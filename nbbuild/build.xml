@@ -132,7 +132,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <!-- Platform modules: -->
   <target name="all-openide" depends="init">
     <echo message="Building Open APIs..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -141,7 +141,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-openide/loaders" depends="all-openide">
     <echo message="Building openide/loaders..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -150,7 +150,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-openide/execution" depends="all-openide,all-openide/io">
     <echo message="Building openide/execution..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -159,7 +159,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-openide/io" depends="all-openide">
     <echo message="Building openide/io..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -168,7 +168,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/bootstrap" depends="init">
     <echo message="Building module core/bootstrap..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -177,7 +177,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core" depends="all-openide,all-openide/loaders,all-core/bootstrap,all-core/swing/plaf">
     <echo message="Building IDE core implementation..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -186,7 +186,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/javahelp" depends="all-openide,all-openide/loaders">
     <echo message="Building module core/javahelp..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -195,7 +195,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/favorites" depends="all-openide,all-openide/loaders">
     <echo message="Building module core/favorites..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -204,7 +204,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/execution" depends="all-openide,all-openide/io,all-openide/execution,all-core,all-core/bootstrap">
     <echo message="Building module core/execution..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -213,7 +213,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/output" depends="all-openide,all-openide/io,all-core/term">
     <echo message="Building module core/output..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -222,7 +222,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/term" depends="init">
     <echo message="Building module core/term..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -231,7 +231,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/output2" depends="all-openide,all-openide/io">
     <echo message="Building module core/output2..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -240,7 +240,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target> 
   <target name="all-core/ui" depends="all-openide">
     <echo message="Building module core/ui..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -249,7 +249,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/windows" depends="all-openide,all-openide/loaders,all-core,all-core/swing/tabcontrol">
     <echo message="Building module core/windows..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -258,7 +258,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/multiview" depends="all-openide,all-openide/loaders">
     <echo message="Building module core/multiview..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -267,7 +267,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>  
   <target name="all-core/ide" depends="all-openide">
     <echo message="Building module core/ide..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -276,7 +276,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/settings" depends="all-openide,all-openide/loaders">
     <echo message="Building module core/settings..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -285,7 +285,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-openide/masterfs" depends="all-openide,all-projects/queries">
     <echo message="Building module openide/masterfs..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -294,7 +294,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-autoupdate" depends="all-openide,all-core">
     <echo message="Building module autoupdate..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -303,7 +303,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-projects/queries" depends="all-openide">
     <echo message="Building module projects/queries..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -312,7 +312,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/swing/plaf" depends="init">
     <echo message="Building look and feel library..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -321,7 +321,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/swing/tabcontrol" depends="init">
     <echo message="Building tabcontrol javabean..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -332,7 +332,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <!-- And the rest of modules -->
   <target name="all-java/srcmodel" depends="all-java/api">
     <echo message="Building java/srcmodel..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -341,7 +341,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-java/javacore" depends="all-java/javamodel,all-classfile,all-java/api,all-java/parser">
     <echo message="Building module javacore..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -350,7 +350,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-java/javamodel" depends="all-mdr">
     <echo message="Building module javamodel..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -359,7 +359,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-java/parser" depends="init">
     <echo message="Building module parser..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -372,7 +372,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/deprecated" depends="init">
     <echo message="Building core/deprecated..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -408,7 +408,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/compiler" depends="all-openide/compiler">
     <echo message="Building module core/compiler..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -417,7 +417,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-contrib/naming" depends="init">
     <echo message="Building module contrib/naming..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -426,7 +426,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-contrib/bookmarks" depends="all-contrib/naming">
     <echo message="Building module bookmarks ..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -435,7 +435,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-contrib/htmldiff" depends="all-diff">
     <echo message="Building module htmldiff ..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -444,7 +444,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-openide/looks" depends="all-openide/registry,all-core/registry">
     <echo message="Building module openide/looks..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -453,7 +453,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-openide/registry" depends="init">
     <echo message="Building module openide/registry..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -462,7 +462,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-core/registry" depends="all-openide/registry,all-openide/convertor">
     <echo message="Building module core/registry..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -471,7 +471,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-openide/convertor" depends="init">
     <echo message="Building module openide/convertor..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -481,7 +481,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-a11y" depends="all-form,all-junit,all-xtest">
     <echo message="Building module a11y..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -490,7 +490,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-ant" depends="init">
     <echo message="Building module ant..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -499,7 +499,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-ant/docs" depends="init">
     <echo message="Building module ant/docs..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -508,7 +508,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-ant/freeform" depends="all-ant,all-java/project,all-java/api,all-java/platform,all-ant/project,all-projects/projectapi,all-projects/projectuiapi,all-web/webapi">
     <echo message="Building module ant/freeform..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -517,7 +517,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-ant/grammar" depends="all-ant,all-xml/core">
     <echo message="Building module ant/grammar..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -526,7 +526,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-ant/browsetask" depends="init">
     <echo message="Building module ant/browsetask..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -535,7 +535,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-apisupport" depends="all-java/api,all-java/srcmodel">
     <echo message="Building module apisupport..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -544,7 +544,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-apisupport/ant" depends="init">
     <echo message="Building module apisupport/ant..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -554,7 +554,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <!-- Deps include modules for which we build APIs: -->
   <target name="all-apisupport/apidocs" depends="all-openide/registry,all-openide/looks,all-core/registry,all-openide/convertor,all-java/api">
     <echo message="Building module apisupport/apidocs..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -563,7 +563,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-apisupport/lite" depends="all-java/srcmodel">
     <echo message="Building module apisupport lite..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -572,7 +572,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-applet" depends="all-debuggercore">
     <echo message="Building module applet..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -581,7 +581,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-ide/updatecenters" depends="init">
     <echo message="Building module ide/updatecenters..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -590,7 +590,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-beans" depends="all-java,all-java/srcmodel">
     <echo message="Building module beans..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -599,7 +599,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-classfile" depends="init">
     <echo message="Building module classfile..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -608,7 +608,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-classclosure" depends="all-classfile,all-logger,all-java/srcmodel,all-openide/compiler">
     <echo message="Building module classclosure..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -617,7 +617,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-clazz" depends="all-classfile,all-java/srcmodel,all-java/api">
     <echo message="Building module clazz..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -626,7 +626,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-db" depends="all-openidex,all-form">
     <echo message="Building module db..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -644,7 +644,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-debuggercore/api" depends="init">
     <echo message="Building module debuggercore/api ..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -653,7 +653,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-debuggercore/viewmodel" depends="init">
     <echo message="Building module debuggercore/viewmodel ..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -662,7 +662,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-debuggercore" depends="all-debuggercore/api,all-debuggercore/viewmodel">
     <echo message="Building module debuggercore ..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -671,7 +671,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-debuggerjpda/api" depends="all-debuggercore/api,all-debuggercore/viewmodel">
     <echo message="Building module debuggerjpda/api ..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -680,7 +680,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-debuggerjpda" depends="all-debuggercore/api,all-debuggercore/viewmodel,all-debuggerjpda/api">
     <echo message="Building module debuggerjpda..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -689,7 +689,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-debuggerjpda/ui" depends="all-debuggercore/api,all-debuggercore/viewmodel,all-debuggercore,all-debuggerjpda/api,all-debuggerjpda,all-java/srcmodel">
     <echo message="Building module debuggerjpda/ui ..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -698,7 +698,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-debuggerjpda/ant" depends="init,all-debuggercore/api,all-debuggerjpda/api,all-java/api,all-java/srcmodel,all-projects/projectapi,all-projects/projectuiapi,all-java/project,all-debuggercore/viewmodel">
     <echo message="Building module debuggerjpda/ant..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -707,7 +707,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-editor" depends="init,all-java/srcmodel,all-java/api,all-java/javacore,all-editor/lib,all-editor/fold,all-editor/util">
     <echo message="Building module editor..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -720,7 +720,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-editor/fold" depends="init,all-editor/util">
     <echo message="Building module editor/fold..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -729,7 +729,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-editor/util" depends="init">
     <echo message="Building module editor/util..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -742,7 +742,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-extbrowser" depends="init">
     <echo message="Building module extbrowser..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -751,7 +751,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-extbrowser/webclient" depends="init,all-httpserver">
     <echo message="Building module webclient..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -764,7 +764,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-form" depends="init,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-ant/project,all-java/api,all-java/project,all-java,all-java/srcmodel,all-java/platform">
     <echo message="Building module form..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -777,7 +777,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-html" depends="init">
     <echo message="Building module html..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -790,7 +790,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-httpserver/servletapi" depends="init">
     <echo message="Building module httpserver/servletapi..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -799,7 +799,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-i18n" depends="init,all-properties,all-java/srcmodel,all-java/project">
     <echo message="Building module i18n..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -813,7 +813,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-icebrowser" depends="init">
     <echo message="Building module icebrowser..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -822,7 +822,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-image" depends="init">
     <echo message="Building module image..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -831,7 +831,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-innertesters" depends="init,all-openide/compiler,all-openide/deprecated">
     <echo message="Building module innertesters..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -840,7 +840,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-j2eeserver" depends="init,all-j2eeserver/j2eeapis,all-projects/projectapi,build-schema2beans/anttask,all-xml/api,all-schema2beans/rt">
     <echo message="Building module j2eeserver..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -849,7 +849,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-j2eeserver/j2eeapis" depends="init">
     <echo message="Building module j2eeserver/j2eeapis..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -858,7 +858,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-j2eeserver/ant" depends="init,all-j2eeserver">
     <echo message="Building module j2eeserver/ant..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -867,7 +867,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-junit" depends="init,all-java/srcmodel,all-ant,all-java/api,all-projects/projectapi,all-projects/projectuiapi,all-java/project">
     <echo message="Building module junit..."/>
-     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -878,7 +878,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-java" depends="init,all-java/api,all-java/srcmodel,all-java/javacore">
     <echo message="Building module java..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -887,7 +887,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-java/fastjavac" depends="init,all-openide/compiler,all-java">
     <echo message="Building module java/fastjavac..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -897,7 +897,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-java/api" depends="init">
     <!-- dependency on all-projects/queries is temporary -->
     <echo message="Building Java support APIs.."/>
-     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -907,7 +907,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-javadoc" depends="init,all-java/api,all-java,all-java/srcmodel">
     <!-- dependency on all-projects/queries is temporary -->
     <echo message="Building module javadoc..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -917,7 +917,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <!--
   <target name="all-javaembeddedserver" depends="all-jarpackager,all-form">
     <echo message="Building module javaembeddedserver..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -927,7 +927,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   -->
   <target name="all-jellytools" depends="init,all-jemmy,all-xtest">
     <echo message="Building module jellytools..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -936,7 +936,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-jemmy" depends="init">
     <echo message="Building module jemmy..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -945,7 +945,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-jemmysupport" depends="init,all-jemmy,all-diff">
     <echo message="Building module jemmysupport..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -954,7 +954,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-jini" depends="init,all-httpserver">
     <echo message="Building module jini..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -963,7 +963,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-latex/ant/antint" depends="init">
     <echo message="Building module latex/ant/antint..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -972,7 +972,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-latex/auted" depends="init,all-latex/model">
     <echo message="Building module latex/auted..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -981,7 +981,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-latex/bibtex" depends="init,all-latex/model">
     <echo message="Building module latex/bibtex..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -990,7 +990,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-latex/branding" depends="init,all-core/ui,all-latex/project,all-latex/ui">
     <echo message="Building module latex/branding..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -999,7 +999,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-latex/core" depends="init,all-editor,all-lexer,all-lexer/editorbridge,all-latex/model,all-latex/editor">
     <echo message="Building module latex/core..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1008,7 +1008,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-latex/editor" depends="init,all-editor,all-lexer,all-lexer/editorbridge,all-latex/model">
     <echo message="Building module latex/editor..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1017,7 +1017,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-latex/loaders" depends="init,all-editor,all-latex/model,all-latex/editor,all-latex/core">
     <echo message="Building module latex/loaders..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1026,7 +1026,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-latex/manual" depends="init">
     <echo message="Building module latex/manual..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1035,7 +1035,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-latex/model" depends="init,all-lexer">
     <echo message="Building module latex/model..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1044,7 +1044,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-latex/nexplorer" depends="init">
     <echo message="Building module latex/nexplorer..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1053,7 +1053,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-latex/project" depends="init,all-editor,all-ant,all-latex/ant/antint,all-latex/model,all-latex/editor,all-latex/core,all-latex/loaders">
     <echo message="Building module latex/project..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1062,7 +1062,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-latex/guiproject" depends="init,all-editor,all-ant,all-latex/ant/antint,all-latex/model,all-latex/editor,all-latex/core,all-latex/loaders,all-projects/projectapi,all-projects/projectuiapi">
     <echo message="Building module latex/guiproject..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1071,7 +1071,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-latex/ui" depends="init,all-editor,all-latex/model,all-latex/editor,all-latex/core,all-latex/loaders">
     <echo message="Building module latex/ui..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1080,7 +1080,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-jndi" depends="init,all-openidex,all-openide/deprecated,all-projects">
     <echo message="Building module jndi..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1089,7 +1089,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-logger" depends="init">
     <echo message="Building module logger..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1098,7 +1098,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-lexer" depends="init">
     <echo message="Building module lexer..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1107,7 +1107,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-lexer/editorbridge" depends="init,all-editor,all-lexer">
     <echo message="Building module lexer/editorbridge..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1116,7 +1116,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-lexer/editorbridge/calc" depends="init,all-editor,all-lexer,all-lexer/editorbridge">
     <echo message="Building module lexer/editorbridge/calc..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1125,7 +1125,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-makefile" depends="init,all-openide/compiler,all-openide/deprecated,all-debuggercore/oldapi">
     <echo message="Building module makefile..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1134,7 +1134,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-metrics" depends="init,all-classfile,all-clazz,all-java">
     <echo message="Building module metrics..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1144,7 +1144,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <!-- XXX remove dep on all-web/servletapi23 when possible (unused at runtime) -->
   <target name="all-monitor" depends="init,all-web/core,all-schema2beans/rt,all-html,all-httpserver,all-httpserver/servletapi,all-web/servletapi23">
     <echo message="Building module monitor..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1155,7 +1155,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-mdr/module" depends="init,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof,all-mdr/nbjmiutils,all-mdr/jmiutils,all-mdr/lib">
     <echo message="Building module mdr/module..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1164,7 +1164,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-mdr/lib" depends="init,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof,all-mdr/nbjmiutils,all-mdr/jmiutils">
     <echo message="Building mdr library..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1173,7 +1173,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-mdr/nbjmiutils" depends="init,all-mdr/jmiutils,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof">
     <echo message="Building module mdr/nbjmiutils..."/>
-     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1182,7 +1182,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-mdr/jmiutils" depends="init,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof">
     <echo message="Building module mdr/jmiutils..."/>
-     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1191,7 +1191,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-mdr/mdrapi" depends="init,all-mdr/jmi,all-mdr/mof">
     <echo message="Building module mdr/mdrapi..."/>
-     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1200,7 +1200,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-mdr/mof" depends="init,all-mdr/jmi">
     <echo message="Building module mdr/mof..."/>
-     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1209,7 +1209,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-mdr/jmi" depends="init">
     <echo message="Building module mdr/jmi..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1219,7 +1219,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   
   <target name="all-multicompile" depends="init,all-openide/compiler">
     <echo message="Building module multicompile..."/>
-     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1228,7 +1228,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-objectbrowser" depends="init">
     <echo message="Building module objectbrowser..."/>
-     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1237,7 +1237,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-openidex" depends="init">
     <echo message="Building module openidex..."/>
-     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1249,7 +1249,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-properties" depends="init,all-editor">
     <echo message="Building module properties..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1258,7 +1258,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-remotefs" depends="init">
     <echo message="Building module remotefs..."/>
-     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1267,7 +1267,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-rmi" depends="init,all-java,all-debuggercore,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-debuggercore/oldapi">
     <echo message="Building module rmi..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1277,7 +1277,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-schema2beans/rt" depends="init">
     <echo message="Building module schema2beans/rt..."/>
 <!--    HACK!!! because of cyclic dependenecies 
-<getdependsclusters name="dependsClusters" list="${clusters.list}"/>-->
+<getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>-->
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="nb.cluster.platform"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1295,7 +1295,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-schema2beans/dev" depends="init,all-schema2beans/rt">
     <echo message="Building module schema2beans/dev..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1304,7 +1304,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-scripting" depends="init,all-openidex,all-openide/execution,all-openide/execution/deprecated">
     <echo message="Building module scripting..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1313,7 +1313,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-serialversion" depends="init,all-openide/compiler,all-java/srcmodel">
     <echo message="Building module serialversion..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1322,7 +1322,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-sysprops" depends="init">
     <echo message="Building module sysprops..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1333,7 +1333,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <!-- Tasklist modules -->
   <target name="all-tasklist/api" depends="init,all-java">
     <echo message="Building module tasklist/api..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1342,7 +1342,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-tasklist/copyright" depends="init,all-tasklist/api,all-tasklist/core,all-editor">
     <echo message="Building module tasklist/copyright..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1351,7 +1351,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>  
   <target name="all-tasklist/core" depends="init,all-tasklist/api">
     <echo message="Building module tasklist/core..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1360,7 +1360,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-tasklist/usertasks" depends="init,all-tasklist/api,all-tasklist/core">
     <echo message="Building module tasklist/usertasks..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1369,7 +1369,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-tasklist/suggestions" depends="init,all-tasklist/api,all-tasklist/core">
     <echo message="Building module tasklist/suggestions..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1382,7 +1382,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-tasklist/docscan" depends="init,all-java/api,all-projects/projectapi,all-projects/projectuiapi,all-tasklist/api,all-tasklist/core,all-tasklist/suggestions">
     <echo message="Building module tasklist/docscan..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1391,7 +1391,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-tasklist/editor" depends="init,all-editor,all-tasklist/api,all-tasklist/core,all-tasklist/usertasks">
     <echo message="Building module tasklist/editor..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1400,7 +1400,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-tasklist/bugs" depends="init,all-tasklist/api,all-tasklist/core">
     <echo message="Building module tasklist/bugs..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1409,7 +1409,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-tasklist/pmd" depends="init,all-tasklist/api,all-tasklist/core,all-contrib/pmd-nb-wrapper,all-java/srcmodel">
     <echo message="Building module tasklist/pmd..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1418,7 +1418,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-tasklist/javaparser" depends="init,all-tasklist/api,all-tasklist/core,all-java">
     <echo message="Building module tasklist/javaparser..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1427,7 +1427,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-tasklist/javadoc" depends="init,all-tasklist/api,all-tasklist/core,all-java,all-javadoc">
     <echo message="Building module tasklist/javadoc..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1436,7 +1436,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-tasklist/html" depends="init,all-tasklist/api,all-tasklist/core,all-html,all-diff">
     <echo message="Building module tasklist/html..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1445,7 +1445,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-tasklist/compiler" depends="init,all-tasklist/api,all-tasklist/core,all-openide/compiler,all-core/compiler">
     <echo message="Building module tasklist/compiler..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1455,7 +1455,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-testtools" depends="init,all-openide/compiler,all-java,all-ant,all-jemmy,all-jemmysupport,all-jellytools">
     <echo message="Building module testtools..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1464,7 +1464,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-tomcatint/tomcat5" depends="init,all-ant,all-schema2beans/rt,all-java/srcmodel,all-j2eeserver,all-web/ddapi,build-schema2beans/anttask">
     <echo message="Building module tomcatint/tomcat5..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1473,7 +1473,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-tomcatint/tomcat5/bundled" depends="init">
     <echo message="Building module tomcatint/tomcat5/bundled..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1482,7 +1482,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-translatedfiles" depends="init">
     <echo message="Building module translatedfiles..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1491,7 +1491,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-usersguide" depends="init">
     <echo message="Building module usersguide..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1500,7 +1500,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-usersguide/j2seexamples" depends="init,all-java/api,all-java/j2seproject">
     <echo message="Building module usersguide/j2seexamples..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1509,7 +1509,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-utilities" depends="init,all-openidex">
     <echo message="Building module utilities..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1518,7 +1518,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-utilities/project" depends="init,all-projects/projectapi,all-projects/projectuiapi,all-utilities">
     <echo message="Building module utilities/project..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1527,7 +1527,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-utilities/group" depends="init,all-openidex">
     <echo message="Building module utilities/group..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1536,7 +1536,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-vcscvs" depends="init,all-openidex,all-editor,all-vcscore">
     <echo message="Building module vcscvs..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1545,7 +1545,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-vcscvs/compat" depends="init,all-openidex,all-vcscore,all-vcsgeneric">
     <echo message="Building module vcscvs compat..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1554,7 +1554,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-vcsgeneric" depends="init,all-openidex,all-vcscore,all-diff">
     <echo message="Building module vcsgeneric..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1564,7 +1564,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-vcsgeneric/profiles/cvsprofiles" depends="init,all-vcsgeneric,all-javacvs/libmodule">
     <echo message="Building module vcsgeneric/profiles/cvsprofiles"/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1574,7 +1574,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-vcsgeneric/profiles/clearcase" depends="init,all-vcsgeneric,all-openide/deprecated">
     <echo message="Building module vcsgeneric/profiles/clearcase"/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1584,7 +1584,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-vcsgeneric/profiles/pvcs" depends="init,all-vcsgeneric">
     <echo message="Building module vcsgeneric/profiles/pvcs"/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1594,7 +1594,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-vcsgeneric/profiles/vss" depends="init,all-vcsgeneric">
     <echo message="Building module vcsgeneric/profiles/vss"/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1604,7 +1604,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-vcscore" depends="init,all-openidex">
     <echo message="Building module vcscore..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1613,7 +1613,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-javacvs" depends="init,all-openidex,all-vcscore, all-diff,all-openide/deprecated">
     <echo message="Building module javacvs..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1622,7 +1622,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-javacvs/compat" depends="init,all-vcscore,all-vcsgeneric,all-vcsgeneric/profiles/cvsprofiles">
     <echo message="Building module javacvs compat..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1631,7 +1631,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-javacvs/libmodule" depends="init">
     <echo message="Building module javacvs/libmodule..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1640,7 +1640,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-web/servletapi23" depends="init,all-web/core">
     <echo message="Building module web/servletapi23..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1649,7 +1649,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-web/servletapi24" depends="init">
     <echo message="Building module web/servletapi24..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1658,7 +1658,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-web/jstl11" depends="init">
     <echo message="Building module web/jstl11..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1667,7 +1667,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-web/ddapi" depends="init,all-schema2beans/rt,build-schema2beans/anttask,all-libs/xerces">
     <echo message="Building module web/ddapi..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1676,7 +1676,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-web/webapi" depends="init,all-schema2beans/rt,all-java/api">
     <echo message="Building module web/webapi..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1685,7 +1685,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-web/project" depends="init,all-web/webapi,all-web/servletapi24,all-web/jstl11,all-java/api,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-schema2beans/rt">
     <echo message="Building module web/project..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1694,7 +1694,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-web/core" depends="init,all-java,all-editor,all-web/ddapi,all-web/webapi,all-j2eeserver,all-html,all-httpserver,all-debuggercore,all-openidex,all-schema2beans/rt,all-xml/api,all-xml/catalog,all-java/srcmodel,all-java/api,all-projects/projectapi,all-web/jspsyntax">
     <echo message="Building module web/core..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1703,7 +1703,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-web/jspparser" depends="init,all-web/servletapi24">
     <echo message="Building module web/jspparser..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1712,7 +1712,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-web/jspsyntax" depends="init,all-web/jspparser,all-xml/text-edit">
     <echo message="Building module web/jspsyntax..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1721,7 +1721,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-web/examples" depends="init">
     <echo message="Building module web/examples..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1730,7 +1730,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-web/jspdebug" depends="init,all-web/core,all-java/srcmodel,all-debuggercore/api,all-debuggerjpda/api">
     <echo message="Building module web/jspdebug..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1739,7 +1739,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-web/taglibed" depends="init,all-web/core,all-jarpackager,all-xml/core,all-java/srcmodel">
     <echo message="Building module web/taglibed..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1748,7 +1748,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-webl" depends="init,all-java,all-openide/compiler,all-openide/deprecated">
     <echo message="Building module webl..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1757,7 +1757,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-cpplite" depends="init,all-editor,all-java,all-openide/deprecated,all-openide/compiler">
     <echo message="Building module cpplite..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1766,7 +1766,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-cpp" depends="init,all-editor,all-openide/deprecated,all-openide/compiler">
     <echo message="Building module cpp..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1775,7 +1775,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-externaleditor" depends="init,all-editor">
     <echo message="Building module externaleditor..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1785,7 +1785,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-corba" depends="init,all-editor,all-java,all-openide/compiler,all-projects">
     <echo message="Building module corba..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1795,7 +1795,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-ide/welcome" depends="init">
     <echo message="Building module ide/welcome..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1805,7 +1805,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-ide/applemenu" depends="init">
     <echo message="Building module ide/applemenu..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1816,7 +1816,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <!-- Libs modules -->
   <target name="all-libs/xalan" depends="init">
       <echo message="Building module libs/xalan..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1826,7 +1826,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-libs/jaxp" depends="init">
       <echo message="Building module libs/jaxp..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1836,7 +1836,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-libs/xerces" depends="init">
       <echo message="Building module libs/xerces..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1846,7 +1846,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   
   <target name="all-libs/regexp" depends="init">
       <echo message="Building module libs/regexp..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1856,7 +1856,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   
   <target name="all-libs/j2eeeditor" depends="init">
       <echo message="Building module libs/j2eeeditor..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1870,7 +1870,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <!-- XML modules -->
   <target name="all-xml/api" depends="init">
       <echo message="Building module xml/api..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1880,7 +1880,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-xml/core" depends="init,all-xml/api">
       <echo message="Building module xml/core..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1890,7 +1890,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-xml/tax" depends="init,all-xml/api,all-xml/core, all-libs/xerces">
       <echo message="Building module xml/tax..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1900,7 +1900,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
  <target name="all-xml/catalog" depends="init,all-xml/api,all-xml/core">
       <echo message="Building module xml/catalog..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1910,7 +1910,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-xml/tools" depends="init, all-xml/api, all-xml/tax, all-xml/core,all-java/srcmodel,all-java/api">
       <echo message="Building module xml/tools..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1920,7 +1920,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-xml/text-edit" depends="init, all-editor, all-xml/tax, all-xml/core">
       <echo message="Building module xml/text-edit..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1930,7 +1930,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-xml/tree-edit" depends="init,all-xml/api,all-xml/tax,all-xml/core">
       <echo message="Building module xml/tree-edit..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1940,7 +1940,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-xml/css" depends="init,all-editor,all-xml/api">
       <echo message="Building module xml/css..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1950,7 +1950,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-xml/xsl" depends="init,all-httpserver/servletapi,all-xml/api,all-xml/tax,all-xml/core,all-projects/projectapi,all-projects/projectuiapi,all-libs/xalan">
       <echo message="Building module xml/xsl..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1960,7 +1960,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-xml/schema" depends="init, all-xml/api, all-xml/tax, all-xml/core">
       <echo message="Building xml/schema module..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1972,7 +1972,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-treefs" depends="init,all-java/srcmodel">
     <echo message="Building module treefs..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1982,7 +1982,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-utilities/loaderswitcher" depends="init">
       <echo message="Building module utilities/loaderswitcher..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1992,7 +1992,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-xtest" depends="init,all-java/j2seproject,all-projects/projectui,all-java/javacore">
       <echo message="Building module xtest..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2002,7 +2002,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-workspaceswitcher/navigator" depends="init,all-openide/looks,all-openide/registry">
     <echo message="Building module workspaceswitcher/navigator..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2012,7 +2012,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-workspaceswitcher/navigator/javagator" depends="init,all-workspaceswitcher/navigator,all-java/srcmodel,all-openide/looks">
     <echo message="Building module workspaceswitcher/navigator/javagator..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2022,7 +2022,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-workspaceswitcher/navigator/beanigator" depends="init,all-workspaceswitcher/navigator,all-java/srcmodel,all-openide/looks,all-beans">
     <echo message="Building module workspaceswitcher/navigator/beanigator..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2032,7 +2032,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-contrib/statuspopup" depends="init">
     <echo message="Building module contrib/statuspopup..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2042,7 +2042,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   
   <target name="all-contrib/coloreditor" depends="init">
     <echo message="Building module contrib/coloreditor"/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2052,7 +2052,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   
   <target name="all-contrib/dropshadow" depends="init">
     <echo message="Building module contrib/dropshadow"/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2062,7 +2062,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   
   <target name="all-contrib/editorthemes" depends="init,all-editor">
     <echo message="Building module contrib/editorthemes"/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2072,7 +2072,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   
   <target name="all-contrib/archiver" depends="init,all-java/api">
     <echo message="Building module contrib/archiver..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2082,7 +2082,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-contrib/docbook" depends="init,all-xml/catalog">
     <echo message="Building module contrib/docbook..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2092,7 +2092,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-contrib/mount" depends="init,all-ant,all-java/api,all-java/platform,all-java/project,all-projects/projectapi">
     <echo message="Building module contrib/mount..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2102,7 +2102,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-contrib/pmd-nb-wrapper" depends="init">
     <echo message="Building module contrib/pmd-nb-wrapper..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2112,7 +2112,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-contrib/pmd-nb-ext" depends="init,all-contrib/pmd-nb-wrapper">
     <echo message="Building module contrib/pmd-nb-ext..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2122,7 +2122,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-contrib/insertunicode" depends="init,all-editor">
     <echo message="Building module contrib/insertunicode..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2132,7 +2132,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-jasm" depends="init,all-editor,all-java/srcmodel,all-openide/deprecated,all-openide/compiler,all-clazz">
       <echo message="Building module jasm..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2142,7 +2142,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   
   <target name="all-projects/projectapi" depends="init">
       <echo message="Building module projects/projectapi..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2151,7 +2151,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-projects/projectuiapi" depends="init,all-projects/projectapi">
       <echo message="Building module projects/projectapi..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2160,7 +2160,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-projects/libraries" depends="init,all-projects/projectapi,all-ant/project,all-java/api">
       <echo message="Building module projects/libraries..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2169,7 +2169,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-projects/projectui" depends="init,all-projects/projectapi,all-projects/projectuiapi,all-openidex">
       <echo message="Building module projects/projectui..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2178,7 +2178,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-java/platform" depends="init,all-java/api">
     <echo message="Building module java/platform..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2187,7 +2187,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-java/j2seplatform" depends="init,all-java/api,all-java/platform,all-ant/project,all-projects/libraries,all-classfile">
     <echo message="Building module java/j2seplatform..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2196,7 +2196,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-java/j2seproject" depends="init,all-java/api,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-ant">
     <echo message="Building module java/j2seproject..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2205,7 +2205,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-ant/project" depends="init,all-ant,all-projects/projectapi">
       <echo message="Building module ant/project..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2214,7 +2214,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-java/project" depends="init,all-openidex,all-projects/projectapi,all-projects/projectuiapi,all-java/api,all-java,all-java/platform,all-ant/project,all-projects/libraries,all-ant">
     <echo message="Building module java/project..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2223,7 +2223,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-apisupport/project" depends="init,all-projects/projectapi,all-projects/projectuiapi,all-ant/project,all-java/api,all-java/platform,all-java/project">
     <echo message="Building module apisupport/project..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2232,7 +2232,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-i18n/form" depends="init,all-form,all-i18n,all-java,all-properties,all-java/srcmodel">
     <echo message="Building module i18n/form..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2243,7 +2243,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <!-- target for branding of NetBeans IDE -->
   <target name="all-ide/branding" depends="init">
     <echo message="Building module ide/branding..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -2254,7 +2254,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <!-- target for upgrader of NetBeans IDE -->
   <target name="all-ide/launcher/upgrade" depends="init">
     <echo message="Building module ide/launcher/upgrade..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
