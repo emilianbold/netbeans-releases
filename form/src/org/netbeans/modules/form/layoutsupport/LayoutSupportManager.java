@@ -637,15 +637,25 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     }
 
     // resizing support
-    public int getResizableDirections(Component component, int index) {
-        return layoutDelegate.getResizableDirections(component, index);
+    public int getResizableDirections(Container container,
+                                      Container containerDelegate,
+                                      Component component,
+                                      int index)
+    {
+        return layoutDelegate.getResizableDirections(container,
+                                                     containerDelegate,
+                                                     component, index);
     }
 
-    public LayoutConstraints getResizedConstraints(Component component,
+    public LayoutConstraints getResizedConstraints(Container container,
+                                                   Container containerDelegate,
+                                                   Component component,
                                                    int index,
                                                    Insets sizeChanges)
     {
-        return layoutDelegate.getResizedConstraints(component, index,
+        return layoutDelegate.getResizedConstraints(container,
+                                                    containerDelegate,
+                                                    component, index,
                                                     sizeChanges);
     }
 

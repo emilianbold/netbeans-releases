@@ -477,6 +477,7 @@ class ComponentDragger
 
                         Insets sizeChanges = new Insets(up, left, down, right);
                         constr = layoutSupport.getResizedConstraints(
+                                     targetContainer, targetContainerDel,
                                      comp, metacomp.getComponentIndex(),
                                      sizeChanges);
                     }

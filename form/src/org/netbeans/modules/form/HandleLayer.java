@@ -675,18 +675,20 @@ class HandleLayer extends JPanel
 
         return false;
     }
-    
-    private void checkResizing(MouseEvent e) {
-        int resizing = checkDesignerResizing(e);
-        if (resizing == 0) {
-            if (getToolTipText() != null)
-                setToolTipText(null);
 
-            resizing = checkComponentsResizing(e);
-        }
-        else {
-            if (getToolTipText() == null) {
-                Dimension size = formDesigner.getComponentLayer().getDesignerSize();
+    // Check the mouse cursor if it is at position where a component or the
+    // designer can be resized. Change mouse cursor accordingly.
+    private void checkResizing(MouseEvent e) {
+        int resizing = checkComponentsResizing(e);
+        if (resizing == 0) {
+            resizing = checkDesignerResizing(e);
+            if (resizing == 0) {
+                if (getToolTipText() != null)
+                    setToolTipText(null);
+            }
+            else if (getToolTipText() == null) {
+                Dimension size = formDesigner.getComponentLayer()
+                                               .getDesignerSize();
                 String hint = resizingHintFormat.format(
                                 new Object[] { new Integer(size.width),
                                                new Integer(size.height) });
@@ -694,6 +696,8 @@ class HandleLayer extends JPanel
                 ToolTipManager.sharedInstance().mouseEntered(e);
             }
         }
+        else if (getToolTipText() != null)
+            setToolTipText(null);
 
         if (resizing != 0)
             setResizingCursor(resizing);
@@ -704,6 +708,8 @@ class HandleLayer extends JPanel
         }
     }
 
+    // Check the mouse cursor if it is at position where designer can be
+    // resized.
     private int checkDesignerResizing(MouseEvent e) {
         if (!e.isAltDown() && !e.isControlDown() && !e.isShiftDown()) {
             ComponentLayer compLayer = formDesigner.getComponentLayer();
@@ -720,6 +726,7 @@ class HandleLayer extends JPanel
         return resizeType;
     }
 
+    // Check whether given resize type is valid for designer.
     private boolean validDesignerResizing(int resizing) {
         return resizing == (LayoutSupportManager.RESIZE_DOWN
                             | LayoutSupportManager.RESIZE_RIGHT)
@@ -727,57 +734,63 @@ class HandleLayer extends JPanel
             || resizing == LayoutSupportManager.RESIZE_RIGHT;
     }
 
+    // Check the mouse cursor if it is at position where a component (or more
+    // components) can be resized.
     private int checkComponentsResizing(MouseEvent e) {
-        if (!e.isAltDown() && !e.isControlDown() && !e.isShiftDown()) {
-            // check wheteher all selected components are in the same container
-            RADComponent parent = null;
-            Iterator selected = formDesigner.getSelectedComponents().iterator();
-            while (selected.hasNext()) {
-                RADComponent comp = (RADComponent) selected.next();
-                if (comp instanceof RADVisualComponent) {
-                    if (parent == null) {
-                        parent = comp.getParentComponent();
-                        if (parent == null)
-                            return 0; // component without a parent cannot be resized
-                    }
-                    else if (comp.getParentComponent() != parent)
-                        return 0; // selected components are not in the same container
-                }
-            }
+        if (e.isAltDown() || e.isControlDown() || e.isShiftDown()) {
+            resizeType = 0;
+            return resizeType;
+        }
 
-            Point p = e.getPoint();
-            RADComponent compAtPoint = getMetaComponentAt(p, COMP_SELECTED);
-            if (compAtPoint instanceof RADVisualComponent) {
-                RADVisualComponent metacomp = (RADVisualComponent) compAtPoint;
-                if (!formDesigner.isComponentSelected(metacomp)) {
-                    int resizing = 0;
-                    RADVisualComponent[] otherComps;
-                    if (metacomp instanceof RADVisualContainer)
-                        otherComps = ((RADVisualContainer)metacomp).getSubComponents();
-                    else {
-                        RADVisualContainer metacont = metacomp.getParentContainer();
-                        if (metacont != null)
-                            otherComps = metacont.getSubComponents();
-                        else return 0; // component without a parent
-                    }
-
-                    for (int i=0; i < otherComps.length; i++) {
-                        metacomp = otherComps[i];
-                        resizing = getComponentResizable(p, metacomp);
-                        if (resizing != 0)
-                            break;
-                    }
-                    resizeType = resizing;
+        // check whether all selected components are in the same container
+        RADComponent parent = null;
+        Iterator selected = formDesigner.getSelectedComponents().iterator();
+        while (selected.hasNext()) {
+            RADComponent comp = (RADComponent) selected.next();
+            if (comp instanceof RADVisualComponent) {
+                if (parent == null) {
+                    parent = comp.getParentComponent();
+                    if (parent == null)
+                        return 0; // component without a parent cannot be resized
                 }
-                else resizeType = getComponentResizable(p, metacomp);
+                else if (comp.getParentComponent() != parent)
+                    return 0; // selected components are not in the same container
             }
-            else resizeType = 0;
+        }
+
+        Point p = e.getPoint();
+        RADComponent compAtPoint = getMetaComponentAt(p, COMP_SELECTED);
+        if (compAtPoint instanceof RADVisualComponent) {
+            RADVisualComponent metacomp = (RADVisualComponent) compAtPoint;
+            if (!formDesigner.isComponentSelected(metacomp)) {
+                int resizing = 0;
+                RADVisualComponent[] otherComps;
+                if (metacomp instanceof RADVisualContainer)
+                    otherComps = ((RADVisualContainer)metacomp).getSubComponents();
+                else {
+                    RADVisualContainer metacont = metacomp.getParentContainer();
+                    if (metacont != null)
+                        otherComps = metacont.getSubComponents();
+                    else return 0; // component without a parent
+                }
+
+                for (int i=0; i < otherComps.length; i++) {
+                    metacomp = otherComps[i];
+                    resizing = getComponentResizable(p, metacomp);
+                    if (resizing != 0)
+                        break;
+                }
+                resizeType = resizing;
+            }
+            else resizeType = getComponentResizable(p, metacomp);
         }
         else resizeType = 0;
 
         return resizeType;
     }
 
+    // Check how possible component resizing (obtained from layout support)
+    // matches with mouse position on component selection border. 
     private int getComponentResizable(Point p, RADVisualComponent metacomp) {
         if (!formDesigner.isComponentSelected(metacomp))
             return 0;
@@ -792,17 +805,21 @@ class HandleLayer extends JPanel
         if (laySup == null)
             return 0;
 
+        Container cont = (Container) formDesigner.getComponent(metacont);
+        Container contDel = metacont.getContainerDelegate(cont);
         Component comp = (Component) formDesigner.getComponent(metacomp);
 
         int resizable = laySup.getResizableDirections(
-                                   comp,
-                                   metacont.getIndexOf(metacomp));
+                                   cont, contDel,
+                                   comp, metacont.getIndexOf(metacomp));
         if (resizable != 0)
             resizable &= getSelectionResizable(p, comp, 2);
 
         return resizable;
     }
 
+    // Compute possible resizing directions according to mouse position on
+    // component selection border.
     private int getSelectionResizable(Point p, Component comp, int borderWidth) {
         if (comp == null)
             return 0;

@@ -694,21 +694,37 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 
     /** Provides resizing options for given component. It can combine the
      * bit-flag constants RESIZE_UP, RESIZE_DOWN, RESIZE_LEFT, RESIZE_RIGHT.
-     * @return resizing options for a component; 0 if no resizing is possible
+     * @param container instance of a real container in which the
+     *        component is to be resized
+     * @param containerDelegate effective container delegate of the container
+     *        (e.g. like content pane of JFrame)
+     * @param component real component to be resized
+     * @param index position of the component in its container
+     * @return resizing options for the component; 0 if no resizing is possible
      */
-    public int getResizableDirections(Component component, int index) {
+    public int getResizableDirections(Container container,
+                                      Container containerDelegate,
+                                      Component component,
+                                      int index)
+    {
         return 0;
     }
 
     /** This method should calculate layout constraints for a component being
      * resized.
-     * @param component real component to be resized
-     * @param index position of the component in its current container
+     * @param container instance of a real container in which the
+     *        component is resized
+     * @param containerDelegate effective container delegate of the container
+     *        (e.g. like content pane of JFrame)
+     * @param component real component being resized
+     * @param index position of the component in its container
      * @param sizeChanges Insets object with size differences
      * @return component layout constraints for resized component; null if
      *         resizing is not supported opossible or not implemented
      */
-    public LayoutConstraints getResizedConstraints(Component component,
+    public LayoutConstraints getResizedConstraints(Container container,
+                                                   Container containerDelegate,
+                                                   Component component,
                                                    int index,
                                                    Insets sizeChanges)
     {
