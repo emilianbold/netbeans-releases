@@ -21,13 +21,15 @@ import javax.enterprise.deploy.spi.*;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.*;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
 import org.openide.filesystems.*;
-import org.openide.loaders.DataObject;
+import org.openide.loaders.*;
+import org.openide.util.Lookup;
 import org.openide.cookies.InstanceCookie;
 import org.openide.nodes.Node;
 import java.util.*;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindServer;
+
 
 public class Server implements Node.Cookie {
     
@@ -38,30 +40,40 @@ public class Server implements Node.Cookie {
     final String name;
     Map configMap;
     Map customMap;
+    Lookup lkp;
     
     public Server(FileObject fo) throws Exception {
         name = fo.getName();
         FileObject descriptor = fo.getFileObject("Descriptor");
-        FileObject factoryinstance = fo.getFileObject("Factory.instance");
-        if(descriptor == null || factoryinstance == null)
+        if(descriptor == null)
             throw new IllegalStateException("Incorrect server plugin installation");
         dep = NetbeansDeployment.createGraph(descriptor.getInputStream());
-        DataObject dobj = DataObject.find(factoryinstance);
-        InstanceCookie cookie = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
-        if(cookie == null)
-            throw new IllegalStateException("Incorrect server plugin installation");
-        factoryCls = cookie.instanceClass();
         
-        // speculative code depending on the DF implementation and if it registers
-        // itself with DFM or not
-        
-        try {
-//            System.err.println("Trying to create plugin");
-            factory = (DeploymentFactory) cookie.instanceCreate();
-//            System.err.println("Created plugin");
-        } catch (Exception e) {
-//            System.err.println("Couldn't create factory instance from Server constructor");
-            e.printStackTrace(System.err);
+        lkp = new FolderLookup (DataFolder.findContainer (fo)).getLookup ();
+        factory = (DeploymentFactory) lkp.lookup (DeploymentFactory.class);
+        if (factory != null) {
+            factoryCls = factory.getClass ();
+        } else {
+            FileObject factoryinstance = fo.getFileObject("Factory.instance");
+            if(factoryinstance == null)
+                throw new IllegalStateException("Incorrect server plugin installation");
+            DataObject dobj = DataObject.find(factoryinstance);
+            InstanceCookie cookie = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
+            if(cookie == null)
+                throw new IllegalStateException("Incorrect server plugin installation");
+            factoryCls = cookie.instanceClass();
+
+            // speculative code depending on the DF implementation and if it registers
+            // itself with DFM or not
+
+            try {
+    //            System.err.println("Trying to create plugin");
+                factory = (DeploymentFactory) cookie.instanceCreate();
+    //            System.err.println("Created plugin");
+            } catch (Exception e) {
+    //            System.err.println("Couldn't create factory instance from Server constructor");
+                e.printStackTrace(System.err);
+            }
         }
     }
         
@@ -143,6 +155,10 @@ public class Server implements Node.Cookie {
     }
     
     public FindServer getFindServer() {
+        FindServer oo = (FindServer) lkp.lookup (FindServer.class);
+        if (oo != null) {
+            return oo;
+        }
         Object o = getClassFromPlugin(dep.getFinderUi());
         if (o instanceof FindServer)
             return (FindServer) o;
@@ -193,31 +209,55 @@ public class Server implements Node.Cookie {
     }
     
     public IncrementalDeployment getIncrementalDeployment() {
+        IncrementalDeployment o = (IncrementalDeployment) lkp.lookup (IncrementalDeployment.class);
+        if (o != null) {
+            return o;
+        }
         String className = dep.getIncrementalDeploy();
         return (IncrementalDeployment) getClassFromPlugin(className);
     }
     
     public FileDeploymentLayout getFileDeploymentLayout() {
+        FileDeploymentLayout o = (FileDeploymentLayout) lkp.lookup (FileDeploymentLayout.class);
+        if (o != null) {
+            return o;
+        }
         String className = dep.getFileDeploymentLayout();
         return (FileDeploymentLayout) getClassFromPlugin(className);
     }
     
     public StartServer getStartServer() {
+        StartServer o = (StartServer) lkp.lookup (StartServer.class);
+        if (o != null) {
+            return o;
+        }
         String className = dep.getStartServer();
         return (StartServer) getClassFromPlugin(className);
     }
 
     public ModuleUrlResolver getModuleUrlResolver() {
+        ModuleUrlResolver o = (ModuleUrlResolver) lkp.lookup (ModuleUrlResolver.class);
+        if (o != null) {
+            return o;
+        }
         String className = dep.getModuleUrlResolver();
         return (ModuleUrlResolver) getClassFromPlugin(className);
     }
     
     public DeploymentPlanSplitter getDeploymentPlanSplitter() {
+        DeploymentPlanSplitter o = (DeploymentPlanSplitter) lkp.lookup (DeploymentPlanSplitter.class);
+        if (o != null) {
+            return o;
+        }
         String className = dep.getDeploymentPlanSplitter();
         return (DeploymentPlanSplitter) getClassFromPlugin(className);
     }
 
     public ManagementMapper getManagementMapper() {
+        ManagementMapper o = (ManagementMapper) lkp.lookup (ManagementMapper.class);
+        if (o != null) {
+            return o;
+        }
         String className = dep.getNameMapper();
         Object mapper = getClassFromPlugin(className);
         if (mapper instanceof ManagementMapper)
