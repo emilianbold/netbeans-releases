@@ -807,3 +807,30 @@ src/org/netbeans/jemmy/operators/JMenuItemOperator.java
 	
 	
 
+#VERSION 2.2.1
+
+Javadoc has been completed.
+
+JSpinner operator and driver
+(Could be compiled and used under 1.4 only.)
+        src/org/netbeans/jemmy/drivers/scrolling/JSpinnerDriver.java
+        src/org/netbeans/jemmy/operators/JSpinnerOperator.java
+
+JSlider is now working through ScrollDriver
+        src/org/netbeans/jemmy/operators/JSliderOperator.java
+        src/org/netbeans/jemmy/drivers/scrolling/JSliderDriver.java
+
+28835: JemmyException is thrown if getApproveButton() returns null.
+        src/org/netbeans/jemmy/operators/JFileChooserOperator.java
+
+30939: description field has been removed.
+        src/org/netbeans/jemmy/JemmyException.java
+
+Throwable is accepted as an inner exception by JemmyException
+        src/org/netbeans/jemmy/JemmyException.java
+
+StringComparator can be passed to StringPropChooser constructor
+        src/org/netbeans/jemmy/util/StringPropChooser.java
+
+Tooltip component is now searched through all the windows:
+        src/org/netbeans/jemmy/operators/JComponentOperator.java

@@ -93,8 +93,4 @@ public class jemmy_047 extends JemmyTest {
 	}
         return(0);
     }
-    public static void main(String[] argv) {
-        new jemmy_045().runIt(null);
-        System.exit(0);
-    }
 }
