@@ -50,8 +50,9 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/openidex/netbeans/modules/autoload/openidex.jar"/>
         <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/j2eeserver.jar"/>
         <pathelement location="${nb_root}/projects/netbeans/modules/projects.jar"/>
-	<pathelement path="${nb_root}/xml/api/netbeans/modules/autoload/xml-api.jar" />
-         <pathelement location="${nb_root}/xml/catalog/netbeans/modules/xml-catalog.jar"/>
+        <pathelement path="${nb_root}/xml/api/netbeans/modules/autoload/xml-api.jar" />
+        <pathelement path="${nb_root}/xml/core/netbeans/modules/autoload/xml-core.jar" />
+        <pathelement location="${nb_root}/xml/catalog/netbeans/modules/xml-catalog.jar"/>
         <pathelement path="${nb_root}/web/jspparser/netbeans/modules/eager/jsp-parser.jar" />
         <pathelement path="${nb_root}/web/jspsyntax/netbeans/modules/eager/jsp-syntax.jar" />
         <pathelement path="${nb_root}/web/servletapi24/netbeans/modules/autoload/ext/jsp-api-2.0.jar" />
@@ -63,9 +64,11 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="jars" depends="compile">
     <property file="${nb_root}/web/spec-vers.properties"/>
+    <property file="${nb_root}/xml/spec-vers.properties"/>
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <filter token="DDAPI_IMPL_VERSION" value="${ddap.impl.version}"/>
+    <filter token="XML_CORE_IMPL_VERSION" value="${xml.common.impl.version}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/modules/jsp.jar"
             manifest="manifest-subst.mf"
