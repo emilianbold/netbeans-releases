@@ -177,6 +177,8 @@ Microsystems, Inc. All Rights Reserved.
         </file>
         
         <folder name="DebuggerType">
+            <!-- DefaultDebuggerType should be the first one -->
+            <attr name="OpenIDE-Folder-Order" stringvalue="org-netbeans-modules-debugger-delegator-DefaultDebuggerType.settings" />
             <file name="org-netbeans-modules-debugger-delegator-DefaultDebuggerType.settings" url="DefaultDebuggerType.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/jpdaDebugging.gif"/>
