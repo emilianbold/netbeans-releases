@@ -824,15 +824,7 @@ public class NewTemplateAction extends NodeAction {
     
     /** Implements <code>ContextAwareAction</code> interface method. */
     public Action createContextAwareInstance (Lookup actionContext) {
-        Action action = new DelegateAction (this, actionContext);
-        Lookup.Result nodesResult = actionContext.lookup (new Lookup.Template (Node.class));
-        // if a weak listener is used then NewTemplateActionTest fails
-        //LookupListener l = (LookupListener)WeakListeners.create (LookupListener.class, (LookupListener)action, nodesResult);
-        //nodesResult.addLookupListener (l);
-        //l.resultChanged (null);
-        nodesResult.addLookupListener ((LookupListener)action);
-        ((LookupListener)action).resultChanged (null);
-        return action;
+        return new DelegateAction (this, actionContext);
     }
     
     private static final class DelegateAction extends Object
@@ -840,12 +832,22 @@ public class NewTemplateAction extends NodeAction {
         
         private NewTemplateAction delegate;
         private Lookup actionContext;
+        private Lookup.Result nodesResult;
         
         private PropertyChangeSupport support = new PropertyChangeSupport (this);
+        
+        private static Lookup.Template NODES = new Lookup.Template (Node.class);
         
         public DelegateAction (NewTemplateAction action, Lookup actionContext) {
             this.delegate = action;
             this.actionContext = actionContext;
+            this.nodesResult = actionContext.lookup (NODES);
+            // if a weak listener is used then NewTemplateActionTest fails
+            //LookupListener l = (LookupListener)WeakListeners.create (LookupListener.class, (LookupListener)action, nodesResult);
+            //nodesResult.addLookupListener (l);
+            //l.resultChanged (null);
+            nodesResult.addLookupListener (this);
+            resultChanged (null);
         }
         
         /** Overrides superclass method, adds delegate description. */
