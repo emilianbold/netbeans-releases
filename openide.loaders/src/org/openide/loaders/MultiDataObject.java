@@ -902,7 +902,9 @@ public class MultiDataObject extends DataObject {
 
         protected Entry (FileObject file) {
             this.file = file;
-            file.setImportant(isImportant());
+	    if (!isImportant()) {
+                file.setImportant(false);
+	    }
         }
 
         /** A method to change the entry file to some else.
