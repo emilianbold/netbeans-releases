@@ -90,9 +90,9 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     }
     
     private Integer getServerPort () {
-        DeploymentManager m = getDeploymentManager();
-        if (m instanceof TomcatManager){
-            Integer port = ((TomcatManager)m).getServerPort();
+        TomcatManager m = getTomcatManager();
+        if (m != null){
+            Integer port = m.getServerPort();
             if (port != null && port.intValue() != iPort){
                 iPort = port.intValue();
                 setDisplayName(NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode",  // NOI18N
@@ -104,63 +104,63 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     }
 
     private Boolean getClassic() {
-        DeploymentManager m = getDeploymentManager();
-        if (m instanceof TomcatManager){
-            return  ((TomcatManager)m).getClassic();
+        TomcatManager m = getTomcatManager();
+        if (m != null){
+            return  m.getClassic();
         };
         return Boolean.FALSE;
     }
 
     private String getDebugType() {
-        DeploymentManager m = getDeploymentManager();
-        if (m instanceof TomcatManager){
-            return  ((TomcatManager)m).getDebugType();
+        TomcatManager m = getTomcatManager();
+        if (m != null){
+            return  m.getDebugType();
         };
         return null;
     }
 
     private String getSharedMemory() {
-        DeploymentManager m = getDeploymentManager();
-        if (m instanceof TomcatManager){
-            return  ((TomcatManager)m).getSharedMemory();
+        TomcatManager m = getTomcatManager();
+        if (m != null){
+            return  m.getSharedMemory();
         };
         return null;
     }
 
     private Integer getDebugPort () {
-        DeploymentManager m = getDeploymentManager();
-        if (m instanceof TomcatManager){
-            return  ((TomcatManager)m).getDebugPort();
+        TomcatManager m = getTomcatManager();
+        if (m != null){
+            return  m.getDebugPort();
         };
         return null;
     }
     
     private Integer getAdminPort () {
-        DeploymentManager m = getDeploymentManager();
-        if (m instanceof TomcatManager){
-            return ((TomcatManager)m).getAdminPort();
+        TomcatManager m = getTomcatManager();
+        if (m != null){
+            return m.getAdminPort();
         };
         return null;
     }
 
     private void setClassic (Boolean classic) {
-        DeploymentManager m = getDeploymentManager();
-        if (m instanceof TomcatManager){
-            ((TomcatManager)m).setClassic(classic);
+        TomcatManager m = getTomcatManager();
+        if (m != null){
+            m.setClassic(classic);
         };
     }
 
     private void setSharedMemory (String str) {
-        DeploymentManager m = getDeploymentManager();
-        if (m instanceof TomcatManager){
-            ((TomcatManager)m).setSharedMemory(str);
+        TomcatManager m = getTomcatManager();
+        if (m != null){
+            m.setSharedMemory(str);
         };
     }
 
     private void setDebugPort (Integer port) {
-        DeploymentManager m = getDeploymentManager();
-        if (m instanceof TomcatManager){
-            ((TomcatManager)m).setDebugPort(port);
+        TomcatManager m = getTomcatManager();
+        if (m != null){
+            m.setDebugPort(port);
         };
     }
 
@@ -180,20 +180,20 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     }
 
     private String getHome() {
-        DeploymentManager m = getDeploymentManager();
-        if (m instanceof TomcatManager){
-            return ((TomcatManager)m).getCatalinaHome();
+        TomcatManager m = getTomcatManager();
+        if (m != null){
+            return m.getCatalinaHomeDir().getAbsolutePath();
         }
         return "";
     }
     
     private String getBase() {
-        DeploymentManager m = getDeploymentManager();
-        if (m instanceof TomcatManager) {
-            if (((TomcatManager)m).getCatalinaBase() != null) {
-                return ((TomcatManager)m).getCatalinaBase();
+        TomcatManager m = getTomcatManager();
+        if (m != null){
+            if (m.getCatalinaBase() != null) {
+                return m.getCatalinaBaseDir().getAbsolutePath();
             } else {
-                return ((TomcatManager)m).getCatalinaHome();
+                return m.getCatalinaHomeDir().getAbsolutePath();
             }
         }
         return "";
