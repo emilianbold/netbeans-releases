@@ -117,6 +117,8 @@ implements PropertyChangeListener, DebuggerManagerListener {
     public void sessionRemoved (Session session) {}
     public void watchAdded (Watch watch) {}
     public void watchRemoved (Watch watch) {}
+    public void engineAdded (DebuggerEngine engine) {}
+    public void engineRemoved (DebuggerEngine engine) {}
 
 
     // helper methods ..........................................................

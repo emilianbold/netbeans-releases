@@ -39,6 +39,12 @@ import com.sun.jdi.Bootstrap;
 import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
+import java.beans.PropertyChangeEvent;
+import org.netbeans.api.debugger.DebuggerEngine;
+
+
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.java.platform.JavaPlatform;
 
@@ -49,29 +55,36 @@ import org.netbeans.api.java.platform.JavaPlatform;
  */
 public class JPDAStart extends Task implements Runnable {
 
-    private static final boolean verbose = System.getProperty ("netbeans.debugger.debug") != null;
-    private static final boolean startVerbose = System.getProperty ("netbeans.debugger.start") != null;
+    private static final boolean    verbose = System.getProperty ("netbeans.debugger.debug") != null;
+    private static final boolean    startVerbose = System.getProperty ("netbeans.debugger.start") != null;
 
     /** Name of the property to which the JPDA address will be set.
      * Target VM should use this address and connect to it
      */
-    private String addressProperty;
+    private String                  addressProperty;
     /** Default transport is socket*/
-    private String transport = "dt_socket";
+    private String                  transport = "dt_socket";
     /** Name which will represent this debugging session in debugger UI.
      * If known in advance it should be name of the app which will be debugged.
      */
-    private String name;
+    private String                  name;
     /** Explicit sourcepath of the debugged process. */
-    private Path sourcepath = null;
+    private Path                    sourcepath = null;
     /** Explicit classpath of the debugged process. */
-    private Path classpath = null;
+    private Path                    classpath = null;
     /** Explicit bootclasspath of the debugged process. */
-    private Path bootclasspath = null;
-    private Object [] lock = null; 
+    private Path                    bootclasspath = null;
+    private Object []               lock = null; 
     /** The class debugger should stop in, or null. */
-    private String stopClassName = null;
-    
+    private String                  stopClassName = null;
+    private MethodBreakpoint        breakpoint;
+
+    {
+        DebuggerManager.getDebuggerManager ().addDebuggerListener (
+            DebuggerManager.PROP_DEBUGGER_ENGINES,
+            new Listener ()
+        );
+    }
 
     // properties ..............................................................
     
@@ -204,13 +217,7 @@ public class JPDAStart extends Task implements Runnable {
                 if (stopClassName != null && stopClassName.length() > 0) {
                     if (startVerbose)
                         System.out.println("\nS create method breakpoint, class name = " + stopClassName);
-                    
-                    MethodBreakpoint breakpoint = MethodBreakpoint.create (
-                        stopClassName,
-                        ""
-                    );
-                    breakpoint.setHidden (true);
-                    DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
+                    createBreakpoint (stopClassName);
                 }                
                 
                 debug ("Debugger started");
@@ -229,6 +236,22 @@ public class JPDAStart extends Task implements Runnable {
 
     
     // support methods .........................................................
+    
+    private void createBreakpoint (String stopClassName) {
+        breakpoint = MethodBreakpoint.create (
+            stopClassName,
+            ""
+        );
+        breakpoint.setHidden (true);
+        DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
+    }
+    
+    private void removeBreakpoint () {
+        if (breakpoint != null) {
+            DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
+            breakpoint = null;
+        }
+    }
 
     private void debug (String msg) {
         if (!verbose) return;
@@ -385,5 +408,37 @@ public class JPDAStart extends Task implements Runnable {
             return false;
         }
         return true;
+    }
+    
+    private class Listener extends DebuggerManagerAdapter {
+        public void propertyChange (PropertyChangeEvent e) {
+            if (e.getPropertyName () == JPDADebugger.PROP_STATE) {
+                int state = ((Integer) e.getNewValue ()).intValue ();
+                if ( (state == JPDADebugger.STATE_DISCONNECTED) ||
+                     (state == JPDADebugger.STATE_STOPPED)
+                ) removeBreakpoint ();
+            }
+            return;
+        }
+        
+        public void engineAdded (DebuggerEngine engine) {
+            JPDADebugger debugger = (JPDADebugger) engine.lookupFirst 
+                (null, JPDADebugger.class);
+            if (debugger == null) return;
+            debugger.addPropertyChangeListener (
+                JPDADebugger.PROP_STATE,
+                this
+            );
+        }
+        
+        public void engineRemoved (DebuggerEngine engine) {
+            JPDADebugger debugger = (JPDADebugger) engine.lookupFirst 
+                (null, JPDADebugger.class);
+            if (debugger == null) return;
+            debugger.removePropertyChangeListener (
+                JPDADebugger.PROP_STATE,
+                this
+            );
+        }
     }
 }

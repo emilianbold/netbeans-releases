@@ -187,25 +187,13 @@ public class BreakpointOutput extends LazyActionsManagerListener
         return new String[] { ActionsManagerListener.PROP_ACTION_PERFORMED };
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-    }
-
-    public Breakpoint[] initBreakpoints() {
-        return new Breakpoint[0];
-    }
-
-    public void initWatches() {
-    }
-
-    public void watchAdded(Watch watch) {
-    }
-
-    public void watchRemoved(Watch watch) {
-    }
-
-    public void sessionAdded(Session session) {
-    }
-
-    public void sessionRemoved(Session session) {
-    }
+    public void propertyChange (PropertyChangeEvent evt) {}
+    public Breakpoint[] initBreakpoints() {return new Breakpoint[0];}
+    public void initWatches () {}
+    public void watchAdded (Watch watch) {}
+    public void watchRemoved (Watch watch) {}
+    public void sessionAdded (Session session) {}
+    public void sessionRemoved (Session session) {}
+    public void engineAdded (DebuggerEngine engine) {}
+    public void engineRemoved (DebuggerEngine engine) {}
 }

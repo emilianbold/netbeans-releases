@@ -298,12 +298,15 @@ public final class Session {
         String language,
         DebuggerEngine engine
     ) {
+        // is pair already added?
         int i, k = languages.length;
         for (i = 0; i < k; i++)
             if (language.equals (languages [i])) {
                 engines [i] = engine;
                 return;
             }
+        
+        // add pair
         String[] newLanguages = new String [languages.length + 1];
         DebuggerEngine[] newEngines = new DebuggerEngine [engines.length + 1];
         System.arraycopy (languages, 0, newLanguages, 0, languages.length);
@@ -313,6 +316,7 @@ public final class Session {
         Object oldL = languages;
         languages = newLanguages;
         engines = newEngines;
+        DebuggerManager.getDebuggerManager ().addEngine (engine);
         pcs.firePropertyChange (
             PROP_SUPPORTED_LANGUAGES,
             oldL,
@@ -344,6 +348,7 @@ public final class Session {
             (new String [newLanguages.size ()]);
         engines = (DebuggerEngine[]) newEngines.toArray 
             (new DebuggerEngine [newEngines.size ()]);
+        DebuggerManager.getDebuggerManager ().removeEngine (engine);
         
         pcs.firePropertyChange (
             PROP_SUPPORTED_LANGUAGES,
@@ -381,6 +386,12 @@ public final class Session {
             oldL,
             languages
         );
+        
+        k = engines.length;
+        for (i = 0; i < k; i++)
+            if (engines [i] == engine)
+                return;
+        DebuggerManager.getDebuggerManager ().removeEngine (engine);
     }
 
     /**

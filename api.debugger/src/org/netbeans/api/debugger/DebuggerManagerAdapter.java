@@ -87,6 +87,22 @@ public class DebuggerManagerAdapter implements LazyDebuggerManagerListener {
      */
     public void sessionRemoved (Session session) {
     }
+
+    /**
+     * Called when some engine is added.
+     *
+     * @param engine a new engine
+     */
+    public void engineAdded (DebuggerEngine engine) {
+    }
+
+    /**
+     * Called when some engine is removed.
+     *
+     * @param engine removed engine
+     */
+    public void engineRemoved (DebuggerEngine engine) {
+    }
     
     public void propertyChange (PropertyChangeEvent evt) {
     }

@@ -119,6 +119,9 @@ public final class DebuggerManager {
     
     /** Name of property for set of running debugger sessions. */
     public static final String                PROP_SESSIONS = "sessions";
+    
+    /** Name of property for set of running debugger engines. */
+    public static final String                PROP_DEBUGGER_ENGINES = "debuggerEngines";
 
     /** Name of property for the set of watches in the system. */
     public static final String                PROP_WATCHES = "watches"; // NOI18N
@@ -131,16 +134,15 @@ public final class DebuggerManager {
     private Session                           currentSession;
     private DebuggerEngine                    currentEngine;
     private Session[]                         sessions = new Session [0];
+    private Set                               engines = new HashSet ();
     private Vector                            breakpoints = new Vector ();
     private boolean                           breakpointsInitialized = false;
     private Vector                            watches = new Vector ();
     private boolean                           watchesInitialized = false;
-//    static private ArrayList                  debuggerPlugIns;
     private SessionListener                   sessionListener = new SessionListener ();
     private Vector                            listener = new Vector ();
     private HashMap                           listeners = new HashMap ();
     private ActionsManager                    actionsManager = null;
-//    private PropertyChangeSupport pcs = new PropertyChangeSupport (this);
     
     private Lookup                            lookup = new Lookup.MetaInf (null);
     
@@ -171,22 +173,6 @@ public final class DebuggerManager {
     
     
     // lookup management .............................................
-    
-//    /**
-//     * Finds all registrations of given service in Meta-inf/debugger/ folder 
-//     * and returns instances of it.
-//     */
-//     public List lookup (Class service) {
-//        return lookup.lookup (null, service);
-//    }
-//    
-//    /**
-//     * Finds first occurence of service in Meta-inf/debugger/ folder 
-//     * and returns instance of it.
-//     */
-//    public Object lookupFirst (Class service) {
-//        return lookup.lookupFirst (null, service);
-//    }
     
     /**
      * Returns list of services of given type from given folder.
@@ -385,6 +371,15 @@ public final class DebuggerManager {
      */
     public Session[] getSessions () {
         return sessions;
+    }
+
+    /**
+     * Returns set of running debugger engines.
+     *
+     * @return set of running debugger engines
+     */
+    public DebuggerEngine[] getDebuggerEngines () {
+        return (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
     }
     
     /**
@@ -862,6 +857,86 @@ public final class DebuggerManager {
         }
     }
 
+    /**
+     * Notifies registered listeners about a change.
+     * Notifies {@link #listener registered listeners} that a engine
+     * {@link DebuggerManagerListener#engineAdded was added}
+     * and its properties
+     * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
+     * were changed.
+     *
+     * @param engine a engine that was created
+     */
+    private void fireEngineAdded (
+        final DebuggerEngine engine,
+        final DebuggerEngine[] old,
+        final DebuggerEngine[] ne
+    ) {
+        initDebuggerManagerListeners ();
+        PropertyChangeEvent ev = new PropertyChangeEvent (
+            this, PROP_DEBUGGER_ENGINES, old, ne
+        );
+        
+        Vector l = (Vector) listener.clone ();
+        int i, k = l.size ();
+        for (i = 0; i < k; i++) {
+            ((DebuggerManagerListener) l.elementAt (i)).engineAdded 
+                (engine);
+            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+        }
+        
+        Vector l1 = (Vector) listeners.get (PROP_DEBUGGER_ENGINES);
+        if (l1 != null) {
+            l1 = (Vector) l1.clone ();
+            k = l1.size ();
+            for (i = 0; i < k; i++) {
+                ((DebuggerManagerListener) l1.elementAt (i)).engineAdded
+                    (engine);
+                ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+            }
+        }
+    }
+
+    /**
+     * Notifies registered listeners about a change.
+     * Notifies {@link #listener registered listeners} that a engine
+     * {@link DebuggerManagerListener#engineRemoved was removed}
+     * and its properties
+     * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
+     * were changed.
+     *
+     * @param engine a engine that was removed
+     */
+    private void fireEngineRemoved (
+        final DebuggerEngine engine,
+        final DebuggerEngine[] old,
+        final DebuggerEngine[] ne
+    ) {
+        initDebuggerManagerListeners ();
+        PropertyChangeEvent ev = new PropertyChangeEvent (
+            this, PROP_DEBUGGER_ENGINES, old, ne
+        );
+
+        Vector l = (Vector) listener.clone ();
+        int i, k = l.size ();
+        for (i = 0; i < k; i++) {
+            ((DebuggerManagerListener) l.elementAt (i)).engineRemoved 
+                (engine);
+            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+        }
+
+        Vector l1 = (Vector) listeners.get (PROP_DEBUGGER_ENGINES);
+        if (l1 != null) {
+            l1 = (Vector) l1.clone ();
+            k = l1.size ();
+            for (i = 0; i < k; i++) {
+                ((DebuggerManagerListener) l1.elementAt (i)).engineRemoved 
+                    (engine);
+                ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+            }
+        }
+    }
+
     
     // helper methods ....................................................
     
@@ -935,6 +1010,22 @@ public final class DebuggerManager {
         Session[] o = sessions;
         sessions = nds;
         fireSessionRemoved (session, o, sessions);
+    }
+    
+    void addEngine (DebuggerEngine engine) {
+        if (engines.contains (engine)) return;
+        DebuggerEngine[] old = (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
+        engines.add (engine);
+        DebuggerEngine[] ne = (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
+        fireEngineAdded (engine, old, ne);
+    }
+    
+    void removeEngine (DebuggerEngine engine) {
+        if (!engines.contains (engine)) return;
+        DebuggerEngine[] old = (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
+        engines.remove (engine);
+        DebuggerEngine[] ne = (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
+        fireEngineRemoved (engine, old, ne);
     }
     
     private void updateCurrentEngine () {
