@@ -116,7 +116,7 @@ public class I18nManager {
             return;
 
         // Add i18n panel to top component.
-        getDialog(sourceDataObject.getName(), Util.getProjectFor(sourceDataObject));
+        getDialog(sourceDataObject);;
         final I18nPanel i18nPanel = ((I18nPanel)i18nPanelWRef.get());
         i18nPanel.showBundleMessage("TXT_SearchingForStrings");
         i18nPanel.enableButtons(I18nPanel.CANCEL_BUTTON | I18nPanel.HELP_BUTTON);
@@ -269,7 +269,10 @@ public class I18nManager {
     
     /** Gets dialog. In our case it is a top component. 
      * @param name name of top component */
-    private void getDialog(String name, Project project) {
+    private void getDialog(DataObject sourceDataObject) {
+        String name = sourceDataObject.getName();
+        Project project = Util.getProjectFor(sourceDataObject);
+
         Dialog dialog = (Dialog) dialogWRef.get();
         I18nPanel i18nPanel = (I18nPanel)i18nPanelWRef.get();
 
@@ -309,7 +312,10 @@ public class I18nManager {
         }
 
         // Set default i18n string.
+        i18nPanel.setProject(project);
         i18nPanel.setI18nString(support.getDefaultI18nString());
+        i18nPanel.setDefaultResource(sourceDataObject);
+
 
         if (dialog == null) {
             String title = Util.getString("CTL_I18nDialogTitle"); // NOI18N
