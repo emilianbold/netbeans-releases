@@ -64,7 +64,7 @@ class GetJavaWord extends Object {
             int bix, eix;
 
             for( bix = Character.isJavaIdentifierPart( text.charAt( pos ) ) ? pos : --pos; 
-                 bix > 0 && Character.isJavaIdentifierPart( text.charAt( bix ) ); bix-- );
+                 bix >= 0 && Character.isJavaIdentifierPart( text.charAt( bix ) ); bix-- );
             for( eix = pos; eix < text.length() && Character.isJavaIdentifierPart( text.charAt( eix )); eix++ );        
        
             return bix == eix ? null : text.substring( bix + 1, eix  );
@@ -80,6 +80,8 @@ class GetJavaWord extends Object {
 
 /* 
  * Log
+ *  8    Gandalf   1.7         11/10/99 Petr Hrebejk    Ctrl+F1 now works in the
+ *       first line of editor too.
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         7/30/99  Petr Hrebejk    Search uses 
