@@ -4,9 +4,12 @@
 <filesystem>
 
   <folder name="Menu">
-	<folder name="Help">
+	<folder name="View">
             <file name="org-netbeans-modules-javadoc-search-SearchDocAction.instance"/>
-            <attr name="org-netbeans-modules-javadoc-search-SearchDocAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-objectbrowser-ShowBrowserAction.instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-javadoc-search-SearchDocAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
         </folder>
   </folder>
 
