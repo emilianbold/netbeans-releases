@@ -193,7 +193,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="test" depends="test-build">
         <mkdir dir="test-results"/>
-        <junit printsummary="withOutAndErr" failureproperty="test.failed" showoutput="true">
+        <junit printsummary="withOutAndErr" failureproperty="test.failed" showoutput="true" fork="true">
             <batchtest todir="test-results">
                 <fileset dir="test">
                     <include name="**/*Test.java"/>
