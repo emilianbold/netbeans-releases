@@ -58,7 +58,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         // run whole suite
         TestRunner.run(suite());
         // run only selected test case
-        //junit.textui.TestRunner.run(new BeansTemplates("testJavaBean"));
+        //junit.textui.TestRunner.run(new BeanInfoGeneration("testGenerateNewBeanInfo"));
     }
     
     /** setUp method  */
@@ -256,7 +256,6 @@ public class BeanInfoGeneration extends JellyTestCase {
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE+"BeanInfo");
         ref(eo.getText());
         compareReferenceFiles();
-        
     }
     
     
@@ -631,8 +630,9 @@ public class BeanInfoGeneration extends JellyTestCase {
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_inDefaultEventSet")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_inDefaultEventSet")).getValue());
         //new EventTool().waitNoEvent(750);
         nbDialogOperator.ok();
-        
-        
+
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE+"BeanInfo");
     }
     public void testCheckBeanInfoCompilability() {
         createContent();
