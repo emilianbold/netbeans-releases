@@ -350,6 +350,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module java..."/>
     <ant dir="../java" target="netbeans"/>
   </target>
+  <target name="all-java/fastjavac" depends="all-openide,all-openide/compiler,all-openide/execution,all-java">
+    <echo message="Building module java/fastjavac..."/>
+    <ant dir="../java/fastjavac" target="netbeans"/>
+  </target>
   <target name="all-java/api" depends="all-openide">
     <echo message="Building Java support APIs.."/>
     <ant dir="../java/api" target="netbeans"/>
