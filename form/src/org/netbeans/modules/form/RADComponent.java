@@ -43,8 +43,8 @@ public class RADComponent {
 // -----------------------------------------------------------------------------
 // Static variables
 
-  public static final String SYNTHETIC_PREFIX = "synthetic_";
-  public static final String PROP_NAME = SYNTHETIC_PREFIX + "Name";
+  public static final String SYNTHETIC_PREFIX = "synthetic_"; /* NO_I18N */
+  public static final String PROP_NAME = SYNTHETIC_PREFIX + "Name"; /* NO_I18N */
 
   static final NewType[] NO_NEW_TYPES = {};
   static final Node.Property[] NO_PROPERTIES = {};
@@ -81,8 +81,8 @@ public class RADComponent {
   // FINALIZE DEBUG METHOD
   public void finalize () throws Throwable {
     super.finalize ();
-    if (System.getProperty ("netbeans.debug.form.finalize") != null) {
-      System.out.println("finalized: "+this.getClass ().getName ()+", instance: "+this);
+    if (System.getProperty ("netbeans.debug.form.finalize") != null) { /* NO_I18N */
+      System.out.println("finalized: "+this.getClass ().getName ()+", instance: "+this); /* NO_I18N */
     }
   } // FINALIZE DEBUG METHOD
   
@@ -109,7 +109,7 @@ public class RADComponent {
   */
   public void setComponent (Class beanClass) {
     if (this.beanClass != null) {
-      throw new InternalError ("Component already initialized: current: "+this.beanClass +", new: "+beanClass);
+      throw new InternalError ("Component already initialized: current: "+this.beanClass +", new: "+beanClass);/* NO_I18N */
     }
 
     this.beanClass = beanClass;
@@ -127,7 +127,7 @@ public class RADComponent {
   */
   public void setInstance (Object beanInstance) {
     if (this.beanClass != null) {
-      throw new InternalError ("Component already initialized: current: "+this.beanClass +", new: "+beanClass);
+      throw new InternalError ("Component already initialized: current: "+this.beanClass +", new: "+beanClass); /* NO_I18N */
     }
     this.beanClass = beanInstance.getClass ();
     this.beanInstance = beanInstance;
@@ -173,7 +173,7 @@ public class RADComponent {
     this.componentNode = node;
     componentNode.addPropertyChangeListener (new java.beans.PropertyChangeListener () {
         public void propertyChange (java.beans.PropertyChangeEvent evt) {
-          if (evt.getPropertyName () != null && evt.getPropertyName ().equals ("variableName")) {
+          if (evt.getPropertyName () != null && evt.getPropertyName ().equals ("variableName")) { /* NO_I18N */ // [CHECK]
             String oldName = (String) evt.getOldValue();
             String newName = (String) evt.getNewValue();
             EventsList.EventSet[] esets = getEventsList().getEventSets ();
@@ -238,7 +238,7 @@ public class RADComponent {
   * @return true if the component has hidden state, false otherwise
   */
   public boolean hasHiddenState () {
-    return (getBeanInfo ().getBeanDescriptor ().getValue ("hidden-state") != null);
+    return (getBeanInfo ().getBeanDescriptor ().getValue ("hidden-state") != null); /* NO_I18N */
   }
   
   /** Getter for the Name property of the component - usually maps to variable declaration for holding the 
@@ -341,45 +341,73 @@ public class RADComponent {
       if (beanExpertProperties.length == 0) {
         // No expert properties
         beanPropertySets = new Node.PropertySet [] {
-          new Node.PropertySet ("synthetic", "Synthetic", "Synthetic Properties") {
-            public Node.Property[] getProperties () {
-              return getSyntheticProperties ();
-            }
-          },
-          new Node.PropertySet ("properties", "Properties", "Properties") {
+          new Node.PropertySet (
+            "properties", 
+            FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
+            FormEditor.getFormBundle().getString("CTL_PropertiesTabHint"),
+          ) {
             public Node.Property[] getProperties () {
               return getComponentProperties ();
             }
           },
-          new Node.PropertySet ("events", "Events", "Events") {
+          new Node.PropertySet (
+            "events", 
+            FormEditor.getFormBundle().getString("CTL_EventsTab"),
+            FormEditor.getFormBundle().getString("CTL_EventsTabHint"),
+          ) {
             public Node.Property[] getProperties () {
               return getComponentEvents ();
             }
           }, 
+          new Node.PropertySet (
+            "synthetic", 
+            FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
+            FormEditor.getFormBundle().getString("CTL_SyntheticTabHint"),
+          ) {
+            public Node.Property[] getProperties () {
+              return getSyntheticProperties ();
+            }
+          },
         };
       } else {
         // With expert properties
         beanPropertySets = new Node.PropertySet [] {
-          new Node.PropertySet ("synthetic", "Synthetic", "Synthetic Properties") {
-            public Node.Property[] getProperties () {
-              return getSyntheticProperties ();
-            }
-          },
-          new Node.PropertySet ("properties", "Properties", "Properties") {
+          new Node.PropertySet (
+            "properties", 
+            FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
+            FormEditor.getFormBundle().getString("CTL_PropertiesTabHint"),
+          ) {
             public Node.Property[] getProperties () {
               return getComponentProperties ();
             }
           },
-          new Node.PropertySet ("expert", "Expert", "Expert Properties") {
+          new Node.PropertySet (
+            "expert", 
+            FormEditor.getFormBundle().getString("CTL_ExpertTab"),
+            FormEditor.getFormBundle().getString("CTL_ExpertTabHint"),
+          ) {
             public Node.Property[] getProperties () {
               return getComponentExpertProperties ();
             }
           },
-          new Node.PropertySet ("events", "Events", "Events") {
+          new Node.PropertySet (
+            "events", 
+            FormEditor.getFormBundle().getString("CTL_EventsTab"),
+            FormEditor.getFormBundle().getString("CTL_EventsTabHint"),
+          ) {
             public Node.Property[] getProperties () {
               return getComponentEvents ();
             }
           }, 
+          new Node.PropertySet (
+            "synthetic", 
+            FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
+            FormEditor.getFormBundle().getString("CTL_SyntheticTabHint"),
+          ) {
+            public Node.Property[] getProperties () {
+              return getSyntheticProperties ();
+            }
+          },
         };
       }
     }
@@ -514,7 +542,7 @@ public class RADComponent {
               for (Iterator iter = change.getAdded ().iterator (); iter.hasNext(); ) {
                 String handlerName = (String) iter.next ();
                 if (!Utilities.isJavaIdentifier (handlerName)) {
-                  System.out.println(handlerName +" is not a Java identifier");
+                  System.out.println(handlerName +" is not a Java identifier"); // [PENDING I18N]
                   continue;
                 }
                 // adding event handler
@@ -541,7 +569,7 @@ public class RADComponent {
                 formManager.fireEventRemoved (RADComponent.this, handler);
               }
             }
-            String newSelectedHandler = "";
+            String newSelectedHandler = ""; /* NO_I18N */
             if (event.getHandlers ().size () >0)
               newSelectedHandler = ((EventsManager.EventHandler) event.getHandlers ().get (0)).getName ();
             getNodeReference ().firePropertyChangeHelper (this.getName (), lastSelectedHandler, newSelectedHandler);
@@ -581,7 +609,7 @@ public class RADComponent {
     if (readMethod == null && desc.getPropertyType().equals(java.awt.Cursor.class) 
       && java.awt.Component.class.isAssignableFrom (beanClass)) {
       try {
-        readMethod = java.awt.Component.class.getMethod("getCursor", new Class[0]);
+        readMethod = java.awt.Component.class.getMethod("getCursor", new Class[0]); /* NO_I18N */
       } catch (NoSuchMethodException e) {
         // silently catch
         e.printStackTrace();
@@ -597,8 +625,8 @@ public class RADComponent {
     cacheValue (desc, value);
 
     // [PENDING - property names to cache]
-    if ("enabled".equals (desc.getName ()) || 
-        "visible".equals (desc.getName ())) 
+    if ("enabled".equals (desc.getName ()) || /* NO_I18N */
+        "visible".equals (desc.getName ())) /* NO_I18N */
     {
       // values of these properties are just cached, not represented during design-time
       return;
@@ -658,24 +686,24 @@ public class RADComponent {
 // Debug methods
 
   public java.lang.String toString () {
-    return super.toString () + ", name: "+getName ()+", class: "+getBeanClass ()+", beaninfo: "+getBeanInfo () + ", instance: "+getBeanInstance ();
+    return super.toString () + ", name: "+getName ()+", class: "+getBeanClass ()+", beaninfo: "+getBeanInfo () + ", instance: "+getBeanInstance (); /* NO_I18N */
   }
   
   public void debugChangedValues () {
-    if (System.getProperty ("netbeans.debug.form.full") != null) {
-      System.out.println("-- debug.form: Changed property values in: "+this+" -------------------------");
+    if (System.getProperty ("netbeans.debug.form.full") != null) { /* NO_I18N */
+      System.out.println("-- debug.form: Changed property values in: "+this+" -------------------------"); /* NO_I18N */
       for (java.util.Iterator it = nameToProperty.values ().iterator (); it.hasNext ();) {
         RADProperty prop = (RADProperty)it.next ();
         if (prop.isChanged ()) {
           PropertyDescriptor desc = prop.getPropertyDescriptor ();
           try {
-            System.out.println("Changed Property: "+desc.getName ()+", value: "+prop.getValue ());
+            System.out.println("Changed Property: "+desc.getName ()+", value: "+prop.getValue ()); /* NO_I18N */
           } catch (Exception e) {
             // ignore problems
           }
         }
       }
-      System.out.println("--------------------------------------------------------------------------------------");
+      System.out.println("--------------------------------------------------------------------------------------"); /* NO_I18N */
     }
   }
 
@@ -918,7 +946,7 @@ public class RADComponent {
         try {
           return (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
         } catch (Exception ex) {
-          if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace ();
+          if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace (); /* NO_I18N */
         }
       } 
       return null;
@@ -1146,7 +1174,7 @@ public class RADComponent {
         try {
           return (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
         } catch (Exception ex) {
-          if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace ();
+          if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace (); /* NO_I18N */
         }
       } 
       return null;
@@ -1242,7 +1270,7 @@ public class RADComponent {
     if (valueType == null) {
       try {
         valueType = org.openide.TopManager.getDefault ().currentClassLoader ().loadClass (
-          "[L" + desc.getIndexedPropertyType ().getName () + ";"
+          "[L" + desc.getIndexedPropertyType ().getName () + ";" /* NO_I18N */
         );
       } catch (Exception e) {
         valueType = Object[].class;
@@ -1412,10 +1440,10 @@ public class RADComponent {
       
       public java.awt.Component getCustomEditor () {
         final EventCustomEditor ed = new EventCustomEditor (EventProperty.this);
-        DialogDescriptor dd = new DialogDescriptor (ed, "Handlers for " + event.getName (), true, 
+        DialogDescriptor dd = new DialogDescriptor (ed, "Handlers for " + event.getName (), true, // [PENDING I18N]
           new java.awt.event.ActionListener () {
             public void actionPerformed (java.awt.event.ActionEvent evt) {
-              if (evt.getActionCommand ().equalsIgnoreCase ("ok")) {
+              if (evt.getActionCommand ().equalsIgnoreCase ("ok")) { // [PENDING I18N]
                 ed.doChanges ();
               }
             }
@@ -1429,6 +1457,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  65   Gandalf   1.64        1/1/00   Ian Formanek    Syntheti tab renamed to 
+ *       Code Generation, I18Nzed
  *  64   Gandalf   1.63        12/17/99 Pavel Buzek     patch for 
  *       java.beans.Inspector error (incorrect inspection of java.awt.Cursor)
  *  63   Gandalf   1.62        12/16/99 Pavel Buzek     
