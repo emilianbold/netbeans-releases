@@ -290,10 +290,10 @@ Microsystems, Inc. All Rights Reserved.
         
         <condition property="xtest.ide.timeout" value="0">
  	   <equals arg1="${xtest.ide.exit}" arg2="false"/>
- 	</condition>
+ 	</condition>        
+        
         <property name="xtest.ide.timeout" value="${xtest.timeout}"/>
         
-
         <!--
         <property name="xtest.workdir.idejars" value="${netbeans.home}/lib/xtest"/>
         -->
@@ -305,10 +305,13 @@ Microsystems, Inc. All Rights Reserved.
         
         <copy file="${xtest.home}/lib/xtest.jar" todir="${xtest.userdir}/xtest/lib"/>        
         <copy file="${xtest.home}/lib/junit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
-        <copy file="${xtest.home}/lib/nbjunit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
-        
+        <copy file="${xtest.home}/lib/nbjunit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>        
+                
         <copy file="${xtest.home}/lib/xtest-junit-testrunner.jar" todir="${xtest.workdir.idejars}"/> 
-        
+
+        <!-- check whether ant module is available in ID, if not use xtest's ant -->
+        <available file="${netbeans.home}/modules/ant.jar" property="xtest.use.ide.ant"/>                
+        <antcall target="prepare-xtest-ant"/>
 
         <antcall target="copy-user-jars"/>
         
@@ -321,16 +324,20 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </property>
         
+        
         <!-- ide classpath - ant and junit -->
         <property name="xtest.ide.path" refid="xtest.ide.path">
-            <classpath id="xtest.ide.path">
-                <!-- XXX this is bad, it assumes the Ant module is installed! -->
+            <classpath id="xtest.ide.path">         
+                <!-- search for ant if available in IDE,
+                     if not available in ide, it is copied
+                     so it is included in the following fileset
+                -->
                 <fileset dir="${netbeans.home}/modules/ext">
                     <include name="ant*.jar"/>
-                </fileset>
+                </fileset>          
                 <fileset dir="${xtest.userdir}/xtest/lib/ext">
                     <include name="*.jar"/>
-                </fileset>
+                </fileset>                
             </classpath>
         </property>        
         
@@ -343,7 +350,7 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>        
         </property>
         
-        <!-- temporary only !!!! remove ASAP -->
+        <!-- this property can be used to turn off the IDE security ... -->
         <!--
         <property name="xtest.ide.security" value="-J-Dnetbeans.security.nocheck=true"/>
         -->
@@ -366,10 +373,10 @@ Microsystems, Inc. All Rights Reserved.
 
         
         <delete dir="${xtest.userdir}/xtest"/>
+                                
+        <antcall target="delete-user-jars"/>        
         
-        <delete file="${xtest.workdir.idejars}/xtest-junit-testrunner.jar"/>
-                
-        <antcall target="delete-user-jars"/>
+        <delete dir="${xtest.workdir.idejars}"/>
         
         <!-- check whether IDE finished abnormally, in this case
              add failure information to the testbag -->
@@ -416,6 +423,10 @@ Microsystems, Inc. All Rights Reserved.
         <jar-finder dirs="${xtest.extra.jars.path}" files="${xtest.extra.jars.ide}" 
                    property="ide.extra.classpath"/>
     </target>
+    
+    <target name="prepare-xtest-ant" unless="xtest.use.ide.ant">
+        <copy file="${xtest.home}/lib/ant-1.4.1.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
+    </target>    
 
     <!-- This target is executed from running IDE -->
     <target name="ide_test_helper" depends="init,ide_test_init,junit_test"/>
