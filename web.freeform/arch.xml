@@ -15,7 +15,6 @@ Microsystems, Inc. All Rights Reserved.
   <!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
 
-<!-- XXX update for freeform split -->
 <api-answers
   question-version="1.24"
   module="web/freeform"
@@ -51,8 +50,7 @@ Microsystems, Inc. All Rights Reserved.
   <ol>
    <li>
     <!-- XXX change links when these are properly published: #43596 -->
-    <!-- XXX fix this link after merging branch to trunk -->
-    <api group="dtd" name="freeform-project-web.xsd" type="export" category="official" url="http://www.netbeans.org/source/browse/~checkout~/ant/freeform/src/org/netbeans/modules/ant/freeform/resources/freeform-project-web.xsd">
+    <api group="dtd" name="freeform-project-web.xsd" type="export" category="official" url="http://www.netbeans.org/source/browse/~checkout~/web/freeform/src/org/netbeans/modules/web/freeform/resources/freeform-project-web.xsd">
      <p>
       XML schema for the Web-specific section. Users are allowed
       to modify this section by hand and can refer to this schema for available
