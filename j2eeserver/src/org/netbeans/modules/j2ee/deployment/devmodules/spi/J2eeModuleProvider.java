@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,6 +24,8 @@ import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.config.*;
+import org.netbeans.modules.j2ee.deployment.config.ConfigFilesListener;
+import org.netbeans.modules.j2ee.deployment.config.DDFilesListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.DefaultSourceMap;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
@@ -54,6 +57,9 @@ public abstract class J2eeModuleProvider {
     
     private ServerRegistry.InstanceListener il;
     private ConfigSupportImpl confSupp;
+    List listeners = new ArrayList();
+    private ConfigFilesListener configFilesListener = null;
+    private DDFilesListener ddFilesListener = null;
     
     public J2eeModuleProvider () {
         il = new IL ();
@@ -69,6 +75,9 @@ public abstract class J2eeModuleProvider {
     public final ConfigSupport getConfigSupport () {
         if (confSupp == null) {
             confSupp = new ConfigSupportImpl (this);
+        }
+        if (ddFilesListener == null) {
+            ddFilesListener = new DDFilesListener(this);
         }
 	return confSupp;
     }
@@ -98,9 +107,21 @@ public abstract class J2eeModuleProvider {
          * @return true if the configuration is ready, else false.
          */
         public boolean ensureConfigurationReady();
-        
+
+        /**
+         * Save configuration.  This is mainly for wizard actions that could
+         * initiate changes in configuration.  These changes should be saved
+         * explicitly by wizard, not implicitly by plugin, in order to avoid
+         * possible side-effect.
+         */
+        //public void saveConfiguration() throws IOException;
+
+        /**
+         * Set/get web module context root.
+         */
         public void setWebContextRoot(String contextRoot);
         public String getWebContextRoot();
+        
         /**
          * Return a list of file names for current server specific deployment 
          * descriptor used in this module.
@@ -118,6 +139,7 @@ public abstract class J2eeModuleProvider {
          * This call is typically used by CMP mapping wizard.
          */
         public void setCMPMappingInfo(String ejbname, OriginalCMPMapping mapping);
+        //public void setCMPMappingInfo(OriginalCMPMapping[] mappings);
         /**
          * Ensure needed resources are automatically defined for the entity
          * represented by given DDBean.
@@ -268,137 +290,25 @@ public abstract class J2eeModuleProvider {
 
     public final FileObject[] getConfigurationFiles(boolean refresh) {
         if (refresh) {
-            fcl.stopListening();
-            fcl = null;
+            configFilesListener.stopListening();
+            configFilesListener = null;
         }
-        addFCL();
+        addCFL();
         return ConfigSupportImpl.getConfigurationFiles(this);
     }
     
-    List listeners = new ArrayList();
     public final void addConfigurationFilesListener(ConfigurationFilesListener l) {
         listeners.add(l);
     }
     public final void removeConfigurationFilesListener(ConfigurationFilesListener l) {
         listeners.remove(l);
     }
-    private void fireConfigurationFilesChanged(boolean added, FileObject fo) {
-        for (Iterator i=listeners.iterator(); i.hasNext();) {
-            ConfigurationFilesListener cfl = (ConfigurationFilesListener) i.next();
-            if (added) {
-                cfl.fileCreated(fo);
-            } else {
-                cfl.fileDeleted(fo);
-            }
-        }
-    }
     
-    private FCL fcl = null;
-    private void addFCL() {
+    private void addCFL() {
         //already listen
-        if (fcl != null)
+        if (configFilesListener != null)
             return;
-        fcl = new FCL();
-    }
-    
-    private File[] getAllServerConfigurationFiles() {
-        //locate the root to listen to
-        Collection servers = ServerRegistry.getInstance().getServers();
-        ArrayList result = new ArrayList();
-        for (Iterator i=servers.iterator(); i.hasNext();) {
-            Server s = (Server) i.next();
-            String[] paths = s.getDeploymentPlanFiles(getJ2eeModule().getModuleType());
-            if (paths == null)
-                continue;
-            
-            for (int j = 0; j < paths.length; j++) {
-                result.add(getDeploymentConfigurationFile(paths[j]));
-            }
-        }
-        return (File[]) result.toArray(new File[result.size()]);
-    }
-
-    private final class FCL implements FileChangeListener {
-        HashSet listenedFOs = new HashSet();
-        public FCL() {
-            startListening();
-        }
-        private synchronized void startListening() {
-            File[] targets = getAllServerConfigurationFiles();
-            for (int i=0; i<targets.length; i++) {
-                startListening(targets[i]);
-            }
-        }
-        public synchronized void stopListening() {
-            for (Iterator i=listenedFOs.iterator(); i.hasNext();) {
-                FileObject fo = (FileObject) i.next();
-                fo.removeFileChangeListener(this);
-            }
-        }
-        private void startListening(File target) {
-            FileObject targetFO = FileUtil.toFileObject(target);
-            while (targetFO == null) {
-                target = target.getParentFile();
-                if (target == null)
-                    return;
-                targetFO = FileUtil.toFileObject(target);
-            }
-            if (! listenedFOs.contains(targetFO)) {
-                targetFO.addFileChangeListener(this);
-                listenedFOs.add(targetFO);
-            }
-        }
-        private boolean isConfigFileName(String name) {
-            return ServerRegistry.getInstance().isConfigFileName(name, getJ2eeModule().getModuleType());
-        }
-        public void fileFolderCreated(FileEvent e) {
-            startListening();
-        }
-        public void fileDeleted(FileEvent e) {
-            FileObject fo = e.getFile();
-            if (isConfigFileName(fo.getNameExt())) {
-                synchronized(listenedFOs) {
-                    listenedFOs.remove(fo);
-                    fo.removeFileChangeListener(this);
-                }
-                fireConfigurationFilesChanged(false, fo);
-            }
-            startListening();
-        }
-        public void fileDataCreated(FileEvent e) {
-            FileObject fo = e.getFile();
-            String name = fo.getNameExt();
-            if (isConfigFileName(fo.getNameExt())) {
-                synchronized(listenedFOs) {
-                    listenedFOs.add(fo);
-                    fo.addFileChangeListener(this);
-                }
-                fireConfigurationFilesChanged(true, fo);
-            }
-        }
-        public void fileRenamed(FileRenameEvent e) {
-            FileObject fo = e.getFile();
-            if (isConfigFileName(fo.getNameExt())) {
-                synchronized(listenedFOs) {
-                    if (!listenedFOs.contains(fo)) {
-                        listenedFOs.add(fo);
-                        fo.addFileChangeListener(this);
-                    }
-                }
-                fireConfigurationFilesChanged(true, fo);
-            } else {
-                if (isConfigFileName(e.getName() + "." + e.getExt())) {
-                    synchronized(listenedFOs) {
-                        listenedFOs.remove(fo);
-                        fo.removeFileChangeListener(this);
-                    }
-                    fireConfigurationFilesChanged(false, fo);
-                }
-            }
-            startListening();
-        }
-        public void fileAttributeChanged(FileAttributeEvent e) {};
-        public void fileChanged(FileEvent e) {}
+        configFilesListener = new ConfigFilesListener(this, listeners);
     }
     
     private final class IL implements ServerRegistry.InstanceListener {
@@ -431,5 +341,5 @@ public abstract class J2eeModuleProvider {
     private ConfigSupportImpl getConfigSupportImpl() {
         return (ConfigSupportImpl) getConfigSupport();
     }
-    
+
 }
