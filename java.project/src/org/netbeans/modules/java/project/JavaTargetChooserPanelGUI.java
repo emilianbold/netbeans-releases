@@ -438,7 +438,9 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     }
     
     /**
-     * Get a package combo model item.
+     * Get a package combo model item for the package the user selected before opening the wizard.
+     * May return null if it cannot find it; or a String instance if there is a well-defined
+     * package but it is not listed among the packages shown in the list model.
      */
     private Object getPreselectedPackage(SourceGroup group, FileObject folder, ListModel model) {
         if ( folder == null ) {
@@ -464,7 +466,8 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                 }
             }
             // Didn't find it.
-            return null;
+            // #49954: should nonetheless show something in the combo box.
+            return name;
         }        
     }
     
