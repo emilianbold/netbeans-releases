@@ -81,6 +81,28 @@ is the proper place.
 
     <changes>
     
+        <change id="Add-ModuleChangeDescriptor-getChangedFiles">
+            <api name="plugins"/>
+            <summary>Method getChangedFiles allows plugin code to access all
+            the changes in current deployment.</summary>
+            <version major="1" minor="6"/>
+            <date day="18" month="1" year="2005"/>
+            <author login="nnguyen"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    The summary of changes provided by current
+		    ModuleChangeDescriptor is not sufficient in many cases for
+		    plugin code to ensure the incrementally deployed
+		    application available.  This new method getChangedFiles
+		    would serve as a 'catch-all' for plugin code to examine
+		    details of the changes.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ModuleChangeDescriptor"/>
+            <issue number="53539"/>
+        </change>
+
         <change id="StartServer-Services-for-Target">
             <api name="plugins"/>
             <summary>StartServer methods call to manage states for target server instances</summary>

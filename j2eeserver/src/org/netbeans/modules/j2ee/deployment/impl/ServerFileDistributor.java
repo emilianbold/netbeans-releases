@@ -320,7 +320,7 @@ public class ServerFileDistributor extends ServerProgress {
         boolean ejbsChanged = false;
         List changedEjbs = Collections.EMPTY_LIST;
         ModuleType moduleType = null;
-        
+        List changedFiles = new ArrayList();
         List descriptorRelativePaths;
         List serverDescriptorRelativePaths;
         AppChanges() {
@@ -339,6 +339,7 @@ public class ServerFileDistributor extends ServerProgress {
             List ejbs = Arrays.asList(changes.getChangedEjbs());
             if (ejbs.size() > 0)
                 changedEjbs.addAll(ejbs);
+            changedFiles.addAll(changes.changedFiles);
         }
         
         private void record(String relativePath) {
@@ -362,7 +363,9 @@ public class ServerFileDistributor extends ServerProgress {
                 serverDescriptorChanged = true;
                 return;
             }
+            changedFiles.add(new File(relativePath));
         }
+        
         private void record(ModuleChangeReporter mcr, long since) {
             EjbChangeDescriptor ecd = mcr.getEjbChanges(since);
             ejbsChanged = ecd.ejbsChanged();
@@ -380,6 +383,9 @@ public class ServerFileDistributor extends ServerProgress {
         public boolean ejbsChanged() { return ejbsChanged; }
         public String[] getChangedEjbs() {
             return (String[]) changedEjbs.toArray(new String[]{});
+        }
+        public File[] getChangedFiles() {
+            return (File[]) changedFiles.toArray(new File[changedFiles.size()]);
         }
     }
 }

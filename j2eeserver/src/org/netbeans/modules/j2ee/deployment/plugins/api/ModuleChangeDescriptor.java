@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.j2ee.deployment.plugins.api;
 
+import java.io.File;
+
 /** 
  * This interface allows a plugin to find out what about a module
  * or application has changed since the last deployment. 
@@ -39,4 +41,8 @@ public interface ModuleChangeDescriptor {
      */
     public boolean manifestChanged();
 
+    /**
+     * Returns distribution relative paths of changed files.
+     */
+    public File[] getChangedFiles();
 }
