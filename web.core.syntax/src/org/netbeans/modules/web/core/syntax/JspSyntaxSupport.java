@@ -1083,11 +1083,11 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             return null;
         TokenID id = item.getTokenID();
         
-        if (id == JspTagTokenContext.COMMENT || 
+        if (/*id == JspTagTokenContext.COMMENT || */
             id == JspTagTokenContext.ERROR || 
             id == JspTagTokenContext.TEXT ||
             id == JspMultiTokenContext.ERROR ||
-            id == JspDirectiveTokenContext.COMMENT || 
+            /*id == JspDirectiveTokenContext.COMMENT || */
             id == JspDirectiveTokenContext.ERROR || 
             id == JspDirectiveTokenContext.TEXT
             ) {
@@ -1274,7 +1274,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             (id == JspTagTokenContext.ERROR) ||
             (id == JspTagTokenContext.TAG) ||
             (id == JspTagTokenContext.SYMBOL) ||
-            (id == JspTagTokenContext.COMMENT) ||
             (id == JspTagTokenContext.ATTRIBUTE) ||
             (id == JspTagTokenContext.ATTR_VALUE) ||
             (id == JspTagTokenContext.SYMBOL2) ||
@@ -1283,7 +1282,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             (id == JspDirectiveTokenContext.ERROR) ||
             (id == JspDirectiveTokenContext.TAG) ||
             (id == JspDirectiveTokenContext.SYMBOL) ||
-            (id == JspDirectiveTokenContext.COMMENT) ||
             (id == JspDirectiveTokenContext.ATTRIBUTE) ||
             (id == JspDirectiveTokenContext.ATTR_VALUE) ||
             (id == JspDirectiveTokenContext.SYMBOL2) ||
