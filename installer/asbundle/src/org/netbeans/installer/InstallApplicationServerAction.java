@@ -900,20 +900,20 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 
     }
     
-    /**Returns checksum for appserver directory in bytes*/
+    /** Returns checksum for appserver directory in bytes */
     public long getCheckSum() {
         if (Util.isWindowsOS()) {
-            return 103000000L;
+            return 105000000L;
         } else if (Util.isSunOS()) {
             return 115000000L;
         } else if (Util.isLinuxOS()) {
-            return 100000000L;
+            return 105000000L;
         } else if (Util.isMacOSX()) {
-            return 100000000L;
+            return 105000000L;
         }
-        return 0L;
+        return 105000000L;
     }
-
+    
     public void setTmpDir() {
 
         if (tmpDir != null && tmpDir.length() > 0)

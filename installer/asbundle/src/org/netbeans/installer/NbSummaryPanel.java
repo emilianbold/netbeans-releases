@@ -237,7 +237,7 @@ public class NbSummaryPanel extends TextDisplayPanel
     private String getTotalSize() {
         RequiredBytesTable table;
         long size = 0;
-        long j2seSize = 0;
+        long asSize = 0;
         String mBytes = null;
         
         try {
@@ -247,11 +247,9 @@ public class NbSummaryPanel extends TextDisplayPanel
             size = table.getBytes(nbInstallDir) >> 20;
             logEvent(this, Log.DBG, "Size of NetBeans: " + size);
             
-            if (!Util.isJDKAlreadyInstalled()) {
-                j2seSize = getJ2SESize() >> 20;
-                logEvent(this, Log.DBG, "Adjusted size of J2SE: " + j2seSize);
-                size = size +j2seSize;
-            }
+            asSize = getASSize() >> 20;
+            logEvent(this, Log.DBG, "Adjusted size of AS: " + asSize);
+            size = size + asSize;
         } catch (ServiceException e) {
             logEvent(this, Log.ERROR, e);
         }
@@ -263,14 +261,16 @@ public class NbSummaryPanel extends TextDisplayPanel
         return mBytes + " MB";  //NOI18N
     }
     
-    private long getJ2SESize() {
+    private long getASSize() {
         if (Util.isWindowsOS()) {
-            return 135000000L;
-        } else if (Util.isLinuxOS()) {
-            return 140000000L;
+            return 105000000L;
         } else if (Util.isSunOS()) {
-            return 140000000L;
+            return 115000000L;
+        } else if (Util.isLinuxOS()) {
+            return 105000000L;
+        } else if (Util.isMacOSX()) {
+            return 105000000L;
         }
-        return 100000000L;
+        return 105000000L;
     }
 }
