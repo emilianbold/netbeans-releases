@@ -419,7 +419,8 @@ final class ShortcutsFolder extends FolderInstance {
                 if(originalFilePath == null) { // It is '.instance' file
                     if (r.add) {
                         if (InstanceDataObject.find (f, r.instanceName (), r.instanceClass ()) == null) {
-                            InstanceDataObject.create(f, r.instanceName(), r.instanceClass());
+                            // bugfix #37064, bind the actual object instead of a default instance
+                            InstanceDataObject.create(f, r.instanceName(), r.instanceCreate (), null);
                         }
                     } else {
                         InstanceDataObject.remove(f, r.instanceName(), r.instanceClass());
