@@ -20,7 +20,7 @@ import java.util.zip.*;
 import java.util.jar.*;
 
 import org.apache.tools.ant.*;
-import org.apache.tools.ant.taskdefs.*;
+import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.types.*;
 
 /** Create a JAR file with locale variants.
