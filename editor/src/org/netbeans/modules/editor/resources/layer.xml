@@ -20,5 +20,29 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-editor-java-JCUpdateAction.instance" />
         </folder>
     </folder>
-    
+    <folder name="DTDs">
+        <folder name="3_2">
+            <file name="catalog" url="DTDs/3_2/catalog"/>
+            <file name="html32.dtd" url="DTDs/3_2/html32.dtd"/>
+            <file name="lat1.ent" url="DTDs/3_2/lat1.ent"/>
+        </folder>
+        <folder name="4_0">
+            <file name="HTMLlat1.ent" url="DTDs/4_0/HTMLlat1.ent"/>
+            <file name="HTMLspecial.ent" url="DTDs/4_0/HTMLspecial.ent"/>
+            <file name="HTMLsymbol.ent" url="DTDs/4_0/HTMLsymbol.ent"/>
+            <file name="catalog" url="DTDs/4_0/catalog"/>
+            <file name="frameset.dtd" url="DTDs/4_0/frameset.dtd"/>
+            <file name="loose.dtd" url="DTDs/4_0/loose.dtd"/>
+            <file name="strict.dtd" url="DTDs/4_0/strict.dtd"/>
+        </folder>
+        <folder name="4_01">
+            <file name="HTMLlat1.ent" url="DTDs/4_01/HTMLlat1.ent"/>
+            <file name="HTMLspecial.ent" url="DTDs/4_01/HTMLspecial.ent"/>
+            <file name="HTMLsymbol.ent" url="DTDs/4_01/HTMLsymbol.ent"/>
+            <file name="catalog" url="DTDs/4_01/catalog"/>
+            <file name="frameset.dtd" url="DTDs/4_01/frameset.dtd"/>
+            <file name="loose.dtd" url="DTDs/4_01/loose.dtd"/>
+            <file name="strict.dtd" url="DTDs/4_01/strict.dtd"/>
+        </folder>
+    </folder>
 </filesystem>
