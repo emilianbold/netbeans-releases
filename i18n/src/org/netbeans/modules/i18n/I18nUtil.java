@@ -15,20 +15,8 @@
 package org.netbeans.modules.i18n;
 
 
-import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
 
-import org.openide.cookies.SourceCookie;
-import org.openide.loaders.DataObject;
-import org.openide.src.ClassElement;
-import org.openide.src.FieldElement;
-import org.openide.src.Identifier;
-import org.openide.src.SourceElement;
-import org.openide.src.SourceException;
-import org.openide.src.Type;
-import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 
@@ -181,137 +169,6 @@ public abstract class I18nUtil {
         
         return regExpHelpItems;
     }
-    
-    /** Gets the string used to replace found hardcoded string. */
-    public static String getReplaceJavaCode(JavaI18nString javaI18nString, DataObject sourceDataObject) {
-        if(javaI18nString != null) {
-            if(javaI18nString.getSupport().getResourceHolder().getResource() != null && javaI18nString.getKey() != null) {
-                String replaceJavaFormat = javaI18nString.getReplaceFormat();
-                
-                if(replaceJavaFormat == null)
-                    replaceJavaFormat = ((I18nOptions)SharedClassObject.findObject(I18nOptions.class, true)).getReplaceJavaCode();
-
-                // Create map.
-                Map map = new HashMap(5);
-                
-                map.put("identifier", ((JavaI18nSupport)javaI18nString.getSupport()).getIdentifier()); // NOI18N
-                map.put("key", javaI18nString.getKey()); // NOI18N
-                map.put("bundleNameSlashes", javaI18nString.getSupport().getResourceHolder().getResource().getPrimaryFile().getPackageName('/')); // NOI18N
-                map.put("bundleNameDots", javaI18nString.getSupport().getResourceHolder().getResource().getPrimaryFile().getPackageName('.')); // NOI18N
-                map.put("sourceFileName", sourceDataObject == null ? "" : sourceDataObject.getPrimaryFile().getName()); // NOI18N
-                
-                // Gets the default replace string.
-                String result = MapFormat.format(
-                    replaceJavaFormat,
-                    map
-                );
-                    
-                // If arguments were set get the message format replace string.
-                String[] arguments = javaI18nString.getArguments();
-                if (arguments.length > 0) {
-                    StringBuffer stringBuffer = new StringBuffer("java.text.MessageFormat.format("); // NOI18N
-                    stringBuffer.append(result);
-                    stringBuffer.append(", new Object[] {"); // NOI18N
-                    for (int i = 0; i < arguments.length; i++) {
-                        stringBuffer.append(arguments[i]);
-                        if (i < arguments.length - 1)
-                            stringBuffer.append(", "); // NOI18N
-                    }
-                    stringBuffer.append("})"); // NOI18N
-                    result = stringBuffer.toString();
-                }
-                return result;
-            }
-        }
-        return null;
-    }
-    
-    /** Creates a new field in java source hierarchy. 
-     * @param javaI18nString which holds info about going-to-be created field element
-     * @param sourceDataObject object to which source will be new field added,
-     * the object have to have <code>SourceCookie</code>
-     * @see org.openide.cookies.SourceCookie */
-    public static void createField(JavaI18nString javaI18nString) {
-        JavaI18nSupport javaI18nSupport = (JavaI18nSupport)javaI18nString.getSupport();
-        
-        // Check if we have to generate field.
-        if(!javaI18nSupport.isGenerateField())
-            return;
-
-        ClassElement sourceClass = getSourceClassElement(javaI18nSupport.getSourceDataObject());
-
-        if(sourceClass.getField(Identifier.create(javaI18nSupport.getIdentifier())) != null)
-            // Field with such identifer exsit already, do nothing.
-            return;
-        
-        try {
-            FieldElement newField = new FieldElement();
-            newField.setName(Identifier.create(javaI18nSupport.getIdentifier()));
-            newField.setModifiers(javaI18nSupport.getModifiers());
-            newField.setType(Type.parse("java.util.ResourceBundle")); // NOI18N
-            newField.setInitValue(getInitJavaCode(javaI18nString));
-            
-            if(sourceClass != null)
-                // Trying to add new field.
-                sourceClass.addField(newField);
-        } catch(SourceException se) {
-            // do nothing, means the field already exist
-            if(Boolean.getBoolean(DEBUG)) // NOI18N
-                se.printStackTrace();
-        } catch(NullPointerException npe) {
-            // something wrong happened, probably sourceDataObject was not initialized
-            if(Boolean.getBoolean(DEBUG)) // NOI18N
-                npe.printStackTrace();
-        }
-
-    }
-
-    /** 
-     * Helper method. Gets the string, the piece of code which initializes
-     * field resource bundle in the source.
-     * <p>
-     * java.util.ResourceBundle <identifier name> = <b>java.util.ResourceBundle.getBundle("<package name></b>")
-     * @return String -> piece of initilizing code. */
-    private static String getInitJavaCode(JavaI18nString javaI18nString) {
-        if(javaI18nString == null)
-            return null;
-            
-        String initJavaFormat = ((JavaI18nSupport)javaI18nString.getSupport()).getInitFormat();
-
-        if(initJavaFormat == null)
-            initJavaFormat = ((I18nOptions)SharedClassObject.findObject(I18nOptions.class, true)).getInitJavaCode();
-
-        // Create map.
-        Map map = new HashMap(3);
-
-        map.put("bundleNameSlashes", javaI18nString.getSupport().getResourceHolder().getResource().getPrimaryFile().getPackageName('/')); // NOI18N
-        map.put("bundleNameDots", javaI18nString.getSupport().getResourceHolder().getResource().getPrimaryFile().getPackageName('.')); // NOI18N
-        map.put("sourceFileName", javaI18nString.getSupport().getSourceDataObject().getPrimaryFile().getName()); // NOI18N
-
-        return MapFormat.format(initJavaFormat, map);
-    }
-    
-    /** Helper method. Finds main top-level class element for <code>sourceDataObject</code> which should be initialized. */
-    private static ClassElement getSourceClassElement(DataObject sourceDataObject) {
-        SourceElement sourceElem = ((SourceCookie)sourceDataObject.getCookie(SourceCookie.class)).getSource();
-        ClassElement sourceClass = sourceElem.getClass(Identifier.create(sourceDataObject.getName()));
-        
-        if(sourceClass != null)
-            return sourceClass;
-        
-        ClassElement[] classes = sourceElem.getClasses();
-        
-        // find source class
-        for(int i=0; i<classes.length; i++) {
-            int modifs = classes[i].getModifiers();
-            if(classes[i].isClass() && Modifier.isPublic(modifs)) {
-                sourceClass = classes[i];
-                break;
-            }
-        }
-        
-        return sourceClass;
-    }
 
     /** Gets resource bundle for i18n module. */
     public static ResourceBundle getBundle() {
@@ -319,6 +176,11 @@ public abstract class I18nUtil {
             bundle = NbBundle.getBundle(I18nModule.class);
         
         return bundle;
+    }
+    
+    /** Gets i18n options. */
+    public static I18nOptions getOptions() {
+        return (I18nOptions)SharedClassObject.findObject(I18nOptions.class, true);
     }
     
 }

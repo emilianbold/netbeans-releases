@@ -41,6 +41,7 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
             PropertyDescriptor genFieldPD =    new PropertyDescriptor(I18nOptions.PROP_GENERATE_FIELD, I18nOptions.class);
+            PropertyDescriptor advWizardPD =   new PropertyDescriptor(I18nOptions.PROP_ADVANCED_WIZARD, I18nOptions.class);
             PropertyDescriptor initCodePD =    new PropertyDescriptor(I18nOptions.PROP_INIT_JAVA_CODE, I18nOptions.class);
             PropertyDescriptor replaceCodePD = new PropertyDescriptor(I18nOptions.PROP_REPLACE_JAVA_CODE, I18nOptions.class);
             PropertyDescriptor regExpPD =      new PropertyDescriptor(I18nOptions.PROP_REGULAR_EXPRESSION, I18nOptions.class);
@@ -52,6 +53,7 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
 
             // Set display names.
             genFieldPD.setDisplayName(I18nUtil.getBundle().getString("TXT_GenerateField"));
+            advWizardPD.setDisplayName(I18nUtil.getBundle().getString("TXT_AdvancedWizard"));
             initCodePD.setDisplayName(I18nUtil.getBundle().getString("TXT_InitCodeFormat"));
             replaceCodePD.setDisplayName(I18nUtil.getBundle().getString("TXT_ReplaceCodeFormat"));
             regExpPD.setDisplayName(I18nUtil.getBundle().getString("TXT_RegularExpression"));
@@ -62,7 +64,7 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
             regExpPD.setPropertyEditorClass(HelpStringCustomEditor.RegExpEditor.class);
             
             return new PropertyDescriptor[] {
-                genFieldPD, initCodePD, replaceCodePD, regExpPD
+                genFieldPD, advWizardPD, initCodePD, replaceCodePD, regExpPD
             };
         } catch(IntrospectionException ie) {
             return null;

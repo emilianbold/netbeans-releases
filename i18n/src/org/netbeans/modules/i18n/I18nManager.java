@@ -86,7 +86,7 @@ public class I18nManager {
     }
     
     /** Get i18n support. */
-    private void initSupport(DataObject sourceDataObject) {
+    private void initSupport(DataObject sourceDataObject) throws IOException {
         I18nSupport.Factory factory = FactoryRegistry.getFactory(sourceDataObject.getClass().getName());
         
         support = factory.create(sourceDataObject);
@@ -101,7 +101,14 @@ public class I18nManager {
         closeDialog();
 
         // Initilialize support.
-        initSupport(sourceDataObject);
+        try {
+            initSupport(sourceDataObject);
+        } catch(IOException ioe) {
+            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                System.err.println("I18N: Document could noy be loaded for "+sourceDataObject.getName()); // NOI18N
+            
+            return;
+        }
 
         // initialize the component
         EditorCookie ec = (EditorCookie)sourceDataObject.getCookie(EditorCookie.class);
@@ -180,6 +187,10 @@ public class I18nManager {
         // Try to add key to bundle.
         support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
 
+        // Provide additional changes if they are available.
+        if(support.hasAdditionalCustomizer())
+            support.performAdditionalChanges();
+        
         // Replace hardcoded string.
         support.getReplacer().replace(hcString, i18nString);
 

@@ -19,4 +19,17 @@ Microsystems, Inc. All Rights Reserved.
         <file name="A-I[org.netbeans.modules.i18n.InsertI18nStringAction].instance" />
     </folder>
 
+  <folder name="Menu">
+    <folder name="Tools">
+      <file name="I18N Wizard...[org-netbeans-modules-i18n-wizard-I18nWizardAction].instance" />
+    </folder>
+  </folder>
+
+  <folder name="Actions">
+    <folder name="Tools">
+      <file name="I18N Wizard...[org-netbeans-modules-i18n-wizard-I18nWizardAction].instance" />
+    </folder>
+  </folder>
+
 </filesystem>
+

@@ -84,19 +84,26 @@ public class InsertI18nStringAction extends CookieAction {
         // If there is a i18n action in run on the same editor, cancel it.
         I18nManager.getDefault().cancel();
 
-        addPanel(dataObject, position);
+        try {
+            addPanel(dataObject, position);
+        } catch(IOException ioe) {
+            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                System.err.println("I18N: Document could noy be loaded for "+dataObject.getName()); // NOI18N
+            
+            return;
+        }
 
         // Ensure caret is visible.
         panes[0].getCaret().setVisible(true);;
     }
 
     /** Create panel used for specifying i18n string. */
-    private JPanel createPanel(final DataObject dataObject, /*final StyledDocument document,*/ final int position) { //  TEMP
+    private JPanel createPanel(final DataObject dataObject, final int position) throws IOException { //  TEMP
         I18nSupport.Factory factory = FactoryRegistry.getFactory(dataObject.getClass().getName());
         
         if(factory == null)
             throw new InternalError("I18N: No factory registered for data object type="+dataObject.getClass().getName()); // NOI18N
-        
+
         final I18nSupport support = factory.create(dataObject);
         
         final I18nPanel i18nPanel = new I18nPanel(false, true);
@@ -152,11 +159,11 @@ public class InsertI18nStringAction extends CookieAction {
 
                         // Create field if necessary. 
                         // PENDING, should not be performed here -> capability moves to i18n wizard.
-                        if(i18nString instanceof JavaI18nString && i18nString.getSupport().hasAdditionalCustomizer())
-                            I18nUtil.createField((JavaI18nString)i18nString);
+                        if(support.hasAdditionalCustomizer())
+                            support.performAdditionalChanges();
                         
                         // Replace string.
-                        support.getDocument().insertString(position, I18nUtil.getReplaceJavaCode((JavaI18nString)i18nString, dataObject), null);
+                        support.getDocument().insertString(position, i18nString.getReplaceString(), null);
 
                     } catch (IllegalStateException e) {
                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
@@ -189,7 +196,7 @@ public class InsertI18nStringAction extends CookieAction {
     }
     
     /** Adds panel to top component in split pane. */
-    private void addPanel(DataObject sourceDataObject, int position) {
+    private void addPanel(DataObject sourceDataObject, int position) throws IOException {
         TopComponent topComponent = (TopComponent)topComponentWRef.get();
 
         if(topComponent == null) {

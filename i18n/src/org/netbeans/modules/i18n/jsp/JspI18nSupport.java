@@ -57,8 +57,12 @@ public class JspI18nSupport extends JavaI18nSupport {
     
     /** Overrides superclass method. 
      * @return null */
-    public JPanel getAdditionalCustomizer(I18nString i18nString) {
+    public JPanel getAdditionalCustomizer() {
         return null;
+    }
+    
+    /** Overrides superclass method. Does nothing. */
+    public void performAdditionalChanges() {
     }
     
     
@@ -214,10 +218,10 @@ public class JspI18nSupport extends JavaI18nSupport {
     
     
     /** Factory for <code>JspI18nSupport</code>. */
-    public static class Factory implements I18nSupport.Factory {
+    public static class Factory extends I18nSupport.Factory {
         
-        /** Implements interface. */
-        public I18nSupport create(DataObject dataObject) {
+        /** Implements superclass abstract method. */
+        public I18nSupport createI18nSupport(DataObject dataObject) {
             return new JspI18nSupport(dataObject);
         }
     }

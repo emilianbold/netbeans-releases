@@ -23,7 +23,6 @@ import javax.swing.JPanel;
 
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
-import org.openide.util.SharedClassObject;
 
 
 /**
@@ -283,7 +282,7 @@ public class PropertyPanel extends JPanel {
                             i18nString.setReplaceFormat(newText);
                             
                             // Reset option as well.
-                            ((I18nOptions)SharedClassObject.findObject(I18nOptions.class, true)).setReplaceJavaCode(newText);
+                            I18nUtil.getOptions().setReplaceJavaCode(newText);
                         }
                         
                         dialogs[0].setVisible(false);

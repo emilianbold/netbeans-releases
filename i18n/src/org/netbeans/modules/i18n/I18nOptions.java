@@ -30,6 +30,9 @@ public class I18nOptions extends SystemOption {
 
     /** Property name for generate field. */
     public static final String PROP_GENERATE_FIELD = "generateField"; // NOI18N
+
+    /** Property name for advanced wizard. */
+    public static final String PROP_ADVANCED_WIZARD = "advancedWizard"; // NOI18N
     
     /** Property name for init java code. */
     public static final String PROP_INIT_JAVA_CODE = "initJavaCode"; // NOI18N
@@ -52,7 +55,7 @@ public class I18nOptions extends SystemOption {
         return I18nUtil.getBundle().getString("LBL_Internationalization");
     }
 
-    /** Getter for init java code property. */
+    /** Getter for init generate field property. */
     public boolean isGenerateField() {
         // Lazy init.
         if(getProperty(PROP_GENERATE_FIELD) == null)
@@ -61,10 +64,25 @@ public class I18nOptions extends SystemOption {
         return ((Boolean)getProperty(PROP_GENERATE_FIELD)).booleanValue();
     }
 
-    /** Setter for init java code property. */
+    /** Setter for init generate field property. */
     public void setGenerateField(boolean generateField) {
         // Stores in class-wide state and fires property changes if needed:
         putProperty(PROP_GENERATE_FIELD, new Boolean(generateField), true);
+    }
+    
+    /** Getter for init advanced wizard property. */
+    public boolean isAdvancedWizard() {
+        // Lazy init.
+        if(getProperty(PROP_ADVANCED_WIZARD) == null)
+            putProperty(PROP_ADVANCED_WIZARD, Boolean.FALSE, true);
+        
+        return ((Boolean)getProperty(PROP_ADVANCED_WIZARD)).booleanValue();
+    }
+
+    /** Setter for init advanced wizard property. */
+    public void setAdvancedWizard(boolean generateField) {
+        // Stores in class-wide state and fires property changes if needed:
+        putProperty(PROP_ADVANCED_WIZARD, new Boolean(generateField), true);
     }
     
     /** Getter for init java code property. */

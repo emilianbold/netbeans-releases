@@ -15,6 +15,13 @@
 package org.netbeans.modules.i18n;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.openide.loaders.DataObject;
+import org.openide.util.MapFormat;
+
+
 /**
  * This object represent i18n values which will be used by actual
  * i18n-izing of found hard coded string. I.e. resource where will be stored 
@@ -48,6 +55,8 @@ public abstract class I18nString extends Object {
             throw new IllegalArgumentException();
 
         this.support = support;
+        
+        replaceFormat = I18nUtil.getOptions().getReplaceJavaCode();
     }
 
     
@@ -105,4 +114,25 @@ public abstract class I18nString extends Object {
         this.replaceFormat = replaceFormat;
     }
 
+    /** Gets replacing string. 
+     * @return replacing string or null if this instance is invalid */
+    public String getReplaceString() {
+        if(getKey() == null || getSupport() == null || getSupport().getResourceHolder().getResource() == null)
+            return null;
+        
+        if(replaceFormat == null)
+            replaceFormat = I18nUtil.getOptions().getReplaceJavaCode();
+
+        // Create map.
+        Map map = new HashMap(4);
+
+        map.put("key", getKey()); // NOI18N
+        map.put("bundleNameSlashes", getSupport().getResourceHolder().getResource().getPrimaryFile().getPackageName('/')); // NOI18N
+        map.put("bundleNameDots", getSupport().getResourceHolder().getResource().getPrimaryFile().getPackageName('.')); // NOI18N
+
+        DataObject sourceDataObject = getSupport().getSourceDataObject();
+        map.put("sourceFileName", sourceDataObject == null ? "" : sourceDataObject.getPrimaryFile().getName()); // NOI18N
+
+        return MapFormat.format(replaceFormat, map);
+    }
 }

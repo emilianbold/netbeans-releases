@@ -15,11 +15,13 @@
 package org.netbeans.modules.i18n;
 
 
+import java.io.IOException;
 import javax.swing.JPanel;
 import javax.swing.text.StyledDocument;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -46,7 +48,10 @@ public abstract class I18nSupport {
     protected final ResourceHolder resourceHolder;
     
 
-    /** Constructor. */
+    /** Constructor. Note: It gets document from data object's editor cookie. If the document
+     * is not available it tries to load it. Therefore this construction could take some time.
+     * @exception IOException when the document is could not be loaded
+     */
     public I18nSupport(DataObject sourceDataObject) {
         this.sourceDataObject = sourceDataObject;
         
@@ -60,6 +65,19 @@ public abstract class I18nSupport {
         this.resourceHolder = createResourceHolder();
     }
     
+
+    /** Loads document if was not get in constructor should be called after creation if the
+     * work on document is necessary. */
+    private void loadDocument() throws IOException {
+        if(document == null) {
+            EditorCookie editorCookie = (EditorCookie)sourceDataObject.getCookie(EditorCookie.class);
+
+            if(editorCookie == null)
+                throw new IllegalArgumentException("I18N: Illegal data object type"+ sourceDataObject); // NOI18N
+            
+            document = editorCookie.openDocument();
+        }
+    }
     
     /** Creates <code>I18nFinder</code> instance used by this instance. */
     protected abstract I18nFinder createFinder();
@@ -121,11 +139,16 @@ public abstract class I18nSupport {
     }
     
     /** Gets additional customizer. Override in subclasses if needed.
-     * @param i18nString instance for which could additional values be customized.
      * @return null 
      * @see #hasAdditionalCustomizer */
-    public JPanel getAdditionalCustomizer(I18nString i18nString) {
+    public JPanel getAdditionalCustomizer() {
         return null;
+    }
+    
+    /** Provides addtional changes. Usually connected with values
+     * set via <code>getAdditionalCustomizer</code> method. Override in subclasses. 
+     * Default implementation does nothing. */
+    public void performAdditionalChanges() {
     }
 
     
@@ -156,11 +179,20 @@ public abstract class I18nSupport {
     }
 
     /** Factory inteface for creating <code>I18nSupport</code> instances. */
-    public interface Factory {
+    public static abstract class Factory {
         
-        /** Creates <code>I18nSupport</code> instance for specified data object and document. */
-        public I18nSupport create(DataObject dataObject);
-    } // End of nested I18nSupportFactory class.
+        /** Gets <code>I18nSupport</code> instance for specified data object and document.
+         * @exception IOException when the document could not be loaded */
+        public I18nSupport create(DataObject dataObject) throws IOException {
+            I18nSupport support = createI18nSupport(dataObject);
+            support.loadDocument();
+          
+            return support;
+        };
+        
+        /** Actually creates i18n support instance. */
+        protected abstract I18nSupport createI18nSupport(DataObject dataObject);
+    } // End of nested Factory class.
     
 }
 

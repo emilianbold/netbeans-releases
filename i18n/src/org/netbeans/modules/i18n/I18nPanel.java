@@ -264,7 +264,7 @@ public class I18nPanel extends JPanel {
             throw new InternalError("I18N: Button has to be disabled. Has no additional cutomizer."); // NOI18N
         }
 
-        JPanel additionalCustomizer = i18nString.getSupport().getAdditionalCustomizer(i18nString);
+        JPanel additionalCustomizer = i18nString.getSupport().getAdditionalCustomizer();
                 
         DialogDescriptor dd = new DialogDescriptor(additionalCustomizer, bundle.getString("LBL_Replace"));
         dd.setModal(true);
