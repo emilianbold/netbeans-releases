@@ -90,7 +90,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         String docBaseName = (String) wiz.getProperty(WizardProperties.DOC_BASE);
         String javaRootName = (String) wiz.getProperty(WizardProperties.JAVA_ROOT);
         String libName = (String) wiz.getProperty(WizardProperties.LIB_FOLDER);
-        
+        String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
+
         FileObject wmFO = FileUtil.toFileObject (dirSrcF);
         assert wmFO != null : "No such dir on disk: " + dirSrcF;
         assert wmFO.isFolder() : "Not really a dir: " + dirSrcF;
@@ -115,11 +116,15 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         else {
             File f = new File(libName);
             libFolder = FileUtil.toFileObject(f);
-        }       
-        
+        }
+
+        if(j2eeLevel == null) {
+            j2eeLevel = WebModule.J2EE_14_LEVEL;
+        }
+
         String buildfile = getBuildfile();
         
-        WebProjectGenerator.importProject (dirF, name, wmFO, javaRoot, docBase, libFolder, WebModule.J2EE_14_LEVEL, buildfile); //PENDING detect spec level
+        WebProjectGenerator.importProject (dirF, name, wmFO, javaRoot, docBase, libFolder, j2eeLevel, buildfile);
         FileObject dir = FileUtil.toFileObject (dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         
