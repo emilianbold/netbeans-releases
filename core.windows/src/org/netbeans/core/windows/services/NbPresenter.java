@@ -83,7 +83,6 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
     private Component currentMessage;
     private JScrollPane currentScrollPane;
     private boolean leaf = false;
-    
     private JPanel currentButtonsPanel;
     private Component[] currentPrimaryButtons;
     private Component[] currentSecondaryButtons;
@@ -156,6 +155,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         getRootPane().setOpaque(true);
         
         descriptor = d;
+
         buttonListener = new ButtonListener();
         // set leaf by DialogDescriptor, NotifyDescriptor is leaf as default
         leaf = d instanceof DialogDescriptor ? ((DialogDescriptor)d).isLeaf () : true;
@@ -425,7 +425,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
      * 'no' options.
      */
     public int compare (Object a, Object b) {
-        boolean isDefaultButton = a.equals(descriptor.getValue());
+        boolean isDefaultButton = a.equals(descriptor.getDefaultValue ());
         int result;
         if (a.equals(NotifyDescriptor.OK_OPTION) || a.equals(NotifyDescriptor.YES_OPTION)) {
             result = 1;
@@ -500,7 +500,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
                 } else {
                     JButton button = new JButton();
                     org.openide.awt.Actions.setMenuText(button, primaryOptions[i].toString(), true);
-                    button.setDefaultCapable(primaryOptions[i].equals(descriptor.getValue()));
+                    button.setDefaultCapable(primaryOptions[i].equals(descriptor.getDefaultValue ()));
                     currentPrimaryButtons[i] = button;
                 }
             }
@@ -599,6 +599,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
             JPanel panelForPrimary = null;
             JPanel panelForSecondary = null;
             
+
             if (currentPrimaryButtons != null) {
                 panelForPrimary = new JPanel();
                 
@@ -692,8 +693,8 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
      */
     private void updateDefaultButton() {
         // bugfix 37083, respects DialogDescriptor's initial value ?
-        if (descriptor.getValue () != null && descriptor.getValue () instanceof JButton) {
-            JButton b = (JButton)descriptor.getValue ();
+        if (descriptor.getDefaultValue () != null && descriptor.getDefaultValue () instanceof JButton) {
+            JButton b = (JButton)descriptor.getDefaultValue ();
             if (b.isVisible() && b.isEnabled () && b.isDefaultCapable ()) {
                 getRootPane ().setDefaultButton (b);
                 return ;

@@ -124,7 +124,7 @@ public class NbPresenterTest extends NbTestCase {
         dd.setClosingOptions (null);
                 
         NbPresenter presenter = new NbDialog (dd, (JFrame)null);
-        // assertEquals ("Dialog has Rescue option as default value.", rescue, dd.getDefaultValue ());
+        assertEquals ("Dialog has Rescue option as default value.", rescue, dd.getDefaultValue ());
         JButton [] backup = (JButton [])options.clone ();
         //showButtonArray (backup);
         Arrays.sort (options, presenter);
