@@ -107,6 +107,10 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     new Variable [0]
                 )).getFields (from, to);
             } catch (NoSuchMethodException e) {
+                System.out.println (e.getLocalizedMessage ());
+                e.printStackTrace ();
+            } catch (InvalidExpressionException e) {
+                System.out.println (e.getLocalizedMessage ());
                 e.printStackTrace ();
             }
         if ( isMapMapType (type)
@@ -123,7 +127,11 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     "()[Ljava/lang/Object;",
                     new Variable [0]
                 )).getFields (from, to);
+            } catch (InvalidExpressionException e) {
+                System.out.println(e.getLocalizedMessage ());
+                e.printStackTrace ();
             } catch (NoSuchMethodException e) {
+                System.out.println(e.getLocalizedMessage ());
                 e.printStackTrace ();
             }
         if ( isMapEntryType (type)
@@ -143,7 +151,11 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     "()[Ljava/beans/PropertyChangeListener;",
                     new Variable [0]
                 )).getFields (from, to);
+            } catch (InvalidExpressionException e) {
+                System.out.println(e.getLocalizedMessage ());
+                e.printStackTrace ();
             } catch (NoSuchMethodException e) {
+                System.out.println(e.getLocalizedMessage ());
                 e.printStackTrace ();
             }
 //        if ( type.equals ("java.lang.ref.WeakReference")

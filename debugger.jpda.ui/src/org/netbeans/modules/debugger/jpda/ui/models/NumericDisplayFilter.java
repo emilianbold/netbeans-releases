@@ -45,7 +45,7 @@ class NumericDisplayFilter implements TableModelFilter, NodeActionsProviderFilte
 
     public Object getValueAt(TableModel original, Object node, String columnID) throws ComputingException,
             UnknownTypeException {
-        if (columnID == this.columnID && node instanceof Variable) {
+        if (columnID == this.columnID && node instanceof Variable && isIntegralType ((Variable) node)) {
             Variable var = (Variable) node;
             return getValue(var, (NumericDisplaySettings) variableToDisplaySettings.get(var));
         }

@@ -289,7 +289,7 @@ public class AbstractVariable implements Variable {
         String methodName,
         String signature,
         Variable[] arguments
-    ) throws NoSuchMethodException {
+    ) throws NoSuchMethodException, InvalidExpressionException {
         if (value == null) return null;
         Method method = ((ClassType) value.type ()).
             concreteMethodByName (methodName, signature);
@@ -307,28 +307,23 @@ public class AbstractVariable implements Variable {
         int i, k = arguments.length;
         for (i = 0; i < k; i++)
             vs [i] = ((AbstractVariable) arguments [i]).getInnerValue ();
-        try {
-            Value v = model.getDebugger ().invokeMethod (
-                (ObjectReference) value,
-                method,
-                vs
+        Value v = model.getDebugger ().invokeMethod (
+            (ObjectReference) value,
+            method,
+            vs
+        );
+        if (v instanceof ObjectReference)
+            return new ObjectVariable (
+                model,
+                (ObjectReference) v,
+                id + method + "^"
             );
-            if (v instanceof ObjectReference)
-                return new ObjectVariable (
-                    model,
-                    (ObjectReference) v,
-                    id + method + "^"
-                );
-            else
-                return new AbstractVariable (
-                    model,
-                    v,
-                    id + method
-                );
-        } catch (InvalidExpressionException e) {
-            e.printStackTrace( );
-            return null;
-        }
+        else
+            return new AbstractVariable (
+                model,
+                v,
+                id + method
+            );
     }
     
     /**

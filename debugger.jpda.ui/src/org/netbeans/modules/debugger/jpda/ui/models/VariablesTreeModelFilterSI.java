@@ -13,8 +13,12 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
 
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -50,7 +54,40 @@ NodeModel, TableModel, NodeActionsProvider {
         "org/netbeans/modules/debugger/resources/watchesView/SuperVariable";
     public static final String STATIC =
         "org/netbeans/modules/debugger/resources/watchesView/SuperVariable";
-    
+    private static final Set ignore = new HashSet (Arrays.asList (new String[] {
+        "java.lang.String",
+        "java.lang.StringBuffer",
+        "java.lang.Character",
+        "java.lang.Integer",
+        "java.lang.Float",
+        "java.lang.Byte",
+        "java.lang.Boolean",
+        "java.lang.Double",
+        "java.lang.Long",
+        "java.lang.Short",
+
+        "java.lang.ref.WeakReference",
+        
+        "java.util.ArrayList",
+        "java.util.HashSet",
+        "java.util.LinkedHashSet",
+        "java.util.LinkedList",
+        "java.util.Stack",
+        "java.util.TreeSet",
+        "java.util.Vector",
+        "java.util.Hashtable",
+        "java.util.Hashtable$Entry",
+        "java.util.HashMap",
+        "java.util.HashMap$Entry",
+        "java.util.IdentityHashMap",
+        "java.util.AbstractMap$SimpleEntry",
+        "java.util.TreeMap",
+        "java.util.TreeMap$Entry",
+        "java.util.WeakHashMap",
+        "java.util.LinkedHashMap",
+        "java.util.LinkedHashMap$Entry",
+        "java.beans.PropertyChangeSupport"
+    }));
     private LookupProvider lookupProvider;
     
     
@@ -89,12 +126,21 @@ NodeModel, TableModel, NodeActionsProvider {
         int         to
     ) throws NoInformationException, ComputingException, UnknownTypeException {
         if (parent instanceof ObjectVariable) {
-            Object[] os = original.getChildren (parent, from, to);
-            Object[] nos = new Object [os.length + 2];
-            System.arraycopy (os, 0, nos, 2, os.length);
-            nos [0] = new Object[] {"static", parent};
-            nos [1] = new Object[] {"inherited", parent};
-            return nos;
+            ObjectVariable variable = (ObjectVariable) parent;
+            if (ignore.contains (variable.getType ()))
+                return original.getChildren (parent, from, to);
+            List l = new ArrayList (Arrays.asList (
+                original.getChildren (parent, from, to)
+            ));
+            boolean staticFields = variable.getAllStaticFields (from, to).
+                length > 0;
+            boolean inheritedFields = variable.getInheritedFields (from, to).
+                length > 0;
+            if (staticFields)
+                l.add (new Object[] {"static", parent});
+            if (inheritedFields)
+                l.add (new Object[] {"inherited", parent});
+            return l.toArray ();
         } else
         if (parent instanceof Object[]) {
             Object[] os1 = (Object[]) parent;

@@ -338,7 +338,7 @@ public class LocalsTreeModel implements TreeModel {
         String className
     ) {
         Value v = or.getValue (f);
-        if (v instanceof ObjectReference)
+        if ( (v == null) || (v instanceof ObjectReference))
             return new ObjectFieldVariable (
                 this,
                 (ObjectReference) v,

@@ -52,7 +52,7 @@ public interface ObjectVariable extends Variable {
         String methodName,
         String signature,
         Variable[] arguments
-    ) throws NoSuchMethodException;
+    ) throws NoSuchMethodException, InvalidExpressionException;
 
     /**
      * Number of fields defined in this object.
