@@ -840,6 +840,13 @@
    <mapID target="org.netbeans.modules.autoupdate.Downloader" url="modules/autoupdate.html" /> 
    <mapID target="org.netbeans.modules.autoupdate.UpdateAction" url="modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.LicenceDialog" url="modules/autoupdate.html" />
+   <mapID target="org.netbeans.modules.autoupdate.ConnectingErrorDialog" url="modules/autoupdate.html" />
+   <mapID target="org.netbeans.modules.autoupdate.Wizard" url="modules/autoupdate.html" />
+   <mapID target="org.netbeans.modules.autoupdate.CertDialog" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.ProxyDialog" url="modules/autoupdate" />   
+   <mapID target="org.netbeans.modules.autoupdate.Settings" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.AutoCheckInfo" url="pending.html" />
+
    <mapID target="org.netbeans.modules.beans.BiFeatureNode" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.BiIncludeAllAction" url="pending.html" />
    <mapID target="org.netbeans.modules.beans.BiNode" url="pending.html" />
@@ -939,9 +946,7 @@
    <mapID target="org.netbeans.core.NbNodeOperation$Sheet" url="pending.html" /> 
    <mapID target="org.netbeans.modules.icebrowser.ICEBrowserSettings" url="pending.html" />
    <mapID target="org.netbeans.modules.projects.ProjectManagerAction" url="project/project.html" />
-   <mapID target="org.netbeans.modules.autoupdate.Settings" url="pending.html" />
    <mapID target="org.netbeans.modules.projects.settings.ProjectOption" url="project/project_adding-new.html" />
-   <mapID target="org.netbeans.modules.autoupdate.ProxyDialog" url="pending.html" />
    <mapID target="org.netbeans.modules.projects.settings.OptionsAction" url="project/project_adding-new.html" />
    <mapID target="org.openide.actions.BuildProjectAction" url="project/project_comp-run-debug.html" />
    <mapID target="org.netbeans.modules.projects.ProjectDataObject" url="project/project.html" /> 
@@ -1059,9 +1064,6 @@
    <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPSubmitAndErrorURLInfoPanel" url="pending.html" />
    <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPSubmitProcessOptionPanel" url="pending.html" />
 
-   <mapID target="org.netbeans.modules.autoupdate.Wizard" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.CertDialog" url="pending.html" />
-
    <mapID target="org.netbeans.modules.search.ResultViewTopComponent" url="objects/search/search_results-window.html" />
    <mapID target="org.netbeans.modules.search.RepositorySearchAction" url="objects/search/search.html" />
    <mapID target="org.openidex.search.SearchType" url="objects/search/search_predefining.html" />
@@ -1077,7 +1079,6 @@
    <mapID target="org.netbeans.modules.web.core.jswdk.Execute2Action" url="pending.html" />
  
    <mapID target="org.netbeans.beaninfo.LoaderActionsPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.autoupdate.AutoCheckInfo" url="pending.html" />
    <mapID target="org.openide.src.nodes.MethodCustomizer" url="pending.html" />
    <mapID target="org.openide.src.nodes.FieldCustomizer" url="pending.html" />
    <mapID target="org.openide.src.nodes.ClassCustomizer" url="pending.html" />

@@ -550,9 +550,9 @@
 <tocitem text="Configuring the Environment" target="configure">
     <tocitem text="Options Window" target="configure.options" />
   <tocitem text="Managing Modules" target="modules.manage">
-    <tocitem text="Creating an IDE Module" target="ide.newmodule" />
-    <tocitem text="Enabling or Disabling a Module" target="configure.module" />
     <tocitem text="Updating the IDE" target="ide.autoupdate" />
+    <tocitem text="Enabling or Disabling a Module" target="configure.module" />
+    <tocitem text="Creating an IDE Module" target="ide.newmodule" />
   </tocitem>
   <tocitem text="Using a Web Browser With the IDE" target="webbrowser">
     <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
