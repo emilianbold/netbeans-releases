@@ -125,4 +125,21 @@ public abstract class DebuggerApiTestBase extends NbTestCase {
         }
     }
 
+    class TestActionsManagerListener implements ActionsManagerListener {
+
+        private List performed = new ArrayList();
+
+        public void actionPerformed(Object action) {
+            performed.add(action);
+        }
+
+        public void actionStateChanged(Object action, boolean enabled) {
+        }
+
+        public List getPerformedActions() {
+            List listCopy = new ArrayList(performed);
+            performed.clear();
+            return listCopy;
+        }
+    }
 }

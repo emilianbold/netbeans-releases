@@ -66,11 +66,11 @@ public class TestDICookie {
 
     private Set infos = new HashSet();
 
-    public void addInfo(String s) {
+    public void addInfo(Object s) {
         infos.add(s);
     }
 
-    public boolean hasInfo(String s) {
+    public boolean hasInfo(Object s) {
         return infos.contains(s);
     }
 }

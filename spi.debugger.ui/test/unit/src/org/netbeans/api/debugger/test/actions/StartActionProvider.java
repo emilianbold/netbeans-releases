@@ -47,7 +47,7 @@ public class StartActionProvider extends ActionsProvider {
     public void doAction (Object action) {
         if (debuggerImpl == null) return;
         final TestDICookie cookie = (TestDICookie) lookupProvider.lookupFirst(TestDICookie.class);
-        cookie.addInfo("start");
+        cookie.addInfo(DebuggerManager.ACTION_START);
     }
 
     public boolean isEnabled (Object action) {

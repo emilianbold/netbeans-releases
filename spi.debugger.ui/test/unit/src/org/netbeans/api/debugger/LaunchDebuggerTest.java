@@ -72,10 +72,10 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
         DebuggerEngine debugger = engines[0];
         DebuggerInfo dic = (DebuggerInfo) debugger.lookupFirst(DebuggerInfo.class);
         assertSame("Wrong debugger info in engine lookup", dic, di);
-        assertTrue("Engine did not start", tdi.hasInfo("start"));
+        assertTrue("Engine did not start", tdi.hasInfo(DebuggerManager.ACTION_START));
 
         dm.getCurrentSession().kill();
-        assertTrue("Engine did not finish", tdi.hasInfo("kill"));
+        assertTrue("Engine did not finish", tdi.hasInfo(DebuggerManager.ACTION_KILL));
 
         events = dml.getEvents();
         assertEquals("Wrong number of events generated", events.size(), 4);
