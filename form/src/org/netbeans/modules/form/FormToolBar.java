@@ -96,6 +96,8 @@ class FormToolBar extends JToolBar {
         paletteButton.setToolTipText(
             FormUtils.getBundleString("CTL_BeansButtonHint")); // NOI18N
         HelpCtx.setHelpIDString(paletteButton, "gui.components.adding"); // NOI18N
+        // Issue 46673
+        ScrollPopupMenu.doNotCancelPopupHack(paletteButton);
         initButton(paletteButton);
 
         // status label
@@ -130,6 +132,9 @@ class FormToolBar extends JToolBar {
         // Issue 46562
         JButton pmButton = add(paletteManagerAction);
         pmButton.addMouseListener(listener);
+        String pmToolTip = paletteManagerAction.getName();
+        pmToolTip = org.openide.awt.Actions.cutAmpersand(pmToolTip);
+        pmButton.setToolTipText(pmToolTip);
         initButton(pmButton);
         Icon icon = (Icon)paletteManagerAction.getValue("hidden_icon"); // NOI18N
         if (icon == null) {
@@ -253,6 +258,7 @@ class FormToolBar extends JToolBar {
                     formDesigner.toggleAddMode();
                     showPaletteViewMenu();
                 } else {
+                    paletteMenuView.getPopupMenu().setVisible(false);
                     formDesigner.toggleSelectionMode();
                 }
             }
