@@ -102,21 +102,27 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
 
     public void removeInterfaces(boolean local) {
         if (local) {
+            ClassElement localInterfaceClass = this.localInterfaceClass;
+            ClassElement localBusinessInterfaceClass = this.localBusinessInterfaceClass;
+            String localHome = ejb.getLocalHome();
+            ejb.setLocal(null);
+            ejb.setLocalHome(null);
+            Utils.removeClass(sourceClassPath, localHome);
+            removeBeanInterface(localInterfaceClass.getName());
             if (localBusinessInterfaceClass != localInterfaceClass) {
                 removeBeanInterface(localBusinessInterfaceClass.getName());
             }
-            removeBeanInterface(localInterfaceClass.getName());
-            Utils.removeClass(sourceClassPath, ejb.getLocalHome());
-            ejb.setLocal(null);
-            ejb.setLocalHome(null);
         } else {
+            ClassElement remoteInterfaceClass = this.remoteInterfaceClass;
+            ClassElement remoteBusinessInterfaceClass = this.remoteBusinessInterfaceClass;
+            String home = ejb.getHome();
+            ejb.setRemote(null);
+            ejb.setHome(null);
+            Utils.removeClass(sourceClassPath, home);
+            removeBeanInterface(remoteInterfaceClass.getName());
             if (remoteBusinessInterfaceClass != remoteInterfaceClass) {
                 removeBeanInterface(remoteBusinessInterfaceClass.getName());
             }
-            removeBeanInterface(remoteInterfaceClass.getName());
-            Utils.removeClass(sourceClassPath, ejb.getHome());
-            ejb.setRemote(null);
-            ejb.setHome(null);
         }
     }
 
