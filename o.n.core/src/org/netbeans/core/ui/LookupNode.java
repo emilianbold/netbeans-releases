@@ -181,7 +181,7 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
             Node node = (Node)n;
             
             
-            DataObject obj = (DataObject)node.getCookie(DataFolder.class);
+            DataObject obj = (DataObject)node.getCookie(DataObject.class);
             
             if (
                 obj != null && Boolean.TRUE.equals (obj.getPrimaryFile ().getAttribute (EA_HIDDEN))
