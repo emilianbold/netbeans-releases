@@ -133,7 +133,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     
     public Project getProject() {
         if (isWarmingUp) {
-            // during warming return project from constructor
+            // during warming up the form then return then project given from constructor
             return project;
         }
         return (Project)projectsComboBox.getSelectedItem();
@@ -392,7 +392,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
                 setIcon(pi.getIcon());
             }
             else {
-                setText( value.toString () );
+                setText( value == null ? "" : value.toString () ); // NOI18N
                 setIcon( null );
             }
             if ( isSelected ) {
