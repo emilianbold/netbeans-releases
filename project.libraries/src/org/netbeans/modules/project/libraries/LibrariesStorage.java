@@ -241,7 +241,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
     }
 
 
-    public synchronized void fileDataCreated(FileEvent fe) {
+    public void fileDataCreated(FileEvent fe) {
         FileObject fo = fe.getFile();
         try {
             final LibraryImplementation impl = readLibrary (fo);
@@ -250,9 +250,11 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                 ErrorManager.getDefault().log("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryCreated(), the library type provider is unknown.");  //NOI18N
             }
             else {
-                provider.libraryCreated (impl);
-                this.libraries.put (impl.getName(), impl);
-                this.librariesByFileNames.put (fo.getPath(), impl);
+                synchronized (this) {
+                    provider.libraryCreated (impl);
+                    this.libraries.put (impl.getName(), impl);
+                    this.librariesByFileNames.put (fo.getPath(), impl);
+                }
                 this.fireLibrariesChanged();
             }
         } catch (SAXException e) {
@@ -264,18 +266,23 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
         }
     }
 
-    public synchronized void fileDeleted(FileEvent fe) {
+    public void fileDeleted(FileEvent fe) {
         String fileName = fe.getFile().getPath();
-        final LibraryImplementation impl = (LibraryImplementation) this.librariesByFileNames.remove (fileName);
+        LibraryImplementation impl;
+        synchronized (this) {
+            impl = (LibraryImplementation) this.librariesByFileNames.remove (fileName);
+            if (impl != null) {
+                this.libraries.remove (impl.getName());
+                LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
+                if (provider == null) {
+                    ErrorManager.getDefault().log("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryDeleted(), the library type provider is unknown.");  //NOI18N
+                }
+                else {
+                    provider.libraryDeleted (impl);
+                }                
+            }
+        }
         if (impl != null) {
-            this.libraries.remove (impl.getName());
-            LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
-            if (provider == null) {
-                ErrorManager.getDefault().log("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryDeleted(), the library type provider is unknown.");  //NOI18N
-            }
-            else {
-                provider.libraryDeleted (impl);
-            }
             this.fireLibrariesChanged();
         }
     }
