@@ -70,6 +70,9 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
     void read (WizardDescriptor settings) {
         this.wizardDescriptor = settings;
+        File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
+        ((FolderList)this.sourcePanel).setProjectFolder(projectLocation);
+        ((FolderList)this.testsPanel).setProjectFolder(projectLocation);
         File[] srcRoot = (File[]) settings.getProperty ("sourceRoot");      //NOI18N
         if (srcRoot!=null) {
             ((FolderList)this.sourcePanel).setFiles(srcRoot);
