@@ -41,6 +41,9 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
     /** default */
     private static NbPlaces places;
     
+    /** A node to return if ProjectDesktop node == null */
+    private static final Node EMPTY_PROJECT_DESKTOP_NODE = new AbstractNode( Children.LEAF );
+    
     /** No instance outside this class.
     */
     private NbPlaces() {
@@ -131,7 +134,8 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
     /** Workspace node for current project. This node can change when project changes.
     */
     public Node projectDesktop () {
-        return NbProjectOperation.getProjectDesktop ();
+        Node pn = NbProjectOperation.getProjectDesktop ();
+        return pn == null ? EMPTY_PROJECT_DESKTOP_NODE : pn;
     }
 
     /** Root nodes.
