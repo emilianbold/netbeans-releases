@@ -6,3 +6,5 @@ OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: 1.0
 OpenIDE-Module-Update-Location: http://update.netbeans.com/eap/developer30/updateInfoEAP.xml
 
+Name: com/netbeans/developer/modules/debugger/jpda/JPDADebuggerType.class
+OpenIDE-Module-Class: Executor
