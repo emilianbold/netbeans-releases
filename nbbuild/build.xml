@@ -1206,7 +1206,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
-  <target name="build-nozip" depends="build-clusters" description="Build the IDE but do not create a final ZIP file.">
+  <target name="build-nozip" depends="clean-cluster-flags,build-clusters" description="Build the IDE but do not create a final ZIP file.">
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
     <loadproperties srcFile="cluster.properties" />
     <repeat target="create-module-xmls-for-one-cluster" name="one.cluster.name" values="${nb.clusters.list}" /> 
@@ -1737,7 +1737,15 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete file="nbantext.jar"/>
   </target>
 
-  <target name="localclean" depends="init">
+  <target name="clean-cluster-flags" unless="do-not-rebuild-clusters">
+    <delete>
+      <fileset dir=".">
+        <include name="build/*.built"/>
+      </fileset>
+    </delete>
+  </target>
+
+  <target name="localclean" depends="clean-cluster-flags,init">
     <delete dir="${netbeans.dest}"/>
     <delete dir="${test.user.dir}"/>
     <delete dir="modules_javadoc"/>
@@ -1746,11 +1754,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="modules_exported_interfaces"/>
     <delete dir="${netbeans.dest}"/>
     <delete file="moduleCluster.properties"/>
-    <delete>
-      <fileset dir=".">
-        <include name="build/*.built"/>
-      </fileset>
-    </delete>
   </target>
 
   <target name="cleanall" depends="init">
