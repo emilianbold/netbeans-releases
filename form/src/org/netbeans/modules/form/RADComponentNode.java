@@ -37,11 +37,11 @@ import java.util.ArrayList;
 */
 public class RADComponentNode extends AbstractNode implements RADComponentCookie, FormCookie {
 
-  static DataFlavor RAD_COMPONENT_COPY_FLAVOR = new RADDataFlavor (
+  public static DataFlavor RAD_COMPONENT_COPY_FLAVOR = new RADDataFlavor (
     RADComponentNode.class,
     "RAD_COMPONENT_COPY_FLAVOR"
   );
-  static DataFlavor RAD_COMPONENT_CUT_FLAVOR = new RADDataFlavor (
+  public static DataFlavor RAD_COMPONENT_CUT_FLAVOR = new RADDataFlavor (
     RADComponentNode.class,
     "RAD_COMPONENT_CUT_FLAVOR"
   );
@@ -661,6 +661,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  31   Gandalf   1.30        7/30/99  Ian Formanek    Flavors are public
  *  30   Gandalf   1.29        7/28/99  Ian Formanek    Fixed bug 2890 - Go to 
  *       Source and Go to Form actions are not enabled in a context menu of a 
  *       component
