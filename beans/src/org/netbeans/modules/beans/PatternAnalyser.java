@@ -226,12 +226,12 @@ public class PatternAnalyser extends Object implements Node.Cookie {
             if ( ( field.getModifiers() & Modifier.STATIC ) != 0 )
                 continue;
             
-            System.out.println("Property style " + propertyStyle);   
+            //System.out.println("Property style " + propertyStyle);   
             String fieldName = field.getName().getName();
-            System.out.println("Field name1 " + fieldName);
+            //System.out.println("Field name1 " + fieldName);
             if( fieldName.startsWith(propertyStyle) ){
                 fieldName = fieldName.substring(1);
-                System.out.println("Field name2 " + fieldName);
+                //System.out.println("Field name2 " + fieldName);
             }
             
             PropertyPattern pp = (PropertyPattern)propertyPatterns.get( fieldName );
