@@ -575,4 +575,43 @@ The Java Media Framework is separately downloadable.
     <delete dir="compatkit-work"/>
   </target>
 
+    <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all jars necessary + xerces.jar for using standalone filesystems.">
+        <zip compress="true" zipfile="standalone-fs/fs.zip">
+            <fileset dir="netbeans/lib">
+                <include name="openide-fs.jar"/>
+                <include name="openide-util.jar"/>
+            </fileset>
+            <fileset dir="standalone-fs" includes="Readme"/>  
+            <fileset dir="${binroot}/core/release/lib/ext" includes="xerces.jar"/>                      
+        </zip>
+        <delete file="standalone-fs/Readme"/>
+    </target>
+
+    <target  name="standalone-fs-light" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all jars necessary for using standalone filesystems. Without xerces.jar.">
+        <zip compress="true" zipfile="standalone-fs/fs-light.zip">
+            <fileset dir="netbeans/lib">
+                <include name="openide-fs.jar"/>
+                <include name="openide-util.jar"/>
+            </fileset>
+            <fileset dir="standalone-fs" includes="Readme"/>  
+        </zip>
+        <delete file="standalone-fs/Readme"/>
+    </target>
+
+    <target name="standalone-fs-prepare" depends="lib-util,lib-fs">
+        <mkdir dir="standalone-fs"/>        
+        <echo file="standalone-fs/Readme"><![CDATA[FileSystem Library
+==================
+
+Please visit the documentation at http://openide.netbeans.org/fs/
+
+If you want to use the library in your application just put openide-fs.jar and xerces.jar into classpath:
+
+	java -cp openide-fs.jar:xerces.jar yourpackage.YourClass
+
+With comments and questions mail nbdev@netbeans.org mailing list.
+]]></echo>
+
+    </target>
+
 </project>
