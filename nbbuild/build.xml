@@ -181,7 +181,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building core/deprecated..."/>
     <ant dir="../core/deprecated" target="netbeans"/>
   </target>
-  <target name="all-java/srcmodel" depends="all-openide,all-openide/loaders">
+  <target name="all-java/srcmodel" depends="all-openide,all-openide/loaders,all-java/api">
     <echo message="Building java/srcmodel..."/>
     <ant dir="../java/srcmodel" target="netbeans"/>
   </target>
@@ -928,7 +928,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../contrib/pmd-nb-ext" target="netbeans"/>
   </target>
 
-  <target name="all-contrib/insertunicode" depends="all-openide">
+  <target name="all-contrib/insertunicode" depends="all-openide,all-editor">
     <echo message="Building module contrib/insertunicode..."/>
     <ant dir="../contrib/insertunicode" target="netbeans"/>
   </target>
