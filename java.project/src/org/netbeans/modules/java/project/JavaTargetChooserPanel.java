@@ -42,6 +42,8 @@ import org.openide.util.Utilities;
  */
 public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, ChangeListener {
 
+    static final String FOLDER_TO_DELETE = "folderToDelete";    //NOI18N
+
     private final SpecificationVersion JDK_14 = new SpecificationVersion ("1.4");   //NOI18N
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     private JavaTargetChooserPanelGUI gui;
@@ -171,7 +173,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
             if ( bottomPanel != null ) {
                 bottomPanel.storeSettings( settings );
             }
-            Templates.setTargetFolder( (WizardDescriptor)settings, getTargetFolderFromGUI () );
+            Templates.setTargetFolder( (WizardDescriptor)settings, getTargetFolderFromGUI ((WizardDescriptor)settings));
             Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
         }
         ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
@@ -196,7 +198,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         wizard.putProperty ("WizardPanel_errorMessage", message); // NOI18N
     }
     
-    private FileObject getTargetFolderFromGUI () {
+    private FileObject getTargetFolderFromGUI (WizardDescriptor wd) {
         assert gui != null;
         FileObject rootFolder = gui.getRootFolder();
         FileObject folder = null;
@@ -205,7 +207,31 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
             folder = rootFolder.getFileObject( packageFileName );
             if ( folder == null ) {
                 try {
-                    folder = FileUtil.createFolder( rootFolder, packageFileName );
+                    folder = rootFolder;
+                    StringTokenizer tk = new StringTokenizer (packageFileName,"/"); //NOI18N
+                    String name = null;
+                    while (tk.hasMoreTokens()) {
+                        name = tk.nextToken();
+                        FileObject fo = folder.getFileObject (name,"");   //NOI8N
+                        if (fo == null) {
+                            break;
+                        }
+                        folder = fo;
+                    }
+                    folder = folder.createFolder(name);
+                    FileObject toDelete = (FileObject) wd.getProperty(FOLDER_TO_DELETE);
+                    if (toDelete == null) {
+                        wd.putProperty(FOLDER_TO_DELETE,folder);
+                    }
+                    else if (!toDelete.equals(folder)) {
+                        toDelete.delete();
+                        wd.putProperty(FOLDER_TO_DELETE,folder);
+                    }
+                    while (tk.hasMoreTokens()) {
+                        name = tk.nextToken();
+                        folder = folder.createFolder(name);
+                    }
+
                 }
                 catch( IOException e ) {
                     ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );

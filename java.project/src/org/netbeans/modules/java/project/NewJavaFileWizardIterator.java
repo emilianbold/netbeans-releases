@@ -27,6 +27,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -118,6 +119,7 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
             DataObject dTemplate = DataObject.find( template );                
             DataObject dobj = dTemplate.createFromTemplate( df, targetName );
             createdFile = dobj.getPrimaryFile();
+            wiz.putProperty(JavaTargetChooserPanel.FOLDER_TO_DELETE, null);
         }
         
         return Collections.singleton( createdFile );
@@ -157,6 +159,15 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
         }
     }
     public void uninitialize (WizardDescriptor wiz) {
+        FileObject toDelete = (FileObject) wiz.getProperty(JavaTargetChooserPanel.FOLDER_TO_DELETE);
+        if (toDelete != null) {
+            wiz.putProperty(JavaTargetChooserPanel.FOLDER_TO_DELETE, null);
+            try {
+                toDelete.delete();
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ioe);
+            }
+        }
         this.wiz = null;
         panels = null;
     }
