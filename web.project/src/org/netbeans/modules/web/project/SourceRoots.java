@@ -280,6 +280,7 @@ public final class SourceRoots {
                                 }
                                 else {
                                     path = refHelper.createForeignFileReference(f, JavaProjectConstants.SOURCES_TYPE_JAVA);
+                                    props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 }
                                 props.put(rootName,path);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,props);
