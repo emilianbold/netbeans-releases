@@ -252,6 +252,7 @@
 
     <tocitem text="Servers">
 	<tocitem text="About Servers" target="about_server"/>
+        <tocitem text="Registering a Server" target="server_register" />
         <tocitem text="Setting a Context Path" target="server_context" />
 	<tocitem text="Starting and Stopping a Server" target="server_start" />
     </tocitem>
