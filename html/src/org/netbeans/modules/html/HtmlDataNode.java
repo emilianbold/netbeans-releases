@@ -33,8 +33,6 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
     
     // private static final String PROP_FOR_EDIT = "ForEdit";  // NOI18N
 
-    static final java.util.ResourceBundle bundle = NbBundle.getBundle (HtmlDataNode.class);
-
     /** Creates new HtmlDataNode */
     public HtmlDataNode (DataObject dobj, Children ch) {
         super (dobj, ch);
