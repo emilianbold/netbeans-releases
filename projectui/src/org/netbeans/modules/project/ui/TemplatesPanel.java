@@ -218,22 +218,13 @@ public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI
         }
         
         protected Node[] createNodes(Object key) {
-            if (key instanceof FileObject) {
-                FileObject fo = (FileObject) key;
-                if (fo.isData()) {
-                    try {
-                        DataObject dobj = DataObject.find (fo);
-                        return new Node[] {
-                            new FilterNode (dobj.getNodeDelegate(),Children.LEAF)
-                        };
-                    } catch (DataObjectNotFoundException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
+            if (key instanceof DataObject) {
+                DataObject dobj = (DataObject) key;
+                if (dobj.isTemplate()) {
+                    return new Node[] {
+                        new FilterNode (dobj.getNodeDelegate (), Children.LEAF)
+                    };
                 }
-            } else if (key instanceof DataObject) {
-                return new Node[] {
-                    new FilterNode (((DataObject)key).getNodeDelegate (), Children.LEAF)
-                };
             }
             return new Node[0];
         }        
