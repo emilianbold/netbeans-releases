@@ -186,7 +186,15 @@ public class PropertyPanel extends JPanel {
     
     /** Value text field event handler. */
     private void valueTextHandler() {
-        element.getValueElem().setValue(UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapeLineContinuationChar(valueText.getText()))));
+        element.getValueElem().setValue(
+            UtilConvert.charsToUnicodes(
+                UtilConvert.escapeJavaSpecialChars(
+                    UtilConvert.escapeLineContinuationChar(
+                        UtilConvert.escapeOutsideSpaces(valueText.getText())
+                    )
+                )
+            )
+        );
     }
     
     private void keyTextFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_keyTextFocusLost

@@ -200,14 +200,18 @@ public class PropertiesTableModel extends AbstractTableModel {
                 if (ps != null) {
                     Element.ItemElem item = ps.getItem(key);
                     if (item != null) {
-                        item.setValue(UtilConvert.escapeLineContinuationChar(((StringPair)aValue).getValue()));
+                        item.setValue(UtilConvert.escapeLineContinuationChar(
+                            UtilConvert.escapeOutsideSpaces(((StringPair)aValue).getValue())
+                            ));
                         item.setComment(((StringPair)aValue).getComment());
                         // this resorting is necessary only if this column index is same as
                         // column according the sort is performed, REFINE
                         obj.getBundleStructure().sort(-1);
                     } else {
                         if ((((StringPair)aValue).getValue().length() > 0) || (((StringPair)aValue).getComment().length() > 0))  {
-                            ps.addItem(key, UtilConvert.escapeLineContinuationChar(((StringPair)aValue).getValue()), ((StringPair)aValue).getComment());
+                            ps.addItem(key, UtilConvert.escapeLineContinuationChar(
+                                UtilConvert.escapeOutsideSpaces(((StringPair)aValue).getValue())
+                                ), ((StringPair)aValue).getComment());
                             // this resorting is necessary only if this column index is same as
                             // column according the sort is performed, REFINE
                             obj.getBundleStructure().sort(-1);

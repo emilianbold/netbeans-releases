@@ -334,6 +334,38 @@ public class UtilConvert {
         }
         return result.toString(); 
     }
+    
+    /** Checks whether the string contains only spaces */
+    private static boolean onlySpaces(String s){
+        for (int i = 0; i<s.length(); i++){
+            if (s.charAt(i) != ' ') return false;
+        }
+        return true;
+    }
+    
+    /** Escapes spaces in outer part of string. */
+    public static String escapeOutsideSpaces(String source){
+        if (source == null || source.length() == 0) return source;
+        StringBuffer result = new StringBuffer();
+        int i = 0;
+        while (source.charAt(i) == ' '){
+            result.append('\\');
+            result.append(' ');
+            if ((i+1) == source.length()) return result.toString();
+            i++;
+        }
+        while (!onlySpaces(source.substring(i))){
+            result.append(source.charAt(i));
+            if ((i+1) == source.length()) return result.toString();
+            i++;
+        }
+        while (i < source.length()){
+            result.append('\\');
+            result.append(' ');
+            i++;
+        }
+        return result.toString(); 
+    }
 
     /** Escape key value. It escapes last '\\' character  only. Used for formating user input.
     */
