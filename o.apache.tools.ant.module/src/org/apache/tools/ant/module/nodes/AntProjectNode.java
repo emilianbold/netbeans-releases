@@ -62,6 +62,7 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
                     updateElementCookie ();
                 }
             }, 500); // don't even think about squeezing out folder recognizer thread...
+        getCookieSet ().add (new ProjectNodeIndex (this));
     }
 
     private void updateDisplayName () {
@@ -384,6 +385,20 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
                 return NbBundle.getMessage (AntProjectNode.class, "MSG_defaulttarget_missing");
             }
             return super.getValue();
+        }
+    }
+    
+    /** Index Cookie for ProjectNode. Enables ReorderAction. */
+    public static class ProjectNodeIndex extends ElementNode.ElementNodeIndex {
+        
+        /** Creates new ProjectNodeIndex. */
+        public ProjectNodeIndex(org.openide.nodes.Node indexNode) {
+            super (indexNode);
+        }
+
+        /** Get the parent Node of the Elements that can be moved.*/
+        protected org.w3c.dom.Node getParentNode() {
+            return ((AntProjectCookie) indexNode.getCookie (AntProjectCookie.class)).getProjectElement ();
         }
     }
 }
