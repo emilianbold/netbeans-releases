@@ -655,7 +655,46 @@ public abstract class NbTestCase extends TestCase implements NbTest {
       * @param url URL to convert
       * @return absolute path
       */
+    
     public static String convertNBFSURL(URL url) {
+        String externalForm = url.toExternalForm();
+        if (externalForm.startsWith("nbfs://")) {
+            // new nbfsurl format (post 06/2003)
+            return convertNewNBFSURL(url);
+        } else {
+            // old nbfsurl (and non nbfs urls)
+            return convertOldNBFSURL(url);            
+        }
+    }
+    
+    // radix for new nbfsurl
+    private final static int radix = 16;
+    // new nbfsurl decoder - assumes the external form 
+    // begins with nbfs://
+    private static String convertNewNBFSURL(URL url) {
+        String externalForm = url.toExternalForm();
+        String path = externalForm.substring("nbfs://".length());
+        // convert separators (%2f = /,  etc.)
+        StringBuffer sb = new StringBuffer();
+        int i = 0;
+        int len = path.length();
+        while (i < len) {
+            char ch = path.charAt(i++);
+            if (ch == '%' && (i+1) < len) {
+                char h1 = path.charAt(i++);
+                char h2 = path.charAt(i++);
+                // convert d1+d2 hex number to char
+                ch = (char)Integer.parseInt(new String(""+h1+h2), radix);
+                
+            }
+            sb.append(ch);
+        }
+        return sb.toString();
+        
+    }
+    
+    // old nbfsurl decoder
+    private static String convertOldNBFSURL(URL url) {
         String path = url.getFile();
         if(url.getProtocol().equals("nbfs")) {
             // delete prefix of special Filesystem (e.g. org.netbeans.modules.javacvs.JavaCvsFileSystem)
