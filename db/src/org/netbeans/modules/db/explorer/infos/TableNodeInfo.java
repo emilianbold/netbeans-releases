@@ -155,9 +155,6 @@ public class TableNodeInfo extends DatabaseNodeInfo {
         try {
             String cname = tinfo.getName();
             Specification spec = (Specification)getSpecification();
-
-            // Add
-
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
         }
@@ -165,12 +162,26 @@ public class TableNodeInfo extends DatabaseNodeInfo {
 
     public void refreshChildren() throws DatabaseException
     {
-    
         Vector charr = new Vector();
+
+        // it is unnecessary (it caused the problem with Indexes node)
+        // put(DatabaseNodeInfo.CHILDREN, charr);
+
         DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
-    
-        put(DatabaseNodeInfo.CHILDREN, charr);
-        chil.remove(chil.getNodes());
+        Node[] chilNodes = chil.getNodes();
+        int iCountOfChildren = chilNodes.length;
+        
+        for(int i=0; i < iCountOfChildren; i++)
+            if(chilNodes[i] instanceof DatabaseNode)
+                // is it node Indexes or column?
+                if(((DatabaseNode)chilNodes[i]).getInfo() instanceof IndexListNodeInfo)
+                    // refresh indexes
+                    ((DatabaseNode)chilNodes[i]).getInfo().refreshChildren();
+                else
+                    // remove column node from list of columns
+                    chil.remove(new Node[] {chilNodes[i]});
+
+        // create list of columns
         initChildren(charr);
         Enumeration en = charr.elements();
         while(en.hasMoreElements()) {
