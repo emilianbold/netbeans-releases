@@ -15,6 +15,8 @@
  
 package org.apache.tools.ant.module.xml;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.util.*;
@@ -40,13 +42,13 @@ import org.openide.filesystems.*;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.openide.filesystems.Repository;
 
-public class AntProjectSupport implements AntProjectCookie.ParseStatus, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable, ChangeListener {
+public class AntProjectSupport implements AntProjectCookie.ParseStatus, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable, PropertyChangeListener {
     
     /**
      * XML parser to use.
@@ -70,7 +72,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     private transient boolean upToDate = false; // see handleEvent (), run ()
 
     private transient Set listeners; // see init(); Set<ChangeListener>
-    private transient EditorCookie editor = null;
+    private transient EditorCookie.Observable editor = null;
     
     private transient DocumentBuilder documentBuilder;
     
@@ -125,19 +127,19 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         out.defaultWriteObject();
     }
 
-    private synchronized EditorCookie getEditor () {
-        FileObject fo = getFileObject ();
+    private synchronized EditorCookie.Observable getEditor() {
+        FileObject fo = getFileObject();
         if (fo == null) return null;
-                if (editor == null) {
-                    try {
-                        editor = (EditorCookie) DataObject.find (fo).getCookie (EditorCookie.class);
-                        if (editor != null && (editor instanceof CloneableEditorSupport)) {
-                            ((CloneableEditorSupport) editor).addChangeListener (WeakListener.change (this, editor));
-                        }
-                    } catch (DataObjectNotFoundException donfe) {
-                        AntModule.err.notify (ErrorManager.INFORMATIONAL, donfe);
-                    }
+        if (editor == null) {
+            try {
+                editor = (EditorCookie.Observable)DataObject.find(fo).getCookie(EditorCookie.Observable.class);
+                if (editor != null) {
+                    editor.addPropertyChangeListener(WeakListeners.propertyChange(this, editor));
                 }
+            } catch (DataObjectNotFoundException donfe) {
+                AntModule.err.notify(ErrorManager.INFORMATIONAL, donfe);
+            }
+        }
         return editor;
     }
     
@@ -196,9 +198,11 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     private void updateFileObject() { // #25701
         fsName = null;
         fileName = null;
-        if (fo == null)
+        if (fo == null) {
             return;
-        fileName = fo.getPackageNameExt('/','.');
+        }
+        // XXX more robust would be to use fo.toURI()...
+        fileName = fo.getPath();
         try {
             fsName = fo.getFileSystem().getSystemName();
         } catch (FileStateInvalidException ex) {
@@ -456,7 +460,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
             it = new HashSet (listeners).iterator ();
         }
         ChangeEvent ev = new ChangeEvent (this);
-        RequestProcessor.postRequest (new ChangeFirer (it, ev));
+        RequestProcessor.getDefault().post(new ChangeFirer(it, ev));
     }
     private static final class ChangeFirer implements Runnable {
         private final Iterator it; // Iterator<ChangeListener>
@@ -495,8 +499,10 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     }
     
     // Called when editor support changes state: #11616
-    public void stateChanged (ChangeEvent changeEvent) {
-        invalidate ();
+    public void propertyChange(PropertyChangeEvent e) {
+        if (EditorCookie.Observable.PROP_DOCUMENT.equals(e.getPropertyName())) {
+            invalidate();
+        }
     }
     
     public void fileDeleted (org.openide.filesystems.FileEvent p1) {
@@ -537,7 +543,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         // and a DOMSubtreeModified to be fired, etc. try to filter out unneeded
         // regenerations. we cannot do more. (see Issue#: 12880)
         upToDate = false;
-        RequestProcessor.postRequest (this);
+        RequestProcessor.getDefault().post(this);
     }
     
     public void run () {
@@ -667,6 +673,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         }
     }
     
+    // XXX better to use RP for this purpose
     private static final class FiringProcessor extends Thread {
         
         public FiringProcessor () {
