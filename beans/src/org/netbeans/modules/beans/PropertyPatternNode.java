@@ -141,6 +141,11 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
     /** Sets the name of pattern
      */
     protected void setPatternName( String name ) throws SourceException {
+        
+        if ( pattern.getName().equals( name ) ) {
+            return;
+        }
+        
         if (testNameValidity(name)) {
             ((PropertyPattern)pattern).setName( name );
             superSetName( name );
@@ -149,7 +154,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
     /** Sets the name of the node */
     public void setName( String name ) {
-
+        
         try {
             pattern.patternAnalyser.setIgnore( true );
             setPatternName( name );

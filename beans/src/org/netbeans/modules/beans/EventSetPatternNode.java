@@ -51,6 +51,11 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
 
     /** Sets the name of Pattern, to new value */
     protected void setPatternName( String name ) throws SourceException {
+        
+        if ( pattern.getName().equals( name ) ) {
+            return;
+        }
+        
         if ( testNameValidity(name) ) {
             ((EventSetPattern)pattern).setName(name);
             superSetName( name );
