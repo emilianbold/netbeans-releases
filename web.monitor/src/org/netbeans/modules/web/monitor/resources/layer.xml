@@ -16,21 +16,17 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
 
-	
    <folder name="Menu">
     
     <folder name="Debug">
-      <file name="org-netbeans-modules-web-monitor.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.monitor.client.MonitorAction"/>
-      </file>
+       <attr name="org-openide-actions-AddWatchAction.instance/org-netbeans-modules-web-monitor-client-MonitorAction.instance" boolvalue="true" />
+       <file name="org-netbeans-modules-web-monitor-client-MonitorAction.instance"/>
     </folder>
 
     <folder name="View">
-        <attr name="org-netbeans-modules-form-actions-FormEditorAction.instance/org-netbeans-modules-web-monitor.instance" boolvalue="true" />
-        <file name="org-netbeans-modules-web-monitor.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.monitor.client.MonitorAction"/>
-         <attr name="org-netbeans-modules-web-monitor.instance/Separator2.instance" boolvalue="true" />
-      </file>
+        <attr name="org-netbeans-modules-form-actions-FormEditorAction.instance/org-netbeans-modules-web-monitor-client-MonitorAction.instance" boolvalue="true" />
+       <file name="org-netbeans-modules-web-monitor-client-MonitorAction.instance"/>
+       <attr name="org-netbeans-modules-web-monitor-client-MonitorAction.instance/Separator2.instance" boolvalue="true" />
    </folder>
 
    <folder name="Help">
@@ -60,9 +56,8 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Toolbars">
 
     <folder name="DebugFull">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.monitor.client.MonitorAction"/>
-	<attr name="org-openide-actions-AddWatchAction.instance/org.netbeans.modules.web.monitor.client.MonitorAction" boolvalue="true" />
-
+	<attr name="org-openide-actions-AddWatchAction.instance/org-netbeans-modules-web-monitor-client-MonitorAction.instance" boolvalue="true" />
+       <file name="org-netbeans-modules-web-monitor-client-MonitorAction.instance"/>
     </folder>
   </folder>
 
