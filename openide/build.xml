@@ -202,7 +202,7 @@ Microsystems, Inc. All Rights Reserved.
     </enhanceclass>
   </target>
 
-  <target name="13javac-workaround">
+  <target name="13javac-workaround" unless="usingAjc">
     <!-- JDK 1.3 Javac at least on Linux has a serious bug as regards -->
     <!-- situations where one package contains a public class and a public -->
     <!-- inner class of the same name: though the inner class should be qualified -->

@@ -41,6 +41,8 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
         <pathelement location="../editor/netbeans/modules/ext/nb-editor.jar"/>
         <pathelement location="../editor/netbeans/modules/editor.jar"/>
+        <!-- src must be on classpath, otherwise AspectJ compiler (ajc) wouldn't compile -->
+        <pathelement location="src" />
       </classpath>
     </javac>
   </target>
