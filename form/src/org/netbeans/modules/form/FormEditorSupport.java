@@ -711,9 +711,10 @@ public class FormEditorSupport extends JavaEditor
     protected org.openide.util.Task reloadDocumentTask() {
         MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
         MultiViewPerspective[] mvps = handler.getPerspectives();
+        int openedElement = 0;
         for (int i=0; i < mvps.length; i++) {
             if (mvps[i] == handler.getSelectedPerspective()) {
-                elementToOpen = i; // remember selected element
+                openedElement = i; // remember selected element
                 break;
             }
         }
@@ -724,6 +725,10 @@ public class FormEditorSupport extends JavaEditor
             TopComponent tc = (TopComponent) en.nextElement();
             tc.close();
         }
+        
+        // Must be done after tc.close(), it sets elementToOpen to 0
+        elementToOpen = openedElement;
+        
         // TODO would be better not to close the form, but just reload
         // FormModel and update form designer(s) with the new model
 
