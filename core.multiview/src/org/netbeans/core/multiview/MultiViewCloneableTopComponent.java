@@ -202,6 +202,21 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
             CloneableEditorSupport.Pane pane = (CloneableEditorSupport.Pane)el.getVisualRepresentation();
             return pane.getEditorPane();
         }
+        // now try a best guess.. iterate the already created elements and check if any of
+        // them is a Pane
+        Collection col = peer.model.getCreatedElements();
+        Iterator it = col.iterator();
+        while (it.hasNext()) {
+            el = (MultiViewElement)it.next();
+            if (el.getVisualRepresentation() instanceof CloneableEditorSupport.Pane) {
+                // fingers crossed and hope for the best... could result in bad results once
+                // we have multiple editors in the multiview component.
+                CloneableEditorSupport.Pane pane = (CloneableEditorSupport.Pane)el.getVisualRepresentation();
+                return pane.getEditorPane();
+            }
+        }
+        // hopeless case, don't try to create new elements. it's users responsibility to
+        // switch to the editor element before getEditorPane() 
         return null;
     }
     
