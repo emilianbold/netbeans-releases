@@ -17,4 +17,16 @@ Microsystems, Inc. All Rights Reserved.
   -->
 
 <list module="tax">
+    <item priority="2">
+        <summary>Exception, when add attribute with same name</summary>
+        <description>When you try to add attribute into element and this element contains attribute with same name, then exception should be thrown.</description>
+    </item>
+    <item priority="2">
+        <summary>Exception, when try replace doctype</summary>
+        <description>When you try to set doctype into document, which already contains doctype, then exception should be thrown.</description>
+    </item>
+    <item priority="2">
+        <summary>Exception, when try replace root element</summary>
+        <description>When you try to set element into document, which already contains element, then exception should be thrown.</description>
+    </item>
 </list>

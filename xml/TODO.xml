@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
     </item>
     <item>
         <summary>XML module API</summary>
-        <description>When we will have xml-api module (see core's <a href="#Core">TODO</a>), than we can guarantee TAX, XML-API with Looks as API around xml.</description>
+        <description>When we will have xml-api module (see core's <a href="#core">TODO</a>), than we can guarantee TAX, XML-API with Looks as API around xml.</description>
     </item>
     <item>
         <summary>Javahelp</summary>
