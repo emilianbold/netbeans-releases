@@ -628,69 +628,60 @@ class HandleLayer extends JPanel
                                                              p, null);
     }
 
-    private void displayHint(RADComponent metacomp, Point p, PaletteItem item) {
-        if (!(metacomp instanceof RADVisualComponent)
+    private void showAddHint(RADComponent metacomp, Point p, PaletteItem item) {
+        if ((!(metacomp instanceof RADVisualComponent) && metacomp != null)
             || item.getItemClass() == null)
         {
             TopManager.getDefault().setStatusText(""); // NOI18N
             return;
         }
 
-        RADVisualContainer metacont;
-
-        if (metacomp instanceof RADVisualContainer)
-            metacont = (RADVisualContainer) metacomp;
-        else {
-            metacont = (RADVisualContainer) metacomp.getParentComponent();
-            if (metacont == null)
-                return;
+        if (metacomp == null) {
+            setStatusText("FMT_MSG_AddToOthers", // NOI18N
+                          new Object[] { item.getDisplayName() });
+            return;
         }
+
+        RADVisualContainer metacont = metacomp instanceof RADVisualContainer ?
+            (RADVisualContainer) metacomp :
+            (RADVisualContainer) metacomp.getParentComponent();
 
         if (item.isLayout()) {
-/*            LayoutSupport layoutSupp = metacont.getLayoutSupport();
-            if (layoutSupp != null
-                && !(layoutSupp instanceof LayoutSupport))
-            {
-                setStatusText("FMT_MSG_CannotSetLayout",
-                              new Object[] { metacont.getName() });
-            } else { */
-                setStatusText("FMT_MSG_SetLayout",
-                              new Object[] { metacont.getName() });
-//            }
+            if (metacont != null) {
+                if (!metacont.getLayoutSupport().isDedicated())
+                    setStatusText("FMT_MSG_SetLayout", // NOI18N
+                                  new Object[] { item.getDisplayName(),
+                                                 metacont.getName() });
+                else
+                    setStatusText("FMT_MSG_CannotSetLayout", // NOI18N
+                                  new Object[] { metacont.getName() });
+            }
+            else
+                setStatusText("FMT_MSG_CannotSetLayout", // NOI18N
+                              new Object[] { metacomp.getName() });
         }
         else if (item.isBorder()) {
-            if (JComponent.class.isAssignableFrom(metacomp.getBeanClass())) {
-                setStatusText("FMT_MSG_SetBorder",
+            if (JComponent.class.isAssignableFrom(metacomp.getBeanClass()))
+                setStatusText("FMT_MSG_SetBorder", // NOI18N
+                              new Object[] { item.getDisplayName(),
+                                             metacomp.getName() });
+            else
+                setStatusText("FMT_MSG_CannotSetBorder", // NOI18N
                               new Object[] { metacomp.getName() });
-            }
-            else {
-                setStatusText("FMT_MSG_CannotSetBorder",
-                              new Object[] { metacomp.getName() });
-            }
-        } else if (!item.isVisual() || item.isMenu()) {
-            setStatusText("FMT_MSG_AddNonVisualComponent",
-                          new Object[] { item.getItemClass().getName() });
-        } else {
-            LayoutSupportManager layoutSupp = metacont.getLayoutSupport();
-            Container cont = (Container) formDesigner.getComponent(metacont);
-            Container contDel = metacont.getContainerDelegate(cont);
-            Point point = SwingUtilities.convertPoint(HandleLayer.this,
-                                                      p, contDel);
-            LayoutConstraints lc =
-                metacont.getLayoutSupport().getNewConstraints(cont, contDel,
-                                                              null, -1,
-                                                              point, null);
-            if (lc != null) {
-                setStatusText("FMT_MSG_AddComponent",
-                              new Object[] {
-                                  "", //cd.getJavaInitializationString(),
-                                  metacont.getName(),
-                                  item.getItemClass().getName()
-                              });
-            }
-            else {
-                TopManager.getDefault().setStatusText("");
-            }
+        }
+        else if (metacont != null
+                 && ((item.isMenu()
+                        && metacont.getContainerMenu() == null
+                        && metacont.canHaveMenu(item.getItemClass()))
+                     || (item.isVisual() && !item.isMenu())))
+        {
+            setStatusText("FMT_MSG_AddComponent", // NOI18N
+                          new Object[] { item.getDisplayName(),
+                                         metacont.getName() });
+        }
+        else {
+            setStatusText("FMT_MSG_AddToOthers", // NOI18N
+                          new Object[] { item.getDisplayName() });
         }
     }
 
@@ -901,8 +892,11 @@ class HandleLayer extends JPanel
         public void mouseMoved(MouseEvent e) {
             CPManager palette = CPManager.getDefault();
             if (palette.getMode() == PaletteAction.MODE_ADD) {
-                RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(), COMP_DEEPEST);
-                displayHint(hitMetaComp, e.getPoint(), palette.getSelectedItem());
+                RADComponent hitMetaComp = getMetaComponentAt(
+                    e.getPoint(),
+                    e.isControlDown() || e.isAltDown() ?
+                        COMP_SELECTED : COMP_DEEPEST);
+                showAddHint(hitMetaComp, e.getPoint(), palette.getSelectedItem());
             }
             else if (palette.getMode() == PaletteAction.MODE_SELECTION) {
                 checkResizing(e.getPoint());
