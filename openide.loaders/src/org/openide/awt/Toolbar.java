@@ -315,10 +315,14 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
         
         public void drop(DropTargetDropEvent dtde) {
+            if( !validateDropPosition() ) {
+                resetDropGesture();
+                return;
+            }
             Transferable t = dtde.getTransferable();
             try {
                 Object o = t.getTransferData( tiDataFlavor ); //XXX
-                if (o instanceof DataObject) {
+                if( o instanceof DataObject ) {
                     doDrop( (DataObject) o, dropTargetButtonIndex-1, insertBefore );
                     
                     resetDropGesture();
