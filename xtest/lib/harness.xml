@@ -22,7 +22,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.home" location=".."/>
     <property name="xtest.basedir" location="../.."/>
     <property name="xtest.uploaddir" location="results"/>
-    <property name="xtest.distdir" location="dist"/>
     
     <property name="xtest.config" value="unspecified-config"/>
     <property name="xtest.instance.name" value="Unspecified instance name"/>
@@ -139,7 +138,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="runtestsdist">
         <ant antfile="build.xml" target="runtests">
-            <property name="xtest.source.location" value="ide"/>            
             <property name="xtest.distexec" value="true"/>
             <property name="xtest.nobuildxtest" value="true"/>
         </ant>
@@ -173,7 +171,7 @@ Microsystems, Inc. All Rights Reserved.
             <param name="target.name" value="realclean-helper"/>
         </antcall>
         <antcall target="localresults-clean"/>
-        <antcall target="cleantestdist"/>
+        <antcall target="cleantestsdist"/>
     </target>
     
     <target name="real-clean" depends="realclean"/>
@@ -190,7 +188,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ======= -->
     
     <!-- helper can be executed only by target executor -->
-    <target name="runtest-helper" depends="setup-xtest_build">
+    <target name="runtest-helper">
         <echo message="Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
         <ant dir="${xtest.basedir}/${xtest.module}/test" target="runtests">
             <property name="xtest.testtype" value="${xtest.testtype}"/>
@@ -205,10 +203,6 @@ Microsystems, Inc. All Rights Reserved.
         -->
     </target>
     
-    <target name="setup-xtest_build" if="xtest.distexec">
-        <property name="xtest.build" location="${xtest.distdir}/${xtest.module}/test"/>
-    </target>
-
     <!-- helper can be executed only by target executor -->
     <target name="buildtest-helper">
         <echo message="Building tests for ${xtest.module}"/>
@@ -236,20 +230,15 @@ Microsystems, Inc. All Rights Reserved.
     <!-- helper can be executed only by target executor -->
     <target name="buildtestsdist-helper">
         <echo message="Building distribution for ${xtest.module}"/>
-        <ant dir="${xtest.basedir}/${xtest.module}/test" target="buildtests">
-            <property name="xtest.build" 
-                      value="${xtest.distdir}/${xtest.module}/test"/>
-        </ant>
-        <copy todir="${xtest.distdir}/${xtest.module}/test">
-            <fileset dir="${xtest.basedir}/${xtest.module}/test">
-                <include name="build*.xml"/>
-                <include name="cfg-*.xml"/>
-            </fileset>
-        </copy>
-        <!-- NetBeans IDE specific - include files from nbproject dir to distribution -->
-        <copy todir="${xtest.distdir}/${xtest.module}/nbproject" failonerror="false">
-            <fileset dir="${xtest.basedir}/${xtest.module}/nbproject" includes="project.*"/>
-        </copy>
+        <ant dir="${xtest.basedir}/${xtest.module}/test" target="buildtests"/>
+        <zip destfile="${xtest.testsdist.zip}" excludes="**/CVS/**" update="true">
+            <!-- add built tests in tests.xar, build scripts and test configs -->
+            <zipfileset dir="${xtest.basedir}/${xtest.module}/test" prefix="${xtest.module}/test"
+                        includes="lib/**,build*.xml,cfg-*.xml"/>
+            <!-- NetBeans IDE specific - include files from nbproject dir to distribution -->
+            <zipfileset dir="${xtest.basedir}/${xtest.module}" prefix="${xtest.module}"
+                        includes="nbproject/project.*"/>
+        </zip>
     </target>
     
     <target name="executor">
@@ -261,13 +250,8 @@ Microsystems, Inc. All Rights Reserved.
                       testRun="${testrun}"/>        
     </target>
 
-    <target name="buildxtest" depends="setnobuildxtest"
-            description="Builds XTest framework." unless="xtest.nobuildxtest">
+    <target name="buildxtest" description="Builds XTest framework." unless="xtest.nobuildxtest">
         <ant dir="${xtest.home}" antfile="build.xml"/>
-    </target>
-    
-    <target name="setnobuildxtest" if="xtest.distexec">
-	<property name="xtest.nobuildxtest" value="true"/>
     </target>
     
     <target name="cleanxtest"
@@ -275,8 +259,8 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="${xtest.home}" antfile="build.xml" target="clean"/>
     </target>
     
-    <target name="cleantestdist">
-        <delete dir="${xtest.distdir}"/>
+    <target name="cleantestsdist" depends="cleantests">
+        <delete file="${xtest.testsdist.zip}"/>
     </target>
     
     <target name="localresults-clean">

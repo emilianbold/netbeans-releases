@@ -23,10 +23,10 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.instance.name" value="NetBeans tests"/>
     
     <property name="xtest.harness.antfile" location="${xtest.home}/lib/harness.xml"/>
-
+    <!-- location of zip file with tests distribution -->
+    <property name="xtest.testsdist.zip" location="./tests-distribution.zip"/>
     
     <!-- ============= -->
-    
 
     <target name="all">
         <echo message="You should provide target to execute, see 'ant -projecthelp'"/>
@@ -64,14 +64,41 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="real-clean" depends="realclean"/>
     
-    <target name="buildtestsdist">
-        <ant dir="." antfile="${xtest.harness.antfile}"
-             target="buildtestsdist"/>
+    <target name="buildtestsdist"
+            description="Zip tests and libraries necessary to run test">
+        <!-- prepare build.xml to zip -->
+        <echo file="build-testsdist.xml">&lt;?xml version="1.0" encoding="UTF-8"?>
+            &lt;project name="NetBeans Tests Distribution" default="runtestsdist" basedir=".">
+                &lt;target name="runtestsdist">
+                    &lt;ant dir="xtest/instance" target="runtestsdist">
+                        &lt;property name="xtest.config" value="${xtest.config}"/>
+                    &lt;/ant>
+                &lt;/target>
+            &lt;/project>
+        </echo>
+        <property name="nb_all" location="../.."/>
+        <zip destfile="${xtest.testsdist.zip}" excludes="**/CVS/**">
+            <!-- add build file -->
+            <zipfileset dir="." includes="build-testsdist.xml" fullpath="build.xml"/>
+            <!-- add xtest -->
+            <zipfileset dir="${nb_all}/xtest" prefix="xtest" 
+                        includes="lib/**,plugins/**,instance/*.xml,standard-test-*cludes.txt"/>
+            <zipfileset dir="${nb_all}/xtest" includes="dist_build.xml" fullpath="xtest/build.xml"/>
+            <!-- add nbbuild -->
+            <zipfileset dir="${nb_all}/nbbuild" prefix="nbbuild" 
+                    includes="templates/**,*.xml,*.jar,*.txt,*.properties"/>
+            <!-- add jemmy/jellytools libraries -->
+            <zipfileset dir="${nb_all}/jemmy/builds" prefix="jemmy/builds"/>
+            <zipfileset dir="${nb_all}/jellytools/builds" prefix="jellytools/builds"/>
+         </zip>
+         <delete file="build-testsdist.xml"/>
+         <!-- build tests and add them to zip file -->
+         <ant dir="." antfile="${xtest.harness.antfile}" target="buildtestsdist"/>
     </target>
-    
-    <target name="cleantestdist">
+
+    <target name="cleantestsdist">
         <ant dir="." antfile="${xtest.harness.antfile}"
-             target="cleantestdist"/>
+             target="cleantestsdist"/>
     </target>
     
     <target name="localresults-clean">
