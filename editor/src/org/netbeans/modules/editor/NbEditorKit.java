@@ -46,6 +46,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.Annotations;
+import org.netbeans.editor.BaseTextUI;
 
 /**
 * Java editor kit with appropriate document
@@ -236,6 +237,16 @@ public class NbEditorKit extends ExtKit {
 
             BaseDocument doc = (BaseDocument)target.getDocument();
             Caret caret = target.getCaret();
+            
+            // check whether the glyph gutter is visible or not
+            if (!(target.getUI() instanceof BaseTextUI)) {
+                target.getToolkit().beep();
+                return;
+            }
+            if (!((BaseTextUI)target.getUI()).getEditorUI().isGlyphGutterVisible()) {
+                target.getToolkit().beep();
+                return;
+            }
 
             int line = 0;
             try {
@@ -281,6 +292,16 @@ public class NbEditorKit extends ExtKit {
             BaseDocument doc = (BaseDocument)target.getDocument();
             Caret caret = target.getCaret();
 
+            // check whether the glyph gutter is visible or not
+            if (!(target.getUI() instanceof BaseTextUI)) {
+                target.getToolkit().beep();
+                return;
+            }
+            if (!((BaseTextUI)target.getUI()).getEditorUI().isGlyphGutterVisible()) {
+                target.getToolkit().beep();
+                return;
+            }
+            
             int line = 0;
             
             try {
