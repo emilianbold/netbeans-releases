@@ -52,7 +52,13 @@ public class TopSecurityManager extends SecurityManager {
      */
     public static void register(SecurityManager sm) throws SecurityException {
         if (check) {
-            AccessController.checkPermission(new RuntimePermission("TopSecurityManager.register")); // NOI18N
+            try {
+                AccessController.checkPermission(new RuntimePermission("TopSecurityManager.register")); // NOI18N
+            } catch (SecurityException se) {
+                // Something is probably wrong; debug it better.
+                System.err.println("Code source of attempted secman: " + sm.getClass().getProtectionDomain().getCodeSource().getLocation().toExternalForm()); // NOI18N
+                throw se;
+            }
         }
         synchronized (delegates) {
             if (delegates.contains(sm)) throw new SecurityException();
