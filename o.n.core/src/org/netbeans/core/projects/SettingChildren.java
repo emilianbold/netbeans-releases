@@ -34,6 +34,10 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyChangeEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import org.openide.actions.CustomizeBeanAction;
+import org.openide.util.actions.SystemAction;
 
 /** Filters nodes under the session node (displayed in Options dialog), adds special
  * properties to Nodes of particular settings to show/edit positions wher the
@@ -335,6 +339,21 @@ public final class SettingChildren extends FilterNode.Children {
 
         protected NodeListener createNodeListener () {
             return new NA (this);
+        }
+        
+        /** Hacked to remove customize bean action from original nodes.
+         * According to UI group customize bean shouldn't be here.
+         */
+        public SystemAction[] getActions () {
+            SystemAction[] actions = super.getActions();
+            List actList = new ArrayList(actions.length);
+            for (int i = 0; i < actions.length; i++) {
+                if (actions[i] instanceof CustomizeBeanAction) {
+                    continue;
+                }
+                actList.add(actions[i]);
+            }
+            return (SystemAction[])actList.toArray(new SystemAction[actList.size()]);
         }
 
         private static class NA extends NodeAdapter {
