@@ -67,6 +67,7 @@ import org.netbeans.modules.editor.options.OptionUtilities;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.MacrosEditorPanel;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -211,6 +212,19 @@ public class NbEditorKit extends ExtKit {
             }
             return popupPlus;
         }
+
+        private Lookup getContextLookup(java.awt.Component component){
+            Lookup lookup = null;
+            for (java.awt.Component c = component; c != null; c = c.getParent()) {
+                if (c instanceof Lookup.Provider) {
+                    lookup = ((Lookup.Provider)c).getLookup ();
+                    if (lookup != null) {
+                        break;
+                    }
+                }
+            }
+            return lookup;
+        }
         
         protected void addAction(JTextComponent target, JPopupMenu popupMenu,
         String actionName) {
@@ -264,14 +278,21 @@ public class NbEditorKit extends ExtKit {
                     } catch (Throwable t) {
                     }
 
+                    
                     if (saClass != null && SystemAction.class.isAssignableFrom(saClass)) {
-                        SystemAction sa = SystemAction.get(saClass);
-                        if (sa instanceof Presenter.Popup) {
-                            JMenuItem item = ((Presenter.Popup)sa).getPopupPresenter();
+                        Action a = SystemAction.get(saClass);
+                        if (a instanceof ContextAwareAction){
+                            a = ((ContextAwareAction)a).createContextAwareInstance(
+                                getContextLookup(target)
+                            );
+                        }
+                        
+                        if (a instanceof Presenter.Popup) {
+                            JMenuItem item = ((Presenter.Popup)a).getPopupPresenter();
                             if (item != null && !(item instanceof JMenu)) {
                                 Keymap km = (Keymap)Lookup.getDefault().lookup(Keymap.class);
                                 if (km!=null){
-                                    KeyStroke[] keys = km.getKeyStrokesForAction(sa);
+                                    KeyStroke[] keys = km.getKeyStrokesForAction(a);
                                     if (keys != null && keys.length > 0) {
                                         item.setAccelerator(keys[0]);
                                     }
