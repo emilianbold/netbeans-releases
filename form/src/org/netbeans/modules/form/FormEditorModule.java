@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.loaders.form;
 import com.netbeans.ide.TopManager;
 import com.netbeans.ide.NotifyDescriptor;
 import com.netbeans.ide.filesystems.FileObject;
+import com.netbeans.ide.filesystems.FileLock;
 import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.loaders.DataFolder;
 import com.netbeans.ide.util.NbBundle;
@@ -90,7 +91,7 @@ public class FormEditorModule implements ModuleInstall {
     try {
       if ((awtCategory = paletteFolder.getFileObject (AWT_CATEGORY_NAME)) == null) 
         awtCategory = paletteFolder.createFolder (AWT_CATEGORY_NAME);
-      createInstances (awtCategory, defaultAWTComponents, componentErrors);
+      createInstances (awtCategory, defaultAWTComponents, null, componentErrors);
     } catch (java.io.IOException e) {
       categoryErrors.add (AWT_CATEGORY_NAME);
     }
@@ -101,7 +102,7 @@ public class FormEditorModule implements ModuleInstall {
     try {
       if ((swingCategory = paletteFolder.getFileObject (SWING_CATEGORY_NAME)) == null) 
         swingCategory = paletteFolder.createFolder (SWING_CATEGORY_NAME);
-      createInstances (swingCategory, defaultSwingComponents, componentErrors);
+      createInstances (swingCategory, defaultSwingComponents, null, componentErrors);
     } catch (java.io.IOException e) {
       categoryErrors.add (SWING_CATEGORY_NAME);
     }
@@ -112,7 +113,7 @@ public class FormEditorModule implements ModuleInstall {
     try {
       if ((swing2Category = paletteFolder.getFileObject (SWING2_CATEGORY_NAME)) == null) 
         swing2Category = paletteFolder.createFolder (SWING2_CATEGORY_NAME);
-      createInstances (swing2Category, defaultSwing2Components, componentErrors);
+      createInstances (swing2Category, defaultSwing2Components, null, componentErrors);
     } catch (java.io.IOException e) {
       categoryErrors.add (SWING2_CATEGORY_NAME);
     }
@@ -123,7 +124,7 @@ public class FormEditorModule implements ModuleInstall {
     try {
       if ((beansCategory = paletteFolder.getFileObject (BEANS_CATEGORY_NAME)) == null) 
         beansCategory = paletteFolder.createFolder (BEANS_CATEGORY_NAME);
-      createInstances (beansCategory, defaultBeansComponents, componentErrors);
+      createInstances (beansCategory, defaultBeansComponents, null, componentErrors);
     } catch (java.io.IOException e) {
       categoryErrors.add (BEANS_CATEGORY_NAME);
     }
@@ -134,7 +135,7 @@ public class FormEditorModule implements ModuleInstall {
     try {
       if ((layoutsCategory = paletteFolder.getFileObject (LAYOUTS_CATEGORY_NAME)) == null) 
         layoutsCategory = paletteFolder.createFolder (LAYOUTS_CATEGORY_NAME);
-      createInstances (layoutsCategory, defaultLayoutsComponents, componentErrors);
+      createInstances (layoutsCategory, defaultLayoutsComponents, defaultLayoutsIcons, componentErrors);
     } catch (java.io.IOException e) {
       categoryErrors.add (LAYOUTS_CATEGORY_NAME);
     }
@@ -145,7 +146,7 @@ public class FormEditorModule implements ModuleInstall {
     try {
       if ((bordersCategory = paletteFolder.getFileObject (BORDERS_CATEGORY_NAME)) == null) 
         bordersCategory = paletteFolder.createFolder (BORDERS_CATEGORY_NAME);
-      createInstances (bordersCategory, defaultBorders, componentErrors);
+      createInstances (bordersCategory, defaultBorders, defaultBordersIcons, componentErrors);
     } catch (java.io.IOException e) {
       categoryErrors.add (BORDERS_CATEGORY_NAME);
     }
@@ -161,14 +162,26 @@ public class FormEditorModule implements ModuleInstall {
     }
   }
 
-  private void createInstances (FileObject folder, String[] classNames, java.util.Collection componentErrors) {
+  private void createInstances (FileObject folder, String[] classNames, String[] iconNames, java.util.Collection componentErrors) {
     for (int i = 0; i < classNames.length; i++) {
       String fileName = formatName (classNames[i]);
+      FileLock lock = null;
       try {
-        if (folder.getFileObject (fileName+".instance") == null)
-          folder.createData (fileName, "instance");
+        if (folder.getFileObject (fileName+".instance") == null) {
+          FileObject fo = folder.createData (fileName, "instance");
+          if ((iconNames != null) && (iconNames [i] != null)) {
+            lock = fo.lock ();
+            java.io.OutputStream os = fo.getOutputStream (lock);
+            String ic = "icon="+iconNames[i];
+            os.write (ic.getBytes ());
+          }
+        }
       } catch (java.io.IOException e) {
         componentErrors.add (fileName);
+      } finally {
+        if (lock != null) {
+          lock.releaseLock ();
+        }
       }
     }
   }
@@ -255,6 +268,17 @@ public class FormEditorModule implements ModuleInstall {
     "com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBoxLayout",
   };
 
+  /** The default Layout Components */
+  private final static String[] defaultLayoutsIcons = new String[] {
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/flowLayout.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/borderLayout.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/gridLayout.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/cardLayout.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/absoluteLayout.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/gridBagLayout.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/boxLayout.gif",
+  };
+  
   /** The default Swing Borders */
   private final static String[] defaultBorders = new String[] {
     "com.netbeans.developerx.loaders.form.formeditor.border.EmptyBorderInfo",
@@ -268,10 +292,24 @@ public class FormEditorModule implements ModuleInstall {
     "com.netbeans.developerx.loaders.form.formeditor.border.CompoundBorderInfo",
   };
   
+  /** The default Swing Borders */
+  private final static String[] defaultBordersIcons = new String[] {
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/emptyBorder.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/lineBorder.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/matteIconBorder.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/matteColorBorder.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/titledBorder.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/etchedBorder.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/bevelBorder.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/softBevelBorder.gif",
+    "/com/netbeans/developer/modules/loaders/form/resources/palette/compoundBorder.gif",
+  };
 }
 
 /*
  * Log
+ *  11   Gandalf   1.10        4/23/99  Ian Formanek    Icons for layouts and 
+ *       borders
  *  10   Gandalf   1.9         4/8/99   Ian Formanek    Removed BeanInfo init
  *  9    Gandalf   1.8         4/5/99   Ian Formanek    
  *  8    Gandalf   1.7         3/31/99  Ian Formanek    
