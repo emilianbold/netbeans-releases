@@ -148,7 +148,15 @@ public class ListViewTest extends NbTestCase {
         //Thread.sleep(2000);
         
         for (int i = NO_OF_NODES-1; i >= 0; i--) {     
-            //Thread.sleep(500);
+            // Waiting for until the view is updated.
+            // This should not be necessary
+            try {
+                SwingUtilities.invokeAndWait( new EmptyRunnable() );
+            } catch (InterruptedException ie) {
+                fail ("Caught InterruptedException:" + ie.getMessage ());
+            } catch (InvocationTargetException ite) {
+                fail ("Caught InvocationTargetException: " + ite.getMessage ());
+            }
             try {
                 p.getExplorerManager().setSelectedNodes(new Node[] {children[i]} );
             } catch (PropertyVetoException  pve) {
@@ -185,6 +193,15 @@ public class ListViewTest extends NbTestCase {
         //Thread.sleep(2000);
         
         try {
+            // Waiting for until the view is updated.
+            // This should not be necessary
+            try {
+                SwingUtilities.invokeAndWait( new EmptyRunnable() );
+            } catch (InterruptedException ie) {
+                fail ("Caught InterruptedException:" + ie.getMessage ());
+            } catch (InvocationTargetException ite) {
+                fail ("Caught InvocationTargetException: " + ite.getMessage ());
+            }
             p.getExplorerManager().setSelectedNodes(new Node[] {children[0]} );
         } catch (PropertyVetoException  pve) {
             fail ("Caught the PropertyVetoException when set selected node " + children[0].getName ()+ ".");
@@ -227,8 +244,15 @@ public class ListViewTest extends NbTestCase {
             c.remove(new Node[] { c1 });
             c.add(new Node[] { c2 });
             
-            //Thread.sleep(350);
-	    //javax.swing.SwingUtilities.invokeAndWait( new EmptyRunnable() );
+            // Waiting for until the view is updated.
+            // This should not be necessary
+            try {
+                SwingUtilities.invokeAndWait( new EmptyRunnable() );
+            } catch (InterruptedException ie) {
+                fail ("Caught InterruptedException:" + ie.getMessage ());
+            } catch (InvocationTargetException ite) {
+                fail ("Caught InvocationTargetException: " + ite.getMessage ());
+            }
             
             try {
                 p.getExplorerManager().setSelectedNodes(new Node[] {c2} );
