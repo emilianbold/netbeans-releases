@@ -338,6 +338,90 @@ and look in your <samp>system/ide.log</samp> file for details.
 further information on association between help IDs and GUI
 components, and so on.</p>
 
+<h2><a name="external-links">External links in JavaHelp</a></h2>
+<div class="nonnormative">
+Most of external links are not displayed correctly in internal java help viewer.
+This lightweight component was added to invoke default IDE HTML browser
+(it should be external browser). This component can be included in HTML content
+within JHContentViewer. Component is displayed as a mouse enabled Label.
+Only text is supported.
+<p>
+To use this class within HTML content use the &lt;object&gt; tag. Below is an
+example usage:
+<p><pre>
+&lt;object CLASSID="java:org.netbeans.module.javahelp.BrowserDisplayer"&gt;
+    &lt;param name="content" value="http://www.netbeans.org"&gt;
+    &lt;param name="text" value="Click here"&gt;
+    &lt;param name="textFontFamily" value="SansSerif"&gt;
+    &lt;param name="textFontSize" value="x-large"&gt;
+    &lt;param name="textFontWeight" value="plain"&gt;
+    &lt;param name="textFontStyle" value="italic"&gt;
+    &lt;param name="textColor" value="red"&gt;
+&lt;/object&gt;
+</pre><p>
+or to get hyperlink style use:
+<p><pre>
+&lt;object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer"&gt;
+    &lt;param name="content" value="http://java.sun.com/downloads/ea/index.html"&gt;
+    &lt;param name="text" value="&lt;html&gt;&lt;u&gt;Early Access&lt;/u&gt;&lt;/html&gt;"&gt;
+    &lt;param name="textFontSize" value="medium"&gt;
+    &lt;param name="textColor" value="blue"&gt;
+&lt;/object&gt;
+</pre><p>
+HTML is used to get underlined text and value of text parameter must be properly escaped.
+<br><br>
+Valid parameters are:
+<ul>
+<li>content - a valid external url like http://java.sun.com
+<li>text - the text of the activator.
+<li>textFontFamily - the font family of the activator text.
+<li>textFontSize - the size of the activator text font. Size is specified
+in a css termonolgy. Acceptable values are as follows:
+      <ul>
+      <li>xx-small
+      <li>x-small
+      <li>small
+      <li>medium
+      <li>large
+      <li>x-large
+      <li>xx-large
+      <li>bigger - increase the current base font size by 1
+      <li>smaller - decrease the current base font size by 1
+      <li>xxpt - set the font size to a specific pt value of "xx"
+      <li>+x - increase the current base font size by a value of "x"
+      <li>-x - decrease the current base font size by a value of "x"
+      <li>x - set the font size to the point size associated with the index "x"
+      </ul>
+<li>textFontWeight - the activator text font weight. Valid weights are
+      <ul>
+      <li>plain
+      <li>bold
+      </ul>
+<li>textFontStyle - the activator text font style. Valid font styles are
+      <ul>
+      <li>plain
+      <li>italic
+      </ul>
+<li>textColor - the activator text color. The following is a list of supported Color names
+      <ul>
+      <li>black
+      <li>blue
+      <li>cyan
+      <li>darkGray
+      <li>gray
+      <li>green
+      <li>lightGray
+      <li>magenta
+      <li>orange
+      <li>pink
+      <li>red
+      <li>white
+      <li>yellow
+      </ul>
+<ul>
+
+</div>
+
 <hr>
 @FOOTER@
 </body>
