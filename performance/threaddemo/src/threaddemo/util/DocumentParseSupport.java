@@ -255,16 +255,23 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         
         public void insertUpdate(DocumentEvent e) {
             System.err.println("DPS.iU");//XXX
-            List l = new ArrayList(1); // List<DocumentEvent>
-            l.add(e);
-            invalidate(l);
+            documentUpdate(e);
         }
         
         public void removeUpdate(DocumentEvent e) {
             System.err.println("DPS.rU");//XXX
-            List l = new ArrayList(1); // List<DocumentEvent>
+            documentUpdate(e);
+        }
+        
+        private void documentUpdate(DocumentEvent e) {
+            final List l = new ArrayList(1); // List<DocumentEvent>
             l.add(e);
-            invalidate(l);
+            getMutex().readAccess(new Mutex.Action() {
+                public Object run() {
+                    invalidate(l);
+                    return null;
+                }
+            });
         }
         
         public void changedUpdate(DocumentEvent e) {
@@ -279,9 +286,10 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
-                getMutex().readAccess(new Runnable() {
-                    public void run() {
+                getMutex().readAccess(new Mutex.Action() {
+                    public Object run() {
                         invalidate(evt);
+                        return null;
                     }
                 });
             }
