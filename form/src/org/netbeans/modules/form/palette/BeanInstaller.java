@@ -417,21 +417,15 @@ public final class BeanInstaller
         private JList list;
         private String[] catNames;
 
-        static final long serialVersionUID =936459317386043582L;
-
         public CategorySelector() {
-            DataObject[] catFolders = PaletteNode.getPaletteFolder().getChildren();
+            Node[] catNodes = PaletteNode.getPaletteNode().getChildren().getNodes(true);
 
-            ArrayList dispList = new ArrayList(catFolders.length);
-            ArrayList nameList = new ArrayList(catFolders.length);
-            for (int i=0; i < catFolders.length; i++)
-                if (catFolders[i] instanceof DataFolder) {
-                    Node node = catFolders[i].getNodeDelegate();
-                    if (node != null) {
-                        dispList.add(node.getDisplayName());
-                        nameList.add(node.getName());
-                    }
-                }
+            ArrayList dispList = new ArrayList(catNodes.length);
+            ArrayList nameList = new ArrayList(catNodes.length);
+            for (int i=0; i < catNodes.length; i++) {
+                dispList.add(catNodes[i].getDisplayName());
+                nameList.add(catNodes[i].getName());
+            }
 
             String[] catDisplayNames = new String[dispList.size()];
             dispList.toArray(catDisplayNames);
