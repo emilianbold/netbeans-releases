@@ -74,6 +74,11 @@ public class DefaultClassPathProvider implements ClassPathProvider {
         if (!file.isValid ()) {
             return null;
         }
+        // #47099 - PVCS: Externally deleted file causes Exception        
+        if (file.isVirtual()) {
+            //Can't do more
+            return null;
+        }
         // #49013 - do not return classpath for files which do 
         // not have EXTERNAL URL, e.g. files from DefaultFS
         if (URLMapper.findURL(file, URLMapper.EXTERNAL) == null) {
