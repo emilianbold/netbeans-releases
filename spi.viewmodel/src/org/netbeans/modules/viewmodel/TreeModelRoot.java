@@ -76,7 +76,8 @@ public class TreeModelRoot implements TreeModelListener {
     }
     
     public void treeNodeChanged (Object parent) {
-        findNode (parent).refresh ();
+        TreeModelNode tmn = findNode (parent);
+        if (tmn != null) tmn.refresh (); 
     }
 
     public void destroy () {
