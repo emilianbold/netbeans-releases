@@ -238,7 +238,7 @@ final class ResultView extends JPanel
                               outputButton,
                               customizeButton,
                               closeButton},
-                closeButton,                        //default button
+                null,                               //no default button
                 DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx(ResultView.class),
                 new ButtonListener());
