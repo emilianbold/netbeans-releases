@@ -61,7 +61,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         j2eeSpecComboBox = new javax.swing.JComboBox();
         serverInstanceLabel = new javax.swing.JLabel();
         serverInstanceComboBox = new javax.swing.JComboBox();
-        addToAppCheckBox = new javax.swing.JCheckBox();
+        addToAppLabel = new javax.swing.JLabel();
         addToAppComboBox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
@@ -126,22 +126,17 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         add(serverInstanceComboBox, gridBagConstraints);
         serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_NEJB_Server_ComboBox_A11YDesc"));
 
-        addToAppCheckBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_AddToEApp_CheckBox"));
-        addToAppCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                addToAppCheckBoxStateChanged(evt);
-            }
-        });
-
+        addToAppLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_NWP1_AddToEApp_CheckBoxMnemonic").charAt(0));
+        addToAppLabel.setLabelFor(addToAppComboBox);
+        addToAppLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_AddToEApp_CheckBox"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(addToAppCheckBox, gridBagConstraints);
+        add(addToAppLabel, gridBagConstraints);
 
-        addToAppComboBox.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -152,10 +147,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-
-    private void addToAppCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_addToAppCheckBoxStateChanged
-        addToAppComboBox.setEnabled(addToAppCheckBox.isSelected());
-    }//GEN-LAST:event_addToAppCheckBoxStateChanged
 
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
         String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
@@ -189,8 +180,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox addToAppCheckBox;
     private javax.swing.JComboBox addToAppComboBox;
+    private javax.swing.JLabel addToAppLabel;
     private javax.swing.JComboBox j2eeSpecComboBox;
     private javax.swing.JLabel j2eeSpecLabel;
     private javax.swing.JComboBox serverInstanceComboBox;
@@ -232,10 +223,13 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     
     private Project getSelectedEarApplication() {
         int idx = addToAppComboBox.getSelectedIndex();
-        return (idx == -1 || !addToAppCheckBox.isSelected()) ? null : (Project) earProjects.get(idx);
+        return (idx <= 0) ? null : (Project) earProjects.get(idx - 1);
     }
     
     private void initEnterpriseApplications() {
+        addToAppComboBox.addItem(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_AddToEApp_None"));
+        addToAppComboBox.setSelectedIndex(0);
+        
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
         earProjects = new ArrayList();
         for (int i = 0; i < allProjects.length; i++) {
@@ -246,8 +240,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
                 addToAppComboBox.addItem(projectInfo.getDisplayName());
             }
         }
-        if (earProjects.size() > 0) {
-            addToAppComboBox.setSelectedIndex(0);
+        if (earProjects.size() <= 0) {
+            addToAppComboBox.setEnabled(false);
         }
     }
 }
