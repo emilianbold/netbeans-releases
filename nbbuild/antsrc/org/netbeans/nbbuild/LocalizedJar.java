@@ -439,6 +439,20 @@ if( localeKitFiles.contains( file)) {
                             attr.remove (Attributes.Name.CLASS_PATH);
                         }
                         ByteArrayOutputStream baos = new ByteArrayOutputStream ();
+                        if ("1.3".equals(System.getProperty("java.specification.version"))) {
+                            // XXX workaround for JRE bug #4357504: Manifest.write can fail!
+                            // Fixed in 1.4 but under 1.3 can cause mysterious error in <genlist>,
+                            // manifest cache, etc.
+                            Iterator it2 = attr.entrySet().iterator();
+                            while (it2.hasNext()) {
+                                Map.Entry e = (Map.Entry)it2.next();
+                                Attributes.Name k = (Attributes.Name)e.getKey();
+                                String v = (String)e.getValue();
+                                if ((k.toString().length() + v.length() + 2) % 69 == 68) {
+                                    e.setValue("   " + v);
+                                }
+                            }
+                        }
                         mani.write (baos);
                         byte[] bytes = baos.toByteArray ();
                         addToJar (new ByteArrayInputStream (bytes), new ByteArrayInputStream (bytes),
