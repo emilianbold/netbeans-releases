@@ -66,7 +66,6 @@ public class XmlMultiViewElement implements MultiViewElement {
 
     public void componentShowing() {
         XmlMultiViewDataObject dObj = (XmlMultiViewDataObject)support.getDataObject();
-        System.out.println("xml comp showing "+dObj.changedFromUI);
         if (dObj.changedFromUI) {
             dObj.updateDocument();
         }

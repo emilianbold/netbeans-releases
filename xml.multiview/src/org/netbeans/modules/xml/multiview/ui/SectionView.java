@@ -132,10 +132,8 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
     public void removeSection(Node key) {
         NodeSectionPanel section = getSection(key);
         java.awt.Container cont = ((java.awt.Component)section).getParent();
-        System.out.println("1:cont="+cont);
         while (cont!=null && !(cont instanceof ContainerPanel)) {
             cont = cont.getParent();
-             System.out.println("2:cont="+cont);
         }
         if ( cont!= null) {
             ((ContainerPanel)cont).removeSection(section);
@@ -180,8 +178,9 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
             this.activePanel.setActive(false);
         }
         this.activePanel = activePanel;
-        if (activePanel instanceof SectionPanel)
-        ((ToolBarDesignEditor)getParent().getParent()).setLastActive(((SectionPanel)activePanel).getKey());
+        if (activePanel instanceof SectionPanel) {
+            ((ToolBarDesignEditor)getParent().getParent()).setLastActive(((SectionPanel)activePanel).getKey());
+        }
     }
     
     public NodeSectionPanel getActivePanel() {
@@ -193,7 +192,6 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
     }
     
     public void showSelection(org.openide.nodes.Node[] nodes) {
-        //System.out.println("showSelection "+nodes[0]+":"+sectionSelected);
         if (sectionSelected) {
             sectionSelected=false;
             return;

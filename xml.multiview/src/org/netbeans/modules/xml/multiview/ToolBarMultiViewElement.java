@@ -47,22 +47,18 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     }
     
     public CloseOperationState canCloseElement() {
-        System.out.println("canCloseElement()"+this);
         return CloseOperationState.STATE_OK;
     }    
     
     public void componentActivated() {
-       System.out.println("compActivated() "+this);
        editor.componentActivated();
     }
     
     public void componentClosed() {
-        System.out.println("compClosed() "+this);
         editor.componentClosed();
     }
     
     public void componentDeactivated() {
-        System.out.println("compDeactivated() "+this);
         editor.componentClosed();
     }
     
@@ -70,12 +66,10 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     }
     
     public void componentOpened() {
-        System.out.println("compOpened() "+this);
         editor.componentOpened();
     }
     
     public void componentShowing() {
-        System.out.println("compShowing() "+this);
         editor.componentShowing();
     }
     
@@ -114,7 +108,6 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
         c.setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
         panel.add(c);
         panel.setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
-        //System.out.println("toolbar = "+((AbstractDesignEditor)comp).getStructureView());
         return panel;
     }
 
