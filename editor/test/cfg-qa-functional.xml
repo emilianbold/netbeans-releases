@@ -63,14 +63,6 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="all,completion-15" name="JDK1.5 Completion" compiler="qa-functional-compiler-completion">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15*" />
-            </patternset>
-        </testset>
-    </testbag>
-
     <!-- Editor Application non-validation tests -->
 
     <testbag testattribs="all,apps" name="TestApplication Non-Validation">
