@@ -71,10 +71,9 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
 
-  <!-- Update all HTML documents generated from XML data files. -->
+  <!-- Update www documents. -->
   <target name="www">
-    <!-- Module requirements - new features. -->
-    <ant dir="../nbbuild/plans" target="xml"/>
+    <ant dir="www" target="all"/>
   </target>
 
 </project>

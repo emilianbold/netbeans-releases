@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<list name="Tools">
+    <item>
+        <summary>cleanup files structure</summary>
+        <description>cleanup files structure:
+    a) by services (each service has its own folder which contains cookies, actions, impl, wizard, ...);
+    b) by class types (separated parts (cookies, actions, impl, wizard, ...) of each service are in common folder);</description>
+    </item>
+</list>

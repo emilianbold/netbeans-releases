@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--DOCTYPE list PUBLIC "-//NetBeans//DTD ToDo 1.0//EN" "http://xml.netbeans.org/dtds/todo-1_0.dtd" [-->
+<!DOCTYPE list [
+    <!ENTITY catalog_todo.xml   SYSTEM "catalog/TODO.xml">
+    <!ENTITY core_todo.xml      SYSTEM "core/TODO.xml">
+    <!ENTITY css_todo.xml       SYSTEM "css/TODO.xml">
+    <!ENTITY tax_todo.xml       SYSTEM "tax/TODO.xml">
+    <!ENTITY text-edit_todo.xml SYSTEM "text-edit/TODO.xml">
+    <!ENTITY tools_todo.xml     SYSTEM "tools/TODO.xml">
+    <!ENTITY tree-edit_todo.xml SYSTEM "tree-edit/TODO.xml">
+]>
+
+<list name="XML">
+    <item>
+        <summary>add to modules manifest conflict with old xml.jar and xml-syntax.jar modules OR try to load old settings</summary>
+        <description>add to modules manifest conflict with old xml.jar and xml-syntax.jar modules OR try to load old settings</description>
+    </item>
+    <item>
+        <summary>clean *.properties files (remove unused, uniform look)</summary>
+        <description>clean *.properties files (remove unused, uniform look)</description>
+    </item>
+    <item>
+        <summary>does it make sense to have subcomponents same as submodules in Issuezilla OR use prefix like [submodule] in Summary field of bug</summary>
+        <description>does it make sense to have subcomponents same as submodules in Issuezilla OR use prefix like [submodule] in Summary field of bug</description>
+    </item>
+    <item>
+        <summary>When we will have xml-api module (see core/TODO), than we can guarantee TAX, XML-API with Looks as API around xml.</summary>
+        <description>When we will have xml-api module (see core/TODO), than we can guarantee TAX, XML-API with Looks as API around xml.</description>
+    </item>
+    <item>
+        <summary>what about javahelp?</summary>
+        <description>what about javahelp?</description>
+    </item>
+    &catalog_todo.xml;
+    &core_todo.xml;
+    &css_todo.xml;
+    &tax_todo.xml;
+    &text-edit_todo.xml;
+    &tools_todo.xml;
+    &tree-edit_todo.xml;    
+</list>
