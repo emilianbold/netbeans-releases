@@ -106,7 +106,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <attr name="netbeans-web-link.url/utilities-sep-2[javax-swing-JSeparator].instance" boolvalue="true"/>
             <file name="utilities-sep-2[javax-swing-JSeparator].instance"/>
-            <attr name="utilities-sep-2[javax-swing-JSeparator].instance/submit-feedback-link.url" boolvalue="true"/>
+            <attr name="org-netbeans-core-actions-ModuleHelpAction$ShortcutsOnly.instance/submit-feedback-link.url" boolvalue="true"/>
             <!-- [PENDING] this is none too useful... (some bug is filed to this effect) -->
             <file name="submit-feedback-link.url">
                 <![CDATA[http://www.netbeans.org/contact.html]]>
@@ -117,9 +117,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="utilities-sep-3[javax-swing-JSeparator].instance"/>
             <attr name="utilities-sep-3[javax-swing-JSeparator].instance/org-netbeans-modules-url-BookmarksAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-url-BookmarksAction.instance"/>
-            <attr name="org-netbeans-modules-url-BookmarksAction.instance/utilities-sep-4[javax-swing-JSeparator].instance" boolvalue="true"/>
-            <file name="utilities-sep-4[javax-swing-JSeparator].instance"/>
-            <attr name="utilities-sep-4[javax-swing-JSeparator].instance/org-netbeans-core-actions-WelcomeAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-url-BookmarksAction.instance/org-netbeans-core-actions-WelcomeAction.instance" boolvalue="true"/>
         </folder>
     </folder>
     <folder name="Toolbars">
