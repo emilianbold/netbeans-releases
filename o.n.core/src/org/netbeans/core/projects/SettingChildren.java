@@ -36,6 +36,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import org.openide.actions.CustomizeBeanAction;
+import org.openide.actions.ToolsAction;
 import org.openide.util.actions.SystemAction;
 
 /** Filters nodes under the session node (displayed in Options dialog), adds special
@@ -82,6 +83,20 @@ public final class SettingChildren extends FilterNode.Children {
             node.isLeaf() ? node.cloneNode() : new TrivialFilterNode(node);
     }
     
+    private static SystemAction[] removeActions(SystemAction[] allActions, SystemAction[] toDeleteActions) {
+        SystemAction[] retVal = allActions;
+        List actions = java.util.Arrays.asList(allActions);
+        for (int i = 0; i < toDeleteActions.length; i++) {
+            SystemAction a = toDeleteActions[i];
+            if(actions.contains(a)) {
+                actions = new ArrayList(actions); // to be mutable
+                actions.remove(a);
+                retVal = (SystemAction[])actions.toArray(new SystemAction[0]);
+            }                
+        }            
+        return retVal;
+    }
+    
     private static final class TrivialFilterNode extends FilterNode {
         public TrivialFilterNode(Node n) {
             super(n, new SettingChildren(n));
@@ -92,7 +107,10 @@ public final class SettingChildren extends FilterNode.Children {
         }
         public int hashCode() {
             return getOriginal().hashCode();
-        }
+        }        
+        public SystemAction[] getActions() {            
+            return removeActions(super.getActions(), new SystemAction[] {SystemAction.get(ToolsAction.class)});
+        }        
     }
 
     /** Property allowing display/manipulation of setting status for one specific layer. */
@@ -336,20 +354,15 @@ public final class SettingChildren extends FilterNode.Children {
         public int hashCode() {
             return getOriginal().hashCode();
         }
-
         // #24766 Exclude Customize Bean action.
         /** Overrides superclass method, excludes the CustomizeBeanAction from the node. */
         public SystemAction[] getActions() {
             SystemAction[] as = super.getActions();
-            List actions = java.util.Arrays.asList(as);
-            SystemAction customizeBean = SystemAction.get(CustomizeBeanAction.class);
-            if(actions.contains(customizeBean)) {
-                actions = new ArrayList(actions); // to be mutable
-                actions.remove(customizeBean);
-                return (SystemAction[])actions.toArray(new SystemAction[0]);
-            } else {
-                return as;
-            }
+            SystemAction[] toDeleteActions = new SystemAction[] {SystemAction.get(CustomizeBeanAction.class), 
+                    SystemAction.get(ToolsAction.class)};
+
+            as = removeActions(as, toDeleteActions);
+            return as;
         }
 
         private static class FSL implements FileStateManager.FileStatusListener {

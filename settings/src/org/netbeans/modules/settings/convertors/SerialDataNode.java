@@ -28,11 +28,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.List;
+import java.util.ArrayList;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.Action;
 
 import org.openide.*;
+import org.openide.actions.ToolsAction;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -993,7 +996,24 @@ public final class SerialDataNode extends DataNode {
         public boolean canDestroy() {
             return false;
         }
+
+        public SystemAction[] getActions() {
+            return removeActions(super.getActions(), new SystemAction[] {SystemAction.get(ToolsAction.class)});
+        }
         
+        private static SystemAction[] removeActions(SystemAction[] allActions, SystemAction[] toDeleteActions) {
+            SystemAction[] retVal = allActions;
+            List actions = java.util.Arrays.asList(allActions);
+            for (int i = 0; i < toDeleteActions.length; i++) {
+                SystemAction a = toDeleteActions[i];
+                if(actions.contains(a)) {
+                    actions = new ArrayList(actions); // to be mutable
+                    actions.remove(a);
+                    retVal = (SystemAction[])actions.toArray(new SystemAction[0]);
+                }                
+            }            
+            return retVal;
+        }        
     }
     
     /** Property change listener to update the properties of the node and
