@@ -14,6 +14,8 @@ package org.netbeans.modules.xml.text.syntax;
 
 import java.util.MissingResourceException;
 
+import org.openide.util.HelpCtx;
+
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.LocaleSupport.Localizer;
@@ -49,6 +51,10 @@ abstract class AbstractBaseOptions extends BaseOptions implements Localizer {
         return XMLIndentEngine.class;
     }
 
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx (this.getClass());
+    }
 
     //
     // Localizer

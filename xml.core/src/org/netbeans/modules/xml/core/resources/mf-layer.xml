@@ -127,6 +127,8 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Editing">
                 <folder name="XML">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle"/>
+                    <attr name="helpID" stringvalue="org.netbeans.modules.xml.core.settings"/>
+
                     <file name="org-netbeans-modules-xml-core-settings-CoreSettings.shadow">
 <![CDATA[Services/org-netbeans-modules-xml-core-settings-CoreSettings.settings
 SystemFileSystem

@@ -20,6 +20,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 
+import org.openide.util.HelpCtx;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 import org.netbeans.tax.*;
@@ -93,6 +94,8 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
         initComponents();
         ownInitComponents();
         initAccessibility();
+
+        HelpCtx.setHelpIDString (this, TreeNodeFilterCustomEditor.class.getName());
     }
 
 
