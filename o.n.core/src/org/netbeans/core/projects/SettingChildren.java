@@ -51,7 +51,8 @@ public final class SettingChildren extends FilterNode.Children {
     
     protected Node copyNode (Node node) {
         InstanceDataObject ido = (InstanceDataObject) node.getCookie (InstanceDataObject.class);
-        return ido != null ? new SettingFilterNode (node) : new FilterNode (node, new SettingChildren (node));
+        return ido != null ? new SettingFilterNode (node) : 
+            new FilterNode (node, node.isLeaf() ? Children.LEAF : new SettingChildren (node));
     }
 
     /** Property allowing display/manipulation of setting status for one specific layer. */
