@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
 import java.awt.*;
@@ -28,11 +27,6 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     private LayoutSupport layoutSupport;
     private LayoutNode layoutNode;
 
-//    public void setComponent(Class beanClass) {
-//        super.setComponent(beanClass);
-//        initLayoutSupport();
-//    }
-
     public void setInstance(Object beanInstance) {
         super.setInstance(beanInstance);
         initLayoutSupport();
@@ -44,11 +38,24 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             LayoutSupportRegistry.getLayoutSupportForContainer(getBeanClass());
 
         if (layoutSupportClass == null) {
+            Container containerDelegate = getContainerDelegate(getBeanInstance());
+
+            // if the container already has child componenents, we rather
+            // refuse to give layout support for it because this certainly will
+            // spoil the whole thing.  The upper code will discard this
+            // container and further consider it as component
+            
+            if (containerDelegate.getComponentCount() > 0)
+                return;
+            
             // try to find support for LayoutManager used by the container
-            LayoutManager lm = getContainerDelegate(getBeanInstance()).getLayout();
-            if (lm != null)
-                layoutSupportClass =
-                    LayoutSupportRegistry.getLayoutSupportForLayout(lm.getClass());
+            
+            LayoutManager lm = containerDelegate.getLayout();
+            if (lm == null)
+                return;
+
+            layoutSupportClass =
+                LayoutSupportRegistry.getLayoutSupportForLayout(lm.getClass());
         }
 
         try {
@@ -118,8 +125,6 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     boolean shouldHaveLayoutNode() {
         return layoutSupport != null && layoutSupport.getLayoutClass() != null;
-//               && (layoutSupport.getLayoutClass() != null
-//                   || layoutSupport instanceof NullLayoutSupport);
     }
 
     // -----------------------------------------------------------------------------

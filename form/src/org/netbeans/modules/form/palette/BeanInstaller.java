@@ -30,10 +30,13 @@ import org.openide.*;
 import org.openide.nodes.Node;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.SharedClassObject; 
+
 import org.netbeans.modules.form.FormLoaderSettings;
+import org.netbeans.modules.form.GlobalJarFileSystem;
 import org.netbeans.modules.clazz.ClassDataObject;
 
 /**
@@ -165,7 +168,9 @@ public final class BeanInstaller
             cat = "Beans"; // default palette category // NOI18N
         }
 
-        FileObject root = TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot();
+        FileSystem fs = TopManager.getDefault().getRepository().getDefaultFileSystem();
+        
+        FileObject root = fs.getRoot();
         FileObject paletteFolder = root.getFileObject("Palette"); // NOI18N
         if (paletteFolder == null) {
             return;
@@ -183,32 +188,46 @@ public final class BeanInstaller
             }
         }
 
-        Iterator it = beans.iterator();
-        LinkedList paletteNodes = new LinkedList();
+        final FileObject categoryFolder = category;
+        final Iterator it = beans.iterator();
+        final LinkedList paletteNodes = new LinkedList();
 
-        while (it.hasNext()) {
-            Object obj = it.next();
-            String name = null;
-            if (obj instanceof FileObject) {
-                if ("class".equals(((FileObject)obj).getExt())) { // NOI18N
-                    name =((FileObject)obj).getPackageName('.');
-                    if (name != null) createInstance(category, name);
-                } else {
-                    createShadow(category,(FileObject)obj);
+        try {
+            fs.runAtomicAction(new FileSystem.AtomicAction () {
+                public void run() {
+                    while (it.hasNext()) {
+                        Object obj = it.next();
+                        String name = null;
+                        if (obj instanceof FileObject) {
+                            if ("class".equals(((FileObject)obj).getExt())) { // NOI18N
+                                name =((FileObject)obj).getPackageName('.');
+                                if (name != null)
+                                    createInstance(categoryFolder, name);
+                            }
+                            else {
+                                createShadow(categoryFolder, (FileObject)obj);
+                            }
+                        }
+                        else if (obj instanceof InstanceCookie) {
+                            name = ((InstanceCookie) obj).instanceName();
+                            if (name != null)
+                                createInstance(categoryFolder, name);
+                        }
+                        else if (obj instanceof ClassDataObject) {
+                            try {
+                                ((ClassDataObject)obj).createShadow(
+                                    DataFolder.findFolder(categoryFolder));
+                            } catch (IOException ex) {
+                                TopManager.getDefault().notifyException(ex);
+                            }
+                        }
+                    }
                 }
-            } else if (obj instanceof InstanceCookie) {
-                name =((InstanceCookie)obj).instanceName();
-                if (name != null) createInstance(category, name);
-            } else if (obj instanceof ClassDataObject) {
-                try {
-                    ((ClassDataObject)obj).createShadow(DataFolder.findFolder(category));
-                } catch (IOException ex) {
-                    TopManager.getDefault().notifyException(ex);
-                }
-            }
+            });
+        }
+        catch (IOException cannotHappen) {
         }
     }
-
 
     private static void addJarFileSystem(JarFileSystem jar) {
         // 1. store information about the JAR/ZIP into $NETBEANS_USER/beans/libs.properties
