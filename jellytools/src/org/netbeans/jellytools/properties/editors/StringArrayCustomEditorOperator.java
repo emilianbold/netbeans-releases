@@ -101,7 +101,7 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
         return _btAdd;
     }
 
-    /** Tries to find null JList in this dialog.
+    /** Tries to find JList in this dialog.
      * @throws TimeoutExpiredException when component not found
      * @return JListOperator
      */
@@ -169,7 +169,7 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
         btRemove().push();
     }
 
-    /** tries to find and set text of txtItem
+    /** Gets text from text field.
      * @return String edited item text */
     public String getItemText() {
         return txtItemText().getText();
@@ -216,6 +216,35 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
         }
     }
     
+    /** Replaces oldValue by newValue. It selects oldValue item in the list,
+     * types newValue into text field and pushes Edit button.
+     * @param oldValue value from list to be replaced
+     * @param newValue new value
+     */
+    public void edit(String oldValue, String newValue) {
+        lstItemList().selectItem(oldValue);
+        setItemText(newValue);
+        edit();
+    }
+
+    /** Moves given item one position up. It select value item and pushes
+     * Up button. It fails, if item is the topmost and Up button is disabled.
+     * @param value item to be moved up
+     */
+    public void up(String value) {
+        lstItemList().selectItem(value);
+        up();
+    }
+
+    /** Moves given item one position down. It select value item and pushes
+     * Down button. It fails, if item is the bottommost and Down button is disabled.
+     * @param value item to be moved down
+     */
+    public void down(String value) {
+        lstItemList().selectItem(value);
+        down();
+    }
+
     /** setter for String array
      * @param value String[] array os Strings to be set */    
     public void setStringArrayValue(String[] value) {
