@@ -16,6 +16,8 @@ package org.netbeans.modules.project.ant;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -51,8 +53,8 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
     /** Construct the singleton. */
     public AntBasedProjectFactorySingleton() {}
     
-    private static final Map/*<Project,AntProjectHelper>*/ project2Helper = new WeakHashMap();
-    private static final Map/*<AntProjectHelper,Project>*/ helper2Project = new WeakHashMap();
+    private static final Map/*<Project,Reference<AntProjectHelper>>*/ project2Helper = new WeakHashMap();
+    private static final Map/*<AntProjectHelper,Reference<Project>>*/ helper2Project = new WeakHashMap();
     private static final Lookup.Result/*<AntBasedProjectType>*/ antBasedProjectTypes;
     private static Map/*<String,AntBasedProjectType>*/ antBasedProjectTypesByType = null;
     static {
@@ -128,16 +130,18 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
         }
         AntProjectHelper helper = HELPER_CALLBACK.createHelper(projectDirectory, projectXml, state, provider);
         Project project = provider.createProject(helper);
-        project2Helper.put(project, helper);
-        helper2Project.put(helper, project);
+        project2Helper.put(project, new WeakReference(helper));
+        helper2Project.put(helper, new WeakReference(project));
         return project;
     }
     
     public void saveProject(Project project) throws IOException, ClassCastException {
-        AntProjectHelper helper = (AntProjectHelper)project2Helper.get(project);
-        if (helper == null) {
+        Reference/*<AntProjectHelper>*/ helperRef = (Reference) project2Helper.get(project);
+        if (helperRef == null) {
             throw new ClassCastException(project.getClass().getName());
         }
+        AntProjectHelper helper = (AntProjectHelper) helperRef.get();
+        assert helper != null : "AntProjectHelper collected for " + project;
         HELPER_CALLBACK.save(helper);
     }
     
@@ -148,7 +152,9 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
      * @return the corresponding project
      */
     public static Project getProjectFor(AntProjectHelper helper) {
-        Project p = (Project)helper2Project.get(helper);
+        Reference/*<Project>*/ projectRef = (Reference) helper2Project.get(helper);
+        assert projectRef != null;
+        Project p = (Project) projectRef.get();
         assert p != null;
         return p;
     }
@@ -160,7 +166,8 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
      * @return the corresponding Ant project helper object, or null if it is unknown
      */
     public static AntProjectHelper getHelperFor(Project p) {
-        return (AntProjectHelper)project2Helper.get(p);
+        Reference/*<AntProjectHelper>*/ helperRef = (Reference) project2Helper.get(p);
+        return helperRef != null ? (AntProjectHelper) helperRef.get() : null;
     }
     
     /**
