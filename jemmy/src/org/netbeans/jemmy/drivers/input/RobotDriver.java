@@ -177,6 +177,20 @@ public class RobotDriver extends LightSupportiveDriver {
     }
 
     private void initRobot() {
+        // need to init Robot in dispatch thread because it hangs on Linux 
+        // (see http://www.netbeans.org/issues/show_bug.cgi?id=37476)
+        if(qtool.isDispatchThread()) {
+            doInitRobot();
+        } else {
+            qtool.invokeAndWait(new Runnable() {
+                public void run() {
+                    doInitRobot();
+                }
+            });
+        }
+    }
+    
+    private void doInitRobot() {
 	try {
 	    ClassReference robotClassReverence = new ClassReference("java.awt.Robot");
 	    robotReference = new ClassReference(robotClassReverence.newInstance(null, null));
@@ -199,4 +213,5 @@ public class RobotDriver extends LightSupportiveDriver {
 	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
 	}
     }
+
 }
