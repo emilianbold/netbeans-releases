@@ -568,7 +568,19 @@ public class MakeNBM extends MatchingTask {
                             signjar.getClass().getDeclaredMethod( "setJar", paramsT ).invoke( signjar, paramsV2 );
                         }
                         catch (NoSuchMethodException ex2) {
-                            throw new BuildException("Unknown ANT version, only ANT 1.4.1 is currently supported and ANT 1.4.1+ is acceptable.");
+			    //Probably ANT1.5.2
+			    try {
+				Class[] paramsT1 = {File.class};
+				Class[] paramsT2 = {String.class};
+				Object[] paramsV1 = {signature.keystore.getAbsolutePath()};
+				Object[] paramsV2 = {file};
+				signjar.getClass().getDeclaredMethod( "setKeystore", paramsT2 ).invoke( signjar, paramsV1 );
+				signjar.getClass().getDeclaredMethod( "setJar", paramsT1 ).invoke( signjar, paramsV2 );
+			    }
+			    catch (NoSuchMethodException ex3) {
+				
+				throw new BuildException("Unknown ANT version, only ANT 1.4.1 is currently supported and ANT 1.4.1+ is acceptable.");
+			    }
                         }
                     }
                 } catch (IllegalAccessException ex3) {
