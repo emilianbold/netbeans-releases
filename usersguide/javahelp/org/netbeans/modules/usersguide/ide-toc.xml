@@ -401,7 +401,7 @@
 <tocitem text="Working With Javadoc Documentation" target="javadoc.jump">
    <tocitem text="The Javadoc Environment" target="javadoc.windows.all"/>
    <tocitem text="Showing Javadoc Documentation" target="javadoc.source_editor"/>
-   <tocitem text="Viewing Documentation Indices" target="javadoc.indices"/>
+   <tocitem text="Viewing API Pages" target="javadoc.indices"/>
    <tocitem text="Searching Javadoc Documentation" target="javadoc.search"/>
    <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
    <tocitem text="Checking Code for Javadoc Comments" target="javadoc.accuracy"/>
