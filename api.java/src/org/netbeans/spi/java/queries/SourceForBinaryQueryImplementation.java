@@ -13,6 +13,7 @@
 package org.netbeans.spi.java.queries;
 
 import java.net.URL;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.openide.filesystems.FileObject;
 
 // XXX add a listener to changes in result
@@ -62,8 +63,8 @@ public interface SourceForBinaryQueryImplementation {
      * (e.g. <samp>jar:file:/tmp/foo.jar!/</samp>).
      * </p>
      * @param binaryRoot the class path root of Java class files
-     * @return a list of source roots; may be empty but not null
+     * @return a result object encapsulating the answer or null if the binaryRoot is not recognized
      */
-    public FileObject[] findSourceRoot(URL binaryRoot);
+    public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot);
     
 }

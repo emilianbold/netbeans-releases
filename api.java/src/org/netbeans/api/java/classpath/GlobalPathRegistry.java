@@ -259,7 +259,7 @@ public final class GlobalPathRegistry {
                 Iterator it2 = cp.entries().iterator();
                 while (it2.hasNext()) {
                     ClassPath.Entry entry = (ClassPath.Entry)it2.next();
-                    FileObject[] someRoots = SourceForBinaryQuery.findSourceRoot(entry.getURL());
+                    FileObject[] someRoots = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
                     // XXX it seems that currently PlatformSourceForBinaryQuery
                     // misbehaves and returns src.zip, not its root... so currently
                     // stack trace hyperlinking does not always work for JRE classes

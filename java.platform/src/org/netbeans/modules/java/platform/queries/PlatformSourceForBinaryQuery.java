@@ -17,6 +17,7 @@ import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
+import javax.swing.event.ChangeListener;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -26,6 +27,7 @@ import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 
 /**
  * This implementation of the SourceForBinaryQueryImplementation
@@ -42,7 +44,7 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
      * @param binaryRoot the URL of a classpath root (platform supports file and jar protocol)
      * @return FileObject[], never returns null
      */
-    public FileObject[] findSourceRoot(URL binaryRoot) {
+    public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         JavaPlatformManager mgr = JavaPlatformManager.getDefault();
         JavaPlatform[] platforms = mgr.getInstalledPlatforms();
         for (int i=0; i< platforms.length; i++) {
@@ -50,11 +52,32 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             for (Iterator it = cp.entries().iterator(); it.hasNext();) {
                 ClassPath.Entry entry = (ClassPath.Entry) it.next();
                 if (entry.getURL().equals (binaryRoot)) {
-                    ClassPath sources = platforms[i].getSourceFolders();
-                    return sources.getRoots();
+                    return new Result (platforms[i]);                    
                 }
             }
         }
-        return new FileObject[0];
+        return null;
+    }
+    
+    private static class Result implements SourceForBinaryQuery.Result {
+                        
+        private JavaPlatform platform;
+                        
+        public Result (JavaPlatform platform) {
+            this.platform = platform;
+        }
+                        
+        public FileObject[] getRoots () {
+            ClassPath sources = this.platform.getSourceFolders();
+            return sources.getRoots();
+        }
+                        
+        public void addChangeListener (ChangeListener l) {
+            //TODO: Implement this
+        }
+                        
+        public void removeChangeListener (ChangeListener l) {
+            //TODO: Implement this
+        }
     }
 }

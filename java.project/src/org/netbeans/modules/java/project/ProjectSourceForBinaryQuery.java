@@ -15,6 +15,7 @@ package org.netbeans.modules.java.project;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
@@ -32,17 +33,17 @@ public class ProjectSourceForBinaryQuery implements SourceForBinaryQueryImplemen
     /** Default constructor for lookup. */
     public ProjectSourceForBinaryQuery() {}
 
-    public FileObject[] findSourceRoot(URL binaryRoot) {
+    public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         Project project = FileOwnerQuery.getOwner(URI.create(binaryRoot.toString()));
         if (project != null) {
             SourceForBinaryQueryImplementation sfbqi =
                     (SourceForBinaryQueryImplementation)project.getLookup().lookup(
                             SourceForBinaryQueryImplementation.class);
             if (sfbqi != null) {
-                return sfbqi.findSourceRoot(binaryRoot);
+                return sfbqi.findSourceRoots(binaryRoot);
             }
         }
-        return new FileObject[0];
+        return null;
     }
     
 }

@@ -308,7 +308,7 @@ public class JPDAStart extends Task implements Runnable {
                 ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
                 continue;
             }
-            FileObject fos[] = SourceForBinaryQuery.findSourceRoot (u);
+            FileObject fos[] = SourceForBinaryQuery.findSourceRoots (u).getRoots();
             System.out.println("class: " + u);
             if (fos.length > 0) {
             System.out.println("source : " + fos [0]);

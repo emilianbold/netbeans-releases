@@ -247,7 +247,7 @@ public final class BeanInstaller {
                 if (FileUtil.isArchiveFile(outputURL))
                     outputURL = FileUtil.getArchiveRoot(outputURL);
                 FileObject sourceRoots[] =
-                    SourceForBinaryQuery.findSourceRoot(outputURL);
+                    SourceForBinaryQuery.findSourceRoots(outputURL).getRoots();
                 for (int j=0; j < sourceRoots.length; j++)
                     if (FileUtil.isParentOf(sourceRoots[j], fo))
                         return new String[] { outputFile.getAbsolutePath() };

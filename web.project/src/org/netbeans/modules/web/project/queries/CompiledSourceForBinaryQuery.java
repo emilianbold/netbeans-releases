@@ -18,6 +18,8 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import java.net.URL;
 import java.net.MalformedURLException;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 
 /**
  * Finds sources corresponding to binaries in a J2SE project.
@@ -31,20 +33,18 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         this.helper = helper;
     }
 
-    public FileObject[] findSourceRoot(URL binaryRoot) {
+    public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
 
-        FileObject result = getSources(binaryRoot, "build.classes.dir","src.dir");   //NOI18N
-        if (result != null)
-            return new FileObject[] {result};
-        result = getSources (binaryRoot,"dist.jar","src.dir");                             //NOI18N
-        if (result != null)
-            return new FileObject[] {result};
-        return new FileObject[0];
+        if (hasSources(binaryRoot, "build.classes.dir") || hasSources (binaryRoot,"dist.jar")) {      //NOI18N
+            return new Result (this.helper, "src.dir");                      //NOI18N
+        }
+        return null;
     }
 
 
-    private FileObject getSources (URL binaryRoot, String binaryProperty, String sourceProperty) {
+    private boolean hasSources (URL binaryRoot, String binaryProperty) {
         try {
+            //TODO: Fix this. Use FileUtil.getArchiveFile.
             if (binaryRoot.getProtocol().equals("jar")) {  // NOI18N
                 // We are interested in the JAR file itself.
                 // Note that this impl therefore accepts *both* file:/tmp/foo.jar
@@ -64,16 +64,51 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             if (outDir != null) {
                 URL url = helper.resolveFile (outDir).toURI().toURL();
                 if (url.equals (binaryRoot)) {
-                    String srcDir = helper.getStandardPropertyEvaluator ().getProperty (sourceProperty);
-                    if (srcDir != null) {
-                        return helper.resolveFileObject(srcDir);
-                    }
+                    return true;
                 }
             }
         } catch (MalformedURLException malformedURL) {
             ErrorManager.getDefault().notify(malformedURL);
         }
-        return null;
+        return false;
+    }
+    
+    private static class Result implements SourceForBinaryQuery.Result {
+        
+        FileObject[] cache;
+        AntProjectHelper helper;
+        String propertyName;
+        
+        public Result (AntProjectHelper helper, String propertyName) {
+            this.helper = helper;
+            this.propertyName = propertyName;
+        }
+        
+        public synchronized FileObject[] getRoots () {
+            if (this.cache == null) {
+                String srcDir = this.helper.getStandardPropertyEvaluator ().getProperty (propertyName);
+                FileObject fo = null;
+                if (srcDir != null) {                
+                    fo = helper.resolveFileObject(srcDir);                    
+                }
+                if (fo != null) {
+                    this.cache = new FileObject[] {fo};
+                }
+                else {
+                    this.cache = new FileObject[0];
+                }
+            }
+            return this.cache;
+        }
+        
+        public void addChangeListener (ChangeListener l) {
+            //TODO: Implement this if needed (source folder can be changed)
+        }
+        
+        public void removeChangeListener (ChangeListener l) {
+            //TODO: Implement this if needed (source folder can be changed)
+        }
+        
     }
     
 }
