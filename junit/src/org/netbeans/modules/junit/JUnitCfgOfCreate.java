@@ -90,7 +90,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
                 if (i == iCnt) {
                     // selected FS was not found - check if it is accaptable for tests
                     if (!TestUtil.isSupportedFileSystem(selectedFS)) {
-                        String msg = NbBundle.getMessage(JUnitCfgOfCreate.class, "MSG_fs_not_acceptable");
+                        String msg = bundle.getString("MSG_fs_not_acceptable");
                         NotifyDescriptor descr = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
                         org.openide.DialogDisplayer.getDefault().notify(descr);
                         return;
@@ -175,9 +175,9 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         this.chkPackagePrivateClasses.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkPackagePrivateClasses.toolTip"));
         this.chkPackagePrivateClasses.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkPackagePrivateClasses.AD"));
         
-        this.chkRegenerateSuite.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkRegenerateSuite.mne"));
-        this.chkRegenerateSuite.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkRegenerateSuite.toolTip"));
-        this.chkRegenerateSuite.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkRegenerateSuite.AD"));
+        this.chkGenerateSuites.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkGenerateSuites.mne"));
+        this.chkGenerateSuites.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkGenerateSuites.toolTip"));
+        this.chkGenerateSuites.getAccessibleContext().setAccessibleDescription(bundle.getString("JUnitCfgOfCreate.chkGenerateSuites.AD"));
         
         this.chkEnabled.setMnemonic(getMnemonics(bundle,"JUnitCfgOfCreate.chkEnabled.mne"));
         this.chkEnabled.setToolTipText(bundle.getString("JUnitCfgOfCreate.chkEnabled.toolTip"));
@@ -205,7 +205,8 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         
     }
     
-    public static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.junit.Bundle");
+    //public static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.junit.Bundle");
+    public static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.junit.Bundle");
     private FileSystem fileSystem;
     
     private void fillFileSystems() {
@@ -278,7 +279,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         cfg.chkComments.setSelected(JUnitSettings.getDefault().isBodyComments());
         cfg.chkContent.setSelected(JUnitSettings.getDefault().isBodyContent());
         cfg.chkJavaDoc.setSelected(JUnitSettings.getDefault().isJavaDoc());        
-        cfg.chkRegenerateSuite.setSelected(JUnitSettings.getDefault().isRegenerateSuiteMethod());        
+        cfg.chkGenerateSuites.setSelected(JUnitSettings.getDefault().isGenerateSuiteClasses());        
         cfg.chkEnabled.setSelected(JUnitSettings.getDefault().isCfgCreateEnabled());
         cfg.chkPackagePrivateClasses.setSelected(JUnitSettings.getDefault().isIncludePackagePrivateClasses());
         
@@ -325,7 +326,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
             JUnitSettings.getDefault().setBodyContent(cfg.chkContent.isSelected());
             JUnitSettings.getDefault().setJavaDoc(cfg.chkJavaDoc.isSelected());
             JUnitSettings.getDefault().setCfgCreateEnabled(cfg.chkEnabled.isSelected());
-            JUnitSettings.getDefault().setRegenerateSuiteMethod(cfg.chkRegenerateSuite.isSelected());
+            JUnitSettings.getDefault().setGenerateSuiteClasses(cfg.chkGenerateSuites.isSelected());
             JUnitSettings.getDefault().setIncludePackagePrivateClasses(cfg.chkPackagePrivateClasses.isSelected());
             
             return true;
@@ -373,7 +374,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         chkJavaDoc = new javax.swing.JCheckBox();
         chkExceptions = new javax.swing.JCheckBox();
         chkAbstractImpl = new javax.swing.JCheckBox();
-        chkRegenerateSuite = new javax.swing.JCheckBox();
+        chkGenerateSuites = new javax.swing.JCheckBox();
         chkPackagePrivateClasses = new javax.swing.JCheckBox();
         chkEnabled = new javax.swing.JCheckBox();
 
@@ -392,14 +393,14 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         cboFileSystem.setPreferredSize(new java.awt.Dimension(200, 26));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 2, 2, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 2, 2, 4);
         add(cboFileSystem, gridBagConstraints);
 
         jpTemplates.setLayout(new java.awt.GridBagLayout());
 
-        jpTemplates.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(), java.util.ResourceBundle.getBundle("org/netbeans/modules/junit/Bundle").getString("JUnitCfgOfCreate.jpTemplates.title")));
+        jpTemplates.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(), bundle.getString("JUnitCfgOfCreate.jpTemplates.title")));
         lblSuiteClass.setText(bundle.getString("JUnitCfgOfCreate.lblSuiteClass.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 6);
@@ -443,7 +444,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
 
         jpCodeGen.setLayout(new java.awt.GridBagLayout());
 
-        jpCodeGen.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(), java.util.ResourceBundle.getBundle("org/netbeans/modules/junit/Bundle").getString("JUnitCfgOfCreate.jpCodeGen.title")));
+        jpCodeGen.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(), bundle.getString("JUnitCfgOfCreate.jpCodeGen.title")));
         chkPublic.setText(bundle.getString("JUnitCfgOfCreate.chkPublic.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -508,16 +509,16 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         jpCodeGen.add(chkAbstractImpl, gridBagConstraints);
 
-        chkRegenerateSuite.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/junit/Bundle").getString("JUnitCfgOfCreate.chkRegenerateSuite.text"));
+        chkGenerateSuites.setText(bundle.getString("JUnitCfgOfCreate.chkGenerateSuites.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jpCodeGen.add(chkRegenerateSuite, gridBagConstraints);
+        jpCodeGen.add(chkGenerateSuites, gridBagConstraints);
 
-        chkPackagePrivateClasses.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/junit/Bundle").getString("JUnitCfgOfCreate.chkPackagePrivateClasses.text"));
+        chkPackagePrivateClasses.setText(bundle.getString("JUnitCfgOfCreate.chkPackagePrivateClasses.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -549,7 +550,6 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel lblSuiteClass;
     private javax.swing.JCheckBox chkContent;
-    private javax.swing.JCheckBox chkRegenerateSuite;
     private javax.swing.JCheckBox chkComments;
     private javax.swing.JLabel lblFileSystem;
     private javax.swing.JPanel jpTemplates;
@@ -563,6 +563,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
     private javax.swing.JCheckBox chkAbstractImpl;
     private javax.swing.JCheckBox chkPackagePrivateClasses;
     private javax.swing.JComboBox cboSuiteClass;
+    private javax.swing.JCheckBox chkGenerateSuites;
     private javax.swing.JCheckBox chkExceptions;
     private javax.swing.JPanel jpCodeGen;
     private javax.swing.JCheckBox chkEnabled;

@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -39,54 +39,54 @@ import java.io.*;
  * @version 1.0
  */
 public class CreateTestAction extends CookieAction {
-
+    
     /* public members */
-    public String getName () {
-        return NbBundle.getMessage (CreateTestAction.class, "LBL_Action_CreateTest");
+    public String getName() {
+        return NbBundle.getMessage(CreateTestAction.class, "LBL_Action_CreateTest");
     }
-
-    public HelpCtx getHelpCtx () {
+    
+    public HelpCtx getHelpCtx() {
         return new HelpCtx(CreateTestAction.class);
     }
-
+    
     /* protected members */
-    protected Class[] cookieClasses () {
+    protected Class[] cookieClasses() {
         //return new Class[] { DataFolder.class, DataObject.class, ClassElement.class };
         // return new Class[] { DataFolder.class, SourceCookie.Editor.class, ClassElement.class };
         return new Class[] { DataFolder.class, SourceCookie.class, ClassElement.class };
     }
-
+    
     /** Perform special enablement check in addition to the normal one.
-    protected boolean enable (Node[] nodes) {
-	if (! super.enable (nodes)) return false;
-	if (...) ...;
-    }
-    */
+     * protected boolean enable (Node[] nodes) {
+     * if (! super.enable (nodes)) return false;
+     * if (...) ...;
+     * }
+     */
     /*
     protected boolean enable (Node[] nodes) {
         if (nodes.length == 0) {
-            return false;            
+            return false;
         }
         for (int i=0; i < nodes.length; i++) {
             Cookie cookie = nodes[i].getCookie(type
         }
     }
      **/
-
-    protected void initialize () {
-	super.initialize ();
+    
+    protected void initialize() {
+        super.initialize();
         putProperty(javax.swing.Action.SHORT_DESCRIPTION, NbBundle.getMessage(CreateTestAction.class, "HINT_Action_CreateTest"));
     }
-
-    protected String iconResource () {
+    
+    protected String iconResource() {
         return "org/netbeans/modules/junit/resources/CreateTestActionIcon.gif";
     }
-
-    protected int mode () {
+    
+    protected int mode() {
         return MODE_ANY;    // allow creation of tests for multiple selected nodes (classes, packages)
     }
-
-    protected void performAction (Node[] nodes) {
+    
+    protected void performAction(Node[] nodes) {
         FileSystem      fsTest = null;
         DataObject      doTestTempl = null;
         DataObject      doSuiteTempl = null;
@@ -112,7 +112,7 @@ public class CreateTestAction extends CookieAction {
             temp = JUnitSettings.getDefault().getSuiteTemplate();
             fo = Repository.getDefault().getDefaultFileSystem().findResource(temp);
             doSuiteTempl = DataObject.find(fo);
-
+            
             // get the Test class template
             temp = JUnitSettings.getDefault().getClassTemplate();
             fo = Repository.getDefault().getDefaultFileSystem().findResource(temp);
@@ -125,7 +125,7 @@ public class CreateTestAction extends CookieAction {
             org.openide.DialogDisplayer.getDefault().notify(descr);
             return;
         }
-
+        
         TestCreator.initialize();
         progress.showMe(true);
         progress.displayStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTest_Begin"));
@@ -134,20 +134,20 @@ public class CreateTestAction extends CookieAction {
             for(int nodeIdx = 0; nodeIdx < nodes.length; nodeIdx++) {
                 if (!hasParentAmongNodes(nodes, nodeIdx)) {
                     if (null != (fo = TestUtil.getFileObjectFromNode(nodes[nodeIdx])))
-                        createTest(fsTest, fo, doTestTempl, doSuiteTempl, null); 
+                        createTest(fsTest, fo, doTestTempl, doSuiteTempl, null);
                     else {
                         // @@ log - the node has no file associated
                         System.out.println("@@ log - the node has no file associated");
                     }
                 }
             }
-            progress.displayStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTests_Finished"));            
+            progress.displayStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTests_Finished"));
         }
         catch (CreateTestCanceledException e) {
             // tests creation has been canceled by the user
-            progress.displayStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTests_Cancelled"));            
+            progress.displayStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTests_Cancelled"));
         }
-        finally {            
+        finally {
             progress.hideMe();
         }
     }
@@ -159,7 +159,7 @@ public class CreateTestAction extends CookieAction {
     private static final String msgCreating = NbBundle.getMessage(CreateTestAction.class, "LBL_generator_status_creating");
     private static final String msgScanning = NbBundle.getMessage(CreateTestAction.class, "LBL_generator_status_scanning");
     private static final String msgIgnoring = NbBundle.getMessage(CreateTestAction.class, "LBL_generator_status_ignoring");
-
+    
     private JUnitProgress progress = new JUnitProgress(NbBundle.getMessage(JUnitProgress.class, "LBL_generator_progress_title"));
     private class CreateTestCanceledException extends Exception {}
     
@@ -167,18 +167,16 @@ public class CreateTestAction extends CookieAction {
         ClassElement[]      classTargets;
         DataObject          doTarget;
         FileObject          fo;
-
+        
         try {
             fo = folder.getPrimaryFile();
             // find the suite class, if it exists or create one from active template
             doTarget = getTestClass(fsTest, TestUtil.getTestSuiteFullName(fo), doSuiteT);
-
             // generate the test suite for all listed test classes
             classTargets = TestUtil.getAllClassElementsFromDataObject(doTarget);
             
             for (int i=0; i < classTargets.length; i++) {
                 ClassElement classTarget = classTargets[i];
-                
                 progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
                 
                 TestCreator.createTestSuite(suite, fo.getPackageName('.'), classTarget);
@@ -189,13 +187,13 @@ public class CreateTestAction extends CookieAction {
                     parentSuite.add(classTarget.getName().getFullName());
                 }
             }
-        } 
+        }
         catch (Exception e) {
             // @@ log - the suite file creation failure
             System.out.println("@@ log - the suite file creation failure");
         }
     }
-
+    
     private void createTest(FileSystem fsTest, FileObject foSource, DataObject doTestT, DataObject doSuiteT, LinkedList parentSuite) throws CreateTestCanceledException {
         if (foSource.isFolder()) {
             // recurse of subfolders
@@ -218,8 +216,9 @@ public class CreateTestAction extends CookieAction {
                 }
             }
             
-            if (0 < mySuite.size()) 
+            if ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses())) {
                 createSuiteTest(fsTest, DataFolder.findFolder(foSource), mySuite, doSuiteT, parentSuite);
+            }
         }
         else {
             ClassElement[]  classSources;
@@ -227,7 +226,7 @@ public class CreateTestAction extends CookieAction {
             DataObject      doTarget;
             String          name;
             
-            try {                
+            try {
                 classSources = TestUtil.getAllClassElementsFromDataObject(DataObject.find(foSource));
                 for (int i=0; i < classSources.length; i++) {
                     ClassElement classSource = classSources[i];
@@ -258,7 +257,7 @@ public class CreateTestAction extends CookieAction {
                         System.out.println("@@ log - the tested class file can't be parsed.");
                     }
                 }
-            } 
+            }
             catch (Exception e) {
                 // @@ log - the test file creation failure
                 System.out.println("@@ log - the test file creation failure");
@@ -270,7 +269,7 @@ public class CreateTestAction extends CookieAction {
             throw new CreateTestCanceledException();
     }
     
-
+    
     
     private DataObject getTestClass(FileSystem fsTest, String testClassName, DataObject doTemplate) throws IOException, DataObjectNotFoundException {
         FileObject      fo;

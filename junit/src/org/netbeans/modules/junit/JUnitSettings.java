@@ -54,7 +54,7 @@ public class JUnitSettings extends SystemOption {
     public static final String PROP_GENERATE_ABSTRACT_IMPL = "gemerate_abstract_impl";
     public static final String PROP_TEST_RUNNER         = "test_runner";
     public static final String PROP_PROPERTIES          = "properties";    
-    public static final String PROP_REGENERATE_SUITE_METHOD = "regenerate_suite_method";
+    public static final String PROP_GENERATE_SUITE_CLASSES   = "generate_suite_classes";
     
     public static final String PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES = "include_package_private_classes";
     public static final String PROP_GENERATE_TESTS_FROM_TEST_CLASSES = "generate_tests_from_tests_classes";    
@@ -104,7 +104,7 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, Boolean.FALSE, true);
         putProperty(PROP_TEST_RUNNER, "org.netbeans.modules.junit.testrunner.JUnitTestRunner", true);
         putProperty(PROP_PROPERTIES, NbBundle.getMessage(JUnitSettings.class, "PROP_properties_default_value"), true);        
-        putProperty(PROP_REGENERATE_SUITE_METHOD, Boolean.TRUE, true);
+        putProperty(PROP_GENERATE_SUITE_CLASSES, Boolean.TRUE, true);
         putProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES, Boolean.FALSE, true);
         putProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES, Boolean.FALSE, false);        
         putProperty(PROP_GENERATE_MAIN_METHOD, Boolean.FALSE, true);
@@ -134,7 +134,7 @@ public class JUnitSettings extends SystemOption {
         out.writeObject(getProperty(PROP_GENERATE_EXCEPTION_CLASSES));
         out.writeObject(getProperty(PROP_TEST_RUNNER));
         out.writeObject(getProperty(PROP_PROPERTIES));
-        out.writeObject(getProperty(PROP_REGENERATE_SUITE_METHOD));
+        out.writeObject(getProperty(PROP_GENERATE_SUITE_CLASSES));
         out.writeObject(getProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES));
         out.writeObject(getProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES));        
         out.writeObject(getProperty(PROP_GENERATE_MAIN_METHOD));
@@ -191,7 +191,7 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, in.readObject(), true);
         putProperty(PROP_TEST_RUNNER, in.readObject(), true);
         putProperty(PROP_PROPERTIES, in.readObject(), true);
-        putProperty(PROP_REGENERATE_SUITE_METHOD,in.readObject(), true);
+        putProperty(PROP_GENERATE_SUITE_CLASSES,in.readObject(), true);
         putProperty(PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES,in.readObject(), true);
         putProperty(PROP_GENERATE_TESTS_FROM_TEST_CLASSES,in.readObject(), true);
         putProperty(PROP_GENERATE_MAIN_METHOD,in.readObject(), true);
@@ -224,7 +224,7 @@ public class JUnitSettings extends SystemOption {
             // dummy read object (Generate NBJUnit poperty) 
             in.readObject();
             // dummy end
-            putProperty(PROP_REGENERATE_SUITE_METHOD,in.readObject(), true);
+            putProperty(PROP_GENERATE_SUITE_CLASSES,in.readObject(), true);
         } catch (OptionalDataException ode) {
             // deserialization failed - just swallow it
             // probably a very old version of JUNit (pre 2.5)
@@ -377,12 +377,12 @@ public class JUnitSettings extends SystemOption {
         return false;
     }
     
-    public boolean isRegenerateSuiteMethod() {
-        return ((Boolean) getProperty(PROP_REGENERATE_SUITE_METHOD)).booleanValue();
+    public boolean isGenerateSuiteClasses() {
+        return ((Boolean) getProperty(PROP_GENERATE_SUITE_CLASSES)).booleanValue();
     }
 
-    public void setRegenerateSuiteMethod(boolean newVal) {
-        putProperty(PROP_REGENERATE_SUITE_METHOD, newVal ? Boolean.TRUE : Boolean.FALSE, true);
+    public void setGenerateSuiteClasses(boolean newVal) {
+        putProperty(PROP_GENERATE_SUITE_CLASSES, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
 
     

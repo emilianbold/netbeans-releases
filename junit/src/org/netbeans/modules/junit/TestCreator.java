@@ -21,7 +21,7 @@ package org.netbeans.modules.junit;
 import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
-
+import java.text.MessageFormat;
 import javax.swing.text.Element;
 import javax.swing.text.BadLocationException;
 
@@ -30,6 +30,7 @@ import org.openide.filesystems.*;
 import org.openide.cookies.SourceCookie;
 import org.openide.cookies.SourceCookie.Editor;
 import org.openide.util.Task;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -43,11 +44,9 @@ public class TestCreator extends java.lang.Object {
     static private final String JUNIT_FRAMEWORK_PACKAGE_NAME    = "junit.framework";    
     
     static private final String forbiddenMethods[]               = {"main", "suite", "run", "runBare", "setUp", "tearDown"};
-    static private final String SUIT_BLOCK_START                = "--JUNIT:";
-    static private final String SUIT_BLOCK_END                  = ":JUNIT--";
-    static private final String SUIT_BLOCK_COMMENT              = "//This block was automatically generated and can be regenerated again.\n" +
-                                                                  "//Do NOT change lines enclosed by the --JUNIT: and :JUNIT-- tags.\n";
-    static private final String SUIT_RETURN_COMMENT             = "//This value MUST ALWAYS be returned from this function.\n";
+    
+    static private final String GENERATED_SUITE_BLOCK_START                = "--JUNIT:";
+    static private final String GENERATED_SUITE_BLOCK_END                  = ":JUNIT--";    
 
     /* public methods */
 
@@ -202,7 +201,7 @@ public class TestCreator extends java.lang.Object {
         
         //System.err.println("Generating suite() method for :"+classTest.getName());
         
-        removeSuiteMethod(classTest);
+        //removeSuiteMethod(classTest);
         
         // create header of function
         MethodElement method = new MethodElement();
@@ -271,7 +270,9 @@ public class TestCreator extends java.lang.Object {
 
                     // generate JavaDoc for test method
                     if (JUnitSettings.getDefault().isJavaDoc()) {
-                        method.getJavaDoc().setText("Test of " + name + " method, of class " + classSource.getName().getFullName() + ".");
+                        String msg = MessageFormat.format(NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.JavaDoc.comment"),
+                                    new Object[] {name, classSource.getName().getFullName()});
+                        method.getJavaDoc().setText(msg);
                     }
 
                     // generate the body of method
@@ -283,11 +284,11 @@ public class TestCreator extends java.lang.Object {
                     }
                     if (JUnitSettings.getDefault().isBodyComments()) {
                         // generate comments to bodies
-                        newBody.append("\n// Add your test code below by replacing the default call to fail.\n");
+                        newBody.append("\n"+NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.defaultComment")+"\n");
                     }
                     if (JUnitSettings.getDefault().isBodyContent()) {
                         // generate a test failuare by default (in response to request 022).
-                        newBody.append("fail(\"The test case is empty.\");\n");
+                        newBody.append(NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.defaultBody")+"\n");
                     }
                     method.setBody(newBody.toString());
                     method.setReturn(Type.VOID);
@@ -409,7 +410,7 @@ public class TestCreator extends java.lang.Object {
         
         
         // add suite method ... only if we are supposed to do so
-        if (JUnitSettings.getDefault().isRegenerateSuiteMethod()) {
+        if (JUnitSettings.getDefault().isGenerateSuiteClasses()) {
             methods = new LinkedList();
             methods.add(createTestClassSuiteMethod(classTest));
             addMethods(classTest, methods);            
@@ -437,41 +438,43 @@ public class TestCreator extends java.lang.Object {
     static private void fillSuiteClass(LinkedList listMembers, String packageName, ClassElement classTest) throws SourceException {
         LinkedList      methods;
         MethodElement   method;
-        StringBuffer    newBody;
-        StringTokenizer oldBody;
-        String          line;
-        boolean         insideBlock;
-        boolean         justBlockExists;
+        boolean         updateBody = false;
+        
         
         fillGeneral(classTest);
         
         methods = new LinkedList();
 
-        // create suite method  - if regenerate - remove the old suite method
-       if (JUnitSettings.getDefault().isRegenerateSuiteMethod()) {     
-            //System.err.println("TestCreator.cfillSuitClass() - is regenerate ...");
-           removeSuiteMethod(classTest);
-        } 
-        method = classTest.getMethod(Identifier.create("suite"), new Type[] {});
-        if (null == method) {
+        removeSuiteMethod(classTest);
+
+        MethodElement oldMethod = classTest.getMethod(Identifier.create("suite"), new Type[] {});
+        if (oldMethod == null) {
             method = new MethodElement();
             method.setName(Identifier.create("suite"));
+            
+        } else {
+            method = oldMethod;
         }
         method.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
         method.setReturn(Type.createClass(Identifier.create("Test")));
-
+        method.getJavaDoc().setText(NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.JavaDoc.comment"));
+        
         // generate the body of suite method
-        oldBody = new StringTokenizer(method.getBody(), "\n");
-        newBody = new StringBuffer();
-        insideBlock = false;
-        justBlockExists = false;
+        StringTokenizer oldBody = new StringTokenizer(method.getBody(), "\n");
+        StringBuffer newBody = new StringBuffer();
+        
+        boolean insideBlock = false;
+        boolean justBlockExists = false;
+        
+        
+        
         while (oldBody.hasMoreTokens()) {
-            line = oldBody.nextToken();
+            String line = oldBody.nextToken();
             
-            if (-1 != line.indexOf(SUIT_BLOCK_START)) {
+            if (-1 != line.indexOf(GENERATED_SUITE_BLOCK_START)) {
                 insideBlock = true;
             }
-            else if (-1 != line.indexOf(SUIT_BLOCK_END)) {
+            else if (-1 != line.indexOf(GENERATED_SUITE_BLOCK_END)) {
                 // JUst's owned suite block, regenerate it
                 insideBlock = false;
                 generateSuiteBody(classTest.getName().getName(), newBody, listMembers, true);
@@ -483,34 +486,27 @@ public class TestCreator extends java.lang.Object {
             }
         }
         
-        if (!justBlockExists)
-            generateSuiteBody(classTest.getName().getName(), newBody, listMembers, false);
-
-        method.setBody(newBody.toString());
-        methods.add(method);
-        
-        // add/update methods to the class
-        addMethods(classTest, methods);
+        if (!justBlockExists) {
+            generateSuiteBody(classTest.getName().getName(), newBody, listMembers, true);
+        }
+                    
+        //if (updateBody) {
+            method.setBody(newBody.toString());
+            // add/update methods to the class
+            methods.add(method);
+            addMethods(classTest, methods);
+        //}
     }
     
     static private void generateSuiteBody(String testName, StringBuffer body, LinkedList members, boolean alreadyExists) {
         ListIterator    li;
         String          name;
         
-        body.append("\n//" + SUIT_BLOCK_START + "\n");
-        body.append(SUIT_BLOCK_COMMENT);
-        
-        // !-- GENERATE NbJUnit no longer supported
-        /*
-        if (JUnitSettings.getDefault().isGenerateNbJUnit()) {
-            body.append("\nTestSuite suite = new NbTestSuite(\"" + testName + "\");\n");
-        } else {
-            body.append("\nTestSuite suite = new TestSuite(\"" + testName + "\");\n");
-        }
-         */
-        // GENERATE NbJUnit no longer supported --!
-        
-        body.append("\nTestSuite suite = new TestSuite(\"" + testName + "\");\n");
+           
+        body.append('\n');
+        //body.append("//" + GENERATED_SUITE_BLOCK_START + "\n");
+        //body.append(NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.suiteBlock.comment")+"\n");
+        body.append("TestSuite suite = new TestSuite(\"" + testName + "\");\n");
         
         li = members.listIterator();
         
@@ -518,12 +514,10 @@ public class TestCreator extends java.lang.Object {
             name = (String) li.next();
             body.append("suite.addTest(" + name + ".suite());\n");
         }
-        body.append("//" + SUIT_BLOCK_END + "\n");
 
-        if (!alreadyExists) {
-            body.append(SUIT_RETURN_COMMENT);
-            body.append("return suite;\n");
-        }
+        body.append("return suite;\n");
+        //body.append("//" + GENERATED_SUITE_BLOCK_END + "\n");
+                
     }
     
     static private boolean isForbidden(String name) {
@@ -598,13 +592,11 @@ public class TestCreator extends java.lang.Object {
 
             // generate JavaDoc for the generated implamentation of tested abstract class
             if (JUnitSettings.getDefault().isJavaDoc()) {
-                StringBuffer    javadoc = new StringBuffer();
                 
-                javadoc.append("Generated implementation of abstract class ");
-                javadoc.append(sourceClass.getName().getFullName());
-                javadoc.append(". Please fill dummy bodies of generated methods.");
-
-                innerClass.getJavaDoc().setText(javadoc.toString());
+                String msg= MessageFormat.format(NbBundle.getMessage(TestCreator.class,"TestCreator.abstracImpl.JavaDoc.comment"), 
+                                new Object[] {sourceClass.getName().getFullName()});
+                   
+                innerClass.getJavaDoc().setText(msg);
             }
             createImpleConstructors(sourceClass, innerClass);
         }
@@ -647,7 +639,7 @@ public class TestCreator extends java.lang.Object {
 
         // prepare the body of method implementation
         if (JUnitSettings.getDefault().isBodyComments())
-            body.append("\n//fill the body in order to provide useful implementation\n");
+            body.append(NbBundle.getMessage(TestCreator.class,"TestCreator.methodImpl.bodyComment"));
         
         if (newMethod.getReturn().isClass() || newMethod.getReturn().isArray()) {
             body.append("\nreturn null;\n");

@@ -119,6 +119,7 @@
     	<folder name="Services">
                 <!-- Display the system option under the "Testing" category in Options. -->
         	<folder name="Testing">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
                     <!-- Point to the real settings file (always on the system file system). -->
 	            <file name="org-netbeans-modules-junit-JUnitSettings.shadow">
                         <attr name="originalFile" stringvalue="Services/org-netbeans-modules-junit-JUnitSettings.settings"/>

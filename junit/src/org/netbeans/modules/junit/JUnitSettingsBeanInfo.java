@@ -100,10 +100,10 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             propGenerateAbstractImpl.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_abstract_impl"));
 
             
-            PropertyDescriptor propRegenerateSuiteMethod = new PropertyDescriptor ("RegenerateSuiteMethod", JUnitSettings.class);
-            propRegenerateSuiteMethod.setPropertyEditorClass(BoolPropEd.class);
-            propRegenerateSuiteMethod.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_regenerate_suite_method"));
-            propRegenerateSuiteMethod.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_regenerate_suite_method"));
+            PropertyDescriptor propGenerateSuiteClasses = new PropertyDescriptor ("GenerateSuiteClasses", JUnitSettings.class);
+            propGenerateSuiteClasses.setPropertyEditorClass(BoolPropEd.class);
+            propGenerateSuiteClasses.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_suite_classes"));
+            propGenerateSuiteClasses.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_suite_classes"));
             
             PropertyDescriptor propIncludePackagePrivateClasses = new PropertyDescriptor ("IncludePackagePrivateClasses", JUnitSettings.class);
             propIncludePackagePrivateClasses.setPropertyEditorClass(BoolPropEd.class);
@@ -176,7 +176,7 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
               propMembersPublic, propMembersProtected, propMembersPackage, propBodyComments, propBodyContent, 
               propJavaDoc, propCfgConfigEnabled, propInternalExecutor, 
               propGenerateExceptionClasses, propGenerateAbstractImpl, propIncludePackagePrivateClasses, 
-              propRegenerateSuiteMethod, propTestRunner, propProperties,  propGenerateTestsFromTestClasses,
+              propGenerateSuiteClasses, propTestRunner, propProperties,  propGenerateTestsFromTestClasses,
               propGenerateMainMethod, propGenerateMainMethodBody, propTestClassNamePrefix, propTestClassNameSuffix,
               propSuiteClassNamePrefix, propSuiteClassNameSuffix, propRootSuiteClassName 
             };
