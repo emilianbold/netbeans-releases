@@ -55,11 +55,11 @@ public final class NewProjectWizard extends TemplateWizard {
     protected WizardDescriptor.Panel createTemplateChooser() {
         WizardDescriptor.Panel panel = new TemplatesPanel ();
         JComponent jc = (JComponent)panel.getComponent ();
-        jc.setName (NbBundle.getBundle (NewProjectWizard.class).getString ("LBL_TemplatesPanel_Name")); // NOI18N
+        jc.setName (NbBundle.getBundle (NewProjectWizard.class).getString ("LBL_NewProjectWizard_Name")); // NOI18N
         jc.putClientProperty ("WizardPanel_contentSelectedIndex", new Integer (0)); // NOI18N
         jc.putClientProperty ("WizardPanel_contentData", new String[] { // NOI18N
-                NbBundle.getBundle (NewProjectWizard.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
-                NbBundle.getBundle (NewProjectWizard.class).getString ("LBL_TemplatesPanel_Dots")}); // NOI18N
+                NbBundle.getBundle (NewProjectWizard.class).getString ("LBL_NewProjectWizard_Name"), // NOI18N
+                NbBundle.getBundle (NewProjectWizard.class).getString ("LBL_NewProjectWizard_Dots")}); // NOI18N
         return panel;
     }          
     
