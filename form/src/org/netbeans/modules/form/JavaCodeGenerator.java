@@ -426,7 +426,7 @@ class JavaCodeGenerator extends CodeGenerator {
             return;
 
         try {
-            IndentEngine engine = IndentEngine.find("text/x-java"); // NOI18N
+            IndentEngine engine = IndentEngine.find(formManager.getFormEditorSupport().getDocument()); // NOI18N
             AWTIndentStringWriter initCodeBuffer = new AWTIndentStringWriter();
             Writer initCodeWriter = engine.createWriter(
                 formManager.getFormEditorSupport().getDocument(),
@@ -534,7 +534,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (errorInitializing)
             return;
 
-        IndentEngine engine = IndentEngine.find("text/x-java"); // NOI18N
+        IndentEngine engine = IndentEngine.find(formManager.getFormEditorSupport().getDocument()); // NOI18N
         StringWriter variablesBuffer = new StringWriter();
         Writer variablesWriter = engine.createWriter(
             formManager.getFormEditorSupport().getDocument(),
