@@ -19,30 +19,35 @@ import org.openide.NotifyDescriptor.Message;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
-import org.netbeans.modules.debugger.Controller;
+import org.netbeans.spi.debugger.ui.Controller;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 
 import org.netbeans.modules.web.debug.util.Utils;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
 /**
-* Customizer of JspEvent
+* Customizer of JspLineBreakpoint
 *
 * @author Martin Grebac
 */
-class JspBreakpointPanel extends JPanel implements Controller, Runnable {
+public class JspBreakpointPanel extends JPanel implements Controller, Runnable {
 
-    private JspEvent event;
-    private boolean valid = false;
-    
     static final long serialVersionUID =-8164649328980808272L;
 
+    private LineBreakpoint breakpoint;
+    private boolean valid = false;
+
+    public JspBreakpointPanel() {
+        //TODO
+    }        
+    
     /** Creates new form JspBreakpointPanel */
-    public JspBreakpointPanel(JspEvent e) {
+    public JspBreakpointPanel(LineBreakpoint b) {
    
-        event = e;
+        breakpoint = b;
         initComponents ();
         putClientProperty("HelpID", "jsp_breakpoint");//NOI18N
 
@@ -54,28 +59,28 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
         // a11y
         getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_LineBreakpointPanel")); // NOI18N
  
-        Object[] objs = Utils.getJsps();
-        if (objs != null) {
-            if (objs.length != 0) {
-                cboxJspSourcePath.setModel(
-                    new DefaultComboBoxModel(objs)
-                );
-            }
-        }
-        
-        String jspSourcePath = event.getJspName();
-        String contextRoot = event.getContextRoot();
-       
-        cboxJspSourcePath.setSelectedItem(jspSourcePath == null ? "" : contextRoot + " : " + jspSourcePath);
-
-        String value = (String)cboxJspSourcePath.getSelectedItem();
-        if (value != null && value.indexOf(':') > -1) {
-            String ctx = value.substring(0,value.indexOf(':')-1);
-            String name = value.substring(value.indexOf(':') + 2);
-            event.setContextRoot(ctx);
-            event.setJspName(name);
-        }
-        
+//        Object[] objs = Utils.getJsps();
+//        if (objs != null) {
+//            if (objs.length != 0) {
+//                cboxJspSourcePath.setModel(
+//                    new DefaultComboBoxModel(objs)
+//                );
+//            }
+//        }
+//        
+//        String jspSourcePath = breakpoint.getJspName();
+//        String contextRoot = breakpoint.getContextRoot();
+//       
+//        cboxJspSourcePath.setSelectedItem(jspSourcePath == null ? "" : contextRoot + " : " + jspSourcePath);
+//
+//        String value = (String)cboxJspSourcePath.getSelectedItem();
+//        if (value != null && value.indexOf(':') > -1) {
+//            String ctx = value.substring(0,value.indexOf(':')-1);
+//            String name = value.substring(value.indexOf(':') + 2);
+//            breakpoint.setContextRoot(ctx);
+//            breakpoint.setJspName(name);
+//        }
+//        
         fillLineNumber();
         run();
     }
@@ -175,8 +180,8 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
         if (value != null && value.indexOf(':') > -1) {
             String ctx = value.substring(0,value.indexOf(':')-1);
             String name = value.substring(value.indexOf(':') + 2);
-            event.setContextRoot(ctx);
-            event.setJspName(name);
+//            event.setContextRoot(ctx);
+//            event.setJspName(name);
         }
         
     }//GEN-LAST:event_cboxJspSourcePathItemStateChanged
@@ -193,30 +198,30 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
     }//GEN-LAST:event_tfLineNumberFocusGained
 
     private void tfLineNumberFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfLineNumberFocusLost
-        if (!evt.isTemporary()) {
-            if (tfLineNumber.getText().trim().length() > 0) {
-                try {
-                    int i = Integer.parseInt(tfLineNumber.getText ());
-                    if (i < 1) {
-                        DialogDisplayer.getDefault().notify (
-                            new Message (
-                                NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Bad_line_number"),  //NOI18N
-                                NotifyDescriptor.ERROR_MESSAGE
-                            )
-                        );
-                    } else if (event != null) {
-                            event.setLineNumber(i);
-                    }                    
-                } catch (NumberFormatException e) {
-                    DialogDisplayer.getDefault().notify (
-                        new Message (
-                            NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Bad_line_number"),  //NOI18N
-                            NotifyDescriptor.ERROR_MESSAGE
-                        )
-                    );
-                }
-            }
-        }
+//        if (!evt.isTemporary()) {
+//            if (tfLineNumber.getText().trim().length() > 0) {
+//                try {
+//                    int i = Integer.parseInt(tfLineNumber.getText ());
+//                    if (i < 1) {
+//                        DialogDisplayer.getDefault().notify (
+//                            new Message (
+//                                NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Bad_line_number"),  //NOI18N
+//                                NotifyDescriptor.ERROR_MESSAGE
+//                            )
+//                        );
+//                    } else if (event != null) {
+//                            event.setLineNumber(i);
+//                    }                    
+//                } catch (NumberFormatException e) {
+//                    DialogDisplayer.getDefault().notify (
+//                        new Message (
+//                            NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Bad_line_number"),  //NOI18N
+//                            NotifyDescriptor.ERROR_MESSAGE
+//                        )
+//                    );
+//                }
+//            }
+//        }
     }//GEN-LAST:event_tfLineNumberFocusLost
 
     private void cboxJspSourcePathFocusGained(java.awt.event.FocusEvent evt) {
@@ -229,12 +234,12 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
     /*    if (!isAcceptableDataObject()) {
             return;
         }*/
-        int lnum = event.getLineNumber();
-        if (lnum < 1)  {
-            tfLineNumber.setText ("");  //NOI18N
-        } else {
-            tfLineNumber.setText ("" + lnum); // NOI18N
-        }
+//        int lnum = event.getLineNumber();
+//        if (lnum < 1)  {
+//            tfLineNumber.setText ("");  //NOI18N
+//        } else {
+//            tfLineNumber.setText ("" + lnum); // NOI18N
+//        }
     }
     
     /******************************/
@@ -289,8 +294,8 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
     }    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel lblJspSourcePath;
     private javax.swing.JComboBox cboxJspSourcePath;
+    private javax.swing.JLabel lblJspSourcePath;
     private javax.swing.JLabel lblLineNumber;
     private javax.swing.JTextField tfLineNumber;
     // End of variables declaration//GEN-END:variables
