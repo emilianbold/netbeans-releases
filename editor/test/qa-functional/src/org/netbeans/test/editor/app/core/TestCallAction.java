@@ -298,21 +298,12 @@ public class TestCallAction extends TestAction {
                                     }
                                 }
                             });
-                        } else {
-                            getLogger().addPropertyChangeListener(new PropertyChangeListener() {
-                                public void propertyChange(final java.beans.PropertyChangeEvent p1) {
-                                    if (p1.getPropertyName().compareTo(Logger.PERFORMING) == 0) {
-                                        if (!((Boolean)(p1.getNewValue())).booleanValue()) {
-                                            getLogger().removePropertyChangeListener(this);
-                                            isPerforming=false;
-                                        }
-                                    }
-                                }
-                            });
                         }
                         isPerforming=true;
                         
+                        getLogger().startPerforming();
                         long sleeps=0;
+                        //wait for Logger
                         while (getLogger().isPerforming() && sleeps < TIMEOUT) {
                             try {
                                 Thread.currentThread().sleep(250);
@@ -320,7 +311,6 @@ public class TestCallAction extends TestAction {
                             } catch (Exception ex) {
                             }
                         }
-                        getLogger().startPerforming();                        
                         System.err.println("Sleeps="+sleeps);
                     }
                 } else {
