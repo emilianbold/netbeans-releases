@@ -2838,16 +2838,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
         }
 
-        // 1. Synthetic properties - only for top frame or dialog (ugly, but
-        // necessary for format compatibility)
-        if (component == formModel.getTopRADComponent()
-            && (java.awt.Window.class.isAssignableFrom(component.getBeanClass())
-                || javax.swing.JInternalFrame.class.isAssignableFrom(
-                                             component.getBeanClass())))
-        {
-            buf.append(indent); addElementOpen(buf, XML_SYNTHETIC_PROPERTIES);
-            saveSyntheticProperties(component, buf, indent + ONE_INDENT);
-            buf.append(indent); addElementClose(buf, XML_SYNTHETIC_PROPERTIES);
+        // 1. Synthetic properties
+        if (component instanceof RADVisualFormContainer) {
+//            buf.append(indent); addElementOpen(buf, XML_SYNTHETIC_PROPERTIES);
+            saveSyntheticProperties(component, buf, indent);
+//            buf.append(indent); addElementClose(buf, XML_SYNTHETIC_PROPERTIES);
         }
 
         // 2. Events
@@ -3108,12 +3103,20 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     private void saveSyntheticProperties(RADComponent component, StringBuffer buf, String indent) {
+        boolean anyProp = false;
+        String indent2 = null;
+
         // compatibility hack for saving form's menu bar (part III)
         if (component instanceof RADVisualFormContainer) {
             RADMenuComponent menuComp =
                 ((RADVisualFormContainer)component).getContainerMenu();
             if (menuComp != null) {
                 buf.append(indent);
+                addElementOpen(buf, XML_SYNTHETIC_PROPERTIES);
+                indent2 = indent + ONE_INDENT;
+                anyProp = true;
+
+                buf.append(indent2);
                 addLeafElementOpenAttr(buf,
                     XML_SYNTHETIC_PROPERTY,
                     new String[] { ATTR_PROPERTY_NAME,
@@ -3161,8 +3164,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     continue;
                 }
             }
-            //System.out.println("saving name="+prop.getName()+", value="+value); // NOI18N
-            buf.append(indent);
+
+            if (!anyProp) {
+                buf.append(indent);
+                addElementOpen(buf, XML_SYNTHETIC_PROPERTIES);
+                indent2 = indent + ONE_INDENT;
+                anyProp = true;
+            }
+
+            buf.append(indent2);
 
             addLeafElementOpenAttr(
                 buf,
@@ -3178,6 +3188,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     encodedValue,
                 }
                 );
+        }
+
+        if (anyProp) {
+            buf.append(indent);
+            addElementClose(buf, XML_SYNTHETIC_PROPERTIES);
         }
     }
 
