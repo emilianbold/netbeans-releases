@@ -81,6 +81,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         try {
             err.println(CAPTION + " Trying to set value by customizer-ok {name="+propertyName+" / value="+propertyValue+"} .");
             propertyInitialValue = getValue(propertyName);
+
             openAndGetPropertyCustomizer(propertyName);
             setCustomizerValue();
             
@@ -127,8 +128,9 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
             err.println(CAPTION + " Trying to set value by in-place {name="+propertyName+" / value="+propertyValue+"} .");
             propertyInitialValue = getValue(propertyName);
             
-            ((TextFieldProperty) findProperty(propertyName, "TextFieldProperty")).setValue(propertyValue);
-            
+//            ((TextFieldProperty) findProperty(propertyName, "TextFieldProperty")).setValue(propertyValue);
+            new PropertySheetOperator(propertiesWindow).tblSheet().changeCellObject(findProperty(propertyName, "TextFieldProperty").getRow(),1, propertyValue);
+
             err.println(CAPTION + " Trying to set value by in-place {name="+propertyName+" / value="+propertyValue+"}  - finished.");
             verifyPropertyValue(expectance);
             
@@ -201,6 +203,9 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
      * @return Property Customizer 
      */    
     public static NbDialogOperator openAndGetPropertyCustomizer(String propertyName) {
+        // hack for troubles with request focus on already focused property
+        new PropertySheetOperator(propertiesWindow).tblSheet().selectCell(0,0);
+        
         findProperty(propertyName, "").openEditor();
         propertyCustomizer = findPropertyCustomizer(propertyName);
         return propertyCustomizer;
@@ -300,9 +305,9 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     
     /** Open property sheet (bean customizer). */
     private static NbDialogOperator openPropertySheet() {
-        String waitFrameTimeout = "FrameWaiter.WaitFrameTimeout";
-        long findTimeout = JemmyProperties.getCurrentTimeout(waitFrameTimeout);
-        JemmyProperties.setCurrentTimeout(waitFrameTimeout, 3000);
+        String waitDialogTimeout = "DialogWaiter.WaitDialogTimeout";
+        long findTimeout = JemmyProperties.getCurrentTimeout(waitDialogTimeout);
+        JemmyProperties.setCurrentTimeout(waitDialogTimeout, 3000);
 
         try{
             propertiesWindow = new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
@@ -311,7 +316,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
             propertiesWindow = new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
         }
         
-        JemmyProperties.setCurrentTimeout(waitFrameTimeout, findTimeout);
+        JemmyProperties.setCurrentTimeout(waitDialogTimeout, findTimeout);
         
         return propertiesWindow;
     }
