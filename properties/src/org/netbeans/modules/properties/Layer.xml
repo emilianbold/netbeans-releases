@@ -16,14 +16,16 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
     <folder name="Templates">
-        <attr name="API_Support/Other" boolvalue="true"/>
+        <attr name="API_Support/Other" boolvalue="true"/>        
         <folder name="Other">
+            <attr name="templateType_Other" boolvalue="true"/>
             <file name="properties.properties" url="sample.properties">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.properties.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/properties/TemplateHelp.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/properties/propertiesObject.gif"/>
-            </file>
+                <attr name="templateType_Other" boolvalue="true"/>
+            </file>            
         </folder>
     </folder>
 

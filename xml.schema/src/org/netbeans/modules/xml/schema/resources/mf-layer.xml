@@ -24,11 +24,13 @@ Microsystems, Inc. All Rights Reserved.
     <!-- register templates -->  
     <folder name="Templates">
         <folder name="XML">
+            <attr name="templateType_XML" boolvalue="true"/>
             <file name="XMLSchema.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/resources/templates/XMLSchema.xml">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/xmlSchemaObject.gif" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/templates/XMLSchema.html" />
+                <attr name="templateType_XML" boolvalue="true"/>
             </file>
             <attr name="XMLSchema.xsd/xml_entity.ent" boolvalue="true"/>
         </folder> <!-- XML -->

@@ -31,7 +31,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- register templates -->  
     <folder name="Templates">
-
+        
+        
         <!-- Follow these nice template groups -->
         <attr name="Beans/XML" boolvalue="true"/>
         <attr name="GUIForms/XML" boolvalue="true"/>
@@ -39,12 +40,14 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="JSP_Servlet/XML" boolvalue="true"/>
     
         <folder name="XML">            
+        <attr name="templateType_XML" boolvalue="true"/>
             <file name="XMLWizard.xml" url="templates/emptyXML.xml.template">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/XMLWizard.html" />
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.xml.core.wizard.XMLWizardIterator.singleton" />            
+                <attr name="templateType_XML" boolvalue="true"/>
             </file>
             <attr name="XMLWizard.xml/emptyDTD.dtd" boolvalue="true"/>
             
@@ -53,6 +56,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/dtdObject.gif" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/emptyDTD.html" />
+                <attr name="templateType_XML" boolvalue="true"/>
             </file>
             <attr name="emptyDTD.dtd/XMLSchema.xsd" boolvalue="true"/>
             
@@ -62,6 +66,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/entObject.gif" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xml_entity.html" />
+                <attr name="templateType_XML" boolvalue="true"/>
             </file>
 
         </folder> <!-- XML -->
