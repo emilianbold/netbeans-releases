@@ -1075,6 +1075,16 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </javadoc>
   </target>
 
+  <target name="clean-external" if="${extmodule}/external.exists">
+    <echo message="Cleaning external - ${extmodule}"/>
+    <ant dir="../${extmodule}/external" target="clean"/>
+  </target>
+
+  <target name="doclean-external">
+    <available file="../${extmodule}/external/build.xml" property="${extmodule}/external.exists"/>
+    <antcall target="clean-external"/>
+  </target>
+
   <target name="real-clean" depends="clean"
           description="Clean everything possible.">
     <echo message="Cleaning old builds..."/>
@@ -1084,6 +1094,63 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <include name="NetBeans-*.zip"/>
       </fileset>
     </delete>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="ant"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="corba"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="core"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="httpserver"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="j2eeserver"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="java"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="nbbuild"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="scripting"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="tomcatint"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="xml"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="web"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="libs"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="junit"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="lexer"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="mdr"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="objectbrowser"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="tasklist"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="xtest"/>
+    </antcall>
+    <antcall target="doclean-external">
+      <param name="extmodule" value="qa"/>
+    </antcall>
     <!-- This step must be last: -->
     <echo message="Cleaning NetBeans-specific Ant extensions..."/>
     <delete file="nbantext.jar" quiet="true"/>
@@ -1092,7 +1159,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <include name="**/*.class"/>
       </fileset>
     </delete>
-    <delete file="nbantext.jar" quiet="true"/>
   </target>
   
   <target name="ant-clean">
