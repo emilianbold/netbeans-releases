@@ -222,13 +222,15 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         private static final SAXException STOP = new SAXException("STOP");  //NOI18N
 
         /**
-         * Go ahead and retrieve a print
+         * Go ahead and retrieve a print or null
          */
         protected Smell sniff(FileObject fo) {
 
             if (fo == null) return null;
             
             if (fo.equals(lastFileObject)) return print;
+            
+            if (fo.isValid() == false) return null;
 
             print = new Smell();
             parse(fo);
@@ -309,15 +311,18 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             throw STOP;
         }
 
-       public void fatalError(SAXParseException exception) throws SAXException {
+        public void fatalError(SAXParseException exception) throws SAXException {
 
-            //??? it may be caused by wrong user XML document
-            ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);           
-            if (emgr != null) {
-                String msg = NbBundle.getMessage(XMLMIMEComponent.class, "W-001", fo, new Integer(exception.getLineNumber())); //NOI18N
-                msg += "\n" + NbBundle.getMessage(XMLMIMEComponent.class, "W-002");  //NOI18N
-                emgr.annotate(exception, msg);
-                emgr.notify(emgr.INFORMATIONAL, exception);
+            // it may be caused by wrong user XML documents, notify only in debug mode
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) {
+           
+                ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);           
+                if (emgr != null) {
+                    String msg = NbBundle.getMessage(XMLMIMEComponent.class, "W-001", fo, new Integer(exception.getLineNumber())); //NOI18N
+                    msg += "\n" + NbBundle.getMessage(XMLMIMEComponent.class, "W-002");  //NOI18N
+                    emgr.annotate(exception, msg);
+                    emgr.notify(emgr.INFORMATIONAL, exception);
+                }
             }
 
             this.state = ERROR;

@@ -69,18 +69,15 @@ final class NbErrorManager extends ErrorManager {
     ) {
         Object o = map.get (t);
 
-        LinkedList ll;
+        List ll;
         if (o == null) {
             ll = new LinkedList ();
             map.put (t, ll);
-        } else if (o instanceof LinkedList) {
-            ll = (LinkedList)o;
         } else {
-            // o should still implement List interface
-            ll = new LinkedList ((List)o);
+            ll = (List)o;
         }
 
-        ll.addFirst(
+        ll.add(0,
             new Ann (severity, message, localizedMessage, stackTrace, date)
         );
 
@@ -96,8 +93,16 @@ final class NbErrorManager extends ErrorManager {
     * @param arr array of annotations (or null)
     */
     public synchronized Throwable attachAnnotations (Throwable t, Annotation[] arr) {
-        // [PENDING] shouldn't it *add* not *replace* the annotations?
-        map.put (t, Arrays.asList(arr));
+        Object o = map.get (t);
+        List l;
+        if (o == null) {
+            l = new ArrayList(arr.length + 5);
+            map.put (t, l);
+        } else {
+            l = (List)o;
+        }
+        l.addAll(0, Arrays.asList(arr));
+        
         lastException.put (Thread.currentThread(), new WeakReference (t));
 
         return t;
@@ -272,7 +277,7 @@ final class NbErrorManager extends ErrorManager {
             if (l == null) {
                 l = new ArrayList(1);
             } else {
-                // #17045: the original l may have been read-only
+                // make a copy, do not modify it
                 l = new ArrayList(l);
             }
             MissingResourceException mre = (MissingResourceException) t;

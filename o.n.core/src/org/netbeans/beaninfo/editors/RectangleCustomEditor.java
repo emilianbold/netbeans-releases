@@ -19,7 +19,6 @@ import java.util.ResourceBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.ErrorManager;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
@@ -57,7 +56,25 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
         yLabel.setText (bundle.getString ("CTL_Y"));
         widthLabel.setText (bundle.getString ("CTL_Width"));
         heightLabel.setText (bundle.getString ("CTL_Height"));
-        HelpCtx.setHelpIDString (this, RectangleCustomEditor.class.getName ());
+
+        xLabel.setLabelFor(xField);
+        yLabel.setLabelFor(yField);
+        widthLabel.setLabelFor(widthField);
+        heightLabel.setLabelFor(heightField);
+
+        xLabel.setDisplayedMnemonic(bundle.getString("CTL_X_Mnemonic").charAt(0));
+        yLabel.setDisplayedMnemonic(bundle.getString("CTL_Y_Mnemonic").charAt(0));
+        widthLabel.setDisplayedMnemonic(bundle.getString("CTL_Width_mnemonic").charAt(0));
+        heightLabel.setDisplayedMnemonic(bundle.getString("CTL_Height_mnemonic").charAt(0));
+
+        xField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_X"));
+        yField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Y"));
+        widthField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Width"));
+        heightField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Height"));
+        
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CustomRectangleEditor"));
+
+//        HelpCtx.setHelpIDString (this, RectangleCustomEditor.class.getName ());
     }
 
     public java.awt.Dimension getPreferredSize () {

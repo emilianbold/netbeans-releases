@@ -20,7 +20,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-import org.openide.util.HelpCtx;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 /*
@@ -58,7 +57,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
 
         widthField.setText ("" + dimension.width);    // NOI18N
         heightField.setText ("" + dimension.height);  // NOI18N
-        HelpCtx.setHelpIDString (this, DimensionCustomEditor.class.getName ());
+//        HelpCtx.setHelpIDString (this, DimensionCustomEditor.class.getName ());
 
         widthField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Width"));
         heightField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Height"));

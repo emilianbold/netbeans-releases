@@ -15,6 +15,7 @@ package org.netbeans.beaninfo.editors;
 
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import java.io.*;
 import java.util.Properties;
 import javax.swing.*;
@@ -42,8 +43,12 @@ public class PropertiesCustomEditor extends javax.swing.JPanel implements Enhanc
             // strange, strange -> ignore
         }
         editorPane.setText (baos.toString ());
-        setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(8, 8, 8, 8)));
+        setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(12, 12, 0, 11)));
         HelpCtx.setHelpIDString (this, PropertiesCustomEditor.class.getName ());
+        
+        editorPane.getAccessibleContext().setAccessibleName(NbBundle.getBundle(PropertiesCustomEditor.class).getString("ACS_PropertiesEditorPane"));
+        editorPane.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(PropertiesCustomEditor.class).getString("ACSD_PropertiesEditorPane"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(PropertiesCustomEditor.class).getString("ACSD_CustomPropertiesEditor"));
     }
 
     /**

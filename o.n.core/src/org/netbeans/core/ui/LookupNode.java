@@ -116,23 +116,10 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
     public PropertySet[] getPropertySets () {
         return NO_PROPERTIES;
     }
+     */
 
-    /** Supports index cookie in addition to standard support.
-    * Redefined to prevent using DataFolder's cookies, so that common operations on folder like compile, etc. are not used here.
-    * @param type the class to look for
-    * @return instance of that class or null if this class of cookie
-    *    is not supported
-    */
     public final Node.Cookie getCookie (Class type) {
         if (isUISettingCategoryNode()) return null;
-        // no index for reordering toolbars, just for toolbar items
-        if (type.isAssignableFrom(DataFolder.Index.class)) {
-            // search for data object
-            DataFolder dataObj = (DataFolder)super.getCookie(DataFolder.class);
-            if (dataObj != null) {
-                return new DataFolder.Index (dataObj, this);
-            }
-        }
         return super.getCookie (type);
     }
 
@@ -260,6 +247,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
         return false;
     }
     
+    /** Misleading name: need not be a leaf at all. */
     private static final class Leaf extends FilterNode {
         DataObject  data;
         Node parent;
@@ -268,6 +256,14 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
             super(node);
             this.data = data;
             this.parent = parent;
+        }
+        
+        // #17920: Index cookie works only when equality works
+        public boolean equals(Object o) {
+            return this == o || getOriginal().equals(o) || (o != null && o.equals(getOriginal()));
+        }
+        public int hashCode() {
+            return getOriginal().hashCode();
         }
         
         public HelpCtx getHelpCtx() {

@@ -19,6 +19,8 @@ import java.util.Hashtable;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
+import org.openide.modules.Dependency;
+import org.openide.modules.SpecificationVersion;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;

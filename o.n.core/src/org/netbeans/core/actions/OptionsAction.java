@@ -167,6 +167,7 @@ public class OptionsAction extends CallableSystemAction {
             add (split, gridBagConstraints);
 
             javax.swing.JButton close = new javax.swing.JButton (NbBundle.getMessage (OptionsAction.class, "CTL_close_button"));
+            close.setMnemonic(NbBundle.getMessage (OptionsAction.class, "CTL_close_button_mnemonic").charAt(0));
             close.setDefaultCapable (true);
             gridBagConstraints = new GridBagConstraints ();
             gridBagConstraints.gridx = 0;
@@ -185,6 +186,7 @@ public class OptionsAction extends CallableSystemAction {
             add (close, gridBagConstraints);
 
             javax.swing.JButton help = new javax.swing.JButton (NbBundle.getMessage (OptionsAction.class, "CTL_help_button"));
+            help.setMnemonic(NbBundle.getMessage (OptionsAction.class, "CTL_help_button_mnemonic").charAt(0));
             help.setMinimumSize (close.getMinimumSize ());
             help.setMaximumSize (close.getMaximumSize ());
             help.setPreferredSize (close.getPreferredSize ());
@@ -205,6 +207,9 @@ public class OptionsAction extends CallableSystemAction {
                 }
             });
             add (help, gridBagConstraints);
+            
+            close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (OptionsAction.class, "ACSD_close_button"));
+            help.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (OptionsAction.class, "ACSD_help_button"));
 
             return view;
         }
@@ -234,7 +239,7 @@ public class OptionsAction extends CallableSystemAction {
             return rc;
         }
 
-        private static class TTW extends TreeTableView implements MouseListener, PropertyChangeListener {
+        private static class TTW extends TreeTableView implements MouseListener, PropertyChangeListener, java.awt.event.ActionListener {
             /** Project/Session indicator property */
             private final Node.Property indicator = new SettingChildren.IndicatorProperty ();
             /** Project layer state indicator property */
@@ -253,6 +258,15 @@ public class OptionsAction extends CallableSystemAction {
                 addMouseListener (this);
                 weakL = WeakListener.propertyChange (this, SessionManager.getDefault ());
                 SessionManager.getDefault ().addPropertyChangeListener (weakL);
+                
+                registerKeyboardAction(
+                    this,
+                    javax.swing.KeyStroke.getKeyStroke('+'),
+                    javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+                );
+
+                getAccessibleContext().setAccessibleName(NbBundle.getBundle(OptionsAction.class).getString("ACSN_optionsTree"));
+                getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(OptionsAction.class).getString("ACSD_optionsTree"));
             }
             public void mouseExited (MouseEvent evt) {
             }
@@ -323,6 +337,11 @@ public class OptionsAction extends CallableSystemAction {
                     active_set = new_set;
                 }
             }
+            
+            public void actionPerformed(ActionEvent e) {
+                refreshColumns(true);
+            }
+            
         }
         
         private static class OptionsFilterNode extends FilterNode {

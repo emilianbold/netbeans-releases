@@ -166,6 +166,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
         FontPanel () {
             setLayout (new BorderLayout ());
+            setBorder(new EmptyBorder(12, 12, 0, 11));
 
             lFont = new JList (fonts);
             lFont.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Font"));

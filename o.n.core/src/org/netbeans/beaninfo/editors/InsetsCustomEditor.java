@@ -19,7 +19,6 @@ import java.util.ResourceBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.ErrorManager;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
@@ -53,7 +52,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
                                    " " + bundle.getString ("CTL_Insets") + " "),
                                new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5))));
 
-        HelpCtx.setHelpIDString (this, InsetsCustomEditor.class.getName ());
+//        HelpCtx.setHelpIDString (this, InsetsCustomEditor.class.getName ());
 
         topLabel.setLabelFor(topField);
         leftLabel.setLabelFor(leftField);

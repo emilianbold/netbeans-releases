@@ -81,6 +81,9 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implem
     *       be prepared to parse that string back in setAsText().
     */
     public String getAsText() {
+        if (getValue() == null)
+            return "null"; // NOI18N
+        
         int[] val = getValues();
 
         if (val == null)
@@ -113,6 +116,10 @@ abstract class ArrayOfIntSupport extends java.beans.PropertyEditorSupport implem
     * @param text  The string to be parsed.
     */
     public void setAsText(String text) throws IllegalArgumentException {
+        if (text.equals("null") || text.equals("")) { // NOI18N
+            setValue(null);
+            return;
+        }
         int[] newVal = new int[count];
         int nextNumber = 0;
 

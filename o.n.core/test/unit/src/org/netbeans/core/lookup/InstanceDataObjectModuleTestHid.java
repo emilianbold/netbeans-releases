@@ -54,24 +54,32 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         mgr = NbTopManager.get().getModuleSystem().getManager();
         final File jar1 = new File(InstanceDataObjectModuleTestHid.class.getResource("data/test1.jar").getPath());
         final File jar2 = new File(InstanceDataObjectModuleTestHid.class.getResource("data/test2.jar").getPath());
-        mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws Exception {
-                m1 = mgr.create(jar1, new ModuleHistory(), false, false);
-                m2 = mgr.create(jar2, new ModuleHistory(), false, false);
-                return null;
-            }
-        });
+        try {
+            mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
+                public Object run() throws Exception {
+                    m1 = mgr.create(jar1, new ModuleHistory(), false, false);
+                    m2 = mgr.create(jar2, new ModuleHistory(), false, false);
+                    return null;
+                }
+            });
+        } catch (MutexException me) {
+            throw me.getException();
+        }
         //System.err.println("loaded module: " + idomJar);
     }
     
     protected void tearDown() throws Exception {
-        mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
-            public Object run() throws Exception {
-                mgr.delete(m1);
-                mgr.delete(m2);
-                return null;
-            }
-        });
+        try {
+            mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
+                public Object run() throws Exception {
+                    mgr.delete(m1);
+                    mgr.delete(m2);
+                    return null;
+                }
+            });
+        } catch (MutexException me) {
+            throw me.getException();
+        }
         m1 = null;
         m2 = null;
         mgr = null;

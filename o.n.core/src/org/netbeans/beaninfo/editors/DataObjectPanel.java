@@ -69,30 +69,25 @@ public class DataObjectPanel extends JPanel implements EnhancedCustomPropertyEdi
     private void initComponent() {
         expPanel = new ExplorerPanel();
         expPanel.setLayout(new BorderLayout());
-        reposTree = new BeanTreeView();
+        reposTree = new SingleSelectionBeanTreeView();
         reposTree.setPopupAllowed(false);
         reposTree.setDefaultActionAllowed(false);
         expPanel.add(reposTree, "Center"); // NOI18N
     }
-    
+
     /** Called from addNotify. */
     private void completeInitialization() {
         if (insets != null) {
             setBorder(new EmptyBorder(insets));
+        } else {
+            setBorder(new EmptyBorder(12, 12, 0, 11));
         }
-        setLayout(new GridBagLayout());
-        GridBagConstraints gbc;
-        int yval = 0;
+        setLayout(new BorderLayout(0, 2));
         
         if (subTitle != null) {
             JLabel l = new JLabel(subTitle);
-            gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = yval++;
-            gbc.gridwidth = GridBagConstraints.REMAINDER;
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            gbc.insets = new Insets(12, 12, 0, 12);
-            add(l, gbc);
+            l.setLabelFor(reposTree);
+            add(l, BorderLayout.NORTH);
         }
         
         if (rootNode == null) {
@@ -179,36 +174,20 @@ public class DataObjectPanel extends JPanel implements EnhancedCustomPropertyEdi
                         myEditor.setOkButtonEnabled(
                             dataFilter.acceptDataObject(getDataObject())); 
                     } else {
-                        myEditor.setOkButtonEnabled(true);
-                    }
-                }
-            }
-        });
-        expPanel.getExplorerManager().addVetoableChangeListener(
-        new VetoableChangeListener() {
-            public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-                if (evt.getPropertyName().equals
-                (ExplorerManager.PROP_SELECTED_NODES)) {
-                    Node [] nodes = (Node []) evt.getNewValue();
-                    if ((nodes != null) && (nodes.length > 1)) {
-                        throw new PropertyVetoException("Only one node can be selected here", evt); // NOI18N
+                        myEditor.setOkButtonEnabled(getDataObject() != null);
                     }
                 }
             }
         });
         
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = yval;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.gridheight = GridBagConstraints.REMAINDER;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        gbc.insets = new Insets(12, 12, 12, 12);
-        gbc.fill = GridBagConstraints.BOTH;
+        add(expPanel, BorderLayout.CENTER);
         
-        add(expPanel, gbc);
+        if ((dataFilter != null) && (getDataObject() != null)) {
+            myEditor.setOkButtonEnabled(
+                dataFilter.acceptDataObject(getDataObject())); 
+        } else {
+            myEditor.setOkButtonEnabled(getDataObject() != null);
+        }
     }
     
     /**
@@ -294,6 +273,16 @@ public class DataObjectPanel extends JPanel implements EnhancedCustomPropertyEdi
      */
     public void setDataObject(DataObject d) {
         dObj = d;
+    }
+    
+    /**
+     * Sets description of the panel.
+     *
+     * @param desc Desciption of the panel.
+     */
+    public void setDescription(String desc) {
+        getAccessibleContext().setAccessibleDescription(desc);
+        reposTree.getAccessibleContext().setAccessibleDescription(desc);
     }
     
     private Node findNode(Node parent, DataObject val) {
@@ -402,6 +391,18 @@ public class DataObjectPanel extends JPanel implements EnhancedCustomPropertyEdi
         return getDataObject();
     }
     
+    /**
+     * Class resulting from bugfix of #19165
+     * @author raccah@netbeans.org (Rochelle Raccah)
+     */
+    private static class SingleSelectionBeanTreeView extends BeanTreeView {
+	public SingleSelectionBeanTreeView() {
+		super();
+		tree.getSelectionModel().setSelectionMode(
+                            TreeSelectionModel.SINGLE_TREE_SELECTION);
+	}
+    }
+
     static class FilteredChildren extends FilterNode.Children {
         private NodeAcceptor nodeAcceptor;
         private DataFilter dFilter;

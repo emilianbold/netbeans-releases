@@ -24,6 +24,7 @@ import org.openide.nodes.NodeAcceptor;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataFilter;
 import org.openide.explorer.propertysheet.*;
+import org.openide.util.HelpCtx;
 
 /**
  * Property editor for org.openide.loaders.DataObject.
@@ -52,6 +53,10 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
     private static final String PROPERTY_TITLE = "title"; // NOI18N
     /** Name of the custom property that can be passed in PropertyEnv. */
     private static final String PROPERTY_INSET = "inset"; // NOI18N
+    /** Name of the custom property that can be passed in PropertyEnv. */
+    private static final String PROPERTY_DESCRIPTION = "description"; // NOI18N
+    /** Name of the custom property that can be passed in PropertyEnv. */
+    private static final String PROPERTY_HELPID = "helpID"; // NOI18N
 
     /** This gets lazy initialized in getDataObjectPanel*/
     private DataObjectPanel customEditor;
@@ -75,15 +80,23 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
     /** A property stored between calls to atachEnv and getCustomEditor() */
     private String title;
     /** A property stored between calls to atachEnv and getCustomEditor() */
-    private int insets;
+    private Integer insets;
+    /** A property stored between calls to atachEnv and getCustomEditor() */
+    private String description;
+    /** A property stored between calls to atachEnv and getCustomEditor() */
+    private String helpID;
+
     
     private PropertyChangeSupport supp = new PropertyChangeSupport(this);
+    
+    private PropertyEnv env;
 
     /**
      * This method is called by the IDE to pass
      * the environment to the property editor.
      */
     public void attachEnv(PropertyEnv env) {
+        this.env = env;
         Object newObj = env.getFeatureDescriptor().getValue(PROPERTY_CURRENT_FOLDER);
         if (newObj instanceof DataFolder) {
             currentFolder = (DataFolder)newObj;
@@ -122,9 +135,17 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         }
         newObj = env.getFeatureDescriptor().getValue(PROPERTY_INSET);
         if (newObj instanceof Integer) {
-            insets = ((Integer)newObj).intValue();
+            insets = (Integer)newObj;
         }
-    }    
+        newObj = env.getFeatureDescriptor().getValue(PROPERTY_DESCRIPTION);
+        if (newObj instanceof String) {
+            description = (String)newObj;
+        }
+        newObj = env.getFeatureDescriptor().getValue(PROPERTY_HELPID);
+        if (newObj instanceof String) {
+            helpID = (String)newObj;
+        }
+    }
     
     /**
      * Calls lazy initialization in getDataObjectpanel().
@@ -135,10 +156,9 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
     }
     
     void setOkButtonEnabled(boolean state) {
-        if (supp == null) {
-            supp = new PropertyChangeSupport(this);
+        if (env != null) {
+            env.setState(state ? PropertyEnv.STATE_VALID:PropertyEnv.STATE_INVALID);
         }
-        supp.firePropertyChange(ExPropertyEditor.PROP_VALUE_VALID, null, state?Boolean.TRUE:Boolean.FALSE);
     }
     
     /**
@@ -176,7 +196,15 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         if (rootNode != null) {
             customEditor.setRootNode(rootNode);
         }
-        customEditor.setInsetValue(insets);
+        if (insets != null) {
+            customEditor.setInsetValue(insets.intValue());
+        }
+        if (description != null) {
+            customEditor.setDescription(description);
+        }
+        if (helpID != null) {
+            HelpCtx.setHelpIDString(customEditor, helpID);
+        }
         return customEditor;
     }
     

@@ -114,20 +114,20 @@ public final class NbMainExplorer extends CloneableTopComponent
     /** Finds module tab in mapping of module tabs to their root node classes.
      * If it is not found it is added when parameter tc is not null. When parameter
      * tc is null new ModuleTab is created using default constructor. */
-    static synchronized ModuleTab findModuleTab (Class nodeClass, ModuleTab tc) {
+    static synchronized ModuleTab findModuleTab (String nodeClassName, ModuleTab tc) {
         if (moduleTabs == null) {
             moduleTabs = new HashMap(5);
         }
-        ModuleTab tab = (ModuleTab) moduleTabs.get(nodeClass.getName());
+        ModuleTab tab = (ModuleTab) moduleTabs.get(nodeClassName);
         if (tab != null) {
             return tab;
         } else {
             if (tc != null) {
-                moduleTabs.put(nodeClass.getName(), tc);
+                moduleTabs.put(nodeClassName, tc);
                 return tc;
             } else {
                 ModuleTab newTC = new ModuleTab();
-                moduleTabs.put(nodeClass.getName(), newTC);
+                moduleTabs.put(nodeClassName, newTC);
                 return newTC;
             }
         }
@@ -203,10 +203,27 @@ public final class NbMainExplorer extends CloneableTopComponent
         
         //Bugfix #9815: added check if toBeActivated is null before
         //request focus is called.
-        if (toBeActivated != null) {
-            ModeImpl mode = (ModeImpl)workspace.findMode(toBeActivated);
-            if (mode != null) {
-                mode.requestFocus(toBeActivated);
+        //Bugfix #17956: Make sure that findMode is called after top component
+        //is added to mode.
+        if (SwingUtilities.isEventDispatchThread()) {
+            if (toBeActivated != null) {
+                ModeImpl mode = (ModeImpl)workspace.findMode(toBeActivated);
+                if (mode != null) {
+                    mode.requestFocus(toBeActivated);
+                }
+            }
+        } else {
+            if (toBeActivated != null) {
+                final ExplorerTab localActivated = toBeActivated;
+                final Workspace localWorkspace = workspace;
+                SwingUtilities.invokeLater(new Runnable () {
+                    public void run () {
+                        ModeImpl mode = (ModeImpl)localWorkspace.findMode(localActivated);
+                        if (mode != null) {
+                            mode.requestFocus(localActivated);
+                        }
+                    }
+                });
             }
         }
         //End of bugfix #9815
@@ -382,7 +399,7 @@ public final class NbMainExplorer extends CloneableTopComponent
             panel = MainTab.getDefaultMainTab();
         } else {
             // tabs added by modules
-            panel = NbMainExplorer.findModuleTab(rc.getClass(), null);
+            panel = NbMainExplorer.findModuleTab(rc.getClass().getName(), null);
         }
         
         panel.setRootContext(rc);
@@ -483,6 +500,8 @@ public final class NbMainExplorer extends CloneableTopComponent
         private TreeView view;
         /** listeners to the root context and IDE settings */
         private PropertyChangeListener weakRcL, weakIdeL;
+        private NodeListener weakNRcL;
+
         private NodeListener rcListener;
         /** validity flag */
         private boolean valid = true;
@@ -495,6 +514,9 @@ public final class NbMainExplorer extends CloneableTopComponent
             setConfirmDelete(ideS.getConfirmDelete());
             // attach listener to the changes of IDE settings
             weakIdeL = WeakListener.propertyChange(rcListener(), ideS);
+            
+            view.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NbMainExplorer.class).getString("ACSN_ExplorerBeanTree"));
+            view.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(NbMainExplorer.class).getString("ACSD_ExplorerBeanTree"));
         }
 
         /** Initializes gui of this component. Subclasses can override
@@ -517,10 +539,13 @@ public final class NbMainExplorer extends CloneableTopComponent
         /** Sets new root context to view. Name, icon, tooltip
         * of this top component will be updated properly */
         public void setRootContext (Node rc) {
+            Node oldRC = getExplorerManager().getRootContext();
             // remove old listener, if possible
             if (weakRcL != null) {
-                getExplorerManager().getRootContext().
-                removePropertyChangeListener(weakRcL);
+                oldRC.removePropertyChangeListener(weakRcL);
+            }
+            if (weakNRcL != null) {
+                oldRC.removeNodeListener(weakNRcL);
             }
             getExplorerManager().setRootContext(rc);
             initializeWithRootContext(rc);
@@ -612,7 +637,11 @@ public final class NbMainExplorer extends CloneableTopComponent
                 weakRcL = WeakListener.propertyChange(rcListener(), rc);
             }
             rc.addPropertyChangeListener(weakRcL);
-            rc.addNodeListener(WeakListener.node(rcListener(), rc));
+            
+            if (weakNRcL == null) {
+                weakNRcL = WeakListener.node(rcListener(), rc);
+            }
+            rc.addNodeListener(weakNRcL);
         }
         
         // put a request for later validation
@@ -622,6 +651,22 @@ public final class NbMainExplorer extends CloneableTopComponent
         protected final void scheduleValidation() {
             valid = false;
             WindowManagerImpl.deferredPerformer().putRequest(this, null);
+        }
+        
+        /* Updated accessible name of the tree view */
+        public void setName(String name) {
+            super.setName(name);
+            if (view != null) {
+                view.getAccessibleContext().setAccessibleName(name);
+            }
+        }
+        
+        /* Updated accessible description of the tree view */
+        public void setToolTipText(String text) {
+            super.setToolTipText(text);
+            if (view != null) {
+                view.getAccessibleContext().setAccessibleDescription(text);
+            }
         }
 
         /** Multi - purpose listener, listens to: <br>
@@ -687,6 +732,15 @@ public final class NbMainExplorer extends CloneableTopComponent
             }
             
             return DEFAULT;
+        }
+        
+        /** Creator/accessor method for proper initialization of
+         * environment (runtime) top component from xml settings file.
+         */
+        public static MainTab createEnvironmentTab () {
+            return (MainTab)getExplorer().createTC(
+                NbPlaces.getDefault().nodes().environment()
+            );
         }
 
         /** Deserialization of RepositoryTab */
@@ -773,6 +827,15 @@ public final class NbMainExplorer extends CloneableTopComponent
             }
             
             return DEFAULT;
+        }
+        
+        /** Creator/accessor method for proper initialization of
+         * filesystems top component from xml settings file.
+         */
+        public static RepositoryTab createRepositoryTab () {
+            return (RepositoryTab)getExplorer().createTC(
+                NbPlaces.getDefault().nodes().repository()
+            );
         }
 
         /** Deserialization of RepositoryTab */
@@ -984,7 +1047,17 @@ public final class NbMainExplorer extends CloneableTopComponent
         /** Deserialization of ModuleTab */
         public Object readResolve() throws java.io.ObjectStreamException {
             Class nodeClass = getExplorerManager().getRootContext().getClass();
-            ModuleTab tc = NbMainExplorer.findModuleTab(nodeClass, this);
+            //Bugfix #18021: Handle deserialization of Javadoc tab from NB 3.0
+            //It should be removed as soon as support of NB 3.0 deserialization
+            //will be removed.
+            ModuleTab tc;
+            if ("org.openide.nodes.AbstractNode".equals(nodeClass.getName()) &&
+                "Javadoc".equals(getName())) {
+                tc = NbMainExplorer.findModuleTab
+                ("org.netbeans.modules.javadoc.search.JavaDocNode", this);
+            } else {
+                tc = NbMainExplorer.findModuleTab(nodeClass.getName(), this);
+            }
             tc.scheduleValidation();
             return tc;
         }
@@ -1001,8 +1074,6 @@ public final class NbMainExplorer extends CloneableTopComponent
         */
         protected TreeView initGui () {
             TreeView view = new BeanTreeView();
-            view.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NbMainExplorer.class).getString("ACSN_ExplorerBeanTree"));
-            view.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(NbMainExplorer.class).getString("ACSD_ExplorerBeanTree"));
             SplittedPanel split = new SplittedPanel();
             PropertySheetView propertyView = new PropertySheetView();
             propertyView.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NbMainExplorer.class).getString("ACSN_ExplorerPropertySheetView"));
@@ -1012,7 +1083,7 @@ public final class NbMainExplorer extends CloneableTopComponent
             // add to the panel
             setLayout(new BorderLayout());
             add(split, BorderLayout.CENTER);
-
+            
             return view;
         }
 

@@ -146,7 +146,7 @@ public class NonGui extends NbTopManager implements Runnable {
                     File projDir = new File (systemDirFile, "Projects"); // NOI18N
                     makedir (projDir);
                     touch (new File (projDir, "workspace.ser_hidden")); // NOI18N
-                    makedir (new File (userDir, DIR_MODULES));
+                    makedir (new File (new File (userDir, DIR_MODULES), "autoload")); // NOI18N
                     File libDir = new File (userDir, "lib"); // NOI18N
                     makedir (libDir);
                     makedir (new File (libDir, "ext")); // NOI18N
@@ -536,10 +536,11 @@ public class NonGui extends NbTopManager implements Runnable {
         } catch (IOException e) {
             getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
         }
-        // load neccessary SystemOptions
-        SharedClassObject.findObject (ExecutionSettings.class, true);
-        
         StartLog.logProgress ("Project opened"); // NOI18N
+
+        // load neccessary SystemOptions because of ExecuteAction setup
+        SharedClassObject.findObject (ExecutionSettings.class, true);
+        StartLog.logProgress ("ExecutionSettings loaded"); // NOI18N
 
         LoaderPoolNode.installationFinished ();
         StartLog.logProgress ("LoaderPool notified"); // NOI18N

@@ -193,26 +193,3 @@ final class NbKeymap implements Keymap {
     }
 
 }
-
-/*
-* Log
-*  12   Jaga      1.10.1.0    3/16/00  Jaroslav Tulach IDE is initialized 
-*       immediatelly when somebody calls TopManager.getDefault.
-*  11   src-jtulach1.10        3/8/00   Jaroslav Tulach Proper synchronization.
-*  10   src-jtulach1.9         1/13/00  Jaroslav Tulach I18N
-*  9    src-jtulach1.8         1/5/00   Ian Formanek    Removed obsoleted field
-*  8    src-jtulach1.7         12/21/99 Ian Formanek    Optimized adding multiple
-*       <action, shortcut> pairs into Keymap
-*  7    src-jtulach1.6         12/1/99  Ian Formanek    Fixed multiple KeyStrokes
-*       per Action bug
-*  6    src-jtulach1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  5    src-jtulach1.4         5/5/99   Jaroslav Tulach Speeded up a bit.
-*  4    src-jtulach1.3         4/1/99   David Simonek   concurrent writing bug 
-*       fixed (hopefully)
-*  3    src-jtulach1.2         3/4/99   Jaroslav Tulach ChangeListener in 
-*       TopManager
-*  2    src-jtulach1.1         3/1/99   David Simonek   icons etc..
-*  1    src-jtulach1.0         3/1/99   David Simonek   
-* $
-*/

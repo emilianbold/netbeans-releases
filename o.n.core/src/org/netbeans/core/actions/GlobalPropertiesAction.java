@@ -53,19 +53,3 @@ public final class GlobalPropertiesAction extends CallableSystemAction {
     }
 
 }
-
-/*
-* Log
-*  7    src-jtulach1.6         1/12/00  Ales Novak      i18n
-*  6    src-jtulach1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  5    src-jtulach1.4         8/9/99   Ian Formanek    Generated Serial Version 
-*       UID
-*  4    src-jtulach1.3         6/24/99  Jesse Glick     Gosh-honest HelpID's.
-*  3    src-jtulach1.2         6/8/99   Ian Formanek    ---- Package Change To 
-*       org.openide ----
-*  2    src-jtulach1.1         4/27/99  Jesse Glick     new HelpCtx () -> 
-*       HelpCtx.DEFAULT_HELP.
-*  1    src-jtulach1.0         4/2/99   Jaroslav Tulach 
-* $
-*/

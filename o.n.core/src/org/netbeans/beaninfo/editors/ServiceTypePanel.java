@@ -62,8 +62,10 @@ public class ServiceTypePanel extends ExplorerPanel {
         update ();
 
         initComponents ();
-
-        setBorder (new javax.swing.border.TitledBorder(name));
+        
+        label.setText(name);
+        listView1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(ServiceTypePanel.class).getString("ACSD_ServiceTypeList"));
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(ServiceTypePanel.class).getString("ACSD_ServiceTypePanel"));
 
         getExplorerManager ().addPropertyChangeListener (new java.beans.PropertyChangeListener () {
                     public void propertyChange (java.beans.PropertyChangeEvent ev) {
@@ -198,41 +200,38 @@ public class ServiceTypePanel extends ExplorerPanel {
         jSplitPane1 = new javax.swing.JSplitPane();
         listView1 = new org.openide.explorer.view.ListView();
         propertySheetView1 = new org.openide.explorer.propertysheet.PropertySheetView();
-        setLayout(new java.awt.GridBagLayout());
-        java.awt.GridBagConstraints gridBagConstraints1;
-        setPreferredSize(new java.awt.Dimension(480, 320));
+        label = new javax.swing.JLabel();
         
+        setLayout(new java.awt.BorderLayout(0, 2));
+        
+        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 0, 11)));
+        setPreferredSize(new java.awt.Dimension(480, 320));
         jSplitPane1.setDividerSize(5);
         jSplitPane1.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 jSplitPane1ComponentResized(evt);
             }
-        }
-        );
+        });
         
         listView1.setTraversalAllowed(false);
-          listView1.setDefaultProcessor(new java.awt.event.ActionListener() { public void actionPerformed(java.awt.event.ActionEvent e) {} });
-          listView1.setPopupAllowed(false);
-          listView1.setSelectionMode(1);
-          listView1.addComponentListener(new java.awt.event.ComponentAdapter() {
-              public void componentResized(java.awt.event.ComponentEvent evt) {
-                  listView1ComponentResized(evt);
-              }
-          }
-          );
-          jSplitPane1.setLeftComponent(listView1);
-          
-          
+        listView1.setDefaultProcessor(new java.awt.event.ActionListener() { public void actionPerformed(java.awt.event.ActionEvent e) {} });
+        listView1.setPopupAllowed(false);
+        listView1.setSelectionMode(1);
+        listView1.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                listView1ComponentResized(evt);
+            }
+        });
+        
+        jSplitPane1.setLeftComponent(listView1);
+        
         jSplitPane1.setRightComponent(propertySheetView1);
-          
-          
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 1.0;
-        add(jSplitPane1, gridBagConstraints1);
+        
+        add(jSplitPane1, java.awt.BorderLayout.CENTER);
+        
+        label.setText("jLabel1");
+        label.setLabelFor(listView1);
+        add(label, java.awt.BorderLayout.NORTH);
         
     }//GEN-END:initComponents
 
@@ -266,6 +265,7 @@ public class ServiceTypePanel extends ExplorerPanel {
     private javax.swing.JSplitPane jSplitPane1;
     private org.openide.explorer.view.ListView listView1;
     private org.openide.explorer.propertysheet.PropertySheetView propertySheetView1;
+    private javax.swing.JLabel label;
     // End of variables declaration//GEN-END:variables
 
     /** Node for displaying services */

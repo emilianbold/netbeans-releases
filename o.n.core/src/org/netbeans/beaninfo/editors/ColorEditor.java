@@ -524,6 +524,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
             selectionModel.addChangeListener (this);
             
             HelpCtx.setHelpIDString (this, NbColorChooser.class.getName ());
+            getAccessibleContext().setAccessibleDescription(getString("ACSD_CustomColorEditor"));
         }
 
         /** Overrides superclass method. Adds removing of change listener. */
@@ -649,6 +650,8 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                  new JScrollPane (list = new JList (names)));
             list.setCellRenderer (new MyListCellRenderer ());
             list.addListSelectionListener (this);
+            
+            list.getAccessibleContext().setAccessibleName(displayName);
         }
 
         /** Get called when state of selected color changes */
@@ -783,6 +786,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                 this.index = index;
                 selected = isSelected;
                 hasFocus = cellHasFocus;
+                getAccessibleContext().setAccessibleName(names[index]);
                 return this;
             }
         } // End of class MyListCellRenderer.

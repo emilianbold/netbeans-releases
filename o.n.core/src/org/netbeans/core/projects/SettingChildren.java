@@ -64,7 +64,20 @@ public final class SettingChildren extends FilterNode.Children {
         }
 
         return filter ? new SettingFilterNode (node) : 
-            new FilterNode (node, node.isLeaf() ? Children.LEAF : new SettingChildren (node));
+            node.isLeaf() ? node.cloneNode() : new TrivialFilterNode(node);
+    }
+    
+    private static final class TrivialFilterNode extends FilterNode {
+        public TrivialFilterNode(Node n) {
+            super(n, new SettingChildren(n));
+        }
+        // #17920: Index cookie works only when equality works
+        public boolean equals(Object o) {
+            return this == o || getOriginal().equals(o) || (o != null && o.equals(getOriginal()));
+        }
+        public int hashCode() {
+            return getOriginal().hashCode();
+        }
     }
 
     /** Property allowing display/manipulation of setting status for one specific layer. */
@@ -287,6 +300,14 @@ public final class SettingChildren extends FilterNode.Children {
             FileObject pf = ((DataObject) getCookie (DataObject.class)).getPrimaryFile ();
             weakL = new FSL (this);
             FileStateManager.getDefault ().addFileStatusListener (weakL, pf);
+        }
+        
+        // #17920: Index cookie works only when equality works
+        public boolean equals(Object o) {
+            return this == o || getOriginal().equals(o) || (o != null && o.equals(getOriginal()));
+        }
+        public int hashCode() {
+            return getOriginal().hashCode();
         }
         
         public PropertySet[] getPropertySets () {

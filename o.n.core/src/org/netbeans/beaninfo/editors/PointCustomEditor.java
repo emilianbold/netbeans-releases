@@ -19,7 +19,6 @@ import java.util.ResourceBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.ErrorManager;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
@@ -59,7 +58,7 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
                                    ),
                                    new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5))));
 
-        HelpCtx.setHelpIDString (this, PointCustomEditor.class.getName ());
+//        HelpCtx.setHelpIDString (this, PointCustomEditor.class.getName ());
     }
 
     public java.awt.Dimension getPreferredSize () {

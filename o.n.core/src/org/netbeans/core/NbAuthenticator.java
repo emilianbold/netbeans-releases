@@ -32,11 +32,11 @@ class NbAuthenticator extends java.net.Authenticator {
 
     protected java.net.PasswordAuthentication getPasswordAuthentication() {
         java.net.InetAddress site = getRequestingSite();
-        String host = site == null ? "" : site.getHostName(); // NOI18N
-        PasswordPanel passwordPanel = new PasswordPanel();
         ResourceBundle bundle = NbBundle.getBundle( NbAuthenticator.class );
+        String host = site == null ? bundle.getString( "CTL_PasswordProtected" ) : site.getHostName(); // NOI18N
+        PasswordPanel passwordPanel = new PasswordPanel();
 
-        DialogDescriptor dd = new DialogDescriptor( passwordPanel, host == null ? bundle.getString( "CTL_PasswordProtected" ) : host );
+        DialogDescriptor dd = new DialogDescriptor( passwordPanel, host );
         dd.setHelpCtx (new HelpCtx (NbAuthenticator.class.getName () + ".getPasswordAuthentication")); // NOI18N
         passwordPanel.setPrompt( getRequestingPrompt() );
         java.awt.Dialog dialog = TopManager.getDefault().createDialog( dd );
@@ -58,9 +58,14 @@ class NbAuthenticator extends java.net.Authenticator {
         /** Generated serialVersionUID */
         static final long serialVersionUID = 1555749205340031767L;
 
+        ResourceBundle bundle = org.openide.util.NbBundle.getBundle(NbAuthenticator.class);
+        
         /** Creates new form PasswordPanel */
         public PasswordPanel() {
             initComponents ();
+            
+            usernameField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_UserNameField"));
+            passwordField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_PasswordField"));
         }
 
         public java.awt.Dimension getPreferredSize () {
@@ -79,7 +84,7 @@ class NbAuthenticator extends java.net.Authenticator {
             mainPanel = new javax.swing.JPanel ();
             mainPanel.setLayout (new java.awt.GridBagLayout ());
             java.awt.GridBagConstraints gridBagConstraints1;
-            mainPanel.setBorder (new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+            mainPanel.setBorder (new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 0, 11)));
 
             promptLabel = new javax.swing.JLabel ();
             promptLabel.setHorizontalAlignment (0);
@@ -91,44 +96,47 @@ class NbAuthenticator extends java.net.Authenticator {
             mainPanel.add (promptLabel, gridBagConstraints1);
 
             jLabel1 = new javax.swing.JLabel ();
-            jLabel1.setText (org.openide.util.NbBundle.getBundle(NbAuthenticator.class).getString("LAB_AUTH_User_Name"));
+            jLabel1.setText (bundle.getString("LAB_AUTH_User_Name"));
+            jLabel1.setDisplayedMnemonic(bundle.getString("LAB_AUTH_User_Name_Mnemonic").charAt(0));
 
             gridBagConstraints1 = new java.awt.GridBagConstraints ();
-            gridBagConstraints1.insets = new java.awt.Insets (5, 0, 5, 3);
+            gridBagConstraints1.insets = new java.awt.Insets (0, 0, 5, 12);
             gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
             mainPanel.add (jLabel1, gridBagConstraints1);
 
             usernameField = new javax.swing.JTextField ();
             usernameField.setMinimumSize (new java.awt.Dimension(70, 20));
             usernameField.setPreferredSize (new java.awt.Dimension(70, 20));
+            jLabel1.setLabelFor(usernameField);
 
             gridBagConstraints1 = new java.awt.GridBagConstraints ();
             gridBagConstraints1.gridwidth = 0;
             gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-            gridBagConstraints1.insets = new java.awt.Insets (5, 3, 5, 0);
+            gridBagConstraints1.insets = new java.awt.Insets (0, 0, 5, 0);
             gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints1.weightx = 1.0;
             mainPanel.add (usernameField, gridBagConstraints1);
 
             jLabel2 = new javax.swing.JLabel ();
             jLabel2.setText (org.openide.util.NbBundle.getBundle(NbAuthenticator.class).getString("LAB_AUTH_Password"));
+            jLabel2.setDisplayedMnemonic(bundle.getString("LAB_AUTH_Password_Mnemonic").charAt(0));
 
             gridBagConstraints1 = new java.awt.GridBagConstraints ();
+            gridBagConstraints1.insets = new java.awt.Insets (0, 0, 0, 12);
             gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
             mainPanel.add (jLabel2, gridBagConstraints1);
 
             passwordField = new javax.swing.JPasswordField ();
             passwordField.setMinimumSize (new java.awt.Dimension(70, 20));
             passwordField.setPreferredSize (new java.awt.Dimension(70, 20));
+            jLabel2.setLabelFor(passwordField);
 
             gridBagConstraints1 = new java.awt.GridBagConstraints ();
             gridBagConstraints1.gridwidth = 0;
             gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-            gridBagConstraints1.insets = new java.awt.Insets (5, 3, 5, 0);
             gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints1.weightx = 1.0;
             mainPanel.add (passwordField, gridBagConstraints1);
-
 
             add (mainPanel, "Center"); // NOI18N
 
@@ -154,10 +162,12 @@ class NbAuthenticator extends java.net.Authenticator {
         void setPrompt( String prompt ) {
             if ( prompt == null ) {
                 promptLabel.setVisible( false );
+                getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_NbAuthenticatorPasswordPanel"));
             }
             else {
                 promptLabel.setVisible( true );
                 promptLabel.setText( prompt );
+                getAccessibleContext().setAccessibleDescription(prompt);
             }
         }
     }

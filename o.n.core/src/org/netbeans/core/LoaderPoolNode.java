@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,7 +35,10 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.enum.ArrayEnumeration;
 import org.openide.util.*;
 import org.openide.util.io.NbMarshalledObject;
+import org.openide.util.io.SafeException;
 import org.openide.actions.ReorderAction;
+import org.openide.modules.ModuleInfo;
+import org.openide.modules.SpecificationVersion;
 
 import org.netbeans.core.modules.ManifestSection;
 
@@ -44,9 +47,7 @@ import org.netbeans.core.modules.ManifestSection;
 * LoaderPoolNode is singleton and that's why it can be obtained
 * only via call to static factory method getLoaderPoolNode().<P>
 * The same situation applies for NbLoaderPool inner class.
-* Instance of CoronaLoaderPool (the only instance in the system) you
-* can obtain through getNbLoaderPool().
-* @author Dafe Simonek
+* @author Dafe Simonek et al.
 */
 public final class LoaderPoolNode extends AbstractNode {
     /** Default icon base for loader pool node.*/
@@ -68,9 +69,9 @@ public final class LoaderPoolNode extends AbstractNode {
     private static List loaders = new ArrayList ();
 
     /** Map from loader class names to arrays of class names for Install-Before's */
-    private static Map installBefores = new HashMap ();
+    private static Map installBefores = new HashMap (); // Map<String,String[]>
     /** Map from loader class names to arrays of class names for Install-After's */
-    private static Map installAfters = new HashMap ();
+    private static Map installAfters = new HashMap (); // Map<String,String[]>
 
     /** copy of the loaders to prevent copying */
     private static Object[] loadersArray;
@@ -114,23 +115,6 @@ public final class LoaderPoolNode extends AbstractNode {
                };
 
     }
-
-    /** Adds new loader at the end of existing ones.
-    * @param dl data loader to add
-    * @exception IllegalArgumentException if the loader is already there
-    *
-    private static void add (DataLoader dl) {
-      myChildren.addLoader(dl);
-}
-
-    /** Adds new loader at the end of existing ones.
-    * @param dl data loader to add
-    * @param at the position to insert it the loader to
-    * @exception IllegalArgumentException if the loader is already there
-    *
-    private static void add (DataLoader dl, int at) {
-      myChildren.addLoader(dl, at);
-}
 
     /** Adds new loader when previous and following are specified.
     * An attempt will be made to (re-)order the loader pool according to specified
@@ -300,6 +284,9 @@ public final class LoaderPoolNode extends AbstractNode {
         err.log ("writePool");
         oos.writeObject (installBefores);
         oos.writeObject (installAfters);
+        
+        // Note which module each loader came from.
+        Collection modules = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances(); // Collection<ModuleInfo>
 
         Iterator it = loaders.iterator ();
 
@@ -316,6 +303,33 @@ public final class LoaderPoolNode extends AbstractNode {
 
             if (obj != null) {
                 err.log ("writing " + l.getDisplayName ());
+                // Find its module, if any.
+                Class c = l.getClass();
+                Iterator mit = modules.iterator();
+                boolean found = false;
+                while (mit.hasNext()) {
+                    ModuleInfo m = (ModuleInfo)mit.next();
+                    if (m.isEnabled() && m.owns(c)) {
+                        err.log("belongs to module: " + m.getDisplayName());
+                        oos.writeObject(m.getCodeNameBase());
+                        int r = m.getCodeNameRelease();
+                        oos.writeInt(r); // might be -1, note
+                        SpecificationVersion v = m.getSpecificationVersion();
+                        if (v != null) {
+                            oos.writeObject(v.toString());
+                        } else {
+                            oos.writeObject(null);
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    err.log("does not belong to any module");
+                    // just write the NbMarshalledObject<DataLoader> itself;
+                    // we need to support that for compatibility of old loader
+                    // pools anyway
+                }
                 oos.writeObject (obj);
             }
         }
@@ -336,6 +350,7 @@ public final class LoaderPoolNode extends AbstractNode {
             }
             if (obj != null) {
                 err.log ("writing " + l.getDisplayName ());
+                // No associated module, no need to write such info.
                 oos.writeObject (obj);
             }
         }
@@ -362,14 +377,56 @@ public final class LoaderPoolNode extends AbstractNode {
 
         HashSet classes = new HashSet ();
         LinkedList l = new LinkedList ();
+        
+        Exception deserExc = null; // collects all exceptions thrown by loader deserialization
+
+        Iterator mit = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances().iterator(); // Iterator<ModuleInfo>
+        Map modules = new HashMap(); // Map<String,ModuleInfo>
+        while (mit.hasNext()) {
+            ModuleInfo m = (ModuleInfo)mit.next();
+            modules.put(m.getCodeNameBase(), m);
+        }
 
         for (;;) {
-            NbMarshalledObject obj = (NbMarshalledObject)ois.readObject ();
-            if (obj == null) {
+            Object o1 = ois.readObject();
+            if (o1 == null) {
                 err.log ("reading null");
                 break;
             }
+            NbMarshalledObject obj;
+            if (o1 instanceof String) {
+                // Module information.
+                String name = (String)o1;
+                int rel = ois.readInt();
+                String spec = (String)ois.readObject();
+                obj = (NbMarshalledObject)ois.readObject();
+                ModuleInfo m = (ModuleInfo)modules.get(name);
+                if (m == null) {
+                    err.log("No known module " + name + ", skipping loader");
+                    continue;
+                }
+                if (!m.isEnabled()) {
+                    err.log("Module " + name + " is disabled, skipping loader");
+                    continue;
+                }
+                if (m.getCodeNameRelease() < rel) {
+                    err.log("Module " + name + " is too old (major vers.), skipping loader");
+                    continue;
+                }
+                if (spec != null) {
+                    SpecificationVersion v = m.getSpecificationVersion();
+                    if (v == null || v.compareTo(new SpecificationVersion(spec)) < 0) {
+                        err.log("Module " + name + " is too old (spec. vers.), skipping loader");
+                        continue;
+                    }
+                }
+                err.log("Module " + name + " is OK, will try to restore loader");
+            } else {
+                // Loader with no known module, or backward compatibility.
+                obj = (NbMarshalledObject)o1;
+            }
 
+            Exception t = null;
             try {
                 DataLoader loader = (DataLoader)obj.get ();
                 Class clazz = loader.getClass();
@@ -377,9 +434,20 @@ public final class LoaderPoolNode extends AbstractNode {
                 l.add (loader);
                 classes.add (clazz);
             } catch (IOException ex) {
-                err.notify (ErrorManager.WARNING, ex);
+                t = ex;
             } catch (ClassNotFoundException ex) {
-                err.notify (ErrorManager.WARNING, ex);
+                t = ex;
+            }
+            if (t != null) {
+                TopManager.getDefault ().getErrorManager ().annotate (
+                    t, org.openide.ErrorManager.WARNING, 
+                    null, null, null, null
+                );
+                if (deserExc == null) {
+                    deserExc = t;
+                } else {
+                    TopManager.getDefault ().getErrorManager ().annotate (deserExc, t);
+                }
             }
         }
 
@@ -390,14 +458,26 @@ public final class LoaderPoolNode extends AbstractNode {
                 err.log ("reading null");
                 break;
             }
+            Exception t = null;
             try {
                 // Just reads its shared state, nothing more.
                 DataLoader loader = (DataLoader) obj.get ();
                 err.log ("reading " + loader.getDisplayName ());
             } catch (IOException ex) {
-                err.notify (ErrorManager.WARNING, ex);
+                t = ex;
             } catch (ClassNotFoundException ex) {
-                err.notify (ErrorManager.WARNING, ex);
+                t = ex;
+            }
+            if (t != null) {
+                TopManager.getDefault ().getErrorManager ().annotate (
+                    t, org.openide.ErrorManager.WARNING, 
+                    null, null, null, null
+                );
+                if (deserExc == null) {
+                    deserExc = t;
+                } else {
+                    TopManager.getDefault ().getErrorManager ().annotate (deserExc, t);
+                }
             }
         }
 
@@ -426,6 +506,10 @@ public final class LoaderPoolNode extends AbstractNode {
             resort ();
         else
             update ();
+        
+        if (deserExc != null) {
+            throw new SafeException (deserExc);
+        }
     }
 
 
@@ -542,18 +626,12 @@ public final class LoaderPoolNode extends AbstractNode {
             return SystemAction.get (PropertiesAction.class);
         }
 
-        /** Can be deleted.
+        /** Cannot be deleted.
+         * Any deleted loaders would reappear after refresh anyway.
         */
         public boolean canDestroy () {
             return false;
         }
-
-        /*
-        // Removed: deleted loaders would reappear after a reload of the pool anyway.
-        public void destroy () throws IOException {
-          remove ((DataLoader) getBean ());
-    }
-        */
 
         /** Cannot be copied
         */

@@ -54,7 +54,7 @@ import org.openide.compiler.CompilationEngine;
 import org.openide.util.lookup.*;
 
 import org.netbeans.core.actions.*;
-import org.netbeans.core.output.OutputTab;
+import org.netbeans.core.output.OutputTabTerm;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.compiler.CompilationEngineImpl;
 import org.netbeans.core.perftool.StartLog;
@@ -615,7 +615,7 @@ public abstract class NbTopManager extends TopManager {
     * @return default system output printer
     */
     public OutputWriter getStdOut () {
-        return OutputTab.getStdOut ();
+        return OutputTabTerm.getStdOut ();
     }
 
     /** creates new OutputWriter
@@ -623,7 +623,7 @@ public abstract class NbTopManager extends TopManager {
     * @return new OutputWriter with given name
     */
     public InputOutput getIO(String name, boolean newIO) {
-        return OutputTab.getIO (name, newIO);
+        return OutputTabTerm.getIO (name, newIO);
     }
 
 

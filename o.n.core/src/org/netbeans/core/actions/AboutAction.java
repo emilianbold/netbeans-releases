@@ -51,21 +51,3 @@ public class AboutAction extends CallableSystemAction {
     }
 
 }
-
-/*
- * Log
- *  9    Gandalf   1.8         1/12/00  Ales Novak      i18n
- *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  7    Gandalf   1.6         6/24/99  Jesse Glick     Gosh-honest HelpID's.
- *  6    Gandalf   1.5         6/22/99  Ian Formanek    employed DEFAULT_HELP
- *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  4    Gandalf   1.3         3/26/99  Ian Formanek    Fixed use of obsoleted 
- *       NbBundle.getBundle (this)
- *  3    Gandalf   1.2         1/20/99  Jaroslav Tulach 
- *  2    Gandalf   1.1         1/7/99   Ian Formanek    fixed resource names
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- * Beta Change History:
- */

@@ -186,6 +186,7 @@ implements RepositoryListener, NewTemplateAction.Cookie {
         nb.getExplorerManager ().setRootContext (
           TopManager.getDefault ().getPlaces().nodes().repositorySettings()
         );
+        nb.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(DataSystem.class).getString("ACSD_DataSystemCustomizer"));
         return nb;
     }
 

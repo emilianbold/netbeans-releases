@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.Border;
@@ -45,6 +46,7 @@ import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.view.ListView;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
@@ -65,6 +67,9 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListener;
 
 import org.netbeans.core.projects.SessionManager;
+import org.netbeans.core.execution.ExecutionEngine;
+import org.netbeans.core.execution.ExecutionEvent;
+import org.netbeans.core.execution.ExecutionListener;
 
 /** Dialog which lets the user select which open files to close.
  *
@@ -130,7 +135,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                                       );
         updateSaveButton ();
         JScrollPane scroll = new JScrollPane (list);
-        scroll.setBorder (new CompoundBorder (new EmptyBorder (5, 5, 5, 5), scroll.getBorder ()));
+        scroll.setBorder (new CompoundBorder (new EmptyBorder (12, 12, 11, 0), scroll.getBorder ()));
         add(scroll, java.awt.BorderLayout.CENTER);
         list.setCellRenderer(new ExitDlgListCellRenderer());
         list.getAccessibleContext().setAccessibleName((NbBundle.getBundle(ExitDialog.class)).getString("ACSN_ListOfChangedFiles"));
@@ -394,6 +399,11 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         cons.insets = new Insets(11, 11, 0, 12);
         
         panel.add(new InfiniteProgress(), cons);
+        
+        view.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ExitDialog.class)
+            .getString("ACSD_PendingTasks"));
+        panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ExitDialog.class)
+            .getString("ACSD_PendingTitle"));
 
         return panel;
     }
@@ -433,6 +443,8 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             getString("LAB_EndTasksMnem").charAt(0));
         // No default button.
         exitOption.setDefaultCapable(false);
+        exitOption.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getBundle(ExitDialog.class).getString("ACSD_EndTasks"));
         
         DialogDescriptor dd = new DialogDescriptor(
             panel,
@@ -468,7 +480,8 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             dialog[0].show();
             dialog[0].dispose();
 
-            if(dd.getValue() == DialogDescriptor.CANCEL_OPTION) {
+            if(dd.getValue() == DialogDescriptor.CANCEL_OPTION
+            || dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
                 return false;
             }
             
@@ -481,11 +494,21 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
      * for pending dialog root node children. Currently it gets pending
      * actions only. */
     private static Collection getPendingTasks() {
-        return ModuleActions.INSTANCE.getRunningActions();
+        
+        ArrayList pendingTasks = new ArrayList( 10 );
+        
+        pendingTasks.addAll( ModuleActions.INSTANCE.getRunningActions() );
+        
+        if ( !Boolean.getBoolean( "netbeans.full.hack" ) ) { // NOI18N
+            // Avoid showing the tasks in the dialog when running internal tests
+            pendingTasks.addAll( ExecutionEngine.getExecutionEngine().getRunningTasks() );
+        }
         
         // [PENDING] When it'll be added another types of tasks (locks etc.)
         // add them here to the list. Then you need to create also a nodes
         // for them in PendingChildren.createNodes.
+        
+        return pendingTasks;
     }
     
     /** Ends penidng tasks. */
@@ -496,13 +519,27 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         // for some specialities, e.g. not to stop task with 
         // unmounting FS action when actually doing the unmounting.
         ModuleActions.killRunningActions();
+        killRunningExecutors();
         
         // [PENDING] When it'll be added another types of tasks (locks etc.)
         // kill them here.
    }
+    
+   /** Tries to kill running executions */
+   private static void killRunningExecutors() {
+       ArrayList tasks = new ArrayList( ExecutionEngine.getExecutionEngine().getRunningTasks() );
+       
+       for ( Iterator it = tasks.iterator(); it.hasNext(); ) {
+           ExecutorTask et = (ExecutorTask) it.next();
+           if ( !et.isFinished() ) {
+               et.stop();
+           }
+       }
+       
+   }
 
     /** Children showing pending tasks. */
-    private static class PendingChildren extends Children.Keys {
+    private static class PendingChildren extends Children.Keys implements ExecutionListener {
 
         /** Listens on changes of sources from getting the tasks from.
          * Currently on module actions only. */
@@ -522,6 +559,8 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             ModuleActions.INSTANCE.addPropertyChangeListener(
                 WeakListener.propertyChange(propertyListener, ModuleActions.INSTANCE)
             );
+            
+            ExecutionEngine.getExecutionEngine().addExecutionListener( this );
         }
 
         /** Implements superclass abstract method. Creates nodes from key.
@@ -531,6 +570,13 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             Node n = null;
             if(key instanceof Action) {
                 n = new PendingActionNode((Action)key);
+            }
+            else if ( key instanceof ExecutorTask ) {
+                AbstractNode an = new AbstractNode( Children.LEAF );
+                an.setName( NbBundle.getBundle(ExitDialog.class).getString("CTL_PendingExternalProcess") + 
+                            ExecutionEngine.getExecutionEngine().getRunningTaskName( (ExecutorTask) key ) );
+                an.setIconBase( "/org/netbeans/core/resources/execution" ); //NOI18N
+                n = an;
             }
             return n == null ? null : new Node[] { n };
         }
@@ -545,6 +591,17 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             super.removeNotify();
+            ExecutionEngine.getExecutionEngine().removeExecutionListener( this );
+        }
+        
+        // ExecutionListener implementation ------------------------------------
+        
+        public void startedExecution( ExecutionEvent ev ) {
+            setKeys(getPendingTasks());
+        }
+        
+        public void finishedExecution( ExecutionEvent ev ) {
+            setKeys(getPendingTasks());
         }
         
     } //  End of class PendingChildren.
@@ -715,10 +772,15 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                 boolean isSelected,      // is the cell selected
                 boolean cellHasFocus)    // the list and the cell have the focus
         {
-            DataObject obj = (DataObject)value;
+            final DataObject obj = (DataObject)value;
             if (!obj.isValid()) {
                 // #17059: it might be invalid already.
-                listModel.removeElement(obj);
+                // #18886: but if so, remove it later, otherwise BasicListUI gets confused.
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        listModel.removeElement(obj);
+                    }
+                });
                 setText("");
                 return this;
             }

@@ -14,6 +14,7 @@
 package org.netbeans.beaninfo.editors;
 
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import java.util.Vector;
 import javax.swing.*;
@@ -32,15 +33,14 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
     public StringCustomEditor(String s, boolean editable) {
         initComponents ();
         
-        // bugfix# 9219 sets the text editable or not
         textArea.setEditable(editable);
-        if (! editable) {
-            textArea.setForeground (textArea.getDisabledTextColor ());
-        }
-        
         textArea.setText (s);
-        setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(8, 8, 8, 8)));
+        setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(12, 12, 0, 11)));
         setPreferredSize (new java.awt.Dimension(500, 300));
+        
+        textArea.getAccessibleContext().setAccessibleName(NbBundle.getBundle(StringCustomEditor.class).getString("ACS_TextArea"));
+        textArea.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(StringCustomEditor.class).getString("ACSD_TextArea"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(StringCustomEditor.class).getString("ACSD_CustomStringEditor"));
     }
 
     /**
