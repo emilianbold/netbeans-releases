@@ -63,6 +63,7 @@ public class DatabaseConnection implements DBConnection {
     /** Connection name */
     private String name;
 
+    private static final String SUPPORT = "_schema_support"; //NOI18N
     public static final String PROP_DRIVER = "driver"; //NOI18N
     public static final String PROP_DATABASE = "database"; //NOI18N
     public static final String PROP_USER = "user"; //NOI18N
@@ -334,13 +335,17 @@ public class DatabaseConnection implements DBConnection {
         drv = (String)in.readObject();
         db = (String)in.readObject();
         usr = (String)in.readObject();
-//        pwd = (String)in.readObject();
         schema = (String)in.readObject();
-        //		rpwd = (Boolean)in.readObject();
         rpwd = new Boolean(false);
         name = (String)in.readObject();
-        if(name!=null)
-            schema=null;
+
+        // boston setting/pilsen setting?
+        if((name!=null)&&(name.equals(DatabaseConnection.SUPPORT))) {
+            // pilsen
+        } else {
+            // boston
+            schema = null;
+        }
         name = null;
         name = getName();
     }
@@ -352,10 +357,8 @@ public class DatabaseConnection implements DBConnection {
         out.writeObject(drv);
         out.writeObject(db);
         out.writeObject(usr);
-//        out.writeObject(pwd);
         out.writeObject(schema);
-        //		out.writeObject(rpwd);
-        out.writeObject(null);
+        out.writeObject(DatabaseConnection.SUPPORT);
     }
 
     public String toString() {
