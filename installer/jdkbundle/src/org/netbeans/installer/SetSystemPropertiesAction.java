@@ -119,7 +119,7 @@ public class SetSystemPropertiesAction extends WizardAction {
                         version = version.substring(0, version.length() - 1);
                     }
                     logEvent(this, Log.DBG,"findJdkHome version: '" + version + "'");
-                    //Must be equal to match "1.5.0" and not eg."1.5.0_01"
+                    //Must be equal to match "1.X.X" and not eg."1.X.X_01"
                     if (bundledVersion.equals(version)) {
                         line = reader.readLine();
                         StringTokenizer st = new StringTokenizer(line,"\"");
@@ -185,7 +185,7 @@ public class SetSystemPropertiesAction extends WizardAction {
                         version = version.substring(0, version.length() - 1);
                     }
                     logEvent(this, Log.DBG,"findJreHome version: '" + version + "'");
-                    //Must be equal to match "1.5.0" and not eg."1.5.0_01"
+                    //Must be equal to match "1.X.X" and not eg."1.X.X_01"
                     if (bundledVersion.equals(version)) {
                         line = reader.readLine();
                         StringTokenizer st = new StringTokenizer(line,"\"");
