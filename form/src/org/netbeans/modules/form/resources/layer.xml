@@ -652,6 +652,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- default workspaces, frames and their layout defined by core-->
     <folder name="windows">
         <folder name="windowmanager">
+            <attr name="Visual/Running" boolvalue="true" />
             <file name="Visual.wswksp" url="windowmanager/Visual.wswksp" />
             <folder name="Visual">
                 <file name="explorer.wsmode" url="windowmanager/Visual/explorer.wsmode" />
