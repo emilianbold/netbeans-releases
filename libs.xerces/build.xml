@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
+    <property name="apache-license.file" location="${libs_root}/apache-license.txt"/>
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
     <property name="storepass" value="?"/>
@@ -70,7 +71,12 @@ Microsystems, Inc. All Rights Reserved.
                  module="netbeans/modules/autoload/xerces.jar"
                  homepage="http://libs.${homepage.base}/#xerces"
                  distribution="http://${dist.base}/xerces.nbm">
-            <license file="${license.file}"/>
+            <license name="xerces-license.txt">
+                 <text>For the Xerces module itself:</text>
+                 <file location="${license.file}"/>
+                 <text>For the Apache's XML parser (Xerces):</text>
+                 <file location="${apache-license.file}"/>
+            </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
     </target>
@@ -78,15 +84,8 @@ Microsystems, Inc. All Rights Reserved.
     <target name="clean">
         <delete file="manifest-subst.mf"/>
         <delete file="${libs_root}/xerces.nbm"/>
-<!-- directories netbeans and Info had been accidentally created 
-       in repository, do not delete them during clean,
-       because further build will create the directories again
-       and cvs client will not be able  to work with them -->
-<!--
         <delete dir="netbeans"/>
         <delete dir="Info"/>
--->
-
     </target>
 
     <target name="all" depends="clean, nbm"/>
