@@ -15,6 +15,8 @@ package org.netbeans.modules.javadoc;
 
 import java.io.File;
 import java.io.IOException;
+import java.beans.*;
+import java.awt.Image;
 
 import java.util.Enumeration;
 import java.lang.reflect.Method;
@@ -22,6 +24,7 @@ import javax.swing.event.*;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 
+import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 import org.openide.src.nodes.FilterFactory;
 import org.openide.actions.CutAction;
@@ -48,7 +51,9 @@ public class JavadocModule extends ModuleInstall {
     /** serialVersionUID */
     private static final long serialVersionUID = 984124010415492146L;
 
-    private static int numberOfStarts = 0;
+    private static final String PROP_INSTALL_COUNT = "installCount"; // NOI18N
+    
+    public static final ErrorManager err = TopManager.getDefault ().getErrorManager ().getInstance ("org.apache.tools.ant.module"); // NOI18N
 
     /** By first install of module in the IDE, check whether standard documentation folder
     * exists. If not creates it.
@@ -61,24 +66,30 @@ public class JavadocModule extends ModuleInstall {
     /** By uninstalling module from the IDE do nothing.
     */
     public void uninstalled () {
+        // Unmount docs (AutoUpdate should handle actually removing the file):
+        Repository repo = TopManager.getDefault ().getRepository ();
+        Enumeration e = repo.fileSystems ();
+        while (e.hasMoreElements ()) {
+            Object o = e.nextElement ();
+            if (o instanceof GlobalLocalFileSystem) {
+                repo.removeFileSystem ((FileSystem) o);
+            }
+        }
     }
 
     /** Called on IDE startup. Registers actions for generating documentation
     * on DataFolder and JavaDataObject.
     */
     public void restored() {
-
-
-        numberOfStarts ++;
-
-        if ( numberOfStarts < 3 ) {
-            /*
-             * This works only on the first start when called from
-             * install method or on second start - but only if doesn't
-             * exist the project.basic & project.last file int system
-             * directory. If these files exist on second start mounted
-             * filesystems are overriden by project settings.
-             */
+        // Mount docs, or remount if project was discarded:
+        Integer count = (Integer) getProperty (PROP_INSTALL_COUNT);
+        int icount = count == null ? 1 : count.intValue () + 1;
+        putProperty (PROP_INSTALL_COUNT, new Integer (icount));
+        // 1: first install (project is discarded anyway)
+        // 2: first restore as actual user
+        // 3: next restore (project settings incl. Repository loaded)
+        notify ("JavadocModule: numberOfStarts=" + icount); // NOI18N
+        if (icount <= 2) {
             installJavadocDirectories();
         }
 
@@ -144,12 +155,16 @@ public class JavadocModule extends ModuleInstall {
             method.invoke( null, new Object[] { factory } );
         }
         catch ( java.lang.ClassNotFoundException e ) {
+            notify (e);
         }
         catch ( java.lang.NoSuchMethodException e ) {
+            notify (e);
         }
         catch ( java.lang.IllegalAccessException e ) {
+            notify (e);
         }
         catch ( java.lang.reflect.InvocationTargetException e ) {
+            notify (e);
         }
     }
 
@@ -193,6 +208,7 @@ public class JavadocModule extends ModuleInstall {
             directory = new File (System.getProperty ("netbeans.user") + fileSep + "javadoc").getCanonicalFile();
         }
         catch ( java.io.IOException e ) {
+            err.notify (ErrorManager.INFORMATIONAL, e);
             directory = new File (System.getProperty ("netbeans.user") + fileSep + "javadoc").getAbsoluteFile();
         }
 
@@ -202,13 +218,14 @@ public class JavadocModule extends ModuleInstall {
 
             // Multiuser we need to unmount the old file system
 
-            LocalFileSystem localFS = new LocalFileSystem();
+            LocalFileSystem localFS = new GlobalLocalFileSystem();
             try {
                 File oldDirectory = null;
                 try {
                     oldDirectory = new File (System.getProperty ("netbeans.home") + fileSep + "javadoc").getCanonicalFile();
                 }
                 catch ( java.io.IOException e ) {
+                    notify (e);
                     oldDirectory = new File (System.getProperty ("netbeans.home") + fileSep + "javadoc").getAbsoluteFile();
                 }
 
@@ -221,8 +238,12 @@ public class JavadocModule extends ModuleInstall {
                     r.removeFileSystem (fs);
                 }
             }
-            catch (java.io.IOException ex) {}
-            catch (java.beans.PropertyVetoException ex) {}
+            catch (java.io.IOException ex) {
+                notify (ex);
+            }
+            catch (java.beans.PropertyVetoException ex) {
+                notify (ex);
+            }
         }
 
         sdsTemp.setDirectory( directory );
@@ -239,7 +260,8 @@ public class JavadocModule extends ModuleInstall {
      *  into Javadoc repository
      */
     static void mount( File root, boolean testSearchability ) {
-
+        notify ("JavadocModule.mount: root=" + root); // NOI18N
+  
         if ((root != null) && (root.isDirectory())) {
             String dirName = root.getAbsolutePath();
 
@@ -249,7 +271,7 @@ public class JavadocModule extends ModuleInstall {
             cap.setDebug( false );
             cap.setDoc( true );
 
-            LocalFileSystem localFS = new LocalFileSystem( cap );
+            LocalFileSystem localFS = new GlobalLocalFileSystem( cap );
             localFS.setHidden( true );
 
             try {
@@ -259,14 +281,18 @@ public class JavadocModule extends ModuleInstall {
                 FileSystem fs = r.findFileSystem(localFS.getSystemName());
 
                 if (fs == null) {
-                    if( !testSearchability ||
-                            DocFileSystem.getDocFileObject( localFS ) != null ) {
+                    if( !testSearchability || DocFileSystem.getDocFileObject( localFS ) != null ) {                        
                         r.addFileSystem (localFS);
+                        notify ("JavadocModule mounted: " + localFS.getSystemName ()); // NOI18N
                     }
                 }
             }
-            catch (java.io.IOException ex) {}
-            catch (java.beans.PropertyVetoException ex) {}
+            catch (java.io.IOException ex) {
+                notify (ex);
+            }
+            catch (java.beans.PropertyVetoException ex) {
+                notify (ex);
+            }
         }
     }
 
@@ -274,17 +300,60 @@ public class JavadocModule extends ModuleInstall {
 
     public void readExternal(final java.io.ObjectInput objectInput )
     throws java.io.IOException, java.lang.ClassNotFoundException {
-
         super.readExternal( objectInput );
-
-        numberOfStarts = objectInput.readInt();
+        putProperty (PROP_INSTALL_COUNT, objectInput.readObject ());
+        //numberOfStarts = objectInput.readInt();
 
     }
 
     public void writeExternal(final java.io.ObjectOutput objectOutput )
     throws java.io.IOException {
         super.writeExternal( objectOutput );
+        objectOutput.writeObject (getProperty (PROP_INSTALL_COUNT));
+        //objectOutput.writeInt( numberOfStarts );
+    }
 
-        objectOutput.writeInt( numberOfStarts );
+    private static void notify (Exception e) {
+        TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+    }
+
+    private static void notify (String s) {
+        TopManager.getDefault ().getErrorManager ().log (ErrorManager.INFORMATIONAL, s);
+    }
+  
+    /** Exists only for the sake of its bean info. */
+    public static final class GlobalLocalFileSystem extends LocalFileSystem {        
+        private static final long serialVersionUID = 3563912690225075761L;
+        
+        public GlobalLocalFileSystem(){
+            super();
+        }
+        public GlobalLocalFileSystem(FileSystemCapability cap){
+            super(cap);
+        }
+    }
+    /** Marks it as global (not project-specific). */
+    public static final class GlobalLocalFileSystemBeanInfo extends SimpleBeanInfo {
+        public BeanDescriptor getBeanDescriptor () {
+            BeanDescriptor bd = new BeanDescriptor (GlobalLocalFileSystem.class);
+            bd.setValue ("global", Boolean.TRUE); // NOI18N
+            return bd;
+        }
+        public BeanInfo[] getAdditionalBeanInfo () {
+            try {
+                return new BeanInfo[] { Introspector.getBeanInfo (LocalFileSystem.class) };
+            } catch (IntrospectionException ie) {
+                err.notify (ie);
+                return null;
+            }
+        }
+        public Image getIcon (int kind) {
+            try {
+                return Introspector.getBeanInfo (LocalFileSystem.class).getIcon (kind);
+            } catch (IntrospectionException ie) {
+                err.notify (ie);
+                return null;
+            }
+        }
     }
 }
