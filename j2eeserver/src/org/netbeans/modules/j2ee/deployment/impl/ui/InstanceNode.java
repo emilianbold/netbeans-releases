@@ -79,13 +79,14 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
     }
 
     public javax.swing.Action[] getActions(boolean context) {
-        Boolean isRunning = instance.checkRunning();
+        return  getUnknownActions();
+        /*Boolean isRunning = instance.checkRunning();
         if (isRunning == null) {
             return getUnknownActions();
         } else if (isRunning.booleanValue()) {
             return getRunningActions();
         } else
-            return getStoppedActions();
+            return getStoppedActions();*/
     }
     
     ServerInstance getServerInstance() {
