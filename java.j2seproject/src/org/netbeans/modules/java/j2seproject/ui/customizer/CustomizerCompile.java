@@ -80,6 +80,7 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
         vps.register( jCheckBoxDeprecation, J2SEProjectProperties.JAVAC_DEPRECATION );
         vps.register( jCheckBoxDebugInfo, J2SEProjectProperties.JAVAC_DEBUG );                
         vps.register( vcs, J2SEProjectProperties.JAVAC_CLASSPATH );
+        vps.register( jCheckBoxBuildSubprojects, J2SEProjectProperties.NO_DEPENDENCIES );
 
         jButtonEdit.setVisible( false );
 
@@ -111,6 +112,7 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
         jButtonRemove = new javax.swing.JButton();
         jButtonMoveUp = new javax.swing.JButton();
         jButtonMoveDown = new javax.swing.JButton();
+        jCheckBoxBuildSubprojects = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -118,6 +120,8 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDebugInfo, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_DebugInfo_JCheckBox"));
         jCheckBoxDebugInfo.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
@@ -127,6 +131,8 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeprecation, java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Compiler_Deprecation_JCheckBox"));
         jCheckBoxDeprecation.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
@@ -216,12 +222,22 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
         jButtonMoveDown.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustomizerCompile_jButtonMoveDown"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 13, 0);
         add(jPanel2, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxBuildSubprojects, java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("LBL_CustomizeCompile_Build_Subprojects"));
+        jCheckBoxBuildSubprojects.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(jCheckBoxBuildSubprojects, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -234,6 +250,7 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, H
     private javax.swing.JButton jButtonMoveDown;
     private javax.swing.JButton jButtonMoveUp;
     private javax.swing.JButton jButtonRemove;
+    private javax.swing.JCheckBox jCheckBoxBuildSubprojects;
     private javax.swing.JCheckBox jCheckBoxDebugInfo;
     private javax.swing.JCheckBox jCheckBoxDeprecation;
     private javax.swing.JLabel jLabelClasspath;
