@@ -14,14 +14,17 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
+import java.io.OutputStream;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.*;
+import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.RegistryNodeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
+import org.netbeans.modules.j2ee.deployment.plugins.api.VerifierSupport;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.Lookup;
@@ -254,6 +257,20 @@ public class Server implements Node.Cookie {
         return cs;
     }
 
+    public VerifierSupport getVerifierSupport() {
+        VerifierSupport vs = (VerifierSupport) lkp.lookup (VerifierSupport.class);
+        return vs;
+    }
+    
+    public boolean canVerify(Object moduleType) {
+        VerifierSupport vs = getVerifierSupport();
+        return  vs != null && vs.supportsModuleType(moduleType);
+    }
+    
+    public void verify(FileObject target, OutputStream logger) throws ValidationException {
+        getVerifierSupport().verify(target, logger);
+    }
+    
     public ServerInstance[] getInstances() {
         Collection ret = new ArrayList();
         for (Iterator i=ServerRegistry.getInstance().getInstances().iterator(); i.hasNext();) {

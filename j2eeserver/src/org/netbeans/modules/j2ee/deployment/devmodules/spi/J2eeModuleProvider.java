@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -20,6 +21,7 @@ import java.util.HashSet;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
+import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.config.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.DefaultSourceMap;
@@ -30,6 +32,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
+import org.netbeans.modules.j2ee.deployment.plugins.api.VerifierSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -208,6 +211,31 @@ public abstract class J2eeModuleProvider {
         return getConfigSupportImpl().getDeploymentName();
     }
 
+    /**
+     * Returns true if the current target platform provide verifier support for this module.
+     */
+    public boolean hasVerifierSupport() {
+        return ServerRegistry.getInstance().getServer(getServerID()).canVerify(getJ2eeModule().getModuleType());
+    }
+    
+    /**
+     * Invoke verifier from current platform on the provided target file.
+     * @param target File to run verifier against.
+     * @param logger output stream to write verification resutl to.
+     * @return true
+     */
+    public void verify(FileObject target, OutputStream logger) throws ValidationException {
+        VerifierSupport verifier = ServerRegistry.getInstance().getServer(getServerID()).getVerifierSupport();
+        if (verifier == null) {
+            throw new ValidationException ("Verification not supported by the selected server");
+        }
+        Object type = getJ2eeModule().getModuleType();
+        if (!verifier.supportsModuleType(type)) {
+            throw new ValidationException ("Verification not supported for module type " + type);
+        }
+        ServerRegistry.getInstance().getServer(getServerID()).getVerifierSupport().verify(target, logger);
+    }
+    
     protected final void fireServerChange (String oldServerID, String newServerID) {
         Server oldServer = ServerRegistry.getInstance ().getServer (oldServerID);
 	Server newServer = ServerRegistry.getInstance ().getServer (newServerID);
