@@ -238,7 +238,9 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
     /** Public method for saving form data to file. Does not save the
      * source code (document), does not report errors and does not throw
      * any exceptions.
-     * @return whether the form was saved without fatal errors
+     * @return whether there was not any fatal error during saving (true means
+     *         everything was ok); returns true even if nothing was saved
+     *         because form was not loaded or read-only, etc.
      */
     public boolean saveForm() {
         try {
@@ -696,7 +698,7 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
     // saving
 
     private void saveFormData() throws PersistenceException {
-        if (formLoaded) {
+        if (formLoaded && !formDataObject.formFileReadOnly()) {
             formModel.fireFormToBeSaved();
 
             resetPersistenceErrorLog();

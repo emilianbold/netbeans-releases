@@ -117,7 +117,9 @@ class JavaCodeGenerator extends CodeGenerator {
             this.formModel = formModel;
             formEditorSupport = FormEditorSupport.getSupport(formModel);
 
-            if (!formModel.isReadOnly()) {
+            if (!formEditorSupport.getFormDataObject().getPrimaryFile()
+                  .isReadOnly())
+            {
                 canGenerate = true;
                 formModel.addFormModelListener(new FormListener());
             }
