@@ -17,7 +17,6 @@
 
 <tocitem text="J2EE Applications">
 	<tocitem text="About Developing J2EE Applications" target="j2ee_about" />
-</tocitem>
 
 <!-- Start of web applications -->
 
@@ -187,6 +186,7 @@
  </tocitem>
 
 <!-- End of web applications -->
-
+ 
+ </tocitem>
 
 </toc>
