@@ -42,8 +42,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
-// XXX permit any paths to be used, not just BUILD_XML & BUILD_IMPL_XML
-
 /**
  * Helps a project type (re-)generate, and manage the state and versioning of,
  * <code>build.xml</code> and <code>build-impl.xml</code>.
