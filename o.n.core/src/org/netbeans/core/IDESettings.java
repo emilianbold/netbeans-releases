@@ -37,6 +37,10 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
+import org.netbeans.core.windows.TabbedContainerUIManager;
+import org.netbeans.core.windows.UIModeManager;
+import org.netbeans.core.windows.WindowManagerImpl;
+
 /** Global IDE settings.
 *
 * @author Ian Formanek
@@ -65,6 +69,10 @@ public class IDESettings extends SystemOption {
     public static final String PROP_MODULES_SORT_MODE = "modulesSortMode"; // NOI18N
     /** Web Browser prefered by user */
     public static final String PROP_WWWBROWSER = "WWWBrowser"; // NOI18N
+    /** UI Mode */
+    public static final String PROP_UIMODE = "UIMode"; // NOI18N
+    /** UI of JTabbedPane component */
+    public static final String PROP_TABBEDCONTAINERUI = "TabbedContainerUI"; // NOI18N
 
     /** proxy host VM property key */
     public static final String KEY_PROXY_HOST = "http.proxyHost"; // NOI18N
@@ -93,7 +101,10 @@ public class IDESettings extends SystemOption {
     private static boolean useProxy = false;
     private static String proxyHost = System.getProperty(KEY_PROXY_HOST, "");
     private static String proxyPort = System.getProperty(KEY_PROXY_PORT, "");
-    
+
+    private UIModeManager uiModeManager = null;
+    private TabbedContainerUIManager tabbedContainerUIManager = null;
+
     // ------------------------------------------
     // property access methods
 
@@ -349,6 +360,22 @@ public class IDESettings extends SystemOption {
         }
     }
 
+    public void setUIMode (int uiMode) {
+        getUIModeManager().setUIMode(uiMode);
+    }
+
+    public int getUIMode () {
+        return getUIModeManager().getUIMode();
+    }
+
+    public void setTabbedContainerUI (int tabbedContainerUI) {
+        getTabbedContainerUIManager().setTabbedContainerUI(tabbedContainerUI);
+    }
+
+    public int getTabbedContainerUI () {
+        return getTabbedContainerUIManager().getTabbedContainerUI();
+    }
+
     // PRIVATE METHODS
     
     /** Returns the default value for the http.nonProxyHosts system property. <br>
@@ -366,4 +393,17 @@ public class IDESettings extends SystemOption {
         return nonProxy;
     }
 
+    private UIModeManager getUIModeManager () {
+        if(uiModeManager == null) {
+            uiModeManager = WindowManagerImpl.getDefault().uiModeManager();
+        }
+        return uiModeManager;
+    }
+
+    private TabbedContainerUIManager getTabbedContainerUIManager () {
+        if(tabbedContainerUIManager == null) {
+            tabbedContainerUIManager = WindowManagerImpl.getDefault().tabbedContainerUIManager();
+        }
+        return tabbedContainerUIManager;
+    }
 }

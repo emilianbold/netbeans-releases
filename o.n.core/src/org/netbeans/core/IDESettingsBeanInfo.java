@@ -16,7 +16,13 @@ package org.netbeans.core;
 import java.awt.Image;
 import java.beans.*;
 import java.util.Hashtable;
+import java.util.ResourceBundle;
 import java.util.Vector;
+
+import org.openide.util.NbBundle;
+
+import org.netbeans.core.windows.nodes.TabbedContainerUIPropertyEditor;
+import org.netbeans.core.windows.nodes.UIModePropertyEditor;
 
 /** A BeanInfo for global IDE settings.
 *
@@ -32,6 +38,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
     // initialization of the array of descriptors
     static {
+        ResourceBundle bundleUIMode = NbBundle.getBundle(UIModePropertyEditor.class);
+        ResourceBundle bundleTabbedContainerUI = NbBundle.getBundle(TabbedContainerUIPropertyEditor.class);
         try {
             desc = new PropertyDescriptor[] {
                        new PropertyDescriptor (IDESettings.PROP_SHOW_TIPS_ON_STARTUP, IDESettings.class,
@@ -55,7 +63,11 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                        new PropertyDescriptor (IDESettings.PROP_MODULES_SORT_MODE, IDESettings.class,
                                                "getModulesSortMode", "setModulesSortMode"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_WWWBROWSER, IDESettings.class, 
-                                               "getWWWBrowser", "setWWWBrowser") // NOI18N
+                                               "getWWWBrowser", "setWWWBrowser"), // NOI18N
+                       new PropertyDescriptor (IDESettings.PROP_UIMODE, IDESettings.class, 
+                                               "getUIMode", "setUIMode"), // NOI18N
+                       new PropertyDescriptor (IDESettings.PROP_TABBEDCONTAINERUI, IDESettings.class, 
+                                               "getTabbedContainerUI", "setTabbedContainerUI") // NOI18N
                    };
 
             desc[0].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
@@ -87,6 +99,14 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
             desc[10].setDisplayName (Main.getString ("PROP_WWW_BROWSER"));
             desc[10].setShortDescription (Main.getString ("HINT_WWW_BROWSER"));
+
+            desc[11].setDisplayName(bundleUIMode.getString("PROP_UI_Mode"));
+            desc[11].setShortDescription(bundleUIMode.getString("HINT_UI_Mode"));
+            desc[11].setPropertyEditorClass(UIModePropertyEditor.class);
+
+            desc[12].setDisplayName(bundleTabbedContainerUI.getString("PROP_UI_Mode"));
+            desc[12].setShortDescription(bundleTabbedContainerUI.getString("HINT_UI_Mode"));
+            desc[12].setPropertyEditorClass(TabbedContainerUIPropertyEditor.class);
 
         } catch (IntrospectionException ex) {
             if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace();
