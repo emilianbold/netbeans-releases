@@ -71,6 +71,7 @@ public class JavaTemplates {
      * @param validPackageRequired indicates whether a only a valid (non-empty) package is accepted
      * @return a wizard panel prompting the user to choose a name and package
      * @throws IllegalArgumentException if folders is empty
+     * @since org.netbeans.modules.java.project/1 1.3 
      */
     public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders, 
         WizardDescriptor.Panel bottomPanel, boolean validPackageRequired) throws IllegalArgumentException {
