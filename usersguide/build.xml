@@ -138,9 +138,6 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
       <classpath>
         <pathelement location="../nbbuild/nbantext.jar"/>
-        <fileset dir="../libs/external">
-          <include name="regexp*.jar"/>
-        </fileset>
         <fileset dir="../nbbuild/external">
           <include name="jhall*.jar"/>
         </fileset>

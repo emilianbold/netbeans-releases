@@ -37,9 +37,6 @@ To implement:
   <property name="nb_all" location=".."/>
   <path id="nbantext">
     <pathelement location="nbantext.jar"/>
-    <fileset dir="${nb_all}/core/external">
-      <include name="regexp*.jar"/>
-    </fileset>
   </path>
 
   <target name="init">
