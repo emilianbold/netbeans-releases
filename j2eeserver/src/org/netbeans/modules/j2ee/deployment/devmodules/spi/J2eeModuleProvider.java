@@ -221,6 +221,14 @@ public abstract class J2eeModuleProvider {
         return true;
     }
     
+    /**
+     * Set ID of the server instance that will be used for deployment.
+     * 
+     * @param severInstanceID server instance ID.
+     * @since 1.6
+     */
+    public abstract void setServerInstanceID(String severInstanceID);
+    
     /** Id of server isntance for deployment. The default implementation returns
      * the default server instance selected in Server Registry. 
      * The return value may not be null.

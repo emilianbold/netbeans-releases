@@ -80,6 +80,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="J2eeModuleProvider-setServerInstanceID">
+            <api name="j2eeserver"/>
+            <summary>Added setServerInstanceID method into J2eeModuleProvider.</summary>
+            <version major="1" minor="6"/>
+            <date day="14" month="3" year="2005"/>
+            <author login="sherold"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="yes"/>
+            <description>
+                <p>
+                    When adding module to j2ee application the target server needs 
+                    to be set to the same as for the app. To make this possible we 
+                    need to add setServerInstanceID method into J2eeModuleProvider.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+        </change>
         <change id="StartServer-stopDontWait">
             <api name="j2eeserver"/>
             <summary>Added stopDontWait and canStopDontWait methods into StartServer.</summary>
