@@ -329,14 +329,8 @@ Microsystems, Inc. All Rights Reserved.
        
         <property name="xtest.current.results" value="${xtest.results.testbag.dir}"/>
        
-        <!-- move the results, because of path length limit on windows
-            there have to be a separate process for windows and for 
-            the rest of operating systems -->
-        <condition property="os.is.windows">
-            <os family="windows"/>
-        </condition>
-        <antcall target="move-results"/>
-        <antcall target="move-results-windows"/>        
+        <!-- move the results -->
+        <antcall target="move-results"/>       
         
         <!-- a mew testbag was added, regenerate the XML tree -->
         <regenerateXML inputDir="${xtest.results}"/>
@@ -358,10 +352,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>        
     <!--
     -->
-    <target name="move-results-windows" if="os.is.windows">
-        <!--
-        <echo message="WINDOWS :-(("/>
-        -->
+    
+    <target name="move-results">
         <!-- move results from workdir to result dir --> 
         <move toDir="${xtest.current.results}">
             <fileset dir="${xtest.workdir}">                        
@@ -375,43 +367,27 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </copy>
         
-        <!-- now copy the ide workdir stuff - since there is 
-            a problem with that on windows -->
+        <!-- do the ide userdir stuff  -->
+        <available file="${xtest.workdir}/sys/ide/system/ide.log" property="ide.userdir.available"/>
+        <antcall target="move-ide-userdir"/>
+        
+        <!--  now delete all the stuff -->
+        <delete dir="${xtest.workdir}/sys/tests" />
+        <delete dir="${xtest.workdir}/sys/ide"/>        
+        <delete dir="${xtest.workdir}/user"/>
+        <delete dir="${xtest.workdir}/xmlresults"/>
+    </target>
+    
+    <target name="move-ide-userdir" if="ide.userdir.available">
+        <!-- zip the ide userdir stuff -->
         <zip zipfile="${xtest.workdir}/sys/ide.zip" basedir="${xtest.workdir}/sys/ide"/>
-        
-        <unzip src="${xtest.workdir}/sys/ide.zip" dest="${xtest.current.results}/sys/ide"/>                
-        
-        <delete dir="${xtest.workdir}/sys/tests" />
-        <delete dir="${xtest.workdir}/sys/ide"/>
+         <!-- copy the ide.log and the zip -->
+        <copy file="${xtest.workdir}/sys/ide.zip" todir="${xtest.current.results}/sys/ide"/>        
+        <copy file="${xtest.workdir}/sys/ide/system/ide.log" todir="${xtest.current.results}/sys/ide"/>
+         <!-- delete zip and ide workdir -->
         <delete file="${xtest.workdir}/sys/ide.zip"/>
-        <delete dir="${xtest.workdir}/user"/>
-        <delete dir="${xtest.workdir}/xmlresults"/>
+        <delete dir="${xtest.workdir}/sys/ide"/>
     </target>
-    
-    <target name="move-results" unless="os.is.windows">
-        <!--
-        <echo message="NO WINDOWS :-))"/>
-        -->
-        <!-- move results from workdir to result dir --> 
-        <move toDir="${xtest.current.results}">
-            <fileset dir="${xtest.workdir}">                        
-                <exclude name="sys/tests"/>                
-                <exclude name="sys/userdata.properties"/>
-            </fileset>
-        </move>
-        
-        <copy toDir = "${xtest.current.results}">
-            <fileset dir="${xtest.workdir}">
-                <include name="sys/userdata.properties"/>
-            </fileset>
-        </copy>
-                         
-        <delete dir="${xtest.workdir}/sys/tests" />
-        <delete dir="${xtest.workdir}/user"/>
-        <delete dir="${xtest.workdir}/xmlresults"/>
-        
-    </target>
-    
     
     <!-- ======== -->
     <!-- Building -->
