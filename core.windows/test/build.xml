@@ -59,9 +59,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="cleantests">
        <ant dir="." antfile="${xtest.module_harness.antfile}"
              target="cleantests"/>
-        <ant dir="unit/src/org/netbeans/core/modules" target="clean"/>
-        <ant dir="unit/src/org/netbeans/core/projects" target="clean"/>
-        <ant dir="unit/src/org/netbeans/core/lookup/data" target="clean"/>             
     </target> 
 
     <!-- This target runs tests. You should not change this --> 
