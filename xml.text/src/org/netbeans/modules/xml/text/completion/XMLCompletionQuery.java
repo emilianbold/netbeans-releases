@@ -35,11 +35,15 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataLoader;
+import org.openide.loaders.UniFileLoader; 
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.ExtensionList;
 
 import org.netbeans.modules.xml.text.syntax.*;
 import org.netbeans.modules.xml.text.syntax.dom.*;
 import org.netbeans.modules.xml.spi.model.*;
+import org.netbeans.modules.xml.text.completion.xsl.XSLGrammarQuery;
 
 import org.netbeans.modules.xml.core.lib.Convertors;
 import javax.swing.Icon;
@@ -506,15 +510,40 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
      */
     protected GrammarQuery getPerformer() {
 
-        GrammarCache desc = (GrammarCache) doc.getProperty(DOCUMENT_GRAMMAR_BINDING_PROP);
+        Object grammarBindingObj = doc.getProperty(DOCUMENT_GRAMMAR_BINDING_PROP);
+        
+        if (grammarBindingObj == null) {
+            // Check if this is an XSL document by looking at the mimetype of the FileLoader
+            boolean useXslGrammar = false;
+            Object obj = doc.getProperty(Document.StreamDescriptionProperty);        
+            if (obj instanceof DataObject) {
+                DataLoader loader = ((DataObject)obj).getLoader();
+                if (loader instanceof UniFileLoader) {
+                    ExtensionList extensions = ((UniFileLoader)loader).getExtensions();
+                    Enumeration mimeEnum = extensions.mimeTypes();
+                    while(mimeEnum.hasMoreElements()) {
+                        if (((String)mimeEnum.nextElement()).equals("application/xslt+xml")) { // NOI18N
+                            useXslGrammar = true;
+                        }
+                    }
+                }
+            }
 
-        if (desc == null) {  
-            desc = new GrammarCache();
-            desc.attach(doc, sup);
-            doc.putProperty(DOCUMENT_GRAMMAR_BINDING_PROP, desc);
+            if (useXslGrammar) {
+                grammarBindingObj = new XSLGrammarQuery();
+            } else {
+                grammarBindingObj = new GrammarCache();
+                ((GrammarCache)grammarBindingObj).attach(doc, sup);
+            }
+            
+            doc.putProperty(DOCUMENT_GRAMMAR_BINDING_PROP, grammarBindingObj);
         }
         
-        return desc.getGrammar(300);
+        if (grammarBindingObj instanceof XSLGrammarQuery) {
+            return (GrammarQuery)grammarBindingObj;
+        } else {
+            return ((GrammarCache)grammarBindingObj).getGrammar(300);
+        }
     }
     
 
