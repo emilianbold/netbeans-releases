@@ -32,6 +32,7 @@ import org.netbeans.api.debugger.Session;
 
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
@@ -67,11 +68,11 @@ public class IOManager {
     
     // variables ...............................................................
     
-    protected InputOutput                   processIO = null;
+//    protected InputOutput                   processIO = null;
     protected InputOutput                   debuggerIO = null;
     private DebuggerEngine                  engine;
     
-    private OutputWriter                    processOut;
+//    private OutputWriter                    processOut;
     private OutputWriter                    debuggerOut;
     private String                          name;
     
@@ -91,24 +92,24 @@ public class IOManager {
     ) {
         this.engine = engine;
         InputOutput debuggerIO = IOProvider.getDefault ().getIO 
-            ("DebuggerManager Console", true);
+            (loc("CTL_DebuggerConsole_Title"), true);
             //S ystem.out.println("IO " + debuggerIO.getClass ());
             //debuggerIO.setOutputVisible (true);
             //debuggerIO.setErrVisible (true);
             //debuggerIO.setInputVisible (false);
             debuggerIO.setFocusTaken (false);
             debuggerOut = debuggerIO.getOut ();
-        processIO = IOProvider.getDefault ().getIO ("Process Output", true);
+//        processIO = IOProvider.getDefault ().getIO (loc("CTL_ProcessOutput_Title"), true);
             //processIO.setOutputVisible (true);
             //processIO.setErrVisible (true);
             //processIO.setInputVisible (false);
             //processIO.setFocusTaken (true);
-            processOut = processIO.getOut ();
+//            processOut = processIO.getOut ();
             //processIO.select ();
         ((TopComponent) debuggerIO).setVisible(false);
         
         debuggerToDebuggerIO.put (engine, debuggerIO);
-        debuggerToProcesIO.put (engine, processIO);
+//        debuggerToProcesIO.put (engine, processIO);
         final DebuggerManager manager = DebuggerManager.getDebuggerManager ();
         if (dListener == null) {
             dListener = new DListener ();
@@ -149,6 +150,10 @@ public class IOManager {
             }
         });
     }
+
+    private String loc(String key) {
+        return NbBundle.getBundle(IOManager.class).getString(key);
+    }
     
     
     // public interface ........................................................
@@ -157,7 +162,7 @@ public class IOManager {
     * 
     */
     public void select () {
-        processIO.select ();
+//        processIO.select ();
     }
     
     /**
@@ -166,7 +171,7 @@ public class IOManager {
     public void print (final String text, final int where) {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                if ((where & PROCESS_OUT) != 0) processOut.print (text);
+//                if ((where & PROCESS_OUT) != 0) processOut.print (text);
                 if ((where & DEBUGGER_OUT) != 0) debuggerOut.print (text);
                 if ((where & STATUS_OUT) != 0) StatusDisplayer.getDefault ().setStatusText (text);
             }
@@ -205,6 +210,7 @@ public class IOManager {
                         for (i = 0; i < k; i++) {
                             Text t = (Text) buffer.removeFirst ();
                             try {
+/*
                                 if ((t.where & PROCESS_OUT) != 0) {
                                     if (t.line != null) {
                                         processOut.println (t.text, listener);
@@ -212,6 +218,7 @@ public class IOManager {
                                     } else
                                         processOut.println (t.text);
                                 }
+*/
                                 if ((t.where & DEBUGGER_OUT) != 0) {
                                     if (t.line != null) {
                                         debuggerOut.println (t.text, listener);
@@ -265,7 +272,8 @@ public class IOManager {
             (outputThread = new CopyMaker (
                 "DebuggerManager output writer thread",
                 new InputStreamReader (process.getInputStream ()), 
-                ((where & PROCESS_OUT) != 0) ? processOut : debuggerOut,
+                debuggerOut,
+//                ((where & PROCESS_OUT) != 0) ? processOut : debuggerOut,
                 false
             )).start ();
         }
@@ -274,7 +282,8 @@ public class IOManager {
             (errorThread = new CopyMaker (
                 "DebuggerManager error writer thread",
                 new InputStreamReader (process.getErrorStream ()), 
-                ((where & PROCESS_OUT) != 0) ? processOut : debuggerOut,
+                debuggerOut,
+//                ((where & PROCESS_OUT) != 0) ? processOut : debuggerOut,
                 false
             )).start ();
         }
@@ -282,6 +291,7 @@ public class IOManager {
 
     public void connectInput (final Process process) {
         if (process == null) throw new NullPointerException ();
+/*
         if (processIO == null) return;
         processIO.setInputVisible (true);
         processIO.flushReader ();
@@ -291,6 +301,7 @@ public class IOManager {
             new OutputStreamWriter (process.getOutputStream ()),
             true
         )).start ();
+*/
     }
 
     /**
