@@ -36,9 +36,9 @@ public class Installer extends ModuleInstall {
     private final static long serialVersionUID = 1;
 
     // place itself in
-    private final String MENU = "Tools"; // NOI18N
+    private final String MENU = "Edit"; // NOI18N
     // place itself behind
-    private final String MENUITEM = "UnmountFSAction"; // NOI18N
+    private final String MENUITEM = "Goto"; // NOI18N
 
     /** Holds hooking code. */
     private SearchHook hook;
