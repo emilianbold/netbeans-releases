@@ -25,6 +25,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
+import org.openide.util.Mutex;
 import org.w3c.dom.Element;
 
 /**
@@ -44,11 +45,15 @@ final class FreeformSources implements Sources, AntProjectListener {
     private Sources delegate;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     
-    public synchronized SourceGroup[] getSourceGroups(String str) {
-        if (delegate == null) {
-            delegate = initSources();
-        }
-        return delegate.getSourceGroups(str);
+    public SourceGroup[] getSourceGroups(final String type) {
+        return (SourceGroup[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
+            public Object run() {
+                if (delegate == null) {
+                    delegate = initSources();
+                }
+                return delegate.getSourceGroups(type);
+            }
+        });
     }
     
     private Sources initSources() {
