@@ -376,6 +376,31 @@ public class TopComponentGetLookupTest extends NbTestCase {
         }
     }
     
+    
+    public void testChangingNodesDoesNotChangeActionMap () {
+        N node = new N ("testChangingNodesDoesNotChangeActionMap");
+        node.state (0x00);
+        top.setActivatedNodes(new Node[] { node });
+        
+        Lookup.Result res = lookup.lookup (new Lookup.Template (ActionMap.class));
+        ActionMap map = (ActionMap)res.allInstances().toArray()[0];
+        
+        L l = new L ();
+        res.addLookupListener (l);
+
+        node.state (0x01);
+        
+        assertEquals ("Map is still the same", map, res.allInstances().toArray()[0]);
+        
+        l.check ("No change in lookup", 0);
+        
+        top.setActivatedNodes (new Node[] { Node.EMPTY });
+        assertEquals ("Map remains the same", map, res.allInstances().toArray()[0]);
+        
+        l.checkAtLeast ("There should be no change, but alas there is one right now", 1);
+        
+    }
+    
     /** Listener to count number of changes.
      */
     private static final class L extends Object 
