@@ -34,14 +34,16 @@ public class Installer extends ModuleInstall {
 
   private final static long serialVersionUID = 1;
   
-  private final String MENU = "Tools";
-  private final String MENUITEM = "Settings";
+  // place itself in
+  private final String MENU = "Tools";  
+  // place itself behind
+  private final String MENUITEM = "UnmountFSAction";
   private final String ACTION = "RepositorySearchAction";
 
   /** Holds hooking code. */
   private SearchHook hook;
 
-  /** Install in tools menu. Place after Settings separated by separator.
+  /** Install in tools menu. Place after "UnmountFSAction" separated by separator.
   */
   public void installed() {
 
@@ -53,7 +55,7 @@ public class Installer extends ModuleInstall {
           TopManager.getDefault ().getPlaces ().folders ().menus (), 
           MENU
         ), 
-        MENUITEM, true, true, true, false
+        MENUITEM, true, true, false, false
       );
 
 
@@ -72,8 +74,9 @@ public class Installer extends ModuleInstall {
       if (System.getProperty ("netbeans.debug.exceptions") != null) 
         ex.printStackTrace ();      
     }
-    
-    Registry.reorderBy(new Class[] {ObjectNameType.class, FullTextType.class} );
+
+    // define default criteria tab order
+    Registry.reorderBy(new Class[] {ObjectNameType.class, FullTextType.class, ModificationDateType.class} );
     
     restored();
   }
@@ -121,6 +124,8 @@ public class Installer extends ModuleInstall {
 
 /* 
 * Log
+*  8    Gandalf   1.7         1/6/00   Petr Kuzel      Tools menu position and 
+*       debug removed.
 *  7    Gandalf   1.6         1/5/00   Petr Kuzel      Margins used. Help 
 *       contexts.
 *  6    Gandalf   1.5         12/23/99 Petr Kuzel      Architecture improved.
