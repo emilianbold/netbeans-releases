@@ -7,40 +7,51 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.jellytools;
 
-/*
- * HelpOperator.java
- *
- * Created on 6/11/02 11:55 AM
- */
-
+import java.awt.Component;
+import java.awt.Container;
 import org.netbeans.jellytools.actions.HelpAction;
-import org.netbeans.jemmy.operators.*;
+import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.TestOut;
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.jemmy.operators.JFrameOperator;
+import org.netbeans.jemmy.operators.JSplitPaneOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 
 /** Class implementing all necessary methods for handling "IDE Help" Frame.
+ * Normally the Help window is a JFrame and it even cannot be placed inside
+ * MDI desktop. But be careful. Help window can be transformed to a JDialog 
+ * when another modal dialog is shown. In such a case you have to use
+ * JDialogOperator to find it.
  *
- * @author as103278
- * @version 1.0
+ * @author Adam.Sotona@sun.com
+ * @author Jiri.Skrivanek@sun.com
  */
-public class HelpOperator extends NbFrameOperator {
+public class HelpOperator extends JFrameOperator {
 
-    /** Creates new HelpOperator that can handle it.
+    /** Creates new HelpOperator that can handle it. It tries to find a JFrame
+     * which contains some javax.help.JHelp* sub component. Indeed it is
+     * a JFrame with "Help - All" title.
      * @throws TimeoutExpiredException when JFrame not found
      */
     public HelpOperator() {
-        super("Help - All");
+        super(helpWindowChooser);
     }
 
     /** Creates new HelpOperator that can handle it.
      * @throws TimeoutExpiredException when JFrame not found
      * @param title String help frame title */
     public HelpOperator(String title) {
-        super( title );
+        super(title);
     }
 
     private static final HelpAction helpAction = new HelpAction();
@@ -287,5 +298,29 @@ public class HelpOperator extends NbFrameOperator {
         treeSearch();
         txtSearchFind();
     }
+    
+    /** Implementation of ComponentChooser to choose component which 
+     * is instance of javax.help.JHelp*. */
+    private static final ComponentChooser jHelpChooser = new ComponentChooser() {
+        public boolean checkComponent(Component comp) {
+            return comp.getClass().getName().startsWith("javax.help.JHelp");
+        }
+        public String getDescription() {
+            return("any javax.help");
+        }
+    };
+    
+    /** Implementation of ComponentChooser to choose such a frame which 
+     * contains some javax.help.JHelp* sub component. */
+    private static final ComponentChooser helpWindowChooser = new ComponentChooser() {
+        public boolean checkComponent(Component comp) {
+            ContainerOperator contOper = new ContainerOperator((Container)comp);
+            contOper.setOutput(TestOut.getNullOutput());
+            return contOper.findSubComponent(jHelpChooser) != null;
+        }
+        public String getDescription() {
+            return("containing any javax.help.JHelp component");
+        }
+    };
 }
 
