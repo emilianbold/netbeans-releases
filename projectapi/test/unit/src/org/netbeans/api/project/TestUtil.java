@@ -114,7 +114,6 @@ public final class TestUtil extends ProxyLookup {
      * a subdirectory called "testproject".
      * If that subdirectory contains a file named "broken" then loading the project
      * will fail with an IOException.
-     * XXX currently the project will never be modified and so cannot be saved
      */
     public static ProjectFactory testProjectFactory() {
         return new TestProjectFactory();
