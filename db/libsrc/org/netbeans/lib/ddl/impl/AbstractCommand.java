@@ -146,9 +146,7 @@ public class AbstractCommand
     * open; otherwise creates new one and closes after use. Throws DDLException if
     * something wrong occurs.
     */
-    public void execute()
-    throws DDLException
-    {
+    public void execute() throws DDLException {
         String fcmd;
         Connection fcon = null;
         boolean opened = false;
@@ -157,13 +155,13 @@ public class AbstractCommand
         try {
             fcmd = getCommand();
         } catch (Exception e) {
-            //			e.printStackTrace();
-            //throw new DDLException(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage()); // NOI18N
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                e.printStackTrace();
+            
             executionWithException = true;
-            TopManager.getDefault().notify(
-                new NotifyDescriptor.Message(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage(),
-                NotifyDescriptor.ERROR_MESSAGE));
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             return;
+//            throw new DDLException(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage()); // NOI18N
         }
 
         //		System.out.println(fcmd);
@@ -172,13 +170,16 @@ public class AbstractCommand
 
             try {
                 OutputWriter ow = TopManager.getDefault().getStdOut();
-                if (ow != null) ow.println(fcmd);
-                else throw new Exception();
+                if (ow != null)
+                    ow.println(fcmd);
+                else
+                    throw new Exception();
 
             } catch (Exception e) {
-                //				e.printStackTrace();
-                System.out.println(e);
-                System.out.println(fcmd);
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
+                    e.printStackTrace();
+                    System.out.println(fcmd);
+                }
             }
         }
 
@@ -193,15 +194,19 @@ public class AbstractCommand
             stat.execute(fcmd);
             stat.close();
         } catch (Exception e) {
-            //			e.printStackTrace();
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                e.printStackTrace();
+            
             executionWithException = true;
             if (opened && fcon != null)
                 spec.closeJDBCConnection();
-            //throw new DDLException(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage()); // NOI18N
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-            return;
+            
+//            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+            throw new DDLException(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage()); // NOI18N
         }
-        if (opened) spec.closeJDBCConnection();
+        
+        if (opened)
+            spec.closeJDBCConnection();
     }
 
     /**

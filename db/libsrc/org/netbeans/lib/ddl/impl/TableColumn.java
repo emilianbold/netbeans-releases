@@ -194,7 +194,10 @@ public class TableColumn extends AbstractTableColumn
         if (charactertypes.contains(spec.getType(type))) qdefval = strdelim+defval+strdelim;
         args.put("column.type", spec.getType(type)); // NOI18N
         if (!nullable) args.put("column.notnull", ""); // NOI18N
-        if (defval != null) args.put("default.value", qdefval); // NOI18N
+        
+        if (!(! nullable && qdefval != null && (qdefval.equalsIgnoreCase("null") || qdefval.equalsIgnoreCase("'null'") || qdefval.equalsIgnoreCase("\"null\"")))) // NOI18N
+            if (defval != null && !defval.equals("")) args.put("default.value", qdefval); // NOI18N
+
         if (checke != null) args.put("check.condition", checke); // NOI18N
         if (constraintColumns != null) {
             String cols = new String();
