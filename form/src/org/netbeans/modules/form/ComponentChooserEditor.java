@@ -282,9 +282,22 @@ public class ComponentChooserEditor implements PropertyEditor,
         }
 
         public boolean equals(Object obj) {
-            return this == obj
-                   || (obj instanceof RADComponent
-                       && obj == component);
+            boolean equal;
+            
+            if (obj instanceof ComponentRef) {
+                ComponentRef ref = (ComponentRef)obj;
+                
+                equal = (ref.component == component);
+                if (componentName == null) {
+                    equal = equal && (ref.componentName == null);
+                } else {
+                    equal = equal && componentName.equals(ref.componentName);
+                }
+            } else {
+                equal = (obj instanceof RADComponent && obj == component);
+            }
+            
+            return equal;
         }
 
         String getJavaInitString() {
