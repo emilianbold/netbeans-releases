@@ -156,6 +156,8 @@ final class BeanCodeManager
 
         if (beanCode != null && variableStatement != null)
             beanCode.addStatement(0, variableStatement);
+
+        readingDone = true;
     }
 
     public CodeExpression getCodeExpression() {

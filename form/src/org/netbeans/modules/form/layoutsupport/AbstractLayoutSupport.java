@@ -47,7 +47,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     private java.util.List componentCodeGroups;
     private java.util.List componentConstraints;
 
-    private BeanCodeManager layoutBeanExpression;
+    private BeanCodeManager layoutBeanCode;
     private CodeGroup setLayoutCode;
 
     private MetaLayout metaLayout;
@@ -506,7 +506,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         if (metaLayout == null)
             return;
 
-        layoutBeanExpression = new BeanCodeManager(
+        layoutBeanCode = new BeanCodeManager(
             getSupportedClass(),
             getAllProperties(),
             CreationDescriptor.PLACE_ALL | CreationDescriptor.CHANGED_ONLY,
@@ -521,7 +521,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         if (metaLayout == null)
             return null;
 
-        layoutBeanExpression = new BeanCodeManager(
+        layoutBeanCode = new BeanCodeManager(
             getSupportedClass(),
             getAllProperties(),
             CreationDescriptor.PLACE_ALL | CreationDescriptor.CHANGED_ONLY,
@@ -530,14 +530,14 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
             CodeVariable.LOCAL,
             initLayoutCode);
 
-        return layoutBeanExpression.getCodeExpression();
+        return layoutBeanCode.getCodeExpression();
     }
 
     // can be overriden
     // called automatically when some property of layout has been changed
     protected void layoutChanged() {
-        if (layoutBeanExpression != null)
-            layoutBeanExpression.updateCode();
+        if (layoutBeanCode != null)
+            layoutBeanCode.updateCode();
     }
 
     // can be overriden
