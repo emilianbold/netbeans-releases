@@ -33,6 +33,7 @@ class DocIndexItem extends Object {
     private String spec = null;
     private String remark = null;
     private String pckg = null;
+    private String declaringClass = null;    
 
     private int iconIndex = DocSearchIcons.ICON_NOTRESOLVED;
 
@@ -78,6 +79,33 @@ class DocIndexItem extends Object {
         this.pckg = pckg;
     }
 
+    /** Getter for property declaringClass.
+     * @return Value of property declaringClass.
+ */
+    public java.lang.String getDeclaringClass() {
+        return declaringClass;
+    }    
+
+    /** Setter for property declaringClass.
+     * @param declaringClass New value of property declaringClass.
+ */
+    public void setDeclaringClass(java.lang.String declaringClass) {
+        this.declaringClass = declaringClass;
+    }
+    
+    /** Getter for property field.
+     * @return Value of property field.
+ */
+    public java.lang.String getField() {
+        return text != null ? text : "";
+    }
+
+    /** Setter for property field.
+     * @param Value of property field.
+    */
+    public void setField(String text) {
+        this.text = text;
+    }
 
     // COMPARATOR INNER CLASSES ----------------------------------------------------------------
 

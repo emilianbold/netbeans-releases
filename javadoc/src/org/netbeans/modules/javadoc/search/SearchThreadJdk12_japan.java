@@ -43,13 +43,11 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
     private boolean splitedIndex = false;
     private int currentIndexNumber;
     private FileObject folder = null;
-    private boolean caseSensitive;
     private String JapanEncoding;
     
     public SearchThreadJdk12_japan(String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer, boolean caseSensitive, String JapanEncoding) {
 
-        super( toFind, fo, diiConsumer );
-        this.caseSensitive = caseSensitive;
+        super( toFind, fo, diiConsumer, caseSensitive );        
 	this.JapanEncoding = JapanEncoding;
         
         if ( fo.isFolder() ) {
@@ -60,7 +58,8 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
             // the right one but when some index files are missing we have
             // to find the right one
             folder = fo;
-            currentIndexNumber = (int)(Character.toUpperCase( toFind.charAt(0) ))  - 'A' + 1;
+            currentIndexNumber = (int)(Character.toUpperCase( lastField.charAt(0) ))  - 'A' + 1;//toFind.charAt(0) ))  - 'A' + 1;
+
             if ( currentIndexNumber < 1 ) {
                 currentIndexNumber = 1;
             }
@@ -104,7 +103,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
 
         ParserDelegator pd = new ParserDelegator();
         
-        if ( fo == null || toFind == null ) {
+        if ( fo == null || lastField == null || lastField.length() == 0) {
             taskFinished();
             return;
         }
@@ -166,8 +165,6 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
         do {
             
             // Assure the only one direction of looking for Files
-            
-            
             if ( currentIndexNumber < 0 || currentIndexNumber > 27 ) {
                 fo = null;
                 return;
@@ -254,12 +251,14 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
 
             if ( t == HTML.Tag.DT ) {
                 where = IN_DT;
+                currentDii = null;
             }
             else if ( t == HTML.Tag.A && where == IN_DT ) {
                 where = IN_AREF;
                 Object val = a.getAttribute( HTML.Attribute.HREF );
                 if ( val != null ) {
                     hrefVal = (String) val.toString();
+                    currentDii = new DocIndexItem( null, null, contextURL, hrefVal );
                 }
             }
             else if ( t == HTML.Tag.A && where == IN_DESCRIPTION_SUFFIX ) {
@@ -292,7 +291,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 
                 if ( splited ) {
                     // it is possible that we search wrong file
-                    char first = Character.toUpperCase( toFind.charAt( 0 ) );
+                    char first = Character.toUpperCase( lastField.charAt( 0 ) );
                     char curr = Character.toUpperCase( data[0] );
                     if ( first != curr ) {
                         
@@ -308,28 +307,8 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                     }
                     
                 }
-                
-                if ( text.startsWith( toFind ) && caseSensitive ) {
-                    DocIndexItem dii = new DocIndexItem( text, null, contextURL, hrefVal );
-                    //insertDocIndexItem( dii );
-                    currentDii = dii;
+                currentDii.setField( text.trim() );
                     where = IN_DESCRIPTION;
-                }
-                else if ( text.toUpperCase().startsWith( toFind.toUpperCase() ) && !caseSensitive ) {
-                    DocIndexItem dii = new DocIndexItem( text, null, contextURL, hrefVal );
-                    //insertDocIndexItem( dii );
-                    currentDii = dii;
-                    where = IN_DESCRIPTION;
-                }
-                /*
-                else if ( text.substring( 0, Math.min(toFind.length(), text.length()) ).toUpperCase().compareTo( toFind.toUpperCase() ) > 0 ) {
-                    // Stop suffering if we are behind the searched words
-                    stopOnNext = true;
-                }
-                */
-                else {
-                    where = IN_BALAST;
-                }
             }
             else if ( where == IN_DESCRIPTION  ) {
                 String text = new String( data );      
@@ -379,11 +358,11 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                     currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );
 
                 // Add the item when all information is available
-                insertDocIndexItem( currentDii );
+                //insertDocIndexItem( currentDii );
 
                 if ( text.endsWith( "." ) ) { // NOI18N
                     where = IN_DESCRIPTION_SUFFIX;
-                    currentDii.setPackage( text.substring( text.lastIndexOf( ' ' ) ) );
+                    currentDii.setPackage( text.substring( text.lastIndexOf( ' ' ) ).trim() );
                 }
                 else
                     where = IN_BALAST;
@@ -391,7 +370,12 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
             else if ( where == IN_DESCRIPTION_SUFFIX ) {
                 boolean isStatic = false;
                 String text = new String ( data );
-                currentDii.setRemark( currentDii.getRemark() + text );
+                currentDii.setRemark( currentDii.getRemark() + text);
+                currentDii.setDeclaringClass(new String( text ).trim());
+                
+                // System.out.println("Data: " + text );
+                text = text.toUpperCase();
+                
                 // System.out.println("Data: " + text );
                 text = text.toUpperCase();
                 if( text.indexOf( STR_STATIC ) != -1 )
@@ -403,6 +387,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                     currentDii.setIconIndex ( isStatic ? DocSearchIcons.ICON_METHOD_ST : DocSearchIcons.ICON_METHOD );
                 else if( text.indexOf ( STR_VARIABLE_JA ) != -1 )
                     currentDii.setIconIndex ( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );
+                insertDocIndexItem( currentDii );
             }
             else
                 where = IN_BALAST;

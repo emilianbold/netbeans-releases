@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.javadoc.search;
 
+import java.util.StringTokenizer;
+import java.io.*;
 
 import org.openide.util.RequestProcessor;
 import org.openide.util.TaskListener;
@@ -21,32 +23,123 @@ import org.openide.filesystems.FileObject;
 
 /** Abstract class for thread which searches for documentation
  *
- *  @author Petr Hrebejk
+ *  @author Petr Hrebejk, Petr Suchomel
  */
 
 public abstract class IndexSearchThread extends Thread  {
 
     // PENDING: Add some abstract methods
 
-    protected String                toFind;
+    //protected String                toFind;
     protected FileObject            fo;
     private   DocIndexItemConsumer  ddiConsumer;
     RequestProcessor.Task           rpTask = null;
-
+    protected boolean caseSensitive;
+    
+    protected String lastField="";
+    protected String middleField="";
+    protected String reminder="";
+    private int tokens=0;
 
     /** This method must terminate the process of searching */
     abstract void stopSearch();
 
-    public IndexSearchThread( String toFind, FileObject fo, DocIndexItemConsumer ddiConsumer ) {
+    public IndexSearchThread( String toFind, FileObject fo, DocIndexItemConsumer ddiConsumer, boolean caseSensitive ) {
         this.ddiConsumer = ddiConsumer;
         this.fo = fo;
-        this.toFind = toFind;
+        this.caseSensitive = caseSensitive;
+        
+        //this.toFind = toFind;
         //rpTask = RequestProcessor.createRequest( this );
-    };
 
+        StringTokenizer st = new StringTokenizer(toFind, ".");
+        tokens = st.countTokens();
+        //System.out.println(tokens);
+        
+        if( tokens > 1 ){
+            if( tokens == 2 ){
+                middleField = st.nextToken();
+                lastField   = st.nextToken();
+            }
+            else{
+                for( int i = 0; i < tokens-2; i++){
+                    reminder += st.nextToken();
+                    if( i+1 < tokens-2 )
+                        reminder += '.';
+                }            
+                middleField = st.nextToken();
+                lastField   = st.nextToken();
+            }            
+        }
+        else{
+            lastField = toFind;            
+        }
+        if( !caseSensitive ){
+            reminder    = reminder.toUpperCase();
+            middleField = middleField.toUpperCase();
+            lastField   = lastField.toUpperCase();
+        }
+        //System.out.println("lastField" + lastField);
+    }
 
-    protected void insertDocIndexItem( DocIndexItem dii ) {
-        ddiConsumer.addDocIndexItem ( dii );
+    protected synchronized void insertDocIndexItem( DocIndexItem dii ) {
+        //no '.', can add directly
+        //System.out.println("Inserting");
+        /*
+        try{
+            PrintWriter pw = new PrintWriter( new FileWriter( "c:/javadoc.dump", true ));
+            pw.println("\"" + dii.getField() +"\""+ " " + "\""+dii.getDeclaringClass()+ "\"" + " " + "\""+ dii.getPackage()+ "\"");
+            pw.println("\"" + lastField + "\"" + " " + "\"" + middleField + "\"" + " " + "\"" + reminder + "\"");
+            pw.flush();
+            pw.close();
+        }
+        catch(IOException ioEx){ioEx.printStackTrace();}
+        */
+        String diiField = dii.getField();
+        String diiDeclaringClass = dii.getDeclaringClass();
+        String diiPackage = dii.getPackage();
+        if( !caseSensitive ){
+            diiField = diiField.toUpperCase();
+            diiDeclaringClass = diiDeclaringClass.toUpperCase();
+            diiPackage = diiPackage.toUpperCase();
+        }
+        
+        if( tokens < 2 ){
+            if( diiField.startsWith( lastField ) )
+                ddiConsumer.addDocIndexItem ( dii );
+            else if( diiDeclaringClass.startsWith( lastField ) ) 
+                ddiConsumer.addDocIndexItem ( dii );
+            else if( diiPackage.startsWith( lastField + '.' ) && dii.getIconIndex() == DocSearchIcons.ICON_PACKAGE ) 
+                ddiConsumer.addDocIndexItem ( dii );
+        }
+        else{            
+            if( tokens == 2 ){
+                //class and field (method etc. are equals)
+                //System.out.println(dii.getField() + "   " + lastField + "   " + dii.getDeclaringClass() + "   " + middleField);
+                if( diiField.startsWith(lastField) && diiDeclaringClass.equals(middleField) ){
+                    ddiConsumer.addDocIndexItem ( dii );
+                }
+                else if( diiPackage.startsWith( middleField.toUpperCase() ) && diiDeclaringClass.equals( lastField ) ){
+                    ddiConsumer.addDocIndexItem ( dii );
+                }
+                else if( diiPackage.startsWith( (middleField + '.' + lastField).toUpperCase() ) && dii.getIconIndex() == DocSearchIcons.ICON_PACKAGE ){
+                    ddiConsumer.addDocIndexItem ( dii );
+                }
+            }
+            else{            
+                //class and field (method etc. are equals)
+                if( diiField.startsWith(lastField) && diiDeclaringClass.equals(middleField) && diiPackage.startsWith( reminder.toUpperCase() ) ){
+                    ddiConsumer.addDocIndexItem ( dii );
+                }
+                //else if( diiDeclaringClass.equals(lastField) && diiPackage.startsWith( (reminder + '.' + middleField).toUpperCase()) ){
+                else if( diiDeclaringClass.startsWith(lastField) && diiPackage.equals( (reminder + '.' + middleField + '.').toUpperCase()) ){
+                    ddiConsumer.addDocIndexItem ( dii );
+                }
+                else if( diiPackage.startsWith( (reminder + '.' + middleField + '.' + lastField).toUpperCase() ) && dii.getIconIndex() == DocSearchIcons.ICON_PACKAGE ){
+                    ddiConsumer.addDocIndexItem ( dii );
+                }
+            }
+        }
     }
 
     public void go() {
