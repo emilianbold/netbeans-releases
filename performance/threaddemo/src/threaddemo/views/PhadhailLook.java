@@ -34,6 +34,10 @@ final class PhadhailLook extends Look implements PhadhailListener, PhadhailEdito
         super("PhadhailLook");
     }
     
+    public String getDisplayName() {
+        return "Phadhails";
+    }
+    
     public void attachTo(Object o) {
         Phadhail ph = (Phadhail)o;
         ph.addPhadhailListener(this);
