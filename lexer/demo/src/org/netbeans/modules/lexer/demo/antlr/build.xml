@@ -27,7 +27,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="grammar.name" value="Calc"/>
     <property name="grammar.pkg" value="org.netbeans.modules.lexer.demo.antlr"/>
     <property name="grammar.root" location="${lexer.module.root}/demo/src"/>
-    <property name="grammar.pkg" value="org.netbeans.modules.lexer.demo.antlr"/>
     
     <!-- Read http://lexer.netbeans.org/doc/antlr.html#tuning before uncommenting
     <property name="scanner.src.postprocess" value="true"/>
