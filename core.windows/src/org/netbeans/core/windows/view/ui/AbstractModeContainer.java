@@ -56,8 +56,8 @@ public abstract class AbstractModeContainer implements ModeContainer {
     public AbstractModeContainer(ModeView modeView, WindowDnDManager windowDnDManager, int kind) {
         this.modeView = modeView;
         this.windowDnDManager = windowDnDManager;
-        this.tabbedHandler = new TabbedHandler(modeView, kind, createTabbed());
         this.kind = kind;
+        this.tabbedHandler = new TabbedHandler(modeView, kind, createTabbed());
     }
 
 
