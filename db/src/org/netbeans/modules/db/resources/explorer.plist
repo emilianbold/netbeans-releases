@@ -27,7 +27,7 @@
 			org.netbeans.modules.db.explorer.nodes.DriverListNode = 1;
 			org.netbeans.modules.db.explorer.nodes.ConnectionNode = 2;
 		};
-		iconbase = "/org/netbeans/modules/db/resources/database";
+		iconbase = "org/netbeans/modules/db/resources/database";
 		children = (driverlist);
 		properties = ();
 		options = {};
@@ -74,7 +74,7 @@
 		name = Drivers;
 		class = org.netbeans.modules.db.explorer.nodes.DriverListNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.DriverListNodeInfo;
-		iconbase = "/org/netbeans/core/resources/defaultFolder";
+		iconbase = "org/netbeans/core/resources/defaultFolder";
 		children = ();
 		properties = ();
 		options = {};
@@ -229,10 +229,10 @@
 		class = org.netbeans.modules.db.explorer.nodes.DriverNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
 		creator = driverlist;
-		iconbase = "/org/netbeans/modules/db/resources/driver";
-		iconbaseprefered = "/org/netbeans/modules/db/resources/driverPrefered";
-		iconbasenotinstalled = "/org/netbeans/modules/db/resources/driverNotInstalled";
-		iconbasepreferednotinstalled = "/org/netbeans/modules/db/resources/driverPreferedNotInstalled";
+		iconbase = "org/netbeans/modules/db/resources/driver";
+		iconbaseprefered = "org/netbeans/modules/db/resources/driverPrefered";
+		iconbasenotinstalled = "org/netbeans/modules/db/resources/driverNotInstalled";
+		iconbasepreferednotinstalled = "org/netbeans/modules/db/resources/driverPreferedNotInstalled";
 		children = ();
 		options = {
 			cut = NO;
@@ -321,8 +321,8 @@
 		activedisplayname = "{0}";
 		class = org.netbeans.modules.db.explorer.nodes.ConnectionNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/connectionDisconnected";
-		activeiconbase = "/org/netbeans/modules/db/resources/connection";
+		iconbase = "org/netbeans/modules/db/resources/connectionDisconnected";
+		activeiconbase = "org/netbeans/modules/db/resources/connection";
 		children = ();
 		options = {
 			cut = NO;
@@ -1193,7 +1193,7 @@
 		displayname = "{name}";
 		class = org.netbeans.modules.db.explorer.nodes.TableListNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/folder";
+		iconbase = "org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {};
@@ -1231,7 +1231,7 @@
 		class = org.netbeans.modules.db.explorer.nodes.TableNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.TableNodeInfo;
 		creator = tablelist;
-		iconbase = "/org/netbeans/modules/db/resources/table";
+		iconbase = "org/netbeans/modules/db/resources/table";
 		children = (ilist,fklist);
 /*		resultset = (catalog,schema,name,type,remarks); */
 		resultset = (catalog,schema,name,type);
@@ -1345,7 +1345,7 @@
 		name = "Column";
 		class = org.netbeans.modules.db.explorer.nodes.ColumnNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ColumnNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/column";
+		iconbase = "org/netbeans/modules/db/resources/column";
 		resultset = (catalog,schema,tablename,name,datatype,typename,columnsize,bufflen,decdigits,radix,nullable,remarks,coldef,reserved1,reserved2,octetlen,ordpos,isnullable);
 		options = {
 			cut = NO;
@@ -1455,7 +1455,7 @@
 		name = "Index";
 		class = org.netbeans.modules.db.explorer.nodes.ColumnNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.IndexColumnNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/columnIndex";
+		iconbase = "org/netbeans/modules/db/resources/columnIndex";
 		resultset = (catalog,schema,tablename,unique,qual,idxname,type,ordpos,name,ord,card,pages,filter);
 		options = {
 			cut = NO;
@@ -1573,7 +1573,7 @@
 		name = "Primary key";
 		class = org.netbeans.modules.db.explorer.nodes.PrimaryKeyNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.PrimaryColumnNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/columnPrimary";
+		iconbase = "org/netbeans/modules/db/resources/columnPrimary";
 		resultset = (catalog,schema,tablename,name,keyseq,pkname);
 		options = {
 			cut = NO;
@@ -1685,7 +1685,7 @@
 		name = "Foreign key";
 		class = org.netbeans.modules.db.explorer.nodes.ColumnNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ForeignColumnNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/columnForeign";
+		iconbase = "org/netbeans/modules/db/resources/columnForeign";
 		resultset = (unused,pktable_schem,pktable_table,pkcolumn_name,unused,unused,unused,name,key_seq);
 		options = {
 			cut = NO;
@@ -1751,7 +1751,7 @@
 		name = "Exported keys";
 		class = org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.RefTableListNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/folder";
+		iconbase = "org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {};
@@ -1762,7 +1762,7 @@
 		name = "Foreign keys";
 		class = org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ForeignKeyListNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/folder";
+		iconbase = "org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {
@@ -1783,7 +1783,7 @@
 		name = "Indexes";
 		class = org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.IndexListNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/folder";
+		iconbase = "org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {
@@ -1810,7 +1810,7 @@
 		name = "Index";
 		class = org.netbeans.modules.db.explorer.nodes.IndexNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.IndexNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/index";
+		iconbase = "org/netbeans/modules/db/resources/index";
 		resultset = (unused,unused,unused,unique,unused,name);
 		children = ();
 		options = {
@@ -1884,8 +1884,8 @@
 		name = "IndexColumn";
 		class = org.netbeans.modules.db.explorer.nodes.LeafNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.IndexColumnNodeInfo;
-		iconbaseA = "/org/netbeans/modules/db/resources/indexDown";
-		iconbaseD = "/org/netbeans/modules/db/resources/indexUp";
+		iconbaseA = "org/netbeans/modules/db/resources/indexDown";
+		iconbaseD = "org/netbeans/modules/db/resources/indexUp";
 		resultset = (catalog,schema,tablename,unused,qual,ixname,type,ordpos,name,ord,card,pages,filter);
 		options = {
 			cut = NO;
@@ -1951,7 +1951,7 @@
 		name = "Foreign Key";
 		class = org.netbeans.modules.db.explorer.nodes.ForeignKeyNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ForeignKeyNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/foreignKey";
+		iconbase = "org/netbeans/modules/db/resources/foreignKey";
 		resultset = (unused,unused,unused,unused,unused,unused,unused,unused,unused,unused,unused,name);
 		children = ();
 		options = {
@@ -1994,7 +1994,7 @@
 		name = "Exported key";
 		class = org.netbeans.modules.db.explorer.node.LeafNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.RefTableNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/tableReferenced";
+		iconbase = "org/netbeans/modules/db/resources/tableReferenced";
 		resultset = (pcatalog,pschema,pname,pcolname,catalog,schema,name,colname,keyseq,updaterule,deleterule,fkname,pkname,defer);
 		children = ();
 		options = {};
@@ -2080,7 +2080,7 @@
 		displayname = "{name}";
 		class = org.netbeans.modules.db.explorer.nodes.ViewListNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ViewListNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/folder";
+		iconbase = "org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {};
@@ -2108,7 +2108,7 @@
 		name = "View";
 		class = org.netbeans.modules.db.explorer.nodes.ViewNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ViewNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/view";
+		iconbase = "org/netbeans/modules/db/resources/view";
 		resultset = (catalog,schema,name,type,remarks);
 		children = ();
 		options = {
@@ -2175,7 +2175,7 @@
 		name = "Column";
 		class = org.netbeans.modules.db.explorer.nodes.ColumnNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ViewColumnNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/columnView";
+		iconbase = "org/netbeans/modules/db/resources/columnView";
 		resultset = (catalog,schema,tablename,name,datatype,typename,columnsize,bufflen,decdigits,radix,nullable,remarks,coldef,reserved1,reserved2,octetlen,ordpos,isnullable);
 		children = ();
 		options = {};
@@ -2255,7 +2255,7 @@
 		displayname = "{name}";
 		class = org.netbeans.modules.db.explorer.nodes.ProcedureListNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ProcedureListNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/folder";
+		iconbase = "org/netbeans/modules/db/resources/folder";
 		children = ();
 		properties = ();
 		options = {};
@@ -2272,7 +2272,7 @@
 		name = "Procedure";
 		class = org.netbeans.modules.db.explorer.nodes.ProcedureNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ProcedureNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/procedure";
+		iconbase = "org/netbeans/modules/db/resources/procedure";
 		resultset = (catalog,schema,name,reserved1,reserverd2,reserverd3,remarks,type);
 		children = ();
 		options = {
@@ -2338,12 +2338,12 @@
 		name = "ProcedureColumn";
 		class = org.netbeans.modules.db.explorer.nodes.ProcedureParamNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ProcedureParamNodeInfo;
-		iconbase = "/org/netbeans/modules/db/resources/param";
-		iconbase_in = "/org/netbeans/modules/db/resources/paramIn";
-		iconbase_out = "/org/netbeans/modules/db/resources/paramOut";
-		iconbase_inout = "/org/netbeans/modules/db/resources/paramInOut";
-		iconbase_result = "/org/netbeans/modules/db/resources/paramResult";
-		iconbase_return = "/org/netbeans/modules/db/resources/paramReturn";
+		iconbase = "org/netbeans/modules/db/resources/param";
+		iconbase_in = "org/netbeans/modules/db/resources/paramIn";
+		iconbase_out = "org/netbeans/modules/db/resources/paramOut";
+		iconbase_inout = "org/netbeans/modules/db/resources/paramInOut";
+		iconbase_result = "org/netbeans/modules/db/resources/paramResult";
+		iconbase_return = "org/netbeans/modules/db/resources/paramReturn";
 		resultset = (catalog, schema, procname, name, type, dtype, typename, precision, length, scale, radix, nullable, remarks);
 		options = {
 			cut = NO;
