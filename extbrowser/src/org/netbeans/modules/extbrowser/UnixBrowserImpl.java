@@ -28,7 +28,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.options.SystemOption;
 
-import org.netbeans.modules.httpserver.*;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -138,7 +137,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         try {
             // internal protocols cannot be displayed in external viewer
             if (isInternalProtocol (url.getProtocol ())) {
-                url = WrapperServlet.createHttpURL (url);
+                url = URLUtil.createExternalURL(url);
             }
             if (currWinID != -1) {
                 // check if given window still exists

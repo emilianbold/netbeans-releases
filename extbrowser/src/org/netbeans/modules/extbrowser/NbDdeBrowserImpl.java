@@ -32,7 +32,6 @@ import org.openide.execution.NbProcessDescriptor;
 import org.openide.options.SystemOption;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
-import org.netbeans.modules.httpserver.*;
 import org.openide.util.NbBundle;
 
 /**
@@ -308,7 +307,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 
                 // internal protocols cannot be displayed in external viewer
                 if (isInternalProtocol(url.getProtocol())) {
-                    url = WrapperServlet.createHttpURL(url);
+                    url = URLUtil.createExternalURL(url);
                 }
                 else {
                     url = url;

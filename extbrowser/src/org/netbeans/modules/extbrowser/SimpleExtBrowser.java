@@ -26,7 +26,6 @@ import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.httpserver.WrapperServlet;
 import org.openide.util.Utilities;
 
 /** Simple external browser that uses new process for each URL request.
@@ -154,7 +153,7 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
                 return;
             try {
                 if (url.getProtocol().equals("nbfs")) {   // NOI18N
-                    url = WrapperServlet.createHttpURL(url);
+                    url = URLUtil.createExternalURL(url);
                 }
                 process.exec(new BrowserFormat(new ExecInfo(""), (url == null)? "": url.toString())); // NOI18N
                 this.url = url;

@@ -25,8 +25,6 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 import org.openide.options.SystemOption;
 
-import org.netbeans.modules.httpserver.*;
-
 /**
  * The ExtBrowserImpl is generalized external browser.
  *
