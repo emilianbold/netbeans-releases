@@ -21,6 +21,7 @@ import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.loaders.DataFolder;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.modules.ModuleInstall;
+import com.netbeans.developer.modules.loaders.form.palette.BeanInstaller;
 
 /**
 * Module installation class for Form Editor
@@ -50,6 +51,7 @@ public class FormEditorModule implements ModuleInstall {
 //    System.out.println("FormEditorModule: restored");
     // [PENDING - ugly workaround so that borders editor works - ideally, a FormPropertyEditorManager would be used for finding border's properties editors]
     java.beans.PropertyEditorManager.registerEditor (javax.swing.border.Border.class, com.netbeans.developer.explorer.propertysheet.editors.BorderEditor.class);
+//    BeanInstaller.autoLoadBeans ();
   }
 
   /** Module was uninstalled. */
@@ -310,6 +312,7 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  18   Gandalf   1.17        6/4/99   Ian Formanek    
  *  17   Gandalf   1.16        5/30/99  Ian Formanek    Minor property editors 
  *       tweaks, fixed problem with empty border's icon
  *  16   Gandalf   1.15        5/14/99  Ian Formanek    
