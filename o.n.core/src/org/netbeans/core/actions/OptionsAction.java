@@ -24,6 +24,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import javax.swing.UIManager;
 
 import org.openide.util.*;
 import org.openide.util.actions.CallableSystemAction;
@@ -248,8 +249,8 @@ public class OptionsAction extends CallableSystemAction {
             //issue 34104, bad sizing/split location for Chinese locales that require
             //a larger default font size
             Dimension result = super.getPreferredSize();
-            int fontsize = 
-                javax.swing.UIManager.getFont ("Tree.font").getSize(); //NOI18N
+            Font treeFont = UIManager.getFont("Tree.font"); // NOI18N
+            int fontsize = treeFont != null ? treeFont.getSize() : 11;
             if (fontsize > 11) {
                 int factor = fontsize - 11;
                 result.height += 15 * factor;
