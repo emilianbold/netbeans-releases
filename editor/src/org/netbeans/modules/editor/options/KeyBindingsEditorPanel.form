@@ -41,7 +41,7 @@
             <Component class="javax.swing.JList" name="actionsList">
 
               <Events>
-                <EventHandler event="valueChanged" handler="actionsListValueChanged"/>
+                <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="actionsListValueChanged"/>
               </Events>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
@@ -83,7 +83,7 @@
               </Properties>
 
               <Events>
-                <EventHandler event="valueChanged" handler="sequencesListValueChanged"/>
+                <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="sequencesListValueChanged"/>
               </Events>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
@@ -100,7 +100,7 @@
           </Properties>
 
           <Events>
-            <EventHandler event="actionPerformed" handler="addSequenceButtonActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addSequenceButtonActionPerformed"/>
           </Events>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout$BoxConstraintsDescription"/>
@@ -118,7 +118,7 @@
           </Properties>
 
           <Events>
-            <EventHandler event="actionPerformed" handler="removeSequenceButtonActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeSequenceButtonActionPerformed"/>
           </Events>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout$BoxConstraintsDescription"/>

@@ -58,7 +58,7 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         try {
             kitClass = Class.forName( kitClassName );
         } catch( ClassNotFoundException e ) {
-            if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
+            if( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) // NOI18N
                 e.printStackTrace();
             return;
         }
@@ -74,7 +74,6 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
 
         // Create our sorter, ActionDescriptors knows themselves how to sort
         TreeMap treeMap = new TreeMap( );
-
         // Fill it with new ActionDescriptors for actions, they'll be in-sorted
         for( int i=0; i<actions.length; i++ ) {
             ActionDescriptor val = new ActionDescriptor( actions[i] );
@@ -407,7 +406,8 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
 
         ActionDescriptor( Action a ) {
             name = (String)a.getValue( Action.NAME );
-            displayName = a.getValue( Action.SHORT_DESCRIPTION ) + " [" + name + "]"; // NOI18N
+            String shortDesc = (String)a.getValue( Action.SHORT_DESCRIPTION );
+            displayName = shortDesc == null ? name : shortDesc + " [" + name + "]"; // NOI18N
             sequences = new Vector();
         }
 
@@ -476,19 +476,3 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
     }
 
 }
-
-/*
- * Log
- *  8    Jaga      1.5.1.1     3/24/00  Miloslav Metelka 
- *  7    Jaga      1.5.1.0     3/20/00  Miloslav Metelka finally branching
- *  6    Gandalf-post-FCS1.5         3/20/00  Miloslav Metelka renaming
- *  5    Gandalf-post-FCS1.4         3/17/00  Petr Nejedly    Rolled back to compile 
- *       under post-FCS
- *  4    Gandalf-post-FCS1.3         3/16/00  Miloslav Metelka renamings
- *  3    Gandalf-post-FCS1.2         3/15/00  Miloslav Metelka reverted previous 
- *       version - ST error?
- *  2    Gandalf-post-FCS1.1         3/15/00  Miloslav Metelka 
- *  1    Gandalf-post-FCS1.0         2/28/00  Petr Nejedly    initial revision
- * $
- */
-
