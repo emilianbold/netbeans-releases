@@ -156,23 +156,24 @@ public class MTestExecutor extends Task {
                 }
                 
                 for (int j=0; j<testbag.getTestsets().length; j++) {
+                    /* sources don't need to be on classpath (work/sys/test/${xtest.testtype}/src)
                     // name of this property should be passed by atribute
                     // and also it's not clear where it's resolved !!!!!!
-                    stb.append( ant_new.getProject().getProperty( "tbag.classpath.root" ) );
+                    //stb.append( ant_new.getProject().getProperty( "tbag.classpath.root" ) );
                     // don't need it :-)
                     
-                     /*
-                    stb.append( "/" );
-                    stb.append( MTestConfigurator.getCurrentTestType() );
-                    */
                     stb.append( "/" );
                     stb.append( ant_new.getProject().getProperty( "tbag.classpath.work" ) );
                     stb.append( "/" );
                     String testsetDir = testbag.getTestsets()[j].getDir();
                     stb.append( testsetDir );
                     stb.append( ";" );
+                     */
                     
-                    // add compiled tests to classpath work/sys/test/qa-functional/classes
+                    // add compiled tests to classpath (work/sys/test/${xtest.testtype}/classes)
+                    
+                    // name of this property should be passed by atribute
+                    // and also it's not clear where it's resolved !!!!!!
                     stb.append( ant_new.getProject().getProperty( "tbag.classpath.root" ) );
                     stb.append( "/" );
                     stb.append( ant_new.getProject().getProperty( "tbag.classpath.work" ) );
@@ -183,6 +184,7 @@ public class MTestExecutor extends Task {
                     stb.append( ";" );
 
                     // check if this testset contains setup dir
+                    String testsetDir = testbag.getTestsets()[j].getDir();
                     if ( ! testsetContainsSetupDir) {
                         if (testbag.getSetupDir().equals(testsetDir)) {
                             testsetContainsSetupDir = true;
