@@ -92,10 +92,14 @@ Microsystems, Inc. All Rights Reserved.
     <ant antfile="../core/build.xml" dir="../core" target="boot" />
   
     <enhanceclass basedir="src" library="../core/netbeans/lib/ext/boot.jar" >
-            <!-- changes the superclass because there is a clash in return types of two methods -->
-	    <patch class="org/openide/util/actions/SystemAction" super="org/openide/util/actions/$$SystemAction$$Patch$$" /> 
             <!-- changes superclass to one that implements Node.Cookie -->
 	    <patch class="org/openide/filesystems/Repository" super="org/openide/filesystems/$$Repository$$Patch$$" /> 
+
+            <!-- renames two methods and makes them public -->
+	    <patch class="org/openide/util/actions/SystemAction" > 
+                <member name="s3tIcon" rename="setIcon" />
+                <member name="g3tIcon" rename="getIcon" />
+            </patch>
             
             <!-- just make some class members public -->
 	    <patch class="org/openide/nodes/AbstractNode" > 
@@ -132,7 +136,9 @@ Microsystems, Inc. All Rights Reserved.
             </patch>
 
             <!-- superclass needs to provide refershRoot method with different signature than the one in AbstractFileSystem -->                        
-	    <patch class="org/openide/filesystems/AbstractFileSystem" super="org/openide/filesystems/$$AbstractFileSystem$$Patch$$" /> 
+	    <patch class="org/openide/filesystems/AbstractFileSystem" > 
+                <member name="r3fr3shRoot" rename="refreshRoot" />
+            </patch>
             
             <!-- superclass implements intefaces AbstractFileSystem.Info, List, Change -->
 	    <patch class="org/openide/filesystems/LocalFileSystem" super="org/openide/filesystems/$$LocalFileSystem$$Patch$$"> 

@@ -86,9 +86,14 @@ public class NbEnhanceClass extends Task {
         
         public static final class Member extends Object {
             String name;
+            String rename;
             
             public void setName (String s) {
                 name = s;
+            }
+            
+            public void setRename (String s) {
+                rename = s;
             }
         }
     }
@@ -129,7 +134,7 @@ public class NbEnhanceClass extends Task {
         java.lang.reflect.Method m;
         try {
             Class c = cl.loadClass (patchClass);
-            m = c.getMethod(enhanceMethod, new Class[] { byte[].class, String.class, String[].class });
+            m = c.getMethod(enhanceMethod, new Class[] { byte[].class, java.util.Map.class });
             if (m.getReturnType() != byte[].class) {
                 throw new BuildException ("Method does not return byte[]: " + m);
             }
@@ -174,22 +179,41 @@ public class NbEnhanceClass extends Task {
                 throw new BuildException ("Cannot read file " + f, ex);
             }
             
-            String[] members;
+            ArrayList members = null;
+            ArrayList rename = null;
             if (p.members != null) {
-                members = new String[p.members.size ()];
+                members = new ArrayList ();
                 Iterator myIt = p.members.iterator();
                 int i = 0;
                 while (myIt.hasNext ()) {
-                    members[i++] = ((Patch.Member)myIt.next ()).name;
+                    Patch.Member mem = (Patch.Member)myIt.next ();
+                    members.add (mem.name);
+                    
+                    if (mem.rename != null) {
+                        if (rename == null) {
+                            rename = new ArrayList ();
+                        }
+                        rename.add (mem.name);
+                        rename.add (mem.rename);
+                    }
                 }
-            } else {
-                members = null;
             }
                 
              
             byte[] out;
             try {
-                out = (byte[])m.invoke (null, new Object[] { arr, p.nbSuperClass, members });
+                java.util.Map args = new java.util.HashMap ();
+                if (p.nbSuperClass != null) {
+                    args.put ("netbeans.superclass", p.nbSuperClass);
+                }
+                if (members != null) {
+                    args.put ("netbeans.public", members.toArray (new String[0]));
+                }
+                if (rename != null) {
+                    args.put ("netbeans.rename", rename.toArray (new String[0]));
+                }
+                
+                out = (byte[])m.invoke (null, new Object[] { arr, args });
                 if (out == null) {
                     // no patching needed
                     continue;

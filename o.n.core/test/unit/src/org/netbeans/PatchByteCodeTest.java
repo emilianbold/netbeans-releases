@@ -18,6 +18,7 @@ import junit.textui.TestRunner;
 import org.netbeans.junit.*;
 import java.io.InputStream;
 import java.lang.reflect.*;
+import java.util.HashMap;
 
 /** Test patching of openide.jar byte code for compatibility.
  * @author Jaroslav Tulach
@@ -58,8 +59,10 @@ public class PatchByteCodeTest extends NbTestCase {
         int l = is.read (arr);
         assertEquals ("Read exactly as much as expected", l, arr.length);
         
-        
-        byte[] res = PatchByteCode.enhance(arr, null, new String[] { "addCompilerListener", "removeCompilerListener" } );
+
+        HashMap args = new HashMap ();
+        args.put ("netbeans.public", new String[] { "addCompilerListener", "removeCompilerListener" } );
+        byte[] res = PatchByteCode.enhance(arr, args);
         PatchClassLoader loader = new PatchClassLoader ("org.openide.compiler.CompilerGroup", res, ClassLoader.getSystemClassLoader());
         
         Class c = loader.loadClass ("org.openide.compiler.CompilerGroup");
@@ -91,7 +94,9 @@ public class PatchByteCodeTest extends NbTestCase {
 
         
         
-        byte[] res = PatchByteCode.enhance(arr, null, new String[] { "member", "field", "method", "staticmethod" } );
+        HashMap args = new HashMap ();
+        args.put ("netbeans.public", new String[] { "member", "field", "method", "staticmethod" } );
+        byte[] res = PatchByteCode.enhance(arr, args);
         PatchClassLoader loader = new PatchClassLoader (Sample.class.getName (), res, ClassLoader.getSystemClassLoader());
         
         Class c = loader.loadClass (Sample.class.getName ());
@@ -134,7 +139,35 @@ public class PatchByteCodeTest extends NbTestCase {
         assertTrue ("Is static", !Modifier.isStatic (f.getModifiers ()));
         
     }
-    
+
+    public void testRenameOfAMember () throws Exception {
+        InputStream is = getClass ().getResourceAsStream ("Sample.class");
+        assertNotNull ("Class has not been found", is);
+        
+        byte[] arr = new byte[is.available ()];
+        int l = is.read (arr);
+        assertEquals ("Read exactly as much as expected", l, arr.length);
+
+        
+        
+        HashMap args = new HashMap ();
+        args.put ("netbeans.rename", new String[] { "staticmethod", "StaticMethod" } );
+        byte[] res = PatchByteCode.enhance(arr, args);
+
+        PatchClassLoader loader = new PatchClassLoader (Sample.class.getName (), res, ClassLoader.getSystemClassLoader());
+        
+        Class c = loader.loadClass (Sample.class.getName ());
+
+        try {
+            c.getDeclaredMethod("staticmethod", new Class[] { });
+            fail ("The old method is still present");
+        } catch (NoSuchMethodException ex) {
+            // ok, should not be there
+        }
+        
+        java.lang.reflect.Method m = c.getDeclaredMethod("StaticMethod", new Class[] { });
+        assertNotNull ("Renamed method found", m);
+    }
         
     private Class checkPatching (
         String className, String resource, String superclass
@@ -150,7 +183,9 @@ public class PatchByteCodeTest extends NbTestCase {
         int l = is.read (arr);
         assertEquals ("Read exactly as much as expected", l, arr.length);
         
-        byte[] res = PatchByteCode.enhance(arr, superclass.replace ('.', '/'));
+        HashMap args = new HashMap ();
+        args.put ("netbeans.superclass", superclass.replace ('.', '/'));
+        byte[] res = PatchByteCode.enhance(arr, args);
         PatchClassLoader loader = new PatchClassLoader (className, res);
 
         Class c = loader.loadClass (className);
