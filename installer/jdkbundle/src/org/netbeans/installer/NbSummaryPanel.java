@@ -177,9 +177,9 @@ public class NbSummaryPanel extends TextDisplayPanel
         if (Util.isWindowsOS()) {
             return 135000000L;
         } else if (Util.isLinuxOS()) {
-            return 97000000L;
+            return 140000000L;
         } else if (Util.isSunOS()) {
-            return 97000000L;
+            return 140000000L;
         }
         return 100000000L;
     }

@@ -301,13 +301,13 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     /**Returns checksum for j2sdk directory in bytes*/
     public long getCheckSum() {
         if (Util.isWindowsOS()) {
-            return 100000000L;
+            return 130000000L;
         }
         else if (Util.isSunOS()) {
-            return 130000000L;
+            return 140000000L;
         }
         else if (Util.isLinuxOS()) {
-            return 130000000L;
+            return 140000000L;
         }
         return 0L;
     }
@@ -321,16 +321,30 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         RequiredBytesTable req = new RequiredBytesTable();
 	//  String imageDirPath = getProductTree().getInstallLocation(this);
 	// logEvent(this, Log.DBG,"imageDirPath -> " + imageDirPath);
-        req.addBytes(j2seInstallDir , getCheckSum());
+        req.addBytes(j2seInstallDir, getCheckSum());
 	logEvent(this, Log.DBG, "Total size = " + req.getTotalBytes());
         //Thread.dumpStack();
-        
-	if (Util.isWindowsOS()) {
-	    // the j2se base image directory goes in the system drive
+
+        if (Util.isWindowsNT() || Util.isWindows98()) {
+            //TMP dir is by default on system disk and we are unable to change it #48281
+	    //The j2se base image directory goes in the system drive and also cache of installer
+            //is stored to Local Settings folder it is 130MB
+            //TMP is used by bundled JVM and MSI to store its cache temporarily about 170MB
+            //when it is checked here bundled JVM is already present in TMP so only about
+            //additional 50MB is necessary ie.130MB+50MB=180MB at system dir.
 	    String sysDir = new String( (new Character(getWinSystemDrive())).toString().concat(":\\"));
-	    req.addBytes(sysDir, 200000000L);
+	    req.addBytes(sysDir, 180000000L);
+        } else if (Util.isWindowsOS()) {
+	    //The j2se base image directory goes in the system drive and also cache of installer
+            //is stored to Local Settings folder it is 130MB
+            //TMP is used by bundled JVM and MSI to store its cache temporarily about 170MB
+            //when it is checked here bundled JVM is already present in TMP so only about
+            //additional 50MB is necessary
+	    String sysDir = new String( (new Character(getWinSystemDrive())).toString().concat(":\\"));
+	    req.addBytes(sysDir, 130000000L);
+            req.addBytes(tempDir, 50000000L);
 	}
-	logEvent(this, Log.DBG, "Total Mbytes = " + (req.getTotalBytes()>>20));
+	logEvent(this, Log.DBG, "Total (not necessarily on one disk when tempdir is redirected) Mbytes = " + (req.getTotalBytes()>>20));
         return req;
     }
 
