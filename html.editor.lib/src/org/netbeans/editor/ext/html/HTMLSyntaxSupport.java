@@ -128,7 +128,6 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 }
             }
             
-            
 	    if (token != null && isTagButNotSymbol(token) && isInside){
 		int start; // possition where the matched tag starts
 		int end;   // possition where the matched tag ends
@@ -139,9 +138,10 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                     //we are in a close tag
 		    String tag = token.getImage().trim().toLowerCase();
 		    while ( token != null){
-			if (isTagButNotSymbol(token) && !isSingletonTag(token)) {
-			    if (token.getImage().trim().toLowerCase().equals(tag) &&
-                                token.getTokenID() == HTMLTokenContext.TAG_OPEN){
+			if (isTagButNotSymbol(token)) {
+			    if (token.getImage().trim().toLowerCase().equals(tag)
+                                    && (token.getTokenID() == HTMLTokenContext.TAG_OPEN)
+                                    && !isSingletonTag(token)) {
                                 //it's an open tag
 				if (poss == 0){  
                                     //get offset of previous token: < or </
@@ -162,7 +162,8 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
 			    }
 			    else {
                                 //test whether the tag is a close tag for the 'tag' tagname
-				if (token.getImage().toLowerCase().indexOf(tag) > -1){				    
+				if ((token.getImage().toLowerCase().indexOf(tag) > -1)
+                                    && !isSingletonTag(token)) {
 				    poss++;
 				}
 			    }
@@ -182,9 +183,9 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                     
 		    String tag = token.getImage().toLowerCase();
 		    while ( token != null){
-			if (isTagButNotSymbol(token) && !isSingletonTag(token)) {
-                            if (token.getImage().trim().toLowerCase().equals(tag) &&
-                                token.getTokenID() == HTMLTokenContext.TAG_CLOSE){
+			if (isTagButNotSymbol(token)) {
+                            if (token.getImage().trim().toLowerCase().equals(tag) 
+                                && token.getTokenID() == HTMLTokenContext.TAG_CLOSE){
 				if (poss == 0) {
                                     //get offset of previous token: < or </
 				    start = token.getPrevious().getOffset();
@@ -201,7 +202,8 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
 				    poss--;
 			    }
 			    else{
-				if (token.getImage().toLowerCase().equals(tag))
+				if (token.getImage().toLowerCase().equals(tag)
+                                    && !isSingletonTag(token))
 				    poss++;
 			    }
 			}
@@ -218,7 +220,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                     //start html token - we need to find the end token of the html comment
                     while(toki != null) {
                         if((toki.getTokenID() == HTMLTokenContext.BLOCK_COMMENT)) {
-                            if(toki.getImage().endsWith("-->")) { //NOI18N
+                            if(toki.getImage().endsWith("-->")) {//NOI18N
                                 //found end token
                                 int start = toki.getOffset() + toki.getImage().length() - "-->".length(); //NOI18N
 				int end = toki.getOffset() + toki.getImage().length();
@@ -252,6 +254,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
      * @return true is the token is a part of singleton tag
      */
     public boolean isSingletonTag(TokenItem tagTokenItem) {
+        System.out.println("isSingletonTag?: " + tagTokenItem.getImage() + "(" + tagTokenItem.getOffset() + "; " + tagTokenItem.getTokenID().getName());
         TokenItem ti = tagTokenItem;
         while(ti != null) {
             if(ti.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL) {
