@@ -35,9 +35,6 @@ import org.openide.util.NbBundle;
  */
 public class FileArrayEditor extends PropertyEditorSupport implements ExPropertyEditor, PropertyChangeListener {
     
-    /** Env passed in the attachEnv method.*/
-    private PropertyEnv env;
-    
     /** Openning mode.*/
     private int mode = JFileChooser.FILES_AND_DIRECTORIES;
     
@@ -70,8 +67,6 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
      * @param env Environment passed by the ide.
      */
     public void attachEnv(PropertyEnv env) {
-        this.env = env;
-
         // clearing to defaults
         directories = true;
         files = true;

@@ -46,9 +46,6 @@ import org.openide.util.NbBundle;
  */
 public class FileEditor extends PropertyEditorSupport implements ExPropertyEditor, PropertyChangeListener {
     
-    /** Env passed in the attachEnv method.*/
-    private PropertyEnv env;
-    
     /** Name of the property obtained from the feature descriptor.*/
     static final String PROPERTY_SHOW_DIRECTORIES = "directories"; //NOI18N
     
@@ -102,8 +99,6 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
      * @param env Environment passed by the ide.
      */
     public void attachEnv(PropertyEnv env) {
-        this.env = env;
-
         // clearing to defaults
         directories = true;
         files = true;
