@@ -60,7 +60,8 @@ public class DataObjectTreeView extends DataObjectPanel {
     private void initComponent() {
         expPanel = new ExplorerPanel();
         expPanel.setLayout(new BorderLayout());
-        reposTree = new SingleSelectionBeanTreeView();
+        reposTree = new BeanTreeView();
+        reposTree.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         reposTree.setPopupAllowed(false);
         reposTree.setDefaultActionAllowed(false);
         expPanel.add(reposTree, "Center"); // NOI18N
@@ -225,17 +226,4 @@ public class DataObjectTreeView extends DataObjectPanel {
     public Object getPropertyValue() throws IllegalStateException {
         return getDataObject();
     }
-    
-    /**
-     * Class resulting from bugfix of #19165
-     * @author raccah@netbeans.org (Rochelle Raccah)
-     */
-    private static class SingleSelectionBeanTreeView extends BeanTreeView {
-	public SingleSelectionBeanTreeView() {
-		super();
-		tree.getSelectionModel().setSelectionMode(
-                            TreeSelectionModel.SINGLE_TREE_SELECTION);
-	}
-    }
-    
 }
