@@ -1747,6 +1747,8 @@ final class Central implements ControllerHandler {
             viewRequestor.scheduleRequest(
                 new ViewRequest(null, View.CHANGE_TOPCOMPONENT_AUTO_HIDE_DISABLED, null, null));
         }
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManagerImpl.PROP_ACTIVE_MODE, null, getActiveMode());
     }
 
     /** Moves given top component into given mode, but does not activate it

@@ -42,9 +42,10 @@ public class MaximizeWindowAction extends AbstractAction {
         propListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
-                if(TopComponent.Registry.PROP_ACTIVATED.equals(propName)
-                || WindowManagerImpl.PROP_MAXIMIZED_MODE.equals(propName)
-                || WindowManagerImpl.PROP_EDITOR_AREA_STATE.equals(evt.getPropertyName())) {
+                if(/*TopComponent.Registry.PROP_ACTIVATED.equals(propName)
+                || */WindowManagerImpl.PROP_MAXIMIZED_MODE.equals(propName)
+                || WindowManagerImpl.PROP_EDITOR_AREA_STATE.equals(evt.getPropertyName())
+                || WindowManagerImpl.PROP_ACTIVE_MODE.equals(evt.getPropertyName())) {
                     updateState();
                 }
             }
