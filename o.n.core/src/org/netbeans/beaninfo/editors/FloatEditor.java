@@ -42,7 +42,7 @@ public class FloatEditor extends WrappersEditor {
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "new java.lang.Float(" + getAsText() + ")";
+	return "new java.lang.Float(" + getAsText() + ")"; // NOI18N
     }
 
 }

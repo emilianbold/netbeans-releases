@@ -42,7 +42,7 @@ public class ShortEditor extends WrappersEditor {
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "new java.lang.Short((short)" + getAsText() + ")";
+	return "new java.lang.Short((short)" + getAsText() + ")"; // NOI18N
     }
 
 }

@@ -42,7 +42,7 @@ public class IntegerEditor extends WrappersEditor {
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "new java.lang.Integer(" + getAsText() + ")";
+	return "new java.lang.Integer(" + getAsText() + ")"; // NOI18N
     }
 
 }

@@ -42,7 +42,7 @@ public class ByteEditor extends WrappersEditor {
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "new java.lang.Byte((byte)" + getAsText() + ")";
+	return "new java.lang.Byte((byte)" + getAsText() + ")"; // NOI18N
     }
 
 }

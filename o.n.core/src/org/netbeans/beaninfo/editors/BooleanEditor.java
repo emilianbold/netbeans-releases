@@ -43,8 +43,8 @@ public class BooleanEditor extends WrappersEditor {
      */
     public String getJavaInitializationString() {
         String gat = getAsText();
-        if (gat.equals("True")) return "new java.lang.Boolean(true)";
-        else return "new java.lang.Boolean(false)";
+        if (gat.equals("True")) return "java.lang.Boolean.TRUE"; // NOI18N
+        else return "java.lang.Boolean.FALSE"; // NOI18N
     }
 
 }

@@ -42,7 +42,7 @@ public class DoubleEditor extends WrappersEditor {
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "new java.lang.Double(" + getAsText() + ")";
+	return "new java.lang.Double(" + getAsText() + ")"; // NOI18N
     }
 
 }

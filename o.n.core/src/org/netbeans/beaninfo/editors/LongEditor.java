@@ -42,7 +42,7 @@ public class LongEditor extends WrappersEditor {
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "new java.lang.Long(" + getAsText() + ")";
+	return "new java.lang.Long(" + getAsText() + ")"; // NOI18N
     }
 
 }
