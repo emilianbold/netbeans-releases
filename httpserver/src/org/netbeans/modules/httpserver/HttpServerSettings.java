@@ -163,7 +163,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
           HttpServerSettings.OPTIONS.wait(SERVER_STARTUP_TIMEOUT);
         }
         catch (Exception e) {
-          e.printStackTrace();
+          // e.printStackTrace();
         }
       }  
       else {
@@ -370,6 +370,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  12   Gandalf   1.11        6/25/99  Petr Jiricka    Removed debug prints
  *  11   Gandalf   1.10        6/24/99  Petr Jiricka    Implements recent 
  *       changes in org.openide.util.HttpServer - allowAccess(...)
  *  10   Gandalf   1.9         6/23/99  Petr Jiricka    
