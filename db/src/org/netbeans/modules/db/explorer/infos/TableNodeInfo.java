@@ -39,12 +39,12 @@ public class TableNodeInfo extends DatabaseNodeInfo
 	throws DatabaseException
 	{				
  		try {
-			ResultSet rs, rsTemp; //rsTemp - ODBC bug hack
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String table = (String)get(DatabaseNode.TABLE);
       DriverSpecification drvSpec = getDriverSpecification();
-      
+      boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
+
 			// Primary keys
 			Hashtable ihash = new Hashtable(); 		
 			drvSpec.getPrimaryKeys(catalog, dmd, table);
@@ -60,17 +60,23 @@ public class TableNodeInfo extends DatabaseNodeInfo
 			// Indexes
 			Hashtable ixhash = new Hashtable(); 		
 			drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+      
       if (drvSpec.rs != null) {
         while (drvSpec.rs.next()) {
-//          drvSpec.rsTemp.next();
+          if (jdbcOdbcBridge) drvSpec.rsTemp.next();
           if (drvSpec.rs.getString("COLUMN_NAME") == null)
            continue;
-          DatabaseNodeInfo iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXED_COLUMN, drvSpec.rs);
+          DatabaseNodeInfo iinfo;
+          if (jdbcOdbcBridge)
+            iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXED_COLUMN, drvSpec.rsTemp);
+          else
+            iinfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXED_COLUMN, drvSpec.rs);
+          
           String iname = (String)iinfo.get("name");
           ixhash.put(iname,iinfo);
         }
         drvSpec.rs.close();
-//        drvSpec.rsTemp.close();
+        if (jdbcOdbcBridge) drvSpec.rsTemp.close();
       }
         
 /*        
@@ -89,7 +95,7 @@ public class TableNodeInfo extends DatabaseNodeInfo
 			drvSpec.getColumns(catalog, dmd, table, columnname);
       if (drvSpec.rs != null) {
         while (drvSpec.rs.next()) {
-//          drvSpec.rsTemp.next();
+          if (jdbcOdbcBridge) drvSpec.rsTemp.next();
           
           DatabaseNodeInfo nfo;
           String cname = drvSpec.rs.getString("COLUMN_NAME");
@@ -103,12 +109,15 @@ public class TableNodeInfo extends DatabaseNodeInfo
 //              if (fhash.containsKey(cname)) {
 //                nfo = (DatabaseNodeInfo)fhash.get(cname);
               else
-                nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, drvSpec.rs);
+                if (jdbcOdbcBridge)
+                  nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, drvSpec.rsTemp);
+                else
+                  nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, drvSpec.rs);
   			    
 			    children.add(nfo);
         }
         drvSpec.rs.close();
-//        drvSpec.rsTemp.close();
+        if (jdbcOdbcBridge) drvSpec.rsTemp.close();
       }
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
@@ -213,6 +222,7 @@ public class TableNodeInfo extends DatabaseNodeInfo
 }
 /*
  * <<Log>>
+ *  17   Gandalf   1.16        1/26/00  Radko Najman    JDBC-ODBC bridge HACK
  *  16   Gandalf   1.15        1/25/00  Radko Najman    new driver adaptor 
  *       version
  *  15   Gandalf   1.14        12/15/99 Radko Najman    driver adaptor

@@ -102,6 +102,7 @@ public class IndexNode extends DatabaseNode
 					dmd = info.getSpecification().getMetaData();
 					spec = (Specification)info.getSpecification();
 					catalog = (String)info.get(DatabaseNode.CATALOG);
+          boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
 
           DriverSpecification drvSpec = info.getDriverSpecification();
           drvSpec.getIndexInfo(catalog, dmd, info.getTable(), true, false);
@@ -130,23 +131,25 @@ public class IndexNode extends DatabaseNode
             icmd.execute();
 
             drvSpec.getIndexInfo(catalog, dmd, destinfo.getTable(), true, false);
-            //Hack - ODBC bug
-//            ResultSet rsTemp = info.getDriverSpecification().getIndexInfo(catalog, dmd, destinfo.getTable(), true, false);
-            
             if (drvSpec.rs != null) {
               while (drvSpec.rs.next()) {
-//                rsTemp.next();
+                if (jdbcOdbcBridge) drvSpec.rsTemp.next();
                 String ixname = drvSpec.rs.getString("INDEX_NAME");
                 String colname = drvSpec.rs.getString("COLUMN_NAME");
                 if (ixname.equals(index) && colname.equals(info.getName())) {
-                  IndexNodeInfo ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, drvSpec.rs);
+                  IndexNodeInfo ixinfo;
+                  if (jdbcOdbcBridge)
+                    ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, drvSpec.rsTemp);
+                  else
+                    ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, drvSpec.rs);
+                  
                   if (ixinfo != null) {
                     ((DatabaseNodeChildren)destinfo.getNode().getChildren()).createSubnode(ixinfo,true);
                   } else throw new Exception("unable to create node information for index");
                 }
               }
               drvSpec.rs.close();
-//              rsTemp.close();
+              if (jdbcOdbcBridge) drvSpec.rsTemp.close();
             }
           }
 				} catch (Exception e) { 
@@ -160,6 +163,7 @@ public class IndexNode extends DatabaseNode
 }
 /*
  * <<Log>>
+ *  14   Gandalf   1.13        1/26/00  Radko Najman    JDBC-ODBC bridge HACK
  *  13   Gandalf   1.12        1/26/00  Radko Najman    new driver adaptor 
  *       version
  *  12   Gandalf   1.11        1/25/00  Radko Najman    new driver adaptor 

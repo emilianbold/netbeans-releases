@@ -37,13 +37,19 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 
       DriverSpecification drvSpec = getDriverSpecification();
       drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+      boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
 			
       if (drvSpec.rs != null) {
   			Set ixmap = new HashSet();
         while (drvSpec.rs.next()) {
-//          drvSpec.rsTemp.next();
+          if (jdbcOdbcBridge) drvSpec.rsTemp.next();
           if (drvSpec.rs.getString("INDEX_NAME") != null) {
-            IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rs);
+            IndexNodeInfo info;
+            if (jdbcOdbcBridge)
+              info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rsTemp);
+            else
+              info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rs);
+            
             if (info != null) {
               if (!ixmap.contains(info.getName())) {
                 ixmap.add(info.getName());
@@ -54,7 +60,7 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
           }
         }
         drvSpec.rs.close();
-//        drvSpec.rsTemp.close();
+        if (jdbcOdbcBridge) drvSpec.rsTemp.close();
       }
  		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
@@ -71,20 +77,26 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 
       DriverSpecification drvSpec = getDriverSpecification();
       drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+       boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
 
 			if (drvSpec.rs != null) {
         while (drvSpec.rs.next()) {
-          drvSpec.rsTemp.next();
+          if (jdbcOdbcBridge) drvSpec.rsTemp.next();
           String findex = drvSpec.rs.getString("INDEX_NAME");
           if (findex != null) {
             if (findex.equals(name)) {
-              IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rsTemp);
+              IndexNodeInfo info;
+              if (jdbcOdbcBridge)
+                info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rsTemp);
+              else
+                info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rs);
+              
               if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
             } 
           }
         }
         drvSpec.rs.close();
-        drvSpec.rsTemp.close();
+        if (jdbcOdbcBridge) drvSpec.rsTemp.close();
       }
  		} catch (Exception e) {
  			e.printStackTrace();
@@ -95,6 +107,7 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  14   Gandalf   1.13        1/26/00  Radko Najman    JDBC-ODBC bridge HACK
  *  13   Gandalf   1.12        1/25/00  Radko Najman    new driver adaptor 
  *       version
  *  12   Gandalf   1.11        12/15/99 Radko Najman    driver adaptor

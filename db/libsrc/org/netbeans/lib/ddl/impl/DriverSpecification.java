@@ -245,6 +245,7 @@ public class DriverSpecification {
   public void getIndexInfo(String catalog, DatabaseMetaData dmd, String table, boolean unique, boolean approximate) {
     String schema = null;
     boolean caseindentifiers;
+    boolean jdbcOdbcBridge = false;
     
     try {
       caseindentifiers = dmd.storesMixedCaseIdentifiers();
@@ -257,6 +258,8 @@ public class DriverSpecification {
     }
     
     try {
+      jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
+      
       if (!getCatalog().equals("true"))
         catalog = null;
       if (getSchema().equals("true"))
@@ -268,7 +271,7 @@ public class DriverSpecification {
 
       if (!desc.get("DriverName").equals("DefaultDriver")) {
         rs = dmd.getIndexInfo(catalog, schema, table, unique, approximate);
-//        rsTemp = dmd.getIndexInfo(catalog, schema, table, unique, approximate);
+        if (jdbcOdbcBridge) rsTemp = dmd.getIndexInfo(catalog, schema, table, unique, approximate);
         return;
       }
     } catch (SQLException ex) {
@@ -283,7 +286,7 @@ public class DriverSpecification {
       checkResultSet();
       rs.close();
       rs = dmd.getIndexInfo(catalog, schema, table, unique, approximate);
-//      rsTemp = dmd.getIndexInfo(catalog, schema, table, unique, approximate);
+      if (jdbcOdbcBridge) rsTemp = dmd.getIndexInfo(catalog, schema, table, unique, approximate);
     } catch (Exception ex) {
       try {
 //        System.out.println("2. PASS - IndexInfo: " + dmd.getDriverName());
@@ -291,7 +294,7 @@ public class DriverSpecification {
         checkResultSet();
         rs.close();
         rs = dmd.getIndexInfo(null, schema, table, unique, approximate);
-//        rsTemp = dmd.getIndexInfo(null, schema, table, unique, approximate);
+        if (jdbcOdbcBridge) rsTemp = dmd.getIndexInfo(null, schema, table, unique, approximate);
       } catch (Exception ex1) {
         try {
 //          System.out.println("3. PASS - IndexInfo: " + dmd.getDriverName());
@@ -299,15 +302,16 @@ public class DriverSpecification {
           checkResultSet();
           rs.close();
           rs = dmd.getIndexInfo(catalog, null, table, unique, approximate);
-//          rsTemp = dmd.getIndexInfo(catalog, null, table, unique, approximate);
+          if (jdbcOdbcBridge) rsTemp = dmd.getIndexInfo(catalog, null, table, unique, approximate);
         } catch (Exception ex2) {
           try {
 //            System.out.println("4. PASS - IndexInfo: " + dmd.getDriverName());
             rs = dmd.getIndexInfo(null, null, table, unique, approximate);
-//            rsTemp = dmd.getIndexInfo(null, null, table, unique, approximate);
+            if (jdbcOdbcBridge) rsTemp = dmd.getIndexInfo(null, null, table, unique, approximate);
           } catch (Exception ex3) {
 //            System.out.println("NO INDEXINFO: " + ex3);
             rs = null;
+            rsTemp = null;
           }
         }
       }
@@ -317,7 +321,8 @@ public class DriverSpecification {
   public void getColumns(String catalog, DatabaseMetaData dmd, String tableNamePattern, String columnNamePattern) {
     String schemaPattern = null;
     boolean caseindentifiers;
-    
+    boolean jdbcOdbcBridge = false;
+
     try {
       caseindentifiers = dmd.storesMixedCaseIdentifiers();
       if (!caseindentifiers) {
@@ -329,6 +334,8 @@ public class DriverSpecification {
     }
     
     try {
+      jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
+      
       if (!getCatalog().equals("true"))
         catalog = null;
       if (getSchema().equals("true"))
@@ -336,7 +343,7 @@ public class DriverSpecification {
 
       if (!desc.get("DriverName").equals("DefaultDriver")) {
         rs = dmd.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
-//        rsTemp = dmd.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
+        if (jdbcOdbcBridge) rsTemp = dmd.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
         return;
 }
     } catch (SQLException ex) {
@@ -351,7 +358,7 @@ public class DriverSpecification {
       checkResultSet();
       rs.close();
       rs = dmd.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
-//      rsTemp = dmd.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
+      if (jdbcOdbcBridge) rsTemp = dmd.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
     } catch (Exception ex) {
       try {
 //        System.out.println("2. PASS - Columns: " + dmd.getDriverName());
@@ -359,7 +366,7 @@ public class DriverSpecification {
         checkResultSet();
         rs.close();
         rs = dmd.getColumns(null, schemaPattern, tableNamePattern, columnNamePattern);
-//        rsTemp = dmd.getColumns(null, schemaPattern, tableNamePattern, columnNamePattern);
+        if (jdbcOdbcBridge) rsTemp = dmd.getColumns(null, schemaPattern, tableNamePattern, columnNamePattern);
       } catch (Exception ex1) {
         try {
 //          System.out.println("3. PASS - Columns: " + dmd.getDriverName());
@@ -367,15 +374,16 @@ public class DriverSpecification {
           checkResultSet();
           rs.close();
           rs = dmd.getColumns(catalog, null, tableNamePattern, columnNamePattern);
-//          rsTemp = dmd.getColumns(catalog, null, tableNamePattern, columnNamePattern);
+          if (jdbcOdbcBridge) rsTemp = dmd.getColumns(catalog, null, tableNamePattern, columnNamePattern);
         } catch (Exception ex2) {
           try {
 //            System.out.println("4. PASS - Columns: " + dmd.getDriverName());
             rs = dmd.getColumns(null, null, tableNamePattern, columnNamePattern);
-//            rsTemp = dmd.getColumns(null, null, tableNamePattern, columnNamePattern);
+            if (jdbcOdbcBridge) rsTemp = dmd.getColumns(null, null, tableNamePattern, columnNamePattern);
           } catch (Exception ex3) {
 //            System.out.println("NO COLUMNS: " + ex3);
             rs = null;
+            rsTemp = null;
           }
         }
       }
@@ -508,6 +516,7 @@ public class DriverSpecification {
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         1/26/00  Radko Najman    JDBC-ODBC bridge HACK
 *  1    Gandalf   1.0         1/25/00  Radko Najman    
 * $
 */
