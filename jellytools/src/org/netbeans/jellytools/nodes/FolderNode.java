@@ -24,13 +24,8 @@ public class FolderNode extends Node {
     static final ExploreFromHereAction exploreFromHereAction = new ExploreFromHereAction();
     static final FindAction findAction = new FindAction();
     static final RefreshFolderAction refreshFolderAction = new RefreshFolderAction();
-    static final CompileAction compileAction = new CompileAction();
-    static final CompileAllAction compileAllAction = new CompileAllAction();
-    static final BuildAction buildAction = new BuildAction();
-    static final BuildAllAction buildAllAction = new BuildAllAction();
-    static final CleanAction cleanAction = new CleanAction();
-    static final CleanAllAction cleanAllAction = new CleanAllAction();
     static final CopyAction copyAction = new CopyAction();
+    static final PasteAction pasteAction = new PasteAction();
     static final PasteCopyAction pasteCopyAction = new PasteCopyAction();
     static final PasteLinkAction pasteLinkAction = new PasteLinkAction();
     static final CutAction cutAction = new CutAction();
@@ -76,12 +71,6 @@ public class FolderNode extends Node {
             exploreFromHereAction,
             findAction,
             refreshFolderAction,
-            compileAction,
-            compileAllAction,
-            buildAction,
-            buildAllAction,
-            cleanAction,
-            cleanAllAction,
             copyAction,
             cutAction,
             deleteAction,
@@ -109,41 +98,16 @@ public class FolderNode extends Node {
         refreshFolderAction.perform(this);
     }
     
-    /** performs CompileAction with this node */    
-    public void compile() {
-        compileAction.perform(this);
-    }
-
-    /** performs CompileAllAction with this node */    
-    public void compileAll() {
-        compileAllAction.perform(this);
-    }
-    
-    /** performs BuildAction with this node */    
-    public void build() {
-        buildAction.perform(this);
-    }
-    
-    /** performs BuildAllAction with this node */    
-    public void buildAll() {
-        buildAllAction.perform(this);
-    }
-    
-    /** performs CleanAction with this node */    
-    public void clean() {
-        cleanAction.perform(this);
-    }
-    
-    /** performs CleanAllAction with this node */    
-    public void cleanAll() {
-        cleanAllAction.perform(this);
-    }
-    
     /** performs CopyAction with this node */    
     public void copy() {
         copyAction.perform(this);
     }
     
+    /** performs PasteAction with this node */    
+    public void paste() {
+        pasteAction.perform(this);
+    }
+
     /** performs PasteCopyAction with this node */    
     public void pasteCopy() {
         pasteCopyAction.perform(this);
