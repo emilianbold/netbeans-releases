@@ -33,6 +33,7 @@ import org.openide.util.MutexException;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
 import java.io.IOException;
+import java.util.Properties;
 import org.openide.filesystems.FileUtil;
 
 /** A test.
@@ -51,31 +52,12 @@ public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestH
         TestRunner.run(new NbTestSuite(InstanceDataObjectModuleTest7.class));
     }
     
-    private File mark, systemDir;
-    
     protected void setUp() throws Exception {
-        String origSysDir = System.getProperty("system.dir");
-        if (origSysDir == null) {
-            mark = File.createTempFile("IDOMT7", ".txt");
-            systemDir = new File(mark.getParentFile(), mark.getName().substring(0, mark.getName().length() - 4));
-            if (! systemDir.mkdir()) throw new IOException("mkdir: " + systemDir);
-            //System.err.println("created system dir: " + systemDir);
-            // Understood by Plain:
-            System.setProperty("system.dir", systemDir.getAbsolutePath());
-        } else {
-            // XXX #17333 workaround
-            systemDir = new File(origSysDir);
-            systemDir.mkdir();
-        }
+        // Use MemoryFileSystem:
+        Properties p = System.getProperties();
+        p.remove("system.dir");
+        System.setProperties(p);
         super.setUp();
-    }
-    
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        // In case ModuleList is still doing its thing:
-        Thread.sleep(1000);
-        if (mark != null && !mark.delete()) throw new IOException();
-        deleteRec(mark == null ? new File(systemDir, "Services") : systemDir, true);
     }
     
     public void testFixedSettingsChangeInstanceAfterSlowReload() throws Exception {
@@ -83,8 +65,9 @@ public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestH
         DataObject obj1;
         try {
             obj1 = findIt("Services/Misc/inst-2.settings");
+            assertEquals("No saved state for inst-2.settings", null, FileUtil.toFile(obj1.getPrimaryFile()));
             InstanceCookie inst1 = (InstanceCookie)obj1.getCookie(InstanceCookie.class);
-            assertNotNull("Had an instance", inst1);
+            assertNotNull("Had an instance from " + obj1, inst1);
             Action a1 = (Action)inst1.instanceCreate();
             assertTrue("Old version of action", a1.isEnabled());
             // Make some change which should cause it to be written to disk:
@@ -95,9 +78,11 @@ public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestH
             File saved = new File(new File(new File(systemDir, "Services"), "Misc"), "inst-2.settings");
             assertTrue("Wrote to disk: " + saved, saved.isFile());
              */
+            /*
             File saved = FileUtil.toFile(obj1.getPrimaryFile());
             assertNotNull("Wrote to disk; expecting: " + new File(new File(new File(systemDir, "Services"), "Misc"), "inst-2.settings"),
                 saved);
+             */
             twiddle(m2, TWIDDLE_DISABLE);
             // Just in case it is needed:
             Thread.sleep(1000);
