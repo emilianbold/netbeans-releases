@@ -55,7 +55,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
         public String getOldName() {
             return oldName;
         }
-
+        
         public String getOldExpansion() {
             return expansion;
         }
@@ -70,7 +70,6 @@ public abstract class AbbreviationsTest extends JellyTestCase {
     public abstract Abbreviation[] getAbbreviationsToRemove();
     public abstract Abbreviation[] getAbbreviationsToModify();
     public abstract String         getEditorName();
-    public abstract String         getEditorOptionsClassName();
     public abstract void           finishEditor();
     
     protected void flushResult() {
@@ -83,31 +82,6 @@ public abstract class AbbreviationsTest extends JellyTestCase {
         }
     }
     
-    private Map backupAbbreviations() {
-        try {
-            Class clazz = Class.forName(getEditorOptionsClassName());
-            BaseOptions options = (BaseOptions) SystemOption.findObject(clazz);
-            Map abbrevMap = options.getAbbrevMap();
-
-            return new HashMap(abbrevMap);
-        } catch (ClassNotFoundException e) {
-            assertTrue("Class representing options \"" + getEditorOptionsClassName() + "\" not found. Bug of test.",
-                       true);
-            return null;
-        }
-    }
-    
-    private void restoreAbbrevitions(Map abbrevs) {
-        try {
-            Class clazz = Class.forName(getEditorOptionsClassName());
-            BaseOptions options = (BaseOptions) SystemOption.findObject(clazz);
-            options.setAbbrevMap(new HashMap(abbrevs));
-        } catch (ClassNotFoundException e) {
-            assertTrue("Class representing options \"" + getEditorOptionsClassName() + "\" not found. Bug of test.",
-                       true);
-        }
-    }
-    
     private void useAbbreviation(String abbreviation, boolean expand) {
         EditorOperator editor = getTestEditor();
         
@@ -115,7 +89,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
          *using main method of JavaAbbreviationsTestPerformer, but does not
          *when I run them automaticaly.
          */
-//        editor.clickMouse();
+        //        editor.clickMouse();
         
         editor.txtEditorPane().typeText(abbreviation);
         if (expand)
@@ -151,7 +125,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
             log("testAbbreviationTest finished");
         }
     }
-
+    
     public void testAbbreviationInsideComment() {
         log("testAbbreviationInsideComment start");
         try {
@@ -175,7 +149,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
             log("testAbbreviationInsideComment finished");
         }
     }
-
+    
     public void testAbbreviationWithoutExpansion() {
         log("testAbbreviationWithoutExpansion start");
         try {
@@ -202,7 +176,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
     
     public void testAbbreviationAdd() {
         log("testAbbreviationAdd start");
-        Map backup = backupAbbreviations();
+        Object backup = Utilities.saveAbbreviationsState();
         
         try {
             Abbreviation[] toAdd = getAbbreviationsToAdd();
@@ -228,7 +202,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
             
             log("testAbbreviationAdd restoring abbreviations map:");
             
-            restoreAbbrevitions(backup);
+            Utilities.restoreAbbreviationsState(backup);
             
             log("testAbbreviationAdd finished");
         }
@@ -236,7 +210,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
     
     public void testAbbreviationChange() {
         log("testAbbreviationChange start");
-        Map backup = backupAbbreviations();
+        Object backup = Utilities.saveAbbreviationsState();
         
         try {
             Abbreviation[] toChange = getAbbreviationsToModify();
@@ -246,9 +220,9 @@ public abstract class AbbreviationsTest extends JellyTestCase {
             for (int cntr = 0; cntr < toChange.length; cntr++) {
                 assertTrue("Editing of abbreviation with original name=\"" + toChange[cntr].getOldName() + "\" failed.",
                 Abbreviations.editAbbreviation(getEditorName(),
-                                               toChange[cntr].getOldName(),
-                                               toChange[cntr].getName(),
-                                               toChange[cntr].getExpansion()));
+                toChange[cntr].getOldName(),
+                toChange[cntr].getName(),
+                toChange[cntr].getExpansion()));
             }
             
             for (int cntr = 0; cntr < toChange.length; cntr++) {
@@ -269,7 +243,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
             
             log("testAbbreviationChange results abbreviations map:");
             
-            restoreAbbrevitions(backup);
+            Utilities.restoreAbbreviationsState(backup);
             
             log("testAbbreviationChange finished");
         }
@@ -277,7 +251,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
     
     public void testAbbreviationOKCancel() {
         log("testAbbreviationOKCancel start");
-        Map backup = backupAbbreviations();
+        Object backup = Utilities.saveAbbreviationsState();
         
         try {
             Abbreviations dialog = Abbreviations.invoke(getEditorName());
@@ -311,7 +285,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
             
             log("testAbbreviationOKCancel restoring abbreviations map:");
             
-            restoreAbbrevitions(backup);
+            Utilities.restoreAbbreviationsState(backup);
             
             log("testAbbreviationOKCancel finished");
         }
@@ -319,7 +293,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
     
     public void testAbbreviationRemove() {
         log("testAbbreviationRemove start");
-        Map backup = backupAbbreviations();
+        Object backup = Utilities.saveAbbreviationsState();
         
         try {
             Abbreviations dialog = null;
@@ -369,7 +343,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
             
             log("testAbbreviationRemove restoring abbreviations map:");
             
-            restoreAbbrevitions(backup);
+            Utilities.restoreAbbreviationsState(backup);
             
             log("testAbbreviationRemove finished");
         }
@@ -377,7 +351,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
     
     public void setUp() {
         log("Starting abbreviations test. Test class=" + getClass());
-	log("Test name=" + getName());
+        log("Test name=" + getName());
     }
     
     public void tearDown() throws Exception {
