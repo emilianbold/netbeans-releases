@@ -337,6 +337,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     
     /** getter for classpath base */
     String getWrapperBaseURL() {
+        setRunning (true);
         return wrapperBaseURL;
     }
 
