@@ -46,6 +46,7 @@ Microsystems, Inc. All Rights Reserved.
   org.netbeans.modules.html.editor.lib/1,
   org.netbeans.modules.servletapi24/1 > ${web.servletapi24.specification.version},
   org.netbeans.modules.html/1,
+  org.netbeans.modules.editor.fold/1,
   org.netbeans.modules.web.jspparser/2,
   org.netbeans.modules.xml.text/2 = ${xml.common.impl.version},
   org.openide.loaders > 4.11,
