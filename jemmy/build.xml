@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init" depends="default.init">
       <patternset id="jemmy.files">
         <!-- All files created for NBM -->
-        <include name="${nb.modules.dir}/jemmy-module.jar"/>
+        <include name="${nb.modules.dir}/org-netbeans-modules-jemmy.jar"/>
         <include name="${nb.system.dir}/ParserDB/Jemmy*"/>
         <include name="${nb.docs.dir}/jemmy-api.zip"/>
         <include name="${nb.modules.dir}/ext/jemmy.jar"/>
@@ -93,10 +93,10 @@ Microsystems, Inc. All Rights Reserved.
     <jar jarfile="${jar}" basedir="${build}" manifest="${build}/org/netbeans/jemmy/version_info"/>
   </target>
 
-  <target name="parser-db">
+  <target name="parser-db" depends="init">
       <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../nbbuild/nbantext.jar"/>
-      <mkdir dir="netbeans/system/ParserDB"/>
-      <makeparserdb db="netbeans/system/ParserDB/Jemmy" sources="${src}" nbroot=".."/>
+      <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB"/>
+      <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/Jemmy" sources="${src}" nbroot=".."/>
   </target>
 
 
@@ -107,7 +107,15 @@ Microsystems, Inc. All Rights Reserved.
     <filter token="VERSION_SUBST" value="${Jemmy-MajorVersion}.${Jemmy-MinorVersion}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/jemmy-module.jar" manifest="manifest-subst.mf" basedir="${modulesrc}"/>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-jemmy.jar" 
+         manifest="manifest-subst.mf" 
+         basedir="${modulesrc}"
+    />
+    <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
+      <enabled dir="${netbeans.dest.dir}/${cluster.dir}">
+        <include name="${nb.modules.dir}/org-netbeans-modules-jemmy.jar"/>
+      </enabled>
+    </createmodulexml>
   </target>
 
   <target name="jarsrc" depends="compile,jar">
@@ -183,7 +191,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="jemmy.nbm"
              productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/jemmy-module.jar"
+             module="${nb.modules.dir}/org-netbeans-modules-jemmy.jar"
              homepage="http://jemmy.${homepage.base}"
              distribution="http://${dist.base}/jemmy.nbm">
       <license file="${license.file}"/>
@@ -192,7 +200,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/jemmy-module.jar">
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-jemmy.jar">
       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
         <patternset refID="jemmy.files"/>
       </fileset>
