@@ -463,7 +463,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-ui-IDESettingsWizardPanel.instance">
                 <attr name="basic" boolvalue="true" />
             </file>
-            <file name="org-netbeans-core-ui-ModuleSelectionPanel.instance" />
+            <file name="org-netbeans-core-ui-ModuleSelectionWizardPanel.instance" />
         </folder>
      </folder>    
     
