@@ -264,5 +264,42 @@ public class EditorTestCase extends NbTestCase {
         EditorWindowOperator editorWindow = new EditorWindowOperator(defaultSampleName);
         return editorWindow.selectPage(defaultSampleName);
     }
+
+    /** Method will wait max. <code> maxMiliSeconds </code> miliseconds for the <code> requiredValue </code>
+     *  gathered by <code> resolver </code>.
+     *
+     *  @param maxMiliSeconds maximum time to wait for requiredValue
+     *  @param resolver resolver, which is gathering an actual value
+     *  @param requiredValue if resolver value equals requiredValue the wait cycle is finished
+     *
+     *  @return false if the given maxMiliSeconds time elapsed and the requiredValue wasn't obtained
+     */
+    protected boolean waitMaxMilisForValue(int maxMiliSeconds, ValueResolver resolver, Object requiredValue){
+        int time = (int) maxMiliSeconds / 100;
+        while (time > 0) {
+            Object resolvedValue = resolver.getValue();
+            if (requiredValue == null && resolvedValue == null){
+                return true;
+            }
+            if (requiredValue != null && requiredValue.equals(resolvedValue)){
+                return true;
+            }
+            try {
+                Thread.currentThread().sleep(100);
+            } catch (InterruptedException ex) {
+                time=0;
+            }
+            time--;
+        }
+        return false;
+    }
     
+    /** Interface for value resolver needed for i.e. waitMaxMilisForValue method.  
+     *  For more details, please look at {@link #waitMaxMilisForValue()}.
+     */
+    public static interface ValueResolver{
+        /** Returns checked value */
+        Object getValue();
+    }
+
 }
