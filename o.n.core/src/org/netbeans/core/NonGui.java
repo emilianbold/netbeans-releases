@@ -568,7 +568,7 @@ public class NonGui extends NbTopManager implements Runnable {
 
         //-------------------------------------------------------------------------------------------------------
         // setup wizard
-        try {
+        /*try {
             if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
@@ -583,7 +583,7 @@ public class NonGui extends NbTopManager implements Runnable {
             showSplashAgain();
         }
         StartLog.logProgress ("SetupWizard done"); // NOI18N
-
+        */
         // wait until mounting really occurs
         automount.waitFinished ();
         StartLog.logProgress ("Automounter done"); // NOI18N
