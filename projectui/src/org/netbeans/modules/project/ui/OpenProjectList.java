@@ -92,6 +92,7 @@ public final class OpenProjectList {
                 needNotify = true;
                 INSTANCE = new OpenProjectList();
                 INSTANCE.openProjects = loadProjectList();                
+                INSTANCE.recentTemplates = new ArrayList( OpenProjectListSettings.getInstance().getRecentTemplates() );
                 String mainProjectDir = OpenProjectListSettings.getInstance().getMainProjectDir();
                 // Load recent project list
                 INSTANCE.recentProjects.load();
@@ -266,7 +267,7 @@ public final class OpenProjectList {
             recentTemplates.remove( 100 );
         }
         
-        OpenProjectListSettings.getInstance().setRecentTemplates( recentTemplates );
+        OpenProjectListSettings.getInstance().setRecentTemplates( new ArrayList( recentTemplates ) );
     }
     
     
@@ -388,14 +389,6 @@ public final class OpenProjectList {
     }
     
     private ArrayList /*<FileObject>*/ getTemplateNamesLRU( Project project ) {
-        if ( recentTemplates == null ) {
-            recentTemplates = OpenProjectListSettings.getInstance().getRecentTemplates();
-            if ( recentTemplates == null ) {
-                recentTemplates = new ArrayList( 100 );
-                OpenProjectListSettings.getInstance().setRecentTemplates( recentTemplates );
-            }            
-        }
-
         // First take recently used templates and try to find those which
         // are supported by the project.
         

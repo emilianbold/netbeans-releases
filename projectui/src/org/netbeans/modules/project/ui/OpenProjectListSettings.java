@@ -41,6 +41,7 @@ public class OpenProjectListSettings extends SystemOption {
     // PERSISTENCE
     private static final long serialVersionUID = 8754987489474L;
     
+    
     public static OpenProjectListSettings getInstance() {
         return (OpenProjectListSettings)SystemOption.findObject( OpenProjectListSettings.class, true );
     }
@@ -118,8 +119,9 @@ public class OpenProjectListSettings extends SystemOption {
         }
     }
     
-    public List /*<String>*/ getRecentTemplates() {
-        return (List)getProperty( RECENT_TEMPLATES );       
+    public List /*<String>*/ getRecentTemplates() {        
+        List list = (List)getProperty( RECENT_TEMPLATES );               
+        return list == null ? new ArrayList( 100 ) : list;       
     }
     
     public void setRecentTemplates( List /*<String>*/ templateNames ) {
