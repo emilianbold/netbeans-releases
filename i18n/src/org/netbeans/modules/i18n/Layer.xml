@@ -30,8 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Services">
         <!-- I18N Settings -->
         <file name="i18n_settings.settings">
-            <![CDATA[
-                <?xml version="1.0"?>
+            <![CDATA[<?xml version="1.0"?>
                 <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                 <settings version="1.0">
                     <module name="org.netbeans.modules.i18n" spec="1.8"/>
