@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.editor;
 
 import java.awt.Color;
@@ -26,25 +27,26 @@ import org.openide.filesystems.FileUtil;
 
 public class HtmlPrintContainer implements PrintContainer {
 
-    private static final String T_HTML_S = "<HTML>";    //NOI18N
-    private static final String T_HTML_E = "</HTML>";   //NOI18N
-    private static final String T_HEAD_S = "<HEAD>";    //NOI18N
-    private static final String T_HEAD_E = "</HEAD>";   //NOI18N
-    private static final String T_BODY_S = "<BODY>";    //NOI18N
-    private static final String T_BODY_E = "</BODY>";   //NOI18N
-    private static final String T_TITLE = "<TITLE>{0}</TITLE>";    //NOI18N
-    private static final String T_PRE_S = "<PRE>";   //NOI18N
-    private static final String T_PRE_E = "</PRE>";  //NOI18N
-    private static final String T_BLOCK_S = "<FONT CLASS=\"{0}\">";  //NOI18N
-    private static final String T_BLOCK_E = "</FONT>";   //NOI18N
-    private static final String T_NAME_TABLE = "<TABLE WIDTH=\"100%\"><TR><TD ALIGN=\"center\">{0}</TD></TR></TABLE>";    //NOI18N
-    private static final String T_CHARSET = "<META HTTP-EQUIV=\"content-type\" CONTENT=\"text/html; charset={0}\">";    //NOI18N
-    private static final String T_STYLE_S = "<STYLE TYPE=\"text/css\">";    //NOI18N
-    private static final String T_STYLE_E = "</STYLE>"; //NOI18N
+    private static final String DOCTYPE = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">"; // NOI18N
+    private static final String T_HTML_S = "<html>";    //NOI18N
+    private static final String T_HTML_E = "</html>";   //NOI18N
+    private static final String T_HEAD_S = "<head>";    //NOI18N
+    private static final String T_HEAD_E = "</head>";   //NOI18N
+    private static final String T_BODY_S = "<body>";    //NOI18N
+    private static final String T_BODY_E = "</body>";   //NOI18N
+    private static final String T_TITLE = "<title>{0}</title>";    //NOI18N
+    private static final String T_PRE_S = "<pre>";   //NOI18N
+    private static final String T_PRE_E = "</pre>";  //NOI18N
+    private static final String T_BLOCK_S = "<span class=\"{0}\">";  //NOI18N
+    private static final String T_BLOCK_E = "</span>";   //NOI18N
+    private static final String T_NAME_TABLE = "<table width=\"100%\"><tr><td align=\"center\">{0}</td></tr></table>";    //NOI18N
+    private static final String T_CHARSET = "<meta http-equiv=\"content-type\" content=\"text/html; charset={0}\">";    //NOI18N
+    private static final String T_STYLE_S = "<style type=\"text/css\">";    //NOI18N
+    private static final String T_STYLE_E = "</style>"; //NOI18N
     private static final String T_COMMENT_S = "<!--";   //NOI18N
     private static final String T_COMMENT_E = "-->";    //NOI18N
-    private static final String ST_BODY = "BODY";       //NOI18N
-    private static final String ST_TABLE = "TABLE";     //NOI18N
+    private static final String ST_BODY = "body";       //NOI18N
+    private static final String ST_TABLE = "table";     //NOI18N
     private static final String ST_BEGIN = "{";        //NOI18N
     private static final String ST_COLOR = "color: "; //NOI18N
     private static final String ST_BGCOLOR = "background-color: ";    //NOI18N
@@ -71,6 +73,7 @@ public class HtmlPrintContainer implements PrintContainer {
     private Font defaultFont;
     private StringBuffer buffer;
     private String fileName;
+    private String shortFileName;
     private Styles styles;
     private boolean[] boolHolder;
     private Map syntaxColoring;
@@ -83,6 +86,7 @@ public class HtmlPrintContainer implements PrintContainer {
         styles = new Styles ();
         buffer = new StringBuffer();
         fileName = FileUtil.getFileDisplayName(fo);
+        shortFileName = fo.getNameExt();
         boolHolder = new boolean [1];
         this.defaultForegroundColor = fgColor;
         this.defaultBackgroundColor = bgColor;
@@ -112,11 +116,13 @@ public class HtmlPrintContainer implements PrintContainer {
 
     public final String end () {
         StringBuffer result = new StringBuffer ();
+        result.append (DOCTYPE);
+        result.append (EOL);
         result.append (T_HTML_S);
         result.append (EOL);
         result.append (T_HEAD_S);
         result.append (EOL);
-        result.append (MessageFormat.format (T_TITLE, new Object[] {this.fileName}));
+        result.append (MessageFormat.format (T_TITLE, new Object[] {this.shortFileName}));
         result.append (EOL);
         result.append (MessageFormat.format (T_CHARSET, new Object[] {this.charset}));
         result.append (EOL);
@@ -150,6 +156,7 @@ public class HtmlPrintContainer implements PrintContainer {
         this.styles = null;
         this.buffer = null;
         this.fileName = null;
+        this.shortFileName = null;
         this.defaultBackgroundColor = null;
         this.defaultForegroundColor = null;
         this.defaultFont = null;
