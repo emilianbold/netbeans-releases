@@ -94,7 +94,16 @@ public class LocalsTreeModel implements TreeModel {
             } else
             if (o instanceof AbstractVariable) { // ThisVariable & FieldVariable
                 AbstractVariable mv = (AbstractVariable) o;
-                return getFields (mv, true);
+                if ( (mv.getInnerValue () instanceof ArrayReference) &&
+                     (mv.getFieldsCount () > 50)
+                ) {
+                    AbstractVariable[] vs = getFields (mv, true, 0, 50);
+                    Object[] vs1 = new Object [51];
+                    System.arraycopy (vs, 0, vs1, 0, 50);
+                    vs1 [50] = "More"; // NOI18N
+                    return vs1; 
+                }
+                return getFields (mv, true, 0, 0);
             } else
             throw new UnknownTypeException (o);
         } catch (VMDisconnectedException ex) {
@@ -103,12 +112,12 @@ public class LocalsTreeModel implements TreeModel {
     }
     
     public boolean isLeaf (Object o) throws UnknownTypeException {
-        if (o.equals (ROOT)) {
+        if (o.equals (ROOT))
             return false;
-        } else
-        if (o instanceof AbstractVariable) {
+        if (o instanceof AbstractVariable)
             return !(((AbstractVariable) o).getInnerValue () instanceof ObjectReference);
-        } else
+        if (o.equals ("More")) // NOI18N
+            return true;
         throw new UnknownTypeException (o);
     }
 
@@ -203,7 +212,8 @@ public class LocalsTreeModel implements TreeModel {
     
     AbstractVariable[] getFields (
         AbstractVariable mv,
-        boolean includeSuper
+        boolean includeSuper,
+        int from, int to
     ) {// ThisVariable & FieldVariable
         if (!(mv.getInnerValue () instanceof ObjectReference)) 
             return new AbstractVariable [0];
@@ -213,7 +223,8 @@ public class LocalsTreeModel implements TreeModel {
             return getFieldsOfArray (
                 (ArrayReference) or, 
                 ((ArrayType) rt).componentTypeName (),
-                mv.getID ()
+                mv.getID (),
+                from, to
             );
         else 
             return getFields (or, rt, includeSuper, mv.getID ());
@@ -292,10 +303,16 @@ public class LocalsTreeModel implements TreeModel {
     AbstractVariable[] getFieldsOfArray (
         ArrayReference ar, 
         String componentType,
-        String parentID
+        String parentID,
+        int from, 
+        int to
     ) {
     // ThisVariable & FieldVariable & SuperVariable
-        List l = ar.getValues ();
+        List l = null;
+        if (to == from) 
+            l = ar.getValues ();
+        else
+            l = ar.getValues (from, to);
         int i, k = l.size ();
         AbstractVariable[] ch = new AbstractVariable [k];
         String className = ar.referenceType ().name ();

@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.Value;
+import com.sun.jdi.ArrayReference;
 
 
 /**

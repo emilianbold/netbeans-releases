@@ -63,6 +63,9 @@ public class VariablesActionsProvider implements NodeActionsProvider {
         if (node instanceof Variable)
             return new Action [] {
             };
+        if (node.equals ("More")) // NOI18N
+            return new Action [] {
+            };
         throw new UnknownTypeException (node);
     }
     
@@ -73,6 +76,8 @@ public class VariablesActionsProvider implements NodeActionsProvider {
             goToSource ((Field) node);
             return;
         }
+        if (node.equals ("More")) // NOI18N
+            return;
         throw new UnknownTypeException (node);
     }
 

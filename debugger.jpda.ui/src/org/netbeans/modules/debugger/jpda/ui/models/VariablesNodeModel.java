@@ -59,6 +59,8 @@ public class VariablesNodeModel implements NodeModel {
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
             return "Name";
+        if (o.equals ("More")) // NOI18N
+            return "more items...";
         if (o instanceof Field)
             return ((Field) o).getName ();
         if (o instanceof LocalVariable)
@@ -127,11 +129,13 @@ public class VariablesNodeModel implements NodeModel {
             } catch (InvalidExpressionException ex) {
                 return ex.getLocalizedMessage ();
             }
+        if (o.equals ("More")) // NOI18N
+            return null;
         throw new UnknownTypeException (o);
     }
     
     public String getIconBase (Object o) throws UnknownTypeException {
-        if (o instanceof String)
+        if (o == TreeModel.ROOT)
             return FIELD;
         if (o instanceof Field) {
             if (((Field) o).isStatic ())
@@ -145,6 +149,8 @@ public class VariablesNodeModel implements NodeModel {
             return SUPER;
         if (o instanceof This)
             return FIELD;
+        if (o.equals ("More")) // NOI18N
+            return null;
         throw new UnknownTypeException (o);
     }
 

@@ -195,8 +195,11 @@ public class AbstractVariable implements Variable {
     * @return string representation of type of this variable.
     */
     public int getFieldsCount () {
-        if (getInnerValue () == null) return 0;
-        return ((ReferenceType) getInnerValue ().type ()).fields ().size ();
+        Value v = getInnerValue ();
+        if (v == null) return 0;
+        if (v instanceof ArrayReference)
+            return ((ArrayReference) v).length ();
+        return ((ReferenceType) v.type ()).fields ().size ();
     }
 
     /**
@@ -228,7 +231,7 @@ public class AbstractVariable implements Variable {
     public Field[] getFields (int from, int to) {
         if (getInnerValue () == null) return new Field [0];
         AbstractVariable[] vs = getModel ().getFields (
-            this, false
+            this, false, from, to
         );
         Field[] fs = new Field [vs.length];
         System.arraycopy (vs, 0, fs, 0, vs.length);

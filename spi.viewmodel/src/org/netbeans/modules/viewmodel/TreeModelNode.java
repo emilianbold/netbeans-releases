@@ -158,7 +158,11 @@ public class TreeModelNode extends AbstractNode {
 //            setDisplayName ("Computing");
 //        }
         try {
-            setIconBase (model.getIconBase (object));
+            String iconBase = model.getIconBase (object);
+            if (iconBase != null)
+                setIconBase (iconBase);
+            else
+                setIconBase ("org/openide/resources/actions/empty");
         } catch (UnknownTypeException e) {
             e.printStackTrace ();
         } catch (ComputingException e) {
