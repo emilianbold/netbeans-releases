@@ -136,7 +136,7 @@ public class ColumnItem extends Hashtable
 					if (oldc.equals(Integer.class)) value = new Integer((String)value);
 				}
 			} catch (Exception e) {
-				System.out.println(e);
+				e.printStackTrace();
 			}
 		}
 

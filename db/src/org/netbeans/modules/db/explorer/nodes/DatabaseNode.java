@@ -225,8 +225,8 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 				if (psitem != null) ps.put(psitem);
 				else throw new DatabaseException("no property for "+pname+" "+pclass);
 
-			} catch (Exception e) {
-				System.out.println("unable to create property "+key+" ("+e+")");
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
 		}
     	

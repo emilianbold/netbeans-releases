@@ -50,8 +50,8 @@ public class ColumnNode extends LeafNode
 			cmd.renameColumn(info.getName(), newname);
 			cmd.execute();
 			super.setName(newname);
-		} catch (Exception e) {
-			System.out.println("Unable to change name: "+e);
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 }

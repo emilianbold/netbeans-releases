@@ -28,6 +28,7 @@ import org.openide.util.datatransfer.*;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.SpecificationFactory;
 import com.netbeans.ddl.impl.Specification;
+import com.netbeans.enterprise.modules.db.adaptors.DatabaseAdaptor;
 import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseConnection;
@@ -46,7 +47,7 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 		super.setInfo(nodeinfo);
 		DatabaseNodeInfo info = getInfo();
 		displayFormat = new java.text.MessageFormat((String)info.get("displayname"));
-		setName(info.getName());
+		setName((String)info.get(DatabaseNodeInfo.DATABASE));
 		getInfo().addConnectionListener(new PropertyChangeListener() {
       		public void propertyChange(PropertyChangeEvent evt) {
       			if (evt.getPropertyName().equals(DatabaseNodeInfo.CONNECTION)) {
@@ -121,29 +122,36 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 		Node.Property usrprop = set.get(DatabaseNodeInfo.USER);
 		Node.Property rememberprop = set.get(DatabaseNodeInfo.REMEMBER_PWD);
 		
-		if (!connecting) {
-			children.remove(children.getNodes());
-		} else try {
-			DatabaseMetaData dmd = connection.getMetaData();
-			info.put(DatabaseNodeInfo.DBPRODUCT, dmd.getDatabaseProductName());
-			info.put(DatabaseNodeInfo.DBVERSION, dmd.getDatabaseProductVersion());
-			info.put(DatabaseNodeInfo.READONLYDB, new Boolean(dmd.isReadOnly()));
-			info.put(DatabaseNodeInfo.GROUPSUP, new Boolean(dmd.supportsGroupBy()));
-			info.put(DatabaseNodeInfo.OJOINSUP, new Boolean(dmd.supportsOuterJoins()));
-			info.put(DatabaseNodeInfo.UNIONSUP, new Boolean(dmd.supportsFullOuterJoins()));
-			
-			// Create subnodes
-			
-			DatabaseNodeInfo innernfo;
-			innernfo = DatabaseNodeInfo.createNodeInfo(info, DatabaseNode.TABLELIST);
-			children.createSubnode(innernfo, true);
-			innernfo = DatabaseNodeInfo.createNodeInfo(info, DatabaseNode.VIEWLIST);
-			children.createSubnode(innernfo, true);
-			innernfo = DatabaseNodeInfo.createNodeInfo(info, DatabaseNode.PROCEDURELIST);
-			children.createSubnode(innernfo, true);
-			
+		try {
+
+			DatabaseAdaptor adaptor = info.getDatabaseAdaptor();
+			adaptor.setConnection(connection);
+		
+			if (!connecting) {
+				children.remove(children.getNodes());
+			} else {
+	
+				DatabaseMetaData dmd = adaptor.getMetaData();
+				info.put(DatabaseNodeInfo.DBPRODUCT, dmd.getDatabaseProductName());
+				info.put(DatabaseNodeInfo.DBVERSION, dmd.getDatabaseProductVersion());
+				info.put(DatabaseNodeInfo.READONLYDB, new Boolean(dmd.isReadOnly()));
+				info.put(DatabaseNodeInfo.GROUPSUP, new Boolean(dmd.supportsGroupBy()));
+				info.put(DatabaseNodeInfo.OJOINSUP, new Boolean(dmd.supportsOuterJoins()));
+				info.put(DatabaseNodeInfo.UNIONSUP, new Boolean(dmd.supportsFullOuterJoins()));
+				
+				// Create subnodes
+				
+				DatabaseNodeInfo innernfo;
+				innernfo = DatabaseNodeInfo.createNodeInfo(info, DatabaseNode.TABLELIST);
+				children.createSubnode(innernfo, true);
+				innernfo = DatabaseNodeInfo.createNodeInfo(info, DatabaseNode.VIEWLIST);
+				children.createSubnode(innernfo, true);
+				innernfo = DatabaseNodeInfo.createNodeInfo(info, DatabaseNode.PROCEDURELIST);
+				children.createSubnode(innernfo, true);
+	
+			}
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
 		}
 		
 		PropertySupport newdbprop = createPropertySupport(dbprop.getName(), dbprop.getValueType(), dbprop.getDisplayName(), dbprop.getShortDescription(), info, !connecting);

@@ -143,8 +143,8 @@ public class AddDriverDialog
 			DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddDriverDialogTitle"), true, listener);
 			dialog = TopManager.getDefault().createDialog(descriptor);
 			dialog.setResizable(false);
-		} catch (MissingResourceException ex) {
-			System.out.println("missing resource "+ex.getKey()+"("+ex+")");
+		} catch (MissingResourceException e) {
+			e.printStackTrace();
 		}
     }
     

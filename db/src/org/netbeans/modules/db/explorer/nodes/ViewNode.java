@@ -26,12 +26,6 @@ import com.netbeans.enterprise.modules.db.explorer.infos.*;
 
 public class ViewNode extends DatabaseNode
 {
-/*
-	public ViewNode()
-	{
-		super(Children.LEAF);
-	}
-*/
 	public void setName(String newname)
 	{
 		try {
@@ -44,7 +38,7 @@ public class ViewNode extends DatabaseNode
 		} catch (CommandNotSupportedException e) {
 			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to change the name, command "+e.getCommand()+" is not supported by system", NotifyDescriptor.ERROR_MESSAGE));				
 		} catch (Exception e) {
-			System.out.println("Unable to change name: "+e);
+			e.printStackTrace();
 		}
 	}
 }

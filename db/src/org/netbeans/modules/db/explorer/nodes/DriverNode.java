@@ -28,8 +28,9 @@ public class DriverNode extends LeafNode implements PropertyChangeListener
 		if (drv != null) {
 			info.put(DatabaseNodeInfo.NAME, drv.getName());
 			info.put(DatabaseNodeInfo.URL, drv.getURL());		
+			info.put(DatabaseNodeInfo.ADAPTOR_CLASSNAME, drv.getDatabaseAdaptor());		
 			info.addDriverListener(this);
-		} else System.out.println("driver for "+info.getCode()+" not specified");
+		} 
 	}
 
 	public void propertyChange(PropertyChangeEvent evt)
@@ -41,5 +42,6 @@ public class DriverNode extends LeafNode implements PropertyChangeListener
 		if (pname.equals(DatabaseNodeInfo.NAME)) drv.setName((String)newval);
 		if (pname.equals(DatabaseNodeInfo.URL)) drv.setURL((String)newval);
 		if (pname.equals(DatabaseNodeInfo.PREFIX)) drv.setDatabasePrefix((String)newval);
+		if (pname.equals(DatabaseNodeInfo.ADAPTOR_CLASSNAME)) drv.setDatabaseAdaptor((String)newval);
 	}
 }

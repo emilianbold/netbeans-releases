@@ -154,8 +154,8 @@ public class DataViewWindow extends TopComponent
 	        layout.setConstraints(split, con);
 	        add(split);
        
-		} catch (MissingResourceException ex) {
-			System.out.println("Missing resource "+ex.getKey());
+		} catch (MissingResourceException e) {
+			e.printStackTrace();
 		}
 	}
          
@@ -410,7 +410,7 @@ public class DataViewWindow extends TopComponent
 				if (query != null) setQuery(query);
 				
 			} catch (Exception e) { 
-				System.out.println(e.getMessage()); 
+				e.printStackTrace();
 			}
 		}
 	}
@@ -435,6 +435,7 @@ public class DataViewWindow extends TopComponent
 		public void executeQuery(String query) 
 		throws Exception
 		{
+	    	if (query.length() == 0) return;
 	    	if (!query.startsWith("select")) throw new Exception("not a select");
 			Connection con = dbcon.createJDBCConnection();
 			Statement stat = con.createStatement();
@@ -607,13 +608,6 @@ public class DataViewWindow extends TopComponent
 				}
 				enucol++;
 			}
-/*			
-			if (where.length()>0) {
-				String colname = ((ColDef)coldef.elementAt(column)).getName();
-				int coltype = ((ColDef)coldef.elementAt(column)).getDataType();
-				System.out.println("update "+table+" set "+colname+" = "+format(value, coltype)+" where "+where.toString());
-			} // else ???
-*/
 		}
 	}
 }
