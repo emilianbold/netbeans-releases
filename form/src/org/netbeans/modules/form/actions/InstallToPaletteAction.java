@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.loaders.form.actions;
 
 import org.openide.cookies.InstanceCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
@@ -39,6 +40,27 @@ public class InstallToPaletteAction extends CookieAction {
   */
   protected Class[] cookieClasses () {
     return new Class[] { InstanceCookie.class };
+  }
+
+  /** Test for enablement based on the cookies of selected nodes.
+  * Generally subclasses should not override this except for strange
+  * purposes, and then only calling the super method and adding a check.
+  * Just use {@link #cookieClasses} and {@link #mode} to specify
+  * the enablement logic.
+  * @param activatedNodes the set of activated nodes
+  * @return <code>true</code> to enable
+  */
+  protected boolean enable (Node[] activatedNodes) {
+    if (super.enable (activatedNodes)) {
+      for (int i = 0; i < activatedNodes.length; i++) {
+        if (activatedNodes[i].getCookie (DataObject.class) == null) {
+          return false;
+        }
+      }
+      return true;
+    } 
+
+    return false;
   }
 
   /** Human presentable name of the action. This should be
@@ -80,6 +102,8 @@ public class InstallToPaletteAction extends CookieAction {
 
 /*
  * Log
+ *  2    Gandalf   1.1         7/22/99  Ian Formanek    Is enabled only on 
+ *       reasonable objects
  *  1    Gandalf   1.0         7/18/99  Ian Formanek    
  * $
  */
