@@ -488,6 +488,50 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module jini..."/>
     <ant dir="../jini" target="netbeans"/>
   </target>
+  <target name="all-latex/auted" depends="build-platform,all-latex/model">
+    <echo message="Building module latex/auted..."/>
+    <ant dir="../latex/auted" target="netbeans"/>
+  </target>
+  <target name="all-latex/bibtex" depends="build-platform,all-latex/model">
+    <echo message="Building module latex/bibtex..."/>
+    <ant dir="../latex/bibtex" target="netbeans"/>
+  </target>
+  <target name="all-latex/branding" depends="build-platform,all-latex/ui">
+    <echo message="Building module latex/branding..."/>
+    <ant dir="../latex/branding" target="netbeans"/>
+  </target>
+  <target name="all-latex/core" depends="build-platform,all-editor,all-lexer,all-lexer/editorbridge,all-latex/model,all-latex/editor">
+    <echo message="Building module latex/core..."/>
+    <ant dir="../latex/core" target="netbeans"/>
+  </target>
+  <target name="all-latex/editor" depends="build-platform,all-editor,all-lexer,all-lexer/editorbridge,all-latex/model">
+    <echo message="Building module latex/editor..."/>
+    <ant dir="../latex/editor" target="netbeans"/>
+  </target>
+  <target name="all-latex/loaders" depends="build-platform,all-editor,all-latex/model,all-latex/editor,all-latex/core">
+    <echo message="Building module latex/loaders..."/>
+    <ant dir="../latex/loaders" target="netbeans"/>
+  </target>
+  <target name="all-latex/manual" depends="build-platform">
+    <echo message="Building module latex/manual..."/>
+    <ant dir="../latex/manual" target="netbeans"/>
+  </target>
+  <target name="all-latex/model" depends="build-platform,all-lexer">
+    <echo message="Building module latex/model..."/>
+    <ant dir="../latex/model" target="netbeans"/>
+  </target>
+  <target name="all-latex/nexplorer" depends="build-platform">
+    <echo message="Building module latex/nexplorer..."/>
+    <ant dir="../latex/nexplorer" target="netbeans"/>
+  </target>
+  <target name="all-latex/project" depends="build-platform,all-editor,all-ant,all-latex/model,all-latex/editor,all-latex/core,all-latex/loaders">
+    <echo message="Building module latex/project..."/>
+    <ant dir="../latex/project" target="netbeans"/>
+  </target>
+  <target name="all-latex/ui" depends="build-platform,all-editor,all-latex/model,all-latex/editor,all-latex/core,all-latex/loaders,all-latex/project">
+    <echo message="Building module latex/ui..."/>
+    <ant dir="../latex/ui" target="netbeans"/>
+  </target>
   <target name="all-jndi" depends="build-platform,all-openidex,all-openide/deprecated,all-projects">
     <echo message="Building module jndi..."/>
     <ant dir="../jndi" target="netbeans"/>
@@ -1308,6 +1352,14 @@ the ${netbeans.dest}/bin/ directory.
     </chmod>
   </target>
 
+  <macrodef name="resolve">
+    <attribute name="name"/>
+    <attribute name="property"/>
+    <sequential>
+      <property name="@{name}" value="${@{property}}"/>
+    </sequential>
+  </macrodef>
+
   <target name="zipclusters" depends="init">
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
     <mkdir dir="${netbeans.build.dir}/zips"/>
@@ -1320,11 +1372,10 @@ the ${netbeans.dest}/bin/ directory.
       <zipfileset dir="${netbeans.dest}/etc" prefix="etc"/>
     </zip>
   </target>
-  
+
   <target name="zip-one-cluster">
     <taskdef name="setclusterpatternset" classname="org.netbeans.nbbuild.SetClusterPatternSet" classpath="nbantext.jar"/>
     <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
-    <taskdef name="resolve" classname="org.netbeans.nbbuild.ResolveProperty" classpath="nbantext.jar"/>
     <loadproperties srcFile="cluster.properties" />
     <loadproperties srcFile="cluster-description.properties" />
     <loadproperties srcFile="directories.properties" />
@@ -1351,7 +1402,6 @@ the ${netbeans.dest}/bin/ directory.
     
   <target name="create-one-rpm-proto">
     <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
-    <taskdef name="resolve" classname="org.netbeans.nbbuild.ResolveProperty" classpath="nbantext.jar"/>
     <loadproperties srcFile="cluster.properties" />
     <loadproperties srcFile="cluster-description.properties" />
     <loadproperties srcFile="directories.properties" />
@@ -1405,7 +1455,6 @@ ${pkg.rpm.map}/${one.cluster.dir}</echo>
 
   <target name="create-one-svr4-proto">
     <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
-    <taskdef name="resolve" classname="org.netbeans.nbbuild.ResolveProperty" classpath="nbantext.jar"/>
     <loadproperties srcFile="cluster.properties" />
     <loadproperties srcFile="cluster-description.properties" />
     <loadproperties srcFile="directories.properties" />
