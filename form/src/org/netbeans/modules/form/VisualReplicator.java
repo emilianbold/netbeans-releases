@@ -387,6 +387,10 @@ public class VisualReplicator {
                     && clone instanceof JComponent) {
                 ((JComponent)clone).setRequestFocusEnabled(false);
                 ((JComponent)clone).setNextFocusableComponent((JComponent)clone);
+
+                // patch for JDK 1.4 - hide glass pane of JInternalFrame
+                if (clone instanceof JInternalFrame)
+                    ((JInternalFrame)clone).getGlassPane().setVisible(false);
             }
         }
 
