@@ -280,6 +280,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420457865637574696f6e74002a6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c65744578656375746f7278"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
                 <attr name="templateType_JavaForms" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_javaForms"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>
             <file name="JApplet.form" url="templates/SwingForms/JApplet_form">
                 <attr name="template" boolvalue="true" />
@@ -293,6 +295,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor32.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
                 <attr name="templateType_JavaForms" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_javaForms"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>
             <file name="JDialog.form" url="templates/SwingForms/JDialog_form">
                 <attr name="template" boolvalue="true" />                
@@ -306,6 +310,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
                 <attr name="templateType_JavaForms" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_javaForms"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>
             <file name="JFrame.form" url="templates/SwingForms/JFrame_form">
                 <attr name="template" boolvalue="true" />
@@ -319,6 +325,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JInternalFrameColor32.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
                 <attr name="templateType_JavaForms" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_javaForms"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>
             <file name="JInternalFrame.form" url="templates/SwingForms/JInternalFrame_form">
                 <attr name="template" boolvalue="true" />
@@ -332,6 +340,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor32.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
                 <attr name="templateType_JavaForms" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_javaForms"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>
             <file name="JPanel.form" url="templates/SwingForms/JPanel_form">
                 <attr name="template" boolvalue="true" />
@@ -343,6 +353,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/BeanForm.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.singleton" />
                 <attr name="templateType_JavaForms" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_javaForms"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>
             <file name="BeanForm.form" url="templates/SwingForms/BeanForm_form">
                 <attr name="template" boolvalue="true" />
@@ -364,6 +376,8 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420457865637574696f6e74002a6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c65744578656375746f7278"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
                     <attr name="templateType_JavaForms" boolvalue="true"/>
+                    <attr name="templateCategorized" boolvalue="true"/>
+                    <attr name="templateCategory" stringvalue="category_javaForms"/>
                 </file>
                 <file name="Applet.form" url="templates/AWTForms/Applet_form">
                     <attr name="template" boolvalue="true" />
@@ -376,6 +390,8 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/dialog.gif"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
                     <attr name="templateType_JavaForms" boolvalue="true"/>
+                    <attr name="templateCategorized" boolvalue="true"/>
+                    <attr name="templateCategory" stringvalue="category_javaForms"/>
                 </file>
                 <file name="Dialog.form" url="templates/AWTForms/Dialog_form">
                     <attr name="template" boolvalue="true" />
@@ -388,6 +404,8 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/frame.gif"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
                     <attr name="templateType_JavaForms" boolvalue="true"/>
+                    <attr name="templateCategorized" boolvalue="true"/>
+                    <attr name="templateCategory" stringvalue="category_javaForms"/>
                 </file>
                 <file name="Frame.form" url="templates/AWTForms/Frame_form">
                     <attr name="template" boolvalue="true" />
@@ -400,6 +418,8 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/beaninfo/awt/panel.gif"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
                     <attr name="templateType_JavaForms" boolvalue="true"/>
+                    <attr name="templateCategorized" boolvalue="true"/>
+                    <attr name="templateCategory" stringvalue="category_javaForms"/>
                 </file>
                 <file name="Panel.form" url="templates/AWTForms/Panel_form">
                     <attr name="template" boolvalue="true" />
@@ -422,6 +442,8 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
                     <attr name="templateType_JavaForms" boolvalue="true"/>
+                    <attr name="templateCategorized" boolvalue="true"/>
+                    <attr name="templateCategory" stringvalue="category_guiJavaApplication"/>
                 </file>
                 <file name="Application.form" url="templates/Dialogs/Application_form">
                     <attr name="template" boolvalue="true" />
@@ -435,6 +457,8 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
                     <attr name="templateType_JavaForms" boolvalue="true"/>
+                    <attr name="templateCategorized" boolvalue="true"/>
+                    <attr name="templateCategory" stringvalue="category_guiJavaApplication"/>
                 </file>
                 <file name="MDIApplication.form" url="templates/Dialogs/MDIApplication_form">
                     <attr name="template" boolvalue="true" />
@@ -448,6 +472,8 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor32.gif"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
                     <attr name="templateType_JavaForms" boolvalue="true"/>
+                    <attr name="templateCategorized" boolvalue="true"/>
+                    <attr name="templateCategory" stringvalue="category_guiJavaApplication"/>
                 </file>
                 <file name="OkCancelDialog.form" url="templates/Dialogs/OkCancelDialog_form">
                     <attr name="template" boolvalue="true" />

@@ -26,6 +26,8 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/ProjectDescription.html"/>
         <attr name="templateType_Ant" boolvalue="true"/>
+        <attr name="templateCategory" stringvalue="category_antScript"/>
+        <attr name="templateCategorized" boolvalue="true"/>
       </file>
       <attr name="Project.xml/CustomTask.java" boolvalue="true"/>
       <file name="CustomTask.java" url="CustomTask_java">
@@ -33,6 +35,8 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/CustomTaskDescription.html"/>
         <attr name="templateType_Ant" boolvalue="true"/>
+        <attr name="templateCategory" stringvalue="category_antTask"/>
+        <attr name="templateCategorized" boolvalue="true"/>
       </file>
     </folder>
     <attr name="Classes/Ant" boolvalue="true"/>

@@ -74,6 +74,8 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     // private final String[] recommendedTypes = null;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     
+    private Project project;
+    
     //GUI Builder
     private TemplatesPanelGUI.Builder builder;
     
@@ -98,6 +100,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             projectsModel.insertElementAt( p, 0 );
         }
         projectsComboBox.setSelectedItem( p );
+        project = p;
     }
     
     
@@ -208,7 +211,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             // SortedSet/*<DataObject>*/ l = new TreeSet(this);
             List l = new ArrayList();
             DataObject[] kids = folder.getChildren();
-            String[] recommendedTypes = getRecommendedTypes();
+            String[] recommendedTypes = getRecommendedTypes ( (Project)projectsComboBox.getSelectedItem() );
             for (int i = 0; i < kids.length; i++) {
                 DataObject d = kids[i];
                 FileObject prim = d.getPrimaryFile();
@@ -229,7 +232,10 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
                             }
                         }
                     }
-                    l.add(d);
+                    // has children?
+                    if (hasChildren ((Project)projectsComboBox.getSelectedItem (), d)) {
+                        l.add(d);
+                    }
                 }
             }
             setKeys(l);
@@ -276,12 +282,6 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
 
         // Private methods -----------------------------------------------------
         
-        private String[] getRecommendedTypes() {
-            Project project = (Project)projectsComboBox.getSelectedItem();
-            RecommendedTemplates rt = (RecommendedTemplates)project.getLookup().lookup( RecommendedTemplates.class );
-            return rt == null ? null :rt.getRecommendedTypes();
-        }
-        
         private boolean acceptTemplate( DataObject d, FileObject primaryFile ) {            
             if (d instanceof DataFolder && !isTemplate((DataFolder)d))  {
                 Object o = primaryFile.getAttribute ("simple"); // NOI18N
@@ -290,25 +290,17 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             return false;
         }
         
-        private boolean isCategorized (FileObject primaryFile) {
-            Object o = primaryFile.getAttribute ("templateCategorized"); // NOI18N
-            if (o != null) {
-                assert o instanceof Boolean;
-                return ((Boolean)o).booleanValue ();
-            } else {
-                return false;
-            }
-        }
-        
     }
     
     
     private static class FileChildren extends Children.Keys {
         
         private DataFolder root;
+        private Project project;
                 
-        public FileChildren (DataFolder folder) {
+        public FileChildren (Project p, DataFolder folder) {
             this.root = folder;
+            this.project = p;
             assert this.root != null : "Root can not be null";  //NOI18N
         }
         
@@ -323,7 +315,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         protected Node[] createNodes(Object key) {
             if (key instanceof DataObject) {
                 DataObject dobj = (DataObject)key;
-                if (isTemplate(dobj)) {
+                if (isTemplate(dobj) && isRightCategory (project, dobj.getPrimaryFile ())) {
                     return new Node[] {
                         new FilterNode (dobj.getNodeDelegate(),Children.LEAF)
                     };
@@ -342,7 +334,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         public Children createTemplatesChildren(FileObject fo) {
-            return new FileChildren (DataFolder.findFolder(fo));
+            return new FileChildren (project, DataFolder.findFolder(fo));
         }
         
         public void fireChange() {
@@ -415,6 +407,65 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         return false;
     }
+    
+    private static boolean isCategorized (FileObject primaryFile) {
+        Object o = primaryFile.getAttribute ("templateCategorized"); // NOI18N
+        if (o != null) {
+            assert o instanceof Boolean : primaryFile + ", attr templateCategorized = " + o;
+            return ((Boolean)o).booleanValue ();
+        } else {
+            return false;
+        }
+    }
 
+    private static boolean isRightCategory (Project p, FileObject primaryFile) {
+        if (getRecommendedTypes (p) == null || getRecommendedTypes (p).length == 0) {
+            // if no recommendedTypes are supported (i.e. freeform) -> disaply all templates
+            return true;
+        }
+        
+        if (isCategorized (primaryFile)) {
+            Object o = primaryFile.getAttribute ("templateCategory"); // NOI18N
+            if (o != null) {
+                assert o instanceof String : primaryFile + " attr templateCategory = " + o;
+                String category = (String)o;
+                return Arrays.asList (getRecommendedTypes (p)).contains (category);
+            } else {
+                return false;
+            }
+        }
+        
+        // no category set, ok display it
+        return true;
+    }
+
+    private static String[] getRecommendedTypes (Project project) {
+        RecommendedTemplates rt = (RecommendedTemplates)project.getLookup().lookup( RecommendedTemplates.class );
+        return rt == null ? null :rt.getRecommendedTypes();
+    }
+    
+    private boolean hasChildren (Project p, DataObject folder) { 
+        if (!(folder instanceof DataFolder)) {
+            return false;
+        }
+        
+        DataFolder f = (DataFolder) folder;
+        DataObject[] ch = f.getChildren ();
+        boolean ok = false;
+        for (int i = 0; i < ch.length; i++) {
+            if (isTemplate (ch[i]) && isRightCategory (p, ch[i].getPrimaryFile ())) {
+                // XXX: how to filter link to Package template in each java types folder?
+                if (!(ch[i] instanceof DataShadow)) {
+                    ok = true;
+                    break;
+                }
+            }
+        }
+        return ok;
+        
+        // simplied but more counts
+        //return new FileChildren (p, (DataFolder) folder).getNodesCount () > 0;
+        
+    }
 
 }

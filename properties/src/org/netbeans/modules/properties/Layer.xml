@@ -25,6 +25,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/properties/TemplateHelp.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/properties/propertiesObject.gif"/>
                 <attr name="templateType_Other" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_simpleFileTypes"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>            
         </folder>
     </folder>

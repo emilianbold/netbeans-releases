@@ -362,14 +362,28 @@ final class J2SEProject implements Project, AntProjectListener {
         // List of primarily supported templates
         
         private static final String[] TYPES = new String[] { 
-            "templateType_Java",        // NOI18N
-            "templateType_JavaBeans",   // NOI18N
-            "templateType_JavaForms",   // NOI18N
-            "templateType_JUnit",       // NOI18N
-            "templateType_Ant",         // NOI18N
-            "templateType_XML",         // NOI18N
-            "templateType_Other",       // NOI18N
-            "templateType_J2SE",        // NOI18N
+            "templateType_Java",            // NOI18N
+            "templateType_JavaBeans",       // NOI18N
+            "templateType_JavaForms",       // NOI18N
+            "templateType_JUnit",           // NOI18N
+            "templateType_Ant",             // NOI18N
+            "templateType_XML",             // NOI18N
+            "templateType_Other",           // NOI18N
+            "templateType_J2SE",            // NOI18N
+            "category_genericJava",         // NOI18N
+            "category_javaMainClass",       // NOI18N
+            "category_javaForms",           // NOI18N
+            "category_guiJavaApplication",  // NOI18N
+            "category_javaBeans",           // NOI18N
+            "category_oasisXML",            // NOI18N
+            "category_genericXML",          // NOI18N
+            "category_antScript",           // NOI18N
+            "category_antTask",             // NOI18N
+            "category_servletTypes",        // NOI18N
+            // "category_genericWebTypes",  // NOI18N
+            "category_junitTestType",       // NOI18N
+            // "category_midTypes",         // NOI18N
+            "category_simpleFileTypes"      // NOI18N
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {

@@ -31,6 +31,8 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateWizardIterator" 
               methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>
         <attr name="templateType_Web" boolvalue="true"/>     
+        <attr name="templateCategory" stringvalue="category_genericWebTypes"/>
+        <attr name="templateCategorized" boolvalue="true"/>
       </file>
       <!--  JSP Document --> 
       <file name="JSPX.jspx" url="templates/JSPDoc.template"/>
@@ -44,6 +46,8 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateWizardIterator" 
             methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createTagIterator"/>
         <attr name="templateType_Web" boolvalue="true"/>     
+        <attr name="templateCategory" stringvalue="category_servletTypes"/>
+        <attr name="templateCategorized" boolvalue="true"/>
       </file>
       <!--  Tag File Document --> 
       <file name="TagFileX.tagx" url="templates/TagFile.template"/>
@@ -57,6 +61,8 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
           <attr name="org.netbeans.modules.web.IsServletFile" boolvalue="true"/>
           <attr name="templateType_Web" boolvalue="true"/>     
+          <attr name="templateCategory" stringvalue="category_servletTypes"/>
+          <attr name="templateCategorized" boolvalue="true"/>
       </file>
       <!-- use template description from HTML module -->
       <file name="Html.html" url="nbresloc:/org/netbeans/modules/html/templates/html.html">
@@ -66,6 +72,8 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="templateWizardIterator" 
                 methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createHtmlIterator"/>
          <attr name="templateType_Web" boolvalue="true"/>     
+         <attr name="templateCategory" stringvalue="category_genericWebTypes"/>
+         <attr name="templateCategorized" boolvalue="true"/>
       </file>
       <!-- Servlet Listener --> 
       <file name="ServletListener.java" url="templates/ServletListener.template">
@@ -74,6 +82,8 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
           <attr name="templateType_Web" boolvalue="true"/>     
+          <attr name="templateCategory" stringvalue="category_servletTypes"/>
+          <attr name="templateCategorized" boolvalue="true"/>
       </file>
       <!-- Tag Library 2.0--> 
       <file name="TagLibrary.tld" url="templates/BlankTagLibrary.template">
@@ -83,6 +93,8 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="templateWizardIterator" 
                 methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createTagLibraryIterator"/>
           <attr name="templateType_Web" boolvalue="true"/>     
+          <attr name="templateCategory" stringvalue="category_servletTypes"/>
+          <attr name="templateCategorized" boolvalue="true"/>
       </file>
       <!--  Tag Library 1.2 --> 
       <file name="TagLibrary_1_2.tld" url="templates/BlankTagLibrary_1_2.template"/>
@@ -97,6 +109,8 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createFilterIterator"/>
         <attr name="templateType_Web" boolvalue="true"/>     
+        <attr name="templateCategory" stringvalue="category_genericWebTypes"/>
+        <attr name="templateCategorized" boolvalue="true"/>
       </file>      
       <file name="AdvancedFilter.java" url="templates/AdvancedFilter.template"/>
       <!-- Tag Handlers --> 
@@ -106,6 +120,8 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.TagHandlerIterator"/>
         <attr name="templateType_Web" boolvalue="true"/>     
+        <attr name="templateCategory" stringvalue="category_servletTypes"/>
+        <attr name="templateCategorized" boolvalue="true"/>
       </file>      
       <file name="BodyTagHandler.java" url="templates/BodyTagHandler.template"/>
       

@@ -140,6 +140,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/templatesFolder.html" />
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFileIterator.folderIterator" />
                 <attr name="templateType_Other" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_simpleFileTypes"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </folder>
             <file name="file">
                 <![CDATA[]]>
@@ -149,6 +151,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/templatesFile.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFileIterator.emptyFileIterator" />
                 <attr name="templateType_Other" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_simpleFileTypes"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>
         </folder>
     </folder>

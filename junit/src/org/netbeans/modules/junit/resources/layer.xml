@@ -41,6 +41,8 @@
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.EmptyTestCaseWizardIterator.singleton"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
                 <attr name="templateType_JUnit" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_junitTestType"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>
             
             <file name="SimpleJUnitTest.java" url="templates/SimpleJUnitTest.java.template">
@@ -50,6 +52,8 @@
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.SimpleTestCaseWizardIterator.singleton"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
                 <attr name="templateType_JUnit" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_junitTestType"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>
             
             <file name="TestSuite.java" url="templates/SimpleJUnitTest.java.template">
@@ -59,6 +63,8 @@
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.junit.wizards.TestSuiteWizardIterator.singleton"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
                 <attr name="templateType_JUnit" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_junitTestType"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>
             <file name="Package.shadow">
                 <attr name="originalFile" stringvalue="Templates/Classes/Package"/>

@@ -470,6 +470,15 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             "templateType_Ant",         // NOI18N
             "templateType_XML",         // NOI18N
             "templateType_Other",       // NOI18N
+            "category_genericJava",         // NOI18N
+            "category_javaBeans",           // NOI18N
+            "category_oasisXML",            // NOI18N
+            "category_genericXML",          // NOI18N
+            "category_antScript",           // NOI18N
+            "category_antTask",             // NOI18N
+            "category_servletTypes",        // NOI18N
+            "category_genericWebTypes",  // NOI18N
+            "category_simpleFileTypes"      // NOI18N
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {

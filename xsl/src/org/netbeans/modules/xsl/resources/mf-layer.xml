@@ -32,6 +32,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xsl/resources/templates/stylesheet.html" />
                 <attr name="template" boolvalue="true" />
                 <attr name="templateType_XML" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_genericXML"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>
 
             <attr name="stylesheet.xsl/XMLCatalog.xml" boolvalue="true"/>

@@ -31,6 +31,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/xmlSchemaObject.gif" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/templates/XMLSchema.html" />
                 <attr name="templateType_XML" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_genericXML"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>
             <attr name="XMLSchema.xsd/xml_entity.ent" boolvalue="true"/>
         </folder> <!-- XML -->

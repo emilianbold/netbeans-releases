@@ -30,6 +30,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/catalog/resources/templates/XMLCatalog.html" />
                 <attr name="templateType_XML" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="category_oasisTypes"/>
+                <attr name="templateCategorized" boolvalue="true"/>
             </file>                        
             <attr name="XMLCatalog.xml/xml_entity.ent" boolvalue="true"/>
             
