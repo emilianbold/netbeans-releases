@@ -298,7 +298,7 @@ public abstract class BaseFileObj extends FileObject {
 
     }
 
-    private FolderObj getExistingParent() {
+    FolderObj getExistingParent() {
         final File parentFile = getFileName().getParent().getFile();
         final FolderObj parent = (FolderObj) getLocalFileSystem().getFactory().get(parentFile);
         return parent;

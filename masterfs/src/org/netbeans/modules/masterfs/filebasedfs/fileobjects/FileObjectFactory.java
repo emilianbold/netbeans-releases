@@ -56,8 +56,8 @@ public final class FileObjectFactory {
                 //TODO: handle possible List
                 assert obj instanceof Reference;
                 final WeakReference ref = (WeakReference) obj;
-                final FileObject fo = (FileObject) ((ref != null) ? ref.get() : null);
-                if (fo != null && fo.isValid() && fo.isFolder()) {
+                final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
+                if (fo != null && (fo.isFolder() || fo.getExistingParent() == null))  {
                     all2Refresh.add(fo);
                 }
             }
