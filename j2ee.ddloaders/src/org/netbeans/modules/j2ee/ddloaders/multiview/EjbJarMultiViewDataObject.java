@@ -309,40 +309,40 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
      * @param evt - object that describes the change.
      */
     public void deploymentChange(DDChangeEvent evt) {
-        // fix of #28542, don't add ejb, if it's already defined in DD
-        if (evt.getType() == DDChangeEvent.EJB_ADDED && EjbDefined(evt.getNewValue())) {
-            return;
-        }
-
-        synchronized (this) {
-            if (updates == null) {
-                updates = new Vector();
-            }
-            updates.addElement(evt);
-        }
-        
-        // schedule processDDChangeEvent
-        if (updateTask == null) {
-            updateTask = RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    List changes = null;
-                    synchronized (EjbJarMultiViewDataObject.this) {
-                        if (!EjbJarMultiViewDataObject.this.isValid()) {
-                            return;
-                        }
-                        if (updates != null) {
-                            changes = updates;
-                            updates = null;
-                        }
-                    }
-                    if (changes != null) {
-                        showDDChangesDialog(changes);
-                    }
-                }
-            }, 2000, Thread.MIN_PRIORITY);
-        } else {
-            updateTask.schedule(2000);
-        }
+//        // fix of #28542, don't add entity, if it's already defined in DD
+//        if (evt.getType() == DDChangeEvent.EJB_ADDED && EjbDefined(evt.getNewValue())) {
+//            return;
+//        }
+//
+//        synchronized (this) {
+//            if (updates == null) {
+//                updates = new Vector();
+//            }
+//            updates.addElement(evt);
+//        }
+//        
+//        // schedule processDDChangeEvent
+//        if (updateTask == null) {
+//            updateTask = RequestProcessor.getDefault().post(new Runnable() {
+//                public void run() {
+//                    List changes = null;
+//                    synchronized (EjbJarMultiViewDataObject.this) {
+//                        if (!EjbJarMultiViewDataObject.this.isValid()) {
+//                            return;
+//                        }
+//                        if (updates != null) {
+//                            changes = updates;
+//                            updates = null;
+//                        }
+//                    }
+//                    if (changes != null) {
+//                        showDDChangesDialog(changes);
+//                    }
+//                }
+//            }, 2000, Thread.MIN_PRIORITY);
+//        } else {
+//            updateTask.schedule(2000);
+//        }
     }
 
     private boolean EjbDefined(String classname) {
@@ -360,110 +360,110 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         return false;
     }
 
-    private void showDDChangesDialog(List changes) {
-        final JButton processButton;
-        final JButton processAllButton;
-        final JButton closeButton;
-        final DDChangesPanel connectionPanel;
-        final DialogDescriptor confirmChangesDescriptor;
-        final Dialog confirmChangesDialog[] = {null};
-
-        processButton = new JButton(NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_processButton"));
-        processButton.setMnemonic(
-                NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_processButton_Mnemonic").charAt(0));
-        processButton.setToolTipText(NbBundle.getMessage(EjbJarMultiViewDataObject.class, "ACS_processButtonA11yDesc"));
-        processAllButton = new JButton(NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_processAllButton"));
-        processAllButton.setMnemonic(
-                NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_processAllButton_Mnemonic").charAt(0));
-        processAllButton.setToolTipText(
-                NbBundle.getMessage(EjbJarMultiViewDataObject.class, "ACS_processAllButtonA11yDesc"));
-        closeButton = new JButton(NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_closeButton"));
-        closeButton.setMnemonic(
-                NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_closeButton_Mnemonic").charAt(0));
-        closeButton.setToolTipText(NbBundle.getMessage(EjbJarMultiViewDataObject.class, "ACS_closeButtonA11yDesc"));
-        final Object[] options = new Object[]{
-            processButton,
-            processAllButton
-        };
-        final Object[] additionalOptions = new Object[]{
-            closeButton
-        };
-
-        String fsname = "";                                             //NOI18N
-        Project project = getProject();
-        if (project != null) {
-            ProjectInformation projectInfo = ProjectUtils.getInformation(project);
-            if (projectInfo != null) {
-                fsname = projectInfo.getName();
-            }
-        }
-
-        ///LUDO    WebModule wm = WebModule.getWebModule(getPrimaryFile ());
-        ///    if (wm!=null) {
-        ///        fsname=wm.getContextPath();
-        ///    }
-        String caption = NbBundle.getMessage(EjbJarMultiViewDataObject.class, "MSG_SynchronizeCaption", fsname);
-        connectionPanel = new DDChangesPanel(caption, processButton);
-        confirmChangesDescriptor = new DialogDescriptor(connectionPanel,
-                NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_ConfirmDialog"),
-                true,
-                options,
-                processButton,
-                DialogDescriptor.RIGHT_ALIGN,
-                HelpCtx.DEFAULT_HELP,
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        if (e.getSource() instanceof Component) {
-                            Component root;
-
-                            // hack to avoid multiple calls for disposed dialogs:
-                            root = javax.swing.SwingUtilities.getRoot((Component) e.getSource());
-                            if (!root.isDisplayable()) {
-                                return;
-                            }
-                        }
-                        if (options[0].equals(e.getSource())) {
-                            int min = connectionPanel.getChangesList().getMinSelectionIndex();
-                            int max = connectionPanel.getChangesList().getMaxSelectionIndex();
-                            for (int i = max; i >= min; i--) {
-                                if (connectionPanel.getChangesList().isSelectedIndex(i)) {
-                                    final DDChangeEvent ev = (DDChangeEvent) connectionPanel.getListModel()
-                                            .getElementAt(i);
-                                    processDDChangeEvent(ev);
-                                    connectionPanel.getListModel().removeElementAt(i);
-                                }
-                            }
-                            if (connectionPanel.getListModel().isEmpty()) {
-                                confirmChangesDialog[0].setVisible(false);
-                            } else {
-                                processButton.setEnabled(false);
-                            }
-                        } else if (options[1].equals(e.getSource())) {
-                            Enumeration en = connectionPanel.getListModel().elements();
-                            while (en.hasMoreElements()) {
-                                processDDChangeEvent((DDChangeEvent) en.nextElement());
-                            }
-                            confirmChangesDialog[0].setVisible(false);
-                            connectionPanel.setChanges(null);
-                        } else if (additionalOptions[0].equals(e.getSource())) {
-                            confirmChangesDialog[0].setVisible(false);
-                            connectionPanel.setChanges(null);
-                        }
-                    }
-                });
-        confirmChangesDescriptor.setAdditionalOptions(additionalOptions);
-
-        processButton.setEnabled(false);
-        processAllButton.requestFocus();
-        connectionPanel.setChanges(changes);
-
-        try {
-            confirmChangesDialog[0] = DialogDisplayer.getDefault().createDialog(confirmChangesDescriptor);
-            confirmChangesDialog[0].show();
-        } finally {
-            confirmChangesDialog[0].dispose();
-        }
-    }
+//    private void showDDChangesDialog(List changes) {
+//        final JButton processButton;
+//        final JButton processAllButton;
+//        final JButton closeButton;
+//        final DDChangesPanel connectionPanel;
+//        final DialogDescriptor confirmChangesDescriptor;
+//        final Dialog confirmChangesDialog[] = {null};
+//
+//        processButton = new JButton(NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_processButton"));
+//        processButton.setMnemonic(
+//                NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_processButton_Mnemonic").charAt(0));
+//        processButton.setToolTipText(NbBundle.getMessage(EjbJarMultiViewDataObject.class, "ACS_processButtonA11yDesc"));
+//        processAllButton = new JButton(NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_processAllButton"));
+//        processAllButton.setMnemonic(
+//                NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_processAllButton_Mnemonic").charAt(0));
+//        processAllButton.setToolTipText(
+//                NbBundle.getMessage(EjbJarMultiViewDataObject.class, "ACS_processAllButtonA11yDesc"));
+//        closeButton = new JButton(NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_closeButton"));
+//        closeButton.setMnemonic(
+//                NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_closeButton_Mnemonic").charAt(0));
+//        closeButton.setToolTipText(NbBundle.getMessage(EjbJarMultiViewDataObject.class, "ACS_closeButtonA11yDesc"));
+//        final Object[] options = new Object[]{
+//            processButton,
+//            processAllButton
+//        };
+//        final Object[] additionalOptions = new Object[]{
+//            closeButton
+//        };
+//
+//        String fsname = "";                                             //NOI18N
+//        Project project = getProject();
+//        if (project != null) {
+//            ProjectInformation projectInfo = ProjectUtils.getInformation(project);
+//            if (projectInfo != null) {
+//                fsname = projectInfo.getName();
+//            }
+//        }
+//
+//        ///LUDO    WebModule wm = WebModule.getWebModule(getPrimaryFile ());
+//        ///    if (wm!=null) {
+//        ///        fsname=wm.getContextPath();
+//        ///    }
+//        String caption = NbBundle.getMessage(EjbJarMultiViewDataObject.class, "MSG_SynchronizeCaption", fsname);
+//        connectionPanel = new DDChangesPanel(caption, processButton);
+//        confirmChangesDescriptor = new DialogDescriptor(connectionPanel,
+//                NbBundle.getMessage(EjbJarMultiViewDataObject.class, "LAB_ConfirmDialog"),
+//                true,
+//                options,
+//                processButton,
+//                DialogDescriptor.RIGHT_ALIGN,
+//                HelpCtx.DEFAULT_HELP,
+//                new ActionListener() {
+//                    public void actionPerformed(ActionEvent e) {
+//                        if (e.getSource() instanceof Component) {
+//                            Component root;
+//
+//                            // hack to avoid multiple calls for disposed dialogs:
+//                            root = javax.swing.SwingUtilities.getRoot((Component) e.getSource());
+//                            if (!root.isDisplayable()) {
+//                                return;
+//                            }
+//                        }
+//                        if (options[0].equals(e.getSource())) {
+//                            int min = connectionPanel.getChangesList().getMinSelectionIndex();
+//                            int max = connectionPanel.getChangesList().getMaxSelectionIndex();
+//                            for (int i = max; i >= min; i--) {
+//                                if (connectionPanel.getChangesList().isSelectedIndex(i)) {
+//                                    final DDChangeEvent ev = (DDChangeEvent) connectionPanel.getListModel()
+//                                            .getElementAt(i);
+//                                    processDDChangeEvent(ev);
+//                                    connectionPanel.getListModel().removeElementAt(i);
+//                                }
+//                            }
+//                            if (connectionPanel.getListModel().isEmpty()) {
+//                                confirmChangesDialog[0].setVisible(false);
+//                            } else {
+//                                processButton.setEnabled(false);
+//                            }
+//                        } else if (options[1].equals(e.getSource())) {
+//                            Enumeration en = connectionPanel.getListModel().elements();
+//                            while (en.hasMoreElements()) {
+//                                processDDChangeEvent((DDChangeEvent) en.nextElement());
+//                            }
+//                            confirmChangesDialog[0].setVisible(false);
+//                            connectionPanel.setChanges(null);
+//                        } else if (additionalOptions[0].equals(e.getSource())) {
+//                            confirmChangesDialog[0].setVisible(false);
+//                            connectionPanel.setChanges(null);
+//                        }
+//                    }
+//                });
+//        confirmChangesDescriptor.setAdditionalOptions(additionalOptions);
+//
+//        processButton.setEnabled(false);
+//        processAllButton.requestFocus();
+//        connectionPanel.setChanges(changes);
+//
+//        try {
+//            confirmChangesDialog[0] = DialogDisplayer.getDefault().createDialog(confirmChangesDescriptor);
+//            confirmChangesDialog[0].show();
+//        } finally {
+//            confirmChangesDialog[0].dispose();
+//        }
+//    }
 
     private void processDDChangeEvent(DDChangeEvent evt) {
         if (!isValid()) {
