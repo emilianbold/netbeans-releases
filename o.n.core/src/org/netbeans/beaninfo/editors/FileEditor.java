@@ -354,6 +354,8 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     static JFileChooser createHackedFileChooser() {
         final JFileChooser chooser = new JFileChooser();
 
+        chooser.getAccessibleContext().setAccessibleDescription( getString("ACSD_FileEditor") );
+        
         // Only jdk1.3 there is not the action in action map, i.e. also no 
         // key binding. When running on jdk1.4 only remove this part
         // dealing with setting the key binding.
