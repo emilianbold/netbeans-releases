@@ -109,10 +109,14 @@ public class EventsAction extends CookieAction {
           if (nodes.length == 0) return;
           Node n = nodes[0]; // we suppose that one node is activated
 
-          RADComponent radComp = ((RADComponentCookie) n.getCookie(RADComponentCookie.class)).getRADComponent ();
-          if (radComp == null) {
+          RADComponentCookie radCookie =
+            (RADComponentCookie) n.getCookie(RADComponentCookie.class);
+          if (radCookie == null)
             return;
-          }            
+          
+          RADComponent radComp = radCookie.getRADComponent();
+          if (radComp == null)
+            return;
 
           EventsList em = radComp.getEventsList ();
           EventsList.EventSet[] setHandlers = em.getEventSets ();
@@ -203,6 +207,8 @@ public class EventsAction extends CookieAction {
 }
 /*
  * Log
+ *  14   Gandalf-post-FCS1.12.1.0    3/31/00  Tran Duc Trung  FIX: sometimes NPE when 
+ *       right-click on component
  *  13   Gandalf   1.12        1/7/00   Ian Formanek    I18N
  *  12   Gandalf   1.11        1/5/00   Ian Formanek    NOI18N
  *  11   Gandalf   1.10        11/25/99 Pavel Buzek     support for multiple 
