@@ -86,6 +86,15 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+    <!-- XXX temporary: -->
+    <testbag testattribs="50891" executor="code" name="diagnosis of issue #50891">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/core/modules/ModuleManagerTest.class"/>
+                <include name="org/netbeans/core/modules/NbInstallerTest2.class"/>
+            </patternset>
+        </testset>
+    </testbag>
 
     <testbag testattribs="failing" executor="code" name="testbag_4">
         <testset dir="unit/src">
