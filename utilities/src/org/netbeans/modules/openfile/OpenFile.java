@@ -18,13 +18,13 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import com.netbeans.ide.*;
-import com.netbeans.ide.cookies.*;
-import com.netbeans.ide.filesystems.*;
-import com.netbeans.ide.filesystems.FileSystem;
-import com.netbeans.ide.loaders.*;
-import com.netbeans.ide.modules.ModuleInstall;
-import com.netbeans.ide.nodes.*;
+import org.openide.*;
+import org.openide.cookies.*;
+import org.openide.filesystems.*;
+import org.openide.filesystems.FileSystem;
+import org.openide.loaders.*;
+import org.openide.modules.ModuleInstall;
+import org.openide.nodes.*;
 
 /** Acts as a server to open files when requested.
 *
