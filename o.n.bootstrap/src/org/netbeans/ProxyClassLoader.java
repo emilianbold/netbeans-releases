@@ -337,7 +337,7 @@ public class ProxyClassLoader extends ClassLoader {
                     }
                 }
             }
-            if (pkg == null) {
+            if (pkg == null && /* #30093 */shouldDelegateResource(sname, getParent())) {
                 // Cannot access either Package.getSystemPackage nor ClassLoader.getPackage
                 // from here, so do the best we can though it will cause unnecessary
                 // duplication of the package cache (PCL.packages vs. CL.packages):
@@ -376,6 +376,7 @@ public class ProxyClassLoader extends ClassLoader {
     protected synchronized Package[] getPackages() {
         zombieCheck(null);
         Map all = new HashMap(); // Map<String,Package>
+        // XXX call shouldDelegateResource on each?
         addPackages(all, super.getPackages());
         for (int i = 0; i < parents.length; i++) {
             ClassLoader par = parents[i];
