@@ -20,12 +20,17 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
 
         <folder name="XML">
+            <attr name="XMLWizard.xml/XMLCatalog.xml" boolvalue="true"/>
+            <attr name="stylesheet.xsl/XMLCatalog.xml" boolvalue="true"/>
+            <attr name="emptyDTD.dtd/XMLCatalog.xml" boolvalue="true"/>
             <file name="XMLCatalog.xml" url="templates/XMLCatalog.xml">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.catalog.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/catalog/resources/templates/XMLCatalog.html" />
-            </file>
+            </file>                        
+            <attr name="XMLCatalog.xml/xml_entity.ent" boolvalue="true"/>
+            
         </folder>
     </folder>
 

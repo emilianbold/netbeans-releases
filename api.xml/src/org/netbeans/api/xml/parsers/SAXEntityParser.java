@@ -105,7 +105,7 @@ public class SAXEntityParser implements XMLReader {
             if (err.isLoggable(err.WARNING)) {
                 StringWriter writer = new StringWriter();
                 PrintWriter out = new PrintWriter(writer);
-                new IllegalArgumentException("Missing system ID may cause serious errors while resolving relative references!").printStackTrace(out);  // NOI18N
+                new IllegalArgumentException("WARNING: Missing system ID may cause serious errors while resolving relative references!").printStackTrace(out);  // NOI18N
                 out.flush();
                 err.log(err.WARNING, writer.getBuffer().toString());
             }

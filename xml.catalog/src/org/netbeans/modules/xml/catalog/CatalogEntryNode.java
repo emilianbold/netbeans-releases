@@ -114,7 +114,7 @@ final class CatalogEntryNode extends BeanNode {
         }
                                 
         protected String messageName() {
-            return getPublicID();
+            return Util.THIS.getString("MSG_opened_entity", getPublicID());
         }
         
         protected String messageSave() {
