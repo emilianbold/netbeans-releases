@@ -87,6 +87,8 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="build-win32" depends="init, compile, xsl-win32">
+    <copy file="../lib/scripts/run-storage-builder-windows.template"
+          tofile="build/storagebuilder/run-storage-builder-windows.template"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="build/${ismp.project}-win32" />
       <arg value="-build" />
@@ -96,15 +98,22 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="nb.dir=${nb.dir}"/>
       <arg value="-alias"/>
       <arg value="ismp.home=${ismp.home}"/>
+      <arg value="-alias"/>
+      <arg value="storage.builder=${storage.builder}"/>
+      <arg value="-alias"/>
+      <arg value="scripts.dir=build/storagebuilder"/>
       <classpath>
         <pathelement path="build/classes" />      
         <path refid="ismp.cp"/>
       </classpath>
     </java>
+    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
   </target>
 
   <target name="build-unix" depends="init, compile, xsl-unix">
+    <copy file="../lib/scripts/run-storage-builder-unix.template"
+          tofile="build/storagebuilder/run-storage-builder-unix.template"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="build/${ismp.project}-unix" />
       <arg value="-build" />
@@ -114,11 +123,16 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="nb.dir=${nb.dir}"/>
       <arg value="-alias"/>
       <arg value="ismp.home=${ismp.home}"/>
+      <arg value="-alias"/>
+      <arg value="storage.builder=${storage.builder}"/>
+      <arg value="-alias"/>
+      <arg value="scripts.dir=build/storagebuilder"/>
       <classpath>
         <pathelement path="build/classes" />      
         <path refid="ismp.cp"/>
       </classpath>
     </java>
+    <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
     <move file="build/disk1/setupsolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
     <move file="build/disk1/setupsolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>

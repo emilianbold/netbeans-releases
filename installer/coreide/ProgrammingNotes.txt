@@ -11,5 +11,6 @@ To build from command line run ant as usual with
  -Dismp.home=<home dir of ISMP5>
  -Dnb.dir=../../nbbuild/netbeans
  -Dinstaller.basename=NetBeans-dev-20040622
+ -Dstorage.builder=../../java/storagebuilder/dist/storagebuilder.jar
 
 The installers will be generated and placed in the dist/ subdir

@@ -23,7 +23,7 @@ import java.io.File;
 
 public class InstallLocationPanel extends DestinationPanel
 {
-    public boolean queryEnter(WizardBeanEvent event) {
+    public boolean queryEnter (WizardBeanEvent event) {
         try {
             ProductService service = (ProductService) getService(ProductService.NAME);
             String destination = (String) service.getProductBeanProperty(
@@ -44,5 +44,19 @@ public class InstallLocationPanel extends DestinationPanel
         }
         
         return super.queryEnter(event);
+    }
+    
+    public void exited (WizardBeanEvent event) {
+        try {
+            ProductService service = (ProductService)getService(ProductService.NAME);
+            String destination = (String) service.getProductBeanProperty(
+            ProductService.DEFAULT_PRODUCT_SOURCE, null, "installLocation");
+            destination += File.separator + "_uninst" + File.separator + "storagebuilder"; 
+            logEvent(this, Log.DBG, "destination: " + destination);
+            service.setRetainedProductBeanProperty(ProductService.DEFAULT_PRODUCT_SOURCE,
+            "storageBuilder", "installLocation", destination);
+        } catch (ServiceException e) {
+            logEvent(this, Log.ERROR, e);
+        }
     }
 }
