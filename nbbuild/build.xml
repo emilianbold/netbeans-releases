@@ -879,6 +879,21 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../xtest" antfile="build.xml" target="netbeans"/>
   </target>
 
+  <target name="all-workspaceswitcher/navigator" depends="all-openide/looks,all-openide,all-openide/registry,all-openide/loaders">
+    <echo message="Building module workspaceswitcher/navigator..."/>
+    <ant dir="../workspaceswitcher/navigator" target="netbeans"/>
+  </target>
+
+  <target name="all-workspaceswitcher/navigator/javagator" depends="all-workspaceswitcher/navigator,all-java/srcmodel,all-openide,all-openide/looks">
+    <echo message="Building module workspaceswitcher/navigator/javagator..."/>
+    <ant dir="../workspaceswitcher/navigator/javagator" target="netbeans"/>
+  </target>
+
+  <target name="all-workspaceswitcher/navigator/beanigator" depends="all-workspaceswitcher/navigator,all-java/srcmodel,all-openide,all-openide/looks,all-beans">
+    <echo message="Building module workspaceswitcher/navigator/beanigator..."/>
+    <ant dir="../workspaceswitcher/navigator/beanigator" target="netbeans"/>
+  </target>
+
   <target name="all-contrib/archiver" depends="all-openide,all-openide/loaders,all-openide/io,all-java/api">
     <echo message="Building module contrib/archiver..."/>
     <ant dir="../contrib/archiver" target="netbeans"/>
