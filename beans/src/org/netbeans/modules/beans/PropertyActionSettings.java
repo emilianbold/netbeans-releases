@@ -63,6 +63,11 @@ public class PropertyActionSettings extends SystemOption {
             setPropStyle(PropertyActionSettings.GENERATE_WITH_THIS);
     }
     
+    /** This is a project option. */
+    public boolean isGlobal() {
+        return false;
+    }
+    
     /** Human readable class name
      * @return readable name
      */    
