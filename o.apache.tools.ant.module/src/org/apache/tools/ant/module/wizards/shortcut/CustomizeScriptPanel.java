@@ -73,20 +73,20 @@ public class CustomizeScriptPanel extends javax.swing.JPanel implements WizardDe
         scriptPane = new javax.swing.JEditorPane();
         hintsArea = new javax.swing.JTextArea();
 
-        setLayout(new java.awt.BorderLayout());
+        setLayout(new java.awt.BorderLayout(0, 11));
 
         scrollPane.setPreferredSize(new java.awt.Dimension(100, 100));
         scrollPane.setViewportView(scriptPane);
 
         add(scrollPane, java.awt.BorderLayout.CENTER);
 
-        hintsArea.setWrapStyleWord(true);
-        hintsArea.setLineWrap(true);
+        hintsArea.setBackground(new java.awt.Color(204, 204, 204));
         hintsArea.setEditable(false);
-        hintsArea.setForeground(new java.awt.Color (102, 102, 153));
         hintsArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
+        hintsArea.setForeground(new java.awt.Color(102, 102, 153));
+        hintsArea.setLineWrap(true);
         hintsArea.setText(NbBundle.getMessage(CustomizeScriptPanel.class, "CSP_TEXT_you_may_customize_gend2"));
-        hintsArea.setBackground(new java.awt.Color (204, 204, 204));
+        hintsArea.setWrapStyleWord(true);
         hintsArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
         hintsArea.setEnabled(false);
         hintsArea.setOpaque(false);

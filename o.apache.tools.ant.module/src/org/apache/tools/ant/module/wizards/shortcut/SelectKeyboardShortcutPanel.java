@@ -67,21 +67,21 @@ public class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements W
 
         setLayout(new java.awt.BorderLayout());
 
-        hintsArea.setWrapStyleWord(true);
-        hintsArea.setLineWrap(true);
+        hintsArea.setBackground(new java.awt.Color(204, 204, 204));
         hintsArea.setEditable(false);
-        hintsArea.setForeground(new java.awt.Color (102, 102, 153));
         hintsArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
+        hintsArea.setForeground(new java.awt.Color(102, 102, 153));
+        hintsArea.setLineWrap(true);
         hintsArea.setText(NbBundle.getMessage(SelectKeyboardShortcutPanel.class, "SKSP_TEXT_press_any_key_seq"));
-        hintsArea.setBackground(new java.awt.Color (204, 204, 204));
+        hintsArea.setWrapStyleWord(true);
         hintsArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
         hintsArea.setEnabled(false);
         hintsArea.setOpaque(false);
         add(hintsArea, java.awt.BorderLayout.NORTH);
 
         testField.setColumns(15);
-        testField.setText(NbBundle.getMessage(SelectKeyboardShortcutPanel.class, "SKSP_LBL_type_here"));
         testField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        testField.setText(NbBundle.getMessage(SelectKeyboardShortcutPanel.class, "SKSP_LBL_type_here"));
         mainPanel.add(testField);
 
         add(mainPanel, java.awt.BorderLayout.CENTER);

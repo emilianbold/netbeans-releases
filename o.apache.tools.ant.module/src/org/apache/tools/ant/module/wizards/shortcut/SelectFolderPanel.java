@@ -112,14 +112,14 @@ public class SelectFolderPanel extends javax.swing.JPanel implements WizardDescr
         explorerPanel = new org.openide.explorer.ExplorerPanel();
         treeView = new org.openide.explorer.view.BeanTreeView();
 
-        setLayout(new java.awt.BorderLayout());
+        setLayout(new java.awt.BorderLayout(0, 11));
 
-        hintsArea.setWrapStyleWord(true);
-        hintsArea.setLineWrap(true);
+        hintsArea.setBackground(new java.awt.Color(204, 204, 204));
         hintsArea.setEditable(false);
-        hintsArea.setForeground(new java.awt.Color (102, 102, 153));
         hintsArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
-        hintsArea.setBackground(new java.awt.Color (204, 204, 204));
+        hintsArea.setForeground(new java.awt.Color(102, 102, 153));
+        hintsArea.setLineWrap(true);
+        hintsArea.setWrapStyleWord(true);
         hintsArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
         hintsArea.setEnabled(false);
         hintsArea.setOpaque(false);
@@ -136,8 +136,8 @@ public class SelectFolderPanel extends javax.swing.JPanel implements WizardDescr
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea hintsArea;
-    private org.openide.explorer.ExplorerPanel explorerPanel;
     private org.openide.explorer.view.BeanTreeView treeView;
+    private org.openide.explorer.ExplorerPanel explorerPanel;
     // End of variables declaration//GEN-END:variables
 
     // --- WizardDescriptor.Panel METHODS ---
