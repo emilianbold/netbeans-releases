@@ -21,12 +21,12 @@ Microsystems, Inc. All Rights Reserved.
     <property name="build.sysclasspath" value="ignore"/>
 
     <property name="xtest.home" location=".."/>
-    <property name="xtest.extra.home" location="../../../nbextra/xtest"/>
     <property name="xtest.basedir" location="../.."/>
     <property name="xtest.uploaddir" location="results"/>
     <property name="xtest.distdir" location="dist"/>
     
     <property name="xtest.config" value="config-1"/>
+    <property name="xtest.instance.name" value="NetBeans tests"/>
     
     <property name="xtest.hostname" location="amos.czech"/>
 
@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="xtest-runner" classname="org.netbeans.xtest.NbExecutor2"/>
             <taskdef name="xreport" classname="org.netbeans.xtest.NbReport"/>
         </nbtaskdef>
-        <nbtaskdef classpath="${xtest.home}/lib/xtest.jar;${xtest.extra.home}/lib/xalan.jar;${xtest.extra.home}/lib/xerces.jar">
+        <nbtaskdef classpath="${xtest.home}/lib/xtest.jar;${xtest.home}/lib/xalan.jar;${xtest.home}/lib/xerces.jar">
             <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher"/>
         </nbtaskdef>
         <property name="tasks-defined" value="true"/>
@@ -151,10 +151,10 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- helper can be executed only by target executor -->
     <target name="runtest-helper">
-        <echo message="Running tests for ${xtest.module}, testtype ${xtest.testtype}"/>
+        <echo message="Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
         <ant dir="${xtest.basedir}/${xtest.module}/test" target="runtests">
             <property name="xtest.testtype" value="${xtest.testtype}"/>
-            <property name="xtest.attributes" value="${xtest.attributes}"/>
+            <property name="xtest.attribs" value="${xtest.attribs}"/>
         </ant>        
         <mkdir dir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}"/>
         <copy todir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}">
@@ -204,7 +204,7 @@ Microsystems, Inc. All Rights Reserved.
         <xtest-runner targetname="${target.name}"
                       targetParamModule="xtest.module"
                       targetParamTesttype="xtest.testtype"
-                      targetParamTestAttributes="xtest.attributes"
+                      targetParamTestAttributes="xtest.attribs"
                       runningMode="${running.mode}"/>        
     </target>
 
