@@ -19,14 +19,20 @@ import java.beans.*;
 import org.openide.util.NbBundle;
 
 public class SimpleExtBrowserBeanInfo extends SimpleBeanInfo {
+
+    private static BeanDescriptor descr;
+
+    static {
+        descr = new BeanDescriptor (SimpleExtBrowser.class);
+        descr.setDisplayName (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "CTL_SimpleExtBrowser"));
+        descr.setShortDescription (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "HINT_SimpleExtBrowser"));
+
+        descr.setValue ("helpID", "org.netbeans.modules.extbrowser.SimpleExtBrowser");  // NOI18N
+    }
     
     private static PropertyDescriptor[] properties = null; 
 
     public BeanDescriptor getBeanDescriptor () {
-        BeanDescriptor descr = new BeanDescriptor (SimpleExtBrowser.class);
-        descr.setDisplayName (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "CTL_SimpleExtBrowser"));
-        descr.setShortDescription (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "HINT_SimpleExtBrowser"));
-        descr.setValue ("helpID", "org.netbeans.modules.extbrowser.SimpleExtBrowser");  // NOI18N
         return descr;
     }
 
@@ -46,10 +52,15 @@ public class SimpleExtBrowserBeanInfo extends SimpleBeanInfo {
         if (properties == null) {
             try {
                 properties = new PropertyDescriptor [] {
-                    new PropertyDescriptor (SimpleExtBrowser.PROP_BROWSER_EXECUTABLE, SimpleExtBrowser.class)    // NOI18N
+                    new PropertyDescriptor (SimpleExtBrowser.PROP_DESCRIPTION, SimpleExtBrowser.class, "getDescription", "setDescription"),    // NOI18N
+                    new PropertyDescriptor (SimpleExtBrowser.PROP_BROWSER_EXECUTABLE, SimpleExtBrowser.class, "getBrowserExecutable", "setBrowserExecutable")    // NOI18N
                 };
-                properties[0].setDisplayName (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "PROP_browserExecutable"));
-                properties[0].setShortDescription (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "HINT_browserExecutable"));
+                
+                properties[0].setDisplayName (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "PROP_Description"));
+                properties[0].setShortDescription (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "HINT_Description"));
+                properties[1].setDisplayName (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "PROP_browserExecutable"));
+                properties[1].setShortDescription (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "HINT_browserExecutable"));
+
             } catch (IntrospectionException ie) {
                 org.openide.ErrorManager.getDefault().notify(ie);
                 return null;
@@ -59,7 +70,7 @@ public class SimpleExtBrowserBeanInfo extends SimpleBeanInfo {
     }
 
     /**
-    * Returns the icon. 
+    * Returns the IceBrowserSettings' icon. 
     */
     public Image getIcon (int type) {
         return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.gif"); // NOI18N

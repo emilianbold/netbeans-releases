@@ -33,7 +33,6 @@ import org.openide.util.Utilities;
  */
 public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializable {
     
-    public static final String PROP_NAME = "name";   // NOI18N
     public static final String PROP_DESCRIPTION = "description";   // NOI18N
     public static final String PROP_BROWSER_EXECUTABLE = "browserExecutable"; // NOI18N
     
@@ -45,8 +44,6 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
     
     private PropertyChangeSupport pcs;
 
-    protected String browserName;
-    
     private static final long serialVersionUID = -8494345762328555637L;
     
     /** Creates new SimpleExtBrowser */
@@ -77,27 +74,6 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
             );
         }
         pcs = new PropertyChangeSupport (this);
-    }
-    
-    /** Getter for browser name
-     *  @return name of browser
-     */
-    public String getName() {
-        if (name == null) {
-            this.name = NbBundle.getMessage(ExtWebBrowser.class, "CTL_SimpleExtBrowser");
-        }
-        return name;
-    }
-    
-    /** Setter for browser name
-     */
-    public void setName(String name) {
-        String oldVal = this.name;
-        if (name == null) return;
-        if (!name.equals(oldVal)) {
-            this.name = name;
-            pcs.firePropertyChange(PROP_NAME, oldVal, name);
-        }
     }
     
     /** Getter for property name. If name is not set then default name of bean is returned.

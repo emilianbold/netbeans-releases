@@ -36,7 +36,7 @@ public abstract class ExtBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
     
     /** requested URL */
     protected URL url;
-    //protected String statusMsg = "";  // NOI18N
+    protected String statusMsg = "";  // NOI18N
     protected String title = "";      // NOI18N
     
     protected HtmlBrowser.BrowserComponent delegatingBrowser = null;
@@ -52,20 +52,20 @@ public abstract class ExtBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
     /** Sets new status message for the displayed page.
      * @param msg new message
      */
-/*    protected void setStatusMessage (String msg) {
+    protected void setStatusMessage (String msg) {
         String old = this.statusMsg;
         this.statusMsg = msg;
         pcs.firePropertyChange (PROP_STATUS_MESSAGE, old, msg);
         
         return;
     }
-  */  
+    
     /** Returns status message representing status of html browser.
      *
      * @return status message.
      */
     public String getStatusMessage() {
-        return ""; // statusMsg;
+        return statusMsg;
     }
     
     /** Sets new title of the displayed page.

@@ -40,7 +40,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     /** Number of probes to get exit status of executed command. 
      * Status is checked after each second.
      */
-    protected static final int CMD_TIMEOUT = 6;
+    private static final int CMD_TIMEOUT = 6;
     
     /** Creates modified NbProcessDescriptor that can be used to start
      * browser process when <CODE>-remote openURL()</CODE> options
@@ -48,7 +48,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
      * @return command or <CODE>null</CODE>
      * @param p Original command.
      */
-    protected static NbProcessDescriptor createPatchedExecutable (NbProcessDescriptor p) {
+    private static NbProcessDescriptor createPatchedExecutable (NbProcessDescriptor p) {
         NbProcessDescriptor newP = null;
         
         String [] args = org.openide.util.Utilities.parseParameters(p.getArguments());
@@ -76,7 +76,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     }
 
     /** reference to a factory to get settings */
-    protected ExtWebBrowser extBrowserFactory;
+    private ExtWebBrowser extBrowserFactory;
 
     /** Creates new UnixBrowserImpl */
     public UnixBrowserImpl () {
@@ -165,7 +165,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             
             cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
             sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
-            p = cmd.exec (new ExtWebBrowser.UnixBrowserFormat (url.toString ()));
+            p = cmd.exec (new UnixWebBrowser.UnixBrowserFormat (url.toString ()));
             
             RequestProcessor.getDefault ().post (new Status (cmd, p, url), 1000);
 
@@ -322,7 +322,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                         retried = true;
                         StatusDisplayer.getDefault().
                             setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", startCmd.getProcessName ()));
-                        Process pr = startCmd.exec (new ExtWebBrowser.UnixBrowserFormat (url.toString ()));
+                        Process pr = startCmd.exec (new UnixWebBrowser.UnixBrowserFormat (url.toString ()));
 
                         // do not care about result now
                         // RequestProcessor.getDefault ().post (new Status (startCmd, pr, null), 1000);
