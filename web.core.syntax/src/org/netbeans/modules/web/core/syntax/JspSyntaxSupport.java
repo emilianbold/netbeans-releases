@@ -91,6 +91,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     private static TagInfo[] directiveJspData;
     private static TagInfo[] directiveTagFileData;
     
+    private static HashMap helpMap = null;
     
     private static final TokenID[] JSP_BRACKET_SKIP_TOKENS = new TokenID[] {
                 JavaTokenContext.LINE_COMMENT,
@@ -423,12 +424,25 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         if (info != null) {
             TagInfo[] tags = info.getTags();
             if (tags != null) {
-                for (int i = 0; i < tags.length; i++) {
-                    items.add(tags[i]);
+                String url = (String)helpMap.get(info.getURI());
+                if (url != null && !url.equals("")){
+                    for (int i = 0; i < tags.length; i++) {
+                        items.add(new TagInfo (tags[i].getTagName(), 
+                            tags[i].getTagClassName(), tags[i].getBodyContent(), 
+                            url + tags[i].getTagName() + ".html#tag-start-" + tags[i].getTagName() 
+                            + "#tag-end-" + tags[i].getTagName(), info, 
+                            tags[i].getTagExtraInfo(), tags[i].getAttributes(), 
+                            tags[i].getDisplayName(), tags[i].getSmallIcon(), tags[i].getLargeIcon(),
+                            tags[i].getTagVariableInfos(), tags[i].hasDynamicAttributes()));
+                    }
                 }
+                else {
+                    for (int i = 0; i < tags.length; i++) {
+                        items.add(tags[i]);
+                    }
+                }
+                
             }
-            
-            
         }
         return items;
     }
@@ -458,12 +472,27 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             TagInfo tagInfo = info.getTag(tag);
             if (tagInfo != null) {
                 TagAttributeInfo[] attributes = tagInfo.getAttributes();
-                for (int i = 0; i < attributes.length; i++) 
-                    items.add(attributes[i]);
+                String url = (String)helpMap.get(tagInfo.getTagLibrary().getURI());
+                if (url != null && !url.equals("")){
+                    for (int i = 0; i < attributes.length; i++) {
+                        items.add(new TagAttributeInfo (attributes[i].getName(), 
+                            attributes[i].isRequired(), 
+                            url + tagInfo.getTagName() + ".html#attribute-start-" + attributes[i].getName() 
+                            + "#attribute-end-" + attributes[i].getName(), 
+                            attributes[i].canBeRequestTime(), 
+                            attributes[i].isFragment()));
+                    }
+                }
+                else {
+                    for (int i = 0; i < attributes.length; i++) 
+                        items.add(attributes[i]);
+                }
             }
         }
         return items;
     }
+    
+   
     
     /** Should be overriden ny subclasses to support JSP 1.1. */
     protected List getAllDirectives() {
@@ -547,9 +576,41 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         }
         return JspUtils.getTaglibMap(getDocument(), fobj);
     }
-    
+   
+    private static void initHelp(){
+        if (helpMap == null){
+            String url="";
+            File f = InstalledFileLocator.getDefault().locate("docs/jstl11-doc.zip", null, false); //NoI18N
+            if (f != null){
+                try {
+                    URL urll = f.toURL();
+                    urll = FileUtil.getArchiveRoot(urll);
+                    url = urll.toString();
+                }
+                catch (java.net.MalformedURLException e){
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                    // nothing to do
+                }
+            }
+            helpMap = new HashMap();
+            helpMap.put("http://java.sun.com/jsp/jstl/core", url + "c/");
+            helpMap.put("http://java.sun.com/jstl/core_rt", url + "c_rt/");
+            helpMap.put("http://java.sun.com/jsp/jstl/fmt", url + "fmt/");
+            helpMap.put("http://java.sun.com/jstl/fmt_rt", url + "fmt_rt/");
+            helpMap.put("http://java.sun.com/jsp/jstl/functions", url + "fn/");
+            helpMap.put("http://jakarta.apache.org/taglibs/standard/permittedTaglibs", url+"permittedTaglibs/");
+            helpMap.put("http://jakarta.apache.org/taglibs/standard/scriptfree", url+ "scriptfree/");
+            helpMap.put("http://java.sun.com/jsp/jstl/sql", url + "sql/");
+            helpMap.put("http://java.sun.com/jstl/sql_rt", url + "sql_rt/");
+            helpMap.put("http://java.sun.com/jsp/jstl/xml", url + "x/");
+            helpMap.put("http://java.sun.com/jstl/xml_rt", url + "x_rt/")    ;
+        }
+        
+    }
     
     private static void initCompletionData() {
+        if (helpMap == null)
+            initHelp();
         String url = "";           // NOI18N
         if (standardJspTagDatas == null) {
             final String helpFiles = "docs/syntaxref12.zip"; //NoI18N
