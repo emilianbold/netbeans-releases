@@ -56,6 +56,13 @@ public class JavadocModule extends ModuleInstall {
         return null;
     }
     
+    public static boolean isDisabledForJDK14(){
+        if("1.4".startsWith(System.getProperty("java.version")))
+            return true;
+        else
+            return false;
+    }
+
     /** Exists only for the sake of its bean info.
      * @deprecated Exists only for compability reasons
      */    
