@@ -13,6 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import org.openide.*;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.Utilities;
 
@@ -42,6 +43,9 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
   private PropertyEditor[] allEditors;
   private Component[] allCustomEditors;
     
+  private String preCode;
+  private String postCode;
+  
 // -----------------------------------------------------------------------------
 // Constructor
 
@@ -52,6 +56,9 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
     setBorder (new EmptyBorder (5, 5, 5, 5));
     setLayout (new BorderLayout ());
 
+    preCode = editor.getRADProperty ().getPreCode ();
+    postCode = editor.getRADProperty ().getPostCode ();
+    
     allEditors = editor.getAllEditors ();
     allCustomEditors = new Component[allEditors.length];
     PropertyEditor currentlyUsedEditor = editor.getModifiedEditor ();
@@ -65,7 +72,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
     if (allEditors.length == 1) {
       if (allEditors[0] instanceof FormAwareEditor) {
-        ((FormAwareEditor)allEditors[0]).setRADComponent (editor.getRADComponent ());
+        ((FormAwareEditor)allEditors[0]).setRADComponent (editor.getRADComponent (), editor.getRADProperty ());
       }
 
       if (allEditors[0] instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
@@ -86,7 +93,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
       int indexToSelect = -1;
       for (int i = 0; i < allEditors.length; i++) {
         if (allEditors[i] instanceof FormAwareEditor) {
-          ((FormAwareEditor)allEditors[i]).setRADComponent (editor.getRADComponent ());
+          ((FormAwareEditor)allEditors[i]).setRADComponent (editor.getRADComponent (), editor.getRADProperty ());
         }
 
         if (allEditors[i] instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
@@ -150,11 +157,40 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
         }
       );
     }
+
+    JButton advancedButton = new JButton (FormEditor.getFormBundle ().getString ("CTL_Advanced"));
+    advancedButton.addActionListener (new java.awt.event.ActionListener () {
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+          showAdvancedSettings ();
+        }
+      }
+    );
+
+    JPanel advancedPanel = new JPanel ();
+    advancedPanel.setLayout (new java.awt.FlowLayout (java.awt.FlowLayout.LEFT, 0, 0));
+    advancedPanel.setBorder (new EmptyBorder (8, 0, 0, 0));
+    advancedPanel.add (advancedButton);
+    add (advancedPanel, BorderLayout.SOUTH);
   }
 
   public Dimension getPreferredSize () {
     Dimension inh = super.getPreferredSize ();
     return new Dimension (Math.max (inh.width, DEFAULT_WIDTH), Math.max (inh.height, DEFAULT_HEIGHT));
+  }
+
+  private void showAdvancedSettings () {
+    FormCustomEditorAdvanced fcea = new FormCustomEditorAdvanced (preCode, postCode);
+    DialogDescriptor dd;
+    TopManager.getDefault ().createDialog (dd = new DialogDescriptor (
+        fcea,
+        "Advanced Initialization Code"
+      )
+    ).show ();
+    
+    if (dd.getValue () == DialogDescriptor.OK_OPTION) {
+      preCode = fcea.getPreCode ();
+      postCode =fcea.getPostCode ();
+    }
   }
 
 // -----------------------------------------------------------------------------
@@ -173,12 +209,16 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
       editor.commitModifiedEditor ();
     }
     
+    editor.getRADProperty ().setPreCode (preCode); // [PENDING - change only if modified]
+    editor.getRADProperty ().setPostCode (postCode);
+    
     if (currentCustomEditor instanceof EnhancedCustomPropertyEditor) {
       return ((EnhancedCustomPropertyEditor)currentCustomEditor).getPropertyValue ();
     }
     if (currentEditor != null) {
       return currentEditor.getValue ();
     }
+    
     return editor.getValue ();
   }
 
@@ -205,6 +245,8 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
 /*
  * Log
+ *  16   Gandalf   1.15        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
+ *        changed, advanced dialog for Pre/Post code invocation
  *  15   Gandalf   1.14        9/6/99   Ian Formanek    Fixed bug 3187 - 
  *       Property editor of layout, model (and maybe more) could be bigger.
  *  14   Gandalf   1.13        8/17/99  Ian Formanek    Furhet improved value 
