@@ -43,7 +43,13 @@ public class JellyVersion {
     public static synchronized void checkJemmyVersion() {
         if(!jemmyVersionChecked) {
             jemmyVersionChecked = true;
-            String jemmyVersion = org.netbeans.jemmy.JemmyProperties.getVersion();
+            String jemmyVersion = null;
+            try {
+                jemmyVersion = org.netbeans.jemmy.JemmyProperties.getVersion();
+            } catch (Exception e) {
+                // jemmy version is not available
+                return;
+            }
             String builtOnJemmyVersion = getJemmyVersion();
             if(jemmyVersion.compareTo(builtOnJemmyVersion) < 0) {
                 String line = "\n##############################################\n"; // NOI18N
