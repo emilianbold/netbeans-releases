@@ -256,6 +256,7 @@ public class UpdateHelper {
             props.put("build.test.classes.dir", ""); //NOI18N
             props.put("build.test.results.dir", ""); //NOI18N
             props.put("conf.dir","${source.root}/conf"); //NOI18N
+            props.put("jspcompilation.classpath", "${jspc.classpath}:${javac.classpath}");
         }
         
         if (putProps) {
