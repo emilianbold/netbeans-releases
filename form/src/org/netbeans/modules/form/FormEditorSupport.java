@@ -765,13 +765,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     public void gotoForm() {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-
-                if (!formLoaded)
-                    openForm(true);
-                else {
-                    formModel.getFormDesigner().open();
+                if (formModel.getFormDesigner().isOpened())
                     formModel.getFormDesigner().requestVisible();
-                }
             }
         });
     }
