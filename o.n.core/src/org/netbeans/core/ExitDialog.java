@@ -312,15 +312,22 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             if (exitDialog == null) {
                 ResourceBundle bundle = NbBundle.getBundle(ExitDialog.class);
                 JButton buttonSave = new JButton();
+                buttonSave.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Save"));
+                JButton buttonSaveAll = new JButton();
+                buttonSaveAll.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_SaveAll"));
+                JButton buttonDiscardAll = new JButton();
+                buttonDiscardAll.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_DiscardAll"));
 
                 // special handling to handle a button title with mnemonic 
                 // and to allow enable/disable control of the option
                 Actions.setMenuText(buttonSave, bundle.getString("CTL_Save"), true);
+                Actions.setMenuText(buttonSaveAll, bundle.getString("CTL_SaveAll"), true);
+                Actions.setMenuText(buttonDiscardAll, bundle.getString("CTL_DiscardAll"), true);
 
                 exitOptions = new Object[] {
                                   buttonSave,
-                                  bundle.getString("CTL_SaveAll"),
-                                  bundle.getString("CTL_DiscardAll"),
+                                  buttonSaveAll,
+                                  buttonDiscardAll,
                               };
                 ExitDialog exitComponent = null;
                 if (activatedNodes != null)
