@@ -80,9 +80,9 @@ public final class ShowDocAction extends CookieAction {
         indexSearch.requestActive();
     }
 
-    protected String iconResource(){
-        return "org/netbeans/modules/javadoc/resources/showjavadoc.gif"; //NOI18N
-    }
+//    protected String iconResource(){
+//        return "org/netbeans/modules/javadoc/resources/showjavadoc.gif"; //NOI18N
+//    }
     
     /**
      * Attempts to find a suitable text from the node. 
