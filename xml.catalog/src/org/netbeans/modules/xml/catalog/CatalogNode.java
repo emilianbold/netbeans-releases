@@ -259,10 +259,12 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
         
         protected void performAction(Node[] activatedNodes) {
             if (enable(activatedNodes) == false) return;
-            try {
-                ((CatalogNode)activatedNodes[0]).destroy();
-            } catch (IOException ex) {
-                //??? ignore
+            for (int i = 0; i<activatedNodes.length; i++) {
+                try {
+                    ((CatalogNode)activatedNodes[i]).destroy();
+                } catch (IOException ex) {
+                    //??? ignore
+                }
             }
         }
         
