@@ -7,6 +7,7 @@
   <property name="jar" value="jemmy.jar"/>
   <property name="zip" value="jemmy.zip"/>
   <property name="util" value="util"/>
+  <property name="excludes" value="util/1.4.excludes"/>
 
   <property name="testlist" value="testsuite/testlist"/>
   <property name="testdatalocation" value="testsuite/src/org/netbeans/jemmy/testing"/>
@@ -20,7 +21,7 @@
   <target name="compile">
     <copy file="${util}/version" tofile="${src}/org/netbeans/jemmy/version_info"/>
     <mkdir dir="${build}"/>
-    <javac srcdir="${src}" destdir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}" excludesfile="${excludes}"/>
     <copy file="${src}/org/netbeans/jemmy/debug.timeouts" todir="${build}/org/netbeans/jemmy"/>
   </target>
 
@@ -67,14 +68,6 @@
     <delete dir="${testbuild}"/>
     <delete file="${jar}"/>
     <delete file="${zip}"/>
-  </target>
-
-  <target name="util">
-    <exec dir="${util}" executable="chmod">
-      <arg line="+x"/>
-      <arg line="compile"/>
-      <arg line="runTest"/>
-    </exec>
   </target>
 
   <target name="test" depends="compiletest">
