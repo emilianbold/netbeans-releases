@@ -97,7 +97,7 @@ public class Controller { //XXX public only for debug access to logging code
 
     private Object[] popupItems = new Object[] {
         copyAction, new JSeparator(), findAction, findNextAction,
-        new JSeparator(), nextErrorAction, prevErrorAction, new JSeparator(),
+        /*new JSeparator(), nextErrorAction, prevErrorAction, */new JSeparator(),
         wrapAction, new JSeparator(), saveAsAction, closeAction, 
     };
     
