@@ -41,6 +41,7 @@ import org.openide.actions.PasteAction;
 import org.openide.actions.DeleteAction;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.editor.options.OptionUtilities;
+import org.netbeans.modules.editor.options.AllOptionsFolder;
 
 /**
 * Customized settings for NetBeans editor
@@ -86,9 +87,12 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
   
         if (kitClass == NbEditorKit.class) {
             // init popup menu items from layer folder
-            settingsMap.put(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
-            OptionUtilities.getPopupStrings(OptionUtilities.getGlobalPopupMenuItems())
-            );
+            if (AllOptionsFolder.getDefault().baseInitialized()){
+                // put to the settings map only if base options has been initialized. See #19470
+                settingsMap.put(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
+                OptionUtilities.getPopupStrings(OptionUtilities.getGlobalPopupMenuItems())
+                );
+            }
         }
         
     }

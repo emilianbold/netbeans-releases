@@ -294,6 +294,11 @@ public class AllOptionsFolder{
         uninstallOption();        
     }
     
+    /** Returns true if BaseOptions has been initialized */
+    public boolean baseInitialized(){
+        return baseInitialized;
+    }
+    
     /** Gets the singleton of BaseOptions and register it in Settings initializer,
      * if it wasn't been done before. */
     private BaseOptions getBase(){
