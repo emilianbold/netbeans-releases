@@ -309,7 +309,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       }
   
       initCodeWriter.write (INIT_COMPONENTS_FOOTER);
-  
+      initCodeWriter.close ();
       // set the text into the guarded block
       synchronized (GEN_LOCK) {
         initComponentsSection.setText (initCodeBuffer.toString ());
@@ -335,6 +335,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       
       variablesWriter.write (VARIABLES_FOOTER);
       variablesWriter.write ("\n");
+      variablesWriter.close ();
       synchronized (GEN_LOCK) {
         variablesSection.setText (variablesBuffer.toString ());
       }
@@ -1101,6 +1102,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  34   Gandalf   1.33        7/8/99   Ian Formanek    Fixed closing code 
+ *       generation writers
  *  33   Gandalf   1.32        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
  *        getComponentClass->getBeanClass
  *  32   Gandalf   1.31        6/30/99  Ian Formanek    Properties for code 
