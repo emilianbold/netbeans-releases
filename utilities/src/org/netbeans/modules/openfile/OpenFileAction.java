@@ -176,6 +176,12 @@ public class OpenFileAction extends CallableSystemAction {
         }
     }
     
+    /**
+     */
+    protected boolean asynchronous() {
+        return false;
+    }
+    
 
     /** File chooser filter that filters files by their names' suffixes. */
     private static class Filter extends FileFilter {
