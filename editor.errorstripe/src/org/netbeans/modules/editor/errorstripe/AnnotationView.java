@@ -17,6 +17,8 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -26,7 +28,12 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.View;
+import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.fold.FoldHierarchyEvent;
+import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.Annotations.AnnotationsListener;
@@ -39,7 +46,7 @@ import org.openide.ErrorManager;
  *
  * @author Jan Lahoda
  */
-public class AnnotationView extends JComponent implements AnnotationsListener, MouseListener, MouseMotionListener {
+public class AnnotationView extends JComponent implements AnnotationsListener, FoldHierarchyListener, MouseListener, MouseMotionListener {
     
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance("org.netbeans.modules.editor.errorstripe.AnnotationView");
     
@@ -58,6 +65,8 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
     /** Creates a new instance of AnnotationViewBorder */
     public AnnotationView(JTextComponent pane) {
         this.pane = pane;
+        
+        FoldHierarchy.get(pane).addFoldHierarchyListener(this);
         
         this.doc = (BaseDocument) pane.getDocument();
         
@@ -93,7 +102,7 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
 
     }
 
-    private List/*<Status>*/ getStatusesForLine(int line) {
+    private List/*<AnnotationStatusPair>*/ getStatusesForLine(int line) {
         Annotations annotations = doc.getAnnotations();
         List result = new ArrayList();
         
@@ -118,17 +127,31 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
         return result;
     }
     
-    private List/*<Status>*/ getStatusesForLinesBlock(int currentLine) {
-        Annotations annotations = doc.getAnnotations();
-        int linesInBlock = computeLinesForBlock();
-        int startingLine = (currentLine / linesInBlock) * linesInBlock;
-        int endingLine = startingLine + linesInBlock;
+    private int[] getLinesSpan(int currentLine) {
+        double position  = modelToView(currentLine);
         
-        int current = startingLine;
+        if (position == (-1))
+            return new int[] {currentLine, currentLine};
+            
+        int    startLine = currentLine;
+        int    endLine   = currentLine;
+        
+        while (position == modelToView(startLine - 1))//TODO startLine > 0
+            startLine--;
+        
+        while (position == modelToView(endLine + 1))//TODO endLine < line count
+            endLine++;
+        
+        return new int[] {startLine, endLine};
+    }
+    
+    private List/*<AnnotationStatusPair>*/ getStatusesForBlock(int startLine, int endLine) {
+        Annotations annotations = doc.getAnnotations();
+        int current = startLine;
         
         List result = new ArrayList();
         
-        while ((current = annotations.getNextLineWithAnnotation(current)) != (-1) && current < endingLine) {
+        while ((current = annotations.getNextLineWithAnnotation(current)) != (-1) && current <= endLine) {
             result.addAll(getStatusesForLine(current));
             current++;
         }
@@ -184,11 +207,15 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
         int annotatedLine = doc.getAnnotations().getNextLineWithAnnotation(-1);
         
         while (annotatedLine != (-1)) {
-            List/*<Status>*/ statuses = getStatusesForLinesBlock(annotatedLine);
+            int[] lineSpan  = getLinesSpan(annotatedLine);
+            int   startLine = lineSpan[0];
+            int   endLine   = lineSpan[1];
+            
+            List/*<Status>*/ statuses = getStatusesForBlock(startLine, endLine);
             
             if (statuses.size() > 0) {
                 Status s = ((AnnotationStatusPair) statuses.get(0)).getStatus();
-                int start = modelToView(annotatedLine);
+                double start = modelToView(annotatedLine);
                 
                 if (s != null) {
                     Color color = s.getColor();
@@ -196,11 +223,11 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
                     assert color != null;
                     
                     g.setColor(color);
-                    g.fillRect(0, start, THICKNESS - 1, PIXELS_FOR_LINE);
+                    g.fillRect(0, (int) start, THICKNESS - 1, PIXELS_FOR_LINE);
                 }
             }
             
-            annotatedLine = doc.getAnnotations().getNextLineWithAnnotation(annotatedLine + 1);
+            annotatedLine = doc.getAnnotations().getNextLineWithAnnotation(endLine + 1);
         }
         
         drawGlobalStatus(g);
@@ -215,11 +242,10 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
     private Status computeTotalStatus() {
         int targetStatus = Status.STATUS_OK;
         int annotatedLine = -1;
-        int linesInBlock = computeLinesForBlock();
         int totalLines = Utilities.getRowCount(doc);
         
         while ((annotatedLine = doc.getAnnotations().getNextLineWithAnnotation(annotatedLine)) != (-1) && annotatedLine < totalLines) {
-            List/*<Status>*/ statuses = getStatusesForLinesBlock(annotatedLine);
+            List/*<Status>*/ statuses = getStatusesForLine(annotatedLine);
             
             for (Iterator i = statuses.iterator(); i.hasNext(); ) {
                 Status s = ((AnnotationStatusPair) i.next()).getStatus();
@@ -227,7 +253,7 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
                 targetStatus = Status.getCompoundStatus(targetStatus, s.getStatus());
             }
             
-            annotatedLine = (annotatedLine / linesInBlock) * linesInBlock + linesInBlock;
+            annotatedLine++;
         }
         
         return new Status(targetStatus);
@@ -245,70 +271,107 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
         repaint();
     }
     
-    private double computeLineSeparatorSize() {
-        int lines = Utilities.getRowCount(doc);
-        double proposedAnnotationSize = ((double) (getHeight() - HEIGHT_OFFSET)) / lines;
-        double result;
-        
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "computeLineSeparatorSize: proposedAnnotationSize=" + proposedAnnotationSize);
-        }
-        
-        if (proposedAnnotationSize > (LINE_SEPARATOR_SIZE  + PIXELS_FOR_LINE)) {
-            int lineHeight = Utilities.getEditorUI(pane).getLineHeight();
+    private double getComponentHeight() {
+        return pane.getUI().getRootView(pane).getPreferredSpan(View.Y_AXIS);
+    }
+    
+    private double getUsableHeight() {
+        return getHeight() - HEIGHT_OFFSET;
+    }
+    
+    private double modelToView(int line) {
+        try {
+            int lineOffset = Utilities.getRowStartFromLineOffset((BaseDocument) pane.getDocument(), line);
+            
+            Rectangle r = pane.modelToView(lineOffset);
             
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "computeLineSeparatorSize: lineHeight=" + lineHeight);
+                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: line=" + line);
+                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: lineOffset=" + lineOffset);
+                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: r=" + r);
+                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: getComponentHeight()=" + getComponentHeight());
+                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: getUsableHeight()=" + getUsableHeight());
             }
-
-            if (lineHeight < proposedAnnotationSize) {
-                result = lineHeight - PIXELS_FOR_LINE;
+            
+            if (r == null) {
+                return -1;
+            }
+            
+            if (getComponentHeight() <= getUsableHeight()) {
+                //1:1 mapping:
+                return r.getY() + HEIGHT_OFFSET;
             } else {
-                result = proposedAnnotationSize - PIXELS_FOR_LINE;
+                double pixelsPerBlock = (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE) * (getComponentHeight() / getUsableHeight());
+                
+                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: pixelsPerBlock=" + pixelsPerBlock);
+                }
+                
+                return (r.getY() / pixelsPerBlock) * (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE) + HEIGHT_OFFSET;
             }
-        } else {
-            result = LINE_SEPARATOR_SIZE;
-        }
-        
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "computeLineSeparatorSize: result=" + result);
-        }
-        
-        return result;
-    }
-    
-    private int computeLinesForBlock() {
-        int lines = Utilities.getRowCount(doc);
-        double lineSeparatorSize = computeLineSeparatorSize();
-        int result = (int) (lines / ((getHeight() - HEIGHT_OFFSET) / (PIXELS_FOR_LINE + lineSeparatorSize))) + 1;
-        
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "computeLinesForBlock: result=" + result);
-        }
-        
-        return result;
-    }
-    
-    private int modelToView(int line) {
-        int lines = Utilities.getRowCount(doc);
-        int linesForPixel = computeLinesForBlock();
-        double lineSeparatorSize = computeLineSeparatorSize();
-        
-        return (int) ((line / linesForPixel) * (PIXELS_FOR_LINE + lineSeparatorSize) + HEIGHT_OFFSET);
-    }
-    
-    private int viewToModel(int offset) {
-        int lines = Utilities.getRowCount(doc);
-        int linesForPixel = computeLinesForBlock();
-        double lineSeparatorSize = computeLineSeparatorSize();
-        int linesStart = (int) ((offset - HEIGHT_OFFSET) / (PIXELS_FOR_LINE + lineSeparatorSize) * linesForPixel);
-        int linesEnd = linesStart + linesForPixel;
-        int line = doc.getAnnotations().getNextLineWithAnnotation(linesStart);
-        
-        if (line >= linesEnd)
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(e);
             return -1;
-        else
-            return line;
+        }
+    }
+    
+    private int[] viewToModel(double offset) {
+        try {
+            double componentOffset = -1;
+            
+            if (getComponentHeight() <= getUsableHeight()) {
+                //1:1 mapping:
+                componentOffset = offset - HEIGHT_OFFSET;
+            } else {
+                double pixelsPerBlock = (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE) * (getComponentHeight() / getUsableHeight());
+                
+                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: pixelsPerBlock=" + pixelsPerBlock);
+                }
+                
+                componentOffset = ((offset - HEIGHT_OFFSET) / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE)) * pixelsPerBlock;
+            }
+                
+            int lineOffset = pane.viewToModel(new Point(0, (int) componentOffset));
+            
+            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: lineOffset=" + lineOffset);
+                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: componentOffset=" + componentOffset);
+                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: getComponentHeight()=" + getComponentHeight());
+                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: getUsableHeight()=" + getUsableHeight());
+            }
+            
+            if (lineOffset == (-1)) {
+                return new int[] {-1, -1};
+            }
+            
+            int line = Utilities.getLineOffset((BaseDocument) pane.getDocument(),  lineOffset);
+            
+            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: line=" + line);
+            }
+            
+            return getLinesSpan(line);
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(e);
+            return new int[] {-1, -1};
+        }
+    }
+    
+    private AnnotationDesc getAnnotationForPoint(double point) {
+        int[] lineSpan   = viewToModel(point);
+        int   startLine  = lineSpan[0];
+        int   endLine    = lineSpan[1];
+        
+        if (startLine != (-1)) {
+            List/*<Status>*/ statuses = getStatusesForBlock(startLine, endLine);
+            
+            if (statuses.size() > 0) {
+                return ((AnnotationStatusPair) statuses.get(0)).getAnnotation();
+            }
+        }
+        
+        return null;
     }
 
     public Dimension getMaximumSize() {
@@ -348,12 +411,13 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
     }
 
     public void mouseClicked(MouseEvent e) {
-        int annotated = viewToModel(e.getPoint().y);
-        
         resetCursor();
         
-        if (annotated != (-1))
-            pane.setCaretPosition(Utilities.getRowStartFromLineOffset(doc, annotated));
+        AnnotationDesc annotation = getAnnotationForPoint(e.getPoint().getY());
+        
+        if (annotation != null) {
+            pane.setCaretPosition(annotation.getOffset());
+        }
     }
     
     private void resetCursor() {
@@ -361,9 +425,9 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
     }
     
     private void checkCursor(MouseEvent e) {
-        int annotated = viewToModel(e.getPoint().y);
+        AnnotationDesc annotation = getAnnotationForPoint(e.getPoint().getY());
         
-        if (annotated == (-1)) {
+        if (annotation == null) {
             resetCursor();
             return ;
         }
@@ -381,11 +445,10 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
             int errors = 0;
             int warnings = 0;
             int annotatedLine = -1;
-            int linesInBlock = computeLinesForBlock();
             int totalLines = Utilities.getRowCount(doc);
             
             while ((annotatedLine = doc.getAnnotations().getNextLineWithAnnotation(annotatedLine)) != (-1) && annotatedLine < totalLines) {
-                List/*<Status>*/ statuses = getStatusesForLinesBlock(annotatedLine);
+                List/*<Status>*/ statuses = getStatusesForLine(annotatedLine);
                 
                 for (Iterator i = statuses.iterator(); i.hasNext(); ) {
                     Status s = ((AnnotationStatusPair) i.next()).getStatus();
@@ -394,7 +457,7 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
                     warnings += s.getStatus() == Status.STATUS_WARNING ? 1 : 0;
                 }
                 
-                annotatedLine = (annotatedLine / linesInBlock) * linesInBlock + linesInBlock;
+                annotatedLine++;
             }
             
             if (errors == 0 && warnings == 0) {
@@ -412,23 +475,20 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
             return "" + errors + " error(s), " + warnings + " warning(s)";
         }
         
-        int line = viewToModel(y);
+        AnnotationDesc annotation = getAnnotationForPoint(y);
         
-        if (line != (-1)) {
-            List/*<Status>*/ statuses = getStatusesForLinesBlock(line);
-            int index = 0;
+        if (annotation != null) {
+            String description = annotation.getShortDescription();
             
-            while (index < statuses.size()) {
-                String description = ((AnnotationStatusPair) statuses.get(0)).getAnnotation().getShortDescription();
-                
-                if (description != null)
-                    return description;
-            }
-            
-            return null;
+            if (description != null)
+                return description;
         }
         
         return null;
+    }
+
+    public void foldHierarchyChanged(FoldHierarchyEvent evt) {
+        changedAll();
     }
     
 }
