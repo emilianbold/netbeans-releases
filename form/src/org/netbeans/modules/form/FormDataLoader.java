@@ -26,11 +26,9 @@ import com.netbeans.developer.modules.loaders.java.JavaDataLoader;
 *
 * @author Ian Formanek
 */
-public class FormDataLoader extends MultiFileLoader {
+public class FormDataLoader extends JavaDataLoader {
   /* The standard extensions of the recognized files */
   public static final String FORM_EXTENSION = "form";
-  public static final String JAVA_EXTENSION = "java";
-  public static final String CLASS_EXTENSION = "class";
 
   /** Constructs a new FormDataLoader */
   public FormDataLoader () {
@@ -113,9 +111,9 @@ public class FormDataLoader extends MultiFileLoader {
   *
   * @param primaryFile primary file recognized by this loader
   * @return primary entry for that file
-  */
+  * /
   protected MultiDataObject.Entry createPrimaryEntry (MultiDataObject obj, FileObject primaryFile) {
-    return new FileEntry(obj, primaryFile);
+    return new JavaLoader.JavaEntry(obj, primaryFile);
   }
 
   /** Creates right secondary entry for given file. The file is said to
@@ -127,8 +125,10 @@ public class FormDataLoader extends MultiFileLoader {
   protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, FileObject secondaryFile) {
     String ext = secondaryFile.getExt();
     if (ext.equals(CLASS_EXTENSION)) {
+      secondaryFile.setImportant(false);
       return new FileEntry.Numb (obj, secondaryFile);             // entries for .class file
     } else if (ext.equals (FORM_EXTENSION)) {
+      secondaryFile.setImportant(true);
       FileEntry formEntry = new FileEntry (obj, secondaryFile);   // entries for .form files
       ((FormDataObject)obj).formEntry = formEntry;
       return formEntry;
@@ -138,6 +138,8 @@ public class FormDataLoader extends MultiFileLoader {
 
 /*
  * Log
+ *  13   Gandalf   1.12        5/14/99  Ian Formanek    extends JavaLoader to 
+ *       provide substitutions during createFromTemplate
  *  12   Gandalf   1.11        3/26/99  Ian Formanek    Fixed use of obsoleted 
  *       NbBundle.getBundle (this)
  *  11   Gandalf   1.10        3/24/99  Ian Formanek    
