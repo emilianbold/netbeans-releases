@@ -30,6 +30,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.awt.Mnemonics;
@@ -92,7 +93,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         }
         
         rootComboBox.setRenderer(new GroupListCellRenderer());
-        packageComboBox.setRenderer(PackageListView.listRenderer());
+        packageComboBox.setRenderer(PackageView.listRenderer());
         rootComboBox.addActionListener( this );
         
         setPreferredSize( PREF_DIM );
@@ -390,7 +391,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     // Private methods ---------------------------------------------------------
         
     private void updatePackages() {
-        packageComboBox.setModel(PackageListView.createListView((SourceGroup) rootComboBox.getSelectedItem()));
+        packageComboBox.setModel(PackageView.createListView((SourceGroup) rootComboBox.getSelectedItem()));
     }
     
     private File getFolder() {

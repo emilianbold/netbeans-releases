@@ -13,10 +13,25 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
+import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Enumeration;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.java.project.PackageDisplayUtils;
 import org.netbeans.modules.java.project.PackageViewSettings;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
@@ -71,6 +86,46 @@ public class PackageView {
     }
     
     /**
+     * Create a list or combo box model suitable for {@link javax.swing.JList} from a source group
+     * showing all Java packages in the source group.
+     * To display it you will also need {@link #listRenderer}.
+     * <p>No particular guarantees are made as to the nature of the model objects themselves,
+     * except that {@link Object#toString} will give the fully-qualified package name
+     * (or <code>""</code> for the default package), regardless of what the renderer
+     * actually displays.</p>
+     * @param group a Java-like source group
+     * @return a model of its packages
+     * @since org.netbeans.modules.java.project/1 1.3 
+     */
+    public static ComboBoxModel createListView(SourceGroup group) {
+        DefaultListModel model = new DefaultListModel();
+        SortedSet/*<PackageItem>*/ items = new TreeSet();
+        FileObject root = group.getRootFolder();
+        if (PackageDisplayUtils.isSignificant(root)) {
+            items.add(new PackageItem(group, root));
+        }
+        Enumeration/*<FileObject>*/ files = root.getChildren(true);
+        while (files.hasMoreElements()) {
+            FileObject f = (FileObject) files.nextElement();
+            if (f.isFolder() && PackageDisplayUtils.isSignificant(f)) {
+                items.add(new PackageItem(group, f));
+            }
+        }
+        return new DefaultComboBoxModel(items.toArray(new PackageItem[items.size()]));
+    }
+    
+    /**
+     * Create a renderer suited to rendering models created using {@link #createListView}.
+     * The exact nature of the display is not specified.
+     * Instances of String can also be rendered.
+     * @return a suitable package renderer
+     * @since org.netbeans.modules.java.project/1 1.3 
+     */
+    public static ListCellRenderer listRenderer() {
+        return new PackageListCellRenderer();
+    }
+    
+    /**
      * FilterNode which listens on the PackageViewSettings and changes the view to 
      * the package view or tree view
      *
@@ -106,4 +161,61 @@ public class PackageView {
             }
         }        
     }
+    
+    /**
+     * Model item representing one package.
+     */
+    private static final class PackageItem implements Comparable {
+        
+        private final FileObject pkg;
+        private final String pkgname;
+        
+        public PackageItem(SourceGroup group, FileObject pkg) {
+            this.pkg = pkg;
+            String path = FileUtil.getRelativePath(group.getRootFolder(), pkg);
+            assert path != null : "No " + pkg + " in " + group;
+            pkgname = path.replace('/', '.');
+        }
+        
+        public String toString() {
+            return pkgname;
+        }
+        
+        public String getLabel() {
+            return PackageDisplayUtils.getDisplayLabel(pkg, pkgname);
+        }
+        
+        public Icon getIcon() {
+            return new ImageIcon(PackageDisplayUtils.getIcon(pkg, pkgname));
+        }
+
+        public int compareTo(Object obj) {
+            return pkgname.compareTo(((PackageItem) obj).pkgname);
+        }
+        
+    }
+    
+    /**
+     * The renderer which just displays {@link PackageItem#getLabel} and {@link PackageItem#getIcon}.
+     */
+    private static final class PackageListCellRenderer extends DefaultListCellRenderer {
+        
+        public PackageListCellRenderer() {}
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if (value instanceof PackageItem) {
+                PackageItem pkgitem = (PackageItem) value;
+                super.getListCellRendererComponent(list, pkgitem.getLabel(), index, isSelected, cellHasFocus);
+                setIcon(pkgitem.getIcon());
+            } else {
+                // #49954: render a specially inserted package somehow.
+                String pkgitem = (String) value;
+                super.getListCellRendererComponent(list, pkgitem, index, isSelected, cellHasFocus);
+            }
+            return this;
+        }
+        
+    }
+    
+    
 }

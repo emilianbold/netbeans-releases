@@ -70,12 +70,30 @@ is the proper place.
     <apidefs>
         <apidef name="general">Java Project API</apidef>
         <apidef name="classpath">Classpath Support SPI</apidef>
+        <apidef name="ui">UI Support SPI</apidef>
         <!-- etc. -->
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
-
+        <change>
+            <api name="ui"/>
+            <summary>The functionality of PackageListView was moved into PackageView support SPI.</summary>
+            <version major="1" minor="3"/>
+            <date day="10" month="1" year="2005"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                The new methods supporting creating of package list were added into PackageView.
+                PackageView.createListView (SourceGroup) creates an ComboBoxModel containing the
+                packages from given SourceGroup. PackageView.listRenderer() returns an ListCellRenderer
+                rendering the packages.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support.ui" name="PackageView"/>
+            <issue number="48618"/>
+        </change>
          <change>
             <api name="classpath"/>
             <summary>Added helper method for creating ClassPathImplementation based on the ant property</summary>
