@@ -59,34 +59,47 @@ import org.openide.options.SystemOption;
  */
 
 public class CompletionJTest extends JXTest {
+    // constants for showCompl() method
     private static int NO_WAIT = 0;
     private static int EMPTY = 1;
     private static int NO_EMPTY = 2;
     
+    /** Caret Column Position */
     int col;
+    /** Editor Operator */
     EditorOperator editor;
-    JTextComponentOperator text;
     
-    /** Creates new CoreTemplatesTest */
+    /**
+     * Creates new CoreTemplatesTest
+     * @param testName
+     */
     public CompletionJTest(String testName) {
         super(testName);
     }
     
-    public void test() throws Exception {
-        String folder = getFilesystemName() + DELIM + getDataPackageName(DELIM);
+    /** Main test method. */
+    public void test() {
+        String folder;
         String name = "Document";
         String ext = "xml";
+        XMLOptions options;
+        DataObject dao;
         
-        XMLOptions options = (XMLOptions) SystemOption.findObject(XMLOptions.class, true);
-        options.setCompletionAutoPopup(false);
+        try {
+            folder = getFilesystemName() + DELIM + getDataPackageName(DELIM);
+            
+            options = (XMLOptions) SystemOption.findObject(XMLOptions.class, true);
+            options.setCompletionAutoPopup(false);
+            
+            dao = TestUtil.THIS.findData(name + "." + ext);
+            if (dao != null) dao.delete();
+            // catalog is only real XML template in the module :-(
+            NewWizardOperator.create("XML" + DELIM + "OASIS XML Catalog", folder, name);
+            editor = new EditorOperator(name);
+        } catch (Exception ex) {
+            log("Cannot setup test.", ex);
+        }
         
-        DataObject dao = TestUtil.THIS.findData(name + "." + ext);
-        if (dao != null) dao.delete();
-        // catalog is only real XML template in the module :-(
-        NewWizardOperator.create("XML" + DELIM + "OASIS XML Catalog", folder, name);
-        editor = new EditorOperator(name);
-        text = new JTextComponentOperator(editor);
-
         clearText();
         insert(""
         + "<?xml version='1.0' encoding='UTF-8'?>\n"
@@ -94,7 +107,7 @@ public class CompletionJTest extends JXTest {
         + "<h");
         save();
         //tml>
-        showCompl();
+        showCompl(NO_EMPTY);
         enter();
         insert(">\n");
         //<head>
@@ -105,7 +118,7 @@ public class CompletionJTest extends JXTest {
         insertTag("<t", "Test page", -1);
          */
         insert("<t");
-        showCompl();
+        showCompl(NO_EMPTY);
         esc();
         insert("Test page");
         //!!! end hack
@@ -132,16 +145,16 @@ public class CompletionJTest extends JXTest {
         insertTag("<td", "1", -1);
         end();
         insertTag("<td", "2", -1);
-        */
+         */
         
         insert("<td");
-        showCompl();
+        showCompl(NO_EMPTY);
         esc();
         insert("1");
         end();
         
         insert("<td");
-        showCompl();
+        showCompl(NO_EMPTY);
         esc();
         insert("2");
         //!!! end hack
@@ -161,7 +174,18 @@ public class CompletionJTest extends JXTest {
         compareReferenceFiles();
     }
     
-    void insertTag(String pref, String suf, int index) {
+    /** Inserts a tag using completion, i.e.:
+     * <ul>
+     * <li>types <i>pref</i> at caret position
+     * <li>triggers code completion
+     * <li>enters index-th element from completion list
+     * <li>types <i>suf</i> at caret position
+     * </ul>
+     * @param pref prefix
+     * @param suf sufix
+     * @param index index of inserting item, -1 => 
+     */
+    final protected void insertTag(String pref, String suf, int index) {
         insert(pref);
         if (index < 0) {
             showCompl(NO_WAIT);
@@ -175,55 +199,73 @@ public class CompletionJTest extends JXTest {
             enter();
         }
         //!!! sometime completion doesn't finish on time
-        sleepTest(500); 
+        sleepTest(500);
         insert(suf);
     }
     
-    private void insert(String txt) {
+    /** Types a text at caret position
+     *
+     * @param txt String
+     */
+    protected final void insert(String txt) {
         editor.txtEditorPane().typeText(txt);
     }
     
-    private void move(int x, int y) {
+    /** Moves caret about <i>x</i> lines and <i>y</i> rows
+     *
+     * @param x delta X
+     * @param y delta Y
+     */
+    protected final void move(int x, int y) {
         col += y;
         editor.setCaretPosition(editor.getLineNumber() + x, col);
     }
     
-    private void hMove(int len) {
-        editor.setCaretPosition(editor.getLineNumber() + len, col);
-    }
-    
-    private void vMove(int len) {
-        col += len;
-        editor.setCaretPosition(editor.getLineNumber(), col);
-    }
-    
-    private void goTo(int x, int y) {
-        editor.setCaretPosition(x, y);
-    }
-    
-    private void save() {
+    /** Saves the document */
+    protected final void save() {
         editor.save();
     }
     
-    private void clearText() {
+    /** Clears the document */
+    protected final void clearText() {
         col = 0;
+        JTextComponentOperator text = new JTextComponentOperator(editor);
+        
         text.setText("X"); //!!! because clearText is to slow.
         text.clearText();
     }
     
-    private void showCompl() {
-        showCompl(NO_EMPTY);
-    }
-    
-    private void showCompl(int mode) {
+    /** Triggers code completion in given mode.
+     * <ul>
+     * <li>NO_WAIT - only trigger completion and continue
+     * <li>EMPTY - trigger completion and wait for completion list
+     * <li>NO_EMPTY - trigger completion and wait for non-empty completion list
+     * </ul>
+     */
+    protected final void showCompl(int mode) {
         editor.pressKey(KeyEvent.VK_SPACE, InputEvent.CTRL_MASK);
-        if (mode == NO_EMPTY) {
+        if (mode == NO_WAIT) {
+            return;
+        } else if (mode == NO_EMPTY) {
             waitCompl(1);
         } else if (mode == EMPTY) {
             waitCompl(0);
         }
     }
-        
+    
+    /** Triggers code completion and checks if completion list contains at least
+     * <i>minSize</i> items.
+     * @param minSize
+     */
+    protected final void checkCompletion(int minSize) {
+        showCompl(NO_WAIT);
+        waitCompl(minSize);
+        esc();
+    }
+    
+    /** Waits completion list with at least <i>minSize</i> items.
+     * @param minSize - nuber of items
+     */
     private void waitCompl(int minSize) {
         CompletionChooser completionChoser = new CompletionChooser(minSize);
         ListCompletionView completionView = (ListCompletionView) ComponentOperator
@@ -232,12 +274,7 @@ public class CompletionJTest extends JXTest {
         int size = completionView.getModel().getSize();
     }
     
-    private void checkCompletion(int minSize) {
-        showCompl(NO_WAIT);
-        waitCompl(minSize);
-        esc();
-    }
-    
+    /** Searches for a completion listh with at least <i>minSize</i> items */
     private class CompletionChooser implements ComponentChooser {
         int minSize;
         
@@ -266,44 +303,62 @@ public class CompletionJTest extends JXTest {
     
     // KEYS
     
-    private void delete(int len) {
+    /** Deletes given number of characters from current caret possition.
+     * Position of caret will not change.
+     * @param length number of characters to be deleted
+     */
+    protected final void delete(int len) {
         editor.delete(len);
     }
     
-    private void backSp(int len) {
+    /** Deletes given number of characters before current caret possition.
+     * @param length number of characters to be deleted
+     */
+    protected final void backSp(int len) {
         for (int i = 0; i < len; i++) {
             editor.pushKey(KeyEvent.VK_BACK_SPACE);
         }
     }
     
-    private void esc() {
+    /** Presses key [ESC] */
+    protected final void esc() {
         editor.pressKey(KeyEvent.VK_ESCAPE);
     }
     
-    private void enter() {
+    /** Presses key [ENTER] */
+    protected final void enter() {
         editor.pressKey(KeyEvent.VK_ENTER);
     }
     
-    private void down() {
+    /** Presses key [DOWN] */
+    protected final void down() {
         editor.pressKey(KeyEvent.VK_DOWN);
     }
     
-    private void up() {
+    /** Presses key [UP] */
+    protected final void up() {
         editor.pressKey(KeyEvent.VK_UP);
     }
     
-    private void left() {
+    /** Presses key [LEFT] */
+    protected final void left() {
         editor.pressKey(KeyEvent.VK_LEFT);
     }
     
-    private void right() {
+    /** Presses key [RIGHT] */
+    protected final void right() {
         editor.pressKey(KeyEvent.VK_RIGHT);
     }
     
-    private void end() {
+    /** Presses key [END] */
+    protected final void end() {
         editor.pressKey(KeyEvent.VK_END);
     }
     
+    /** Main method for debuging purpose
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         JamController.setFast(false);
         DEBUG = true;
