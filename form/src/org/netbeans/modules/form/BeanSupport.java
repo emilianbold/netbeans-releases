@@ -59,7 +59,7 @@ public class BeanSupport {
   */
   public static BeanInfo createBeanInfo (Class beanClass) {
     try {
-      return Introspector.getBeanInfo (beanClass);
+      return org.openide.util.Utilities.getBeanInfo (beanClass);
     } catch (IntrospectionException e) {
       return null;
     }
@@ -224,6 +224,8 @@ public class BeanSupport {
 
 /*
  * Log
+ *  6    Gandalf   1.5         7/28/99  Ian Formanek    Fixed bug 2147 - 
+ *       horizontalAlignment property displays number instead of text.
  *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  4    Gandalf   1.3         5/30/99  Ian Formanek    Removed 
