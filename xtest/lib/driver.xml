@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
      	<taskdef name="mconfig" classname="org.netbeans.xtest.driver.MasterConfigReader2"/>  
      	<taskdef name="checkout" classname="org.netbeans.xtest.driver.CheckoutNeeded"/>
      	<taskdef name="list" classname="org.netbeans.xtest.driver.ListReader"/>
-     	<taskdef name="split" classname="org.netbeans.xtest.driver.SplitProperty"/>
+     	<taskdef name="resolve" classname="org.netbeans.xtest.driver.ResolveInstance"/>
      </nbtaskdef>
    </target>
    
@@ -95,7 +95,8 @@ Microsystems, Inc. All Rights Reserved.
    </target>
    
    <target name="splitproperty">
-     <split split="${xtest.instancecfg}" newproperties="xtest.instance.dir,xtest.config"/>
+     <resolve instance="${xtest.instancecfg}" instanceDirProperty="xtest.instance.dir"
+                                           instanceConfigProperty="xtest.config"/>
    </target>
    
   <!-- ======== -->
