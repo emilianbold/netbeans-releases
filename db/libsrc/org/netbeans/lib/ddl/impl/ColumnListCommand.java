@@ -13,12 +13,14 @@
 
 package org.netbeans.lib.ddl.impl;
 
-import java.text.ParseException;
 import java.text.MessageFormat;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Vector;
 
 import org.openide.util.NbBundle;
-import java.util.*;
-import org.netbeans.lib.ddl.*;
+
+import org.netbeans.lib.ddl.DDLException;
 
 /**
 * Instances of this command operates with column list (e.g. create column).
@@ -31,8 +33,6 @@ public class ColumnListCommand extends AbstractCommand
 {
     /** Used columns */
     private Vector columns;
-
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
 
     static final long serialVersionUID =3646663278680222131L;
     /** Constructor */
@@ -73,11 +73,11 @@ public class ColumnListCommand extends AbstractCommand
                 columns.add(column);
             } else throw new InstantiationException(
                     MessageFormat.format(
-                        bundle.getString("EXC_UnableLocateType"), // NOI18N
+                        NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableLocateType"), // NOI18N
                         new String[] {tname, props.keySet().toString() } ));
         } else throw new InstantiationException(
                     MessageFormat.format(
-                        bundle.getString("EXC_UnableToBind"), // NOI18N
+                        NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableToBind"), // NOI18N
                         new String[] {type, bindmap.toString() } ));
         return column;
     }
@@ -123,15 +123,3 @@ public class ColumnListCommand extends AbstractCommand
         out.writeObject(columns);
     }
 }
-
-/*
-* <<Log>>
-*  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  4    Gandalf   1.3         8/17/99  Ian Formanek    Generated serial version 
-*       UID
-*  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
-*/

@@ -13,12 +13,16 @@
 
 package org.netbeans.lib.ddl.impl;
 
-import java.util.*;
 import java.text.MessageFormat;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Vector;
 
 import org.openide.util.NbBundle;
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.impl.*;
+
+import org.netbeans.lib.ddl.Argument;
+import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.lib.ddl.ProcedureDescriptor;
 
 /**
 * Interface of database action command. Instances should remember connection 
@@ -38,8 +42,6 @@ public class CreateProcedure extends AbstractCommand implements ProcedureDescrip
 
     /** Arguments */
     private Vector args;
-
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
 
     static final long serialVersionUID =1316633286943440734L;
     public CreateProcedure()
@@ -105,7 +107,7 @@ public class CreateProcedure extends AbstractCommand implements ProcedureDescrip
                 Map typemap = (Map)gprops.get(tname);
                 if (typemap == null) throw new InstantiationException(
                     MessageFormat.format(
-                        bundle.getString("EXC_UnableLocateObject"), // NOI18N
+                        NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableLocateObject"), // NOI18N
                         new String[] {tname}));
                 Class typeclass = Class.forName((String)typemap.get("Class")); // NOI18N
                 String format = (String)typemap.get("Format"); // NOI18N
@@ -117,7 +119,7 @@ public class CreateProcedure extends AbstractCommand implements ProcedureDescrip
                 return (Argument)arg;
             } else throw new InstantiationException(
                         MessageFormat.format(
-                            bundle.getString("EXC_UnableLocateType"), // NOI18N
+                            NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableLocateType"), // NOI18N
                             new String[] {String.valueOf(type), bindmap.toString() }));
         } catch (Exception e) {
             throw new DDLException(e.getMessage());
@@ -150,15 +152,3 @@ public class CreateProcedure extends AbstractCommand implements ProcedureDescrip
         return cmdprops;
     }
 }
-
-/*
-* <<Log>>
-*  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  4    Gandalf   1.3         9/10/99  Slavek Psenicka 
-*  3    Gandalf   1.2         8/17/99  Ian Formanek    Generated serial version 
-*       UID
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
-*/

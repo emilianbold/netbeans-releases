@@ -13,12 +13,14 @@
 
 package org.netbeans.lib.ddl.impl;
 
-import java.util.*;
-import java.sql.*;
-import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 import org.openide.util.NbBundle;
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.util.*;
+
+import org.netbeans.lib.ddl.Argument;
+import org.netbeans.lib.ddl.DatabaseSpecification;
+import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.lib.ddl.util.CommandFormatter;
 
 /**
 * Argument of procedure. Encapsulates name, type (in/out) and datatype.
@@ -39,8 +41,6 @@ public class ProcedureArgument implements Argument {
     /** Additional properties */
     private Map addprops;
 
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
-    
     public static String getArgumentTypeName(int type)
     {
         String typename = null;
@@ -148,7 +148,7 @@ public class ProcedureArgument implements Argument {
     throws DDLException
     {
         Map cprops;
-        if (format == null) throw new DDLException(bundle.getString("EXC_NoFormatSpec")); // NOI18N
+        if (format == null) throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_NoFormatSpec")); // NOI18N
         try {
             cprops = getColumnProperties(cmd);
             return CommandFormatter.format(format, cprops);

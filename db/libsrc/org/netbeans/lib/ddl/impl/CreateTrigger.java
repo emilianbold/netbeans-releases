@@ -13,12 +13,14 @@
 
 package org.netbeans.lib.ddl.impl;
 
-import java.util.*;
 import java.text.MessageFormat;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Vector;
 
 import org.openide.util.NbBundle;
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.impl.*;
+import org.netbeans.lib.ddl.CreateTriggerCommand;
+import org.netbeans.lib.ddl.DDLException;
 
 /**
 * Interface of database action command. Instances should remember connection 
@@ -58,8 +60,6 @@ public class CreateTrigger extends AbstractCommand implements CreateTriggerComma
         return null;
     }
 
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
-    
     static final long serialVersionUID =-2217362040968396712L;
     public CreateTrigger()
     {
@@ -153,7 +153,7 @@ public class CreateTrigger extends AbstractCommand implements CreateTriggerComma
                 Map typemap = (Map)gprops.get(tname);
                 if (typemap == null) throw new InstantiationException(
                     MessageFormat.format(
-                        bundle.getString("EXC_UnableLocateObject"), // NOI18N
+                        NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableLocateObject"), // NOI18N
                         new String[] {tname}));
                 Class typeclass = Class.forName((String)typemap.get("Class")); // NOI18N
                 String format = (String)typemap.get("Format"); // NOI18N
@@ -165,7 +165,7 @@ public class CreateTrigger extends AbstractCommand implements CreateTriggerComma
                 return (TriggerEvent)evt;
             } else throw new InstantiationException(
                     MessageFormat.format(
-                        bundle.getString("EXC_UnableLocateType"), // NOI18N
+                        NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableLocateType"), // NOI18N
                         new String[] {"EVENT", bindmap.toString() })); // NOI18N
         } catch (Exception e) {
             throw new DDLException(e.getMessage());

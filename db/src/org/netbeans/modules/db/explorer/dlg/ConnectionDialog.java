@@ -13,20 +13,18 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.sql.*;
+import java.awt.Dialog;
+import java.awt.event.ActionListener;
+import java.util.ResourceBundle;
 
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+
+import javax.swing.event.ChangeListener;
+
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-
-import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 
 public class ConnectionDialog {
 
@@ -35,7 +33,7 @@ public class ConnectionDialog {
     private transient JPanel basePane;
     private transient Exception storedExp;
 
-    static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+    ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
         
     Dialog dialog = null;
     

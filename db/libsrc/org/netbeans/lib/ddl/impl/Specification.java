@@ -13,14 +13,18 @@
 
 package org.netbeans.lib.ddl.impl;
 
-import java.beans.*;
-import java.sql.*;
-import java.util.*;
+import java.beans.Beans;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.openide.util.NbBundle;
 
 import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.adaptors.*;
+import org.netbeans.lib.ddl.adaptors.DatabaseMetaDataAdaptor;
 
 import org.openide.*;
 
@@ -31,8 +35,6 @@ public class Specification implements DatabaseSpecification {
 
     /** Used JDBC Connection */
     private Connection jdbccon;
-
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
 
     /** Owned factory */
     SpecificationFactory factory;
@@ -137,8 +139,8 @@ public class Specification implements DatabaseSpecification {
                         dmdAdaptor = (DatabaseMetaData) Beans.instantiate(loader, adc);
                         if (dmdAdaptor instanceof DatabaseMetaDataAdaptor) {
                             ((DatabaseMetaDataAdaptor)dmdAdaptor).setConnection(jdbccon);
-                        } else throw new ClassNotFoundException(bundle.getString("EXC_AdaptorInterface"));
-                    } else throw new ClassNotFoundException(bundle.getString("EXC_AdaptorUnspecClass"));
+                        } else throw new ClassNotFoundException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_AdaptorInterface")); //NOI18N
+                    } else throw new ClassNotFoundException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_AdaptorUnspecClass")); //NOI18N
                 }
             }
 
@@ -158,13 +160,13 @@ public class Specification implements DatabaseSpecification {
     public Connection openJDBCConnection()
     throws DDLException
     {
-        if (jdbccon != null) throw new DDLException(bundle.getString("EXC_ConnOpen"));
+        if (jdbccon != null) throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_ConnOpen")); //NOI18N
         DBConnection dbcon = getConnection();
-        if (dbcon == null) throw new DDLException(bundle.getString("EXC_ConnNot"));
+        if (dbcon == null) throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_ConnNot")); //NOI18N
         try {
             jdbccon = dbcon.createJDBCConnection();
         } catch (Exception e) {
-            throw new DDLException(bundle.getString("EXC_ConnNot"));
+            throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_ConnNot"));
         }
 
         return jdbccon;
@@ -184,12 +186,12 @@ public class Specification implements DatabaseSpecification {
     public void closeJDBCConnection()
     throws DDLException
     {
-        if (jdbccon == null) throw new DDLException(bundle.getString("EXC_ConnNot"));
+        if (jdbccon == null) throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_ConnNot")); //NOI18n
         try {
             jdbccon.close();
             jdbccon = null;
         } catch (SQLException e) {
-            throw new DDLException(bundle.getString("EXC_ConnUnableClose"));
+            throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_ConnUnableClose")); //NOI18N
         }
     }
 
@@ -220,13 +222,13 @@ public class Specification implements DatabaseSpecification {
         if (cprops != null) classname = (String)cprops.get("Class"); // NOI18N
         //else throw new CommandNotSupportedException(commandName, "command "+commandName+" is not supported by system");
         else throw new CommandNotSupportedException(commandName,
-            MessageFormat.format(bundle.getString("EXC_CommandNotSupported"), new String[] {commandName})); // NOI18N
+            MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_CommandNotSupported"), new String[] {commandName})); // NOI18N
         try {
             cmdclass = Class.forName(classname);
             cmd = (AbstractCommand)cmdclass.newInstance();
         } catch (Exception e) {
             throw new CommandNotSupportedException(commandName,
-                MessageFormat.format(bundle.getString("EXC_UnableFindOrInitCommand"), new String[] {classname, commandName, e.getMessage()})); // NOI18N
+                MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableFindOrInitCommand"), new String[] {classname, commandName, e.getMessage()})); // NOI18N
         }
 
         cmd.setObjectName(tableName);

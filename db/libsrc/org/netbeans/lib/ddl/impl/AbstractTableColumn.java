@@ -13,13 +13,14 @@
 
 package org.netbeans.lib.ddl.impl;
 
-import java.util.*;
-import java.sql.*;
-import org.openide.util.NbBundle;
-import java.text.ParseException;
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.util.*;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.openide.util.NbBundle;
+
+import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.lib.ddl.util.CommandFormatter;
 
 /**
 * Default implementation of database column. It handles name, column name, it's 
@@ -42,8 +43,6 @@ public class AbstractTableColumn implements Serializable {
     /** Referenced column */
     String refcol;
 
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
-    
     static final long serialVersionUID =-5128289937199572117L;
     /** Returns name of object */
     public String getObjectName()
@@ -148,9 +147,9 @@ public class AbstractTableColumn implements Serializable {
 
         if (addprops != null) args.putAll(addprops);
         if (oname != null) args.put("object.name", cmd.quote(oname)); // NOI18N
-        else throw new DDLException(bundle.getString("EXC_Unknown")); // NOI18N
+        else throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_Unknown")); // NOI18N
         if (cname != null) args.put("column.name", cmd.quote(cname)); // NOI18N
-        else throw new DDLException(bundle.getString("EXC_Unknown")); // NOI18N
+        else throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_Unknown")); // NOI18N
 
         if (reftab != null) args.put("fkobject.name", cmd.quote(reftab)); // NOI18N
         if (refcol != null) args.put("fkcolumn.name", cmd.quote(refcol)); // NOI18N
@@ -168,7 +167,7 @@ public class AbstractTableColumn implements Serializable {
     throws DDLException
     {
         Map cprops;
-        if (format == null) throw new DDLException(bundle.getString("EXC_NoFormatSpec"));
+        if (format == null) throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_NoFormatSpec")); //NOI18N
         try {
             cprops = getColumnProperties(cmd);
             return CommandFormatter.format(format, cprops);

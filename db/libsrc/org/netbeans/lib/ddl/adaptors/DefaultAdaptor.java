@@ -13,12 +13,18 @@
 
 package org.netbeans.lib.ddl.adaptors;
 
-import java.beans.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+
 import org.openide.util.NbBundle;
 
 public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable {
@@ -27,7 +33,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable {
     protected Map properties;
     private transient PropertyChangeSupport propertySupport;
 
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
+    private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
     
     public static final int NOT_SET = 0;
     public static final String NOT_SET_STRING = "";

@@ -14,11 +14,11 @@
 package org.netbeans.lib.ddl.impl;
 
 import java.text.MessageFormat;
+import java.util.Map;
+
 import org.openide.util.NbBundle;
 
-import java.text.ParseException;
-import java.util.*;
-import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.DDLException;
 
 /**
 * Instances of this command operates with one column.
@@ -31,8 +31,6 @@ public class ColumnCommand extends AbstractCommand
     /** Column */
     private TableColumn column;
 
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
-    
     static final long serialVersionUID =-4554975764392047624L;
     /** Creates specification of command
     * @param type Type of column
@@ -49,7 +47,7 @@ public class ColumnCommand extends AbstractCommand
         if (tname != null) {
             Map typemap = (Map)gprops.get(tname);
             if (typemap == null) throw new InstantiationException(
-                                                MessageFormat.format(bundle.getString("EXC_UnableLocateObject"), // NOI18N
+                                                MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableLocateObject"), // NOI18N
                                                     new String[] {tname}));
             Class typeclass = Class.forName((String)typemap.get("Class")); // NOI18N
             String format = (String)typemap.get("Format"); // NOI18N
@@ -58,7 +56,7 @@ public class ColumnCommand extends AbstractCommand
             column.setObjectType(type);
             column.setColumnName(name);
             column.setFormat(format);
-        } else throw new InstantiationException(MessageFormat.format(bundle.getString("EXC_UnableLocateType"), // NOI18N
+        } else throw new InstantiationException(MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableLocateType"), // NOI18N
                                                     new String[] {type, bindmap.toString() }));
 
         return column;
@@ -86,15 +84,3 @@ public class ColumnCommand extends AbstractCommand
         return args;
     }
 }
-
-/*
-* <<Log>>
-*  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  4    Gandalf   1.3         8/17/99  Ian Formanek    Generated serial version 
-*       UID
-*  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
-*/

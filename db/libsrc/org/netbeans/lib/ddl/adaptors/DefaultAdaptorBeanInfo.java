@@ -13,9 +13,14 @@
 
 package org.netbeans.lib.ddl.adaptors;
 
-import java.awt.*;
-import java.beans.*;
-import java.util.ResourceBundle;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.PropertyDescriptor;
+import java.beans.PropertyEditor;
+import java.beans.SimpleBeanInfo;
 
 import org.openide.util.NbBundle;
 
@@ -23,8 +28,6 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
 {
     /** Array of property descriptors. */
     private static PropertyDescriptor[] desc;
-
-    static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
 
     static {
         try {
@@ -188,7 +191,7 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
             for (int i = 0; i < desc.length; i++) {
                 try {
                     String name = "PROP_"+desc[i].getName(); // NOI18N
-                    if (i>109) desc[i].setDisplayName(bundle.getString(name));
+                    if (i>109) desc[i].setDisplayName(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString(name)); //NOI18N
                     if (i<65) desc[i].setPropertyEditorClass(BooleanEditor.class);
                     if (i<110) desc[i].setExpert(true);
                 } catch (Exception ex) {}
@@ -213,9 +216,9 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
         {
             super (
                 new int[] {	DefaultAdaptor.NOT_SET, DefaultAdaptor.YES, DefaultAdaptor.NO },
-                new String[] { bundle.getString("NotSet"), 
-                               bundle.getString("Yes"),
-                               bundle.getString("No") }
+                new String[] { NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("NotSet"), 
+                               NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("Yes"),
+                               NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("No") }
             );
         }
     }
@@ -323,7 +326,3 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
         }
     }
 }
-
-/*
- * <<Log>>
- */

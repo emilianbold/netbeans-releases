@@ -19,7 +19,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -52,8 +51,6 @@ public class AbstractCommand implements Serializable, DDLCommand {
 
     /** Additional properties */
     private Map addprops;
-
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
 
     static final long serialVersionUID =-560515030304320086L;
 
@@ -136,7 +133,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
         if (oname != null)
             args.put("object.name", quote(getObjectName())); // NOI18N
         else
-            throw new DDLException(bundle.getString("EXC_Unknown")); // NOI18N
+            throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_Unknown")); // NOI18N
         args.put("object.owner", quote(getObjectOwner())); // NOI18N
 
         return args;
@@ -160,7 +157,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             executionWithException = true;
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             return;
         }
 
@@ -168,7 +165,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
         if (spec.getSpecificationFactory().isDebugMode()) {
 
             try {
-                OutputWriter ow = IOProvider.getDefault().getIO(bundle.getString("LBL_Output_Window"), false).getOut(); //NOI18N
+                OutputWriter ow = IOProvider.getDefault().getIO(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("LBL_Output_Window"), false).getOut(); //NOI18N
                 if (ow != null) {
                     ow.println(fcmd);
                     ow.println(" "); //NOI18N
@@ -195,7 +192,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
             if (opened && fcon != null)
                 spec.closeJDBCConnection();
 
-            throw new DDLException(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage()); // NOI18N
+            throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage()); // NOI18N
         }
 
         if (opened)
@@ -211,7 +208,7 @@ public class AbstractCommand implements Serializable, DDLCommand {
     */
     public String getCommand() throws DDLException {
         if (format == null)
-            throw new DDLException(bundle.getString("EXC_NoFormatSpec")); // NOI18N
+            throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_NoFormatSpec")); // NOI18N
         try {
             Map props = getCommandProperties();
             return CommandFormatter.format(format, props);

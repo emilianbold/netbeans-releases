@@ -13,12 +13,13 @@
 
 package org.netbeans.lib.ddl.impl;
 
-import java.util.*;
-import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.openide.util.NbBundle;
-import java.text.ParseException;
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.util.*;
+
+import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.lib.ddl.util.CommandFormatter;
 
 /**
 * Describes trigger. Encapsulates name, timing (when it fires; when user INSERTs of 
@@ -30,8 +31,6 @@ public class TriggerEvent {
     public static final int UPDATE = 2;
     public static final int DELETE = 3;
 
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
-    
     /** Converts code into string representation */
     public static String getName(int code)
     {
@@ -110,7 +109,7 @@ public class TriggerEvent {
     throws DDLException
     {
         Map cprops;
-        if (format == null) throw new DDLException(bundle.getString("EXC_NoFormatSpec"));
+        if (format == null) throw new DDLException(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_NoFormatSpec")); //NOI18N
         try {
             cprops = getColumnProperties(cmd);
             return CommandFormatter.format(format, cprops);

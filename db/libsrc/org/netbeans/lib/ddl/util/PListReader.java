@@ -14,10 +14,14 @@
 package org.netbeans.lib.ddl.util;
 
 import java.io.*;
-import java.util.*;
+import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
 import java.text.MessageFormat;
 import org.openide.util.NbBundle;
-import java.text.ParseException;
 
 /** Reader for "plist" format. This format uses {} brackets to enclose dictionary
 * data (Map) and () braces for array data (Collection). Returns Map with data.
@@ -28,8 +32,6 @@ public class PListReader {
 
     protected StreamTokenizer tokenizer = null;
 
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
-    
     public static Map read(String file)
     throws FileNotFoundException, ParseException, IOException
     {
@@ -148,7 +150,7 @@ public class PListReader {
                 charr[0] = (char)charcode;
                 //throw new ParseException("expected '"+new String(charr)+"', found: "+tokenizer.toString(), tokenizer.lineno());
                 throw new ParseException(
-                    MessageFormat.format(bundle.getString("EXC_Expected"), // NOI18N
+                    MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_Expected"), // NOI18N
                         new String[] {new String(charr), tokenizer.toString()}),
                     tokenizer.lineno());
             }
@@ -227,7 +229,7 @@ public class PListReader {
                         throw new EOFException();
                     default:
                         //throw new ParseException("unexpected key, found: "+tokenizer.toString(), tokenizer.lineno());
-                        throw new ParseException( MessageFormat.format(bundle.getString("EXC_UnexpectedKey"), // NOI18N
+                        throw new ParseException( MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_UnexpectedKey"), // NOI18N
                                                     new String[] { tokenizer.toString() } ),
                                                 tokenizer.lineno());
                     }
@@ -254,7 +256,7 @@ public class PListReader {
                         object = parseNumber(tokenizer);
                         break;
                     default:
-                        throw new ParseException( MessageFormat.format(bundle.getString("EXC_ExpectedObject"), // NOI18N
+                        throw new ParseException( MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_ExpectedObject"), // NOI18N
                                                                             new String[] { tokenizer.toString() } ),
                                                                         tokenizer.lineno());
                     }
@@ -342,7 +344,7 @@ public class PListReader {
                         object = parseNumber(tokenizer);
                         break;
                     default:
-                        throw new ParseException( MessageFormat.format(bundle.getString("EXC_ExpectedObject"), // NOI18N
+                        throw new ParseException( MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_ExpectedObject"), // NOI18N
                                                     new String[] { tokenizer.toString() } ),
                                                 tokenizer.lineno());
                     }
@@ -358,7 +360,7 @@ public class PListReader {
                         break;
                     default:
                         throw new ParseException(
-                            MessageFormat.format(bundle.getString("EXC_Expected"), // NOI18N
+                            MessageFormat.format(NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle").getString("EXC_Expected"), // NOI18N
                                 new String[] {"','", tokenizer.toString()}), // NOI18N
                             tokenizer.lineno());
                             }
@@ -375,7 +377,3 @@ public class PListReader {
         }
     }
 }
-
-/*
-* <<Log>>
-*/	

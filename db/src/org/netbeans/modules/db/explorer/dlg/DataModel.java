@@ -14,24 +14,12 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.table.*;
-import javax.swing.text.DefaultCaret;
-import java.io.InputStream;
-import org.netbeans.lib.ddl.impl.Specification;
-import org.netbeans.lib.ddl.impl.CreateTable;
-import org.netbeans.lib.ddl.util.CommandBuffer;
-import org.netbeans.lib.ddl.impl.CreateIndex;
-import org.netbeans.lib.ddl.util.PListReader;
+import java.util.Vector;
+
 import javax.swing.event.TableModelEvent;
+import javax.swing.table.AbstractTableModel;
+
 import org.openide.util.NbBundle;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.util.*;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 /**
 * Table data model
@@ -47,8 +35,6 @@ public class DataModel extends AbstractTableModel
 
     static final long serialVersionUID =4162743695966976536L;
     
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
-
     public DataModel()
     {
         super();
@@ -153,7 +139,7 @@ public class DataModel extends AbstractTableModel
     }
 
     public String getColumnName(int col) {
-        return bundle.getString("CreateTable_" + col); //NOI18N
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("CreateTable_" + col); //NOI18N
     }
 
     public Class getColumnClass(int c)

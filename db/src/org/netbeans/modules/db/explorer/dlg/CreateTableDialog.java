@@ -50,14 +50,14 @@ public class CreateTableDialog {
 
     private static Map dlgtab = null;
     private static final String filename = "org/netbeans/modules/db/resources/CreateTableDialog.plist"; // NOI18N
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
+    private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
 
     public static final Map getProperties() {
         if (dlgtab == null) try {
             ClassLoader cl = CreateTableDialog.class.getClassLoader();
             InputStream stream = cl.getResourceAsStream(filename);
             if (stream == null) {
-                String message = MessageFormat.format(bundle.getString("EXC_UnableToOpenStream"), new String[] {filename}); // NOI18N
+                String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_UnableToOpenStream"), new String[] {filename}); // NOI18N
                 throw new Exception(message);
             }
             PListReader reader = new PListReader(stream);
