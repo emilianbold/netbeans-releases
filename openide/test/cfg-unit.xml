@@ -111,8 +111,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart7"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart8"/>
                 
-                <!-- excluded because this test locks. See issue #26848 -->
-                <exclude name="org/openide/loaders/FolderLookupTest.class"/>
                 <!-- If #2, #3, or #4 are seen to fail, just add them above, no big deal. -->
                 <!-- But if #6 is seen failing, please file a bug report, that is more serious. -->
                 <include name="org/openide/nodes/*.class"/>

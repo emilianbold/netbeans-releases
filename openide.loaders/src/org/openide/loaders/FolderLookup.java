@@ -351,7 +351,7 @@ public class FolderLookup extends FolderInstance {
             }
             
             // do not wait in folder recognizer, but in all other cases
-            if (!FolderList.isFolderRecognizerThread ()) {
+            if (!FolderList.isFolderRecognizerThread () && ICItem.DANGEROUS.get () == null) {
                 fl.instanceFinished ();
             }
         }
@@ -370,6 +370,8 @@ public class FolderLookup extends FolderInstance {
      * the internal lookup data structure is made from. */
     private static final class ICItem extends AbstractLookup.Pair implements Serializable {
         static final long serialVersionUID = 10L;
+        
+        static final ThreadLocal DANGEROUS = new ThreadLocal ();
 
         /** when deserialized only primary file is stored */
         private FileObject fo;
@@ -395,18 +397,24 @@ public class FolderLookup extends FolderInstance {
         public void init () {
             if (ic != null) return;
 
-            if (obj == null) {
-                try {
-                    obj = DataObject.find(fo);
-                } catch (DataObjectNotFoundException donfe) {
-                    ic = new BrokenInstance("File: " + fo.getPath(), donfe); // NOI18N
-                    return;
+            Object prev = DANGEROUS.get ();
+            try {
+                DANGEROUS.set (this);
+                if (obj == null) {
+                    try {
+                        obj = DataObject.find(fo);
+                    } catch (DataObjectNotFoundException donfe) {
+                        ic = new BrokenInstance("File: " + fo.getPath(), donfe); // NOI18N
+                        return;
+                    }
                 }
-            }
-            
-            ic = (InstanceCookie)obj.getCookie (InstanceCookie.class);
-            if (ic == null) {
-                ic = new BrokenInstance("File: " + fo.getPath(), null); // NOI18N
+
+                ic = (InstanceCookie)obj.getCookie (InstanceCookie.class);
+                if (ic == null) {
+                    ic = new BrokenInstance("File: " + fo.getPath(), null); // NOI18N
+                }
+            } finally {
+                DANGEROUS.set (prev);
             }
         }
             
