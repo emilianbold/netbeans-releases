@@ -182,7 +182,7 @@ public class MainClassChooser extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 4, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 2, 12);
         add(jLabel1, gridBagConstraints);
 
         jScrollPane1.setMinimumSize(new java.awt.Dimension(100, 200));
