@@ -319,8 +319,8 @@
 //
 //	********************************************************************************/
 
-	"Oracle Lite ORDBMS" = {
-		DatabaseProductName = "Oracle Lite ORDBMS";
+	"Oracle" = {
+		DatabaseProductName = "Oracle";
 		DatabaseProductVersion = 6;
 		TriggerEventListDelimiter = " OR ";
 		TypeMap = {
