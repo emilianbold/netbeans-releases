@@ -379,7 +379,6 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         } else {
             chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
         }
-        chooser.setDialogTitle("XXX 333");
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File configFilesDir = FileUtil.normalizeFile(chooser.getSelectedFile());
             jTextFieldLibraries.setText(configFilesDir.getAbsolutePath());
@@ -395,7 +394,6 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         } else {
             chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
         }
-        chooser.setDialogTitle("XXX 333");
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File configFilesDir = FileUtil.normalizeFile(chooser.getSelectedFile());
             jTextFieldConfigFiles.setText(configFilesDir.getAbsolutePath());
