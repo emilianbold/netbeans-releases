@@ -163,7 +163,7 @@ final class Services extends ServiceType.Registry {
       }
     });
   }
-
+  
   /** Only one instance */
   private Object readResolve () {
     return INSTANCE;
@@ -316,7 +316,7 @@ final class Services extends ServiceType.Registry {
       
       int max = current.length;
       
-      for (int i = 0; i < max; i++) {
+      for (int i = 0; i < current.length; i++) {
         int indx = newKeys.indexOf (current[i]);
         if (indx == -1) {
           // node is not present => add at the end
@@ -327,6 +327,7 @@ final class Services extends ServiceType.Registry {
         }
       }
       
+
       Enumeration en = nodes ();
       while (en.hasMoreElements ()) {
         Node n = (Node)en.nextElement ();
@@ -640,6 +641,8 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  9    Gandalf   1.8         10/15/99 Jaroslav Tulach Enterprise debugger can 
+*       be autoupdated.
 *  8    Gandalf   1.7         10/5/99  Jaroslav Tulach Handles missing sections 
 *       too.
 *  7    Gandalf   1.6         10/5/99  Jaroslav Tulach Small improvement.
