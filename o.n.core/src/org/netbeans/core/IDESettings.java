@@ -148,6 +148,9 @@ public class IDESettings extends SystemOption {
     if (value == confirmDelete) return;
     Boolean oldValue = new Boolean (confirmDelete);
     confirmDelete = value;
+    
+    org.openide.explorer.ExplorerPanel.setConfirmDelete (value);
+    
     // fire the PropertyChange
     firePropertyChange (PROP_CONFIRM_DELETE, oldValue, new Boolean (confirmDelete));
   }
@@ -239,6 +242,7 @@ public class IDESettings extends SystemOption {
 
 /*
  * Log
+ *  12   Gandalf   1.11        9/20/99  Jaroslav Tulach #1603
  *  11   Gandalf   1.10        8/1/99   Ian Formanek    Got rid of Output 
  *       Details property
  *  10   Gandalf   1.9         7/28/99  Jan Jancura     Bug in useProxy property

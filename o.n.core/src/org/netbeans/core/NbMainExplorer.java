@@ -114,10 +114,12 @@ implements ItemListener, Runnable {
     managersListener = new ManagerListener ();
     rootsListener = new RootsListener ();
 
-    // listening on changes of 
-    TopManager.getDefault ().addPropertyChangeListener (
-      new WeakListener.PropertyChange (rootsListener)
-    );
+    // listening on changes of
+    PropertyChangeListener l = new WeakListener.PropertyChange (rootsListener);
+    TopManager.getDefault ().addPropertyChangeListener (l);
+
+    IDESettings ideS = (IDESettings)IDESettings.findObject (IDESettings.class);
+    ideS.addPropertyChangeListener (l);
     
     propertySheet = new PropertySheet ();
     
@@ -189,7 +191,9 @@ implements ItemListener, Runnable {
       getRootPanel (currentRoot).getExplorerManager ();
     // create actions and attach them if we are activated
     if (actions == null) {
+      IDESettings ideS = (IDESettings)IDESettings.findObject (IDESettings.class);
       actions = new ExplorerActions();
+      actions.setConfirmDelete (ideS.getConfirmDelete ());
     }
     if (this.equals(TopComponent.getRegistry().getActivated())) {
       actions.attach(currentManager);
@@ -633,6 +637,16 @@ implements ItemListener, Runnable {
   private final class RootsListener extends Object 
   implements PropertyChangeListener {
     public void propertyChange (PropertyChangeEvent evt) {
+      if ("confirmDelete".equals (evt.getPropertyName ())) {
+        // possible change in confirm delete settings
+        ExplorerActions a = actions;
+        IDESettings ideS = (IDESettings)IDESettings.findObject (IDESettings.class);
+
+        if (a != null) {
+          a.setConfirmDelete (ideS.getConfirmDelete ());
+        }
+        return;
+      }
       if (TopManager.PROP_PLACES.equals (evt.getPropertyName ())) {
         // possible change in list of roots
         refreshRoots ();
@@ -679,6 +693,7 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  37   Gandalf   1.36        9/20/99  Jaroslav Tulach #1603
 *  36   Gandalf   1.35        9/15/99  David Simonek   cut/copy/delete actions 
 *       bugfix
 *  35   Gandalf   1.34        8/29/99  Ian Formanek    Removed obsoleted import
