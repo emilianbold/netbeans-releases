@@ -205,7 +205,12 @@ public final class XCatalog extends AbstractCatalog
      * Return display name of this reader (e.g. "XCatalog Reader" or "SOCAT Reader"
      */
     public String getDisplayName() {
-        return Util.THIS.getString("PROP_display_name", catalogSrc);
+        String location = catalogSrc;
+        if (location == null || "".equals(location.trim())) {
+            return Util.THIS.getString("PROP_missing_location");
+        } else {
+            return Util.THIS.getString("PROP_display_name", catalogSrc);
+        }
     }
         
     public Image getIcon(int type) {

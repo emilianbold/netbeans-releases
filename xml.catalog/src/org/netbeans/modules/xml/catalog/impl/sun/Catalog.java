@@ -130,7 +130,12 @@ public final class Catalog
      * @return I18N display name
      */
     public String getDisplayName() {
-        return Util.THIS.getString("TITLE_catalog", location);
+        String src = location;
+        if (src == null || "".equals(src.trim())) {
+            return Util.THIS.getString("PROP_missing_location");
+        } else {        
+            return Util.THIS.getString("TITLE_catalog", location);
+        }
     }
 
     public String getName() {
