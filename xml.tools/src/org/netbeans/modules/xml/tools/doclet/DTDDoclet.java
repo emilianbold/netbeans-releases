@@ -85,8 +85,8 @@ public class DTDDoclet {
         
         s.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"); // NOI18N
         
-        s.appendStartTag(ROOT).append("\n<head><title>DTD grammar documentation</title></head>\n"); // NOI18N
-        s.append("\n<!-- Generated on " + DateFormat.getDateInstance().format(new Date()) + " by Forte XML module. -->\n"); // NOI18N
+        s.appendStartTag(ROOT).append("\n<head><title>" + Util.getString("PAGE_TITLE") + "</title></head>\n"); // NOI18N
+        s.append("\n<!-- Generated on " + DateFormat.getDateInstance().format(new Date()) + " by NetBeans XML module. -->\n"); // NOI18N
         s.appendStartTag(BODY);
         
         headline1(Util.getString("TEXT_Element_Index"));
@@ -155,20 +155,23 @@ public class DTDDoclet {
     private void commentElement(TreeElementDecl node) {
         String tag = node.getName();
         currentElement = tag;
-        
-        s.append("\n<a name=\"" + tag + "\"></a>\n"); // NOI18N
-        
-        headline1(tag);        
-        s.append(comment == null ? "" : "<p>" + comment + "</p>"); // NOI18N
+                
+        headline1(tag, tag);        
+        // try to survive various user tags wrap it in <div>
+        s.append(comment == null ? "" : "<div>" + comment + "</div>"); // NOI18N
         commentAttributes(node);
         
         headline2(Util.getString("TEXT_ContentModel"));        
         TreeElementDecl.ContentType type = node.getContentType();
+        s.append("<p><tt>"); // NOI18N
         commentContentModel(type);
+        s.append("</tt></p>"); // NOI18N
 
         headline2(Util.getString("TEXT_Referenced_by"));
+        s.append("<p><tt>"); // NOI18N
         s.append(getRefList(tag));
-        s.append("\n\n"); // NOI18N
+        s.append("</tt></p>"); // NOI18N
+        s.append("\n"); // NOI18N
     } 
     
     /*
@@ -183,7 +186,7 @@ public class DTDDoclet {
 	    return;
         
         headline2(Util.getString("TEXT_Declared_Attributes"));
-        s.appendStartTag(LIST).append("<tt>"); // NOI18N
+        s.appendStartTag(LIST); // NOI18N
         
         while (it.hasNext()) {
             TreeAttlistDeclAttributeDef next = (TreeAttlistDeclAttributeDef) it.next();
@@ -206,7 +209,7 @@ public class DTDDoclet {
             listitem(s, text);
         }
         
-        s.append("</tt>").appendEndTag(LIST); // NOI18N
+        s.appendEndTag(LIST); // NOI18N
     }
 
     /*
@@ -296,8 +299,14 @@ public class DTDDoclet {
         
     }
 
+    private void headline1(String text, String id) {
+        s.append("\n\n<hr />\n").appendStartTag(HEADLINE1);  //NOI18N
+        if (id != null) s.append("<a name=\"" + id + "\"></a>"); // NOI18N
+        s.append(text).appendEndTag(HEADLINE1).append("\n"); // NOI18N        
+    }
+    
     private void headline1(String text) {
-        s.append("\n<hr />\n").appendStartTag(HEADLINE1).append(text).appendEndTag(HEADLINE1).append("\n"); // NOI18N
+        headline1(text, null);
     }
 
     private void headline2(String text) {
@@ -305,7 +314,7 @@ public class DTDDoclet {
     }
     
     private void listitem(RefList s, String text) {
-        s.appendStartTag(LIST_ITEM).append(text).appendEndTag(LIST_ITEM).append("\n"); // NOI18N
+        s.appendStartTag(LIST_ITEM).append("<tt>").append(text).append("</tt>").appendEndTag(LIST_ITEM).append("\n"); // NOI18N
     }
     
     //~~~~~~~~~~~~~~~~~ BACKGROUND STUFF ~~~~~~~~~~~~~~~~~~~~~~~
