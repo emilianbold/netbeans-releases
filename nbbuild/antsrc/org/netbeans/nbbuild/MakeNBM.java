@@ -546,8 +546,7 @@ public class MakeNBM extends Task {
         }
         infofile.deleteOnExit();
         ZipFileSet infoXML = new ZipFileSet();
-        infoXML.setDir( new File("/") );
-        infoXML.setIncludes( infofile.getAbsolutePath().substring(1) );
+        infoXML.setFile( infofile );
         infoXML.setFullpath("Info/info.xml");
 
         String codename = attr.getValue("OpenIDE-Module");
