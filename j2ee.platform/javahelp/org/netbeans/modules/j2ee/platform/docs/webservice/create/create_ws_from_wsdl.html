@@ -20,7 +20,8 @@ you can use the IDE to implement it. The WSDL file is an agreement on the data a
 <td>If the WSDL file imports schemas, other WSDL files, or both, from the local file system, the web service will only work
 	if the imported schemas and WSDL files are copied beforehand into the <tt>WEB-INF/wsdl</tt> (or <tt>META-INF/wsdl</tt>)
        	folder. If you do not do this,
-	the <tt>wscompile</tt> tool will not be able to locate these imported files at the end of the procedure below.</td>
+	the <a href="../build/about_wscompile.html">Web Service Compiler</a>
+       	will not be able to locate these imported files at the end of the procedure below.</td>
 </tr>
 </table>
  <p><b>To create a web service from a WSDL file:</b></p>
@@ -77,7 +78,7 @@ and you can access them in the Source Packages node (in the Projects window).
 <table cellpadding="3" cellspacing="0" border="0">
 <tr valign="top"> 
 <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
-<td>The IDE allows you to add new operations, but note that those operations do not get added to the WSDL file.</td>
+<td>You cannot add operations to a web service created from a WSDL file.</td>
 </tr>
 </table>
 </li>
