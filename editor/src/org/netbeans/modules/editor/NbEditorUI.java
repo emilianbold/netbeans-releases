@@ -175,7 +175,7 @@ public class NbEditorUI extends ExtEditorUI {
         return new NbEditorToolBar(this);
     }
 
-    private class SystemActionPerformer extends GlobalContextAction implements PropertyChangeListener{
+    private class SystemActionPerformer implements PropertyChangeListener{
 
         private String editorActionName;
 
@@ -288,21 +288,6 @@ public class NbEditorUI extends ExtEditorUI {
                 }
             }
             return systemAction;
-        }
-        
-        public void resultChanged(org.openide.util.LookupEvent ev) {
-            // FOR DEBUG PURPOSES
-            /*  
-            ActionMap am = getContextActionMap();
-            Action globalSystemAction = getSystemAction(getComponent());
-            if (am!=null){
-                if (globalSystemAction instanceof CallbackSystemAction){
-                    Object key = ((CallbackSystemAction)globalSystemAction).getActionMapKey();
-                    Action ea = (Action)am.get (key);
-                    System.out.println("editor action:"+ea);
-                }                        
-            }
-             */
         }
         
     }
