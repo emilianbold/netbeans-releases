@@ -108,7 +108,7 @@ public class ParseTest extends NbTestCase {
             log (pagePath + " not found.");
         log("Parsing page " + pagePath);
         JspParserAPI.ParseResult result = JspParserFactory.getJspParser()
-                .analyzePage(jspFo, JspParserAccess.getJspParserWM(getWebModule(jspFo)), JspParserAPI.ERROR_IGNORE);
+                .analyzePage(jspFo, TestUtil.getWebModule(jspFo), JspParserAPI.ERROR_IGNORE);
         
         if (ProjectSupport.closeProject(ProjectUtils.getInformation(project).getName()))
             log ("Project closed.");
@@ -127,19 +127,9 @@ public class ParseTest extends NbTestCase {
         assertFile(outFile, goldenF, getWorkDir());
     }
     
-    /** Returns the WebModule for a FileObject.
-     */
-    private WebModule getWebModule(FileObject fo){
-        FileObject wmRoot = WebModule.getWebModule(fo).getDocumentBase();
-        if (fo == wmRoot || FileUtil.isParentOf(wmRoot, fo)) {
-            return WebModule.getWebModule(fo);
-        }
-        return null;
-    }
-    
     private static int fileNr = 1;
     
-    private void analyzeIt(FileObject root, FileObject jspFile) throws Exception {
+    /*private void analyzeIt(FileObject root, FileObject jspFile) throws Exception {
         log("calling parseIt, root: " + root + "  file: " + jspFile);
         JspParserAPI api = JspParserFactory.getJspParser();
         JspParserAPI.ParseResult result = api.analyzePage(jspFile, TestUtil.getWebModule(root, jspFile), JspParserAPI.ERROR_IGNORE);
@@ -160,7 +150,7 @@ public class ParseTest extends NbTestCase {
         log("golden file exists 2: " + goldenF.exists());
         assertNotNull(outFile);
         assertFile(outFile, goldenF, getWorkDir());
-    }
+    }*/
     
     
     private void writeOutResult(JspParserAPI.ParseResult result, File outFile) throws IOException {

@@ -35,31 +35,6 @@ import org.openide.filesystems.Repository;
  */
 class TestUtil {
     
-/*    static FileObject mountRoot(File f, NbTestCase test) throws IOException {
-        try {
-            FileObject fo[] = FileUtil.fromFile(f);
-            if ((fo == null) || (fo.length == 0)) {
-                // need to mount
-                File f2 = f;
-                while (f2.getParentFile() != null) {
-                    f2 = f2.getParentFile();
-                }
-                test.log("Mounting " + f2);
-                org.openide.filesystems.LocalFileSystem lfs = new org.openide.filesystems.LocalFileSystem();
-                lfs.setRootDirectory(f2);
-                Repository.getDefault().addFileSystem(lfs);
-                fo = FileUtil.fromFile(f);
-            }
-            test.log("fileObject " + fo[0]);
-            return fo[0];
-        }
-        catch (PropertyVetoException e) {
-            IOException ioe = new IOException(e.getMessage());
-            ioe.initCause(e);
-            throw ioe;
-        }
-    }*/
-    
     static FileObject getFileInWorkDir(String path, NbTestCase test) throws Exception {
         File f = new File(Manager.getWorkDirPath());
         FileObject workDirFO = FileUtil.fromFile(f)[0];
@@ -71,9 +46,21 @@ class TestUtil {
         return tempFile;
     }
     
-    static JspParserAPI.WebModule getWebModule(FileObject wmRoot, FileObject jspFile) throws Exception {
+     static JspParserAPI.WebModule getWebModule(FileObject fo){
+        WebModule wm =  WebModule.getWebModule(fo);
+        if (wm == null) {
+            return null;
+        }
+        FileObject wmRoot = wm.getDocumentBase();
+        if (fo == wmRoot || FileUtil.isParentOf(wmRoot, fo)) {
+            return JspParserAccess.getJspParserWM(WebModule.getWebModule(fo));
+        }
+        return null;
+    }
+     
+    /*static JspParserAPI.WebModule getWebModule(FileObject wmRoot, FileObject jspFile) throws Exception {
         WebModule wm = createWebModule(new UnpWarWebModuleImplementation(wmRoot));
-        return JspParserAccess.getJspParserWM(wm/*wmRoot*/);
+        return JspParserAccess.getJspParserWM(wm);
     }
     
     private static WebModule createWebModule(WebModuleImplementation impl) throws Exception {
@@ -116,6 +103,6 @@ class TestUtil {
         public ClassPath getJavaSources (){
             return null;
         }
-    }
+    }*/
     
 }

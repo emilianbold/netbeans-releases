@@ -49,6 +49,7 @@ public class FastScanTest extends NbTestCase {
 
     public void testPage1() throws Exception {
         doFastScanTest("jspparser-data/wmroot", "subdir/Page1.jsp", new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"));
+        
     }
     
     public void testXMLFromExamples1() throws Exception {
@@ -79,7 +80,7 @@ public class FastScanTest extends NbTestCase {
     private void parseIt(FileObject root, FileObject jspFile, JspParserAPI.JspOpenInfo correctInfo) throws Exception {
         log("calling parseIt, root: " + root + "  file: " + jspFile);
         JspParserAPI api = JspParserFactory.getJspParser();
-        JspParserAPI.JspOpenInfo info = api.getJspOpenInfo(jspFile, TestUtil.getWebModule(root, jspFile), false);
+        JspParserAPI.JspOpenInfo info = api.getJspOpenInfo(jspFile, TestUtil.getWebModule(jspFile), false);
         log("file: " + jspFile + "   enc: " + info.getEncoding() + "   isXML: " + info.isXmlSyntax());
         assertEquals(correctInfo, info);
     }
