@@ -138,12 +138,21 @@ public class NbPath extends Task {
             getProject().setProperty(XERCES_JAR, xerces_jar);
         }
         
+        // prepare junit.path property
+        String junit_path = getProject().getProperty(JUNIT_PATH);
+        if (null == junit_path) {
+            addPath(list, appendSlash(xthome) + "lib/patches/junit-file-diff.jar");
+            addPath(list, junit_jar);
+            junit_path = list.toString();
+            getProject().setProperty(JUNIT_PATH, junit_path);
+        }
+        
         // prepare xtest.path property
         if (null == getProject().getProperty(XTEST_PATH)) {
             list.setLength(0);
             addPath(list, appendSlash(xthome) + "lib/xtest.jar");
             addPath(list, ant_path);
-            addPath(list, junit_jar);
+            addPath(list, junit_path);
             addPath(list, xalan_jar);
             addPath(list, xerces_jar);
             getProject().setProperty(XTEST_PATH, list.toString());
@@ -261,6 +270,7 @@ public class NbPath extends Task {
     private static String XTEST_PATH          = "xtest.path";
     private static String ANT_PATH            = "ant.path";
     private static String JUNIT_JAR           = "junit.jar";
+    private static String JUNIT_PATH          = "junit.path";
     private static String XALAN_JAR           = "xalan.jar";
     private static String XERCES_JAR          = "xerces.jar";
 }
