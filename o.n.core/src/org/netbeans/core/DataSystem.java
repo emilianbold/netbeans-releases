@@ -24,6 +24,7 @@ import com.netbeans.ide.loaders.DataFolder;
 import com.netbeans.ide.loaders.DataFilter;
 import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.filesystems.*;
+import com.netbeans.ide.util.datatransfer.*;
 import com.netbeans.ide.util.*;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.actions.SystemAction;
@@ -137,6 +138,11 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     return DataFolder.findFolder (fs.getRoot());
   }
 
+  /** @return available new types */
+  public NewType[] getNewTypes () {
+    return ModuleFSSection.listOfNewTypes();
+  }
+
   /** Getter for set of actions that should be present in the
   * popup menu of this node. This set is used in construction of
   * menu returned from getContextMenu and specially when a menu for
@@ -148,6 +154,8 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     return new SystemAction[] {
       SystemAction.get (com.netbeans.developer.impl.actions.AddFSAction.class),
       SystemAction.get (com.netbeans.developer.impl.actions.AddJarAction.class),
+      null,
+      SystemAction.get (com.netbeans.ide.actions.NewAction.class),
       null,
       SystemAction.get (com.netbeans.ide.actions.PropertiesAction.class)
     };
@@ -245,6 +253,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
 
 /*
  * Log
+ *  10   Gandalf   1.9         3/22/99  Jaroslav Tulach Added new section.
  *  9    Gandalf   1.8         3/21/99  Jaroslav Tulach Repository displayed ok.
  *  8    Gandalf   1.7         3/19/99  Jaroslav Tulach TopManager.getDefault 
  *       ().getRegistry ()
