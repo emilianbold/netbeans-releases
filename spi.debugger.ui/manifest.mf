@@ -1,15 +1,15 @@
-NetBeans-Module: com.netbeans.developer.modules.debugger/1
-NetBeans-Module-Name: Debugger
-NetBeans-Module-Specification-Version: 1.0
-NetBeans-Module-Implementation-Version: 1.0
+OpenIDE-Module: com.netbeans.developer.modules.debugger/1
+OpenIDE-Module-Name: Debugger
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Implementation-Version: 1.0
 
 Name: com/netbeans/developer/modules/debugger/support/DebuggerSettings.class
-NetBeans-Module-Class: Option
+OpenIDE-Module-Class: Option
 
 Name: com/netbeans/developer/modules/debugger/debug/ToolsDebugger.class
-NetBeans-Module-Class: Debugger
+OpenIDE-Module-Class: Debugger
 
 Name: com/netbeans/developer/modules/debugger/support/nodes/DebuggerNode.class
-NetBeans-Module-Class: Node
+OpenIDE-Module-Class: Node
 Type: Environment
 

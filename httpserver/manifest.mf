@@ -1,10 +1,10 @@
-Netbeans-Module: com.netbeans.developer.modules.httpserver/1
-Netbeans-Module-Name: Http Server
-NetBeans-Module-Install: com/netbeans/developer/modules/httpserver/HttpServerModule.class
-NetBeans-Module-Specification-Version: 1.0
-NetBeans-Module-Implementation-Version: 1.0
+OpenIDE-Module: com.netbeans.developer.modules.httpserver/1
+OpenIDE-Module-Name: Http Server
+OpenIDE-Module-Install: com/netbeans/developer/modules/httpserver/HttpServerModule.class
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Implementation-Version: 1.0
 Class-Path: ext/javax.servlet.jar
 
 Name: com/netbeans/developer/modules/httpserver/HttpServerSettings.class
-Netbeans-Module-Class: Option
+OpenIDE-Module-Class: Option
 

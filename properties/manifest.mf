@@ -1,9 +1,9 @@
-NetBeans-Module: com.netbeans.developer.modules.loaders.properties/1
-NetBeans-Module-Name: Properties Files
-NetBeans-Module-Specification-Version: 1.0
-NetBeans-Module-Implementation-Version: 1.0
-Netbeans-Module-Install: com/netbeans/developer/modules/loaders/properties/PropertiesModule.class
+OpenIDE-Module: com.netbeans.developer.modules.loaders.properties/1
+OpenIDE-Module-Name: Properties Files
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Implementation-Version: 1.0
+OpenIDE-Module-Install: com/netbeans/developer/modules/loaders/properties/PropertiesModule.class
 
 Name: com/netbeans/developer/modules/loaders/properties/PropertiesDataLoader.class
-NetBeans-Module-Class: Loader
+OpenIDE-Module-Class: Loader
 
