@@ -4,3 +4,4 @@ usersguide/javahelp/org/netbeans/modules/usersguide/**/*.xml
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.jhm
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.css
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.gif
+usersguide/src/org/netbeans/modules/usersguide/Bundle.properties
