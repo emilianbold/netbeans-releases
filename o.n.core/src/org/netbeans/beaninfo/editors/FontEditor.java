@@ -116,14 +116,11 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     public void paintValue (Graphics g, Rectangle rectangle) {
-        Color color = g.getColor ();
         Font f = g.getFont ();
-        g.setColor (Color.black);
         FontMetrics fm = g.getFontMetrics (font);
         g.setFont (font);
-        g.drawString (fontName, rectangle.x + 4, rectangle.y +
+        g.drawString (fontName, rectangle.x, rectangle.y +
                       (rectangle.height - fm.getHeight ()) / 2 + fm.getAscent ());
-        g.setColor (color);
         g.setFont (f);
     }
 

@@ -251,26 +251,21 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
     }
 
     public void paintValue(Graphics g, Rectangle rectangle) {
-        Color color = g.getColor();
         int px;
 
         if (this.color != null) {
-            g.setColor(Color.black);
-            g.drawRect(rectangle.x + 6, rectangle.y + rectangle.height / 2 - 5 , 10, 10);
+            Color color = g.getColor();
+            g.drawRect(rectangle.x, rectangle.y + rectangle.height / 2 - 5 , 10, 10);
             g.setColor(this.color);
-            g.fillRect(rectangle.x + 7, rectangle.y + rectangle.height / 2 - 4 , 9, 9);
-            g.setColor(Color.black);
+            g.fillRect(rectangle.x + 1, rectangle.y + rectangle.height / 2 - 4 , 9, 9);
+            g.setColor(color);
             px = 18;
         }
-        else {
-            g.setColor(new Color(0, 0, 128));
-            px = 0;
-        }
+        else px = 0;
 
         FontMetrics fm = g.getFontMetrics();
-        g.drawString(getAsText(), rectangle.x + px + 4, rectangle.y +
+        g.drawString(getAsText(), rectangle.x + px, rectangle.y +
                       (rectangle.height - fm.getHeight()) / 2 + fm.getAscent());
-        g.setColor(color);
     }
 
     public boolean supportsCustomEditor () {
