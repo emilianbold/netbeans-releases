@@ -531,6 +531,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
                 int line = textView.getDocument().getDefaultRootElement().getElementIndex(pos);
                 if (line >= 0) {
                     lineClicked(line, e.getPoint());
+                    e.consume(); //do not allow this window's caret to steal the focus from editor window
                 }
             }
         }
@@ -687,5 +688,10 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             }
             return true;
         }        
+
+        public void mouseReleased(MouseEvent e) {
+            if( !e.isConsumed() )
+                super.mouseReleased(e);
+        }
     }
 }
