@@ -220,8 +220,8 @@
 		iconbasepreferednotinstalled = "/org/netbeans/modules/db/resources/driverPreferedNotInstalled";
 		children = ();
 		options = {
-			cut = YES;
-			copy = YES;
+			cut = NO;
+			copy = NO;
 			delete = YES;
 		};
 		properties = (
@@ -310,8 +310,8 @@
 		activeiconbase = "/org/netbeans/modules/db/resources/connection";
 		children = ();
 		options = {
-			cut = YES;
-			copy = YES;
+			cut = NO;
+			copy = NO;
 			delete = YES;
 		};
 		children_ordering = {
@@ -339,10 +339,10 @@
 				class = org.netbeans.modules.db.explorer.actions.DisconnectAction;
 			},
 			delimiter,
-//			{
-//				name = "CaptureDatabaseSchema";
-//				class = org.netbeans.modules.db.explorer.actions.CaptureSchemaAction;
-//			},
+			{
+				name = "CaptureDatabaseSchema";
+				class = org.netbeans.modules.db.explorer.actions.CaptureSchemaAction;
+			},
 			delimiter,
 			{
 				name = "ExecuteCommand";
@@ -1211,7 +1211,7 @@
 		resultset = (catalog,schema,name,type);
 		options = {
 			cut = NO;
-			copy = YES;
+			copy = NO;
 			delete = YES;
 		};
 		children_ordering = {
@@ -1323,8 +1323,8 @@
 		iconbase = "/org/netbeans/modules/db/resources/column";
 		resultset = (catalog,schema,tablename,name,datatype,typename,columnsize,bufflen,decdigits,radix,nullable,remarks,coldef,reserved1,reserved2,octetlen,ordpos,isnullable);
 		options = {
-			cut = YES;
-			copy = YES;
+			cut = NO;
+			copy = NO;
 			delete = YES;
 		};
 		actions = (
@@ -1432,7 +1432,11 @@
 		infoclass = org.netbeans.modules.db.explorer.infos.IndexColumnNodeInfo;
 		iconbase = "/org/netbeans/modules/db/resources/columnIndex";
 		resultset = (catalog,schema,tablename,unique,qual,idxname,type,ordpos,name,ord,card,pages,filter);
-		options = {};
+		options = {
+			cut = NO;
+			copy = NO;
+			delete = YES;
+		};
 		actions = (
 			{
 				name = "AddColumn";
@@ -1547,8 +1551,8 @@
 		iconbase = "/org/netbeans/modules/db/resources/columnPrimary";
 		resultset = (catalog,schema,tablename,name,keyseq,pkname);
 		options = {
-			cut = YES;
-			copy = YES;
+			cut = NO;
+			copy = NO;
 			delete = YES;
 		};
 		actions = (
@@ -1658,8 +1662,8 @@
 		infoclass = org.netbeans.modules.db.explorer.infos.ForeignColumnNodeInfo;
 		iconbase = "/org/netbeans/modules/db/resources/columnForeign";
 		options = {
-			cut = YES;
-			copy = YES;
+			cut = NO;
+			copy = NO;
 			delete = YES;
 		};
 		actions = (
@@ -1778,8 +1782,8 @@
 		children = ();
 		properties = ();
 		options = {
-			cut = YES;
-			copy = YES;
+			cut = NO;
+			copy = NO;
 			delete = YES;
 		};
 		actions = (
@@ -1805,8 +1809,8 @@
 		resultset = (unused,unused,unused,unused,unused,name);
 		children = ();
 		options = {
-			cut = YES;
-			copy = YES;
+			cut = NO;
+			copy = NO;
 			delete = YES;
 		};
 		actions = (
@@ -1868,8 +1872,8 @@
 		iconbaseD = "/org/netbeans/modules/db/resources/indexUp";
 		resultset = (catalog,schema,tablename,unique,qual,ixname,type,ordpos,name,ord,card,pages,filter);
 		options = {
-			cut = YES;
-			copy = YES;
+			cut = NO;
+			copy = NO;
 			delete = YES;
 		};
 		actions = (
@@ -2056,8 +2060,8 @@
 		resultset = (catalog,schema,name,type,remarks);
 		children = ();
 		options = {
-			cut = YES;
-			copy = YES;
+			cut = NO;
+			copy = NO;
 			delete = YES;
 		};
 		actions = (
@@ -2219,8 +2223,8 @@
 		iconbase = "/org/netbeans/modules/db/resources/procedure";
 		resultset = (catalog,schema,name,reserved1,reserverd2,reserverd3,remarks,type);
 		options = {
-			cut = YES;
-			copy = YES;
+			cut = NO;
+			copy = NO;
 			delete = YES;
 		};
 		actions = (
@@ -2289,9 +2293,9 @@
 		iconbase_return = "/org/netbeans/modules/db/resources/paramReturn";
 		resultset = (catalog, schema, procname, name, type, dtype, typename, precision, length, scale, radix, nullable, remarks);
 		options = {
-			cut = YES;
-			copy = YES;
-			delete = YES;
+			cut = NO;
+			copy = NO;
+			delete = NO;
 		};
 		actions = (
 //			{
