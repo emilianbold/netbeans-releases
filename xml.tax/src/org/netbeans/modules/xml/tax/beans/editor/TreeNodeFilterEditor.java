@@ -42,7 +42,7 @@ public class TreeNodeFilterEditor extends PropertyEditorSupport {
     /**
      */
     public boolean supportsCustomEditor () {
-        return true;
+        return getValue() != null;
     }
 
     /**
