@@ -36,33 +36,40 @@ public class PropertyActionSettingsBeanInfo extends SimpleBeanInfo {
 
     public PropertyDescriptor[] getPropertyDescriptors () {
         try {
-            PropertyDescriptor access = new PropertyDescriptor("genAccess", PropertyActionSettings.class);
+            PropertyDescriptor access = new PropertyDescriptor(
+                    PropertyActionSettings.PROP_ACCESS, PropertyActionSettings.class, "getGenAccess", "setGenAccess");
             access.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Gen_Access"));
             access.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Gen_Access"));
             access.setPropertyEditorClass (AccessEditor.class);
 
-            PropertyDescriptor bound = new PropertyDescriptor("genBound", PropertyActionSettings.class);
+            PropertyDescriptor bound = new PropertyDescriptor(
+                    PropertyActionSettings.PROP_BOUND, PropertyActionSettings.class, "isGenBound", "setGenBound");
             bound.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Gen_Bound"));
             bound.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Gen_Bound"));
 
-            PropertyDescriptor constrained = new PropertyDescriptor("genConstrained", PropertyActionSettings.class);
+            PropertyDescriptor constrained = new PropertyDescriptor(
+                    PropertyActionSettings.PROP_CONSTR, PropertyActionSettings.class, "isGenConstrained", "setGenConstrained");
             constrained.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Gen_Constrained"));
             constrained.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Gen_Constrained"));
 
-            PropertyDescriptor indexed = new PropertyDescriptor("genIndexed", PropertyActionSettings.class);
+            PropertyDescriptor indexed = new PropertyDescriptor(
+                    PropertyActionSettings.PROP_INDEXED, PropertyActionSettings.class, "isGenIndexed", "setGenIndexed");
             indexed.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Gen_Indexed"));
             indexed.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Gen_Indexed"));
 
-            PropertyDescriptor inherit = new PropertyDescriptor("useInherit", PropertyActionSettings.class);
+            PropertyDescriptor inherit = new PropertyDescriptor(
+                    PropertyActionSettings.PROP_INHER, PropertyActionSettings.class, "isUseInherit", "setUseInherit");
             inherit.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Use_Inherit"));
             inherit.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Use_Inherit"));
                 
-            PropertyDescriptor askBefore = new PropertyDescriptor("askBeforeGen", PropertyActionSettings.class);
+            PropertyDescriptor askBefore = new PropertyDescriptor(
+                    PropertyActionSettings.ASK_BEFORE, PropertyActionSettings.class, "isAskBeforeGen", "setAskBeforeGen");
             askBefore.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Ask_Before_Generating"));
             askBefore.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Ask_Before_Generating"));
             askBefore.setHidden(true);  //will be set to false ASAP I'll have right panel
                 
-            PropertyDescriptor propstyle = new PropertyDescriptor("propStyle", PropertyActionSettings.class);
+            PropertyDescriptor propstyle = new PropertyDescriptor(
+                    PropertyActionSettings.PROP_STYLE, PropertyActionSettings.class, "getPropStyle", "setPropStyle");
             propstyle.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Prop_Style"));
             propstyle.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Prop_Style"));
             propstyle.setPropertyEditorClass (PropertyStyleEditor.class);
