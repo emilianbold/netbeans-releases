@@ -440,7 +440,12 @@ public class BaseOptions extends OptionSupport {
     public Map getAbbrevMap() {
         loadDefaultAbbreviations();
         loadSettings(AbbrevsMIMEProcessor.class);
-        return new HashMap((Map)super.getSettingValue(SettingsNames.ABBREV_MAP) );
+        Map settingsMap = (Map)super.getSettingValue(SettingsNames.ABBREV_MAP);
+        if (settingsMap == null){
+            org.netbeans.editor.Utilities.annotateLoggable(new NullPointerException("settingsMap is null for kit:"+getKitClass())); //NOI18N
+        }
+        Map ret = (settingsMap == null) ? new HashMap() : new HashMap(settingsMap);
+        return ret;
     }
     
     /** Sets new abbreviations map to initializer map and if saveToXML is true,
@@ -725,7 +730,11 @@ public class BaseOptions extends OptionSupport {
     
     public Map getColoringMap() {
         loadSettings(FontsColorsMIMEProcessor.class);
-        Map cm = new HashMap( SettingsUtil.getColoringMap(getKitClass(), false, true) ); // !!! !evaluateEvaluators
+        Map settingsMap = SettingsUtil.getColoringMap(getKitClass(), false, true); // !!! !evaluateEvaluators
+        if (settingsMap == null){
+            org.netbeans.editor.Utilities.annotateLoggable(new NullPointerException("settingsMap is null for kit:"+getKitClass())); //NOI18N
+        }
+        Map cm = (settingsMap == null) ? new HashMap() : new HashMap(settingsMap);
         cm.put(null, getKitClass().getName() ); // add kit class
         return cm;
     }
@@ -898,7 +907,11 @@ public class BaseOptions extends OptionSupport {
     public Map getMacroMap() {
         loadDefaultMacros();
         loadSettings(MacrosMIMEProcessor.class);
-        Map ret = new HashMap( (Map)super.getSettingValue(SettingsNames.MACRO_MAP) );
+        Map settingsMap = (Map)super.getSettingValue(SettingsNames.MACRO_MAP);
+        if (settingsMap == null){
+            org.netbeans.editor.Utilities.annotateLoggable(new NullPointerException("settingsMap is null for kit:"+getKitClass())); //NOI18N
+        }
+        Map ret = (settingsMap == null) ? new HashMap() : new HashMap(settingsMap);
         ret.put(null, getKBList());
         return ret;
     }
