@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -37,6 +37,7 @@ public class NbMerge extends Task {
     private Vector modules = new Vector (); // Vector<String>
     private String targetprefix = "all-";
     private String topdir = "..";
+    private String [] topdirs = null;
     
     /** Target directory to unpack to (top of IDE installation). */
     public void setDest (String s) {
@@ -66,6 +67,15 @@ public class NbMerge extends Task {
         topdir = s;
     }
     
+    public void setTopdirs (String str) {
+        StringTokenizer st = new StringTokenizer(str, ",");
+        int count = st.countTokens();
+        topdirs = new String [count];
+        for (int i = 0; i < count; i++) {
+            topdirs[i] = new String (st.nextToken().trim());
+        }
+    }
+    
     public void execute () throws BuildException {
         // Somewhat convoluted code because Project.executeTargets does not
         // eliminate duplicates when analyzing dependencies! Ecch.
@@ -81,27 +91,38 @@ public class NbMerge extends Task {
         }
         project.addTarget (dummy);
         project.executeTarget (dummyName);
-
+        
         Deltree deltree = (Deltree) project.createTask ("deltree");
         deltree.setDir (dest);
-	deltree.init ();
+        deltree.init ();
         deltree.setLocation (location);
-	deltree.execute ();
+        deltree.execute ();
 
-        for (int i = 0; i < modules.size (); i++) {
-            String module = (String) modules.elementAt (i);
-	    String netbeans = topdir + '/' + module + "/netbeans";
-	    if (! new File (netbeans).exists ()) {
-		log ("Build product dir " + netbeans + " does not exist, skipping...", Project.MSG_WARN);
-		continue;
-	    }
-            Copydir copydir = (Copydir) project.createTask ("copydir");
-            copydir.setSrc (netbeans);
-            copydir.setDest (dest);
-	    copydir.init ();
-            copydir.setLocation (location);
-            copydir.execute ();
+        if (topdirs == null && topdir != null) {
+            topdirs = new String[1];
+            topdirs[0] = topdir; 
         }
-    }
-
+        
+        if (topdir == null && topdirs == null) {
+            throw new BuildException ("You must set at least one topdir attribute", location);
+        }
+        
+        for (int j = 0; j < topdirs.length; j++) {
+            topdir = topdirs[j];
+            for (int i = 0; i < modules.size (); i++) {
+                String module = (String) modules.elementAt (i);
+                String netbeans = topdir + '/' + module + "/netbeans";
+                if (! new File (netbeans).exists ()) {
+                    log ("Build product dir " + netbeans + " does not exist, skipping...", Project.MSG_WARN);
+                    continue;
+                }
+                Copydir copydir = (Copydir) project.createTask ("copydir");
+                copydir.setSrc (netbeans);
+                copydir.setDest (dest);
+                copydir.init ();
+                copydir.setLocation (location);
+                copydir.execute ();
+            }
+        }        
+    }    
 }
