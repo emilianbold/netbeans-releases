@@ -26,6 +26,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.junit.GuiUtils;
+import org.netbeans.modules.junit.SelfResizingPanel;
 import org.netbeans.modules.junit.SizeRestrictedPanel;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
@@ -72,14 +73,13 @@ class TestSuiteStepLocation implements WizardDescriptor.Panel {
                         GuiUtils.CHK_HINTS}));
         chkCodeHints = chkBoxes[0];
 
-        JComponent box = new JPanel();
+        JComponent box = new SelfResizingPanel();
         box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
         box.add(infoLabel);
         box.add(Box.createVerticalStrut(24));
         box.add(optCode);
         box.add(Box.createVerticalStrut(11));
         box.add(optComments);
-        box.add(Box.createVerticalStrut(1000));
         
         /* tune layout of the components within the box: */
         infoLabel.setAlignmentX(0.0f);
