@@ -52,7 +52,7 @@ public class JColorChooserOperator extends JComponentOperator
 
     private static final String RGB_TITLE = "RGB";
 
-    private final static long WAIT_LIST_PAINTED_TIMEOUT = 10000;
+    private final static long WAIT_LIST_PAINTED_TIMEOUT = 60000;
 
     private TestOut output;
     private JTabbedPaneOperator tabbed;

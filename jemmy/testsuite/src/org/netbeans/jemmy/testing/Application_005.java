@@ -54,8 +54,13 @@ public class Application_005 extends TestFrame {
 	    });
         JMenu sbsbm = new JMenu("subsubmenu");
         sbsbm.add(itm);
+
+        JMenu sbsbm2 = new JMenu("subsubmenu2");
+
         JMenu sbm = new JMenu("submenu");
         sbm.add(sbsbm);
+        sbm.add(sbsbm2);
+
 	JMenuItem pb = new JMenu("XXX");
         pb.add(sbm);
 	popup.add(pb);

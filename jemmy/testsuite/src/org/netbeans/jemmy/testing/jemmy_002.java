@@ -75,6 +75,15 @@ public class jemmy_002 extends JemmyTest {
 
 	    JMenuBarOperator mbo = new JMenuBarOperator(JMenuBarOperator.findJMenuBar(win));
 
+            if(mbo.showMenuItems("menu|submenu", "|").length != 2) {
+		finalize();
+		return(1);
+            }
+
+                mbo.closeSubmenus();
+
+                sleep(2000);
+
             if(!mbo.showMenuItem("menu|submenu", "|").getText().equals("submenu")) {
 		finalize();
 		return(1);
@@ -144,7 +153,7 @@ public class jemmy_002 extends JemmyTest {
 		return(1);
 	    }
 
-	} catch(TimeoutExpiredException e) {
+	} catch(Exception e) {
 	    getOutput().printStackTrace(e);
 	    finalize();
 	    return(1);

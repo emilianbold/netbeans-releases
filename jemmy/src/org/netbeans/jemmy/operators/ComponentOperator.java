@@ -115,10 +115,10 @@ public class ComponentOperator extends Operator
     private final static long MOUSE_CLICK_TIMEOUT = 0;
     private final static long BEFORE_DRAG_TIMEOUT = 0;
     private final static long AFTER_DRAG_TIMEOUT = 0;
-    private final static long WAIT_COMPONENT_TIMEOUT = 10000;
-    private final static long WAIT_COMPONENT_ENABLED_TIMEOUT = 1000;
-    private final static long WAIT_FOCUS_TIMEOUT = 10000;
-    private final static long WAIT_STATE_TIMEOUT = 5000;
+    private final static long WAIT_COMPONENT_TIMEOUT = 60000;
+    private final static long WAIT_COMPONENT_ENABLED_TIMEOUT = 60000;
+    private final static long WAIT_FOCUS_TIMEOUT = 60000;
+    private final static long WAIT_STATE_TIMEOUT = 60000;
 
     private Component source;
     private Timeouts timeouts;
@@ -885,6 +885,17 @@ public class ComponentOperator extends Operator
 	} catch(InterruptedException e) {
 	    output.printStackTrace(e);
 	}
+    }
+
+    public void waitComponentVisible(final boolean visibility) {
+	waitState(new ComponentChooser() {
+                public boolean checkComponent(Component comp) {
+                    return(isVisible() == visibility);
+                }
+                public String getDescription() {
+                    return("Component is " + (visibility ? "" : " not ") + "visible");
+                }
+            });
     }
 
     /**

@@ -110,11 +110,16 @@ public class jemmy_005 extends JemmyTest {
 		    }
 		}
 
+                if(pmo.showMenuItems("XXX|submenu", "|").length != 2) {
+                    finalize();
+                    return(1);
+                }
+
                 if(!pmo.showMenuItem("XXX|submenu", "|").getText().equals("submenu")) {
                     finalize();
                     return(1);
                 }
-                
+
                 if(!pmo.showMenuItem("XXX", "|").getText().equals("XXX")) {
                     finalize();
                     return(1);

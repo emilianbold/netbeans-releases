@@ -20,6 +20,8 @@ import javax.swing.text.JTextComponent;
 import java.lang.reflect.InvocationTargetException;
 
 import org.netbeans.jemmy.demo.Demonstrator;
+
+import org.netbeans.jemmy.util.DefaultVisualizer;
 import org.netbeans.jemmy.util.Dumper;
 
 public class jemmy_001 extends JemmyTest {
@@ -28,7 +30,9 @@ public class jemmy_001 extends JemmyTest {
 	try {
 	    (new ClassReference("org.netbeans.jemmy.testing.Application_001")).startApplication();
 
-	    JFrame win =JFrameOperator.waitJFrame("Application_001", true, true);
+	    JFrame win = JFrameOperator.waitJFrame("Application_001", true, true);
+
+            Operator.setDefaultComponentVisualizer(((DefaultVisualizer)Operator.getDefaultComponentVisualizer()).cloneThis());
 
 	    JFrameOperator fo = new JFrameOperator(win);
 	    JFrameOperator fo2 = new JFrameOperator();

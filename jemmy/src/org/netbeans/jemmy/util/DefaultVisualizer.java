@@ -17,6 +17,7 @@
 
 package org.netbeans.jemmy.util;
 
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyInputException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
@@ -49,7 +50,7 @@ import javax.swing.JTabbedPane;
  * @author Alexandre Iline (alexandre.iline@sun.com)
  * 
  */
-public class DefaultVisualizer implements ComponentVisualizer {
+public class DefaultVisualizer implements ComponentVisualizer, Cloneable {
     private boolean window = true;
     private boolean internalFrame = true;
     private boolean scroll = false;
@@ -188,4 +189,14 @@ public class DefaultVisualizer implements ComponentVisualizer {
 	    JemmyProperties.getProperties().getOutput().printStackTrace(e);
 	}
     }
+
+    public DefaultVisualizer cloneThis() {
+        try {
+            return((DefaultVisualizer)super.clone());
+        } catch(CloneNotSupportedException e) {
+            //that's impossible
+            throw(new JemmyException("Even impossible happens :)", e));
+        }
+    }
+
 }

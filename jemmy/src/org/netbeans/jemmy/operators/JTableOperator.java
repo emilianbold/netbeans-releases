@@ -84,7 +84,7 @@ import javax.swing.text.JTextComponent;
 public class JTableOperator extends JComponentOperator
 implements Outputable, Timeoutable {
 
-    private final static long WAIT_EDITING_TIMEOUT = 1000;
+    private final static long WAIT_EDITING_TIMEOUT = 60000;
 
     private TestOut output;
     private Timeouts timeouts;

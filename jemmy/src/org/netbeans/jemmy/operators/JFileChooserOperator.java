@@ -19,6 +19,7 @@ package org.netbeans.jemmy.operators;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.TestOut;
@@ -64,7 +65,7 @@ import javax.swing.plaf.FileChooserUI;
 public class JFileChooserOperator extends JComponentOperator 
     implements Timeoutable, Outputable {
 
-    private final static long WAIT_LIST_PAINTED_TIMEOUT = 10000;
+    private final static long WAIT_LIST_PAINTED_TIMEOUT = 60000;
 
     private Timeouts timeouts;
     private TestOut output;
@@ -1069,15 +1070,32 @@ public class JFileChooserOperator extends JComponentOperator
 		   }, index));
     }
 
-    private int findFileIndex(String file, StringComparator comparator) {
-	File[] files = getFiles();
-	for(int i = 0; i < files.length; i++) {
-	    if(comparator.equals(files[i].getName(), 
-				 file)) {
-		return(i);
-	    }
-	}
-	return(-1);
+    private int findFileIndex(final String file, final StringComparator comparator) {
+        Waiter fileWaiter = new Waiter(new Waitable() {
+                public Object actionProduced(Object obj) {
+                    File[] files = getFiles();
+                    for(int i = 0; i < files.length; i++) {
+                        if(comparator.equals(files[i].getName(), 
+                                             file)) {
+                            return(new Integer(i));
+                        }
+                    }
+                    return(null);
+                }
+                public String getDescription() {
+                    return("\"" + file + "\" file to be displayed");
+                }
+            });
+        fileWaiter.setOutput(getOutput().createErrorOutput());
+        fileWaiter.setTimeouts(getTimeouts().cloneThis());
+        fileWaiter.getTimeouts().setTimeout("Waiter.WaitingTime", 
+                                            getTimeouts().
+                                            getTimeout("JFileChooserOperator.WaitListPaintedTimeout"));
+        try {
+            return(((Integer)fileWaiter.waitAction(null)).intValue());
+        } catch(InterruptedException e) {
+            throw(new JemmyException("Waiting has been interrupted!"));
+        }
     }
 
     private int findDirIndex(String dir, StringComparator comparator) {

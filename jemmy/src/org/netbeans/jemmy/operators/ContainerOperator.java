@@ -51,7 +51,7 @@ public class ContainerOperator extends ComponentOperator
     implements Timeoutable, Outputable {
 
     private static int POINT_RECT_SIZE = 10;
-    private final static long WAIT_SUBCOMPONENT_TIMEOUT = 10000;
+    private final static long WAIT_SUBCOMPONENT_TIMEOUT = 60000;
 
     private ComponentSearcher searcher;
     private Timeouts timeouts;

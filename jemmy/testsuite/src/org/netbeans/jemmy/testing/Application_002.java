@@ -41,9 +41,11 @@ public class Application_002 extends TestFrame {
 
 	MyMenu subsubmenu = new MyMenu("subsubmenu");
 	subsubmenu.add(menuItem);
+	MyMenu subsubmenu2 = new MyMenu("subsubmenu2");
 
 	MyMenu submenu = new MyMenu("submenu");
 	submenu.add(subsubmenu);
+	submenu.add(subsubmenu2);
 
 	MyMenu menu = new MyMenu("menu");
 	menu.add(submenu);

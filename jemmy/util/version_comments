@@ -662,3 +662,58 @@ www/samples/TreeActionsSample.java
 www/samples/QueueUsingSample.java
 www/samples/MyTest.java
 www/samples/RunnerTest.java
+
+
+
+#VERSION 2.0.5
+
+Propogated changes from queue-branch (27152 fix):
+        src/org/netbeans/jemmy/drivers/menus/DefaultJMenuDriver.java
+
+27160:
+        src/org/netbeans/jemmy/operators/ComponentOperator.java
+        src/org/netbeans/jemmy/operators/ContainerOperator.java
+        src/org/netbeans/jemmy/operators/JColorChooserOperator.java
+        src/org/netbeans/jemmy/operators/JComboBoxOperator.java
+        src/org/netbeans/jemmy/operators/JMenuOperator.java
+        src/org/netbeans/jemmy/operators/JProgressBarOperator.java
+        src/org/netbeans/jemmy/operators/JTextComponentOperator.java
+        src/org/netbeans/jemmy/operators/JTableOperator.java
+        src/org/netbeans/jemmy/operators/JTreeOperator.java
+        src/org/netbeans/jemmy/operators/TextAreaOperator.java
+        src/org/netbeans/jemmy/operators/TextFieldOperator.java
+        src/org/netbeans/jemmy/operators/TextComponentOperator.java
+        src/org/netbeans/jemmy/util/DefaultVisualizer.java
+        src/org/netbeans/jemmy/EventDispatcher.java
+
+26408:
+        src/org/netbeans/jemmy/operators/ComponentOperator.java
+
+
+24313:  showMenuItems(*) in all menu operators, closeSubmenus() in JMenuBarOperator:
+        src/org/netbeans/jemmy/operators/JMenuBarOperator.java
+        src/org/netbeans/jemmy/operators/JMenuOperator.java
+        src/org/netbeans/jemmy/operators/JPopupMenuOperator.java
+
+
+26050: NoSuchPathException is thrown
+        src/org/netbeans/jemmy/operators/JTreeOperator.java
+
+
+27846:
+        src/org/netbeans/jemmy/util/DefaultVisualizer.java
+        
+
+src/org/netbeans/jemmy/operators/JFileChooserOperator.java:
+        JFileChooserOperator.findFileIndex waits for a file.
+        Earlier it tried to find file.
+
+Wait for popup having right invoker. JPopupMenu should have 
+"invoker" property equal either to component on which it was invoked 
+or it's subcomponent/supercomponent.
+        src/org/netbeans/jemmy/operators/JPopupMenuOperator.java
+
+IndexOutOfBoundsException of TreeModel.getChild() is ignored.
+This exception can be thrown if subnodes was deleted during
+path finding.
+        src/org/netbeans/jemmy/operators/JTreeOperator.java

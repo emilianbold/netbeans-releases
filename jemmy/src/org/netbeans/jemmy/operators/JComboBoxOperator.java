@@ -83,7 +83,7 @@ public class JComboBoxOperator extends JComponentOperator
 implements Timeoutable, Outputable {
 
     private final static long BEFORE_SELECTING_TIMEOUT = 0;
-    private final static long WAIT_LIST_TIMEOUT = 1000;
+    private final static long WAIT_LIST_TIMEOUT = 60000;
 
     private TestOut output;
     private Timeouts timeouts;

@@ -61,9 +61,9 @@ import javax.swing.event.MenuListener;
 public class JMenuOperator extends JMenuItemOperator 
 implements Outputable, Timeoutable{
 
-    private final static long WAIT_POPUP_TIMEOUT = 10000;
+    private final static long WAIT_POPUP_TIMEOUT = 60000;
     private final static long WAIT_BEFORE_POPUP_TIMEOUT = 0;
-    private final static long PUSH_MENU_TIMEOUT = 10000;
+    private final static long PUSH_MENU_TIMEOUT = 60000;
 
     private Timeouts timeouts;
     private TestOut output;
@@ -440,6 +440,27 @@ implements Outputable, Timeoutable{
 	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
 	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
 	pushMenuNoBlock(parseString(path, delim));
+    }
+
+    public JMenuItemOperator[] showMenuItems(String[] path, StringComparator comparator) {
+        JMenu menu = (JMenu)pushMenu(path, comparator);
+        JMenuItemOperator[] result = new JMenuItemOperator[menu.getMenuComponentCount()];
+        for(int i = 0; i < result.length; i++) {
+            result[i] = new JMenuItemOperator((JMenuItem)menu.getMenuComponent(i));
+            result[i].copyEnvironment(this);
+        }
+        return(result);
+    }
+
+    public JMenuItemOperator[] showMenuItems(String[] path) {
+        return(showMenuItems(path, getComparator()));
+    }
+
+    public JMenuItemOperator[] showMenuItems(String path, String delim, StringComparator comparator ) {
+        return(showMenuItems(parseString(path, delim), comparator));
+    }
+    public JMenuItemOperator[] showMenuItems(String path, String delim) {
+        return(showMenuItems(path, delim, getComparator()));
     }
 
     public JMenuItemOperator showMenuItem(String[] path, StringComparator comparator) {

@@ -326,6 +326,28 @@ public class JMenuBarOperator extends JComponentOperator
 	pushMenuNoBlock(parseString(path, delim));
     }
 
+    public JMenuItemOperator[] showMenuItems(String[] path, StringComparator comparator) {
+        JMenu menu = (JMenu)pushMenu(path, comparator);
+        JMenuItemOperator[] result = new JMenuItemOperator[menu.getMenuComponentCount()];
+        for(int i = 0; i < result.length; i++) {
+            result[i] = new JMenuItemOperator((JMenuItem)menu.getMenuComponent(i));
+            result[i].copyEnvironment(this);
+        }
+        return(result);
+    }
+
+    public JMenuItemOperator[] showMenuItems(String[] path) {
+        return(showMenuItems(path, getComparator()));
+    }
+
+    public JMenuItemOperator[] showMenuItems(String path, String delim, StringComparator comparator ) {
+        return(showMenuItems(parseString(path, delim), comparator));
+    }
+
+    public JMenuItemOperator[] showMenuItems(String path, String delim) {
+        return(showMenuItems(path, delim, getComparator()));
+    }
+
     public JMenuItemOperator showMenuItem(String[] path, StringComparator comparator ) {
         String[] parentPath = getParentPath(path);
         JMenu menu;
@@ -349,8 +371,23 @@ public class JMenuBarOperator extends JComponentOperator
     public JMenuItemOperator showMenuItem(String path, String delim, StringComparator comparator ) {
         return(showMenuItem(parseString(path, delim), comparator));
     }
+
     public JMenuItemOperator showMenuItem(String path, String delim) {
         return(showMenuItem(path, delim, getComparator()));
+    }
+
+    public void closeSubmenus() {
+        JMenu menu = (JMenu)findSubComponent(new ComponentChooser() {
+                public boolean checkComponent(Component comp) {
+                    return(((JMenu)comp).isPopupMenuVisible());
+                }
+                public String getDescription() {
+                    return("Expanded JMenu");
+                }
+            });
+        JMenuOperator oper = new JMenuOperator(menu);
+        oper.copyEnvironment(this);
+        oper.push();
     }
 
     /**

@@ -56,7 +56,7 @@ public class EventDispatcher implements Outputable, Timeoutable {
 
     private final static long WAIT_QUEUE_EMPTY_TIMEOUT = 180000;
     private final static long ROBOT_AUTO_DELAY = 10;
-    private final static long WAIT_COMPONENT_UNDER_MOUSE_TIMEOUT = 10000;
+    private final static long WAIT_COMPONENT_UNDER_MOUSE_TIMEOUT = 60000;
 
     private static Field[] keyFields;
     private static MotionListener motionListener = null;

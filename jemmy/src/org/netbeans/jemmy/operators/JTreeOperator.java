@@ -19,6 +19,7 @@ package org.netbeans.jemmy.operators;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.JemmyInputException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.QueueTool;
@@ -89,13 +90,13 @@ import javax.swing.tree.TreeSelectionModel;
 public class JTreeOperator extends JComponentOperator
     implements Timeoutable, Outputable{
 
-    private final static long WAIT_NODE_EXPANDED_TIMEOUT = 10000;
-    private final static long WAIT_NODE_COLLAPSED_TIMEOUT = 10000;
+    private final static long WAIT_NODE_EXPANDED_TIMEOUT = 60000;
+    private final static long WAIT_NODE_COLLAPSED_TIMEOUT = 60000;
     private final static long WAIT_AFTER_NODE_EXPANDED_TIMEOUT = 0;
-    private final static long WAIT_NEXT_NODE_TIMEOUT = 10000;
-    private final static long WAIT_NODE_VISIBLE_TIMEOUT = 10000;
+    private final static long WAIT_NEXT_NODE_TIMEOUT = 60000;
+    private final static long WAIT_NODE_VISIBLE_TIMEOUT = 60000;
     private final static long BEFORE_EDIT_TIMEOUT = 1000;
-    private final static long WAIT_EDITING_TIMEOUT = 10000;
+    private final static long WAIT_EDITING_TIMEOUT = 60000;
 
     private TestOut output;
     private Timeouts timeouts;
@@ -527,7 +528,13 @@ public class JTreeOperator extends JComponentOperator
 		TreeModel model = getModel();
 		Object[] result = new Object[2];
 		for(int j = 0; j < model.getChildCount(path.getLastPathComponent()); j++) {
-		    result[0] = path.pathByAddingChild(model.getChild(path.getLastPathComponent(), j));
+                    Object child = null;
+                    try {
+                        child = model.getChild(path.getLastPathComponent(), j);
+                    } catch(IndexOutOfBoundsException e) {
+                        return(null);
+                    }
+                    result[0] = path.pathByAddingChild(child);
 		    if(chsr.checkPath((TreePath)result[0], j)) {
 			result[1] = Boolean.TRUE;
 			return(result);
@@ -912,8 +919,12 @@ public class JTreeOperator extends JComponentOperator
      */
     public Point getPointToClick(TreePath path) {
 	Rectangle rect = getPathBounds(path);
-	return(new Point((int)(rect.getX() + rect.getWidth() / 2),
-			 (int)(rect.getY() + rect.getHeight() / 2)));
+        if(rect != null) {
+            return(new Point((int)(rect.getX() + rect.getWidth() / 2),
+                             (int)(rect.getY() + rect.getHeight() / 2)));
+        } else {
+            throw(new NoSuchPathException(path));
+        }
     }
 
     public Point getPointToClick(int row) {
@@ -1024,11 +1035,15 @@ public class JTreeOperator extends JComponentOperator
 	scroller.copyEnvironment(this);
 	scroller.setVisualizer(new EmptyVisualizer());
 	Rectangle rect = getPathBounds(path);
-	scroller.scrollToComponentRectangle(getSource(), 
-					    (int)rect.getX(),
-					    (int)rect.getY(),
-					    (int)rect.getWidth(),
-					    (int)rect.getHeight());
+        if(rect != null) {
+            scroller.scrollToComponentRectangle(getSource(), 
+                                                (int)rect.getX(),
+                                                (int)rect.getY(),
+                                                (int)rect.getWidth(),
+                                                (int)rect.getHeight());
+        } else {
+            throw(new NoSuchPathException(path));
+        }
     }
 
     public void scrollToRow(int row) {
@@ -2053,6 +2068,36 @@ public class JTreeOperator extends JComponentOperator
         }
     }
 
+    private static String pathToString(String[] path) {
+        String desc = "";
+        for(int i = 0; i < path.length; i++) {
+            desc = desc + path[i] + ", ";
+        }
+        if(desc.length() > 0) {
+            desc = desc.substring(0, desc.length() - 2);
+        }
+        return("[ " + desc + " ]");
+    }
+
+    /**
+     * Can be throught during item selecting if list does not have
+     * item requested.
+     */
+    public class NoSuchPathException extends JemmyInputException {
+	/**
+	 * Constructor.
+	 */
+	public NoSuchPathException(String[] path) {
+	    super("No such path as \"" + pathToString(path) + "\"", getSource());
+	}
+	public NoSuchPathException(int index) {
+	    super("Tree does not contain " + index + "'th line", getSource());
+	}
+	public NoSuchPathException(TreePath path) {
+	    super("No such path as \"" + path.toString() + "\"", getSource());
+	}
+    }
+
     /**
      * Interface is intended to be used to find TreePath in the tree.
      */
@@ -2100,14 +2145,7 @@ public class JTreeOperator extends JComponentOperator
 	    return(true);
 	}
 	public String getDescription() {
-	    String desc = "";
-	    for(int i = 0; i < arr.length; i++) {
-		desc = desc + arr[i] + ", ";
-	    }
-	    if(desc.length() > 0) {
-		desc = desc.substring(0, desc.length() - 2);
-	    }
-	    return("[ " + desc + " ]");
+            return(pathToString(arr));
 	}
     }
 

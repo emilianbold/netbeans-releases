@@ -91,8 +91,8 @@ public class JTextComponentOperator extends JComponentOperator
 
     private final static long PUSH_KEY_TIMEOUT = 0;
     private final static long BETWEEN_KEYS_TIMEOUT = 0;
-    private final static long CHANGE_CARET_POSITION_TIMEOUT = 10000;
-    private final static long TYPE_TEXT_TIMEOUT = 30000;
+    private final static long CHANGE_CARET_POSITION_TIMEOUT = 60000;
+    private final static long TYPE_TEXT_TIMEOUT = 60000;
 
     private Timeouts timeouts;
     private TestOut output;

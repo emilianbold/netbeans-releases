@@ -256,11 +256,24 @@ implements Outputable, Timeoutable {
      * @param mouseButton Mouse button mask to call popup.
      * @throws TimeoutExpiredException
      */
-    public static JPopupMenu callPopup(Component comp, int x, int y, int mouseButton) {
+    public static JPopupMenu callPopup(final Component comp, int x, int y, int mouseButton) {
 	ComponentOperator co = new ComponentOperator(comp);
 	co.makeComponentVisible();
 	co.clickForPopup(x, y, mouseButton);
-	return(findJPopupMenu(waitJPopupWindow(ComponentSearcher.getTrueChooser("Popup menu window")), 
+	return(waitJPopupMenu(waitJPopupWindow(new ComponentChooser() {
+                public boolean checkComponent(Component cmp) {
+                    Component invoker = ((JPopupMenu)cmp).getInvoker();
+                    return(invoker == comp ||
+                           (invoker instanceof Container &&
+                            ((Container)invoker).isAncestorOf(comp)) ||
+                           (comp instanceof Container &&
+                            ((Container)comp).isAncestorOf(invoker)));
+                }
+                public String getDescription() {
+                    return("Popup menu");
+                    
+                }
+            }), 
 			      ComponentSearcher.getTrueChooser("Popup menu")));
     }
 
@@ -476,6 +489,28 @@ implements Outputable, Timeoutable {
      */
     public void pushMenuNoBlock(String path, String delim) {
 	pushMenuNoBlock(parseString(path, delim));
+    }
+
+    public JMenuItemOperator[] showMenuItems(String[] path, StringComparator comparator) {
+        JMenu menu = (JMenu)pushMenu(path, comparator);
+        JMenuItemOperator[] result = new JMenuItemOperator[menu.getMenuComponentCount()];
+        for(int i = 0; i < result.length; i++) {
+            result[i] = new JMenuItemOperator((JMenuItem)menu.getMenuComponent(i));
+            result[i].copyEnvironment(this);
+        }
+        return(result);
+    }
+
+    public JMenuItemOperator[] showMenuItems(String[] path) {
+        return(showMenuItems(path, getComparator()));
+    }
+
+    public JMenuItemOperator[] showMenuItems(String path, String delim, StringComparator comparator ) {
+        return(showMenuItems(parseString(path, delim), comparator));
+    }
+
+    public JMenuItemOperator[] showMenuItems(String path, String delim) {
+        return(showMenuItems(path, delim, getComparator()));
     }
 
     public JMenuItemOperator showMenuItem(String[] path, StringComparator comparator ) {
@@ -750,8 +785,20 @@ implements Outputable, Timeoutable {
 
     public static class JPopupWindowFinder implements ComponentChooser {
 	ComponentChooser subFinder;
+        ComponentChooser ppFinder;
 	public JPopupWindowFinder(ComponentChooser sf) {
 	    subFinder = sf;
+            ppFinder = new ComponentChooser() {
+                    public boolean checkComponent(Component comp) {
+                        return(comp.isShowing() &&
+                               comp.isVisible() &&
+                               comp instanceof JPopupMenu &&
+                               subFinder.checkComponent(comp));
+                    }
+                    public String getDescription() {
+                        return(subFinder.getDescription());
+                    }
+                };
 	}
 	public JPopupWindowFinder() {
             this(ComponentSearcher.getTrueChooser("Any JPopupWindow"));
@@ -760,7 +807,7 @@ implements Outputable, Timeoutable {
 	    if(comp.isShowing() && comp instanceof Window) {
 		ComponentSearcher cs = new ComponentSearcher((Container)comp);
 		cs.setOutput(JemmyProperties.getCurrentOutput().createErrorOutput());
-		return(cs.findComponent(new JPopupMenuFinder(subFinder))
+		return(cs.findComponent(ppFinder)
 		       != null);
 	    }
 	    return(false);

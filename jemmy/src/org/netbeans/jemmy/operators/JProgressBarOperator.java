@@ -58,7 +58,7 @@ import javax.swing.plaf.ProgressBarUI;
 public class JProgressBarOperator extends JComponentOperator
     implements Timeoutable, Outputable {
 
-    private static long WAIT_VALUE_TIMEOUT = 10000;
+    private static long WAIT_VALUE_TIMEOUT = 60000;
 
     private Timeouts timeouts;
     private TestOut output;

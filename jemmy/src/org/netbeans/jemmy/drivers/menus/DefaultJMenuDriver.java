@@ -70,24 +70,32 @@ public class DefaultJMenuDriver extends SupportiveDriver implements MenuDriver {
 		return(null);
 	    }
 	    itemOper.copyEnvironment(oper);
-	    return(push(itemOper, chooser, 1, true));
+	    return(push(itemOper, (oper instanceof JMenuBarOperator) ? ((JMenuBar)oper.getSource()) : null, 
+                        chooser, 1, true));
 	} else {
-	    return(push(oper, chooser, 0, true));
+	    return(push(oper, null, chooser, 0, true));
 	}
     }
-    private Object push(ComponentOperator oper, PathChooser chooser, int depth, boolean pressMouse) {
+    private Object push(ComponentOperator oper, JMenuBar menuBar, 
+                        PathChooser chooser, int depth, boolean pressMouse) {
         try {
             oper.waitComponentEnabled();
         } catch(InterruptedException e) {
             throw(new JemmyException("Interrupted!", e));
         }
-	if(depth > chooser.getDepth() - 1) {
-	    DriverManager.getButtonDriver(oper).push(oper);
-	    return(oper.getSource());
-	}
 	MouseDriver mDriver = DriverManager.getMouseDriver(oper);
         mDriver.enterMouse(oper);
-	if(pressMouse && !((JMenuOperator)oper).isPopupMenuVisible()) {
+	if(depth > chooser.getDepth() - 1) {
+            if(oper instanceof JMenuOperator &&
+               menuBar != null && isMenuBarSelected(menuBar)) {
+                mDriver.enterMouse(oper);
+            } else {
+                DriverManager.getButtonDriver(oper).push(oper);
+            }
+	    return(oper.getSource());
+	}
+	if(pressMouse && !((JMenuOperator)oper).isPopupMenuVisible() &&
+           !(menuBar != null && isMenuBarSelected(menuBar))) {
 	    DriverManager.getButtonDriver(oper).push(oper);
 	}
 	oper.getTimeouts().sleep("JMenuOperator.WaitBeforePopupTimeout");
@@ -96,7 +104,7 @@ public class DefaultJMenuDriver extends SupportiveDriver implements MenuDriver {
 	if(item instanceof JMenu) {
 	    JMenuOperator mo = new JMenuOperator((JMenu)item);
 	    mo.copyEnvironment(oper);
-	    return(push(mo, chooser, depth + 1, false));
+	    return(push(mo, null, chooser, depth + 1, false));
 	} else {
 	    JMenuItemOperator mio = new JMenuItemOperator(item);
 	    mio.copyEnvironment(oper);
@@ -129,6 +137,17 @@ public class DefaultJMenuDriver extends SupportiveDriver implements MenuDriver {
 	} catch(InterruptedException e) {
 	    throw(new JemmyException("Waiting has been interrupted", e));
 	}
+    }
+
+    private boolean isMenuBarSelected(JMenuBar bar) {
+        MenuElement[] subElements = bar.getSubElements();
+        for(int i = 0; i < subElements.length; i++) {
+            if(subElements[i] instanceof JMenu &&
+               ((JMenu)subElements[i]).isPopupMenuVisible()) {
+                return(true);
+            }
+        }
+        return(false);
     }
 
     private class JMenuItemWaiter implements Waitable {
