@@ -1199,6 +1199,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <available file="../jemmy/build.xml" />
           <available file="../jellytools/build.xml" />
           <available file="../xtest/build.xml" />
+          <not>
+            <isfalse value="${nb.run.validation}" />
+          </not>
         </and>
     </condition>
   </target>
