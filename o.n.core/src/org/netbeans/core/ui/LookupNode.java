@@ -176,6 +176,9 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
      */
     private String findName () {
         DataFolder df = (DataFolder)getCookie (DataFolder.class);
+        if (df == null) {
+            return "";
+        }
         String name = df.getPrimaryFile ().getPath();
         if (name.startsWith (prefObjects (root ()))) {
             name = name.substring (prefObjects (root ()).length ());
