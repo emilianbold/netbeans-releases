@@ -43,11 +43,14 @@ public final class NbIOProvider extends IOProvider {
         if (out != null && out.isClosed()) {
             try {
                 out.reset();
+                out = (OutWriter) stdout.getOut();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
                 stdout = getIO (STDOUT, true, null);
                 out = (OutWriter) stdout.getOut();
             }
+        } else {
+            out = (OutWriter) stdout.getOut();
         }
         return out;
     }

@@ -960,14 +960,15 @@ class OutWriter extends OutputWriter implements Runnable {
                 storage = null;
             }
             init();
-            if (owner != null) {
-//                owner.setStreamClosed(false);
-            }
         }
     }
 
     private void clearListeners() {
         if (Controller.log) Controller.log (this + ": Sending outputLineCleared to all listeners");
+        if (owner == null) {
+            //Somebody called reset() twice
+            return;
+        }
         if (!linesToListeners.isEmpty()) {
             int[] keys = linesToListeners.getKeys();
             Controller.ControllerOutputEvent e = new Controller.ControllerOutputEvent(owner, 0);

@@ -102,7 +102,7 @@
     private static int ct = 0;
     public void run () {
         if (SwingUtilities.isEventDispatchThread()) {
-            out = (OutWriter) io.getOut();
+            out = (OutWriter) NbIOProvider.getDefault().getStdOut();//(OutWriter) io.getOut();
            Thread t = new Thread(this);
            t.setName ("Thread " + ct + " - ");
            t.start();
