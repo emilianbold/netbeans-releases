@@ -148,7 +148,10 @@ public class ClassFile {
             loadAttributes(in, constantPool);
         } catch (IOException ioe) {
             ioe.printStackTrace();
-            throw new IOException("invalid class format");
+	    String msg = "invalid class format";
+	    if (sourceFileName != null)
+		msg += ": " + sourceFileName;
+            throw new IOException(msg);
         }
     }
 
