@@ -360,7 +360,20 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     /** Creates hacked fileChooser, responding on Enter the way it
      * performs folder change. */
     public static JFileChooser createHackedFileChooser() {
-        final JFileChooser chooser = new JFileChooser();
+        JFileChooser chooser;
+        try {
+            chooser = new JFileChooser();
+        } catch (NullPointerException npe) {
+            //Workaround for issue 34879 - sometimes the WinXP file chooser UI
+            //tries to create image icons for the file chooser buttons before
+            //it has loaded its images, calls new ImageIcon(null) and throws an
+            //NPE
+            ErrorManager.getDefault().log (ErrorManager.INFORMATIONAL,
+                "NPE occured in JFileChooser constructor due to Win XP LF bug. " +
+                "Attempting to create another.");
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
+            chooser = new JFileChooser();
+        }
         hackFileChooser(chooser);
         return chooser;
     }
