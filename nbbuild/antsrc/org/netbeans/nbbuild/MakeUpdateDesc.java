@@ -171,7 +171,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     }
                     desc_ent = new File(ent_name);               
                     desc_ent.delete();
-                    pw.println ("<!DOCTYPE autoupdate_catalog PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_0.dtd\" [");
+                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_0.dtd\" [");
                     // Would be better to follow order of groups and includes
                     pw.println ("    <!ENTITY entity SYSTEM \"" + xmlEscape(desc_ent.getName()) + "\">");
                     int inc_num=0;
@@ -195,7 +195,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
                     
                 } else {
-                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_0.dtd\">");
+                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_0.dtd\">");
                     pw.println ("<module_updates timestamp=\"" + date + "\">");
                     pw.println ();
                 }
@@ -234,7 +234,7 @@ public class MakeUpdateDesc extends MatchingTask {
                                         throw new BuildException ("NBM " + n_file + " was malformed: no Info/info.xml", location);
                                     java.io.InputStream is = zip.getInputStream (entry);
                                     try {
-                                        java.io.BufferedReader r = new java.io.BufferedReader (new java.io.InputStreamReader (is));
+                                        java.io.BufferedReader r = new java.io.BufferedReader (new java.io.InputStreamReader (is, "UTF-8"));
                                         String line = r.readLine ();
                                         if (! line.startsWith ("<?xml"))
                                             throw new BuildException ("Strange info.xml line: " + line, location);

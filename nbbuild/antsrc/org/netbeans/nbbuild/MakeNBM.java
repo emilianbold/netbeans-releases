@@ -56,7 +56,7 @@ public class MakeNBM extends MatchingTask {
 		try {
 		    InputStream is = new FileInputStream (file);
 		    try {
-			Reader r = new InputStreamReader (is);
+			Reader r = new InputStreamReader (is, "UTF-8");
 			char[] buf = new char[4096];
 			int len;
 			while ((len = r.read (buf)) != -1)
