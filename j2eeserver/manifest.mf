@@ -9,6 +9,7 @@ OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
 OpenIDE-Module-Module-Dependencies: org.openide.src > 1.0,
  org.openide.execution > 1.0,
  org.openide.debugger > 1.0,
+ org.netbeans.modules.debugger.core/3,
  org.netbeans.modules.javahelp/1,
  org.netbeans.modules.schema2beans/1,
  org.netbeans.libs.j2eeeditor/1,
