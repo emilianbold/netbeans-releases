@@ -724,11 +724,24 @@
 
    <mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="configure/configure_options.html" />
    <mapID target="org.netbeans.beaninfo.editors.BeanEditor" url="pending.html" />
+
+
+<!-- Following map id no longer used; replaced with map id editing.fonts 
    <mapID target="org.netbeans.modules.editor.options.ColoringArrayEditor$FakeNode" url="pending.html" />
-   <mapID target="org.netbeans.modules.editor.options.ColoringArrayEditorPanel" url="pending.html" />
+-->
+
+<!-- I don't think any help id is set in these 2 classes
+<mapID target="org.netbeans.modules.editor.options.ColoringArrayEditorPanel" url="pending.html" />
+
    <mapID target="org.netbeans.modules.editor.options.ColoringEditorPanel" url="pending.html" /> 
+-->
+
+<!-- this class name no longer exists
    <mapID target="org.netbeans.modules.form.editors2.ColorEditor$NbColorChooser" url="pending.html" />
-   <mapID target="org.netbeans.beaninfo.editors.ColorEditor$NbColorChooser" url="pending.html" /> 
+-->
+
+   <mapID target="org.netbeans.beaninfo.editors.ColorEditor$NbColorChooser" url="editing/configuring/colorchooser.html" /> 
+
    <mapID target="org.netbeans.beaninfo.editors.FontEditor$FontPanel" url="pending.html" /> 
 <!--OptionsAction is Options window--> 
    <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure_options.html" /> 
