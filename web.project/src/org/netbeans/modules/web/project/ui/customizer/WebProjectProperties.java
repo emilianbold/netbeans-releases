@@ -936,8 +936,18 @@ public class WebProjectProperties {
                 }
                 else {
                     // Standalone jar or property
-                    String eval = antProjectHelper.getStandardPropertyEvaluator ().evaluate (file);
-                    cpItem = new VisualClassPathItem( file, VisualClassPathItem.TYPE_JAR, file, eval, pathInWar );
+                    String eval;
+                    if (isAntProperty (file)) {
+                        eval = antProjectHelper.getStandardPropertyEvaluator ().getProperty(getAntPropertyName(file));
+                    }
+                    else {
+                        eval = file;
+                    }                    
+                    File f = null;
+                    if (eval != null) {
+                        f = antProjectHelper.resolveFile(eval);
+                    }                    
+                    cpItem = new VisualClassPathItem( f, VisualClassPathItem.TYPE_JAR, file, eval, pathInWar );
                 }
             }
             if (cpItem!=null) {
@@ -990,8 +1000,18 @@ public class WebProjectProperties {
                     cpItem = new VisualClassPathItem(artifact, VisualClassPathItem.TYPE_ARTIFACT, file, eval, pathInWar);
                 } else {
                     // Standalone jar or property
-                    String eval = antProjectHelper.getStandardPropertyEvaluator().evaluate(file);
-                    cpItem = new VisualClassPathItem(file, VisualClassPathItem.TYPE_JAR, file, eval, pathInWar);
+                    String eval;
+                    if (isAntProperty (file)) {
+                        eval = antProjectHelper.getStandardPropertyEvaluator ().getProperty(getAntPropertyName(file));
+                    }
+                    else {
+                        eval = file;
+                    }                    
+                    File f = null;
+                    if (eval != null) {
+                        f = antProjectHelper.resolveFile(eval);
+                    }                    
+                    cpItem = new VisualClassPathItem(f, VisualClassPathItem.TYPE_JAR, file, eval, pathInWar);
                 }
             }
             if (cpItem != null)
