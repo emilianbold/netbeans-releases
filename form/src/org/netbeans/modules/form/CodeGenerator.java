@@ -54,6 +54,7 @@ public abstract class CodeGenerator {
 
     public abstract boolean generateEventHandler(String handlerName,
                                                  String[] paramTypes,
+                                                 String[] exceptTypes,
                                                  String bodyText);
 
     /**
@@ -68,6 +69,7 @@ public abstract class CodeGenerator {
 
     public abstract boolean changeEventHandler(final String handlerName,
                                                final String[] paramTypes,
+                                               final String[] exceptTypes,
                                                final String bodyText);
 
     /**
@@ -87,6 +89,7 @@ public abstract class CodeGenerator {
 
     public abstract boolean renameEventHandler(String oldHandlerName,
                                                String newHandlerName,
+                                               String[] exceptTypes,
                                                String[] paramTypes);
 
     /** Focuses the specified event handler in the editor. */

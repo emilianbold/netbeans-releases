@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -629,7 +629,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
             }
         }
-        
+
     }
 
     private void generateComponentCreate(RADComponent comp,
@@ -1049,7 +1049,8 @@ class JavaCodeGenerator extends CodeGenerator {
      * @param bodyText the body text of the event handler or null for default(empty) one
      * @return true if the event handler have not existed yet and was creaated, false otherwise
      */
-    public boolean generateEventHandler(String handlerName, String[] paramTypes, String bodyText) {
+    public boolean generateEventHandler(String handlerName, String[] paramTypes,
+                                        String[] exceptTypes, String bodyText) {
         if (errorInitializing) return false;
         if (getEventHandlerSection(handlerName) != null)
             return false;
@@ -1059,7 +1060,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
             try {
                 JavaEditor.InteriorSection sec = s.createInteriorSectionAfter(initComponentsSection, getEventSectionName(handlerName));
-                sec.setHeader(getEventHandlerHeader(handlerName, paramTypes));
+                sec.setHeader(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
                 sec.setBody(getEventHandlerBody(handlerName, paramTypes, bodyText));
                 sec.setBottom(getEventHandlerFooter(handlerName, paramTypes));
             } catch (javax.swing.text.BadLocationException e) {
@@ -1076,13 +1077,14 @@ class JavaCodeGenerator extends CodeGenerator {
      * @param bodyText the new body text of the event handler or null for default(empty) one
      * @return true if the event handler existed and was modified, false otherwise
      */
-    public boolean changeEventHandler(final String handlerName, final String[] paramTypes, final String bodyText) {
+    public boolean changeEventHandler(final String handlerName, final String[] paramTypes,
+                                      final String[] exceptTypes, final String bodyText) {
         JavaEditor.InteriorSection sec = getEventHandlerSection(handlerName);
         if (sec == null)
             return false;
 
         synchronized(GEN_LOCK) {
-            sec.setHeader(getEventHandlerHeader(handlerName, paramTypes));
+            sec.setHeader(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
             sec.setBody(getEventHandlerBody(handlerName, paramTypes, bodyText));
             sec.setBottom(getEventHandlerFooter(handlerName, paramTypes));
             clearUndo();
@@ -1105,7 +1107,7 @@ class JavaCodeGenerator extends CodeGenerator {
         return true;
     }
 
-    private String getEventHandlerHeader(String handlerName, String[] paramTypes) {
+    private String getEventHandlerHeader(String handlerName, String[] paramTypes, String[] exceptTypes) {
         StringBuffer buf = new StringBuffer();
 
         // [IAN] following line contains a hack, where the first two spaces in the event handler header
@@ -1129,8 +1131,20 @@ class JavaCodeGenerator extends CodeGenerator {
             if (i != paramTypes.length - 1)
                 buf.append(", "); // NOI18N
             else
-                buf.append(") {\n"); // NOI18N
+                buf.append(")"); // {\n"); // NOI18N
         }
+
+        if (exceptTypes != null && exceptTypes.length > 0) {
+            buf.append(" throws "); // NOI18N
+
+            for (int i=0; i < exceptTypes.length; i++) {
+                buf.append(exceptTypes[i]);
+                if (i != exceptTypes.length - 1)
+                    buf.append(", "); // NOI18N
+            }
+        }
+        buf.append(" {\n");
+
         return buf.toString();
     }
 
@@ -1157,14 +1171,15 @@ class JavaCodeGenerator extends CodeGenerator {
      * @param oldHandlerName The old name of the event handler
      * @param newHandlerName The new name of the event handler
      */
-    public boolean renameEventHandler(String oldHandlerName, String newHandlerName, String[] paramTypes) {
+    public boolean renameEventHandler(String oldHandlerName, String newHandlerName,
+                                      String[] paramTypes, String[] exceptTypes) {
         JavaEditor.InteriorSection sec = getEventHandlerSection(oldHandlerName);
         if (sec == null) {
             return false;
         }
 
         synchronized(GEN_LOCK) {
-            sec.setHeader(getEventHandlerHeader(newHandlerName, paramTypes));
+            sec.setHeader(getEventHandlerHeader(newHandlerName, paramTypes, exceptTypes));
             sec.setBottom(getEventHandlerFooter(newHandlerName, paramTypes));
             try {
                 sec.setName(getEventSectionName(newHandlerName));
@@ -1356,6 +1371,27 @@ class JavaCodeGenerator extends CodeGenerator {
         public void componentsRemoved(RADComponent[] comps) {
             regenerateVariables();
             regenerateInitializer();
+
+            // delete the ".SER" file for removed components?
+            for (int i=0; i < comps.length; i++) {
+                RADComponent comp = comps[i];
+                Integer generationType =(Integer) comp.getAuxValue(AUX_CODE_GENERATION);
+                if (generationType != null && generationType.equals(VALUE_SERIALIZE)) {
+                    Object serTo = comp.getAuxValue(AUX_SERIALIZE_TO);
+                    if (serTo != null) {
+                        try {
+                            FileObject fo = formManager.getFormObject().getPrimaryFile();
+                            FileObject serFile = fo.getParent().getFileObject((String)serTo, "ser"); // NOI18N
+                            if (serFile != null) {
+                                serFile.delete(serFile.lock());
+                            }
+                        }
+                        catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            }
         }
 
         /**
@@ -1377,6 +1413,12 @@ class JavaCodeGenerator extends CodeGenerator {
 
         public void propertyChanged(FormPropertyEvent evt) {
             regenerateInitializer();
+
+            RADComponent comp = evt.getRADComponent();
+            Integer generationType =(Integer) comp.getAuxValue(AUX_CODE_GENERATION);
+            if (generationType != null && generationType.equals(VALUE_SERIALIZE)) {
+                serializeComponentsRecursively(comp);
+            }
         }
 
         /**
