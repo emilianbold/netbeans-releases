@@ -15,3 +15,6 @@ Name: com/netbeans/developer/modules/debugger/support/nodes/DebuggerNode.class
 OpenIDE-Module-Class: Node
 Type: Environment
 
+Name: com/netbeans/developer/modules/debugger/delegator/DefaultDebuggerType.class
+OpenIDE-Module-Class: Service
+Default: true
