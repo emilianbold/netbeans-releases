@@ -188,46 +188,56 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="../sysprops"/>
     <ant dir="../serialversion"/>
     <mkdir dir="examplemodules/apiexamples"/>
-    <copydir src="api/examples" dest="examplemodules/apiexamples">
-      <include name="org/netbeans/examples/modules/minicomposer/"/>
-      <exclude name="org/netbeans/examples/modules/minicomposer/templates.jar.MAKEME"/>
-      <include name="org/netbeans/examples/modules/globalactions/"/>
-      <include name="org/netbeans/examples/scripts/"/>
-    </copydir>
-    <copydir src="../sysprops/src" dest="examplemodules/apiexamples"/>
-    <copydir src="../serialversion/src" dest="examplemodules/apiexamples"/>
+    <copy todir="examplemodules/apiexamples">
+      <fileset dir="api/examples">
+        <include name="org/netbeans/examples/modules/minicomposer/"/>
+        <exclude name="org/netbeans/examples/modules/minicomposer/templates.jar.MAKEME"/>
+        <include name="org/netbeans/examples/modules/globalactions/"/>
+        <include name="org/netbeans/examples/scripts/"/>
+      </fileset>
+    </copy>
+    <copy todir="examplemodules/apiexamples">
+      <fileset dir="../sysprops/src"/>
+    </copy>
+    <copy todir="examplemodules/apiexamples">
+      <fileset dir="../serialversion/src"/>
+    </copy>
     <mkdir dir="examplemodules/apiexamples/manifests"/>
     <filter token="BUILD_NUMBER_SUBST" value="(demo module)"/>
-    <copyfile src="api/examples/org/netbeans/examples/modules/minicomposer.mf"
-              dest="examplemodules/apiexamples/manifests/minicomposer.mf"/>
-    <copyfile src="api/examples/org/netbeans/examples/modules/globalactions.mf"
-              dest="examplemodules/apiexamples/manifests/globalactions.mf"/>
-    <copyfile src="../sysprops/manifest.mf"
-              dest="examplemodules/apiexamples/manifests/sysprops.mf"
-	      filtering="true"/>
-    <copyfile src="../serialversion/manifest.mf"
-              dest="examplemodules/apiexamples/manifests/serialversion.mf"
-	      filtering="true"/>
+    <copy file="api/examples/org/netbeans/examples/modules/minicomposer.mf"
+          tofile="examplemodules/apiexamples/manifests/minicomposer.mf"/>
+    <copy file="api/examples/org/netbeans/examples/modules/globalactions.mf"
+          tofile="examplemodules/apiexamples/manifests/globalactions.mf"/>
+    <copy file="../sysprops/manifest.mf"
+          tofile="examplemodules/apiexamples/manifests/sysprops.mf"
+	  filtering="true"/>
+    <copy file="../serialversion/manifest.mf"
+          tofile="examplemodules/apiexamples/manifests/serialversion.mf"
+	  filtering="true"/>
     <zip zipfile="examplemodules/apiexamples.zip"
          basedir="examplemodules/apiexamples"
 	 compress="true"/>
   </target>
 
   <target name="clean" depends="clean-preprocess">
-    <delete dir="src">
-      <include name="**/*.class"/>
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+      </fileset>
     </delete>
-    <delete dir="api/examples">
-      <include name="**/*.class"/>
+    <delete>
+      <fileset dir="api/examples">
+        <include name="**/*.class"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
-    <deltree dir="netbeans"/>
+    <delete dir="netbeans"/>
     <delete file="openide-13javac-workaround.jar"/>
-    <deltree dir="OpenAPIs"/>
+    <delete dir="OpenAPIs"/>
     <!-- <delete file="OpenAPIs.zip"/> -->
     <echo message="Will not remove OpenAPIs.zip, remove it yourself if desired..."/>
     <delete file="OpenAPIs.log"/>
-    <deltree dir="examplemodules"/>
+    <delete dir="examplemodules"/>
     <delete file="api/examples/org/netbeans/examples/modules/minicomposer/templates.jar"/>
   </target>
 

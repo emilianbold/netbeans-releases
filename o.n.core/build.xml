@@ -56,20 +56,28 @@ Microsystems, Inc. All Rights Reserved.
 	 compress="false"/>
   </target>
   <target name="release">
-    <copydir src="release" dest="netbeans">
-      <exclude name="**/lib/ext/regexp.jar"/>
-    </copydir>
+    <copy todir="netbeans">
+      <fileset dir="release">
+        <exclude name="**/lib/ext/regexp.jar"/>
+      </fileset>
+    </copy>
   </target>
   <target name="netbeans" depends="jars,release"/>
   <target name="clean">
-    <delete dir="src">
-      <include name="**/*.class"/>
-      <include name="**/*.jar"/>
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+        <include name="**/*.jar"/>
+      </fileset>
     </delete>
-    <delete dir="libsrc">
-      <include name="**/*.class"/>
+    <delete>
+      <fileset dir="libsrc">
+        <include name="**/*.class"/>
+      </fileset>
     </delete>
-    <deltree dir="netbeans"/>
+    <delete dir="netbeans"/>
     <delete dir="versioning-tmp"/>
   </target>
 </project>
+
+

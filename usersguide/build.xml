@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copyfile src="manifest.mf" dest="manifest-subst.mf" filtering="on"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="netbeans/modules/usersguide.jar"
          manifest="manifest-subst.mf"
          basedir="src"
@@ -36,19 +36,23 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release">
-    <copydir src="release" dest="netbeans"/>
+    <copy todir="netbeans">
+      <fileset dir="release"/>
+    </copy>
   </target>
 
   <target name="javahelp">
-    <copydir src="javahelp" dest="netbeans/docs">
-      <!-- Temporary files, or preprocessing scripts: -->
-      <exclude name="**/check-anchors.pl"/>
-      <exclude name="**/context-help.jhm"/>
-      <exclude name="**/create-helpset-files.pl"/>
-      <exclude name="**/forte4j_help_fcs.jhm"/>
-      <exclude name="**/usergdix.xml"/>
-      <exclude name="**/usergdto.xml"/>
-    </copydir>
+    <copy todir="netbeans/docs">
+      <fileset dir="javahelp">
+        <!-- Temporary files, or preprocessing scripts: -->
+        <exclude name="**/check-anchors.pl"/>
+        <exclude name="**/context-help.jhm"/>
+        <exclude name="**/create-helpset-files.pl"/>
+        <exclude name="**/forte4j_help_fcs.jhm"/>
+        <exclude name="**/usergdix.xml"/>
+        <exclude name="**/usergdto.xml"/>
+      </fileset>
+    </copy>
   </target>
 
   <target name="netbeans" depends="jars,release,javahelp"/>
@@ -68,13 +72,19 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="clean">
-    <delete dir="src">
-      <include name="**/*.class"/>
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="usersguide.nbm"/>
-    <deltree dir="netbeans"/>
-    <deltree dir="Info"/>
+    <delete dir="netbeans"/>
+    <delete dir="Info"/>
   </target>
 
 </project>
+
+
+
+
