@@ -137,6 +137,7 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
    private boolean showNoMainProjectWarning (Project[] projects, String action) {
         boolean canceled;
         final JButton okButton = new JButton (NbBundle.getMessage (NoMainProjectWarning.class, "LBL_NoMainClassWarning_ChooseMainProject_OK")); // NOI18N        
+        okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (NoMainProjectWarning.class, "AD_NoMainClassWarning_ChooseMainProject_OK"));
         
         // no main project set => warning
         final NoMainProjectWarning panel = new NoMainProjectWarning (projects);

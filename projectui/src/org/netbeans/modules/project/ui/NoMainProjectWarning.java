@@ -97,7 +97,8 @@ public class NoMainProjectWarning extends JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(380, 300));
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(NoMainProjectWarning.class, "LBL_NoMainProjectWarning_jLabel1"));
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("AD_NoMainProjectWarninig"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(NoMainProjectWarning.class, "LBL_NoMainProjectWarning_jLabel1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -108,8 +109,8 @@ public class NoMainProjectWarning extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 6, 12);
         add(jLabel1, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(NoMainProjectWarning.class, "MNE_NoMainProjectWarning_jLabel2").charAt(0));
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(NoMainProjectWarning.class, "LBL_NoMainProjectWarning_jLabel2"));
+        jLabel2.setLabelFor(jList1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(NoMainProjectWarning.class, "LBL_NoMainProjectWarning_jLabel2"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -123,6 +124,7 @@ public class NoMainProjectWarning extends JPanel {
         jScrollPane2.setMinimumSize(new java.awt.Dimension(100, 200));
         jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane2.setViewportView(jList1);
+        jList1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("AD_NoMainProjectWarning_jList1"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
