@@ -25,7 +25,6 @@ import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class ProcedureListNodeInfo extends DatabaseNodeInfo
-            implements ProcedureOwnerOperations
 {
     static final long serialVersionUID =-7911927402768472443L;
 
@@ -53,36 +52,20 @@ public class ProcedureListNodeInfo extends DatabaseNodeInfo
         }
     }
 
-    public void dropProcedure(DatabaseNodeInfo tinfo)
-    throws DatabaseException
-    {
-        DatabaseNode node = (DatabaseNode)tinfo.getNode();
-        DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
-        try {
-            String tname = tinfo.getName();
-            Specification spec = (Specification)getSpecification();
-            AbstractCommand cmd = spec.createCommandDropProcedure(tname);
-            getNode().getChildren().remove(new Node[]{node});
-        } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
-        }
-    }
-
+    /* refresh list of procedure nodes */
     public void refreshChildren() throws DatabaseException {
-        // PENDING !!!
-        /*
-        		Vector charr = new Vector();
-        		DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
 
-        		put(DatabaseNodeInfo.CHILDREN, charr);
-        		chil.remove(chil.getNodes());
-        		initChildren(charr);
-        		Enumeration en = charr.elements();
-        		while(en.hasMoreElements()) {
-        			DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
-        			chil.add(new Node[] {subnode});
-        		}
-        */
+        Vector charr = new Vector();
+        DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
+
+        put(DatabaseNodeInfo.CHILDREN, charr);
+        chil.remove(chil.getNodes());
+        initChildren(charr);
+        Enumeration en = charr.elements();
+        while(en.hasMoreElements()) {
+                DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
+                chil.add(new Node[] {subnode});
+        }
     }
 }
 /*
