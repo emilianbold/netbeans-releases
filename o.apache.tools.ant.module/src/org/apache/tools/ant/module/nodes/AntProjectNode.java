@@ -385,6 +385,9 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         
         /** Returns special String in case of missing default target. */
         public Object getValue() {
+            if (proj.getProjectElement () == null) {
+                return NbBundle.getMessage (AntProjectNode.class, "LBL_property_invalid_no_element");
+            }
             Element el = getTarget();
             if (el == null) {
                 return NbBundle.getMessage (AntProjectNode.class, "MSG_defaulttarget_missing");
