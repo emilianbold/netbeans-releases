@@ -86,8 +86,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(srcStructLabel, gridBagConstraints);
 
-        srcStructComboBox.setMinimumSize(new java.awt.Dimension(150, 24));
-        srcStructComboBox.setPreferredSize(new java.awt.Dimension(150, 24));
         srcStructComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 srcStructComboBoxActionPerformed(evt);
@@ -141,8 +139,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         jPanel1.add(serverInstanceLabel, gridBagConstraints);
 
-        serverInstanceComboBox.setMinimumSize(new java.awt.Dimension(150, 24));
-        serverInstanceComboBox.setPreferredSize(new java.awt.Dimension(150, 24));
         serverInstanceComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 serverInstanceComboBoxActionPerformed(evt);
@@ -170,8 +166,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         jPanel1.add(j2eeSpecLabel, gridBagConstraints);
 
-        j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
-        j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
         j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 j2eeSpecComboBoxActionPerformed(evt);
