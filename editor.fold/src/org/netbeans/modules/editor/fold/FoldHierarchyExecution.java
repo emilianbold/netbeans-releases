@@ -36,6 +36,8 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldStateChange;
+import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
 import org.netbeans.spi.editor.fold.FoldOperation;
@@ -532,7 +534,8 @@ public final class FoldHierarchyExecution implements DocumentListener {
     public void rebuild() {
         // Stop listening on the original document
         if (lastDocument != null) {
-            lastDocument.removeDocumentListener(this);
+            // Remove document listener with specific priority
+            DocumentUtilities.removeDocumentListener(lastDocument, this, DocumentListenerPriority.FOLD_UPDATE);
             lastDocument = null;
         }
 
@@ -557,7 +560,8 @@ public final class FoldHierarchyExecution implements DocumentListener {
             // Start listening for changes
             if (!releaseOnly) {
                 lastDocument = adoc;
-                lastDocument.addDocumentListener(this);
+                // Add document listener with specific priority
+                DocumentUtilities.addDocumentListener(lastDocument, this, DocumentListenerPriority.FOLD_UPDATE);
             }
         }
         try {

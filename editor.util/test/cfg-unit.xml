@@ -47,14 +47,6 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src"/>
     </testbag>
 
-    <testbag testattribs="dev" executor="code" name="testbag_dev">
-        <testset dir="unit/src">
-            <patternset>
-                <!-- Add your own code tests -->
-            </patternset>
-        </testset>
-    </testbag>
-    
     <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
     
     <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
