@@ -397,7 +397,11 @@ public class XSLGrammarQuery implements GrammarQuery{
 
 ////////////////////////////////////////////////////////////////////////////////
 // GrammarQuery interface fulfillment
-    
+
+    /**
+     * Support completions of elements defined by XSLT spec and by the <output>
+     * doctype attribute (in result space).
+     */
     public Enumeration queryElements(HintContext ctx) {        
         Node node = ((Node)ctx).getParentNode();        
         
@@ -406,21 +410,21 @@ public class XSLGrammarQuery implements GrammarQuery{
                 
         if (node instanceof Element) {
             Element el = (Element) node;
-            updateProperies(el);
+            updateProperties(el);
             if (prefixList.size() == 0) return EmptyEnumeration.EMPTY;
             
             String firstXslPrefixWithColon = prefixList.get(0) + ":";
             Set elements;
             if (el.getTagName().startsWith(firstXslPrefixWithColon)) {
-                String parentName = el.getTagName().substring(firstXslPrefixWithColon.length());
-                elements = (Set) getElementDecls().get(parentName);
+                String parentNCName = el.getTagName().substring(firstXslPrefixWithColon.length());
+                elements = (Set) getElementDecls().get(parentNCName);
             } else {
                 // Children of result elements should always be the template set
                 elements = getTemplate();
             }
             
             // First we add the Result elements
-            if (elements != null && elements.contains(resultElements) && resultGrammarQuery != null) {
+            if (elements != null && resultGrammarQuery != null && elements.contains(resultElements)) {
                 ResultHintContext resultHintContext = new ResultHintContext(ctx, firstXslPrefixWithColon, null);
                 Enumeration resultEnum = resultGrammarQuery.queryElements(resultHintContext);
                 while (resultEnum.hasMoreElements()) {
@@ -450,7 +454,8 @@ public class XSLGrammarQuery implements GrammarQuery{
                 }
             }
             
-         } else if (node instanceof Document) {
+        } else if (node instanceof Document) {
+            //??? it should be probably only root element name
             addXslElementsToEnum(list, getElementDecls().keySet(), prefixList.get(0) + ":", prefix);
         } else {
             return EmptyEnumeration.EMPTY;
@@ -465,7 +470,7 @@ public class XSLGrammarQuery implements GrammarQuery{
         String elTagName = el.getTagName();
         NamedNodeMap existingAttributes = el.getAttributes();
          
-        updateProperies(el);
+        updateProperties(el);
         
        
         String curXslPrefix = null;
@@ -528,16 +533,14 @@ public class XSLGrammarQuery implements GrammarQuery{
             if (prefix.length() == 0) {
                 return EmptyEnumeration.EMPTY; // This should never happen
             }            
-//            char quoteChar = prefix.charAt(0);
-            prefix = prefix.substring(1); // Get rid of the " or ' at the beginning
-            
             
             Attr attr = (Attr)ctx;
 
             boolean isXPath = false;
             String elName = attr.getOwnerElement().getNodeName();
             if (elName.startsWith(xslNamespacePrefix)) {
-                String xpathAttrName = (String)getExprAttributes().get(elName.substring(4));
+                String key = elName.substring(xslNamespacePrefix.length());
+                String xpathAttrName = (String)getExprAttributes().get(key);
                 if (xpathAttrName != null && xpathAttrName.equals(attr.getNodeName())) {
                     // This is an XSLT element which should contain XPathExpression
                     isXPath = true;
@@ -551,8 +554,8 @@ public class XSLGrammarQuery implements GrammarQuery{
                 String nodeValue = attr.getNodeValue();
                 int exprStart = nodeValue.lastIndexOf('{', prefix.length() - 1);
                 int exprEnd = nodeValue.indexOf('}', prefix.length());
-                System.out.println("exprStart: " + exprStart);
-                System.out.println("exprEnd: " + exprEnd);
+                Util.THIS.debug("exprStart: " + exprStart);
+                Util.THIS.debug("exprEnd: " + exprEnd);
                 if (exprStart != -1 && exprEnd != -1) {
                     isXPath = true;
                     preExpression = prefix.substring(0, exprStart + 1);
@@ -588,6 +591,9 @@ public class XSLGrammarQuery implements GrammarQuery{
                     subRest = subExpression;
                 }
 
+                // At this point we need to consult transformed document or
+                // its grammar.
+                
                 Object selScenarioObj = scenarioCookie.getModel().getSelectedItem();
                 if (selScenarioObj instanceof XSLScenario) {
                     XSLScenario scenario = (XSLScenario)selScenarioObj;
@@ -647,6 +653,7 @@ public class XSLGrammarQuery implements GrammarQuery{
                                 childNodeNames.add("@" + curResNode.getNodeName());
                             }
                         } catch (Exception e) {
+                            Util.THIS.debug("Ignored during XPathAPI operations", e);
                            // We don't care, ignore
                         }
 
@@ -665,7 +672,17 @@ public class XSLGrammarQuery implements GrammarQuery{
     }
 
     public Enumeration queryEntities(String prefix) {
-       return EmptyEnumeration.EMPTY;
+        QueueEnumeration list = new QueueEnumeration();
+        
+        // add well-know build-in entity names
+        
+        if ("lt".startsWith(prefix)) list.put(new MyEntityReference("lt"));     // NOI18N
+        if ("gt".startsWith(prefix)) list.put(new MyEntityReference("gt"));     // NOI18N
+        if ("apos".startsWith(prefix)) list.put(new MyEntityReference("apos")); // NOI18N
+        if ("quot".startsWith(prefix)) list.put(new MyEntityReference("quot")); // NOI18N
+        if ("amp".startsWith(prefix)) list.put(new MyEntityReference("amp"));   // NOI18N
+        
+        return list;
     }
 
     public Enumeration queryNotations(String prefix) {
@@ -741,7 +758,7 @@ public class XSLGrammarQuery implements GrammarQuery{
         while ( it.hasNext()) {
             String nextText = (String)it.next();
             if (nextText.startsWith(startWith)) {
-                enum.put(new MyElement(prefix + nextText));
+                enum.put(new MyText(prefix + nextText));
             }
         }
     }
@@ -752,7 +769,7 @@ public class XSLGrammarQuery implements GrammarQuery{
      * members if necessery.
      * @param curNode the node which from wich the traversing should start.
      */
-    private void updateProperies(Node curNode) {
+    private void updateProperties(Node curNode) {
         prefixList.clear();
         
         // Traverse up the documents tree
@@ -967,22 +984,30 @@ public class XSLGrammarQuery implements GrammarQuery{
         
     }
 
-    private static class MyNotation extends AbstractResultNode implements Notation {
+
+    private static class MyText extends AbstractResultNode implements Text {
         
-        private String name;
+        private String data;
         
-        MyNotation(String name) {
-            this.name = name;
+        MyText(String data) {
+            this.data = data;
         }
         
         public short getNodeType() {
-            return Node.NOTATION_NODE;
+            return Node.TEXT_NODE;
+        }
+
+        public String getNodeValue() {
+            return getData();
         }
         
-        public String getNodeName() {
-            return name;
+        public String getData() throws DOMException {
+            return data;
         }
-                        
-    }
 
+        public int getLength() {
+            return data == null ? -1 : data.length();
+        }    
+    }
+    
 }

@@ -47,6 +47,9 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
     private String prefix = null;
     
     public Enumeration enabled(GrammarEnvironment ctx) {
+
+        if (ctx.getFileObject() == null) return null;
+        
         prefix = null;
         Enumeration en = ctx.getDocumentChildren();
         while (en.hasMoreElements()) {
@@ -98,13 +101,15 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
     }
     
     public GrammarQuery getGrammar(GrammarEnvironment input) {
-        DataObject dataObj = null;
         try {
-            dataObj = DataObject.find(input.getFileObject());
-        } catch(DataObjectNotFoundException e) {
-            // What should we do?
+            FileObject fo = input.getFileObject();
+            if (fo == null) throw new IllegalStateException("GrammarEnvironment has changed between enabled() and getGrammar()!");      // NOI18N
+            DataObject dataObj = DataObject.find(fo);
+            return new XSLGrammarQuery(dataObj);
+            
+        } catch (DataObjectNotFoundException e) {
+            throw new IllegalStateException("Missing DataObject " + e.getFileObject().getPackageNameExt('/', '.') + "!");
         }
-        return new XSLGrammarQuery(dataObj);
     }
     
 }
