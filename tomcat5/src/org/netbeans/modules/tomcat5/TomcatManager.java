@@ -254,7 +254,7 @@ public class TomcatManager implements DeploymentManager {
     }
     
     public boolean isRedeploySupported () {
-        // PENDING
+        // XXX what this really means
         return false;
     }
     
@@ -293,9 +293,13 @@ public class TomcatManager implements DeploymentManager {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.stop called on disconnected instance");   // NOI18N
         }
+        if (tmID.length != 1 || !(tmID[0] instanceof TomcatModule)) {
+            throw new IllegalStateException ("TomcatManager.stop invalid TargetModuleID passed");   // NOI18N
+        }
         
-        // PENDING 
-        return null;
+        TomcatManagerImpl impl = new TomcatManagerImpl (this);
+        impl.stop ((TomcatModule)tmID[0]);
+        return impl;
     }
     
     public ProgressObject undeploy (TargetModuleID[] tmID) throws IllegalStateException {

@@ -133,12 +133,12 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             rp ().post (this, 0, Thread.NORM_PRIORITY);
         }
         catch (java.io.FileNotFoundException fnfe) {
-            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, fnfe.getLocalizedMessage (), StateType.FAILED)); // PENDING
+            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, fnfe.getLocalizedMessage (), StateType.FAILED));
         }
         
     }
     
-    void remove (TomcatModule tmId) {
+    public void remove (TomcatModule tmId) {
         this.tmId = tmId;
         command = "remove?path="+tmId.getPath (); // NOI18N
         cmdType = CommandType.UNDEPLOY;
@@ -147,10 +147,19 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
     }
     
     /** Starts web module. */
-    void start (TomcatModule tmId) {
+    public void start (TomcatModule tmId) {
         this.tmId = tmId;
         command = "start?path="+tmId.getPath (); // NOI18N
-        cmdType = CommandType.UNDEPLOY;
+        cmdType = CommandType.START;
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+        rp ().post (this, 0, Thread.NORM_PRIORITY);
+    }
+    
+    /** Stops web module. */
+    public void stop (TomcatModule tmId) {
+        this.tmId = tmId;
+        command = "stop?path="+tmId.getPath (); // NOI18N
+        cmdType = CommandType.STOP;
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
@@ -203,7 +212,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
      * @return server output
      */
     public String jmxProxy (String query) {
-        command = "jmxproxy/?qry="+query; // NOI18N
+        command = "jmxproxy/"+query; // NOI18N
         run ();
         // PENDING : error check
         return output;
@@ -216,7 +225,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
     
     /** JSR88 method. */
     public DeploymentStatus getDeploymentStatus () {
-        return pes.getDeploymentStatus (); // PENDING
+        return pes.getDeploymentStatus ();
     }
     
     /** JSR88 method. */
@@ -258,7 +267,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
     /** Executes one management task. */
     public synchronized void run () {
         TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, command);
-        pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, "" /* message */, StateType.RUNNING)); // PENDING
+        pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, command /* message */, StateType.RUNNING));
         
         output = ""; 
         // similar to Tomcat's Ant task
@@ -328,7 +337,6 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             String msg = null;
             boolean first = !command.startsWith ("jmxproxy");   // NOI18N
             while (true) {
-                // PENDING append to output var
                 int ch = reader.read();
                 if (ch < 0) {
                     output += buff.toString ()+"\n";    // NOI18N
@@ -336,7 +344,6 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 } else if ((ch == '\r') || (ch == '\n')) {
                     String line = buff.toString();
                     buff.setLength(0);
-                    // PENDING : fireProgressEvent
                     TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, line);
                     if (first) {
                         if (!line.startsWith("OK -")) { // NOI18N
@@ -347,6 +354,10 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                         }
                         first = false;
                     }
+                    pes.fireHandleProgressEvent (
+                        tmId, 
+                        new Status (ActionType.EXECUTE, cmdType, line, StateType.RUNNING)
+                    );
                     output += line+"\n";    // NOI18N
                 } else {
                     buff.append((char) ch);
@@ -358,11 +369,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             if (error != null) {
                 throw new Exception(error);
             }
-            pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, msg, StateType.COMPLETED)); // PENDING
+            pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, msg, StateType.COMPLETED));
 
         } catch (Exception e) {
             TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, e);
-            pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, e.getLocalizedMessage (), StateType.FAILED)); // PENDING
+            pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, e.getLocalizedMessage (), StateType.FAILED));
             // throw t;
         } finally {
             if (reader != null) {

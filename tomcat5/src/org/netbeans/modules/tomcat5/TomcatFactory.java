@@ -83,7 +83,7 @@ public class TomcatFactory implements DeploymentFactory {
         }
         // PENDING parse to get home and base dirs
         
-        return new TomcatManager (false, uri.substring (tomcatUriPrefix.length ()), null, null);    // PENDING
+        return new TomcatManager (false, uri.substring (tomcatUriPrefix.length ()), null, null);
     }
     
     public String getDisplayName() {
