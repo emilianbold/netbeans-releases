@@ -22,6 +22,9 @@ import threaddemo.model.Phadhail;
 import threaddemo.model.Phadhails;
 import threaddemo.views.PhadhailViews;
 
+// XXX memory usage meter
+// XXX AWT blockage meter
+
 /**
  * Demonstrate various models and views for big data sets.
  * Classpath: openide.jar:naming.jar:looks.jar:Spin.jar
@@ -109,7 +112,7 @@ public final class Main extends JFrame {
         } else {
             throw new IllegalStateException();
         }
-        JFrame frame = new JFrame(model.getDisplayName());
+        JFrame frame = new JFrame(model.getPath());
         frame.getContentPane().add(view);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.pack();

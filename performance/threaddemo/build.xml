@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="Spin.jar" location="???/spin-1.1/Spin.jar"/>
     
     <!-- Root directory of the file browsers: -->
-    <property name="testdir" location="/"/>
+    <property name="testdir" location="/tmp"/>
 
     <path id="cp">
         <pathelement location="${openide.jar}"/>
@@ -52,6 +52,20 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="threaddemo.jar"/>
             </classpath>
             <arg file="${testdir}"/>
+        </java>
+    </target>
+    
+    <target name="debug" depends="build">
+        <java classname="threaddemo.Main" fork="true" failonerror="true">
+            <classpath>
+                <path refid="cp"/>
+                <pathelement location="threaddemo.jar"/>
+            </classpath>
+            <arg file="${testdir}"/>
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xnoagent"/>
+            <jvmarg value="-Djava.compiler=none"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8888,suspend=n"/>
         </java>
     </target>
     

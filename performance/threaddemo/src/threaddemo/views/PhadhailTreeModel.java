@@ -17,6 +17,8 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
 import threaddemo.model.Phadhail;
 
+// XXX listen to changes in display name, delete, rename, new
+
 /**
  * Tree model displaying phadhails directly.
  * @author Jesse Glick
@@ -34,21 +36,15 @@ final class PhadhailTreeModel implements TreeModel {
     }
     
     public Object getChild(Object parent, int index) {
-        return ((Phadhail)parent).getChildren()[index];
+        return ((Phadhail)parent).getChildren().get(index);
     }
     
     public int getChildCount(Object parent) {
-        return ((Phadhail)parent).getChildren().length;
+        return ((Phadhail)parent).getChildren().size();
     }
     
     public int getIndexOfChild(Object parent, Object child) {
-        Phadhail[] kids = ((Phadhail)parent).getChildren();
-        for (int i = 0; i < kids.length; i++) {
-            if (kids[i] == child) {
-                return i;
-            }
-        }
-        return -1;
+        return ((Phadhail)parent).getChildren().indexOf(child);
     }
     
     public boolean isLeaf(Object node) {

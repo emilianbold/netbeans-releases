@@ -13,28 +13,26 @@
 
 package threaddemo.model;
 
-import java.io.File;
+import java.util.EventObject;
 
 /**
- * Factory for model impls.
+ * Event object for phadhail events (suitable as is for children changes).
  * @author Jesse Glick
  */
-public class Phadhails {
+public class PhadhailEvent extends EventObject {
     
-    private Phadhails() {}
-    
-    public static Phadhail synchronous(File f) {
-        return BufferedPhadhail.forPhadhail(DefaultPhadhail.forFile(f));
+    /** factory */
+    public static PhadhailEvent create(Phadhail ph) {
+        return new PhadhailEvent(ph);
     }
     
-    public static Phadhail locked(File f) {
-        return LockedPhadhail.forPhadhail(DefaultPhadhail.forFile(f));
+    /** cannot be subclassed outside package */
+    PhadhailEvent(Phadhail ph) {
+        super(ph);
     }
     
-    public static Phadhail spun(File f) {
-        return SpunPhadhail.forPhadhail(DefaultPhadhail.forFile(f));
+    public Phadhail getPhadhail() {
+        return (Phadhail)getSource();
     }
-    
-    // XXX missing a callback impl using off-AWT asynch processing
     
 }

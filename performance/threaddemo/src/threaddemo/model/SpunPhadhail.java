@@ -62,7 +62,7 @@ final class SpunPhadhail extends Spin {
         Phadhail ph = (Phadhail)instances.get(_ph);
         if (ph == null) {
             Spin spin = new SpunPhadhail(_ph);
-            ph = new BufferedPhadhail((Phadhail)spin.getProxy());
+            ph = BufferedPhadhail.forPhadhail((Phadhail)spin.getProxy());
             instances.put(_ph, ph);
         }
         return ph;
@@ -75,17 +75,33 @@ final class SpunPhadhail extends Spin {
     /** overridden to recursively wrap phadhails */
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Object result = super.invoke(proxy, method, args);
-        if (result instanceof Phadhail[]) {
+        if (result instanceof Phadhail) {
+            return forPhadhail((Phadhail)result);
+        } else if (result instanceof List) {
             // I.e. from getChildren(). Need to wrap result phadhails.
-            Phadhail[] _phs = (Phadhail[])result;
-            Phadhail[] phs = new Phadhail[_phs.length];
-            for (int i = 0; i < _phs.length; i++) {
-                phs[i] = forPhadhail(_phs[i]);
-            }
-            return phs;
+            List phs = (List)result; // List<Phadhail>
+            return new SpunChildrenList(phs);
         } else {
             // Just pass on the call.
             return result;
+        }
+    }
+    
+    private static final class SpunChildrenList extends AbstractList {
+        private final List orig; // List<Phadhail>
+        private final Phadhail[] kids;
+        public SpunChildrenList(List orig) {
+            this.orig = orig;
+            kids = new Phadhail[orig.size()];
+        }
+        public Object get(int i) {
+            if (kids[i] == null) {
+                kids[i] = forPhadhail((Phadhail)orig.get(i));
+            }
+             return kids[i];
+        }
+        public int size() {
+            return kids.length;
         }
     }
     

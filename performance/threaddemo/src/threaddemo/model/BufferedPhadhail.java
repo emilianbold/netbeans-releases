@@ -13,40 +13,122 @@
 
 package threaddemo.model;
 
+import java.io.*;
 import java.lang.ref.*;
+import java.util.*;
 
 /**
  * Wraps a plain Phadhail and buffers its list of children.
  * @author Jesse Glick
  */
-class BufferedPhadhail implements Phadhail {
+final class BufferedPhadhail implements Phadhail, PhadhailListener {
     
     private final Phadhail ph;
-    private Reference kids; // Reference<Phadhail[]>
+    private Reference kids; // Reference<List<Phadhail>>
+    private int listenerCount = 0;
     
-    public BufferedPhadhail(Phadhail ph) {
+    public static Phadhail forPhadhail(Phadhail ph) {
+        if (ph.hasChildren() && !(ph instanceof BufferedPhadhail)) {
+            return new BufferedPhadhail(ph);
+        } else {
+            return ph;
+        }
+    }
+    
+    private BufferedPhadhail(Phadhail ph) {
         this.ph = ph;
     }
     
-    public Phadhail[] getChildren() {
-        Phadhail[] phs = null;
+    public List getChildren() {
+        List phs = null; // List<Phadhail>
         if (kids != null) {
-            phs = (Phadhail[])kids.get();
+            phs = (List)kids.get();
         }
         if (phs == null) {
             // Need to (re)calculate the children.
-            phs = ph.getChildren();
+            phs = new BufferedChildrenList(ph.getChildren());
             kids = new WeakReference(phs);
         }
         return phs;
     }
     
-    public String getDisplayName() {
-        return ph.getDisplayName();
+    private static final class BufferedChildrenList extends AbstractList {
+        private final List orig; // List<Phadhail>
+        private final Phadhail[] kids;
+        public BufferedChildrenList(List orig) {
+            this.orig = orig;
+            kids = new Phadhail[orig.size()];
+        }
+        public Object get(int i) {
+            if (kids[i] == null) {
+                kids[i] = forPhadhail((Phadhail)orig.get(i));
+            }
+             return kids[i];
+        }
+        public int size() {
+            return kids.length;
+        }
+    }
+    
+    public String getName() {
+        return ph.getName();
+    }
+    
+    public String getPath() {
+        return ph.getPath();
     }
     
     public boolean hasChildren() {
         return ph.hasChildren();
+    }
+    
+    public void addPhadhailListener(PhadhailListener l) {
+        ph.addPhadhailListener(l);
+        if (listenerCount == 0) {
+            ph.addPhadhailListener(this);
+        }
+        listenerCount++;
+    }
+    
+    public void removePhadhailListener(PhadhailListener l) {
+        ph.removePhadhailListener(l);
+        listenerCount--;
+        if (listenerCount == 0) {
+            ph.removePhadhailListener(this);
+        }
+    }
+    
+    public void rename(String nue) throws IOException {
+        ph.rename(nue);
+    }
+    
+    public Phadhail createContainerPhadhail(String name) throws IOException {
+        return ph.createContainerPhadhail(name);
+    }
+    
+    public Phadhail createLeafPhadhail(String name) throws IOException {
+        return ph.createLeafPhadhail(name);
+    }
+    
+    public void delete() throws IOException {
+        ph.delete();
+    }
+    
+    public InputStream getInputStream() throws IOException {
+        return ph.getInputStream();
+    }
+    
+    public OutputStream getOutputStream() throws IOException {
+        return ph.getOutputStream();
+    }
+    
+    public void childrenChanged(PhadhailEvent ev) {
+        // clear cache
+        kids = null;
+    }
+    
+    public void nameChanged(PhadhailNameEvent ev) {
+        // ignore
     }
     
 }
