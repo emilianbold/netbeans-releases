@@ -28,6 +28,7 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
+import org.netbeans.modules.java.j2seproject.ui.J2SEPhysicalViewProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -140,12 +141,13 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         }
         
         if ( broken ) {
-            jLabelErrorMessage.setText( NbBundle.getMessage( CustomizerLibraries.class, "LBL_CustomizeLibraries_Libraries_Error" ) ); // NOI18N
+            jLabelErrorMessage.setText( NbBundle.getMessage( CustomizerLibraries.class, "LBL_CustomizeLibraries_Libraries_Error" ) ); // NOI18N            
         }
         else {
             jLabelErrorMessage.setText( " " ); // NOI18N
         }
-        
+        J2SEPhysicalViewProvider viewProvider = (J2SEPhysicalViewProvider) uiProperties.getProject().getLookup().lookup(J2SEPhysicalViewProvider.class);
+        viewProvider.setBroken(broken);
     }
     
     // Implementation of HelpCtx.Provider --------------------------------------
