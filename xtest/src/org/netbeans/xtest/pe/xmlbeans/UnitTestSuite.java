@@ -167,6 +167,7 @@ public class UnitTestSuite extends XMLBean {
     
     // child elements
     public UnitTestCase[] xmlel_UnitTestCase;
+    public Data[] xmlel_Data;
 
     /** Holds value of property testBag_id. */
     private long testBag_id;

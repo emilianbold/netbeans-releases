@@ -82,6 +82,19 @@
 		</xsl:if>
 	   </P>
         </xsl:if>
+	<xsl:if test="Data/PerformanceData">
+		<P>
+			<H3>Measured Performance Data:</H3>
+			<TABLE width="95%" cellspacing="2" cellpadding="5" border="0">
+				<TR valign="top" bgcolor="#A6CAF0">
+					<TD width="20%"><B>Name</B></TD>
+					<TD width="10%"><B>Value</B></TD>
+					<TD width="70%"><B>Unit</B></TD>
+				</TR>
+					<xsl:apply-templates select="Data/PerformanceData" mode="table"/>		
+			</TABLE>				
+		</P>
+	</xsl:if>
 </xsl:template>
 
 <xsl:template match="UnitTestCase" mode="table">
@@ -116,6 +129,14 @@
 		   </TD>
                 </xsl:if>
 		<TD><xsl:value-of select="@time"/></TD>
+	</TR>
+</xsl:template>
+
+<xsl:template match="PerformanceData" mode="table">
+	<TR valign="top" class="pass">
+		<TD><xsl:value-of select="@name"/></TD>
+		<TD><xsl:value-of select="@value"/></TD>
+		<TD><xsl:value-of select="@unit"/></TD>
 	</TR>
 </xsl:template>
 
