@@ -15,8 +15,7 @@ package com.netbeans.developer.modules.loaders.form;
 
 import org.openide.TopManager;
 import org.openide.actions.*;
-import org.openide.cookies.InstanceCookie;
-import org.openide.cookies.SaveCookie;
+import org.openide.cookies.*;
 import org.openide.loaders.InstanceSupport;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
@@ -257,10 +256,17 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   public Node.Cookie getCookie (Class type) {
     Node.Cookie inh = super.getCookie (type);
     if (inh == null) {
-      return component.getFormManager ().getFormObject ().getCookie (type);
-    } else {
-      return inh;
-    }
+      if (CompilerCookie.class.isAssignableFrom (type) || 
+          SaveCookie.class.isAssignableFrom (type) || 
+          ExecCookie.class.isAssignableFrom (type) || 
+          DebuggerCookie.class.isAssignableFrom (type) || 
+          CloseCookie.class.isAssignableFrom (type) || 
+          ArgumentsCookie.class.isAssignableFrom (type) || 
+          PrintCookie.class.isAssignableFrom (type)) {
+        return component.getFormManager ().getFormObject ().getCookie (type);
+       }
+    } 
+    return inh;
   }
   
   /** Test whether there is a customizer for this node. If true,
@@ -635,6 +641,9 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  27   Gandalf   1.26        7/25/99  Ian Formanek    Fixed bug with too many 
+ *       tools actions (namely those on DataObject.class) being enabled on the 
+ *       node
  *  26   Gandalf   1.25        7/20/99  Jesse Glick     Context help.
  *  25   Gandalf   1.24        7/19/99  Ian Formanek    paste copy, paste 
  *       instance
