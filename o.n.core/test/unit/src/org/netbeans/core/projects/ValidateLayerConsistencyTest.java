@@ -16,8 +16,11 @@ package org.netbeans.core.projects;
 import java.io.InputStream;
 import junit.framework.*;
 import org.netbeans.junit.*;
+import org.openide.cookies.InstanceCookie;
 
 import org.openide.filesystems.*;
+
+import org.openide.loaders.DataObject;
 
 /** Checks the consistence of System File System content.
  *
@@ -103,4 +106,48 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
     }
     
+    public void testInstantiateAllInstances () {
+        java.util.ArrayList errors = new java.util.ArrayList ();
+        
+        java.util.Enumeration files = Repository.getDefault().getDefaultFileSystem().getRoot ().getChildren(true);
+        while (files.hasMoreElements()) {
+            FileObject fo = (FileObject)files.nextElement();
+            
+            if (skipFile (fo.toString ())) {
+                continue;
+            }
+            
+            try {
+                DataObject obj = DataObject.find (fo);
+                InstanceCookie ic = (InstanceCookie)obj.getCookie (InstanceCookie.class);
+                if (ic != null) {
+                    Object o = ic.instanceCreate ();
+                }
+            } catch (ClassNotFoundException ex) {
+                errors.add ("\n    File " + fo + " thrown exception " + ex);
+            } catch (java.io.IOException ex) {
+                errors.add ("\n    File " + fo + " thrown exception " + ex);
+            }
+        }
+        
+        if (!errors.isEmpty()) {
+            fail ("Some instances cannot be created " + errors);
+        }
+    }
+    
+    private boolean skipFile (String s) {
+        if (s.startsWith ("Templates/GUIForms")) return true;
+        if (s.startsWith ("Palette/Borders/javax-swing-border-")) return true;
+        if (s.startsWith ("Palette/Layouts/javax-swing-BoxLayout")) return true;
+        if (s.startsWith ("Templates/Beans/")) return true;
+        if (s.startsWith ("PaletteUI/org-netbeans-modules-form-palette-CPComponent")) return true;
+        if (s.startsWith ("Templates/Ant/CustomTask.java")) return true;
+        if (s.startsWith ("Templates/Privileged/Main.shadow")) return true;
+        if (s.startsWith ("Templates/Privileged/JFrame.shadow")) return true;
+        if (s.startsWith ("Templates/Privileged/Class.shadow")) return true;
+        if (s.startsWith ("Templates/Classes")) return true;
+        if (s.startsWith ("Templates/JSP_Servlet")) return true;
+        if (s.startsWith ("EnvironmentProviders/ProfileTypes/Execution/nb-j2ee-deployment.instance")) return true;
+        return false;
+    }
 }

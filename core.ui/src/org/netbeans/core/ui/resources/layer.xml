@@ -59,7 +59,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-PopupAction.instance"/>
             <file name="org-openide-actions-PrintAction.instance"/>
             <file name="org-openide-actions-PageSetupAction.instance"/>
-            <file name="org-openide-filesystems-RefreshAction.instance"/>
+            <file name="org-openide-actions-FileSystemRefreshAction.instance"/>
             <file name="org-netbeans-core-actions-UnmountFSAction.instance"/>
             <file name="org-openide-actions-RenameAction.instance"/>
             <file name="org-openide-actions-ReorderAction.instance"/>
