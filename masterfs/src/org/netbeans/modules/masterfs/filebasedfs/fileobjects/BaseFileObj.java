@@ -56,13 +56,15 @@ public abstract class BaseFileObj extends FileObject {
     private final EventListenerList eventSupport = new EventListenerList();
     private final FileNaming fileName;
 
-    
-
 
     protected BaseFileObj(final File file) {
         this.fileName = NamingFactory.fromFile(file);
-        //setValid(true)/*file.exists()*/;
-        isValid (true);
+        setValid(true);
+    }
+    
+    protected BaseFileObj(final File file, final FileNaming name) {
+        this.fileName = name;
+        setValid(true);
     }
 
     public final String toString() {
@@ -214,7 +216,7 @@ public abstract class BaseFileObj extends FileObject {
 
     public final boolean isReadOnly() {
         final File f = getFileName().getFile();
-        assert f.exists() || !isValid(true) ;
+        assert f.exists() || !isValid(true, f) ;
 
         return !f.canWrite() && f.exists();
     }
@@ -243,6 +245,15 @@ public abstract class BaseFileObj extends FileObject {
         return isValid();/*getFileName().getFile().exists()*/
     }
 
+    public final boolean isValid(final boolean refresh, final File f) {                    
+        if (refresh) {
+            File ff = (f != null) ? f : getFileName().getFile();
+            setValid(ff.exists());                 
+        }
+        
+        return isValid();/*getFileName().getFile().exists()*/
+    }
+    
     
     static File getFile(final File f, final String name, final String ext) {
         File retVal;
@@ -366,7 +377,7 @@ public abstract class BaseFileObj extends FileObject {
 
     public void delete(final FileLock lock) throws IOException {
         final File f = getFileName().getFile();
-        assert f.exists() || !isValid(true) ;
+        assert f.exists() || !isValid(true, f) ;
 
         final FolderObj existingParent = getExistingParent();
         final ChildrenCache childrenCache = (existingParent != null) ? existingParent.getChildrenCache() : null;
@@ -385,7 +396,7 @@ public abstract class BaseFileObj extends FileObject {
             if (childrenCache != null) childrenCache.getChild(BaseFileObj.getNameExt(f), true);
         } finally {
             if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
-            isValid(true);
+            isValid(true,f);
         }
 
         fireFileDeletedEvent(false);

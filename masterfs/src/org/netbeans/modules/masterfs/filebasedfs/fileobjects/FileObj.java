@@ -21,6 +21,7 @@ import org.openide.util.Enumerations;
 import java.io.*;
 import java.util.Date;
 import java.util.Enumeration;
+import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 
 /**
  * @author rm111737
@@ -31,14 +32,14 @@ final class FileObj extends BaseFileObj {
     private long lastModified = -1;
 
 
-    FileObj(final File file) {
-        super(file);
-        lastModified();
+    FileObj(final File file, final FileNaming name) {
+        super(file, name);
+        lastModified(null);
     }
     
     public final java.io.OutputStream getOutputStream(final org.openide.filesystems.FileLock lock) throws java.io.IOException {
         final File f = getFileName().getFile();
-        assert f.exists() || !isValid(true) ;
+        assert f.exists() || !isValid(true, f) ;
 
         final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, false);
         FileOutputStream retVal = null;
@@ -64,7 +65,7 @@ final class FileObj extends BaseFileObj {
 
     public final java.io.InputStream getInputStream() throws java.io.FileNotFoundException {
         final File f = getFileName().getFile();
-        assert f.exists() || !isValid(true) ;
+        assert f.exists() || !isValid(true, f) ;
                         
         InputStream inputStream;
         MutualExclusionSupport.Closeable closeableReference = null;
@@ -94,14 +95,17 @@ final class FileObj extends BaseFileObj {
 
     public final Date lastModified() {
         final File f = getFileName().getFile();
-        assert f.exists() || !isValid(true) ;
+        return new Date(lastModified(f));
+    }
 
-        if (f.exists()) {
-            lastModified = f.lastModified();
+    private final long lastModified(File f) {
+        if (f == null) {
+            lastModified = System.currentTimeMillis();
         } else {
-            lastModified = -1;            
+            lastModified = (f.exists()) ? f.lastModified() : -1;
         }
-        return (lastModified < 0) ? new Date(0) : new Date(lastModified);
+        
+        return (lastModified < 0) ? 0 : lastModified;
     }
 
     
@@ -145,7 +149,7 @@ final class FileObj extends BaseFileObj {
             final long oldLastModified = lastModified;
             lastModified();
 
-            if (oldLastModified != -1 && oldLastModified != lastModified) {
+            if (oldLastModified != -1 && oldLastModified < lastModified) {
                 fireFileChangedEvent(expected);
             }
         } else if (isDeleted && getExistingParent() == null) {            

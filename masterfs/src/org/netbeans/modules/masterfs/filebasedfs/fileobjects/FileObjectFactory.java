@@ -12,18 +12,17 @@
  */
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
-
-import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
+import org.netbeans.modules.masterfs.filebasedfs.naming.FolderName;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Mutex;
 
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
 
 /**
  * 
@@ -40,12 +39,63 @@ public final class FileObjectFactory {
         return root;
     }
 
-    public final FileObject findFileObject(final File f) {
-        final FileObject retVal = this.findFileObjectImpl(f, new ArrayList());
-
-        return retVal;
+    public final FileObject findFileObject(final FileInfo fInfo) {
+        FileObject retVal = null;
+        File f = fInfo.getFile();
+        
+        synchronized (allInstances) {
+            retVal = this.get(f);
+            if (retVal != null) {
+                ((BaseFileObj)retVal).isValid(true, f);
+            } else {
+                final File parent = f.getParentFile();
+                if (parent != null) {
+                    retVal = this.create(fInfo);
+                } else {
+                    retVal = this.getRoot();
+                }
+                
+            }
+            
+            return retVal;
+        }
     }
 
+
+    private BaseFileObj create(final FileInfo fInfo) {
+        if (fInfo.isWindowsFloppy()) {
+            return null;
+        }
+
+        if (!fInfo.isConvertibleToFileObject()) {
+            return null;
+        }
+
+        final File file = fInfo.getFile();
+        FileNaming name = fInfo.getFileNaming();
+        name = (name == null) ? NamingFactory.fromFile(file) : name;
+        
+        if (name == null) return null;
+
+        if (name.isFile()) {
+            final FileObj realRoot = new FileObj(file, name);
+            return putInCache(realRoot, realRoot.getFileName().getId());
+        }
+        
+        if (!name.isFile() || fInfo.isUNCFolder()) {            
+            final FolderObj realRoot = new FolderObj(file, name);
+            return putInCache(realRoot, realRoot.getFileName().getId());
+        }
+
+        if (fInfo.isUnixSpecialFile()) {
+            final FileObj realRoot = new FileObj(file, name);
+            return putInCache(realRoot, realRoot.getFileName().getId());
+        }
+
+        assert false;
+        return null;
+    }
+    
     public final void refreshAll(final boolean expected) {
         final Set all2Refresh = new HashSet();
         synchronized (allInstances) {
@@ -127,51 +177,6 @@ public final class FileObjectFactory {
         }
     }    
     
-    private  FileObject findFileObjectImpl(final File file, final List keepIt) {
-        FileObject retVal;
-        synchronized (allInstances) {
-            final FileInfo fInfo = new FileInfo(file);
-            retVal = this.get(file);
-
-            if (retVal == null) {
-                final File parent = file.getParentFile();
-                if (parent != null) {
-                    FileObject fileObjectImpl = findFileObjectImpl(parent, keepIt);
-                    if (!(fileObjectImpl instanceof FolderObj)) return null;
-                    assert (fileObjectImpl instanceof FolderObj) : fileObjectImpl.getClass().toString() + " file: " + file.getAbsolutePath() + " parent: " + parent.getAbsolutePath();
-                    final FolderObj parentFo = ((FolderObj) fileObjectImpl);
-                    if (parentFo != null) {
-                        final ChildrenCache parentChildrenCache = parentFo.getChildrenCache();
-                        final Mutex.Privileged mutexPrivileged = parentChildrenCache.getMutexPrivileged();
-
-                        mutexPrivileged.enterReadAccess();
-                        try {
-                            final FileNaming child = parentChildrenCache.getChild(file.getName(), false);
-
-                            if (child != null) {
-                                assert child.getFile().equals(file) : (child.getFile().getAbsolutePath() + " | " + file.getAbsolutePath());//NOI18N
-                                retVal = this.create(fInfo);
-                            } else {
-                                //TODO: find out why is this code here
-                                parentChildrenCache.getChild(file.getName(), false);
-                            }
-                        } finally {
-                            mutexPrivileged.exitReadAccess();
-                        }
-                    }
-                } else {
-                    retVal = this.getRoot();
-                }
-                //this assert might fail after external changes and means that children caches
-                // doesn't correspond to real files on disk - which may occure
-                //assert retVal != null || !fInfo.isConvertibleToFileObject() : (file.getAbsolutePath() + " isConvertible:   " + !fInfo.isConvertibleToFileObject());//NOI18N
-            }
-            keepIt.add(retVal);
-        }
-        return retVal;
-    }
-
-
     public final  BaseFileObj get(final File file) {
         final Object o;
         synchronized (allInstances) {
@@ -198,37 +203,6 @@ public final class FileObjectFactory {
         }
         return retVal;
     }
-
-    private BaseFileObj create(final FileInfo fInfo) {
-        if (fInfo.isWindowsFloppy()) {
-            return null;
-        }
-
-        final File file = fInfo.getFile();
-
-        if (!fInfo.isConvertibleToFileObject()) {
-            return null;
-        }
-
-        if (fInfo.isDirectory() || fInfo.isUNCFolder()) {
-            final FolderObj realRoot = new FolderObj(file);
-            return putInCache(realRoot, realRoot.getFileName().getId());
-        }
-
-        if (fInfo.isFile()) {
-            final FileObj realRoot = new FileObj(file);
-            return putInCache(realRoot, realRoot.getFileName().getId());
-        }
-
-        if (fInfo.isUnixSpecialFile()) {
-            final FileObj realRoot = new FileObj(file);
-            return putInCache(realRoot, realRoot.getFileName().getId());
-        }
-
-        assert false;
-        return null;
-    }
-
 
     private FileObjectFactory(final FileInfo fInfo) {
         final File rootFile = fInfo.getFile();

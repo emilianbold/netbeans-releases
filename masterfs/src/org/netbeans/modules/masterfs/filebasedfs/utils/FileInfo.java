@@ -14,148 +14,219 @@
 package org.netbeans.modules.masterfs.filebasedfs.utils;
 
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLock;
+import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.naming.UNCName;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
+import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
+import org.openide.filesystems.FileObject;
 
 public final class FileInfo {
-    private static final FileSystemView fsv = FileSystemView.getFileSystemView();
+    private static final FileSystemView FILESYSTEMVIEW = FileSystemView.getFileSystemView();
+    private static boolean IS_WINDOWS = org.openide.util.Utilities.isWindows();
 
-    private static final int TYPE_WINDOWS_FLOPPY = 0;
-    private static final int TYPE_UNC_FOLDER = 1;
-    private static final int TYPE_FILE = 2;
-    private static final int TYPE_DIRECTORY = 3;
-    private static final int TYPE_UNIX_SPECIAL_FILE = 4;
-
-    private static final int TYPE_NOTEXISTING = 5;
-    private static final int TYPE_UNKNOWN = 6;
+    public static final int FLAG_isFile = 0;
+    public static final int FLAG_isDirectory = 1;
+    public static final int FLAG_exists = 2;
+    public static final int FLAG_isComputeNode = 3;
+    public static final int FLAG_isWindowsFloppy = 4;
+    public static final int FLAG_isUnixSpecialFile = 5;
+    public static final int FLAG_isUNC = 6;    
+    public static final int FLAG_isFloppy = 7;
+    public static final int FLAG_isWindows = 8;
+    public static final int FLAG_isConvertibleToFileObject = 9;
 
 
     private int isFile = -1;
     private int isDirectory = -1;
     private int exists = -1;
     private int isComputeNode = -1;
+    private int isWindowsFloppy = -1;
+    private int isUnixSpecialFile = -1;
+    private int isUNC = -1;    
     private int isFloppy = -1;
     private int isWindows = -1;
+    private int isConvertibleToFileObject = -1;
 
-    private final File f;
+    private Integer id = null;        
+    private FileInfo root = null;    
+    private final File file;
+    
+    private FileInfo parent = null;
+    private FileNaming fileNaming = null;
+    private FileObject fObject = null;
+    
 
 
-    public FileInfo(final File f) {
-        this.f = f;
+    public FileInfo(final File file) {
+        this.file = file;
     }
 
-    public final FileInfo getRoot() {
-        File rootFile = f;
-        while (rootFile.getParentFile() != null) {
-            rootFile = rootFile.getParentFile();
-        }
-
-        return new FileInfo(rootFile);
+    public FileInfo(final FileInfo parent, final File file) {
+        this (file);
+        this.parent = parent;
     }
-
-    public final boolean isConvertibleToFileObject() {
-        //TODO: lockfiles are hidden - rethink
-        return (!isWindowsFloppy() && (getTypeCode() != FileInfo.TYPE_NOTEXISTING)) && !WriteLock.isActiveLockFile(f);
-    }
-
-
-    private boolean exists() {
-        if (exists == -1) {
-            assert isFloppy != -1 || !isWindows();
-            exists = (f.exists()) ? 1 : 0;
-        }
-
-        return (exists == 1) ? true : false;
-    }
-
-    public final File getFile() {
-        return f;
-    }
-
-    public final boolean isWindowsFloppy() {
-        if (!org.openide.util.Utilities.isWindows ()) return false;
-        return getTypeCode() == FileInfo.TYPE_WINDOWS_FLOPPY;
-    }
-
-    public final boolean isUNCFolder() {
-        if (!org.openide.util.Utilities.isWindows ()) return false;
-        return getTypeCode() == FileInfo.TYPE_UNC_FOLDER;
-    }
-
-    public final boolean isUnixSpecialFile() {
-        return getTypeCode() == FileInfo.TYPE_UNIX_SPECIAL_FILE;
-    }
-
-
-    public final boolean isFile() {
+    
+    public boolean isFile() {
         if (isFile == -1) {
-            isFile = (f.isFile()) ? 1 : 0;
+            isFile = (getFile().isFile()) ? 1 : 0;
         }
-        return (isFile == 1) ? true : false;
+        return (isFile == 0) ? false : true;
     }
 
-    public final boolean isDirectory() {
+
+    public boolean isDirectory() {
         if (isDirectory == -1) {
-            isDirectory = (f.isDirectory()) ? 1 : 0;
+            isDirectory = (getFile().isDirectory()) ? 1 : 0;
         }
-
-        return (isDirectory == 1) ? true : false;
+        return (isDirectory == 0) ? false : true;
     }
 
 
-    private int getTypeCode() {
-        int retVal = -1;
-
-        for (int i = 0; i <= FileInfo.TYPE_UNKNOWN && retVal == -1; i++) {
-            switch (i) {
-                case FileInfo.TYPE_WINDOWS_FLOPPY:
-                    retVal = (isWindows() && isFloppy()) ? i : -1;
-                    break;
-                case FileInfo.TYPE_UNC_FOLDER:
-                    retVal = (f instanceof UNCName.UNCFile) || ((isWindows() && !isFile() && !isDirectory() && !exists() && isComputeNode())) ? i : -1;
-                    break;
-                case FileInfo.TYPE_FILE:
-                    retVal = (isFile()) ? i : -1;
-                    break;
-                case FileInfo.TYPE_DIRECTORY:
-                    retVal = (isDirectory()) ? i : -1;
-                    break;
-                case FileInfo.TYPE_UNIX_SPECIAL_FILE:
-                    retVal = (/*Utilities.isUnix() && */!isDirectory() && !isFile() && exists()) ? i : -1;
-                    break;
-                default:
-                    retVal = FileInfo.TYPE_NOTEXISTING;
-            }
+    public boolean  exists() {
+        if (exists == -1) {
+            exists = (getFile().exists()) ? 1 : 0;
         }
-        return retVal;
+        return (exists == 0) ? false : true;
     }
 
-
-    private boolean isComputeNode() {
+    public boolean isComputeNode() {
         if (isComputeNode == -1) {
-            assert isWindows != -1;
-            isComputeNode = (FileInfo.fsv.isComputerNode(f)) ? 1 : 0;
+            isComputeNode = (FileInfo.FILESYSTEMVIEW.isComputerNode(getFile())) ? 1 : 0;
         }
 
         return (isComputeNode == 1) ? true : false;
     }
 
-    private boolean isFloppy() {
+
+    public boolean isWindowsFloppy() {
         if (isFloppy == -1) {
-            assert isWindows != -1;
-            isFloppy = (FileInfo.fsv.isFloppyDrive(f)) ? 1 : 0;
+            isFloppy = (FileInfo.FILESYSTEMVIEW.isFloppyDrive(getFile())) ? 1 : 0;
+        }
+        return (isFloppy == 1) ? true : false;
+    }
+
+
+    public boolean isUnixSpecialFile() {
+        if (isUnixSpecialFile == -1) {
+            isUnixSpecialFile = (!IS_WINDOWS && !isDirectory() && !isFile() && exists()) ? 1 : 0;
+        }        
+        return (isUnixSpecialFile == 1) ? true : false;
+    }
+
+
+    public boolean isUNCFolder() {
+        if (isUNC == -1) {
+            isUNC = ((getFile() instanceof UNCName.UNCFile) || ((isWindows() && !isFile() && !isDirectory() && !exists() && isComputeNode()))) ? 1 : 0;
+        }                
+        return (isUNC == 1) ? true : false;
+    }
+
+
+    public boolean isWindows() {
+        return FileInfo.IS_WINDOWS;
+    }
+    
+    public boolean isFloppy() {
+        if (isFloppy == -1) {
+            isFloppy = (FileInfo.FILESYSTEMVIEW.isFloppyDrive(getFile())) ? 1 : 0;
         }
 
         return (isFloppy == 1) ? true : false;
     }
 
-    private boolean isWindows() {
-        if (isWindows == -1) {
-            isWindows = (org.openide.util.Utilities.isWindows()) ? 1 : 0;
-        }
 
-        return (isWindows == 1) ? true : false;
+
+
+    public boolean isConvertibleToFileObject() {
+        if (isConvertibleToFileObject == -1) {
+            isConvertibleToFileObject = (exists() && !WriteLock.isActiveLockFile(getFile()) && (getFile().getParent() != null || !isWindowsFloppy())) ?  1 : 0;
+        }
+        
+        return (isConvertibleToFileObject == 1) ? true : false;
+    }
+
+
+    public FileInfo getRoot() {
+        if (root == null) {
+            File tmp = getFile();
+            File retVal = tmp;
+            while (tmp != null) {
+                retVal = tmp;
+                tmp = tmp.getParentFile();
+            }
+            
+            root = new FileInfo (retVal);
+        }
+        
+        return root;
+    }
+
+
+    public File getFile() {
+        return file;
+    }
+
+    public Integer getID() {
+        if (id == null) {
+            id = NamingFactory.createID(getFile());
+        }        
+        return id;
+    }
+
+    public FileInfo getParent() {
+        return parent;
+    }
+    
+    public void setValueForFlag (int flag, boolean value) {
+        switch (flag) {
+            case FLAG_exists:
+                 exists = (value) ? 1 : 0;                
+                break;
+             case FLAG_isComputeNode:
+                 isComputeNode = (value) ? 1 : 0;
+                break;
+             case FLAG_isConvertibleToFileObject:
+                 isConvertibleToFileObject = (value) ? 1 : 0;                 
+                break;
+             case FLAG_isDirectory:
+                 isDirectory = (value) ? 1 : 0;                                  
+                break;
+             case FLAG_isFile:
+                 isFile = (value) ? 1 : 0;                                  
+                break;
+             case FLAG_isFloppy:
+                 isFloppy = (value) ? 1 : 0;                                  
+                break;                
+             case FLAG_isUNC:
+                 isUNC = (value) ? 1 : 0;                                  
+                break;
+             case FLAG_isUnixSpecialFile:
+                 isUnixSpecialFile = (value) ? 1 : 0;                                  
+                break;
+             case FLAG_isWindows:
+                 isWindows = (value) ? 1 : 0;                                  
+                break;
+             case FLAG_isWindowsFloppy:
+                 isWindowsFloppy = (value) ? 1 : 0;                                  
+                break;            
+        }
+    }
+
+    public FileNaming getFileNaming() {
+        return fileNaming;
+    }
+
+    public void setFileNaming(FileNaming fileNaming) {
+        this.fileNaming = fileNaming;
+    }
+
+    public FileObject getFObject() {
+        return fObject;
+    }
+
+    public void setFObject(FileObject fObject) {
+        this.fObject = fObject;
     }
 }

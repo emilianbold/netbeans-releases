@@ -43,8 +43,8 @@ public final class FolderObj extends BaseFileObj {
     /**
      * Creates a new instance of FolderImpl
      */
-    public FolderObj(final File file) {
-        super(file);
+    public FolderObj(final File file, final FileNaming name) {
+        super(file, name);
     }
 
     public final boolean isFolder() {
@@ -102,10 +102,14 @@ public final class FolderObj extends BaseFileObj {
             mutexPrivileged.exitWriteAccess();
         }
 
+        final FileBasedFileSystem lfs = getLocalFileSystem();        
         for (Iterator iterator = fileNames.iterator(); iterator.hasNext();) {
             final FileNaming fileName = (FileNaming) iterator.next();
-            final FileBasedFileSystem lfs = getLocalFileSystem();
-            final FileObject fo = lfs.findFileObject(fileName.getFile());
+            FileInfo fInfo = new FileInfo (fileName.getFile());
+            fInfo.setFileNaming(fileName);
+            fInfo.setValueForFlag(FileInfo.FLAG_exists, true);
+            
+            final FileObject fo = lfs.findFileObject(fInfo);
             if (fo != null) {
                 results.add(fo);
             }
@@ -268,10 +272,10 @@ public final class FolderObj extends BaseFileObj {
                     final File f = child.getFile();
                     if (!(new FileInfo(f).isConvertibleToFileObject())) {
                         final BaseFileObj fakeInvalid;
-                        if (child instanceof FolderName) {
-                            fakeInvalid = new FolderObj(f);
+                        if (child.isFile()) {
+                            fakeInvalid = new FileObj(f, child);
                         } else {
-                            fakeInvalid = new FileObj(f);
+                            fakeInvalid = new FolderObj(f, child);                            
                         }
 
                         fakeInvalid.fireFileDeletedEvent(expected);

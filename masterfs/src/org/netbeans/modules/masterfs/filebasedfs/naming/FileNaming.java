@@ -28,6 +28,7 @@ public interface FileNaming {
 
     File getFile();
 
+    boolean isFile ();
 
     Integer getId();
 

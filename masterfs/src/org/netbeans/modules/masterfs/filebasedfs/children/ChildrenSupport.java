@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.children;
 
+import com.sun.media.sound.Toolkit;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
@@ -128,6 +129,10 @@ public final class ChildrenSupport {
             public Integer getId(boolean recompute) {
                 return id;
             }
+
+            public boolean isFile() {
+                return this.getFile ().isFile();
+            }
         }
         FakeNaming fake = new FakeNaming ();
         
@@ -229,7 +234,6 @@ java.lang.AssertionError: E:\work\nb_all8\openide\masterfs\build
             for (Iterator iterator = added.iterator(); iterator.hasNext();) {
                 final FileName addedItem = (FileName) iterator.next();
                 retVal.put(addedItem, ChildrenCache.ADDED_CHILD);
-                
             }
         }
         return retVal;

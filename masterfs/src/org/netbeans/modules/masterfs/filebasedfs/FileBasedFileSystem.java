@@ -69,14 +69,19 @@ public final class FileBasedFileSystem extends FileSystem {
     }
 
     public final FileObject findFileObject(final File f) {
-        boolean issue45485 = Utilities.isWindows() && f.getName().endsWith(".");//NOI18N        
+        return findFileObject(new FileInfo (f));
+    }
+    
+    public final FileObject findFileObject(final FileInfo fInfo) {
+        File f = fInfo.getFile();
+        boolean issue45485 = fInfo.isWindows() && f.getName().endsWith(".");//NOI18N        
         if (issue45485) {
             File f2 = FileUtil.normalizeFile(f);
             issue45485 = !f2.getName().endsWith(".");
             if (issue45485) return null;
         }
-        final BaseFileObj retVal = (BaseFileObj)(getFactory().findFileObject(f));
-        return (retVal != null && retVal.isValid(true)) ? retVal : null;
+        final BaseFileObj retVal = (BaseFileObj)(getFactory().findFileObject(fInfo));
+        return (retVal != null && retVal.isValid()) ? retVal : null;
     }
 
     public final org.openide.filesystems.FileObject getRoot() {
@@ -92,27 +97,11 @@ public final class FileBasedFileSystem extends FileSystem {
     }
 
     public final SystemAction[] getActions(final Set foSet) {
-        //FileBasedFileSystem.REFRESH_ACTION.setFoSet(foSet);
         return new SystemAction[]{FileBasedFileSystem.REFRESH_ACTION};
 
     }
 
     public final void refresh(final boolean expected) {
-/*        final Set allFs = new HashSet();
-        synchronized (FileBasedFileSystem.allInstances) {
-            final Iterator iterator = FileBasedFileSystem.allInstances.values().iterator();
-            while (iterator.hasNext()) {
-                final FileBasedFileSystem fs = (FileBasedFileSystem) iterator.next();
-                allFs.add(fs);
-            }
-        }
-
-        for (Iterator iterator = allFs.iterator(); iterator.hasNext();) {
-            final FileBasedFileSystem fs = (FileBasedFileSystem) iterator.next();
-            final FileObjectFactory factory = fs.getFactory();
-            factory.refreshAll(expected);
-        }
-*/
         getFactory().refreshAll(expected);
     }
 

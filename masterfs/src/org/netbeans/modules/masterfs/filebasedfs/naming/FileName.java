@@ -96,4 +96,8 @@ public class FileName implements FileNaming {
     public final int hashCode() {
         return id.intValue();
     }
+
+    public boolean isFile() {
+        return true;
+    }
 }

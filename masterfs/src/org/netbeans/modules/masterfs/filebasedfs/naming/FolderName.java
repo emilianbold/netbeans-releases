@@ -27,6 +27,9 @@ public class FolderName extends FileName {
 
     FolderName(final FileNaming parent, final File file) {
         super(parent, file);
+        synchronized (FolderName.class) {
+            FolderName.fileCache.put(this, file);
+        }
     }
 
 
@@ -50,6 +53,10 @@ public class FolderName extends FileName {
             FolderName.fileCache = new WeakHashMap();
         }
 
+    }
+
+    public boolean isFile() {
+        return false;
     }
 
 }
