@@ -783,10 +783,11 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 
                 int i = displayName.indexOf ("[r/o]"); 
                 if (i > 0) {
-                    String nuName = "<html><font color='#555555'><i>" +
+                    int roLength = "[r/o]".length();
+                    String nuName = "<html><font color='#555555'><i>" + //NOI18N
                         displayName.substring (0, i-1);
-                    if (i + 11 < nuName.length()) {
-                        nuName += displayName.substring(i+11);
+                    if (i + roLength < displayName.length()) {
+                        nuName += displayName.substring(i + roLength);
                     }
                     displayName = nuName;
                 }
