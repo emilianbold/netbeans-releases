@@ -46,12 +46,46 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
         instance.addRefreshListener(this);
     }
     
+    static javax.swing.Action[] runningActions;
+    static javax.swing.Action[] stoppedActions;
+    static javax.swing.Action[] unknownActions;
+    
+    private javax.swing.Action[] getRunningActions() {
+        if (runningActions == null) {
+            runningActions = new SystemAction[] {
+                SystemAction.get(StopServerAction.class),
+                SystemAction.get(RemoveInstanceAction.class)
+            };
+        }
+        return runningActions;
+    }
+    private javax.swing.Action[] getStoppedActions() {
+        if (stoppedActions == null) {
+            stoppedActions = new SystemAction[] {
+                SystemAction.get(StartServerAction.class),
+                SystemAction.get(RemoveInstanceAction.class)
+            };
+        }
+        return stoppedActions;
+    }
+    private javax.swing.Action[] getUnknownActions() {
+        if (unknownActions == null) {
+            unknownActions = new SystemAction[] {
+                SystemAction.get(ServerStatusAction.class),
+                SystemAction.get(RemoveInstanceAction.class)
+            };
+        }
+        return unknownActions;
+    }
+
     public javax.swing.Action[] getActions(boolean context) {
-        return new SystemAction[] {
-            SystemAction.get(ServerStatusAction.class),
-            SystemAction.get(RemoveInstanceAction.class)/*,
-            SystemAction.get(RefreshAction.class)*/
-        };
+        Boolean isRunning = instance.checkRunning();
+        if (isRunning == null) {
+            return getUnknownActions();
+        } else if (isRunning.booleanValue()) {
+            return getRunningActions();
+        } else
+            return getStoppedActions();
     }
     
     ServerInstance getServerInstance() {

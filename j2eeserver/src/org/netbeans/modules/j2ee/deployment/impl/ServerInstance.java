@@ -48,6 +48,7 @@ public class ServerInstance implements Node.Cookie {
     private final Set targetsStartedByIde = new HashSet(); // valued by target name
     private Map targets; // keyed by target name, valued by ServerTarget
     private boolean managerStartedByIde = false;
+    private ServerTarget coTarget = null;
     
     // PENDING how to manage connected/disconnected servers with the same manager?
     // maybe concept of 'default unconnected instance' is broken?
@@ -106,6 +107,7 @@ public class ServerInstance implements Node.Cookie {
         management = null;
         managerWrappers = null;
         targets = null;
+        initCoTarget();
         fireInstanceRefreshed();
     }
     
@@ -234,11 +236,45 @@ public class ServerInstance implements Node.Cookie {
         lastCheck = System.currentTimeMillis();
         return isRunning;
     }
+    
+    static final long PING_WAIT_MILLIS = 100;
+    private final Object state = new Object();
+    public Boolean checkRunning() {
+        Runnable r = new Runnable() {
+            public void run() {
+                isRunning();
+                gotIt();
+            }
+        };
+        (new Thread(r)).start();
+        if (waitForState())
+            return (isRunning ? Boolean.TRUE : Boolean.FALSE);
+        else
+            return null;
+    }
+    
+    private boolean waitForState() {
+        long t0 = System.currentTimeMillis();
+        try {
+            synchronized(state) {
+                state.wait(PING_WAIT_MILLIS);
+            }
+        } catch(InterruptedException e) {}
+        return (System.currentTimeMillis() - t0 < PING_WAIT_MILLIS);
+    }        
+
+    private void gotIt() {
+        synchronized(state) {
+            state.notify();
+        }
+    }
+    
     public boolean isDebuggable() {
         StartServer ss = getStartServer();
         Target target = getDeploymentManager().getTargets()[0];
         return ss != null && ss.isAlsoTargetServer(target) && ss.isDebuggable(target);
     }
+    
     public boolean isDebuggable(Target target) {
         StartServer ss = getStartServer();
         return ss != null && ss.isDebuggable(target);
@@ -283,11 +319,9 @@ public class ServerInstance implements Node.Cookie {
      * @return true if successful.
      */
     public boolean start(DeployProgressUI ui) {
-        if (isRunning())
-            return true;
-        
         return _start(ui);
     }
+
     /**
      * Start specified target server.  If it is also admin server only make sure
      * admin server is running.
@@ -330,9 +364,9 @@ public class ServerInstance implements Node.Cookie {
         } else {
             String title = NbBundle.getMessage(ServerInstance.class, "LBL_StartServerProgressMonitor", getUrl());
             final DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
-            ui.startProgressUI(10);
+            ui.startProgressUI(5);
             if (_start(ui)) {
-                ui.recordWork(10);
+                ui.recordWork(5);
                 return true;
             }
             return false;
@@ -345,6 +379,7 @@ public class ServerInstance implements Node.Cookie {
     public void stop(DeployProgressUI ui) {
         _stop(ui);
     }
+
     public void stop() {
         String title = NbBundle.getMessage(ServerInstance.class, "LBL_StopServerProgressMonitor", getUrl());
         DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
@@ -646,15 +681,15 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public ServerTarget getCoTarget() {
-        if (! isRunning() && getStartServer().needsStartForTargetList())
-            return null;
-        
+        return coTarget;
+    }
+    
+    private void initCoTarget() {
         ServerTarget[] childs = getTargets();
         for (int i=0; i<childs.length; i++) {
             if (getStartServer().isAlsoTargetServer(childs[i].getTarget()))
-                return childs[i];
+                coTarget = childs[i];
         }
-        return null;
     }
     
     /*private ShowEventWindowsAction.EventLogProvider getEventLogProviderCookie() {
