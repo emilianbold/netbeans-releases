@@ -381,13 +381,10 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
   <folder name="Shortcuts">
-    <file name="CS-F6[org-openide-actions-ExecuteProjectAction].instance" />
     <file name="S-F5[org-openide-actions-FinishDebuggerAction].instance" />
-    <file name="CS-F5[org-openide-actions-DebugProjectAction].instance" />
     <file name="C-F11[org-openide-actions-CleanAllAction].instance" />
     <file name="CA-C[org-netbeans-core-actions-StopCompileAction].instance" />
     <file name="C-Z[org-openide-actions-UndoAction].instance" />
-    <file name="CS-O[org-openide-actions-OpenProjectAction].instance" />
     <file name="CA-F9[org-openide-actions-BuildAllAction].instance" />
     <file name="DELETE[org-openide-actions-DeleteAction].instance" />
     <file name="C-Y[org-openide-actions-RedoAction].instance" />
@@ -418,11 +415,9 @@ Microsystems, Inc. All Rights Reserved.
     <file name="C-S[org-openide-actions-SaveAction].instance" />
     <file name="C-C[org-openide-actions-CopyAction].instance" />
     <file name="C-3[org-netbeans-core-actions-EditorViewAction].instance" />
-    <file name="CS-F10[org-openide-actions-BuildProjectAction].instance" />
     <file name="C-R[org-openide-actions-ReplaceAction].instance" />
     <file name="S-F12[org-netbeans-core-actions-PreviousOutJumpAction].instance" />
     <file name="C-2[org-netbeans-core-actions-ExplorerViewAction].instance" />
-    <file name="CS-F9[org-openide-actions-CompileProjectAction].instance" />
     <file name="C-1[org-netbeans-core-actions-GlobalPropertiesAction].instance" />
     <file name="C-P[org-openide-actions-PrintAction].instance" />
     <file name="C-0[org-openide-actions-OpenLocalExplorerAction].instance" />
