@@ -1,0 +1,888 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+{
+	/** 
+	* Root section.
+	* This section describes subnode "Database" in "Environment". It is a root for
+	* database explorer, handles open connections and a list of drives. Serves list
+	* of supported database products (suppdbsystems). Allows to add a new connection.
+	*/
+	root = {
+		name = Databases;
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.RootNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.RootNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/database";
+		children = (driverlist);
+		properties = ();
+		actions = (
+			{
+				name = "Add connection";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddConnectionAction;
+			}
+		);
+	};
+	
+	/** 
+	* Driver list section.
+	* This section describes subnode "Drivers" in "Database". It is a root for driver
+	* list (a list of all available and registered drivers). Allows add a new driver.
+	* Serves no properties (name isn't modifable).
+	*/
+	driverlist = {
+		name = Drivers;
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.DriverListNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.DriverListNodeInfo;
+		iconbase = "/com/netbeans/ide/resources/defaultFolder";
+		children = ();
+		properties = ();
+		actions = (
+			{
+				name = "Add new driver";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddDriverAction;
+			}
+		);
+	};
+
+	/** 
+	* Driver section.
+	* This section describes dynamic subnodes in "Drivers" node. Entire drivers serves name
+	* and URL properties, allows to delete selected node and connect using selected driver.
+	*/
+	driver = {
+		name = Driver;
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.DriverNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.DriverNodeInfo;
+		creator = driverlist;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/driver";
+		children = ();
+		properties = (
+			{
+				code = name;
+				writable = YES;
+			},
+			{
+				code = url;
+				class = java.lang.String;
+				description = URL;
+				name = "Driver URL";
+				writable = YES;
+			}
+		);
+		actions = (
+			{
+				name = "Add new driver";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddDriverAction;
+				node = driverlist;
+			},
+			{
+				name = "Connect using...";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ConnectUsingDriverAction;
+				node = root;
+			},
+			delimiter,
+			{
+				name = "Remove driver";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.RemoveDriverAction;
+				node = driverlist;
+			}
+		);
+	};
+
+	/** 
+	* Connection section.
+	* This section describes dynamic subnodes in "Databases" node. Entire connection
+	* serves a lot of properties, allows connect or disconnect to database, eventually
+	* delete the connection.
+	*/
+	connection = {
+		name = Connection;
+		displayname = "{db} as {user} [disconnected]";
+		activedisplayname = "{db} as {user}";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.ConnectionNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ConnectionNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/connectionDisconnected";
+		activeiconbase = "/com/netbeans/enterprise/modules/db/resources/connection";
+		children = ();
+		actions = (
+			{
+				name = "Connect";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ConnectAction;
+			},
+			{
+				name = "Connect as...";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ConnectAsAction;
+			},
+			{
+				name = "Disconnect";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.DisconnectAction;
+			},
+			delimiter,
+			{
+				name = "Add connection";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddConnectionAction;
+				node = root;
+			},
+			{
+				name = "Delete connection";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.RemoveConnectionAction;
+				node = root;
+			}, 
+			delimiter,
+			{
+				name = "Get info";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.PrintDebugInfoAction;
+			}
+		);
+		properties = (
+			{
+				code = db;
+				name = "Database URL";
+				description = "URL of database";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = driver;
+				name = "Driver URL";
+				description = "URL of driver";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = user;
+				name = "User";
+				description = "Logged user";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = readonlydatabase;
+				name = "Read only";
+				description = "Database in readonly state";
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = groupbysupport;
+				name = "Group by";
+				description = "Database supports GROUP BY clause";
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = outerjoinsupport;
+				name = "Outer join";
+				description = "Database supports outer joins";
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = unionsupport;
+				name = "Union support";
+				description = "Database supports unions";
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = dbproduct;
+				name = "Database product";
+				description = "Database product name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = dbversion;
+				name = "Database version";
+				description = "Database product version";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = rememberpassword;
+				name = "Remember PWD";
+				description = "Remembers password or not";
+				class = java.lang.Boolean;
+				writable = YES;
+			}
+		);
+	};
+
+	/** 
+	* Catalog section.
+	* This section describes dynamic subnodes in "Connection" node.
+	*/
+	catalog = {
+		name = Catalog;
+		displayname = "Catalog {name}";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.CatalogNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/catalog";
+		resultset = (name);
+		children = (tablelist,viewlist,procedurelist);
+		actions = (
+			{
+				name = "Grab structure";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.GrabCatalogAction;
+			},
+			{
+				name = "Recreate...";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateCatalogAction;
+			}
+		);
+	};
+
+	/** 
+	* Table list section.
+	* This section describes dynamic subnodes in "Connection" node.
+	*/
+	tablelist = {
+		name = Tables;
+		displayname = "{name}";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.TableListNodeInfo;
+		iconbase = "/com/netbeans/ide/resources/defaultFolder";
+		children = ();
+		properties = ();
+		actions = (
+			{
+				name = "Create Table";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddTableAction;
+			},
+			delimiter,
+			{
+				name = "Grab structure";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.GrabCatalogAction;
+				node = catalog;
+			},
+			{
+				name = "Recreate...";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateCatalogAction;
+				node = catalog;
+			}
+		);
+	};
+
+	/** 
+	* Table  section.
+	* This section describes one table.
+	*/
+	table = {
+		name = Table;
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.TableNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.TableNodeInfo;
+		creator = tablelist;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/table";
+		children = (ekeylist);
+		resultset = (catalog,schema,name,type,remarks);
+		actions = (
+			{
+				name = "Create Table";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddTableAction;
+			},
+			{
+				name = "Create index";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateIndexAction;
+			},
+			delimiter,
+			{
+				name = "Drop table";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.DropTableAction;
+				node = tablelist;
+			},
+			{
+				name = "Drop index";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.DropIndexAction;
+				node = tablelist;
+			},
+			delimiter,
+			{
+				name = "Grab structure";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.GrabTableAction;
+			},
+			{
+				name = "Recreate...";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateTableAction;
+			}
+		);
+		properties = (
+			{
+				code = name;
+				writable = YES;
+			},
+			{
+				code = catalog;
+				name = "Catalog";
+				description = "Catalog name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = schema;
+				name = "Schema";
+				description = "Schema name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = type;
+				description = "Column Type";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = remarks;
+				name = "Remarks";
+				description = "Remarks";
+				class = java.lang.String;
+				writable = YES;
+			}
+		);
+	};
+		
+	/** 
+	* Column section.
+	* This section describes list of one column.
+	*/
+	column = {
+		name = "Column";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ColumnNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/column";
+		resultset = (catalog,schema,tablename,name,datatype,typename,columnsize,bufflen,decdigits,radix,nullable,remarks,coldef,reserved1,reserved2,octetlen,ordpos,isnullable);
+
+		actions = (
+			{
+				name = "Create index";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateIndexAction;
+			},
+			{
+				name = "Drop index";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.DropIndexAction;
+			},
+			delimiter,
+			{
+				name = "Add column";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+			},
+			{
+				name = "Delete column";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.RemoveColumnAction;
+				node = table;
+			}
+		);
+		properties = (
+			{
+				code = name;
+				writable = YES;
+			},
+			{
+				code = catalog;
+				name = "Catalog";
+				description = "Catalog name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = schema;
+				name = "Schema";
+				description = "Schema name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = type;
+				name = "Type";
+				description = "Column Type";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = columnsize;
+				name = "Column size";
+				description = "Size of column";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = bufflen;
+				name = "Buffer size";
+				description = "Size of buffer";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = decdigits;
+				name = "Decimal digits";
+				description = "Decimal digits";
+				class = java.lang.Integer;
+				writable = NO;
+			}
+		);
+	};
+
+	/** 
+	* Primary key section.
+	* This section describes list of one column.
+	*/
+	icolumn = {
+		name = "Primary key";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.IndexColumnNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnPrimary";
+		resultset = (catalog,schema,tablename,name,keyseq,pkname);
+		actions = (
+			{
+				name = "Add column";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+			},
+			{
+				name = "Create index";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateIndexAction;
+			},
+			{
+				name = "Drop index";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.DropIndexAction;
+			},
+			{
+				name = "Delete primary key";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.DeleteAction;
+			}
+		);
+		properties = (
+			{
+				code = name;
+				writable = YES;
+			},
+			{
+				code = catalog;
+				name = "Catalog";
+				description = "Catalog name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = schema;
+				name = "Schema";
+				description = "Schema name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = type;
+				name = "Type";
+				description = "Column Type";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = columnsize;
+				name = "Column size";
+				description = "Size of column";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = keyseq;
+				name = "Key seq";
+				description = "Key seq";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = decdigits;
+				name = "Decimal digits";
+				description = "Decimal digits";
+				class = java.lang.Integer;
+				writable = NO;
+			}
+		);
+	};
+
+	/** 
+	* Foreign key section.
+	* This section describes one related column.
+	*/
+	fcolumn = {
+		name = "Foreign key";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.ColumnNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ForeignColumnNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnForeign";
+		actions = (
+			{
+				name = "Add column";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
+			},
+			{
+				name = "Delete foreign key";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.DeleteAction;
+			}
+		);
+		properties = (
+			{
+				code = name;
+				writable = YES;
+			},
+			{
+				code = catalog;
+				name = "Catalog";
+				description = "Catalog name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = schema;
+				name = "Schema";
+				description = "Schema name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = type;
+				name = "Type";
+				description = "Column Type";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = columnsize;
+				name = "Column size";
+				description = "Size of column";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = keyseq;
+				name = "Key seq";
+				description = "Key seq";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = decdigits;
+				name = "Decimal digits";
+				description = "Decimal digits";
+				class = java.lang.Integer;
+				writable = NO;
+			}
+		);
+	};
+
+	// fresultsetnames = ekeycatalog;pkeyscheme;pkeytable;pkeyname;ekeycatalog;ekeyscheme;ekeytable;ekeycolumn;keyseq;urule;drule;fkname;pkname;defer
+
+	ekeylist = {
+		name = "Exported keys";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ExportedColumnListNodeInfo;
+		iconbase = "/com/netbeans/ide/resources/defaultFolder";
+		children = ();
+		properties = ();
+		actions = (
+			{
+				name = "Add foreign key";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddForeignKeyAction;
+			}
+		);
+	};
+
+	ekey = {
+		name = "Exported key";
+		class = com.netbeans.enterprise.modules.db.explorer.node.DatabaseNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ColumnNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/ekey";
+		children = ();
+		actions = (
+			{
+				name = "Add foreign key";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddForeignKeyAction;
+			},
+			{
+				name = "Delete foreign key";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddForeignKeyAction;
+			}
+		);
+		properties = (
+			{
+				code = name;
+				writable = YES;
+			},
+			{
+				code = catalog;
+				name = "Catalog";
+				description = "Catalog name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = schema;
+				name = "Schema";
+				description = "Schema name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = type;
+				name = "Type";
+				description = "Column Type";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = columnsize;
+				name = "Column size";
+				description = "Size of column";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = keyseq;
+				name = "Key seq";
+				description = "Key seq";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = decdigits;
+				name = "Decimal digits";
+				description = "Decimal digits";
+				class = java.lang.Integer;
+				writable = NO;
+			}
+		);
+	};
+		
+//		resultsetnames = pkeycatalog;pkeyscheme;pkeytable;name;ekeycatalog;ekeyscheme;ekeytable;ekeycolumn;keyseq;urule;drule;fkname;pkname;defer
+
+	viewlist = {
+		name = "Views";
+		displayname = "{name}";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ViewListNodeInfo;
+		iconbase = "/com/netbeans/ide/resources/defaultFolder";
+		children = ();
+		properties = ();
+		actions = (
+			{
+				name = "Create view";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddViewAction;
+			}
+		);
+	};
+
+	view = {
+		name = "View";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ViewNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/view";
+		actions = (
+			{
+				name = "Create view";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.AddViewAction;
+			},
+			{
+				name = "Drop view";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.DeleteViewAction;
+			}
+		);
+		properties = (
+			{
+				code = name;
+				writable = YES;
+			},
+			{
+				code = catalog;
+				name = "Catalog";
+				description = "Catalog name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = schema;
+				name = "Schema";
+				description = "Schema name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = type;
+				name = "Type";
+				description = "Column Type";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = remarks;
+				name = "Remarks";
+				description = "Remarks";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = columnsize;
+				name = "Column size";
+				description = "Size of column";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = keyseq;
+				name = "Key seq";
+				description = "Key seq";
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = decdigits;
+				name = "Decimal digits";
+				description = "Decimal digits";
+				class = java.lang.Integer;
+				writable = NO;
+			}
+		);
+	};
+		
+	procedurelist = {
+		name = "Procedures";
+		displayname = "{name}";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.DatabaseNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ProcedureListNodeInfo;
+		iconbase = "/com/netbeans/ide/resources/defaultFolder";
+		children = ();
+		actions = (
+			{
+				name = "Create procedure";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
+			}
+		);
+	};
+
+	procedure = {
+		name = "Procedure";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.ProcedureNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ProcedureNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/procedure";
+		resultset = (catalog,schema,name,reserved1,reserverd2,reserverd3,remarks,type);
+		actions = (
+			{
+				name = "Create procedure";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
+				node = procedurelist;
+			},
+			{
+				name = "Delete procedure";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.RemoveProcedureAction;
+				node = procedurelist;
+			}
+		);
+		properties = (
+			{
+				code = name;
+				writable = YES;
+			},
+			{
+				code = catalog;
+				name = "Catalog";
+				description = "Catalog name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = schema;
+				name = "Schema";
+				description = "Schema name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = type;
+				name = "Type";
+				description = "Column Type";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = remarks;
+				name = "Remarks";
+				description = "Remarks";
+				class = java.lang.String;
+				writable = NO;
+			}
+		);
+	};
+	
+	procedurecolumn = {
+		name = "ProcedureColumn";
+		class = com.netbeans.enterprise.modules.db.explorer.nodes.ProcedureParamNode;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ProcedureParamNodeInfo;
+		iconbase = "/com/netbeans/enterprise/modules/db/resources/param";
+		iconbase_in = "/com/netbeans/enterprise/modules/db/resources/paramIn";
+		iconbase_out = "/com/netbeans/enterprise/modules/db/resources/paramOut";
+		iconbase_inout = "/com/netbeans/enterprise/modules/db/resources/paramInOut";
+		iconbase_result = "/com/netbeans/enterprise/modules/db/resources/paramResult";
+		iconbase_return = "/com/netbeans/enterprise/modules/db/resources/paramReturn";
+		resultset = (catalog, schema, procname, name, type, dtype, typename, precision, length, scale, radix, nullable, remarks);
+		actions = (
+			{
+				name = "Create procedure";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
+				node = procedurelist;
+			},
+			{
+				name = "Delete procedure";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.RemoveProcedureAction;
+				node = procedurelist;
+			}
+		);
+		properties = (
+			{
+				code = name;
+				writable = YES;
+			},
+			{
+				code = catalog;
+				name = "Catalog";
+				description = "Catalog name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = schema;
+				name = "Schema";
+				description = "Schema name";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = type;
+				name = "Type";
+				description = "Column Type";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = typename;
+				name = "Data type";
+				description = "Data type";
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = remarks;
+				name = "Remarks";
+				description = "Remarks";
+				class = java.lang.String;
+				writable = NO;
+			}
+		);
+	};
+}
