@@ -93,7 +93,8 @@ public class MeasureMenus  {
         
 //TODO        suite.addTest(new FormInspectorNodePopupMenu("measureTime", "Form Inspector node popup"));
 //TODO        suite.addTest(new EditorDownButtonPopupMenu("measureTime", "Editor Down Button popup"));
-//TODO        suite.addTest(new ToolsOptionsNodePopupMenu("measureTime", "Tools-Options node popup"));
+        
+        suite.addTest(new ToolsOptionsNodePopupMenu("measureTime", "Tools-Options node popup"));
       
         return suite;
     }
