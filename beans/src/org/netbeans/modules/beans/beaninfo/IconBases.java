@@ -47,7 +47,7 @@ interface IconBases {
         "/org/netbeans/modules/beans/resources/bifEventSetUC_"; // NOI18N
 
     public static final String BIF_METHOD =
-        "/org/netbeans/modules/beans/resources/bifPropertyRW_"; // NOI18N
+        "/org/netbeans/modules/beans/resources/bifMethod_"; // NOI18N
 
 }
 /*
