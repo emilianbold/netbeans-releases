@@ -418,9 +418,11 @@ public class PropertyPatternPanel extends javax.swing.JPanel
 
   public void actionPerformed( java.awt.event.ActionEvent e ) {
     if ( dialog != null ) {
-       // System.out.println( e );
+       //System.out.println( e );
       
-       if ( e.getActionCommand().equals( "OK" ) ) { 
+       //if ( e.getActionCommand().equals( "OK" ) ) { 
+      
+       if ( e.getSource() == org.openide.DialogDescriptor.OK_OPTION ) {
          if ( !Utilities.isJavaIdentifier( nameTextField.getText() ) ) {
            TopManager.getDefault().notify(
               new NotifyDescriptor.Message(
@@ -451,11 +453,15 @@ public class PropertyPatternPanel extends javax.swing.JPanel
                                       NotifyDescriptor.ERROR_MESSAGE) );
            typeComboBox.requestFocus();
            return;
-         } 
+         }
+        dialog.setVisible( false );
+        dialog.dispose();
        }
+      else if ( e.getSource() == org.openide.DialogDescriptor.CANCEL_OPTION ) { 
+        dialog.setVisible( false );
+        dialog.dispose();
+      }
       
-      dialog.setVisible( false );
-      dialog.dispose();
     }
   } 
 
@@ -463,6 +469,8 @@ public class PropertyPatternPanel extends javax.swing.JPanel
 
 /*
  * Log
+ *  8    Gandalf   1.7         11/10/99 Petr Hrebejk    Canged to work with 
+ *       DialogDescriptor.setClosingOptions()
  *  7    Gandalf   1.6         11/10/99 Petr Hrebejk    Resize behavior in 
  *       property panel fixed
  *  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
