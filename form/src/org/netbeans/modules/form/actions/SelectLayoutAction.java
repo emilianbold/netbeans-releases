@@ -16,8 +16,7 @@ package org.netbeans.modules.form.actions;
 import java.util.ArrayList;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.MenuListener;
-import javax.swing.event.MenuEvent;
+import javax.swing.event.*;
 import java.text.MessageFormat;
 
 import org.openide.NotifyDescriptor;
@@ -128,33 +127,26 @@ public class SelectLayoutAction extends NodeAction {
      * @return the JMenuItem representation for the Action
      */
     public JMenuItem getPopupPresenter() {
-        JMenu popupMenu = new org.openide.awt.JMenuPlus(getName());
-        popupMenu.setEnabled(isEnabled());
-        HelpCtx.setHelpIDString(popupMenu, SelectLayoutAction.class.getName());
-        popupMenu.addMenuListener(new MenuListener() {
-            public void menuSelected(MenuEvent e) {
-                JMenu menu =(JMenu)e.getSource();
-                if (menu.getMenuComponentCount() > 0) { // [IAN - Patch for Swing 1.1, which throws NullPointerException if removeAll is called on empty uninitialized JMenu]
-                    menu.removeAll();
-                }
+        final JMenu layoutMenu = new org.openide.awt.JMenuPlus(getName());
+        layoutMenu.setEnabled(isEnabled());
+        HelpCtx.setHelpIDString(layoutMenu, SelectLayoutAction.class.getName());
+        layoutMenu.getPopupMenu().addPopupMenuListener(new PopupMenuListener() {
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                 Node[] nodes = getActivatedNodes();
                 if (nodes.length == 0)
                     return;
-
                 PaletteItem[] layouts = getAllLayouts();
-
                 for (int i = 0; i < layouts.length; i++) {
                     JMenuItem mi = new JMenuItem(layouts[i].getDisplayName());
                     HelpCtx.setHelpIDString(mi, SelectLayoutAction.class.getName());
-                    menu.add(mi);
+                    layoutMenu.add(mi);
                     mi.addActionListener(new LayoutActionListener(nodes, layouts[i]));
                 }
             }
-            
-            public void menuDeselected(MenuEvent e) {}
-            public void menuCanceled(MenuEvent e) {}
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+            public void popupMenuCanceled(PopupMenuEvent e) {}
         });
-        return popupMenu;
+        return layoutMenu;
     }
 
     class LayoutActionListener implements ActionListener
