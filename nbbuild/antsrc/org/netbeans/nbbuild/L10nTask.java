@@ -163,13 +163,14 @@ public class L10nTask extends MatchingTask {
 				if (modules[j] != null && ! modules[j].equals("")) {
  				fullPropHash = p.getProperties();
 
-				// if (DEBUG) System.out.println("IN FOR MODULES "+modules[j]);
-				// if (DEBUG) System.out.println("\tSTARTING MODULE "+modules[j]); 
+                                // System.out.println("IN FOR MODULES "+modules[j]);
+				// System.out.println("\tSTARTING MODULE "+modules[j]); 
 
 				File f = new File(topdirs[i]+File.separator+modules[j]+File.separator+localizableFile);
+                                // System.out.println("Localizable file is: "+f.getAbsolutePath());
 				
 				if ( f.exists() ) {
-					// if (DEBUG) System.out.println("\t\tFILE exists"+topdirs[i]+File.separator+modules[j]+File.separator+localizableFile);
+					System.out.println("\t\tFILE exists"+topdirs[i]+File.separator+modules[j]+File.separator+localizableFile);
 					File topDir = new File(topdirs[i]);
 					File modDir = new File(topdirs[i]+File.separator+modules[j]);
 
@@ -633,12 +634,11 @@ public class L10nTask extends MatchingTask {
 	public void setModules(String s) {
 		StringTokenizer st = new StringTokenizer(s,",");
 		String[] mods = new String[st.countTokens()];
-		String cache = ""; 
-		String fullMod ="";
+                HashSet modSet = new HashSet(); //This will guarantee that there will be no duplications
+                String fullMod = null;
 		
-		int i=0;
 		while (st.hasMoreTokens()) {
-			fullMod=st.nextToken();
+			fullMod=st.nextToken().trim();;
 
 			// if (DEBUG) System.out.println("ITEM IN MODLIST: "+fullMod);
 
@@ -650,25 +650,14 @@ public class L10nTask extends MatchingTask {
 
 				// if (DEBUG) System.out.println("CHANGED FULLMOD & it's NOW "+fullMod);
 			}
-
-			if ( ! fullMod.equals(cache) ) {
-
-				//Check that the mod immediately preceeding
-				//in the list is not the same as this one & add to list.
-				// else, skip this one.
-
-				// NOTE: I recognize this won't necessarily eliminiate
-				// duplicate modulenames, but it will eliminate the obvious ones.
-				// As long as the list is sorted, this will eliminate dups.
-
-				mods[i++]=fullMod;
-			}
-
-			cache = fullMod;
+                        modSet.add( fullMod );
 		}
-
-
-		this.modules = mods;
+                this.modules = new String[ modSet.size() ];
+                Iterator it = modSet.iterator();
+                
+                int i=0;
+                while( it.hasNext() )
+                    this.modules[i++] = (String) it.next();
 		
 	}
 
