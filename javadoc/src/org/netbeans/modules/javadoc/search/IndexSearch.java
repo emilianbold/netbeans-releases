@@ -38,6 +38,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.src.Element;
 import org.openide.cookies.OpenCookie;
+import org.openide.util.HelpCtx;
 
 import com.netbeans.developer.modules.javadoc.settings.DocumentationSettings;
 
@@ -225,6 +226,10 @@ public class IndexSearch
     byNameButton.setToolTipText(bundle.getString( "CTL_SEARCH_byName_ToolTip" ));
     quickViewButton.setToolTipText(bundle.getString( "CTL_SEARCH_quickView_ToolTip" ));
     sourceButton.setToolTipText(bundle.getString( "CTL_SEARCH_showSource_ToolTip" ));
+  }
+  
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (IndexSearch.class);
   }
 
   /** This method is called from within the constructor to
@@ -759,6 +764,7 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
 
 /*
  * Log
+ *  22   Gandalf   1.21        1/11/00  Jesse Glick     Context help.
  *  21   Gandalf   1.20        11/23/99 Petr Hrebejk    Show source feature 
  *       added
  *  20   Gandalf   1.19        10/27/99 Petr Hrebejk    Bug fixes & back button 
