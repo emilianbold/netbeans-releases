@@ -86,12 +86,11 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
         </xsd:sequence>
     </xsd:complexType>
     
-    <!-- A root of files. Has an ID and location. -->
+    <!-- A root of files. Has a location. -->
     <xsd:complexType name="root">
         <xsd:sequence>
             <xsd:element name="location" type="substitutable-text"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:ID"/>
     </xsd:complexType>
     
     <!-- A typed or generic source root. Also has a display name and maybe a type parameter (e.g. 'java'). -->
@@ -101,7 +100,6 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
             <xsd:element name="type" type="xsd:NMTOKEN" minOccurs="0"/>
             <xsd:element name="location" type="substitutable-text"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:ID"/>
     </xsd:complexType>
     
     <xsd:complexType name="bound-actions">

@@ -229,8 +229,18 @@ final class FreeformProject implements Project {
         }
         
         public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-            // XXX check context, and also perhaps existence of script
-            return true;
+            Element genldata = helper.getPrimaryConfigurationData(true);
+            Element actionsEl = Util.findElement(genldata, "ide-actions", NS); // NOI18N
+            List/*<Element>*/ actions = Util.findSubElements(actionsEl);
+            Iterator it = actions.iterator();
+            while (it.hasNext()) {
+                Element actionEl = (Element)it.next();
+                if (actionEl.getAttribute("name").equals(command)) { // NOI18N
+                    // XXX check context, and also perhaps existence of script
+                    return true;
+                }
+            }
+            throw new IllegalArgumentException("Unrecognized command: " + command); // NOI18N
         }
         
         public void invokeAction(String command, Lookup context) throws IllegalArgumentException {

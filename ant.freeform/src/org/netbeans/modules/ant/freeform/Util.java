@@ -97,6 +97,8 @@ class Util {
                 if (text.trim().length() > 0) {
                     throw new IllegalArgumentException("non-ws text encountered in " + parent + ": " + text); // NOI18N
                 }
+            } else if (n.getNodeType() == Node.COMMENT_NODE) {
+                // skip
             } else {
                 throw new IllegalArgumentException("unexpected non-element child of " + parent + ": " + n); // NOI18N
             }
