@@ -70,7 +70,7 @@ implements ConnectSupport {
     /**
      * Returns a new instance of Debugger.
      */
-    public Debugger createDebugger () {
+    public AbstractDebugger createDebugger () {
         return new JPDADebugger ();
     }
 }
