@@ -76,7 +76,7 @@ public class PropertiesLocaleNode extends FileEntryNode {
   protected SystemAction[] createActions () {
     return new SystemAction[] {
       SystemAction.get(OpenAction.class),
-      SystemAction.get(ViewAction.class),
+      SystemAction.get(EditAction.class),
       SystemAction.get(FileSystemAction.class),
       null,
       SystemAction.get(CutAction.class),
@@ -254,6 +254,7 @@ public class PropertiesLocaleNode extends FileEntryNode {
 
 /*
  * <<Log>>
+ *  9    Gandalf   1.8         7/16/99  Petr Jiricka    
  *  8    Gandalf   1.7         6/30/99  Ian Formanek    NodeTransfer related 
  *       changes to make it compilable
  *  7    Gandalf   1.6         6/24/99  Petr Jiricka    

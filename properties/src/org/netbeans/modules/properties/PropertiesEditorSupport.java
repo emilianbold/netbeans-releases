@@ -35,7 +35,7 @@ import org.openide.util.WeakListener;
 import org.openide.util.NbBundle;
 import org.openide.text.EditorSupport;          
 import org.openide.text.PositionRef;
-import org.openide.cookies.ViewCookie;
+import org.openide.cookies.EditCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObject;
@@ -48,8 +48,8 @@ import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 
  
-/** Support for viewing porperties files (ViewCookie) by opening them in a text editor */
-public class PropertiesEditorSupport extends EditorSupport implements ViewCookie {
+/** Support for viewing porperties files (EditCookie) by opening them in a text editor */
+public class PropertiesEditorSupport extends EditorSupport implements EditCookie {
 
   /** Timer which countdowns the auto-reparsing time. */
   javax.swing.Timer timer;
@@ -303,13 +303,13 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
     return super.openAt(pos);
   }
                                       
-  /** Returns a ViewCookie for editing at a given position. */
+  /** Returns a EditCookie for editing at a given position. */
   public PropertiesEditAt getViewerAt(String key) {
     return new PropertiesEditAt (key);
   }
      
   /** Class for opening at a given key. */
-  public class PropertiesEditAt implements ViewCookie {
+  public class PropertiesEditAt implements EditCookie {
     
     private String key;                          
     
@@ -325,14 +325,14 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
       return key;
     }
     
-    public void view() {   
+    public void edit() {   
       Element.ItemElem item = myEntry.getHandler().getStructure().getItem(key);
       if (item != null) {                   
         PositionRef pos = item.getKeyElem().getBounds().getBegin();
         PropertiesEditorSupport.this.openAt(pos);
       }
       else {
-        PropertiesEditorSupport.this.view();
+        PropertiesEditorSupport.this.edit();
       }          
     }
     

@@ -67,7 +67,7 @@ public class KeyNode extends AbstractNode {
     setActions(
       new SystemAction[] {
         SystemAction.get(OpenAction.class),
-        SystemAction.get(ViewAction.class),
+        SystemAction.get(EditAction.class),
         SystemAction.get(FileSystemAction.class),
         null,
         SystemAction.get(CutAction.class),
@@ -282,6 +282,7 @@ public class KeyNode extends AbstractNode {
 
 /*
  * <<Log>>
+ *  9    Gandalf   1.8         7/16/99  Petr Jiricka    
  *  8    Gandalf   1.7         6/16/99  Petr Jiricka    
  *  7    Gandalf   1.6         6/10/99  Petr Jiricka    
  *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 
