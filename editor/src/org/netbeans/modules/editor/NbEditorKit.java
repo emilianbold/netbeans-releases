@@ -239,11 +239,7 @@ public class NbEditorKit extends ExtKit {
             Caret caret = target.getCaret();
             
             // check whether the glyph gutter is visible or not
-            if (!(target.getUI() instanceof BaseTextUI)) {
-                target.getToolkit().beep();
-                return;
-            }
-            if (!((BaseTextUI)target.getUI()).getEditorUI().isGlyphGutterVisible()) {
+            if (Utilities.getEditorUI(target) == null || !Utilities.getEditorUI(target).isGlyphGutterVisible()) {
                 target.getToolkit().beep();
                 return;
             }
@@ -267,6 +263,10 @@ public class NbEditorKit extends ExtKit {
                 anno = new BookmarkAnnotation();
                 
                 Line lineObj = NbEditorUtilities.getLine(doc, caret.getDot(), false);
+                if (lineObj == null) {
+                    target.getToolkit().beep();
+                    return;
+                }
                 anno.attach(lineObj);
 
                 bookmarks.putBookmark(new Bookmark(anno));
@@ -293,11 +293,7 @@ public class NbEditorKit extends ExtKit {
             Caret caret = target.getCaret();
 
             // check whether the glyph gutter is visible or not
-            if (!(target.getUI() instanceof BaseTextUI)) {
-                target.getToolkit().beep();
-                return;
-            }
-            if (!((BaseTextUI)target.getUI()).getEditorUI().isGlyphGutterVisible()) {
+            if (Utilities.getEditorUI(target) == null || !Utilities.getEditorUI(target).isGlyphGutterVisible()) {
                 target.getToolkit().beep();
                 return;
             }
