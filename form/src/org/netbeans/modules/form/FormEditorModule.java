@@ -439,7 +439,42 @@ public class FormEditorModule extends ModuleInstall {
     private String formatName(String className) {
         return className.substring(className.lastIndexOf(".") + 1) + "[" + className.replace('.', '-') + "]"; // NOI18N
     }
+    
+    static String[] getDefaultAWTComponents() {
+        return defaultAWTComponents;
+    }
+    static String[] getDefaultAWTIcons() {
+        return defaultAWTIcons;
+    }
 
+    static String[] getDefaultSwingComponents() {
+        return defaultSwingComponents;
+    }
+    static String[] getDefaultSwingIcons() {
+        return defaultSwingIcons;
+    }
+    
+    static String[] getDefaultSwing2Components() {
+        return defaultSwing2Components;
+    }
+    static String[] getDefaultSwing2Icons() {
+        return defaultSwing2Icons;
+    }
+    
+    static String[] getDefaultLayoutsComponents() {
+        return defaultLayoutsComponents;
+    }
+    static String[] getDefaultLayoutsIcons() {
+        return defaultLayoutsIcons;
+    }
+    
+    static String[] getDefaultBorders() {
+        return defaultBorders;
+    }
+    static String[] getDefaultBordersIcons() {
+        return defaultBordersIcons;
+    }
+    
     // -----------------------------------------------------------------------------
     // Default Palette contents
 

@@ -20,6 +20,8 @@ import org.openide.nodes.*;
 import java.awt.*;
 import java.beans.*;
 import java.lang.reflect.Method;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
@@ -168,6 +170,10 @@ public class BeanSupport {
      * @returns The icon of specified JavaBean or null if not defined
      */
     public static Image getBeanIcon(Class beanClass, int iconType) {
+        Image ret = getIconForDefault(beanClass);
+        if (ret != null) {
+            return ret;
+        }
         // [FUTURE: the icon should be obtained from the InstanceCookie somehow, and customizable by the user]
         BeanInfo bi = createBeanInfo(beanClass);
         if (bi != null) {
@@ -247,5 +253,69 @@ public class BeanSupport {
 
         return null;
     }
+    
+    static Reference imageCache;
+    
+    private static synchronized Image getIconForDefault(Class klass) {
+        Map icons;
+        if ((imageCache == null) || ((icons = (Map) imageCache.get()) == null)) {
+            icons = createImageCache();
+            imageCache = new SoftReference(icons);
+        }
+        
+        String name = klass.getName();
+        Object img = icons.get(name);
+        
+        if (img == null) {
+            return null;
+        }
+        
+        if (img instanceof Image) {
+            return (Image) img;
+        } else {
+            String res = (String) img;
+            Image image = getImage(res, klass);
+            icons.put(name, image);
+            return image;
+        }
+    }
+    
+    private static Image getImage(String res, Class klass) {
+        java.net.URL resurl = klass.getResource(res);
+        return java.awt.Toolkit.getDefaultToolkit().createImage(resurl);
+    }
+    
+    private static Map createImageCache() {
+        Map ret = new HashMap();
+        
+        String[] compos = FormEditorModule.getDefaultAWTComponents();
+        String[] icons = FormEditorModule.getDefaultAWTIcons();
+        include(ret, compos, icons);
+        
+        compos = FormEditorModule.getDefaultSwingComponents();
+        icons = FormEditorModule.getDefaultSwingIcons();
+        include(ret, compos, icons);
 
+        compos = FormEditorModule.getDefaultSwing2Components();
+        icons = FormEditorModule.getDefaultSwing2Icons();
+        include(ret, compos, icons);
+        
+        compos = FormEditorModule.getDefaultLayoutsComponents();
+        compos = FormEditorModule.getDefaultLayoutsIcons();
+        include(ret, compos, icons);
+
+        compos = FormEditorModule.getDefaultBorders();
+        compos = FormEditorModule.getDefaultBordersIcons();
+        include(ret, compos, icons);
+        
+        ret.put("javax.swing.JFrame", "/javax/swing/beaninfo/images/JFrameColor16.gif");
+        ret.put("javax.swing.JDialog", "/javax/swing/beaninfo/images/JDialogColor16.gif");
+        return ret;
+    }
+    
+    private static void include(Map ret, String[] compos, String[] icons) {
+        for (int i = 0; i < compos.length; i++) {
+            ret.put(compos[i], icons[i]);
+        }
+    }
 }

@@ -357,7 +357,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     } else if (XML_EVENTS.equals(componentNode.getNodeName())) {
                         Collection events = loadEvents(componentNode);
                         if (events != null) {
-                            comp.getEventsList().initEvents(events);
+                            comp.getEventsListImpl().initEvents(events);
                         }
 
                     } else if (XML_AUX_VALUES.equals(componentNode.getNodeName())) {

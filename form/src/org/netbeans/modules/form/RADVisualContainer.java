@@ -51,6 +51,11 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
 
     private void initContainerDelegate() {
+        Object instance = getBeanInstance();
+        if (instance instanceof javax.swing.RootPaneContainer) {
+            containerDelegate = ((javax.swing.RootPaneContainer) instance).getContentPane();
+            return;
+        }
         Object value = getBeanInfo().getBeanDescriptor().getValue("containerDelegate"); // NOI18N
         if ((value != null) &&(value instanceof String) &&((String)value).equals("getContentPane")) { // NOI18N
             try {

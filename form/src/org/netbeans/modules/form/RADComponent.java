@@ -114,7 +114,7 @@ public class RADComponent {
 
         this.beanClass = beanClass;
         beanInstance = createBeanInstance();
-        beanInfo = BeanSupport.createBeanInfo(beanClass);
+        beanInfo = null; //BeanSupport.createBeanInfo(beanClass);
 
         initInternal();
     }
@@ -148,7 +148,7 @@ public class RADComponent {
                     continue;
 
                 Object currentValue = prop.getValue();
-                Object defaultValue = defaultPropertyValues.get(props[i].getName());
+                Object defaultValue = getDefaultPropertyValues().get(props[i].getName());
                 if (!Utilities.compareObjects(currentValue, defaultValue)) {
                     prop.setChanged(true);
                 }
@@ -174,6 +174,7 @@ public class RADComponent {
 
     /** Used by TuborgPersistenceManager */
     void initDeserializedEvents(java.util.Hashtable eventHandlers) {
+        getComponentEvents();
         eventsList.initEvents(eventHandlers);
     }
 
@@ -209,13 +210,13 @@ public class RADComponent {
     private void initInternal() {
         nameToProperty = new HashMap();
 
-        syntheticProperties = createSyntheticProperties();
-        beanProperties = createBeanProperties();
-        beanExpertProperties = createBeanExpertProperties();
+        syntheticProperties = null; //createSyntheticProperties();
+        beanProperties = null; //createBeanProperties();
+        beanExpertProperties = null; //createBeanExpertProperties();
 
-        beanEvents = createEventsProperties();
+        beanEvents = null; //createEventsProperties();
 
-        defaultPropertyValues = BeanSupport.getDefaultPropertyValues(beanClass);
+        defaultPropertyValues = null; //BeanSupport.getDefaultPropertyValues(beanClass);
     }
 
     // -----------------------------------------------------------------------------
@@ -239,6 +240,9 @@ public class RADComponent {
      * @return the BeanInfo of the bean represented by this RADComponent
      */
     public BeanInfo getBeanInfo() {
+        if (beanInfo == null) {
+            beanInfo = BeanSupport.createBeanInfo(beanClass);
+        }
         return beanInfo;
     }
 
@@ -246,7 +250,20 @@ public class RADComponent {
      * @return true if the component has hidden state, false otherwise
      */
     public boolean hasHiddenState() {
-        return(getBeanInfo().getBeanDescriptor().getValue("hidden-state") != null); // NOI18N
+        String name = getBeanClass().getName();
+        if (name.startsWith("java")) {
+            return false;
+        } else if (name.startsWith("org.")) {
+            int idx = name.indexOf('.', 4);
+            if (idx < 0) {
+                idx = name.length();
+            }
+            name = name.substring(4, idx);
+            if (name.equals("netbeans") || name.equals("openide")) {
+                return false;
+            }
+        }
+        return (getBeanInfo().getBeanDescriptor().getValue("hidden-state") != null); // NOI18N
     }
 
     /** Getter for the Name property of the component - usually maps to variable declaration for holding the
@@ -330,9 +347,18 @@ public class RADComponent {
         return formManager;
     }
 
-    public EventsList getEventsList() {
+    public final EventsList getEventsList() {
+        createEventsProperties();
         return eventsList;
     }
+    
+    public EventsList getEventsListImpl() {
+        if (eventsList == null) {
+            eventsList = new EventsList(this);
+        }
+        return eventsList;
+    }
+    
 
     /** @return the map of all currently set aux value - pairs of <String, Object> */
     public Map getAuxValues() {
@@ -361,7 +387,7 @@ public class RADComponent {
 
     public Node.PropertySet[] getProperties() {
         if (beanPropertySets == null) {
-            if (beanExpertProperties.length == 0) {
+            if (getComponentExpertProperties().length == 0) {
                 // No expert properties
                 beanPropertySets = new Node.PropertySet [] {
                     new Node.PropertySet(
@@ -448,26 +474,49 @@ public class RADComponent {
     // Access to component Properties
 
     public Node.Property[] getSyntheticProperties() {
+        if (syntheticProperties == null) {
+            syntheticProperties = createSyntheticProperties();
+        }
         return syntheticProperties;
     }
 
     public Node.Property[] getComponentProperties() {
+        if (beanProperties == null) {
+            beanProperties = createBeanProperties();
+        }
         return beanProperties;
     }
 
     public Node.Property[] getComponentExpertProperties() {
+        if (beanExpertProperties == null) {
+            beanExpertProperties = createBeanExpertProperties();
+        }
         return beanExpertProperties;
     }
 
     public Node.Property[] getComponentEvents() {
+        if (beanEvents == null) {
+            beanEvents = createEventsProperties();
+        }
         return beanEvents;
     }
-
+    
+    Map getDefaultPropertyValues() {
+        if (defaultPropertyValues == null) {
+            defaultPropertyValues = BeanSupport.getDefaultPropertyValues(beanClass);
+        }
+        return defaultPropertyValues;
+    }
+    
     /** Can be used to obtain RADProperty of property with specified name
      * @param name the name of the property - the same as returned from PropertyDescriptor.getName()
      * @return the RADProperty representing the specified property or null if property with specified name does not exist
      */
     public RADProperty getPropertyByName(String name) {
+        getSyntheticProperties();
+        getComponentProperties();
+        getComponentEvents();
+        getComponentExpertProperties();
         return(RADProperty) nameToProperty.get(name);
     }
 
@@ -475,6 +524,9 @@ public class RADComponent {
      * @return the default property value or null, which means that the default value is null or cannot be obtained(write only property, ...)
      */
     public Object getDefaultPropertyValue(RADProperty prop) {
+        if (defaultPropertyValues == null) {
+            defaultPropertyValues = BeanSupport.getDefaultPropertyValues(beanClass);
+        }
         return defaultPropertyValues.get(prop);
     }
 
@@ -482,10 +534,12 @@ public class RADComponent {
     // Protected interface
 
     protected boolean hasDefaultEvent() {
+        getComponentEvents();
         return(eventsList.getDefaultEvent() != null);
     }
 
     protected void attachDefaultEvent() {
+        getComponentEvents();
         EventsList.Event defaultEvt = eventsList.getDefaultEvent();
         Vector handlers = defaultEvt.getHandlers();
         if (handlers == null || handlers.size() == 0)
@@ -498,7 +552,7 @@ public class RADComponent {
     }
 
     protected Node.Property[] createBeanProperties() {
-        PropertyDescriptor[] props = beanInfo.getPropertyDescriptors();
+        PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
         ArrayList nodeProps = new ArrayList();
         for (int i = 0; i < props.length; i++) {
             if ((!props[i].isHidden()) &&(!props[i].isExpert())) {
@@ -514,7 +568,7 @@ public class RADComponent {
     }
 
     protected Node.Property[] createBeanExpertProperties() {
-        PropertyDescriptor[] props = beanInfo.getPropertyDescriptors();
+        PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
         ArrayList nodeProps = new ArrayList();
         for (int i = 0; i < props.length; i++) {
             if ((!props[i].isHidden()) && props[i].isExpert()) {
@@ -528,9 +582,9 @@ public class RADComponent {
 
         return np;
     }
-
+    
     protected Node.Property[] createEventsProperties() {
-        eventsList = new EventsList(this);
+        eventsList = getEventsListImpl();
 
         Node.Property[] nodeEvents = new Node.Property[eventsList.getEventCount()];
         int idx = 0;
@@ -629,7 +683,7 @@ public class RADComponent {
      */
     void restorePropertyValue(PropertyDescriptor desc, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         setPropertyValue(desc, value);
-        Object defValue = defaultPropertyValues.get(desc.getName());
+        Object defValue = getDefaultPropertyValues().get(desc.getName());
         // add the property to the list of changed properties
         RADProperty prop =(RADProperty)nameToProperty.get(desc.getName());
         if (prop != null)
@@ -871,8 +925,8 @@ public class RADComponent {
 
 
             boolean isChanged = false;
-            if (defaultPropertyValues.containsKey(desc.getName())) { // if there is reasonable default
-                Object defValue = defaultPropertyValues.get(desc.getName());
+            if (getDefaultPropertyValues().containsKey(desc.getName())) { // if there is reasonable default
+                Object defValue = getDefaultPropertyValues().get(desc.getName());
                 isChanged = !Utilities.compareObjects(defValue, val);
             } else { // no default => always treat is as changed
                 isChanged = true;
@@ -901,7 +955,7 @@ public class RADComponent {
          * @return <code>true</code> if it does
          */
         public boolean supportsDefaultValue() {
-            return defaultPropertyValues.containsKey(desc.getName()); // true if there is reasonable default
+            return getDefaultPropertyValues().containsKey(desc.getName()); // true if there is reasonable default
         }
 
         /** Restore this property to its default value, if supported.
@@ -922,8 +976,8 @@ public class RADComponent {
             }
 
             // 2. restore the default property value
-            if (defaultPropertyValues.containsKey(desc.getName())) { // if there is reasonable default
-                Object def = defaultPropertyValues.get(desc.getName());
+            if (getDefaultPropertyValues().containsKey(desc.getName())) { // if there is reasonable default
+                Object def = getDefaultPropertyValues().get(desc.getName());
                 try {
                     setValue(def);
                 } catch (IllegalAccessException e) {
@@ -941,7 +995,7 @@ public class RADComponent {
         }
 
         public Object getDefaultValue() {
-            return defaultPropertyValues.get(desc.getName());
+            return getDefaultPropertyValues().get(desc.getName());
         }
 
         /* Returns property editor for this property.
@@ -1105,8 +1159,8 @@ public class RADComponent {
             }
 
             boolean isChanged = false;
-            if (defaultPropertyValues.containsKey(desc.getName())) { // if there is reasonable default
-                Object defValue = defaultPropertyValues.get(desc.getName());
+            if (getDefaultPropertyValues().containsKey(desc.getName())) { // if there is reasonable default
+                Object defValue = getDefaultPropertyValues().get(desc.getName());
                 isChanged = !Utilities.compareObjects(defValue, val);
             } else { // no default => always treat is as changed
                 isChanged = true;
@@ -1132,7 +1186,7 @@ public class RADComponent {
          * @return <code>true</code> if it does
          */
         public boolean supportsDefaultValue() {
-            return defaultPropertyValues.containsKey(desc.getName()); // true if there is reasonable default
+            return getDefaultPropertyValues().containsKey(desc.getName()); // true if there is reasonable default
         }
 
         /** Restore this property to its default value, if supported.
@@ -1153,8 +1207,8 @@ public class RADComponent {
             }
 
             // 2. restore the default property value
-            if (defaultPropertyValues.containsKey(desc.getName())) { // if there is reasonable default
-                Object def = defaultPropertyValues.get(desc.getName());
+            if (getDefaultPropertyValues().containsKey(desc.getName())) { // if there is reasonable default
+                Object def = getDefaultPropertyValues().get(desc.getName());
                 try {
                     setValue(def);
                 } catch (IllegalAccessException e) {
@@ -1171,7 +1225,7 @@ public class RADComponent {
         }
 
         public Object getDefaultValue() {
-            return defaultPropertyValues.get(desc.getName());
+            return getDefaultPropertyValues().get(desc.getName());
         }
 
         /* Returns property editor for this property.

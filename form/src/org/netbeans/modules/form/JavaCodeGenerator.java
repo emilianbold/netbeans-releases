@@ -18,6 +18,7 @@ import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.text.IndentEngine;
 import org.openide.util.Utilities;
+import org.openide.loaders.MultiDataObject.Entry;
 import org.netbeans.modules.java.JavaEditor;
 import org.netbeans.modules.form.editors.CustomCodeEditor;
 import org.netbeans.modules.form.compat2.layouts.DesignLayout;
@@ -419,104 +420,118 @@ class JavaCodeGenerator extends CodeGenerator {
             + "_" + component.getName(); // NOI18N
     }
 
+
+    private String createInitializer() throws IOException {
+        IndentEngine engine = IndentEngine.find(formManager.getFormEditorSupport().getDocument()); // NOI18N
+        AWTIndentStringWriter initCodeBuffer = new AWTIndentStringWriter();
+        Writer initCodeWriter = engine.createWriter(
+            formManager.getFormEditorSupport().getDocument(),
+            initComponentsSection.getBegin().getOffset(), initCodeBuffer);
+
+        initCodeWriter.write(INIT_COMPONENTS_HEADER);
+        RADForm form = formManager.getRADForm();
+        RADComponent top = form.getTopLevelComponent();
+        RADComponent[] nonVisualComponents = formManager.getNonVisualComponents();
+        for (int i = 0; i < nonVisualComponents.length; i++) {
+            addCreateCode(nonVisualComponents[i], initCodeWriter);
+        }
+        addCreateCode(top, initCodeWriter);
+
+        for (int i = 0; i < nonVisualComponents.length; i++) {
+            addInitCode(nonVisualComponents[i], initCodeWriter, initCodeBuffer, 0);
+        }
+        addInitCode(top, initCodeWriter, initCodeBuffer, 0);
+
+        // for visual forms append sizing text
+        if (form.getTopLevelComponent() instanceof RADVisualFormContainer) {
+            RADVisualFormContainer visualForm =
+                (RADVisualFormContainer)form.getTopLevelComponent();
+
+            // 1. generate code for menu, if the form is menu bar container and has
+            // a menu associated
+
+            String menuComp = visualForm.getFormMenu();
+            if (menuComp != null) {
+                String menuText = null;
+                if (visualForm.getFormInfo() instanceof JMenuBarContainer) {
+                    menuText = "setJMenuBar("; // NOI18N
+                } else if (visualForm.getFormInfo() instanceof MenuBarContainer) {
+                    menuText = "setMenuBar("; // NOI18N
+                }
+                if (menuText != null) {
+                    menuText = menuText + menuComp + ");\n\n"; // NOI18N
+                    initCodeWriter.write(menuText);
+                }
+            }
+
+            // 2. generate size code according to form size policy
+
+            int formPolicy = visualForm.getFormSizePolicy();
+            boolean genSize = visualForm.getGenerateSize();
+            boolean genPosition = visualForm.getGeneratePosition();
+            boolean genCenter = visualForm.getGenerateCenter();
+            Dimension formSize = visualForm.getFormSize();
+            Point formPosition = visualForm.getFormPosition();
+
+            String sizeText = ""; // NOI18N
+
+            switch (formPolicy) {
+                case RADVisualFormContainer.GEN_PACK:
+                    sizeText = "pack();\n"; // NOI18N
+                    break;
+                case RADVisualFormContainer.GEN_BOUNDS:
+                    if (genCenter) {
+                        StringBuffer sizeBuffer = new StringBuffer();
+                        if (genSize) {
+                            sizeBuffer.append("pack();\n"); // NOI18N
+                            sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
+                            sizeBuffer.append("setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"); // NOI18N
+                            sizeBuffer.append("setLocation((screenSize.width-"+formSize.width+")/2,(screenSize.height-"+formSize.height+")/2);\n"); // NOI18N
+                        } else {
+                            sizeBuffer.append("pack();\n"); // NOI18N
+                            sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
+                            sizeBuffer.append("java.awt.Dimension dialogSize = getSize();\n"); // NOI18N
+                            sizeBuffer.append("setLocation((screenSize.width-dialogSize.width)/2,(screenSize.height-dialogSize.height)/2);\n"); // NOI18N
+                        }
+
+                        sizeText = sizeBuffer.toString();
+
+                    } else if (genPosition && genSize) { // both size and position
+                        sizeText = "setBounds("+formPosition.x + ", " + formPosition.y +", " + formSize.width + ", " + formSize.height + ");\n"; // NOI18N
+                    } else if (genPosition) { // position only
+                        sizeText = "setLocation(new java.awt.Point("+formPosition.x + ", " + formPosition.y + "));\n"; // NOI18N
+                    } else if (genSize) { // size only
+                        sizeText = "setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"; // NOI18N
+                    }
+                    break;
+            }
+
+            initCodeWriter.write(sizeText);
+        }
+
+        initCodeWriter.write(INIT_COMPONENTS_FOOTER);
+        initCodeWriter.close();
+        
+        return initCodeBuffer.toString();
+    }
+
+   private void regenerateVariablesAndInitializer() {
+        if (needsRegeneration()) {
+            regenerateInitializer();
+            regenerateVariables();
+        }
+   }
+    
+    
     private void regenerateInitializer() {
         if (errorInitializing)
             return;
-
+        
         try {
-            IndentEngine engine = IndentEngine.find(formManager.getFormEditorSupport().getDocument()); // NOI18N
-            AWTIndentStringWriter initCodeBuffer = new AWTIndentStringWriter();
-            Writer initCodeWriter = engine.createWriter(
-                formManager.getFormEditorSupport().getDocument(),
-                initComponentsSection.getBegin().getOffset(), initCodeBuffer);
-
-            initCodeWriter.write(INIT_COMPONENTS_HEADER);
-            RADForm form = formManager.getRADForm();
-            RADComponent top = form.getTopLevelComponent();
-            RADComponent[] nonVisualComponents = formManager.getNonVisualComponents();
-            for (int i = 0; i < nonVisualComponents.length; i++) {
-                addCreateCode(nonVisualComponents[i], initCodeWriter);
-            }
-            addCreateCode(top, initCodeWriter);
-
-            for (int i = 0; i < nonVisualComponents.length; i++) {
-                addInitCode(nonVisualComponents[i], initCodeWriter, initCodeBuffer, 0);
-            }
-            addInitCode(top, initCodeWriter, initCodeBuffer, 0);
-
-            // for visual forms append sizing text
-            if (form.getTopLevelComponent() instanceof RADVisualFormContainer) {
-                RADVisualFormContainer visualForm =
-                    (RADVisualFormContainer)form.getTopLevelComponent();
-
-                // 1. generate code for menu, if the form is menu bar container and has
-                // a menu associated
-
-                String menuComp = visualForm.getFormMenu();
-                if (menuComp != null) {
-                    String menuText = null;
-                    if (visualForm.getFormInfo() instanceof JMenuBarContainer) {
-                        menuText = "setJMenuBar("; // NOI18N
-                    } else if (visualForm.getFormInfo() instanceof MenuBarContainer) {
-                        menuText = "setMenuBar("; // NOI18N
-                    }
-                    if (menuText != null) {
-                        menuText = menuText + menuComp + ");\n\n"; // NOI18N
-                        initCodeWriter.write(menuText);
-                    }
-                }
-
-                // 2. generate size code according to form size policy
-
-                int formPolicy = visualForm.getFormSizePolicy();
-                boolean genSize = visualForm.getGenerateSize();
-                boolean genPosition = visualForm.getGeneratePosition();
-                boolean genCenter = visualForm.getGenerateCenter();
-                Dimension formSize = visualForm.getFormSize();
-                Point formPosition = visualForm.getFormPosition();
-
-                String sizeText = ""; // NOI18N
-
-                switch (formPolicy) {
-                    case RADVisualFormContainer.GEN_PACK:
-                        sizeText = "pack();\n"; // NOI18N
-                        break;
-                    case RADVisualFormContainer.GEN_BOUNDS:
-                        if (genCenter) {
-                            StringBuffer sizeBuffer = new StringBuffer();
-                            if (genSize) {
-                                sizeBuffer.append("pack();\n"); // NOI18N
-                                sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
-                                sizeBuffer.append("setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"); // NOI18N
-                                sizeBuffer.append("setLocation((screenSize.width-"+formSize.width+")/2,(screenSize.height-"+formSize.height+")/2);\n"); // NOI18N
-                            } else {
-                                sizeBuffer.append("pack();\n"); // NOI18N
-                                sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
-                                sizeBuffer.append("java.awt.Dimension dialogSize = getSize();\n"); // NOI18N
-                                sizeBuffer.append("setLocation((screenSize.width-dialogSize.width)/2,(screenSize.height-dialogSize.height)/2);\n"); // NOI18N
-                            }
-
-                            sizeText = sizeBuffer.toString();
-
-                        } else if (genPosition && genSize) { // both size and position
-                            sizeText = "setBounds("+formPosition.x + ", " + formPosition.y +", " + formSize.width + ", " + formSize.height + ");\n"; // NOI18N
-                        } else if (genPosition) { // position only
-                            sizeText = "setLocation(new java.awt.Point("+formPosition.x + ", " + formPosition.y + "));\n"; // NOI18N
-                        } else if (genSize) { // size only
-                            sizeText = "setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"; // NOI18N
-                        }
-                        break;
-                }
-
-                initCodeWriter.write(sizeText);
-            }
-
-            initCodeWriter.write(INIT_COMPONENTS_FOOTER);
-            initCodeWriter.close();
             // set the text into the guarded block
             synchronized(GEN_LOCK) {
                 String originalText = initComponentsSection.getText();
-                String newText = initCodeBuffer.toString();
+                String newText = createInitializer();
                 if (!newText.equals(originalText)) {
                     initComponentsSection.setText(newText);
                     clearUndo();
@@ -525,6 +540,19 @@ class JavaCodeGenerator extends CodeGenerator {
         } catch (IOException e) {
             throw new InternalError(); // cannot happen
         }
+    }
+    
+    private boolean needsRegeneration() {
+       FormDataObject fdo = formManager.getFormObject();
+       Entry primary = fdo.getPrimaryEntry();
+       Entry form = fdo.formEntry;
+       
+       FileObject primaryFO = primary.getFile();
+       FileObject formFO = form.getFile();
+       
+       long diff = formFO.lastModified().getTime() - primaryFO.lastModified().getTime();
+       diff = Math.abs(diff);
+       return (diff > 1500 ? true : false);
     }
 
     private void regenerateVariables() {
@@ -1311,8 +1339,7 @@ class JavaCodeGenerator extends CodeGenerator {
         /** Called when the form is succesfully loaded and fully initialized */
 
         public void formLoaded() {
-            regenerateVariables();
-            regenerateInitializer();
+            regenerateVariablesAndInitializer();
         }
 
         public void codeChanged() {
