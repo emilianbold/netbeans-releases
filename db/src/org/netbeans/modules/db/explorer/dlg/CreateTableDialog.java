@@ -120,9 +120,14 @@ public class CreateTableDialog
 			layout.setConstraints(label, constr);
 			pane.add(label);
         
-        	Vector users = new Vector();
-        	users.add(nfo.getUser());
-        
+     	Vector users = new Vector();
+//        	users.add(nfo.getUser());
+      try {
+       	users.add(spe.getMetaData().getUserName());
+      } catch (java.sql.SQLException e) {
+        e.printStackTrace();
+      }
+
             constr.fill = GridBagConstraints.HORIZONTAL;
             constr.weightx = 0.0;
             constr.weighty = 0.0;
@@ -352,6 +357,7 @@ public class CreateTableDialog
 }
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         11/18/99 Radko Najman    dmd.getUserName()
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         10/12/99 Radko Najman    debug messages removed
