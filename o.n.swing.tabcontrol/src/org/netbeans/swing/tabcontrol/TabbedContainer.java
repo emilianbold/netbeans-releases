@@ -19,6 +19,7 @@ import org.netbeans.swing.tabcontrol.plaf.DefaultTabbedContainerUI;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -303,6 +304,26 @@ public class TabbedContainer extends JComponent {
             setUI(ui);
         } else {
             setUI(DefaultTabbedContainerUI.createUI(this));
+        }
+    }
+    
+    /** Overridden to work around jdk bug 4924516 on jdk 1.4 */
+    public void addNotify() {
+        super.addNotify();
+        jdk14bug4924516HackShowingEvent();
+    }
+    
+    /** Overridden to work around jdk bug 4924516 on jdk 1.4 */
+    public void removeNotify() {
+        super.removeNotify();
+        jdk14bug4924516HackShowingEvent();
+    }
+    
+    private void jdk14bug4924516HackShowingEvent() {
+        if (System.getProperty("java.version").indexOf("1.4") >= 0) {
+            HierarchyEvent evt = new HierarchyEvent (this, 
+                HierarchyEvent.SHOWING_CHANGED, this, getParent());
+            getUI().jdk14bug4924516Hack(evt);
         }
     }
 

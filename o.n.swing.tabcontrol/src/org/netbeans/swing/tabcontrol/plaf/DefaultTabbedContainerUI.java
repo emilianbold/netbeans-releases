@@ -848,6 +848,13 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         }
     }
     
+    protected void jdk14bug4924516Hack(HierarchyEvent evt) {
+        if (hierarchyListener != null) {
+            hierarchyListener.hierarchyChanged (evt);
+        }
+    }
+    
+    private boolean bug4924561knownShowing = false;
     /**
      * Calls <code>initDisplayer()</code>, then <code>attachModelAndSelectionListeners</code>,
      * then <code>ensureSelectedComponentIsShowing</code>
@@ -858,19 +865,23 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
         
         public void hierarchyChanged(HierarchyEvent e) {
             if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
-                if (container.isShowing()) {
-                    initDisplayer();
-                    attachModelAndSelectionListeners();
-                    ensureSelectedComponentIsShowing();
-                    if (container.getType() == TabbedContainer.TYPE_SLIDING) {
-                        updateOrientation();
-                    }
-                } else {
-                    detachModelAndSelectionListeners();
-                    if (container.getType() == TabbedContainer.TYPE_SLIDING) {
-                        updateOrientation();
+                boolean showing = container.isShowing();
+                if (showing != bug4924561knownShowing) {
+                    if (container.isShowing()) {
+                        initDisplayer();
+                        attachModelAndSelectionListeners();
+                        ensureSelectedComponentIsShowing();
+                        if (container.getType() == TabbedContainer.TYPE_SLIDING) {
+                            updateOrientation();
+                        }
+                    } else {
+                        detachModelAndSelectionListeners();
+                        if (container.getType() == TabbedContainer.TYPE_SLIDING) {
+                            updateOrientation();
+                        }
                     }
                 }
+                bug4924561knownShowing = showing;
             }
         }
     }
