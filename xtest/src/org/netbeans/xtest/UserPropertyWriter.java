@@ -14,6 +14,7 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.StringTokenizer;
 
 /**
  * @author lm97939
@@ -22,7 +23,7 @@ public class UserPropertyWriter extends Task {
 
     private String prefix;
     private File file;
-    private String delim;
+    private String attribs;
     
     public void setPropertyPrefix(String p) {
         prefix = p;
@@ -32,33 +33,38 @@ public class UserPropertyWriter extends Task {
         file = f;
     }
     
-    public void setDelimiter(String d) {
-        delim = d ;
+    public void setAttribs(String a) {
+        attribs = a;
     }
 
     public void execute() throws BuildException {
         final String HEADER = "Properties passed to test";
+        final String PREFIX = "xtest.userdata";
         Properties properties = new Properties();
         
         if (file == null) throw new BuildException("Attribute 'file' is empty.", location);
+        if (attribs == null) throw new BuildException("Attribute 'attribs' is empty.", location);
         if (prefix == null) 
             log("No propertyPrefix set. All properties will be written to file.");
-        if (delim == null)
-            log("No delim set. Property will be written without cutting.");
         
         Hashtable table = project.getProperties();
         Enumeration enum = table.keys();
         while (enum.hasMoreElements()) {
             String key = (String) enum.nextElement();
-            if (prefix == null || key.startsWith(prefix)) {
-                if (delim == null) 
-                    properties.setProperty(key,project.getProperty(key));
-                else {
-                    int i = key.indexOf(delim);
-                    if (i != -1) 
-                        properties.setProperty(key.substring(i+1),project.getProperty(key));
-                    else 
-                        log("WARNING: Property name "+key+" doesn't contain required delimiter "+delim, Project.MSG_WARN);
+            StringTokenizer attrtokens = new StringTokenizer(attribs,","); 
+            while (attrtokens.hasMoreTokens()) {
+                String attr = attrtokens.nextToken();
+                if (prefix == null || key.startsWith(prefix+"|") || key.startsWith(PREFIX+"("+attr+")|")) {
+                      int i = key.indexOf("|");
+                      if (prefix == null || i == -1) {
+                          log("!!! "+key+"="+project.getProperty(key));
+                          properties.setProperty(key,project.getProperty(key));
+                      }
+                      else {
+                          log("!!! "+key.substring(i+1)+"="+project.getProperty(key)+"  ("+key+")");
+                          properties.setProperty(key.substring(i+1),project.getProperty(key));
+                      }
+                      break;
                 }
             }
         }
