@@ -29,7 +29,6 @@ import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.ExtensionList;
 import org.openide.execution.NbClassPath;
-import org.openide.text.EditorSupport;
 import org.openide.loaders.OpenSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -126,13 +125,6 @@ public class JspLoader extends UniFileLoader {
 
         JspDataObject obj = createJspObject(primaryFile, this);
         // [PENDING] add these from JspDataObject, not from the loader
-//        EditorSupport es =  obj.createJspEditor();   //new JspEditor (obj.getPrimaryEntry ());
-        BaseJspEditorSupport es = obj.createJspEditorSupport();
-        if (es != null) {
-            es.setMIMEType (JSP_MIME_TYPE);
-            obj.getCookieSet0 ().add (es);
-        }
-        
         obj.getCookieSet0 ().add (new TagLibParseSupport(obj));
 
         if (isFileBased) {

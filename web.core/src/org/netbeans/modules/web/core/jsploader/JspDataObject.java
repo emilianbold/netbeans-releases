@@ -55,6 +55,7 @@ import org.openide.util.enum.*;
 import org.openide.util.actions.*;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
+import org.openide.nodes.CookieSet;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.NodeListener;
 import org.openide.compiler.Compiler;
@@ -122,6 +123,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     
     public JspDataObject (FileObject pf, final UniFileLoader l) throws DataObjectExistsException {
         super (pf, l);
+        CookieSet cookies = getCookieSet();
+        cookies.add (createJspEditorSupport());
         initialize();
     }
 
@@ -197,11 +200,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return super.getCookie(c);
     }
 
-    /** Creates a EditorSupport for this page. May return null. */
-/*    protected EditorSupport createJspEditor() {
-        return new BaseJspEditor(getPrimaryEntry());
-    }
-*/    
     /** Creates a EditorSupport for this page. May return null. */
     protected BaseJspEditorSupport createJspEditorSupport() {
         return new BaseJspEditorSupport(this);

@@ -65,6 +65,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     
     public BaseJspEditorSupport(JspDataObject obj) {
         super(obj, new BaseJspEnv(obj));
+        setMIMEType (JspLoader.JSP_MIME_TYPE);
         initialize();
     }
     
