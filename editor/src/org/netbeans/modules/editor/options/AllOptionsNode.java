@@ -15,30 +15,24 @@ package org.netbeans.modules.editor.options;
 
 import java.beans.IntrospectionException;
 import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.editor.Settings;
 import org.netbeans.modules.editor.NbEditorSettingsInitializer;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.nodes.BeanNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.Repository;
-import org.openide.util.WeakListener;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.SystemAction;
-
+import org.openide.util.NbBundle;
 
 /** Node representing the Editor Settings main node.
  *
  *  @author  Martin Roskanin
  *  @since 08/2001
  */
-
 public class AllOptionsNode extends FilterNode {
     
     private static final String HELP_ID = "editing.global"; // !!! NOI18N
@@ -107,7 +101,7 @@ public class AllOptionsNode extends FilterNode {
                 
                 if (moduleRegistry !=null){ //NOI18N
                     moduleRegistry.addFileChangeListener(
-                    WeakListener.fileChange(moduleRegListener, moduleRegistry ));
+                        FileUtil.weakFileChangeListener(moduleRegListener, moduleRegistry));
                 }
             }
         }

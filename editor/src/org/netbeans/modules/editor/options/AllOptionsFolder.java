@@ -7,47 +7,36 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.editor.options;
 
-import org.openide.cookies.InstanceCookie;
-import java.lang.ClassNotFoundException;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import java.io.IOException;
-import org.openide.nodes.Node;
-import java.beans.IntrospectionException;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
-import org.openide.filesystems.FileObject;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.Settings;
-import org.netbeans.modules.editor.options.MIMEOptionFolder;
 import java.util.Iterator;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import org.openide.util.RequestProcessor;
-import org.netbeans.editor.BaseKit;
-import org.openide.loaders.DataObjectNotFoundException;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.util.WeakListener;
+import javax.swing.SwingUtilities;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.Settings;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
-import javax.swing.SwingUtilities;
-import org.openide.util.NbBundle;
-import org.openide.NotifyDescriptor;
-import java.text.MessageFormat;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.options.SystemOption;
-
+import org.openide.util.NbBundle;
 
 /** Editor Settings main node folder.
  *  In this folder are stored global options such as global keybindings.

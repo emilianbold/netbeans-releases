@@ -92,11 +92,11 @@ public class JPDAReload extends Task {
             for (i = 0; i < k; i++) {
                 File f = fileUtils.resolveFile (baseDir, fileNames [i]);
                 if (f != null) {
-                    FileObject fos[] = FileUtil.fromFile (f);
-                    if (fos.length > 0) {
+                    FileObject fo = FileUtil.toFileObject(f);
+                    if (fo != null) {
                         try {
-                            InputStream is = fos [0].getInputStream ();
-                            long fileSize = fos [0].getSize ();
+                            InputStream is = fo.getInputStream ();
+                            long fileSize = fo.getSize ();
                             byte[] bytecode = new byte [(int) fileSize];
                             is.read (bytecode);
                             // remove ".class" from and use dots for for separator

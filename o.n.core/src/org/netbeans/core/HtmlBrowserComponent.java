@@ -13,32 +13,20 @@
 
 package org.netbeans.core;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.datatransfer.*;
+import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.net.InetAddress;
 import java.net.URL;
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
-import java.util.Iterator;
-import javax.swing.*;
-import javax.accessibility.*;
-
-import org.openide.*;
-import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.Workspace;
-import org.openide.windows.Mode;
+import javax.swing.ImageIcon;
+import org.openide.ErrorManager;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Lookup;
-import org.openide.util.io.*;
-import org.openide.util.actions.*;
-import org.openide.windows.WindowManager;
-
-import org.openide.awt.HtmlBrowser;
+import org.openide.windows.CloneableTopComponent;
 
 /**
  * Formerly HtmlBrowser.BrowserComponent.
@@ -105,13 +93,13 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     
     /** always open this top component in our special mode, if
     * no mode for this component is specified yet */
-    public void open (Workspace workspace) {
+    public void open() {
         // do not open this component if this is dummy browser
         if (browserComponent.getBrowserComponent() == null)
             return;
         
         // behave like superclass
-        super.open(workspace);
+        super.open();
     }
     
     /** Serializes browser component -> writes Replacer object which

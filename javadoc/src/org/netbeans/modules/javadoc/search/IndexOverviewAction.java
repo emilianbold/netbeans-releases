@@ -128,9 +128,8 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
                 FileObject fo = (FileObject)it.next();
                 // Just using fo.hashCode() does not work because sometimes the FileObject
                 // is collected and recreated randomly, and now has a new hash code...
-                x += fo.getPath().hashCode();
                 try {
-                    x += fo.getFileSystem().getSystemName().hashCode();
+                    x += fo.getURL().hashCode();
                 } catch (FileStateInvalidException e) {
                     err.notify(ErrorManager.INFORMATIONAL, e);
                 }

@@ -7,31 +7,21 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.openidex.search;
 
-
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
-
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-
 
 /**
  * Search group which perform search on file objects. It is a
@@ -85,32 +75,6 @@ public class FileObjectSearchGroup extends SearchGroup {
         Node[] nodes = normalizeNodes((Node[])searchRoots.toArray(new Node[searchRoots.size()]));
 
         List children = new ArrayList(nodes.length);
-
-        // test whether scan whole repository
-        if (nodes.length == 1) {
-            InstanceCookie ic = (InstanceCookie) nodes[0].getCookie(InstanceCookie.class);
-
-            try {
-                if (ic != null && Repository.class.isAssignableFrom(ic.instanceClass())) {
-                    Repository rep = Repository.getDefault();
-                    Enumeration fss = rep.getFileSystems();
-
-                    while (fss.hasMoreElements()) {
-                        FileSystem fs = (FileSystem)fss.nextElement();
-                        if (fs.isValid() && !fs.isHidden()) {
-                            children.add(fs.getRoot());
-                        }
-                    }
-
-                    return (FileObject[]) children.toArray(new FileObject[children.size()]);
-                }
-            } catch (IOException ioe) {
-                ioe.printStackTrace();                    
-            } catch (ClassNotFoundException cne) {
-                cne.printStackTrace();
-            }
-        }
-
 
         for (int i = 0; i < nodes.length; i++) {
             DataFolder dataFolder = (DataFolder) nodes[i].getCookie(DataFolder.class);

@@ -7,36 +7,29 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.editor.options;
  
-import org.openide.util.Task;
-import java.io.IOException;
-import org.w3c.dom.*;
-import org.xml.sax.*;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.JarFileSystem;
-import org.openide.loaders.XMLDataObject;
-import org.openide.cookies.InstanceCookie;
-import org.netbeans.editor.AnnotationType;
-import java.util.ResourceBundle;
 import java.awt.Color;
-import java.net.URL;
-import java.util.MissingResourceException;
-import java.net.MalformedURLException;
-import javax.swing.Action;
-import org.netbeans.modules.editor.options.AnnotationTypeActionsFolder;
-import java.util.List;
-import java.util.ArrayList;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.ByteArrayInputStream;
-import java.util.Map;
-import java.util.HashMap;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ResourceBundle;
+import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.editor.AnnotationType;
 import org.openide.ErrorManager;
+import org.openide.cookies.InstanceCookie;
+import org.openide.loaders.XMLDataObject;
+import org.xml.sax.AttributeList;
+import org.xml.sax.HandlerBase;
+import org.xml.sax.InputSource;
+import org.xml.sax.Parser;
+import org.xml.sax.SAXException;
 
 /** Processor of the XML file. The result of parsing is instance of AnnotationType
  * class.
@@ -158,9 +151,7 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
         }
 
 	private void rethrow(Exception e) throws SAXException {
-            SAXException saxe = new SAXException(e);
-	    ErrorManager.getDefault().copyAnnotation(saxe, e);
-            throw saxe;
+            throw new SAXException(e);
 	}
 
         public void startElement(String name, AttributeList amap) throws SAXException {
