@@ -113,4 +113,8 @@ class DOMImplementationImpl implements DOMImplementation {
         return "1.0".equals(version);
     }
     
+    public Object getFeature (String a, String b) {
+        throw new UOException ();
+    }
+
 }

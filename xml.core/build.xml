@@ -32,12 +32,37 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${xml/api.dir}/${nb.modules/autoload.dir}/xml-api.jar"/>
       </path>
     </target>
+    
+    <available property="do-not-generate-user-handler" classname="org.w3c.dom.UserDataHandler" />
+    
+    <!-- 
+     - Workaround for new DOM3 interfaces that are not avalable on JDK 1.4 
+     - At runtime on JDK 1.4 we are happy because we do not call any DOM3 methods
+     -            on JDK 1.5 we are happy because system DOM3 interfaces prevail
+    -->
+    <target name="generate-user-handler" unless="do-not-generate-user-handler" >
+        <mkdir dir="tmpsrc/org/w3c/dom" />
+        <echo file="tmpsrc/org/w3c/dom/UserDataHandler.java" >
+        package org.w3c.dom; public interface UserDataHandler {}
+        </echo>
+        <echo file="tmpsrc/org/w3c/dom/TypeInfo.java" >
+        package org.w3c.dom; public interface TypeInfo {}
+        </echo>
+        <echo file="tmpsrc/org/w3c/dom/DOMConfiguration.java" >
+        package org.w3c.dom; public interface DOMConfiguration {}
+        </echo>
+    </target>
+  
 
-    <target name="compile" depends="init">
+    <target name="compile" depends="init,generate-user-handler">
         <echo message="Compiling XML core module classes..."/>
-        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+        <mkdir dir="tmpsrc"/>
+        <javac destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
             <classpath refid="cp"/>
+            <src path="src"/>
+            <src path="tmpsrc"/>  
         </javac>
+        <delete dir="tmpsrc"/>
     </target>
 
     <target name="jars" depends="compile">

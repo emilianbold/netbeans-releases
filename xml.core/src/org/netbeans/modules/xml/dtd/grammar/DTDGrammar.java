@@ -413,7 +413,8 @@ public class DTDGrammar implements GrammarQuery {
         public String getNodeName() {
             return name;
         }
-                
+        
+        
     }
     
     private static class MyElement extends AbstractResultNode implements Element {

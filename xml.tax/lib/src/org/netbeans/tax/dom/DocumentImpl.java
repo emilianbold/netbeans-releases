@@ -533,4 +533,50 @@ class DocumentImpl extends NodeImpl implements Document{
         return Wrapper.wrap(peer.getChildNodes());
     }
     
+    //
+    // Dom Level 3 methods:
+    //
+    
+    public Node adoptNode (Node a) {
+        throw new UOException ();
+    }
+    public String getDocumentURI () {
+        throw new UOException ();
+    }
+    public DOMConfiguration getDomConfig() {
+        throw new UOException ();
+    }
+    public String getInputEncoding() {
+        throw new UOException ();
+    }
+    public boolean getStrictErrorChecking() {
+        throw new UOException ();
+    }
+    public String getXmlEncoding () {
+        throw new UOException ();
+    }
+    public boolean getXmlStandalone() {
+        throw new UOException ();
+    }
+    public String getXmlVersion()  {
+        throw new UOException ();
+    }
+    public void normalizeDocument() {
+        throw new UOException ();
+    }
+    public Node renameNode(Node a, String nb, String c) {
+        throw new UOException ();
+    }
+    public void setDocumentURI(String a) {
+        throw new UOException ();
+    }
+    public void setStrictErrorChecking(boolean a) {
+        throw new UOException ();
+    }
+    public void setXmlStandalone(boolean a) {
+        throw new UOException ();
+    }
+    public void setXmlVersion(String a) {
+        throw new UOException ();
+    }
 }

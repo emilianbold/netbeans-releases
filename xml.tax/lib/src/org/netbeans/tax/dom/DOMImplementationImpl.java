@@ -111,5 +111,9 @@ class DOMImplementationImpl implements DOMImplementation {
     public boolean hasFeature(String feature, String version) {
         return "1.0".equals(version);
     }
+
+    public Object getFeature (String a, String b) {
+        throw new UOException ();
+    }
     
 }

@@ -278,5 +278,119 @@ public abstract class AbstractNode implements Node {
         throw new UOException();
     }    
 
+    //
+    // Implementation of DOM Level 3 methods
+    //
+    
+    public short compareDocumentPosition (Node a) {
+        throw new UOException();
+    }
+    
+    public String getBaseURI() {
+        throw new UOException();
+    }
+    public Object getFeature(String a, String b) {
+        throw new UOException();
+    }
+    public String getTextContent () {
+        throw new UOException();
+    }
+    public Object getUserData(String a) {
+        throw new UOException();
+    }
+    public boolean isDefaultNamespace (String a)  {
+        throw new UOException();
+    }
+    public boolean isEqualNode(Node a) {
+        throw new UOException();
+    }
+    public boolean isSameNode(Node a) {
+        throw new UOException();
+    }
+    public String lookupNamespaceURI(String a) {
+        throw new UOException();
+    }
+    public String lookupPrefix(String a) {
+        throw new UOException();
+    }
+    public void setTextContent(String a) {
+        throw new UOException();
+    }
+    public Object setUserData(String a, Object b, UserDataHandler c) {
+        throw new UOException();
+    }
+    
+    // Implementation of DOM Level 3 methods for Element
+    public TypeInfo getSchemaTypeInfo() {
+        throw new UOException ();
+    }
+    public void setIdAttribute(String a, boolean b) {
+        throw new UOException ();
+    }
+    public void setIdAttributeNS(String a, String b, boolean c) {
+        throw new UOException ();
+    }
+    public void setIdAttributeNode(Attr a, boolean b) {
+        throw new UOException ();
+    }
+    // Implementation of DOM Level 3 methods for Attr 
+    
+    public boolean isId () {
+        throw new UOException ();
+    }
+    // Implementation of DOM Level 3 methods for Text
+    public Text replaceWholeText (String a) {
+        throw new UOException ();
+    }
+    public String getWholeText() {
+        throw new UOException ();
+    }
+    public boolean isElementContentWhitespace() {
+        throw new UOException ();
+    }
+    
+    // Dom Level 3 methods for Document
+    public Node adoptNode (Node a) {
+        throw new UOException ();
+    }
+    public String getDocumentURI () {
+        throw new UOException ();
+    }
+    public DOMConfiguration getDomConfig() {
+        throw new UOException ();
+    }
+    public String getInputEncoding() {
+        throw new UOException ();
+    }
+    public boolean getStrictErrorChecking() {
+        throw new UOException ();
+    }
+    public String getXmlEncoding () {
+        throw new UOException ();
+    }
+    public boolean getXmlStandalone() {
+        throw new UOException ();
+    }
+    public String getXmlVersion()  {
+        throw new UOException ();
+    }
+    public void normalizeDocument() {
+        throw new UOException ();
+    }
+    public Node renameNode(Node a, String nb, String c) {
+        throw new UOException ();
+    }
+    public void setDocumentURI(String a) {
+        throw new UOException ();
+    }
+    public void setStrictErrorChecking(boolean a) {
+        throw new UOException ();
+    }
+    public void setXmlStandalone(boolean a) {
+        throw new UOException ();
+    }
+    public void setXmlVersion(String a) {
+        throw new UOException ();
+    }
     
 }

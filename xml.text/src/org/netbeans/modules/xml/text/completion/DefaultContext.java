@@ -710,5 +710,74 @@ class DefaultContext implements HintContext, Attr, Element {
             super(DOMException.NOT_SUPPORTED_ERR, "Peer " + peer + " is not instance of Element!");
         }
     }
-	
+
+    //
+    // Implementation of DOM Level 3 methods
+    //
+    
+    public short compareDocumentPosition (Node a) {
+        throw new UOException();
+    }
+    
+    public String getBaseURI() {
+        throw new UOException();
+    }
+    public Object getFeature(String a, String b) {
+        throw new UOException();
+    }
+    public String getTextContent () {
+        throw new UOException();
+    }
+    public Object getUserData(String a) {
+        throw new UOException();
+    }
+    public boolean isDefaultNamespace (String a)  {
+        throw new UOException();
+    }
+    public boolean isEqualNode(Node a) {
+        throw new UOException();
+    }
+    public boolean isSameNode(Node a) {
+        throw new UOException();
+    }
+    public String lookupNamespaceURI(String a) {
+        throw new UOException();
+    }
+    public String lookupPrefix(String a) {
+        throw new UOException();
+    }
+    public void setTextContent(String a) {
+        throw new UOException();
+    }
+    public Object setUserData(String a, Object b, UserDataHandler c) {
+        throw new UOException();
+    }
+    // Implementation of DOM Level 3 methods for Element
+    public TypeInfo getSchemaTypeInfo() {
+        throw new UOException ();
+    }
+    public void setIdAttribute(String a, boolean b) {
+        throw new UOException ();
+    }
+    public void setIdAttributeNS(String a, String b, boolean c) {
+        throw new UOException ();
+    }
+    public void setIdAttributeNode(Attr a, boolean b) {
+        throw new UOException ();
+    }    
+    // Implementation of DOM Level 3 methods for Attr 
+    
+    public boolean isId () {
+        throw new UOException ();
+    }
+    // Implementation of DOM Level 3 methods for Text
+    public Text replaceWholeText (String a) {
+        throw new UOException ();
+    }
+    public String getWholeText() {
+        throw new UOException ();
+    }
+    public boolean isElementContentWhitespace() {
+        throw new UOException ();
+    }
 }
