@@ -378,6 +378,22 @@
 
 
 <tocitem text="Developing Web Modules" > 
+	
+  <tocitem text="Applets" >
+      <tocitem text="Adding Simple Applets" target="webmod_addapplet"/>
+      <tocitem text="Adding Applets With Servlet Dependencies" target="webmod_addcompapplet"/>
+  </tocitem> <!-- Working With Applets -->
+
+  <tocitem text="HTML and XML Files" >      
+      <tocitem text="Adding HTML files to a Web Module" target="concepts_html" />          
+      <tocitem text="Working With XML Files" target="webmod_xml" />		
+  </tocitem> <!-- Introduction to Web Modules-->
+  
+  <tocitem text="JAR Files" >
+	    <tocitem text="About JAR Files in Web Modules" target="concepts_jar"  />   
+            <tocitem text="Adding JAR Files to a Web Module" target="webmod_addjar" />
+  </tocitem> <!-- Working With JAR Files -->
+  
   <tocitem text="JSP Pages" > 
       <tocitem text="About JavaServer Pages Technology" target="concepts_jsp" />
       <tocitem text="About JSP Syntax" target="concepts_jspsyn" />
@@ -388,44 +404,6 @@
       <tocitem text="Upgrading to JSP 2.0 and Servlet 2.4 Specifications" target="spec_version" />
   </tocitem> <!-- Working With JSP Pages -->
 
-  <tocitem text="Tags" >
-	  
-      <tocitem text="About Tag Libraries" target="webmod_addtglb"/>    
-      <tocitem text="Working with Tag Libraries" >
-      <tocitem text="Using the Library Manager" target="ctx_repaddto"/>
-      <tocitem text="Adding a Tag Library To a Project" target="tagsupport_fromfilesys" />        
-      <tocitem text="Using Tags in JSP Files" target="webmod_usetags"/>
-      <tocitem text="Deploying Tag Libraries"  target="taglib_packlib"/>
-      </tocitem>
-    
-      <tocitem text="Working with Tag Library Descriptors" >
-      <tocitem text="About TLD Files" target="concepts_tldfile"  />        
-      <tocitem text="Creating TLD Files" target="taglib_createtaglib" />
-      <tocitem text="Editing TLD Files" target="ctx_taglibcust" />
-      </tocitem>
-
-      <tocitem text="Working with Tag Files" >
-      <tocitem text="Adding Tag Files to a Web Module" target="webmod_addtagf" />	    
-      <tocitem text="Creating and Editing Tags" target="ctx_tagcust" />
-      <tocitem text="Creating and Editing Tag Attributes" target="ctx_tagattcust" />
-      <tocitem text="Creating and Editing Scripting Variables" target="ctx_scrvarcust"/>
-      </tocitem>
-	    
-      <tocitem text="Working with Tag Handlers" >
-      <tocitem text="Generating Java Source Tag Handlers" target="taglib_generate"/>
-      </tocitem>
-  </tocitem> <!-- Developing Tag Libraries and Tag Files -->
-
-  <tocitem text="Applets" >
-      <tocitem text="Adding Simple Applets" target="webmod_addapplet"/>
-      <tocitem text="Adding Applets With Servlet Dependencies" target="webmod_addcompapplet"/>
-  </tocitem> <!-- Working With Applets -->
-
-  <tocitem text="HTML and XML Files" >      
-      <tocitem text="Adding HTML files to a Web Module" target="concepts_html" />          
-      <tocitem text="Working With XML Files" target="webmod_xml" />		
-  </tocitem> <!-- Introduction to Web Modules-->
-	
   <tocitem text="Servlets" >
      <tocitem text="About Servlets" target="concepts_servlet" />
      <tocitem text="Adding Servlets to a Web Module" target="webmod_addservlet" />
@@ -434,23 +412,45 @@
      <tocitem text="Upgrading to JSP 2.0 and Servlet 2.4 Specifications" target="spec_version" />
   </tocitem> <!-- Working With Servlets -->
 
-	<tocitem text="Servlet Filters" > 
-            <tocitem text="About Servlet Filters" target="concepts_filter"  />
-            <tocitem text="Creating a Filter" target="filter_create"/>
-            <tocitem text="Adding a Filter to the Deployment Descriptor" target="filter_addtodd"/>
-        </tocitem> <!-- Working With Filters -->
+  <tocitem text="Servlet Filters" > 
+     <tocitem text="About Servlet Filters" target="concepts_filter"  />
+     <tocitem text="Creating a Filter" target="filter_create"/>
+     <tocitem text="Adding a Filter to the Deployment Descriptor" target="filter_addtodd"/>
+  </tocitem> <!-- Working With Filters -->
 
-	<tocitem text="Servlet Listeners" >
-	    <tocitem text="About Servlet Listeners" target="concepts_listener"  />       					
-            <tocitem text="Creating a Listener" target="listen_create"/>
-            <tocitem text="Adding a Listener to the Deployment Descriptor" target="listen_addtodd"/>
-       </tocitem> <!-- Working With Listeners -->
+  <tocitem text="Servlet Listeners" >
+     <tocitem text="About Servlet Listeners" target="concepts_listener"  />       					
+     <tocitem text="Creating a Listener" target="listen_create"/>
+     <tocitem text="Adding a Listener to the Deployment Descriptor" target="listen_addtodd"/>
+  </tocitem> <!-- Working With Listeners --> 
 
-       <tocitem text="JAR Files" >
-	    <tocitem text="About JAR Files in Web Modules" target="concepts_jar"  />   
-            <tocitem text="Adding JAR Files to a Web Module" target="webmod_addjar" />
-       </tocitem> <!-- Working With JAR Files -->
+  <tocitem text="Tags" >
+	  
+      <tocitem text="About Tag Libraries" target="webmod_addtglb"/>    
+      <tocitem text="Tag Libraries" >
+      <tocitem text="Using the Library Manager" target="ctx_repaddto"/>
+      <tocitem text="Adding Tag Libraries To a Project" target="tagsupport_fromfilesys" />        
+      <tocitem text="Using Tag Libraries in a JSP File" target="webmod_usetags"/>
+      <tocitem text="Deploying Tag Libraries"  target="taglib_packlib"/>
+      </tocitem>
     
+      <tocitem text="Tag Library Descriptors" >
+      <tocitem text="About Tag Library Descriptors" target="concepts_tldfile"  />        
+      <tocitem text="Creating Tag Library Descriptors" target="taglib_createtaglib" />
+      <tocitem text="Editing Tag Library Descriptors" target="ctx_taglibcust" />
+      </tocitem>
+
+      <tocitem text="Tag Files (JSP syntax)" >
+      <tocitem text="Adding Tag Files to a Web Module" target="webmod_addtagf" />	    
+      <tocitem text="Creating and Editing Tags" target="ctx_tagcust" />
+      <tocitem text="Creating and Editing Tag Attributes" target="ctx_tagattcust" />
+      <tocitem text="Creating and Editing Scripting Variables" target="ctx_scrvarcust"/>
+      </tocitem>
+	    
+      <tocitem text="Tag Handlers (Java programming language)" >
+      <tocitem text="Generating Java Source Tag Handlers" target="taglib_generate"/>
+      </tocitem>
+  </tocitem> <!-- Developing Tag Libraries and Tag Files -->
 	
     </tocitem> <!-- Developing Web Modules -->
 <!--
