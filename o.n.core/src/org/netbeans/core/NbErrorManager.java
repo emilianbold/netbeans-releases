@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,8 @@ package org.netbeans.core;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.io.*;
 import java.util.*;
 
@@ -210,15 +211,61 @@ final class NbErrorManager extends ErrorManager {
         //System.err.println ("getInstance: prefix=" + prefix + " mls=" + minLogSeverity + " name=" + name + " prefix2=" + newEM.prefix + " mls2=" + newEM.minLogSeverity);
         return newEM;
     }    
+    
+    /** Method (or field) names in various exception classes which give
+     * a nested exception. Fields should be public, methods public no-arg.
+     * Field names should be prefixed with a dot.
+     */
+    private static Map NESTS = null; // Map<String,String>
+    private static Throwable extractNestedThrowable(Throwable t) {
+        synchronized (NbErrorManager.class) {
+            if (NESTS == null) {
+                NESTS = new HashMap(50);
+                NESTS.put("java.lang.ClassNotFoundException", "getException"); // NOI18N
+                NESTS.put("java.lang.ExceptionInInitializerError", "getException"); // NOI18N
+                NESTS.put("java.lang.reflect.InvocationTargetException", "getTargetException"); // NOI18N
+                NESTS.put("java.lang.reflect.UndeclaredThrowableException", "getUndeclaredThrowable"); // NOI18N
+                NESTS.put("java.security.PrivilegedActionException", "getException"); // NOI18N
+                NESTS.put("javax.naming.NamingException", "getRootCause"); // NOI18N
+                NESTS.put("javax.xml.parsers.FactoryConfigurationError", "getException"); // NOI18N
+                NESTS.put("javax.xml.transform.TransformerException", "getException"); // NOI18N
+                NESTS.put("javax.xml.transform.TransformerFactoryConfigurationError", "getException"); // NOI18N
+                NESTS.put("org.openide.compiler.CompilerGroupException", ".exception"); // NOI18N
+                NESTS.put("org.openide.src.SourceException$IO", "getReason"); // NOI18N
+                NESTS.put("org.openide.src.SourceException$Veto", "getReason"); // NOI18N
+                NESTS.put("org.openide.src.SourceVetoException", "getNestedException"); // NOI18N
+                NESTS.put("org.openide.util.MutexException", "getException"); // NOI18N
+                NESTS.put("org.openide.util.io.OperationException", "getException"); // NOI18N
+                NESTS.put("org.openide.util.io.SafeException", "getException"); // NOI18N
+                NESTS.put("org.xml.sax.SAXException", "getException"); // NOI18N
+            }
+        }
+        for (Class c = t.getClass(); c != Object.class; c = c.getSuperclass()) {
+            String getter = (String)NESTS.get(c.getName());
+            if (getter != null) {
+                try {
+                    if (getter.startsWith(".")) { // NOI18N
+                        Field f = c.getField(getter.substring(1));
+                        return (Throwable)f.get(t);
+                    } else {
+                        Method m = c.getMethod(getter, null);
+                        return (Throwable)m.invoke(t, null);
+                    }
+                } catch (Exception e) {
+                    // Should not happen.
+                    System.err.println("From throwable class: " + c.getName()); // NOI18N
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
 
     /** Finds annotations associated with given exception.
     * @param t the exception
     * @return array of annotations or null
     */
     public synchronized Annotation[] findAnnotations (Throwable t) {
-        // [PENDING] probably this should work recursively?
-        // Or Exc should look for its own sub-annotations and deal
-        // with them sensibly.
         List l = (List)map.get (t);
         // MissingResourceException should be printed nicely... --jglick
         if (t instanceof MissingResourceException) {
@@ -233,6 +280,15 @@ final class NbErrorManager extends ErrorManager {
                 l.add (new Ann (EXCEPTION, NbBundle.getMessage (NbErrorManager.class, "EXC_MissingResourceException_key", k), null, null, null));
             }
             if (l.size () == 0) l = null; // not clear if null means something other than new Annotation[0]
+        } else {
+            // #15611: find all kinds of nested exceptions and deal with them too.
+            // If and when JDK 1.4 causes are widely implemented, this will no
+            // longer be necessary... would be able to use a single call.
+            Throwable t2 = extractNestedThrowable(t);
+            if (t2 != null) {
+                if (l == null) l = new ArrayList();
+                l.add(new Ann(EXCEPTION, null, null, t2, null));
+            }
         }
         Annotation[] arr;
         if (l == null) {
