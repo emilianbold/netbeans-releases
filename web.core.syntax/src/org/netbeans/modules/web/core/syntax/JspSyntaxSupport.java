@@ -87,8 +87,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     /** Data for completion: TreeMap for JSP directives
     * (directive name, array of attributes). */
-    private static TreeMap directiveJspData;
-    private static TreeMap directiveTagFileData;
+    private static TagInfo[] directiveJspData;
+    private static TagInfo[] directiveTagFileData;
+    
     
     private static final TokenID[] JSP_BRACKET_SKIP_TOKENS = new TokenID[] {
                 JavaTokenContext.LINE_COMMENT,
@@ -470,14 +471,16 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         //Is xml syntax? => return nothing.
         if (isXmlSyntax) return items;
         
-        TreeMap directiveData;
+        TagInfo[] directiveData;
         if(NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
             directiveData = directiveTagFileData;
-        else 
+        else {
             directiveData = directiveJspData;
-        for (Iterator it = directiveData.keySet().iterator(); it.hasNext();) {
-            items.add(it.next());
+            
         }
+        for (int i = 0; i < directiveData.length; i++){
+                items.add(directiveData[i]);
+            }
         return items;
     }
     
@@ -488,15 +491,18 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         //Is xml syntax? => return nothing.
         if (isXmlSyntax) return items;
         
-        TreeMap directiveData;
+        TagInfo[] directiveData;
         if(NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
             directiveData = directiveTagFileData;
         else
             directiveData = directiveJspData;
-        String[] attributes = (String[])directiveData.get(directive);
-        if (attributes != null) {
-            for (int i = 0; i < attributes.length; i++)
-                items.add(attributes[i]);
+        for (int i=0; i<directiveData.length; i++) {
+            if (directiveData[i].getTagName ().equals (directive)) {
+                TagAttributeInfo[] attrs = directiveData[i].getAttributes ();
+                for (int j=0; j<attrs.length; j++) 
+                    items.add (attrs[j]);
+                break;
+            }
         }
         return items;
     }
@@ -541,10 +547,10 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     
     private static void initCompletionData() {
+        String url = "";
         if (standardTagDatas == null) {
             final String helpFiles = "docs/syntaxref12.zip";
             File f = InstalledFileLocator.getDefault().locate(helpFiles, null, false); //NoI18N
-            String url = "";
             if (f != null){
                 try {
                     URL urll = f.toURL();
@@ -556,7 +562,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     // nothing to do
                 }
             }
-            standardTagDatas = new TagInfo[] {  
+            standardTagDatas = new TagInfo[] {
               new TagInfo ("fallback", null, TagInfo.BODY_CONTENT_JSP, "alternative text to browsers that do not support OBJECT or EMBED",    // NOI18N
                 null, null, new TagAttributeInfo[] {}),
               new TagInfo ("forward", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref1212.html", // NOI18N
@@ -601,60 +607,97 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             
         }
     
-        if (directiveJspData == null) {
-             directiveJspData = new TreeMap();
+        /*if (directiveJspData2 == null) {
+             directiveJspData2 = new TreeMap();
             // fill in the data, both directive names and attribute names should be in alphabetical order
-            directiveJspData.put("include", new String[]   // NOI18N
+            directiveJspData2.put("include", new String[]   // NOI18N
                 {"file"});      // NOI18N
-            directiveJspData.put("page", new String[]      // NOI18N
+            directiveJspData2.put("page", new String[]      // NOI18N
                 {"autoFlush", "buffer", "contentType", "errorPage", "extends",  // NOI18N 
                  "import", "info", "isErrorPage", "isThreadSafe", "language", "pageEncoding", "session"});  // NOI18N
-            directiveJspData.put("taglib", new String[]    // NOI18N
+            directiveJspData2.put("taglib", new String[]    // NOI18N
             {"prefix", "uri", "tagdir"}); // NOI18N
             
+        }*/
+
+        if (directiveJspData == null){
+            directiveJspData = new TagInfo[] {
+                new TagInfo ("include", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref129.html", null, null, 
+                    new TagAttributeInfo[] { new TagAttributeInfo("file", true, url + "syntaxref129.html#16836#10636", false)}),
+                new TagInfo ("page", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref1210.html", null, null, 
+                    new TagAttributeInfo[] { new TagAttributeInfo("autoFlush", false, url+"syntaxref1210.html#15673#15675", false),
+                                             new TagAttributeInfo("buffer", false, url+"syntaxref1210.html#15671#15673", false),
+                                             new TagAttributeInfo("contentType", false, url+"syntaxref1210.html#15683#1001361", false),
+                                             new TagAttributeInfo("errorPage", false, url+"syntaxref1210.html#15679#15681", false),   
+                                             new TagAttributeInfo("extends", false, url+"syntaxref1210.html#15665#16862", false),
+                                             new TagAttributeInfo("import", false, url+"syntaxref1210.html#16862#15669", false),
+                                             new TagAttributeInfo("info", false, url+"syntaxref1210.html#15677#15679", false),
+                                             new TagAttributeInfo("isErrorPage", false, url+"syntaxref1210.html#15681#15683", false),
+                                             new TagAttributeInfo("isThreadSafe", false, url+"syntaxref1210.html#15675#15677", false),
+                                             new TagAttributeInfo("language", false, url+"syntaxref1210.html#15663#15665", false),
+                                             new TagAttributeInfo("pageEncoding", false, url+"syntaxref1210.html#1001361#18865", false),
+                                             new TagAttributeInfo("session", false, url+"syntaxref1210.html#15669#15671", false)}),
+                new TagInfo ("taglib", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref1211.html", null, null, 
+                    new TagAttributeInfo[] { new TagAttributeInfo("prefix", true, url+"syntaxref1211.html#10724#1002041", false),
+                                             new TagAttributeInfo("uri", false, url+"syntaxref1211.html#10721#10724", false),
+                                             new TagAttributeInfo("tagdir", false, "", false)})
+                                             
+                    
+            };
         }
+        
         
         if (directiveTagFileData == null){
-            directiveTagFileData = new TreeMap();
-            directiveTagFileData.put("attribute", new String[]      // NOI18N
-                    {"description", "fragment", "name", "required", "rtexprvalue", "type"});// NOI18N 
-            // fill in the data, both directive names and attribute names should be in alphabetical order
-            directiveTagFileData.put("include", directiveJspData.get("include"));      // NOI18N
-            directiveTagFileData.put("tag", new String[]      // NOI18N
-                    {"body-content", "description", "display-name","dynamic-attributes", // NOI18N
-                     "example",  "import", "isELIgnored", "isScriptingEnabled", // NOI18N
-                     "large-icon", "language", "pageEncoding", "small-icon" //NOI18N
-                      }); 
-            directiveTagFileData.put("taglib", directiveJspData.get("taglib")); // NOI18N
-            directiveTagFileData.put("variable", new String[]      // NOI18N
-                    {"declare", "description", "fragment","name-from-attribute", // NOI18N
-                     "name-given",  "scope", "variable-class" // NOI18N
-                      }); 
-        }
-        
-        
-        
+            
+            directiveTagFileData = new TagInfo[]{
+                new TagInfo ("attribute", null, TagInfo.BODY_CONTENT_EMPTY, null, null, null, 
+                    new TagAttributeInfo[] { new TagAttributeInfo("description", false, "", false),
+                                             new TagAttributeInfo("fragment", false, "", false),
+                                             new TagAttributeInfo("name", false, "", false),
+                                             new TagAttributeInfo("required", false, "", false),
+                                             new TagAttributeInfo("type", false, "", false)}),
+                directiveJspData[0],                          
+                new TagInfo ("tag", null, TagInfo.BODY_CONTENT_EMPTY, null, null, null, 
+                    new TagAttributeInfo[] { new TagAttributeInfo("body-content", false, "", false),   
+                                             new TagAttributeInfo("description", false, "", false),
+                                             new TagAttributeInfo("display-name", false, "", false),
+                                             new TagAttributeInfo("dynamic-attributes", false, "", false),
+                                             new TagAttributeInfo("example", false, "", false),
+                                             new TagAttributeInfo("import", false, "", false),
+                                             new TagAttributeInfo("isELIgnored", false, "", false),
+                                             new TagAttributeInfo("isScriptingEnabled", false, "", false),
+                                             new TagAttributeInfo("large-icon", false, "", false),
+                                             new TagAttributeInfo("language", false, "", false),
+                                             new TagAttributeInfo("pageEncoding", false, "", false),
+                                             new TagAttributeInfo("small-icon", false, "", false)}),
+                directiveJspData[2],
+                new TagInfo ("variable", null, TagInfo.BODY_CONTENT_EMPTY, null, null, null, 
+                    new TagAttributeInfo[] { new TagAttributeInfo("declare", false, "", false),
+                                             new TagAttributeInfo("description", false, "", false),
+                                             new TagAttributeInfo("fragment", false, "", false),
+                                             new TagAttributeInfo("name-from-attribute", false, "", false),
+                                             new TagAttributeInfo("name-given", false, "", false),
+                                             new TagAttributeInfo("scope", false, "", false),
+                                             new TagAttributeInfo("variable-class", false, "", false)})
+                };
+            }
+       
         if (xmlJspTagDatas == null) {
             TagInfo[] commonXMLTagDatas;
             commonXMLTagDatas = new TagInfo[]{
-                new TagInfo ("declaration", null, TagInfo.BODY_CONTENT_JSP, "",                 // NOI18N
+                new TagInfo ("declaration", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref125.html",                 // NOI18N
                   null, null, new TagAttributeInfo[] {}),
-               new TagInfo ("expression", null, TagInfo.BODY_CONTENT_JSP, "",                 // NOI18N
+               new TagInfo ("expression", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref126.html",                 // NOI18N
                   null, null, new TagAttributeInfo[] {}),
-               new TagInfo ("scriptlet", null, TagInfo.BODY_CONTENT_JSP, "",                 // NOI18N
+               new TagInfo ("scriptlet", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref127.html",                 // NOI18N
                   null, null, new TagAttributeInfo[] {}), 
-               new TagInfo ("root", null, TagInfo.BODY_CONTENT_JSP, "",                         // NOI18N
+               new TagInfo ("root", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref123.html",                         // NOI18N
                   null, null, new TagAttributeInfo[] {})
             };
                   
-            String [] attr = (String[])directiveJspData.get("page");                // NOI18N
-            TagAttributeInfo[] tagAttrInfos = new TagAttributeInfo [attr.length];
-            for (int i = 0; i < attr.length; i++)
-                tagAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
-            
             xmlJspTagDatas = new TagInfo[] {
-                new TagInfo ("directive.page", null, TagInfo.BODY_CONTENT_EMPTY, "",   // NOI18N
-                    null, null, tagAttrInfos),               
+                new TagInfo ("directive.page", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
+                    null, null, directiveJspData[1].getAttributes()),               
             };
             
             ArrayList list = new ArrayList();
@@ -665,40 +708,24 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             for (int i = 0; i < commonXMLTagDatas.length; i++)
                 list.add(commonXMLTagDatas[i]);
          
+            // sort the list of xml tags
             Collections.sort(list,  new Comparator() {
                 public int compare(Object o1, Object o2) {
                     return ((TagInfo)o1).getTagName().compareTo(((TagInfo)o2).getTagName());
                 }
             });
+            
             xmlJspTagDatas = new TagInfo[list.size()];
             for (int i = 0; i < list.size(); i++)
                 xmlJspTagDatas[i] = (TagInfo)list.get(i);
         
-            attr = (String[])directiveTagFileData.get("tag"); // NOI18N
-            tagAttrInfos = new TagAttributeInfo [attr.length];
-            for (int i = 0; i < attr.length; i++)
-                tagAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
-            
-            attr = (String[])directiveTagFileData.get("attribute"); // NOI18N
-            TagAttributeInfo[] attributeAttrInfos = new TagAttributeInfo [attr.length];
-            for (int i = 0; i < attr.length; i++)
-                if (attr[i].equals("name")) // NOI18N
-                    attributeAttrInfos[i] = new TagAttributeInfo (attr[i], true, "",  false);
-                else 
-                    attributeAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
-            
-            attr = (String[])directiveTagFileData.get("variable");  // NOI18N
-            TagAttributeInfo[] variableAttrInfos = new TagAttributeInfo [attr.length];
-            for (int i = 0; i < attr.length; i++)
-               variableAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
-            
             xmlTagFileTagDatas = new TagInfo[] {
-                new TagInfo ("directive.tag", null, TagInfo.BODY_CONTENT_EMPTY, "", // NOI18N
-                    null, null, tagAttrInfos),
-                new TagInfo ("directive.attribute", null, TagInfo.BODY_CONTENT_EMPTY, "", // NOI18N
-                    null, null, attributeAttrInfos),
-                new TagInfo ("directive.variable", null, TagInfo.BODY_CONTENT_EMPTY, "", // NOI18N
-                    null, null, variableAttrInfos),
+                new TagInfo ("directive.tag", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[2].getInfoString(), // NOI18N
+                    null, null, directiveTagFileData[2].getAttributes()),
+                new TagInfo ("directive.attribute", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[0].getInfoString(), // NOI18N
+                    null, null, directiveTagFileData[0].getAttributes()),
+                new TagInfo ("directive.variable", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[4].getInfoString(), // NOI18N
+                    null, null, directiveTagFileData[4].getAttributes()),
             };
             
             list = new ArrayList();
