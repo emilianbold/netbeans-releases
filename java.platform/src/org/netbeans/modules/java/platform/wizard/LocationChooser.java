@@ -345,8 +345,16 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         
         private boolean isPlatformDir ( File f ) {
             FileObject fo = (f != null) ? convertToValidDir(f) : null;
-            
             if (fo != null) {
+                //XXX: Workaround of /net folder on Unix, the folders in the root are not badged as platforms.
+                // User can still select them.
+                try {
+                    if (Utilities.isUnix() && (fo.getParent() == null || fo.getFileSystem().getRoot().equals(fo.getParent()))) {
+                        return false;
+                    }
+                } catch (FileStateInvalidException e) {
+                    return false;
+                }
                 for (Iterator it = this.regs.getInstallers().iterator(); it.hasNext();) {
                     PlatformInstall install = (PlatformInstall) it.next();                
                     if (install.accept(fo)) {
