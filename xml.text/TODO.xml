@@ -12,9 +12,13 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<!-- This document is used as source for generating www/dev/todo.html.
+     When you change this, please regenerate result document by 'ant todo' in www directory.
+  -->
+
 <list name="Text Editing Support">
     <item>
-        <summary>support to add action to XML and DTD editors</summary>
-        <description>support to add action to XML and DTD editors</description>
+        <summary>Actions to editors</summary>
+        <description>Support to add actions to XML and DTD editors.</description>
     </item>
 </list>

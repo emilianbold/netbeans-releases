@@ -12,13 +12,17 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<!-- This document is used as source for generating www/dev/todo.html.
+     When you change this, please regenerate result document by 'ant todo' in www directory.
+  -->
+
 <list name="Catalog">
     <item>
-        <summary>correct support of org.openide.loaders.XMLDataObjectImpl.RuntimeCatalog [does not work now]</summary>
-        <description>correct support of org.openide.loaders.XMLDataObjectImpl.RuntimeCatalog [does not work now]</description>
+        <summary>RuntimeCatalog does not work now</summary>
+        <description>Correct support of org.openide.loaders.XMLDataObjectImpl.RuntimeCatalog which does not work now.</description>
     </item>
     <item>
-        <summary>add support for org.netbeans.core.xml.FileEntityResolver</summary>
-        <description>add support for org.netbeans.core.xml.FileEntityResolver</description>
+        <summary>FileEntityResolver support</summary>
+        <description>Add support for org.netbeans.core.xml.FileEntityResolver.</description>
     </item>
 </list>

@@ -12,11 +12,18 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<!-- This document is used as source for generating www/dev/todo.html.
+     When you change this, please regenerate result document by 'ant todo' in www directory.
+  -->
+
 <list name="Tools">
     <item>
-        <summary>cleanup files structure</summary>
-        <description>cleanup files structure:
-    a) by services (each service has its own folder which contains cookies, actions, impl, wizard, ...);
-    b) by class types (separated parts (cookies, actions, impl, wizard, ...) of each service are in common folder);</description>
+        <summary>Cleanup files structure</summary>
+        <description>Files' structure is not synoptical. I see two possible structures:
+<ol>
+    <li><b>By services</b> - each service has its own folder which contains cookies, actions, impl, wizard, ...</li>
+    <li><b>By class types</b> - separated parts (cookies, actions, impl, wizard, ...) of each service are in common folder.</li>
+</ol>
+        </description>
     </item>
 </list>

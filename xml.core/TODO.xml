@@ -12,29 +12,29 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<!-- This document is used as source for generating www/dev/todo.html.
+     When you change this, please regenerate result document by 'ant todo' in www directory.
+  -->
+
 <list name="Core">
     <item>
-        <summary>bad model of DataNode and EditorSupport in XML- and DTD- DataObject</summary>
-        <description>bad model of DataNode and EditorSupport in XML- and DTD- DataObject</description>
+        <summary>DataNode and EditorSupport in ???DataObject</summary>
+        <description>Bad model of DataNode and EditorSupport in XML- and DTD- DataObject.</description>
     </item>
     <item>
-        <summary>org.netbeans.modules.xml.core.text.TextEditorSupport should extend CloneableEditorSupport instead of DataEditorSupport which is associated with DataObject.</summary>
-        <description>org.netbeans.modules.xml.core.text.TextEditorSupport should extend CloneableEditorSupport instead of DataEditorSupport which is associated with DataObject.</description>
+        <summary>TextEditorSupport should extend CloneableEditorSupport</summary>
+        <description>Class org.netbeans.modules.xml.core.text.TextEditorSupport should extend CloneableEditorSupport instead of DataEditorSupport which is associated with DataObject.</description>
     </item>
     <item>
-        <summary>clear XML- and DTD- DataObject and XMLDataObjectLook, use cookies model mainly.</summary>
-        <description>clear XML- and DTD- DataObject and XMLDataObjectLook, use cookies model mainly.</description>
+        <summary>XML- and DTD- DataObject and XMLDataObjectLook</summary>
+        <description>Clear XML- and DTD- DataObject and XMLDataObjectLook, use cookies model mainly.</description>
     </item>
     <item>
-        <summary>XMLSettings should support another modules to add its property, subnode to it.</summary>
-        <description>XMLSettings should support another modules to add its property, subnode to it.</description>
-    </item>
-    <item>
-        <summary>We could create 'xml-api' module which will specify API for other xml module; 'xml-core' will implement xml-api. See http://openide.netbeans.org/versioning-policy.html -- org.netbeans.modules.xml.[core.api|api].</summary>
+        <summary>XML API</summary>
         <description>We could create 'xml-api' module which will specify API for other xml module; 'xml-core' will implement xml-api. See <a href="http://openide.netbeans.org/versioning-policy.html">API &amp; Module Versioning Policy</a> -- org.netbeans.modules.xml.[core.api|api].</description>
     </item>
     <item>
-        <summary>XML- and DTD- DataLoader could have common super-class.</summary>
+        <summary>XML- and DTD- DataLoader</summary>
         <description>XML- and DTD- DataLoader could have common super-class.</description>
     </item>
 </list>
