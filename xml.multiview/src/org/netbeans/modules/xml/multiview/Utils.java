@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.xml.multiview;
 
+import java.awt.*;
+
 /**
  * Utils.java
  *
@@ -166,5 +168,24 @@ public class Utils {
             }
         }
         return new String(text, 0, pos - 1);
+    }
+
+    /**
+     * Sets focus to the next focusable component according to focus traversal policy
+     * @param component currently focused component
+     */
+    public static void focusNextComponent(Component component) {
+        Container focusCycleRoot = component.getFocusCycleRootAncestor();
+        if (focusCycleRoot == null) {
+            return;
+        }
+        final FocusTraversalPolicy focusTraversalPolicy = focusCycleRoot.getFocusTraversalPolicy();
+        if (focusTraversalPolicy == null) {
+            return;
+        }
+        final Component componentAfter = focusTraversalPolicy.getComponentAfter(focusCycleRoot, component);
+        if (componentAfter != null) {
+            componentAfter.requestFocus();
+        }
     }
 }
