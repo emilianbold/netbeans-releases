@@ -169,6 +169,14 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
     static boolean showDialog() {
         java.util.Set set = org.openide.loaders.DataObject.getRegistry ().getModifiedSet ();
         if (!set.isEmpty()) {
+
+            // XXX(-ttran) caching this dialog is fatal.  If the user
+            // cancels the Exit action, modifies some more files and tries to
+            // Exit again the list of modified DataObject's is not updated,
+            // changes made by the user after the first aborted Exit will be
+            // lost.
+            exitDialog = null;
+            
             if (exitDialog == null) {
                 exitOptions = new JButton[] {
                                   new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_Save")),
