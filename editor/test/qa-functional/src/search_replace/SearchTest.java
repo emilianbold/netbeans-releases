@@ -33,7 +33,10 @@ public class SearchTest extends EditorTestCase {
     
     private static int FIND_TIMEOUT = 1000;
     
-    /** Creates a new instance of Main */
+    /**
+     * Creates a new instance of Main
+     * @param testMethodName name of test
+     */
     public SearchTest(String testMethodName) {
         super(testMethodName);
     }
@@ -708,7 +711,9 @@ public class SearchTest extends EditorTestCase {
         }                
     }    
     
-     
+    /**     
+     * Unchecks all checkboxes in find dialog.
+     */
     public void uncheckAll() {
         Find find = new Find();
         find.cbBackwardSearch().setSelected(false);
