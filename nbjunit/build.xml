@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <project basedir="." default="netbeans" name="NbJUnit">
-  
-  <target name="init">
+  <import file="../../nbbuild/default.xml"/>
+      
+  <target name="init" depends="default.init">
     <ant dir="../external" target="unscramble"/>
   </target>
   
@@ -17,8 +30,7 @@
   </target>
 
   <target name="jar-nbjunit" depends="compile-nbjunit">
-      <mkdir dir="netbeans/modules/ext"/>
-      <jar jarfile="netbeans/modules/ext/nbjunit.jar"
+      <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nbjunit.jar"
             basedir="src"
             excludesfile="../../nbbuild/standard-jar-excludes.txt"
             compress="true"
@@ -26,7 +38,7 @@
   </target>
 
   <target name="check-javadoc-uptodate">
-    <uptodate property="javadoc-uptodate" targetfile="netbeans/docs/nbjunit-api.zip">
+    <uptodate property="javadoc-uptodate" targetfile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/nbjunit-api.zip">
       <srcfiles dir="src">
         <include name="**/*.java"/>
       </srcfiles>
@@ -46,14 +58,12 @@
           </fileset>
         </classpath>
       </javadoc>
-      <mkdir dir="netbeans/docs"/>
-      <zip zipfile="netbeans/docs/nbjunit-api.zip"
+      <zip zipfile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/nbjunit-api.zip"
            basedir="javadoc/nbjunit-api"/>
   </target>
   
   <target name="parserdb">
-  	<mkdir dir="netbeans/system/ParserDB"/>
-  	<copy toDir="netbeans/system/ParserDB">
+  	<copy toDir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB">
   		<fileset dir="parserdb"/>
   	</copy>
   </target>

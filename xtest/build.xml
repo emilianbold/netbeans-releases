@@ -8,12 +8,13 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="xtest" default="netbeans" basedir=".">
-
+  <import file="../nbbuild/default.xml"/> 
+  
   <property name="nball.cvs.root" location=".."/>
   <property name="build.sysclasspath" value="ignore"/>
   <property name="build.compiler.deprecation" value="off"/>    
@@ -24,19 +25,24 @@ Microsystems, Inc. All Rights Reserved.
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="plugins.install.dir" location="plugins"/>
 
-  
-
   <property name="ant.jar" location="${ant.home}/lib/ant.jar"/>
-   
   
   <target name="prepare-nbjunit">
     <ant dir="nbjunit" antfile="build.xml" target="jar-nbjunit"/>
-    <mkdir dir="lib"/>
-    <copy file="nbjunit/netbeans/modules/ext/nbjunit.jar" todir="lib"/>
+    <copy file="${xtest/nbjunit.dir}/${nb.modules.dir}/ext/nbjunit.jar" todir="lib"/>
   </target>
 
-  <target name="init">
-    <ant dir="external" target="unscramble"/>
+  <target name="init" depends="default.init">
+      <ant dir="external" target="unscramble"/>
+      <patternset id="xtest.files">
+        <!-- All files created for NBM -->
+        <include name="${nb.modules.dir}/xtest.jar"/>
+        <include name="${nb.modules/docs.dir}/testtools.jar"/>
+        <include name="${nb.system.dir}/ParserDB/NbJUnit*"/>
+        <include name="${nb.docs.dir}/nbjunit-api.zip"/>
+        <include name="${nb.modules.dir}/ext/nbjunit.jar"/>
+        <include name="xtest-distribution/**"/>
+      </patternset>
   </target>
   
   <target name="compile" depends="init,prepare-nbjunit">
@@ -55,7 +61,6 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
 
   </target>
-  
   
 
   <target name="jars" depends="compile">
@@ -116,7 +121,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="netbeans" depends="build-all"/>
 
-  <target name="clean-xtest">
+  <target name="clean-xtest" depends="init">
     <ant dir="nbjunit" antfile="build.xml" target="clean-nbjunit"/>
     <delete file="lib/nbjunit.jar"/>    
     <delete>
@@ -125,6 +130,9 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
       <fileset dir="modulesrc">
         <include name="**/*.class"/>
+      </fileset>
+       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+          <patternset refID="xtest.files"/>
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
@@ -138,9 +146,8 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="lib/xml-apis.jar"/>
     <delete file="lib/xtest-junit-testrunner.jar"/>
     <delete file="xtest-distribution.zip"/>
+    <delete dir="${netbeans.dest.dir}/${cluster.dir}/xtest-distribution"/>
     <delete file="xtest-pes-distribution.zip"/>
-    <delete dir="netbeans"/>
-    <delete dir="Info"/>
     <delete dir="${plugins.install.dir}"/>  
   </target>
   
@@ -156,9 +163,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="clean" depends="clean-xtest,clean-plugins">    
 
   </target>
-  
- 
-  
+
   <target name="real-clean" depends="clean">
     <!-- depending modules -->
     <ant dir="../openide" antfile="build.xml" target="clean"/>
@@ -183,7 +188,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>  
   
   <!-- xtest module targets -> module is currently not maintained -->
-  <target name="nbm">
+  <target name="nbm" depends="init">
     <ant antfile="module_build.xml" target="nbm"/>
   </target>
   
