@@ -34,7 +34,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-	<pathelement location="release/modules/ext/ant.jar"/>
+	<pathelement location="${binroot}/ant/release/modules/ext/ant.jar"/>
 	<pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
       </classpath>
     </javac>
@@ -56,12 +56,13 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   <target name="release">
     <copy todir="netbeans" includeEmptyDirs="false">
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="${binroot}/ant/release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
   </target>
 
   <target name="javahelp">
     <mkdir dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
-    <unzip src="ant-docs.zip" dest="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
+    <unzip src="${binroot}/ant/ant-docs.zip" dest="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
     <mkdir dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"/>
     <jhindexer basedir="javahelp/org/apache/tools/ant/module/docs"
                db="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"
@@ -106,8 +107,8 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <jar jarfile="test/ant.jar" manifest="manifest-subst.mf" compress="false">
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="javahelp" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <zipfileset src="release/modules/ext/ant.jar" excludes="META-INF/MANIFEST.MF"/>
-      <zipfileset src="release/modules/ext/ant-optional.jar" excludes="META-INF/MANIFEST.MF"/>
+      <zipfileset src="${binroot}/ant/release/modules/ext/ant.jar" excludes="META-INF/MANIFEST.MF"/>
+      <zipfileset src="${binroot}/ant/release/modules/ext/ant-optional.jar" excludes="META-INF/MANIFEST.MF"/>
     </jar>
     <nbinstaller module="test/ant.jar" action="reinstall"/>
   </target>
