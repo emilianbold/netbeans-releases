@@ -349,7 +349,7 @@ public final class ColorEditor implements PropertyEditor {
       editor.setValue(selectionModel.getSelectedColor());
     }
 
-  };
+  }
 
   static class SuperColor extends Color {
     /** generated Serialized Version UID */
@@ -536,6 +536,7 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  9    Gandalf   1.8         4/16/99  Libor Martinek  
  *  8    Gandalf   1.7         3/4/99   Jan Jancura     QuickSorter removed
  *  7    Gandalf   1.6         3/4/99   Jan Jancura     bundle moved
  *  6    Gandalf   1.5         2/5/99   David Simonek   
