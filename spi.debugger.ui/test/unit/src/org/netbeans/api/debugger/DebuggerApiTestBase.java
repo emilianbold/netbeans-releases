@@ -100,8 +100,7 @@ public abstract class DebuggerApiTestBase extends NbTestCase {
             return new Breakpoint[0];
         }
 
-        public Watch[] initWatches() {
-            return new Watch[0];
+        public void initWatches() {
         }
     }
 
