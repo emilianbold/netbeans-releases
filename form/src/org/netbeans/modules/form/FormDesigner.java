@@ -149,7 +149,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             formModel.addFormModelListener(formModelListener);
             formEditorSupport = FormEditorSupport.getFormEditor(formModel);
             resetTopDesignComponent(false);
-            updateName(formModel.getName());
+            setName(formModel.getName());
             handleLayer.setViewOnly(formModel.isReadOnly());
             componentLayer.updateDesignerSize(getStoredDesignerSize());
         }
@@ -519,10 +519,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         }
     }
 
-    void updateName(String name) {
-        setName(name);
-    }
-
     void updateVisualSettings() {
         componentLayer.updateVisualSettings();
         layeredPane.revalidate();
@@ -790,8 +786,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             // this is used (or misused?) to obtain the deserialized multiview
             // topcomponent and set it to FormEditorSupport
             formEditorSupport.setTopComponent(callback.getTopComponent());
-            multiViewObserver.updateTitle(FormEditorSupport.getMVTCDisplayName(
-                formEditorSupport.getFormDataObject()));
         }
     }
 
@@ -905,7 +899,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     componentLayer.revalidate();
                     componentLayer.repaint();
                 }
-                updateName(formModel.getName());
                 return;
             }
 

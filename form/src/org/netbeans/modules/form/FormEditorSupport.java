@@ -924,9 +924,11 @@ public class FormEditorSupport extends JavaEditor
                 if (DataObject.PROP_NAME.equals(ev.getPropertyName())) {
                     String name = formDataObject.getName();
                     formModel.setName(name);
-                    getFormDesigner().updateName(name);
+                    getFormDesigner().setName(name);
                     formRootNode.updateName(name);
-                    formModel.fireFormChanged();
+                    if (multiviewTC != null)
+                        multiviewTC.setToolTipText(getMVTCToolTipText(formDataObject));
+                    formModel.fireFormChanged(); // regenerate code
                 }
                 else if (DataObject.PROP_COOKIE.equals(ev.getPropertyName())) {
                     java.awt.EventQueue.invokeLater(new Runnable() {
@@ -1075,7 +1077,6 @@ public class FormEditorSupport extends JavaEditor
                                              descs,
                                              descs[elementToOpen],
                                              new CloseHandler(formDataObject));
-            multiviewTC.setToolTipText(getMVTCToolTipText(formDataObject));
         }
         return multiviewTC;
     }
@@ -1088,7 +1089,7 @@ public class FormEditorSupport extends JavaEditor
         return name;
     }
     
-    static String getMVTCDisplayName(FormDataObject formDataObject) {
+    private static String getMVTCDisplayName(FormDataObject formDataObject) {
         boolean readonly = formDataObject.getPrimaryFile().isReadOnly();
         int version;
         if (formDataObject.isModified()) {
@@ -1107,6 +1108,8 @@ public class FormEditorSupport extends JavaEditor
      */
     void setTopComponent(TopComponent topComp) {
         multiviewTC = (CloneableTopComponent)topComp;
+        multiviewTC.setDisplayName(getMVTCDisplayName(formDataObject));
+        multiviewTC.setToolTipText(getMVTCToolTipText(formDataObject));
     }
 
     public static FormEditorSupport getFormEditor(TopComponent tc) {
@@ -1345,7 +1348,6 @@ public class FormEditorSupport extends JavaEditor
                 // multiview topcomponent and set it to FormEditorSupport
                 ((FormDataObject)obj).getFormEditor().setTopComponent(
                                                    callback.getTopComponent());
-                multiViewObserver.updateTitle(getMVTCDisplayName((FormDataObject)obj));
             }
         }
 
@@ -1384,7 +1386,6 @@ public class FormEditorSupport extends JavaEditor
             if (multiViewObserver != null) {
                 FormDataObject formDataObject = (FormDataObject)obj;
                 setDisplayName(getMVTCDisplayName(formDataObject));
-                multiViewObserver.getTopComponent().setToolTipText(getMVTCToolTipText(formDataObject));
             }
         }
 
