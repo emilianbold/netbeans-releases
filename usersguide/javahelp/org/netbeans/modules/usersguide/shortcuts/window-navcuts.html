@@ -1,197 +1,1 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!--
-* Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
-* Use is subject to license terms.
--->
-<html>
-<head>
-<link rel="StyleSheet" href="../ide.css" type="text/css">
-<title>Window Navigation Shortcuts  </title>
-</head>
-<body>
-<h2>
-Window Navigation Shortcuts
-</h2>
-<p><small><a href="#seealso">See Also</a></small></p>
-<p>
-The IDE uses JFC/Swing keyboard shortcuts for navigate, activate,
-and select operations in windows in the IDE. 
-The JFC/Swing keyboard shortcuts are not configurable 
-in the IDE.
-</p>
-<p> The following table lists the keystrokes needed for window operations in
-  compact window mode.</p>
-<table border="1" cellpadding="5" cellspacing="0" summary="Window navigation keyboard shortcuts in MDI mode">
-  <tr valign="top" align="left"> 
-    <th align="left" scope="col">Keys</th>
-    <th align="left" scope="col">Action</th>
-  </tr>
-  <tr valign="top"> 
-    <td>Tab</td>
-    <td>Shifts focus to the next component or to the first member of the next 
-      group of components (the upper-left component in left-to-right reading order).</td>
-  </tr>
-  <tr valign="top"> 
-    <td>Shift-Tab</td>
-    <td>Shifts focus to the previous component or to the last component in the 
-      previous group of components (reverse navigation of Tab).</td>
-  </tr>
-  <tr valign="top"> 
-    <td>Home</td>
-    <td>Selects the first item in the list or pane.</td>
-  <tr valign="top"> 
-    <td>End</td>
-    <td>Selects the last item in the list or pane.</td>
-  </tr>
-  <tr valign="top"> 
-    <td> Up arrow </td>
-    <td> Moves keyboard focus to the previous item in a group of items. 
-	    <br> Navigates to the previous setting in a combo box in a property sheet. 
-    </td>
-  </tr>
-  <tr> 
-    <td valign="top">Down arrow </td>
-    <td valign="top">Moves keyboard focus to the next item in a group of items.<br> 
-	    Navigates to the next setting in a combo box in a property sheet.
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td> Left arrow </td>
-    <td> Closes a folder (node). </td>
-  </tr>
-  <tr valign="top"> 
-    <td> Right arrow </td>
-    <td> Opens a folder (node). </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Spacebar</td>
-    <td>Activates the item that has focus.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-0</td>
-    <td valign="top">Switches to the Source Editor.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-1/Ctrl-Shift-1</td>
-    <td valign="top">Opens the Projects window.</td>
-  </tr>
-  <tr> 
-  <td valign="top">Ctrl-2/Ctrl-Shift-2</td>
-    <td valign="top">Opens the Files window.</td>
-  </tr>
-  <tr> 
-  <td valign="top">Ctrl-3/Ctrl-Shift-3</td>
-    <td valign="top">Opens the Favorites window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-4</td>
-    <td valign="top">Opens the Output window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-5</td>
-    <td valign="top">Opens the Runtime window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-6</td>
-    <td valign="top">Opens the To Do window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-7</td>
-    <td valign="top">Opens the HTTP Monitor.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-8/Ctrl-Shift-8</td>
-    <td valign="top">Opens the Versioning window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-9</td>
-    <td valign="top">Opens the VCS Output window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Alt-Shift-1</td>
-    <td valign="top">Opens the Local Variables debugger window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Alt-Shift-2</td>
-    <td valign="top">Opens the Watches debugger window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Alt-Shift-3</td>
-    <td valign="top">Opens the Call Stack debugger window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Alt-Shift-4</td>
-    <td valign="top">Opens the Classes debugger window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Alt-Shift-5</td>
-    <td valign="top">Opens the Breakpoints debugger window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Alt-Shift-6</td>
-    <td valign="top">Opens the Sessions debugger window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Alt-Shift-7</td>
-    <td valign="top">Opens the Threads debugger window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Alt-Shift-8</td>
-    <td valign="top">Opens the Sources window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-Tab (Ctrl-')</td>
-    <td valign="top">Toggles through the open windows in the order that they were 
-      last used. The dialog box displays all open windows and each of the open 
-      documents in the Source Editor.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Shift-Escape</td>
-    <td valign="top">Maximizes the Source Editor or the present window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-F4</td>
-    <td valign="top">Closes the current tab in the current window. If the window 
-      has no tabs, the whole window is closed.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Ctrl-Shift-F4</td>
-    <td valign="top">Closes all open documents in the Source Editor.</td>
- </tr>
- <tr> 
-    <td valign="top">Shift-F4</td>
-    <td valign="top">Opens the Documents dialog box, in which you can save and 
-      close groups of open documents.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Alt-right</td>
-    <td valign="top">Displays the next tab in the current window.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Alt-left</td>
-    <td valign="top">Displays the previous tab in the current window..</td>
-  </tr>
-</table>
-
-<table>
-  <tr>
-    <th colspan=2 align=left><a name="seealso">See Also</a></th>
-  </tr>
-  <tr>
-    <td width="23"></td>
-    <td>
-      <a href="menucuts.html">Menu Shortcuts</a> <br>
-      <a href="editorcuts.html">Editor Shortcuts</a> <br>
-      <a href="jhshortcuts.html">Help Viewer Shortcuts</a> </td>
-  </tr>
-</table>
-
-<hr>
-<small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table></body>
-</html>
-
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"><!--* Copyright © 2004 Sun Microsystems, Inc. All rights reserved.* Use is subject to license terms.--><html><head><link rel="StyleSheet" href="../ide.css" type="text/css"><title>Window Navigation Shortcuts  </title></head><body><h2>Window Navigation Shortcuts</h2><p><small><a href="#seealso">See Also</a></small></p><p>The IDE uses JFC/Swing keyboard shortcuts for navigate, activate,and select operations in windows in the IDE. The JFC/Swing keyboard shortcuts are not configurable in the IDE.</p><p> The following table lists the keystrokes needed for window operations in  compact window mode.</p><table border="1" cellpadding="5" cellspacing="0" summary="Window navigation keyboard shortcuts in MDI mode">  <tr valign="top" align="left">     <th align="left" scope="col">Keys</th>    <th align="left" scope="col">Action</th>  </tr>  <tr valign="top">     <td>Tab</td>    <td>Shifts focus to the next component or to the first member of the next       group of components (the upper-left component in left-to-right reading order).</td>  </tr>  <tr valign="top">     <td>Shift-Tab</td>    <td>Shifts focus to the previous component or to the last component in the       previous group of components (reverse navigation of Tab).</td>  </tr>  <tr valign="top">     <td>Home</td>    <td>Selects the first item in the list or pane.</td>  <tr valign="top">     <td>End</td>    <td>Selects the last item in the list or pane.</td>  </tr>  <tr valign="top">     <td> Up arrow </td>    <td> Moves keyboard focus to the previous item in a group of items. 	    <br> Navigates to the previous setting in a combo box in a property sheet.     </td>  </tr>  <tr>     <td valign="top">Down arrow </td>    <td valign="top">Moves keyboard focus to the next item in a group of items.<br> 	    Navigates to the next setting in a combo box in a property sheet.    </td>  </tr>  <tr valign="top">     <td> Left arrow </td>    <td> Closes a folder (node). </td>  </tr>  <tr valign="top">     <td> Right arrow </td>    <td> Opens a folder (node). </td>  </tr>  <tr valign="top">     <td>Spacebar</td>    <td>Activates the item that has focus.</td>  </tr>  <tr>     <td valign="top">Ctrl-0</td>    <td valign="top">Switches to the Source Editor.</td>  </tr>  <tr>     <td valign="top">Ctrl-1/Ctrl-Shift-1</td>    <td valign="top">Opens the Projects window.</td>  </tr>  <tr>   <td valign="top">Ctrl-2/Ctrl-Shift-2</td>    <td valign="top">Opens the Files window.</td>  </tr>  <tr>   <td valign="top">Ctrl-3/Ctrl-Shift-3</td>    <td valign="top">Opens the Favorites window.</td>  </tr>  <tr>     <td valign="top">Ctrl-4</td>    <td valign="top">Opens the Output window.</td>  </tr>  <tr>     <td valign="top">Ctrl-5</td>    <td valign="top">Opens the Runtime window.</td>  </tr>  <tr>     <td valign="top">Ctrl-6</td>    <td valign="top">Opens the To Do window.</td>  </tr>  <tr>     <td valign="top">Ctrl-7</td>    <td valign="top">Opens the HTTP Monitor.</td>  </tr>  <tr>     <td valign="top">Ctrl-8/Ctrl-Shift-8</td>    <td valign="top">Opens the Versioning window.</td>  </tr>  <tr>     <td valign="top">Ctrl-9</td>    <td valign="top">Opens the VCS Output window.</td>  </tr>  <tr>     <td valign="top">Alt-Shift-1</td>    <td valign="top">Opens the Local Variables debugger window.</td>  </tr>  <tr>     <td valign="top">Alt-Shift-2</td>    <td valign="top">Opens the Watches debugger window.</td>  </tr>  <tr>     <td valign="top">Alt-Shift-3</td>    <td valign="top">Opens the Call Stack debugger window.</td>  </tr>  <tr>     <td valign="top">Alt-Shift-4</td>    <td valign="top">Opens the Classes debugger window.</td>  </tr>  <tr>     <td valign="top">Alt-Shift-5</td>    <td valign="top">Opens the Breakpoints debugger window.</td>  </tr>  <tr>     <td valign="top">Alt-Shift-6</td>    <td valign="top">Opens the Sessions debugger window.</td>  </tr>  <tr>     <td valign="top">Alt-Shift-7</td>    <td valign="top">Opens the Threads debugger window.</td>  </tr>  <tr>     <td valign="top">Alt-Shift-8</td>    <td valign="top">Opens the Sources window.</td>  </tr>  <tr>     <td valign="top">Ctrl-Tab (Ctrl-')</td>    <td valign="top">Toggles through the open windows in the order that they were       last used. The dialog box displays all open windows and each of the open       documents in the Source Editor.</td>  </tr>  <tr>     <td valign="top">Shift-Escape</td>    <td valign="top">Maximizes the Source Editor or the present window.</td>  </tr>  <tr>     <td valign="top">Ctrl-F4</td>    <td valign="top">Closes the current tab in the current window. If the window       has no tabs, the whole window is closed.</td>  </tr>  <tr>     <td valign="top">Ctrl-Shift-F4</td>    <td valign="top">Closes all open documents in the Source Editor.</td> </tr> <tr>     <td valign="top">Shift-F4</td>    <td valign="top">Opens the Documents dialog box, in which you can save and       close groups of open documents.</td>  </tr>  <tr>     <td valign="top">Alt-right</td>    <td valign="top">Displays the next tab in the current window.</td>  </tr>  <tr>     <td valign="top">Alt-left</td>    <td valign="top">Displays the previous tab in the current window..</td>  </tr></table><table>  <tr>    <th colspan=2 align=left><a name="seealso">See Also</a></th>  </tr>  <tr>    <td width="23"></td>    <td>      <a href="menucuts.html">Menu Shortcuts</a> <br>      <a href="editorcuts.html">Editor Shortcuts</a> <br>      <a href="jhshortcuts.html">Help Viewer Shortcuts</a> </td>  </tr></table><hr><small><a href="../credits.html">Legal Notices</a></small><table border="0" cellpadding="20"><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr></table></body></html>
