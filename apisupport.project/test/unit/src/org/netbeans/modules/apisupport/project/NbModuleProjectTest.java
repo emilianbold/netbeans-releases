@@ -83,7 +83,8 @@ public class NbModuleProjectTest extends TestBase {
             javaProjectProject.getHelper().resolveFile(eval.getProperty("apisupport/project.dir")));
         assertEquals("right module JAR", file("nbbuild/netbeans/ide4/modules/org-netbeans-modules-java-project.jar"),
             javaProjectProject.getHelper().resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")));
-        assertEquals("right nb.lib/ext.dir", "launcher", eval.getProperty("nb.lib/ext.dir"));
+        // Synch w/ nbbuild/directories.properties:
+        assertEquals("right nb.lib/ext.dir", "lib", eval.getProperty("nb.lib/ext.dir"));
         assertEquals("right nb.modules/eager.dir", "modules/eager", eval.getProperty("nb.modules/eager.dir"));
         eval = loadersProject.evaluator();
         assertEquals("right module JAR", file("nbbuild/netbeans/platform4/core/openide-loaders.jar"),
