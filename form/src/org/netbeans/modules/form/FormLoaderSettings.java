@@ -450,6 +450,22 @@ public class FormLoaderSettings extends SystemOption {
         firePropertyChange(PROP_NULL_LAYOUT, new Boolean(oldValue), new Boolean(nullLayout));
     }
 
+    // XXX(-tdt) Hmm, backward compatibility with com.netbeans package name
+    // again.  The property editor search path is stored in user settings, we
+    // must translate
+    
+    public void readExternal(java.io.ObjectInput in)
+        throws java.io.IOException, ClassNotFoundException
+    {
+        super.readExternal(in);
+        for (int i = 0; i < editorSearchPath.length; i++) {
+            String path = editorSearchPath[i];
+            path = org.openide.util.Utilities.translate(path + ".BogusClass"); // NOI18N
+            path = path.substring(0, path.length() - ".BogusClass".length()); //  NOI18N
+            editorSearchPath[i] = path;
+        }
+    }
+    
     /** This method must be overriden. It returns display name of this options.
      */
     public String displayName() {
