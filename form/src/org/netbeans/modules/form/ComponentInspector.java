@@ -520,6 +520,8 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
                                 ((RADComponentNode)node).getRADComponent());
                     }
                 }
+
+                designer.repaintSelection();
             }
 
             timer.stop();

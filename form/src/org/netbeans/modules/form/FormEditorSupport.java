@@ -720,6 +720,11 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
             closeForm();
     }
 
+    public void reloadForm() {
+        if (canClose())
+            reloadDocument();
+    }
+
     protected org.openide.util.Task reloadDocumentTask() {
         boolean reloadForm = formLoaded;
         if (formLoaded)
@@ -748,6 +753,8 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
         // remove listeners
         detachFormListener();
         if (openForms.isEmpty()) {
+            if (formDesigner != null)
+                formDesigner.setModel(null);
             ComponentInspector.getInstance().focusForm(null, false);
             detachWorkspacesListener();
             detachSettingsListener();
@@ -840,7 +847,9 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
                         else if (type == FormModelEvent.COMPONENT_ADDED) {
                             if (compsToSelect == null)
                                 compsToSelect = new HashSet();
+
                             compsToSelect.add(ev.getComponent());
+                            compsToSelect.remove(ev.getContainer());
                         }
                     }
                 }

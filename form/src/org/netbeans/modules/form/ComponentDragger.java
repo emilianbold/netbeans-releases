@@ -58,9 +58,8 @@ class ComponentDragger
         this.resizeType = resizeType;
     }
 
-    void mouseDragged(Point p) {
+    void drag(Point p) {
         mousePosition = p;
-        handleLayer.repaint();
     }
 
     void paintDragFeedback(Graphics2D g) {

@@ -46,7 +46,7 @@ class HandleLayer extends JPanel
     static final int COMP_SELECTED = 1; // get the deepest selected component
     static final int COMP_ABOVE_SELECTED = 2; // get the component above the deepest selected component
     static final int COMP_UNDER_SELECTED = 3; // get the component under the deepest selected component
-    
+
     private FormDesigner formDesigner;
     private boolean viewOnly;
 
@@ -55,7 +55,9 @@ class HandleLayer extends JPanel
     private Point prevLeftMousePoint;
     private boolean draggingCanceled = false;
     private int resizeType;
-    
+
+    private SelectionDragger selectionDragger;
+
     private FormDesigner.Resizer fdResizer;
     private int designerResizeType;
     private boolean wasDragged = false;
@@ -160,6 +162,8 @@ class HandleLayer extends JPanel
 
         if (componentDragger != null)
             componentDragger.paintDragFeedback(g2);
+        if (selectionDragger != null)
+            selectionDragger.paintDragFeedback(g2);
     }
 
     private void paintSelection(Graphics2D g, RADComponent metacomp) {
@@ -203,9 +207,9 @@ class HandleLayer extends JPanel
         // focus but the component selection
         if (keyCode == KeyEvent.VK_TAB || e.getKeyChar() == '\t') {
             if (e.getID() == KeyEvent.KEY_PRESSED) {
-                if ((e.getModifiers()&InputEvent.CTRL_MASK)==InputEvent.CTRL_MASK) {
+                if (e.isControlDown()) {
                     // Ctrl+TAB
-                    if ((e.getModifiers()&InputEvent.SHIFT_MASK)!=InputEvent.SHIFT_MASK)
+                    if (!e.isShiftDown())
                         javax.swing.FocusManager.getCurrentManager()
                                                     .focusNextComponent(this);
                     else
@@ -214,7 +218,7 @@ class HandleLayer extends JPanel
                 }
                 else {
                     RADComponent nextComp = formDesigner.getNextVisualComponent(
-                        (e.getModifiers()&InputEvent.SHIFT_MASK)!=InputEvent.SHIFT_MASK);
+                                                              !e.isShiftDown());
 
                      if (nextComp != null)
                          formDesigner.setSelectedComponent(nextComp);
@@ -251,7 +255,7 @@ class HandleLayer extends JPanel
                 e.consume();
         }
         else if (keyCode == KeyEvent.VK_F10) {
-            if ((e.getModifiers() & InputEvent.SHIFT_MASK) != 0) {
+            if (e.isShiftDown()) {
                 Point p = null;
                 Iterator it = formDesigner.getSelectedComponents().iterator();
                 if (it.hasNext()) {
@@ -361,69 +365,141 @@ class HandleLayer extends JPanel
      * What component is selected further depends on whether CTRL or ALT
      * keys are hold. */
     private RADComponent selectComponent(MouseEvent e) {
-        boolean ctrl = e.isControlDown() && !e.isAltDown();
-        boolean alt = e.isAltDown() && !e.isControlDown();
-
-        int selMode = ctrl ? COMP_UNDER_SELECTED :
-                             (alt ? COMP_ABOVE_SELECTED : COMP_DEEPEST);
+        int selMode = !e.isAltDown() ? COMP_DEEPEST :
+                (!e.isShiftDown() ? COMP_ABOVE_SELECTED : COMP_UNDER_SELECTED);
 
         RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(), selMode);
 
-        if (e.isShiftDown()) {
-            if (formDesigner.isComponentSelected(hitMetaComp))
-                formDesigner.removeComponentFromSelection(hitMetaComp);
-            else
-                formDesigner.addComponentToSelection(hitMetaComp);
+        if (e.isControlDown()) {
+            // Control is pressed - add component to selection
+            if (hitMetaComp != null)
+                if (formDesigner.isComponentSelected(hitMetaComp))
+                    formDesigner.removeComponentFromSelection(hitMetaComp);
+                else
+                    formDesigner.addComponentToSelection(hitMetaComp);
         }
-        else {
-            if (hitMetaComp != null) {
-                if (formDesigner.isComponentSelected(hitMetaComp)) {
-                    if (e.getID() == MouseEvent.MOUSE_RELEASED) {
+        else if (e.isShiftDown() && !e.isAltDown()) {
+            // Shift is pressed - select interval
+            if (hitMetaComp != null
+                && !formDesigner.isComponentSelected(hitMetaComp))
+            {
+                if (formDesigner.getSelectedComponents().size() > 0) {
+                    RADComponent[] intervalToSelect =
+                        getComponentsIntervalToSelect(hitMetaComp, false);
+                    if (intervalToSelect == null)
+                        intervalToSelect = getComponentsIntervalToSelect(
+                                                       hitMetaComp, true);
+                    if (intervalToSelect != null)
+                        formDesigner.setSelectedComponents(intervalToSelect);
+                    else
                         formDesigner.setSelectedComponent(hitMetaComp);
-                    }
                 }
-                else {
+                else
                     formDesigner.setSelectedComponent(hitMetaComp);
-                }
+            }
+        }
+        else { // no reasonable modifier key pressed - select single component
+            if (hitMetaComp != null) {
+                if (!formDesigner.isComponentSelected(hitMetaComp))
+                    formDesigner.setSelectedComponent(hitMetaComp);
             }
             else
                 formDesigner.clearSelection();
         }
+
         repaint();
 
         return hitMetaComp;
     }
-    
+
+    private RADComponent[] getComponentsIntervalToSelect(
+                             RADComponent clickedComp,
+                             boolean forward)
+    {
+        if (!(clickedComp instanceof RADVisualComponent))
+            return null;
+
+        java.util.List toSelect = new LinkedList();
+        RADVisualComponent comp = (RADVisualComponent) clickedComp;
+        boolean selected = false;
+
+        do  // starting with clickedComp,
+        {   // go forward/backward in components until a selected one is reached
+            if (forward)
+                toSelect.add(comp);
+            else
+                toSelect.add(0, comp);
+
+            comp = formDesigner.getNextVisualComponent(comp, forward);
+        }
+        while (comp != null && comp != clickedComp
+               && !(selected = formDesigner.isComponentSelected(comp))
+               && comp != formDesigner.getTopDesignComponent());
+
+        if (selected) { // selected component found - we can make the interval
+            if (comp == formDesigner.getTopDesignComponent()) {
+                if (!forward) // top component is fine when going backward
+                    toSelect.add(0, comp);
+            }
+            else { // add also already selected components in the direction
+                selected = false;
+                do {
+                    if (forward)
+                        toSelect.add(comp);
+                    else
+                        toSelect.add(0, comp);
+
+                    comp = formDesigner.getNextVisualComponent(comp, forward);
+                }
+                while (comp != null
+                       && (selected = formDesigner.isComponentSelected(comp))
+                       && comp != formDesigner.getTopDesignComponent());
+
+                if (selected && !forward)
+                    toSelect.add(0, comp); // top comp is fine when going backward
+            }            
+
+            RADComponent[] compArray = new RADComponent[toSelect.size()];
+            toSelect.toArray(compArray);
+            return compArray;
+        }
+
+        return null;
+    }
+
     private void selectOtherComponentsNode() {
-        FormEditorSupport fes = FormEditorSupport.getSupport(formDesigner.getModel());
+        FormEditorSupport fes = formDesigner.getFormEditorSupport();
         ComponentInspector ci = ComponentInspector.getInstance();
-        Node[] selectedNode = new Node[] { ((FormRootNode)fes.getFormRootNode()).getOthersNode() };
+        Node[] selectedNode = new Node[] {
+            ((FormRootNode)fes.getFormRootNode()).getOthersNode() };
         
         try {
             ci.setSelectedNodes(selectedNode, fes);
             formDesigner.clearSelectionImpl();
+            repaint();
         }
         catch (java.beans.PropertyVetoException ex) {
             ex.printStackTrace();
         }
-        
+
         formDesigner.setActivatedNodes(selectedNode);
     }
 
-    private void processDoubleClick(MouseEvent e) {
+    private boolean processDoubleClick(MouseEvent e) {
         if (e.isShiftDown() || e.isControlDown())
-            return;
+            return false;
 
         RADComponent metacomp = getMetaComponentAt(e.getPoint(), COMP_SELECTED);
         if (metacomp == null)
-            return;
+            return true;
 
         if (e.isAltDown()) {
-            if (metacomp instanceof RADVisualComponent) {
+             if (metacomp == formDesigner.getTopDesignComponent()) {
                 metacomp = metacomp.getParentComponent();
                 if (metacomp == null)
-                    return;
+                    return true;
             }
+             else return false;
         }
 
         Node node = metacomp.getNodeReference();
@@ -434,6 +510,8 @@ class HandleLayer extends JPanel
                         node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
             }
         }
+
+        return true;
     }
 
     private void processMouseClickInLayoutSupport(RADComponent metacomp,
@@ -475,6 +553,12 @@ class HandleLayer extends JPanel
     }
 
     // --------
+
+    boolean anyDragger() {
+        return componentDragger != null
+               || selectionDragger != null
+               || fdResizer != null;
+    }
 
     private ComponentDragger createComponentDragger(Point hotspot) {
         List selectedComponents = formDesigner.getSelectedComponents();
@@ -523,8 +607,6 @@ class HandleLayer extends JPanel
         if (selComps.isEmpty())
             return null;
 
-        draggingCanceled = false;
-        
         return new ComponentDragger(
             formDesigner,
             HandleLayer.this,
@@ -535,8 +617,17 @@ class HandleLayer extends JPanel
     }
 
     private boolean cancelDragging() {
-        if (componentDragger != null) {
+        if (componentDragger != null || selectionDragger != null) {
             componentDragger = null;
+            selectionDragger = null;
+
+            if (resizeType != 0) {
+                resizeType = 0;
+                Cursor cursor = getCursor();
+                if (cursor != null && cursor.getType() != Cursor.DEFAULT_CURSOR)
+                    setCursor(Cursor.getDefaultCursor());
+            }
+
             repaint();
             draggingCanceled = true;
             return true;
@@ -550,80 +641,83 @@ class HandleLayer extends JPanel
             || resizing == LayoutSupportManager.RESIZE_DOWN
             || resizing == LayoutSupportManager.RESIZE_RIGHT;
     }
-    
-    private void checkDesignerResizing(Point p) {
-        int resizing = getSelectionResizable(p, formDesigner.getComponentLayer(), 7);
-        
-        if (validDesignerResizing(resizing)) {
+
+    private void checkResizing(MouseEvent e) {
+        int resizing = checkDesignerResizing(e);
+        if (resizing == 0)
+            resizing = checkComponentsResizing(e);
+
+        if (resizing != 0)
             setResizingCursor(resizing);
-        }
         else {
             Cursor cursor = getCursor();
             if (cursor != null && cursor.getType() != Cursor.DEFAULT_CURSOR)
                 setCursor(Cursor.getDefaultCursor());
         }
-        
-        designerResizeType = resizing;
     }
 
-    private void checkResizing(Point p) {
-        // check resizing of FormDesigner
-        checkDesignerResizing(p);
-        
-        // check wheteher all selected components are in the same container
-        RADComponent parent = null;
-        Iterator selected = formDesigner.getSelectedComponents().iterator();
-        while (selected.hasNext()) {
-            RADComponent comp = (RADComponent) selected.next();
-            if (comp instanceof RADVisualComponent) {
-                if (parent == null) {
-                    parent = comp.getParentComponent();
-                    if (parent == null)
-                        return; // component without a parent cannot be resized
+    private int checkDesignerResizing(MouseEvent e) {
+        if (!e.isAltDown() && !e.isControlDown() && !e.isShiftDown()) {
+            int resizing = getSelectionResizable(
+                               e.getPoint(),
+                               formDesigner.getComponentLayer(),
+                               7);
+            designerResizeType = validDesignerResizing(resizing) ? resizing : 0;
+        }
+        else designerResizeType = 0;
+
+        return designerResizeType;
+    }
+
+    private int checkComponentsResizing(MouseEvent e) {
+        if (!e.isAltDown() && !e.isControlDown() && !e.isShiftDown()) {
+            // check wheteher all selected components are in the same container
+            RADComponent parent = null;
+            Iterator selected = formDesigner.getSelectedComponents().iterator();
+            while (selected.hasNext()) {
+                RADComponent comp = (RADComponent) selected.next();
+                if (comp instanceof RADVisualComponent) {
+                    if (parent == null) {
+                        parent = comp.getParentComponent();
+                        if (parent == null)
+                            return 0; // component without a parent cannot be resized
+                    }
+                    else if (comp.getParentComponent() != parent)
+                        return 0; // selected components are not in the same container
                 }
-                else if (comp.getParentComponent() != parent)
-                    return; // selected components are not in the same container
-            }
-        }
-
-        RADComponent compAtPoint = getMetaComponentAt(p, COMP_SELECTED);
-        if (!(compAtPoint instanceof RADVisualComponent))
-            return;
-
-        RADVisualComponent metacomp = (RADVisualComponent) compAtPoint;
-        int resizing = 0;
-
-        if (!formDesigner.isComponentSelected(metacomp)) {
-            RADVisualComponent[] otherComps;
-            if (metacomp instanceof RADVisualContainer)
-                otherComps = ((RADVisualContainer)metacomp).getSubComponents();
-            else {
-                RADVisualContainer metacont = metacomp.getParentContainer();
-                if (metacont != null)
-                    otherComps = metacont.getSubComponents();
-                else return; // component without a parent
             }
 
-            for (int i=0; i < otherComps.length; i++) {
-                metacomp = otherComps[i];
-                resizing = getComponentResizable(p, metacomp);
-                if (resizing != 0)
-                    break;
-            }
-        }
-        else resizing = getComponentResizable(p, metacomp);
+            Point p = e.getPoint();
+            RADComponent compAtPoint = getMetaComponentAt(p, COMP_SELECTED);
+            if (compAtPoint instanceof RADVisualComponent) {
+                RADVisualComponent metacomp = (RADVisualComponent) compAtPoint;
+                if (!formDesigner.isComponentSelected(metacomp)) {
+                    int resizing = 0;
+                    RADVisualComponent[] otherComps;
+                    if (metacomp instanceof RADVisualContainer)
+                        otherComps = ((RADVisualContainer)metacomp).getSubComponents();
+                    else {
+                        RADVisualContainer metacont = metacomp.getParentContainer();
+                        if (metacont != null)
+                            otherComps = metacont.getSubComponents();
+                        else return 0; // component without a parent
+                    }
 
-        if (resizing != 0) {
-            setResizingCursor(resizing);
-//            resizedComponent = metacomp;
+                    for (int i=0; i < otherComps.length; i++) {
+                        metacomp = otherComps[i];
+                        resizing = getComponentResizable(p, metacomp);
+                        if (resizing != 0)
+                            break;
+                    }
+                    resizeType = resizing;
+                }
+                else resizeType = getComponentResizable(p, metacomp);
+            }
+            else resizeType = 0;
         }
-        else {
-            Cursor cursor = getCursor();
-            if (cursor != null && cursor.getType() != Cursor.DEFAULT_CURSOR)
-                setCursor(Cursor.getDefaultCursor());
-//            resizedComponent = null;
-        }
-        resizeType = resizing;
+        else resizeType = 0;
+
+        return resizeType;
     }
 
     private int getComponentResizable(Point p, RADVisualComponent metacomp) {
@@ -805,9 +899,12 @@ class HandleLayer extends JPanel
     private class HandleLayerMouseListener implements MouseListener
     {
         public void mouseClicked(MouseEvent e) {
-            if (MouseUtils.isRightMouseButton(e) && componentDragger == null) {
-                showContextMenu(e.getPoint());
-            }
+            if (MouseUtils.isRightMouseButton(e) && !anyDragger())
+                if (!draggingCanceled)
+                    showContextMenu(e.getPoint());
+                else
+                    draggingCanceled = false;
+
             e.consume();
         }
 
@@ -833,6 +930,11 @@ class HandleLayer extends JPanel
                         componentDragger = null;
                         repaint();
                     }
+                    else if (selectionDragger != null) {
+                        selectionDragger.drop(e.getPoint());
+                        selectionDragger = null;
+                        repaint();
+                    }
                     else if (draggingCanceled) {
                         draggingCanceled = false;
                     }
@@ -846,11 +948,19 @@ class HandleLayer extends JPanel
                         formDesigner.startInPlaceEditing(
                             getMetaComponentAt(e.getPoint(), COMP_SELECTED));
                     }
+                    else if (e.getClickCount() == 1
+                             && !e.isAltDown()
+                             && !e.isControlDown()
+                             && e.isShiftDown())
+                    {   // interval selection (with Shift) on mouse release
+                        selectComponent(e);
+                    }
                 }
 
-                if ((e.getModifiers() & InputEvent.SHIFT_MASK) == 0) {
-                    if (palette.getMode() == PaletteAction.MODE_ADD)
-                        palette.setMode(PaletteAction.MODE_SELECTION);
+                if (!e.isShiftDown()
+                    && palette.getMode() == PaletteAction.MODE_ADD)
+                {
+                    palette.setMode(PaletteAction.MODE_SELECTION);
                 }
 
                 prevLeftMousePoint = lastLeftMousePoint;
@@ -866,17 +976,16 @@ class HandleLayer extends JPanel
         public void mouseExited(MouseEvent e) {
             TopManager.getDefault().setStatusText(""); // NOI18N
         }
-        
+
         public void mousePressed(MouseEvent e) {
             formDesigner.componentActivated();
             if (!HandleLayer.this.isVisible())
                 return;
 
             if (MouseUtils.isRightMouseButton(e)) {
-                if (componentDragger == null) {
-                    if (!mouseOnComponentLayer(e.getPoint())) {
+                if (!anyDragger()) {
+                    if (!mouseOnComponentLayer(e.getPoint()))
                         selectOtherComponentsNode();
-                    }
                     else {
                         RADComponent hitMetaComp =
                             getMetaComponentAt(e.getPoint(), COMP_SELECTED);
@@ -886,66 +995,65 @@ class HandleLayer extends JPanel
                             formDesigner.setSelectedComponent(hitMetaComp);
                         }
                     }
-
                 }
+                else cancelDragging();
+
                 e.consume();
             }
             else if (MouseUtils.isLeftMouseButton(e)) {
-                boolean modifier = e.isControlDown() || e.isAltDown() || e.isShiftDown();
-                if (!modifier)
-                    lastLeftMousePoint = e.getPoint();
+                lastLeftMousePoint = e.getPoint();
 
+                boolean modifier = e.isControlDown() || e.isAltDown() || e.isShiftDown();
                 CPManager palette = CPManager.getDefault();
                 int paletteMode = palette.getMode();
 
                 if (paletteMode == PaletteAction.MODE_SELECTION) {
-                    if (!modifier)
-                        checkResizing(e.getPoint());
-                    
-                    if (!mouseOnComponentLayer(e.getPoint())) {
-                        if (designerResizeType == 0) {
-                            selectOtherComponentsNode();
+                    checkResizing(e);
+
+                    if (!e.isShiftDown() || e.isAltDown() || e.isControlDown()) {
+                        // mouse not pressed with Shift only (reserved for
+                        // interval selection, applied on mouse release or
+                        // or mouse dragged)
+                        if (fdResizer == null && !modifier
+                            && validDesignerResizing(designerResizeType))
+                        {   // start designer resizing
+                            fdResizer = new FormDesigner.Resizer(
+                                              formDesigner, designerResizeType);
+                            fdResizer.showCurrentSizeInStatus();
                         }
-                    }
-                    else if (resizeType == 0) {
-                        if (e.getClickCount() == 2)
-                            processDoubleClick(e);
-                        else {
+                        else if (!mouseOnComponentLayer(lastLeftMousePoint)) {
+                            if (designerResizeType == 0)
+                                selectOtherComponentsNode();
+                        }
+                        else if (resizeType == 0
+                                 && (e.getClickCount() != 2
+                                     || !processDoubleClick(e)))
+                        {   // no resizing, no doubleclick - select component
                             RADComponent hitMetaComp = selectComponent(e);
                             if (hitMetaComp != null && !modifier) // plain single click
                                 processMouseClickInLayoutSupport(hitMetaComp, e);
                         }
                     }
-                    
-                    if (fdResizer == null
-                        && lastLeftMousePoint != null
-                        && validDesignerResizing(designerResizeType))
-                    {
-                        fdResizer = new FormDesigner.Resizer(formDesigner,
-                                                             designerResizeType);
-                        fdResizer.showCurrentSizeInStatus();
-                    }
                 }
                 else if (!viewOnly) {
-                    if (palette.getMode() == PaletteAction.MODE_CONNECTION) {
+                    if (paletteMode == PaletteAction.MODE_CONNECTION) {
                         selectComponent(e);
                     }
                     else if (paletteMode == PaletteAction.MODE_ADD) {
                         RADComponent hitMetaComp = getMetaComponentAt(
-                            e.getPoint(),
-                            e.isControlDown() || e.isAltDown() ?
-                                COMP_SELECTED : COMP_DEEPEST);
+                            lastLeftMousePoint,
+                            e.isAltDown() ? COMP_SELECTED : COMP_DEEPEST);
 
                         PaletteItem item = palette.getSelectedItem();
                         Object constraints;
 
                         if (!item.isMenu() && item.isVisual()) {
-                            constraints = getConstraintsAtPoint(hitMetaComp,
-                                                                e.getPoint());
+                            constraints = getConstraintsAtPoint(
+                                            hitMetaComp, lastLeftMousePoint);
                         }
                         else constraints = null;
 
-                        if (!mouseOnComponentLayer(e.getPoint())) {
+                        if (!mouseOnComponentLayer(lastLeftMousePoint)) {
                             formDesigner.getModel().getComponentCreator()
                                 .createComponent(item.getInstanceCookie(),
                                                  null, null);
@@ -956,8 +1064,6 @@ class HandleLayer extends JPanel
                                                  hitMetaComp,
                                                  constraints);
                         }
-//                        if ((e.getModifiers() & InputEvent.SHIFT_MASK) == 0)
-//                            palette.setMode(PaletteAction.MODE_SELECTION);
                     }
                 }
                 e.consume();
@@ -971,25 +1077,45 @@ class HandleLayer extends JPanel
     {
         public void mouseDragged(MouseEvent e) {
             Point p = e.getPoint();
-            
+
             wasDragged = true;
             
             if (fdResizer != null) {
                 fdResizer.dropDesigner(e.getPoint(), false);
             }
-            else if (!viewOnly
-                     && componentDragger == null
+            else if (CPManager.getDefault().getMode()
+                              == PaletteAction.MODE_SELECTION
+                     && !anyDragger())
+            {
+                if (!viewOnly
+                     && !e.isAltDown() && !e.isControlDown() && !e.isShiftDown()
                      && lastLeftMousePoint != null
-                     && (resizeType != 0 || lastLeftMousePoint.distance(p) > 6)
-                     && CPManager.getDefault().getMode()
-                              == PaletteAction.MODE_SELECTION)
-            { // start dragging
-                componentDragger = createComponentDragger(lastLeftMousePoint);
-//                lastLeftMousePoint = null;
+                     && (resizeType != 0 || lastLeftMousePoint.distance(p) > 8))
+                {   // start components dragging
+                    componentDragger = createComponentDragger(lastLeftMousePoint);
+                    if (componentDragger != null)
+                        draggingCanceled = false;
+                }
+                else if (formDesigner.getTopDesignComponent()
+                                                instanceof RADVisualContainer
+                         && !e.isAltDown() && !e.isControlDown()
+                         && e.isShiftDown()
+                         && lastLeftMousePoint != null
+                         && lastLeftMousePoint.distance(p) > 4)
+                {   // start multiselection dragging
+                    selectionDragger = new SelectionDragger(lastLeftMousePoint);
+                    draggingCanceled = false;
+                }
             }
 
-            if (componentDragger != null)
-                componentDragger.mouseDragged(p);
+            if (componentDragger != null) {
+                componentDragger.drag(p);
+                repaint();
+            }
+            if (selectionDragger != null) {
+                selectionDragger.drag(p);
+                repaint();
+            }
 
             e.consume();
         }
@@ -997,15 +1123,114 @@ class HandleLayer extends JPanel
         public void mouseMoved(MouseEvent e) {
             CPManager palette = CPManager.getDefault();
             if (palette.getMode() == PaletteAction.MODE_ADD) {
-                RADComponent hitMetaComp = getMetaComponentAt(
-                    e.getPoint(),
-                    e.isControlDown() || e.isAltDown() ?
-                        COMP_SELECTED : COMP_DEEPEST);
-                showAddHint(hitMetaComp, e.getPoint(), palette.getSelectedItem());
+                RADComponent hitMetaComp =
+                    getMetaComponentAt(e.getPoint(),
+                                       e.isControlDown() || e.isAltDown() ?
+                                           COMP_SELECTED : COMP_DEEPEST);
+                showAddHint(hitMetaComp,
+                            e.getPoint(),
+                            palette.getSelectedItem());
             }
-            else if (palette.getMode() == PaletteAction.MODE_SELECTION) {
-                checkResizing(e.getPoint());
+            else if (palette.getMode() == PaletteAction.MODE_SELECTION)
+                checkResizing(e);
+        }
+    }
+
+    // ----------
+
+    private class SelectionDragger {
+        private Point startPoint;
+        private Point lastPoint;
+
+        public SelectionDragger(Point startPoint) {
+            this.startPoint = startPoint;
+        }
+
+        public void paintDragFeedback(Graphics g) {
+            if (startPoint != null && lastPoint != null) {
+                Rectangle r = getRectangle();
+                g.drawRect(r.x, r.y, r.width, r.height);
             }
+        }
+
+        public void drag(Point p) {
+            lastPoint = p;
+        }
+
+        public void drop(Point endPoint) {
+            if (startPoint != null && endPoint != null) {
+                lastPoint = endPoint;
+                ArrayList toSelect = new ArrayList();
+                collectSelectedComponents(getRectangle(),
+                                          formDesigner.getComponentLayer(),
+                                          toSelect);
+
+                RADComponent[] selected = new RADComponent[toSelect.size()];
+                toSelect.toArray(selected);
+                formDesigner.setSelectedComponents(selected);
+            }
+        }
+
+        private Rectangle getRectangle() {
+            int x = startPoint.x <= lastPoint.x ? startPoint.x : lastPoint.x;
+            int y = startPoint.y <= lastPoint.y ? startPoint.y : lastPoint.y;
+            int w = lastPoint.x - startPoint.x;
+            if (w < 0)
+                w = -w;
+            int h = lastPoint.y - startPoint.y;
+            if (h < 0)
+                h = -h;
+
+            return new Rectangle(x, y, w, h);
+        }
+
+        private boolean collectSelectedComponents(Rectangle selRect,
+                                                  Container cont,
+                                                  java.util.List toSelect)
+        {
+            ArrayList subContainers = new ArrayList();
+
+            Component[] comps = cont.getComponents();
+            for (int i=0; i < comps.length; i++) {
+                Component comp = comps[i];
+                Rectangle bounds = SwingUtilities.convertRectangle(
+                                           cont,
+                                           comps[i].getBounds(),
+                                           HandleLayer.this);
+                boolean intersects = selRect.intersects(bounds);
+
+                RADComponent metacomp = formDesigner.getMetaComponent(comp);
+                if (metacomp instanceof RADComponent) {
+                    if (intersects)
+                        toSelect.add(metacomp);
+                    if (!(metacomp instanceof ComponentContainer))
+                        continue;
+                }
+
+                if (intersects && comp instanceof Container)
+                    subContainers.add(comp);
+            }
+
+            if (toSelect.size() > 1
+                    || (toSelect.size() == 1 && subContainers.size() == 0))
+                return true;
+
+            Object theOnlyOne = toSelect.size() == 1 ? toSelect.get(0) : null;
+
+            for (int i=0; i < subContainers.size(); i++) {
+                toSelect.clear();
+                if (collectSelectedComponents(selRect,
+                                              (Container)subContainers.get(i),
+                                              toSelect))
+                    return true;
+            }
+
+            if (theOnlyOne != null) {
+                toSelect.add(theOnlyOne);
+                return true;
+            }
+            
+            return false;
         }
     }
 }

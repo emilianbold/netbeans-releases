@@ -293,20 +293,24 @@ public class FormDesigner extends TopComponent
         return selectedComponents;
     }
 
+    boolean isComponentSelected(RADComponent metacomp) {
+        return selectedComponents.contains(metacomp);
+    }
+
     void setSelectedComponent(RADComponent metacomp) {
-        selectedComponents.clear();
+        clearSelectionImpl();
         addComponentToSelectionImpl(metacomp);
+        repaintSelection();
         updateActivatedNodes();
     }
 
     void setSelectedComponents(RADComponent[] metacomps) {
-        selectedComponents.clear();
-        for (int i=0; i < metacomps.length; i++) {
-            selectedComponents.add(metacomps[i]);
-            if (metacomps[i] instanceof RADVisualComponent)
-                ensureComponentIsShown((RADVisualComponent)metacomps[i]);
-        }
-        handleLayer.repaint();
+        clearSelectionImpl();
+
+        for (int i=0; i < metacomps.length; i++)
+            addComponentToSelectionImpl(metacomps[i]);
+
+        repaintSelection();
         updateActivatedNodes();
     }
 
@@ -315,6 +319,7 @@ public class FormDesigner extends TopComponent
             setSelectedComponent(((RADComponentNode)node).getRADComponent());
         else {
             clearSelectionImpl();
+            repaintSelection();
 
             ComponentInspector ci = ComponentInspector.getInstance();
             if (ci.getFocusedForm() != formEditorSupport)
@@ -332,43 +337,50 @@ public class FormDesigner extends TopComponent
         }
     }
 
-    void addComponentToSelectionImpl(RADComponent metacomp) {
-        if (metacomp == null)
-            return;
-
-        selectedComponents.add(metacomp);
-        if (metacomp instanceof RADVisualComponent)
-            ensureComponentIsShown((RADVisualComponent)metacomp);
-        handleLayer.repaint();
-    }
-
     void addComponentToSelection(RADComponent metacomp) {
         addComponentToSelectionImpl(metacomp);
+        repaintSelection();
         updateActivatedNodes();
     }
 
-    void removeComponentFromSelectionImpl(RADComponent metacomp) {
-        selectedComponents.remove(metacomp);
-        handleLayer.repaint();
+    void addComponentsToSelection(RADComponent[] metacomps) {
+        for (int i=0; i < metacomps.length; i++)
+            addComponentToSelectionImpl(metacomps[i]);
+
+        repaintSelection();
+        updateActivatedNodes();
     }
 
     void removeComponentFromSelection(RADComponent metacomp) {
         removeComponentFromSelectionImpl(metacomp);
+        repaintSelection();
         updateActivatedNodes();
-    }
-    
-    void clearSelectionImpl() {
-        selectedComponents.clear();
-        handleLayer.repaint();
     }
 
     public void clearSelection() {
         clearSelectionImpl();
+        repaintSelection();
         updateActivatedNodes();
     }
 
-    boolean isComponentSelected(RADComponent metacomp) {
-        return selectedComponents.contains(metacomp);
+    void addComponentToSelectionImpl(RADComponent metacomp) {
+        if (metacomp != null) {
+            selectedComponents.add(metacomp);
+            if (metacomp instanceof RADVisualComponent)
+                ensureComponentIsShown((RADVisualComponent)metacomp);
+        }
+    }
+
+    void removeComponentFromSelectionImpl(RADComponent metacomp) {
+        selectedComponents.remove(metacomp);
+    }
+
+    void clearSelectionImpl() {
+        selectedComponents.clear();
+    }
+
+    void repaintSelection() {
+        handleLayer.repaint();
     }
 
     private void ensureComponentIsShown(RADVisualComponent metacomp) {
