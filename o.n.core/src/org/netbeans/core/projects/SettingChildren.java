@@ -185,7 +185,7 @@ public final class SettingChildren extends FilterNode.Children {
                     // ignore it, will be handled later
                 }
 
-                switch (val == null ? FileStateManager.FSTATE_UNDEFINED : val.intValue()) {
+                switch (val == null ? -1 : val.intValue()) {
                     case FileStateManager.FSTATE_DEFINED:
                         s = NbBundle.getMessage (SettingChildren.class, "LBL_fstate_defined");
                         break;
@@ -195,8 +195,7 @@ public final class SettingChildren extends FilterNode.Children {
                     case FileStateManager.FSTATE_INHERITED:
                         s = NbBundle.getMessage (SettingChildren.class, "LBL_fstate_inherited");
                         break;
-                    default:
-                        // FileStateManager.FSTATE_UNDEFINED
+                    case FileStateManager.FSTATE_UNDEFINED:
                         s = NbBundle.getMessage (SettingChildren.class, "LBL_fstate_undefined");
                         break;
                 }
@@ -204,7 +203,7 @@ public final class SettingChildren extends FilterNode.Children {
             else {
                 s = super.getShortDescription ();
             }
-            return s;
+            return s == null || s.length () == 0 ? null : s;
         }
     }
 
@@ -251,6 +250,29 @@ public final class SettingChildren extends FilterNode.Children {
 
         public PropertyEditor getPropertyEditor () {
             return new ListImageEditor ();
+        }
+
+        public String getShortDescription () {
+            String s = null;
+            if (primaryFile != null) {
+                Integer val = null;
+                try {
+                    val = (Integer) getValue ();
+                } catch (Exception e) {
+                    // ignore it, will be handled later
+                }
+                switch (val == null ? -1 : val.intValue ()) {
+                    case 0: // session setting
+                        s = NbBundle.getMessage (SettingChildren.class, "LBL_indicator_session");
+                        break; 
+                    case 1: // project opetion
+                        s = NbBundle.getMessage (SettingChildren.class, "LBL_indicator_project");
+                        break; 
+                }
+            } else {
+                s = super.getShortDescription ();
+            }
+            return s == null || s.length () == 0 ? null : s; // no description for empty strings
         }
     }
 

@@ -291,12 +291,16 @@ public class OptionsAction extends CallableSystemAction {
 
                     indicator.setDisplayName (
                         NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Name_Expanded")); //NOI18N
+                    indicator.setShortDescription (
+                        NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Description_Expanded")); //NOI18N
                 }
                 else {
                     if (changeSets) {
                         new_set = new Node.Property [] { indicator };
                         indicator.setDisplayName (
                             NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Name")); //NOI18N
+                        indicator.setShortDescription (
+                            NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Description")); //NOI18N
                     }
                 }
                 
