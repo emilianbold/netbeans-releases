@@ -54,7 +54,6 @@ public class IntroPanel extends javax.swing.JPanel {
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroPanel.class, "IP_TEXT_select_how_to_install_shortcut"));
         menuCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroPanel.class, "ACS_IP_LBL_add_menu_item"));
         toolbarCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroPanel.class, "ACS_IP_LBL_add_toolbar_button"));
-        projectCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroPanel.class, "ACS_IP_LBL_add_to_project"));
         keyboardCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroPanel.class, "ACS_IP_LBL_add_kbd_shortcut"));        
         customizeCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroPanel.class, "ACS_IP_LBL_cust_code_checkbox"));
     }
@@ -70,7 +69,6 @@ public class IntroPanel extends javax.swing.JPanel {
         customizeCheck = new javax.swing.JCheckBox();
         menuCheck = new javax.swing.JCheckBox();
         toolbarCheck = new javax.swing.JCheckBox();
-        projectCheck = new javax.swing.JCheckBox();
         keyboardCheck = new javax.swing.JCheckBox();
         hintsArea = new javax.swing.JTextArea();
 
@@ -81,8 +79,8 @@ public class IntroPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(customizeCheck, gridBagConstraints);
 
         menuCheck.setMnemonic((NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_menu_item_mnem")).charAt(0));
@@ -96,12 +94,12 @@ public class IntroPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(menuCheck, gridBagConstraints);
 
-        toolbarCheck.setMnemonic((NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_toolbar_button_mnem")).charAt(0));
         toolbarCheck.setText(NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_toolbar_button"));
+        toolbarCheck.setMnemonic((NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_toolbar_button_mnem")).charAt(0));
         toolbarCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 someCheckboxClicked(evt);
@@ -111,29 +109,13 @@ public class IntroPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(toolbarCheck, gridBagConstraints);
 
-        projectCheck.setMnemonic((NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_to_project_mnem")).charAt(0)
-        );
-        projectCheck.setText(NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_to_project"));
-        projectCheck.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                someCheckboxClicked(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(projectCheck, gridBagConstraints);
-
+        keyboardCheck.setText(NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_kbd_shortcut"));
         keyboardCheck.setMnemonic((NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_kbd_shortcut_mnem")).charAt(0)
         );
-        keyboardCheck.setText(NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_kbd_shortcut"));
         keyboardCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 someCheckboxClicked(evt);
@@ -143,9 +125,9 @@ public class IntroPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(keyboardCheck, gridBagConstraints);
 
         hintsArea.setBackground(new java.awt.Color(204, 204, 204));
@@ -172,12 +154,11 @@ public class IntroPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_someCheckboxClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextArea hintsArea;
-    private javax.swing.JCheckBox projectCheck;
-    private javax.swing.JCheckBox menuCheck;
-    private javax.swing.JCheckBox keyboardCheck;
-    private javax.swing.JCheckBox toolbarCheck;
     private javax.swing.JCheckBox customizeCheck;
+    private javax.swing.JTextArea hintsArea;
+    private javax.swing.JCheckBox keyboardCheck;
+    private javax.swing.JCheckBox menuCheck;
+    private javax.swing.JCheckBox toolbarCheck;
     // End of variables declaration//GEN-END:variables
 
     public static class IntroWizardPanel implements WizardDescriptor.Panel {
@@ -202,7 +183,6 @@ public class IntroPanel extends javax.swing.JPanel {
         public boolean isValid () {
             return getPanel().menuCheck.isSelected () ||
                    getPanel().toolbarCheck.isSelected () ||
-                   getPanel().projectCheck.isSelected () ||
                    getPanel().keyboardCheck.isSelected ();
         }
 
@@ -236,7 +216,6 @@ public class IntroPanel extends javax.swing.JPanel {
             wiz.putProperty (ShortcutIterator.PROP_SHOW_CUST, getPanel().customizeCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
             wiz.putProperty (ShortcutIterator.PROP_SHOW_MENU, getPanel().menuCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
             wiz.putProperty (ShortcutIterator.PROP_SHOW_TOOL, getPanel().toolbarCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
-            wiz.putProperty (ShortcutIterator.PROP_SHOW_PROJ, getPanel().projectCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
             wiz.putProperty (ShortcutIterator.PROP_SHOW_KEYB, getPanel().keyboardCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
         }
     }

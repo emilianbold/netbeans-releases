@@ -56,15 +56,11 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
     /** type Boolean */
     public static final String PROP_SHOW_TOOL = "wizdata.show.tool"; // NOI18N
     /** type Boolean */
-    public static final String PROP_SHOW_PROJ = "wizdata.show.proj"; // NOI18N
-    /** type Boolean */
     public static final String PROP_SHOW_KEYB = "wizdata.show.keyb"; // NOI18N
     /** type DataFolder */
     public static final String PROP_FOLDER_MENU = "wizdata.folder.menu"; // NOI18N
     /** type DataFolder */
     public static final String PROP_FOLDER_TOOL = "wizdata.folder.tool"; // NOI18N
-    /** type DataFolder */
-    public static final String PROP_FOLDER_PROJ = "wizdata.folder.proj"; // NOI18N
     /** type KeyStroke */
     public static final String PROP_STROKE = "wizdata.stroke"; // NOI18N
 
@@ -79,8 +75,6 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
             new CustomizeScriptPanel.CustomizeScriptWizardPanel (),
             new SelectFolderPanel.SelectFolderWizardPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_menu_to_add_to"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_menu_locn"), DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Menu")).getNodeDelegate (), false, true, PROP_FOLDER_MENU),
             new SelectFolderPanel.SelectFolderWizardPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_toolbar"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_toolbar_locn"), DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Toolbars")).getNodeDelegate (), false, false, PROP_FOLDER_TOOL),
-            // #28214: for now, use Filesystems rather than the active Project tab:
-            new SelectFolderPanel.SelectFolderWizardPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_proj_folder"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_select_project_locn"), RepositoryNodeFactory.getDefault().repository(DataFilter.ALL), true, false, PROP_FOLDER_PROJ),
             new SelectKeyboardShortcutPanel.SelectKeyboardShortcutWizardPanel (),
         };
     }
@@ -94,13 +88,12 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
             NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_cust_script"),
             NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_add_to_menu"),
             NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_add_to_toolbar"),
-            NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_add_to_proj"),
             NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_make_keyboard_shortcut"),
         };
     }
     
     private void dumpContents () {
-        String[] keys = {"wizdata.codeName", "wizdata.contents", "wizdata.show.cust", "wizdata.show.menu", "wizdata.show.tool", "wizdata.show.proj", "wizdata.show.keyb", "wizdata.folder.menu", "wizdata.folder.tool", "wizdata.folder.proj", "wizdata.stroke"}; // NOI18N
+        String[] keys = {"wizdata.codeName", "wizdata.contents", "wizdata.show.cust", "wizdata.show.menu", "wizdata.show.tool", "wizdata.show.keyb", "wizdata.folder.menu", "wizdata.folder.tool", "wizdata.stroke"}; // NOI18N
         System.err.println("TemplateWizard:"); // NOI18N
         for (int i = 0; i < keys.length; i++) {
             System.err.println("\t" + keys[i] + " = " + wiz.getProperty (keys[i])); // NOI18N
@@ -121,12 +114,9 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
         if (showing (PROP_SHOW_TOOL)) {
             create ((DataFolder) wiz.getProperty (PROP_FOLDER_TOOL), null);
         }
-        if (showing (PROP_SHOW_PROJ)) {
-            return Collections.singleton (create ((DataFolder) wiz.getProperty (PROP_FOLDER_PROJ), null));
-        } else {
-            return Collections.EMPTY_SET;
-        }
+        return Collections.EMPTY_SET;
     }
+    
     private DataObject create (DataFolder f, String name) throws IOException {
         final String fname = (name != null) ? name : (String) wiz.getProperty (PROP_CODE_NAME);
         final String contents = (String) wiz.getProperty (PROP_CONTENTS);
@@ -210,8 +200,6 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
         case 4:
             return showing (PROP_SHOW_TOOL);
         case 5:
-            return showing (PROP_SHOW_PROJ);
-        case 6:
             return showing (PROP_SHOW_KEYB);
         default:
             throw new NoSuchElementException ();
