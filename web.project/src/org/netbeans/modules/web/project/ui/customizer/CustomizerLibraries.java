@@ -273,6 +273,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jPanelCompile.setLayout(new java.awt.GridBagLayout());
 
         jPanelCompile.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+        librariesJLabel1.setLabelFor(jTableCpC);
         org.openide.awt.Mnemonics.setLocalizedText(librariesJLabel1, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesC_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -292,6 +293,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             }
         ));
         librariesJScrollPane.setViewportView(jTableCpC);
+        jTableCpC.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerLibraries_JTable"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = 7;
@@ -307,6 +309,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanelCompile.add(jButtonAddArtifactC, gridBagConstraints);
+        jButtonAddArtifactC.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerLibraries_jButtonAddArtifactC"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonAddLibraryC, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_AddLibary_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -314,6 +317,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanelCompile.add(jButtonAddLibraryC, gridBagConstraints);
+        jButtonAddLibraryC.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerLibraries_jButtonAddLibraryC"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonAddJarC, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_AddJar_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -322,6 +326,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         jPanelCompile.add(jButtonAddJarC, gridBagConstraints);
+        jButtonAddJarC.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerLibraries_jButtonAddJarC"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonEditC, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Edit_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -330,6 +335,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         jPanelCompile.add(jButtonEditC, gridBagConstraints);
+        jButtonEditC.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerLibraries_jButtonEditC"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonRemoveC, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Remove_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -338,6 +344,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         jPanelCompile.add(jButtonRemoveC, gridBagConstraints);
+        jButtonRemoveC.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerLibraries_jButtonRemoveC"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonMoveUpC, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_MoveUp_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -346,6 +353,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanelCompile.add(jButtonMoveUpC, gridBagConstraints);
+        jButtonMoveUpC.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerLibraries_jButtonMoveUpC"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonMoveDownC, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_MoveDown_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -355,12 +363,14 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         jPanelCompile.add(jButtonMoveDownC, gridBagConstraints);
+        jButtonMoveDownC.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerLibraries_jButtonMoveDownC"));
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesTab"), jPanelCompile);
 
         jPanelCompileTests.setLayout(new java.awt.GridBagLayout());
 
         jPanelCompileTests.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+        librariesJLabel2.setLabelFor(jListCpCT);
         org.openide.awt.Mnemonics.setLocalizedText(librariesJLabel2, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesCT_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -438,6 +448,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         jPanelRunTests.setLayout(new java.awt.GridBagLayout());
 
         jPanelRunTests.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
+        librariesJLabel4.setLabelFor(jListCpRT);
         org.openide.awt.Mnemonics.setLocalizedText(librariesJLabel4, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_LibrariesRT_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -517,6 +528,8 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         add(jTabbedPane1, gridBagConstraints);
+        jTabbedPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSN_CustomizerLibraries_JTabbedPane"));
+        jTabbedPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustomizerLibraries_JTabbedPane"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxBuildSubprojects, org.openide.util.NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_Build_Subprojects"));
         jCheckBoxBuildSubprojects.setMargin(new java.awt.Insets(0, 0, 0, 0));
