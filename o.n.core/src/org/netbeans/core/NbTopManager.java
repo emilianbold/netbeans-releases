@@ -319,12 +319,21 @@ public abstract class NbTopManager /*extends TopManager*/ {
         Toolkit.getDefaultToolkit().beep();
     }
 
-    public static final class NbURLDisplayer extends org.openide.awt.HtmlBrowser.URLDisplayer {
+    /**
+     * Implementation of URL displayer, which shows documents in the configured web browser.
+     */
+    public static final class NbURLDisplayer extends HtmlBrowser.URLDisplayer {
         /** WWW browser window. */
-        HtmlBrowser.BrowserComponent htmlViewer;
-        public void showURL(URL u) {
-            if (htmlViewer == null) htmlViewer = new NbBrowser ();
-            ((NbBrowser)htmlViewer).showUrl(u);
+        private HtmlBrowser.BrowserComponent htmlViewer;
+        public void showURL(final URL u) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    if (htmlViewer == null) {
+                        htmlViewer = new NbBrowser();
+                    }
+                    ((NbBrowser)htmlViewer).showUrl(u);
+                }
+            });
         }
     }
 
