@@ -201,6 +201,7 @@ public class TopSecurityManager extends SecurityManager {
     static {
         warnedClassesNH.add ("org.netbeans.core.LookupCache"); // NOI18N
         warnedClassesNH.add ("org.netbeans.updater.UpdateTracking"); // NOI18N
+        warnedClassesNH.add("org.netbeans.core.ui.ProductInformationPanel"); // #47429; NOI18N
     }
 
     /* ----------------- private methods ------------- */
