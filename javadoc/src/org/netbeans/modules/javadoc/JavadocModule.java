@@ -23,113 +23,42 @@ import javax.swing.text.Keymap;
 
 import org.openide.util.Utilities;
 import org.openide.src.nodes.FilterFactory;
-// IDE imports ------------------
-
 import org.openide.actions.CutAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.modules.ModuleInstall;
 import org.openide.TopManager;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.filesystems.*;
 import org.openide.loaders.*;
 
-// MODULE imports ---------------
-
-//import com.netbeans.developer.modules.loaders.java.JavaDataObject;
-//import com.netbeans.developer.modules.loaders.java.JavaNode;
 import com.netbeans.developer.modules.javadoc.settings.StdDocletSettings;
 import com.netbeans.developer.modules.javadoc.comments.JavaDocPropertySupportFactory;
 import com.netbeans.developer.modules.javadoc.search.SearchDocAction;
+import com.netbeans.developer.modules.javadoc.search.DocFileSystem;
 
 /** Class for initializing Javadoc module on IDE startup.
 
  @author Petr Hrebejk
 */
-public class JavadocModule implements ModuleInstall {
+public class JavadocModule implements ModuleInstall, java.io.Externalizable {
   
-  private static  Keymap map;
-
+  private int numberOfStarts = 0;
+  
   /** By first install of module in the IDE, check whether standard documentation folder
   * exists. If not creates it.
   */
   public void installed() {
-    // Create Standard Doclet option to get Standard javadoc directory
-    StdDocletSettings sdsTemp = new StdDocletSettings();
-
-
-    // Try to find standard java doc
-
-    File jdkDocsDir = new File ( System.getProperty ("java.home")  + java.io.File.separator + ".." 
-                                 + java.io.File.separator + "docs" + java.io.File.separator + "api" );
-
-    if ( jdkDocsDir.isDirectory() ) {
-      try {
-        File jdkDocsDirCan = new File( jdkDocsDir.getCanonicalPath() );
-        if ( jdkDocsDirCan.isDirectory() ) {
-          LocalFileSystem lfs = new LocalFileSystem( );
-          lfs.setRootDirectory(jdkDocsDirCan);
-          lfs.setHidden( true );
-      
-          String systemName = lfs.getSystemName();
-    
-          if ( TopManager.getDefault().getRepository().findFileSystem( systemName ) == null ) {
-            //System.out.println ( "ADD:" + lfs.getSystemName() );
-            TopManager.getDefault().getRepository().addFileSystem ( lfs );
-            }
-        }
-      }
-      catch ( java.io.IOException ex ) {
-      }
-      catch ( java.beans.PropertyVetoException ex ) {
-      }
-    }
-
-
-    // Try to find netbeans api docs
-
-    File apiDocsDir = new File ( System.getProperty ("netbeans.home")  + java.io.File.separator + "docs" 
-                                 + java.io.File.separator + "open-api" );
-
-    if ( apiDocsDir.isDirectory() ) {
-      try {
-        LocalFileSystem lfs = new LocalFileSystem( );
-        lfs.setRootDirectory(apiDocsDir);
-        lfs.setHidden( true );
-        String systemName = lfs.getSystemName();
-    
-          if ( TopManager.getDefault().getRepository().findFileSystem( systemName ) == null ) {
-            //System.out.println ( "ADD:" + lfs.getSystemName() );
-            TopManager.getDefault().getRepository().addFileSystem ( lfs );    
-            }  
-
-      }
-      catch ( java.io.IOException ex ) {
-      }
-      catch ( java.beans.PropertyVetoException ex ) {
-      }
-    }
-
-
-    // Create default directory for JavaDoc
-
-    File dir = sdsTemp.getDirectory();
-    
-    if ( !dir.isDirectory() ) 
-      dir.mkdirs();
-
     // Install Search Action
 
     try {
       createFirstAction (SearchDocAction.class, 
         DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help") );
-    } catch (Exception e) {
+    } 
+    catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) {
         e.printStackTrace ();
       }
       // ignore failure to install
     }
-
-
 
     restored();
   }
@@ -153,6 +82,19 @@ public class JavadocModule implements ModuleInstall {
   * on DataFolder and JavaDataObject.
   */
   public void restored() {
+    
+    numberOfStarts ++;
+    
+    if ( numberOfStarts < 3 ) {
+      /* 
+       * This works only on the first start when called from
+       * install method or on second start - but only if doesn't
+       * exist the project.basic & project.last file int system
+       * directory. If these files exist on second start mounted
+       * filesystems are overriden by project settings.
+       */
+      installJavadocDirectories();
+    }
       
     // Install the factory for adding JavaDoc property to nodes
     invokeDynamic( "com.netbeans.developer.modules.loaders.java.JavaDataObject",
@@ -164,9 +106,9 @@ public class JavadocModule implements ModuleInstall {
     
     // Assign the Ctrl+F1 to JavaDoc Index Search Action
 
-    map = TopManager.getDefault ().getGlobalKeymap ();
+    Keymap map = TopManager.getDefault ().getGlobalKeymap ();
     try {
-      assign ("C-F1", "com.netbeans.developer.modules.javadoc.search.SearchDocAction");
+      assign ("C-F1", "com.netbeans.developer.modules.javadoc.search.SearchDocAction", map);
     } catch (ClassNotFoundException e) {
       // print and go on
       e.printStackTrace();
@@ -221,7 +163,7 @@ public class JavadocModule implements ModuleInstall {
   * @param key key name
   * @param action name of the action
   */
-  private static void assign (String key, String action) throws ClassNotFoundException {
+  private static void assign (String key, String action, Keymap map) throws ClassNotFoundException {
     KeyStroke str = Utilities.stringToKey (key);
     if (str == null) {
       System.err.println ("Not a valid key: " + key);
@@ -262,11 +204,92 @@ public class JavadocModule implements ModuleInstall {
     catch ( java.lang.reflect.InvocationTargetException e ) {
     }
   }
+  
+  /** Tries to find standard Javadoc directory, open-api javadoc directrory
+   * and directroy for javadoc output and mounts it into javadoc repository
+   */
+  
+  void installJavadocDirectories() {
 
+    // Try to find Java documantation 
+    
+    File jdkDocsDir = new File ( System.getProperty ("java.home")  + java.io.File.separator + ".." 
+                                 + java.io.File.separator + "docs" );
+    mount( jdkDocsDir, true );
+    
+    // Try to find NetBeans open-api documentation
+        
+    File apiDocsDir = new File ( System.getProperty ("netbeans.user")  + java.io.File.separator + "docs" 
+                                 + java.io.File.separator + "openide-api" );
+    mount( apiDocsDir, true );
+    
+    // Create default directory for JavaDoc
+    StdDocletSettings sdsTemp = new StdDocletSettings();
+    File jdOutputDir = sdsTemp.getDirectory();
+    
+    if ( !jdOutputDir.isDirectory() ) 
+      jdOutputDir.mkdirs();
+    mount( jdOutputDir, false );    
+    
+  }
+  
+  
+  /** Method finds out wether directory exists and whether it is
+   *  a searchable javadoc directory if so mounts the directory
+   *  into Javadoc repository
+   */
+  void mount( File root, boolean testSearchability ) {
+
+    
+    if ((root != null) && (root.isDirectory())) {
+      String dirName = root.getAbsolutePath();
+
+      FileSystemCapability.Bean cap = new FileSystemCapability.Bean();
+      cap.setCompile( false );
+      cap.setExecute( false );
+      cap.setDebug( false );
+      cap.setDoc( true );
+
+      LocalFileSystem localFS = new LocalFileSystem( cap );
+      localFS.setHidden( true );
+
+      try {          
+        localFS.setRootDirectory (new File (dirName));
+        Repository r = TopManager.getDefault ().getRepository ();
+
+        if (r.findFileSystem(localFS.getSystemName()) == null) {
+
+          if( !testSearchability ||
+              DocFileSystem.getDocFileObject( localFS ) != null ) {  
+            r.addFileSystem (localFS);
+          }  
+        }
+      } 
+      catch (java.io.IOException ex) {} 
+      catch (java.beans.PropertyVetoException ex) {}
+    }
+  }
+
+  // Implementation of java.io.Externalizable ------------------
+  
+  public void readExternal(final java.io.ObjectInput objectInput ) 
+              throws java.io.IOException, java.lang.ClassNotFoundException {
+    
+    numberOfStarts = objectInput.readInt();
+    
+  }
+  
+  public void writeExternal(final java.io.ObjectOutput objectOutput ) 
+              throws java.io.IOException {
+    
+    objectOutput.writeInt( numberOfStarts );
+  }
 }
 
 /* 
  * Log
+ *  15   Gandalf   1.14        8/13/99  Petr Hrebejk    Initialization of JDoc 
+ *       repository on first and second start added
  *  14   Gandalf   1.13        7/21/99  Petr Hrebejk    Action installation fix
  *  13   Gandalf   1.12        7/20/99  Petr Hrebejk    Action installation 
  *       added
