@@ -110,8 +110,14 @@ class OpenFile extends Object {
       Repository repo2 = TopManager.getDefault ().getRepository ();
       FileSystem exist = repo2.findFileSystem (jfs.getSystemName ());
       if (exist == null) {
-        repo2.addFileSystem (jfs);
-        exist = jfs;
+        if (TopManager.getDefault ().notify (new NotifyDescriptor.Confirmation (SettingsBeanInfo.getString ("MSG_mountArchiveConfirm", f),
+                                                                                SettingsBeanInfo.getString ("LBL_mountArchiveConfirm")))
+          .equals (NotifyDescriptor.OK_OPTION)) {
+          repo2.addFileSystem (jfs);
+          exist = jfs;
+        } else {
+          return null;
+        }
       }
       // The root folder will be displayed in the Explorer:
       return exist.getRoot ();
@@ -143,16 +149,23 @@ class OpenFile extends Object {
       }
     }
     // Not found. For Java files, it is reasonable to mount the package root.
+    String pkg = null;
+    // packageKnown will only be true if
+    // a .java is used and its package decl
+    // indicates a real dir
+    boolean packageKnown = false;
     if (fileNameUpper.endsWith (".JAVA")) {
       // Try to find the package name and then infer a directory to mount.
       BufferedReader rd = null;
-      String pkg = null;
       try {
         rd = new BufferedReader (new InputStreamReader (new FileInputStream (f)));
       scan:
         while (true) {
           String line = rd.readLine ();
-          if (line == null) break;
+          if (line == null) {
+            packageKnown = true; // i.e. valid termination of search, default pkg
+            break;
+          }
           // Will not handle package statements broken across lines, oh well.
           if (line.indexOf ("package") == -1) continue;
           StringTokenizer tok = new StringTokenizer (line, " \t;");
@@ -182,6 +195,7 @@ class OpenFile extends Object {
               }
               if (ok) {
                 pkg = theTok;
+                packageKnown = true;
                 break scan;
               } else {
                 // Keep on looking for valid package statement.
@@ -193,6 +207,7 @@ class OpenFile extends Object {
             } else if (theTok.equals ("{")) {
               // Most likely we can stop if hit opening brace of class def.
               // Usually people leave spaces around it.
+              packageKnown = true; // valid end of search, default pkg
               break scan;
             }
           }
@@ -206,59 +221,94 @@ class OpenFile extends Object {
           TopManager.getDefault ().notifyException (e2);
         }
       }
-      // Now try to go through the package name piece by piece and get the right parent directory.
-      if (pkg == null) pkg = ""; // assume default package
-      String prefix = pkg.replace ('.', File.separatorChar);
-      File dir = f.getParentFile ();
-      if (dir != null) {
-        String pkgtouse = "";
-        while (! pkg.equals ("")) { // [PENDING] check for dir == null
-          int lastdot = pkg.lastIndexOf ('.');
-          String trypkg;
-          String trypart;
-          if (lastdot == -1) {
-            trypkg = "";
-            trypart = pkg;
-          } else {
-            trypkg = pkg.substring (0, lastdot);
-            trypart = pkg.substring (lastdot + 1);
-          }
-          if (dir.getName ().equals (trypart) && dir.getParentFile () != null) {
-            // Worked so far.
-            dir = dir.getParentFile ();
-            pkg = trypkg;
-            if (pkgtouse.equals (""))
-              pkgtouse = trypart;
-            else
-              pkgtouse = trypart + "." + pkgtouse;
-          } else {
-            // No dice.
-            break;
-          }
-        }
-        // Mount it.
-        LocalFileSystem fs = new LocalFileSystem ();
-        try {
-          fs.setRootDirectory (dir);
-        } catch (PropertyVetoException e3) {
-          TopManager.getDefault ().notifyException (e3);
-          return null;
-        } catch (IOException e4) {
-          TopManager.getDefault ().notifyException (e4);
-          return null;
-        }
-        Repository repo = TopManager.getDefault ().getRepository ();
-        if (repo.findFileSystem (fs.getSystemName ()) != null) {
-          TopManager.getDefault ().notify (new NotifyDescriptor.Message (fs.getSystemName () + " was already mounted??"));
-          return null;
-        }
-        repo.addFileSystem (fs);
-        String basename = f.getName ();
-        // [PENDING] handle .JAVA here too
-        return fs.find (pkgtouse, basename.substring (0, basename.lastIndexOf (".java")), "java");
+    }
+    // Now try to go through the package name piece by piece and get the right parent directory.
+    if (pkg == null) {
+      pkg = ""; // assume default package
+    }
+    String prefix = pkg.replace ('.', File.separatorChar);
+    File dir = f.getParentFile ();
+    String pkgtouse = "";
+    while (! pkg.equals ("") && dir != null) {
+      int lastdot = pkg.lastIndexOf ('.');
+      String trypkg;
+      String trypart;
+      if (lastdot == -1) {
+        trypkg = "";
+        trypart = pkg;
+      } else {
+        trypkg = pkg.substring (0, lastdot);
+        trypart = pkg.substring (lastdot + 1);
+      }
+      if (dir.getName ().equals (trypart) && dir.getParentFile () != null) {
+        // Worked so far.
+        dir = dir.getParentFile ();
+        pkg = trypkg;
+        if (pkgtouse.equals (""))
+          pkgtouse = trypart;
+        else
+          pkgtouse = trypart + "." + pkgtouse;
+      } else {
+        // No dice.
+        packageKnown = false;
+        break;
       }
     }
-    return null;
+    // Ask what to mount (if anything). Prompt appropriately with the possible
+    // mount points, as well as the recommended one if there is one (i.e. for valid *.java).
+    File[] dirToMount = new File[] { null };
+    String[] mountPackage = new String[] { null };
+    int pkgLevel = 0;
+    if (! pkgtouse.equals ("")) {
+      int pos = -1;
+      do {
+        pos = pkgtouse.indexOf ('.', pos + 1);
+        pkgLevel++;
+      } while (pos != -1);
+    }
+    if (! packageKnown) pkgLevel = -1;
+    askForMountPoint (f, pkgLevel, dirToMount, mountPackage);
+    if (dirToMount[0] == null) return null;
+    // Mount it.
+    LocalFileSystem fs = new LocalFileSystem ();
+    try {
+      fs.setRootDirectory (dirToMount[0]);
+    } catch (PropertyVetoException e3) {
+      TopManager.getDefault ().notifyException (e3);
+      return null;
+    } catch (IOException e4) {
+      TopManager.getDefault ().notifyException (e4);
+      return null;
+    }
+    Repository repo = TopManager.getDefault ().getRepository ();
+    if (repo.findFileSystem (fs.getSystemName ()) != null) {
+      TopManager.getDefault ().notify (new NotifyDescriptor.Message (fs.getSystemName () + " was already mounted??"));
+      return null;
+    }
+    repo.addFileSystem (fs);
+    return fs.findResource (mountPackage[0].replace ('.', '/') + (mountPackage[0].equals ("") ? "" : "/") + f.getName ());
+  }
+  
+  /** Ask what dir to mount to access a given file.
+  * @param f the file which should be accessible
+  * @param pkgLevel the suggested depth of the package; 0 = default, 1 = single component, 2 = foo.bar, etc.; -1 if no suggested package
+  * @param dirToMount 0th elt will contain the directory to mount (null to cancel the mount)
+  * @param mountPackage 0th elt will contain the name of the package (possibly empty, not null) the file will be in
+  */
+  private static void askForMountPoint (File f, int pkgLevel, File[] dirToMount, String[] mountPackage) {
+    // [PENDING]
+  }
+
+  /** Test run of askForMountPoint. */
+  public static void main (String[] ign) {
+    JFileChooser chooser = new JFileChooser ();
+    chooser.showOpenDialog (null);
+    File f = chooser.getSelectedFile ();
+    int lvl = Integer.parseInt (JOptionPane.showInputDialog ("Level"));
+    File[] mount = new File[] { null };
+    String[] pkg = new String[] { null };
+    askForMountPoint (f, lvl, mount, pkg);
+    System.out.println ("Mount dir: " + mount[0] + " package: " + pkg[0]);
   }
   
 }
