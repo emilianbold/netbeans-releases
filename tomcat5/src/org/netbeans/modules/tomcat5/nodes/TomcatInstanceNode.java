@@ -32,6 +32,7 @@ import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesAction;
 
 import org.netbeans.modules.tomcat5.ide.MonitorSupport;
 import org.openide.actions.PropertiesAction;
+import org.openide.util.HelpCtx;
 
 
 /**
@@ -188,6 +189,10 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         return (DeploymentManager)lkp.lookup(DeploymentManager.class);
     }
 
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx ("org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode"); //NOI18N
+    }
+    
     private String getHome() {
         TomcatManager m = getTomcatManager();
         if (m != null){
@@ -254,6 +259,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     protected Sheet createSheet () {
 	Sheet sheet = super.createSheet ();
         Sheet.Set ssProp = sheet.get (Sheet.PROPERTIES);
+        ssProp.setValue("helpID", "org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode.PropertySheet");// NOI18N
         if (ssProp == null) {
 	    ssProp = Sheet.createPropertiesSet ();
             sheet.put (ssProp);
@@ -392,7 +398,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         ssDebug.setDisplayName(NbBundle.getMessage (TomcatInstanceNode.class, "PROP_debuggerSetName"));  // NOI18N
         ssDebug.setShortDescription(NbBundle.getMessage (TomcatInstanceNode.class, "HINT_debuggerSetName"));  // NOI18N
         
-        ssDebug.setValue("helpID", "tomcat_node_ssProp");// NOI18N
+        ssDebug.setValue("helpID", "org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode.PropertySheet");// NOI18N
 
         p = new PropertySupport.ReadWrite (
                    DEBUGGER_PORT,
@@ -493,7 +499,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
             ssDebug.put(p);  
         }
         sheet.put(ssDebug);
-        
+
         return sheet;
     }
     

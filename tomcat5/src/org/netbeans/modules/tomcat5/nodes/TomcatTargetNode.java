@@ -25,6 +25,7 @@ import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.TomcatModule;
 import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesAction;
 import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesCookie;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -62,7 +63,9 @@ public class TomcatTargetNode extends AbstractNode {
                };        
         }
         
-        
+        public HelpCtx getHelpCtx () {
+            return new HelpCtx ("org.netbeans.modules.tomcat5.nodes.TomcatTargetNode.WebModules"); //NOI18N
+        }
     }
     
     
