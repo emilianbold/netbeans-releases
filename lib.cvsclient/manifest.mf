@@ -4,4 +4,4 @@ OpenIDE-Module: org.netbeans.lib.cvsclient/1
 OpenIDE-Module-Specification-Version: 1.8
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.18
-
+Main-Class: org.netbeans.lib.cvsclient.commandLine.CVSCommand
