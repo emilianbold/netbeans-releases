@@ -595,8 +595,6 @@ public class RADComponent {
   }
 
   class RADPropertyImpl extends Node.Property implements RADProperty {
-//    int count = 0;
-//    java.io.PrintStream ps;
     private PropertyEditor currentPropertyEditor;
     private PropertyDescriptor desc;
     
@@ -667,7 +665,10 @@ public class RADComponent {
         } catch (InvocationTargetException e) { // no problem -> keep null
         }
       }
-      
+
+      if (old == val) return; // no change
+      if ((old != null) && (val != null) && (val.equals (old))) return; // no change
+
       try {
         setPropertyValue (desc, val);
       } catch (IllegalArgumentException e) {  // no problem -> keep null
@@ -714,7 +715,6 @@ public class RADComponent {
       // 2. restore the default property value
       Object def = defaultPropertyValues.get (desc.getName ());
       if (def != null) {
-//        System.out.println ("Restore default value: "+RADPropertyImpl.this.getName ()+ ", : "+def);
         try {
           setValue (def);
         } catch (IllegalAccessException e) {
@@ -759,7 +759,6 @@ public class RADComponent {
       if (defaultEditor != null) {
         editor = new FormPropertyEditor (RADComponent.this, desc.getPropertyType (), RADPropertyImpl.this);
       }
-//System.out.println ("RADComponent::RADPropertyImpl::getPropertyEditor: "+editor);
       return editor;
     }
 
@@ -855,6 +854,9 @@ public class RADComponent {
         }
       }
       
+      if (old == val) return; // no change
+      if ((old != null) && (val != null) && (val.equals (old))) return; // no change
+
       try {
         setPropertyValue (desc, val);
       } catch (IllegalArgumentException e) {  // no problem -> keep null
@@ -1111,6 +1113,9 @@ public class RADComponent {
 
 /*
  * Log
+ *  44   Gandalf   1.43        8/18/99  Ian Formanek    Fixed bug 3475 - When 
+ *       the custom property editor for some properties is cancelled, the setter
+ *       code for this property becomes generated.
  *  43   Gandalf   1.42        8/17/99  Ian Formanek    Fixed work with multiple
  *       property editors
  *  42   Gandalf   1.41        8/16/99  Ian Formanek    Fixed bug 3369 - The 
