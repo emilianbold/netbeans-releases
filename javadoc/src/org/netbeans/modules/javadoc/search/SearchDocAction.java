@@ -58,16 +58,25 @@ public class SearchDocAction extends CallableSystemAction {
   * is not null otherwise the action is ignored.
   */
   public void performAction () {
+
+    if (indexSearch == null) 
+      indexSearch = new IndexSearch ();
+
+    String toFind = GetJavaWord.getCurrentJavaWord();
+
     if (indexSearch != null) 
-      indexSearch.open ();
-    else 
-      (indexSearch = new IndexSearch ()).open ();
+      indexSearch.setTextToFind( toFind );
+      
+    indexSearch.open ();
+    
   }
   
 }
 
 /*
  * Log
+ *  5    Gandalf   1.4         5/27/99  Petr Hrebejk    Crtl+F1 documentation 
+ *       search form editor added
  *  4    Gandalf   1.3         5/26/99  Ian Formanek    Fixed last change
  *  3    Gandalf   1.2         5/26/99  Ian Formanek    touch-ups
  *  2    Gandalf   1.1         5/14/99  Petr Hrebejk    

@@ -37,6 +37,8 @@ public class IndexSearch extends TopComponent {
   /** Search engine */
   private SearchEngine searchEngine = null;
 
+  private String quickFind;
+
   private static ResourceBundle bundle = NbBundle.getBundle(IndexSearch.class);
 
   /** Button titles */
@@ -193,6 +195,26 @@ public class IndexSearch extends TopComponent {
         resultsList.revalidate();    
       }
     } );
+  }
+
+  void setTextToFind( String toFind ) {
+    if ( toFind != null ) {
+      quickFind = toFind; 
+    }
+  }
+
+
+  public void open() {
+    super.open();
+
+    if ( quickFind != null ) {
+      searchComboBox.getEditor().setItem( quickFind ); 
+      if ( searchEngine == null ) {
+        searchButtonActionPerformed( null );
+      }
+    }
+
+    quickFind = null;
   }
 
   private class SearchEngine {
