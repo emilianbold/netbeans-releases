@@ -65,6 +65,9 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     this (ch, NbTopManager.getDefaultRepository (), filter);
   }
 
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (DataSystem.class);
+  }
 
   /** Factory for DataSystem instances */
   public static DataSystem getDataSystem(DataFilter filter) {
@@ -219,6 +222,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
 
 /*
  * Log
+ *  18   Gandalf   1.17        7/8/99   Jesse Glick     Context help.
  *  17   Gandalf   1.16        6/9/99   Ian Formanek    ToolsAction
  *  16   Gandalf   1.15        6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

@@ -19,6 +19,7 @@ import java.util.ResourceBundle;
 import org.openide.TopManager;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -40,7 +41,8 @@ class NbAuthenticator extends java.net.Authenticator {
     java.net.InetAddress site = getRequestingSite();
     String host = site == null ? "" : site.getHostName();
 
-    DialogDescriptor dd = new DialogDescriptor( passwordPanel, host == null ? bundle.getString( "CTL_PasswordProtected" ) : host );   
+    DialogDescriptor dd = new DialogDescriptor( passwordPanel, host == null ? bundle.getString( "CTL_PasswordProtected" ) : host );
+    dd.setHelpCtx (new HelpCtx (NbAuthenticator.class.getName () + ".getPasswordAuthentication"));
     passwordPanel.setPrompt( getRequestingPrompt() );
     java.awt.Dialog dialog = TopManager.getDefault().createDialog( dd );
     dialog.show (); 

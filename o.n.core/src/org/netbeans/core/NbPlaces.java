@@ -20,6 +20,7 @@ import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.util.NotImplementedException;
 import org.openide.nodes.*;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import com.netbeans.developer.impl.workspace.WorkspacePoolContext;
 import com.netbeans.developer.impl.execution.ExecutionEngine;
@@ -39,8 +40,16 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
   /** session node */
   private static AbstractNode session;
 
+  private static class SessionNode extends AbstractNode {
+    SessionNode () {
+      super (new Children.Array ());
+    }
+    public HelpCtx getHelpCtx () {
+      return new HelpCtx (SessionNode.class);
+    }
+  }
   static {
-    session = new AbstractNode (new Children.Array ());
+    session = new SessionNode ();
     session.setName (NbBundle.getBundle (NbPlaces.class).getString ("CTL_Session_Settings"));
     session.setIconBase (SESSION_SETTINGS_ICON_BASE);
   }
@@ -245,6 +254,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  23   Gandalf   1.22        7/8/99   Jesse Glick     Context help.
 *  22   Gandalf   1.21        6/28/99  Jaroslav Tulach Debugger types are like 
 *       Executors
 *  21   Gandalf   1.20        6/8/99   Ian Formanek    ---- Package Change To 

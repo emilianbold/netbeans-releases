@@ -28,6 +28,7 @@ import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.enum.ArrayEnumeration;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.actions.ReorderAction;
@@ -79,6 +80,10 @@ public final class LoaderPoolNode extends AbstractNode {
     setIconBase(LOADER_POOL_ICON_BASE);
 
     getCookieSet ().add (new Index ());
+  }
+
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (LoaderPoolNode.class);
   }
 
   /** Getter for set of actions that should be present in the
@@ -562,6 +567,7 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  23   Gandalf   1.22        7/8/99   Jesse Glick     Context help.
 *  22   Gandalf   1.21        6/9/99   Ian Formanek    ToolsAction
 *  21   Gandalf   1.20        6/8/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----

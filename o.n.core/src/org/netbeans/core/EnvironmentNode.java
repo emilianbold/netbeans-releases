@@ -21,6 +21,7 @@ import org.openide.actions.ToolsAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import com.netbeans.developer.impl.actions.*;
 
@@ -49,6 +50,10 @@ final class EnvironmentNode extends AbstractNode {
     setName(NbBundle.getBundle(EnvironmentNode.class).
                    getString("CTL_Environment_name"));
     setIconBase(EN_ICON_BASE);
+  }
+
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (EnvironmentNode.class);
   }
 
   /** Method to add an node to the environment.
@@ -89,6 +94,7 @@ final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  17   Gandalf   1.16        7/8/99   Jesse Glick     Context help.
  *  16   Gandalf   1.15        6/9/99   Ian Formanek    ToolsAction
  *  15   Gandalf   1.14        6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

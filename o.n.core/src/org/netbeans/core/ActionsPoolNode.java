@@ -22,6 +22,7 @@ import org.openide.actions.*;
 import org.openide.loaders.DataFolder;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** The node for the actions pool folder representation.
@@ -51,6 +52,10 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
     super.setShortDescription(NbBundle.getBundle (ActionsPoolNode.class).getString("CTL_Actions_hint"));
 
     super.setIconBase ("/com/netbeans/developer/impl/resources/actions");
+  }
+
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (ActionsPoolNode.class);
   }
 
   /** Support for new types that can be created in this node.
@@ -189,6 +194,7 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
 
 /*
 * Log
+*  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.
 *  2    Gandalf   1.1         6/8/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
 *  1    Gandalf   1.0         6/8/99   Ian Formanek    
