@@ -59,7 +59,7 @@ public class TargetExecutor implements Runnable {
     /** targets may be null to indicate default target */
     public TargetExecutor (AntProjectCookie pcookie, String[] targets) {
         this.pcookie = pcookie;
-        targetNames = ((targets == null) ? null : Arrays.asList (targets));
+        targetNames = ((targets == null) ? null : Arrays.asList((Object[]) targets));
     }
   
     public void setVerbosity (int v) {
@@ -250,10 +250,12 @@ public class TargetExecutor implements Runnable {
         Thread.currentThread().setPriority((Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) / 2);
         
         InputStream in = null;
-        try {
-            in = new ReaderInputStream(io.getIn());
-        } catch (IOException e) {
-            AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+        if (outputStream == null) { // #43043
+            try {
+                in = new ReaderInputStream(io.getIn());
+            } catch (IOException e) {
+                AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+            }
         }
         
         ok = AntBridge.getInterface().run(buildFile, pcookie.getFileObject(), targetNames,
