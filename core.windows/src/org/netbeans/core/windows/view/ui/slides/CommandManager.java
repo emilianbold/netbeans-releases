@@ -295,11 +295,16 @@ final class CommandManager implements ActionListener {
             slideOut(false, false);
         } else {
             // keep title text up to date
-            String freshText = slideBar.getModel().getTab(curSlidedIndex).getText();
-            TabDataModel slidedModel = getSlidedTabContainer().getModel();
-            String slidedText = slidedModel.getTab(0).getText();
-            if (slidedText == null || !slidedText.equals(freshText)) {
-                slidedModel.setText(0, freshText);
+            SlideBarDataModel model = slideBar.getModel();
+            // #46319 - during close, curSlidedIndex may become out of sync,
+            // in which case do nothing
+            if (curSlidedIndex < model.size()) {
+                String freshText = model.getTab(curSlidedIndex).getText();
+                TabDataModel slidedModel = getSlidedTabContainer().getModel();
+                String slidedText = slidedModel.getTab(0).getText();
+                if (slidedText == null || !slidedText.equals(freshText)) {
+                    slidedModel.setText(0, freshText);
+                }
             }
         }
     }
