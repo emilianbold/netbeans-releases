@@ -43,9 +43,11 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Element;
 
-
 /**
- * DOCDO
+ * Able to import given Eclipse projects in separate thread with providing
+ * information about current state(progress). Converts eclipse projects and
+ * their required projects into NetBeans ones and stores them into the given
+ * destination.
  *
  * @author mkrauskopf
  */
@@ -70,6 +72,10 @@ final class Importer {
         this.nbProjects = new J2SEProject[eclProjects.size()];
     }
     
+    /**
+     * Starts importing process in separated thread. Use getters to obtain
+     * information about current progress.
+     */
     void startImporting() {
         nbPlfs = JavaPlatformManager.getDefault().getInstalledPlatforms();
         JavaPlatform defPlf = JavaPlatformManager.getDefault().getDefaultPlatform();
@@ -98,18 +104,30 @@ final class Importer {
         });
     }
     
+    /**
+     * Returns number of already processed projects.
+     */
     int getNOfProcessed() {
         return nOfProcessed;
     }
-    
+
+    /**
+     * Returns localized message describing current importer activity.
+     */
     String getProgressInfo() {
         return progressInfo;
     }
     
+    /**
+     * Returns whether importer has finished.
+     */
     boolean isDone() {
         return done;
     }
     
+    /**
+     * Gets imported projects. Call after the importing <code>isDone()</code>.
+     */
     J2SEProject[] getProjects() {
         return nbProjects;
     }

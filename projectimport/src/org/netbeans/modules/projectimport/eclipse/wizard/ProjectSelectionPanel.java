@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.projectimport.eclipse.wizard;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
