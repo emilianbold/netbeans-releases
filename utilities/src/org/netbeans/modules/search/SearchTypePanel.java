@@ -75,11 +75,8 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
     /** Creates new form <code>SearchTypePanel</code>. */
     public SearchTypePanel(SearchType searchType) {
         initComponents();
-        
-        // Accessiblity
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_DIALOG_DESC")); // NOI18N        
-        //-
-        
+        initAccessibility();
+                
         this.searchType = searchType;
 
         try {
@@ -120,6 +117,13 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         setName(createName());
     }
 
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_DIALOG_DESC")); // NOI18N        
+        restoreButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_TEXT_BUTTON_RESTORE")); // NOI18N        
+        saveButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_TEXT_BUTTON_SAVE_AS")); // NOI18N        
+        applyCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_TEXT_BUTTON_APPLY")); // NOI18N        
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -307,11 +311,13 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         nameLab.setDisplayedMnemonic(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_LABEL_NAME_MNEM").charAt(0)); // NOI18N
         
         pane.add(nameLab, BorderLayout.WEST); 
+        pane.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_SaveAsPanel")); // NOI18N
         
         JTextField textField;
         if (lastSavedName != null) {
             textField = new JTextField(lastSavedName, 20);
         } else textField = new JTextField(20);
+        textField.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_TEXT_LABEL_SELECT")); // NOI18N
         
         nameLab.setLabelFor(textField);
         pane.add(textField, BorderLayout.CENTER);
@@ -359,6 +365,7 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
     private void restoreCriterion() {
         JPanel pane = new JPanel();
         pane.setLayout(new BorderLayout(12,0));
+        pane.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchTypePanel.class).getString("ACS_RestorePanel")); // NOI18N
         
         JLabel resLabel = new JLabel(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_LABEL_SELECT")); // NOI18N
         resLabel.setDisplayedMnemonic(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_LABEL_SELECT_MNEM").charAt(0)); // NOI18N        

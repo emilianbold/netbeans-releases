@@ -111,7 +111,7 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
             orderedSearchTypePanels.add(searchTypePanel);
         }
         
-        initComponents();
+        initComponents();	
 
         // For each search type create one tab as its search type panel.
         it = orderedSearchTypePanels.iterator();
@@ -128,13 +128,15 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         
         setName(NbBundle.getBundle(SearchPanel.class).getString("TEXT_TITLE_CUSTOMIZE")); // NOI18N
 
-        okButton = new JButton(NbBundle.getBundle(SearchPanel.class).getString("TEXT_BUTTON_SEARCH")); // NOI18N
+        okButton = new JButton(NbBundle.getBundle(SearchPanel.class).getString("TEXT_BUTTON_SEARCH")); // NOI18N         
         okButton.setEnabled(isCustomized());
 
         cancelButton = new JButton(NbBundle.getBundle(SearchPanel.class).getString("TEXT_BUTTON_CANCEL")); // NOI18N
 
         Object options[] = new Object[] {okButton, cancelButton};
 
+        initAccessibility();
+        
         // Creates representing dialog descriptor.
         dialogDescriptor = new DialogDescriptor(
             this, 
@@ -155,6 +157,14 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         });
     }
 
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchPanel.class).getString("ACS_SearchPanel")); // NOI18N         
+        tabbedPane.getAccessibleContext().setAccessibleName(NbBundle.getBundle(SearchPanel.class).getString("ACSN_Tabs")); // NOI18N         
+        tabbedPane.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchPanel.class).getString("ACSD_Tabs")); // NOI18N         
+        okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchPanel.class).getString("ACS_TEXT_BUTTON_SEARCH")); // NOI18N         
+        cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SearchPanel.class).getString("ACS_TEXT_BUTTON_CANCEL")); // NOI18N         
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
