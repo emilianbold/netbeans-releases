@@ -53,6 +53,8 @@ public class NewConnectionPanel extends JPanel {
             // Driver name field
 
             label = new JLabel(bundle.getString("NewConnectionDriverName")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("NewConnectionDriverName_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NewConnectionDriverNameA11yDesc"));
             constr.anchor = GridBagConstraints.WEST;
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
             constr.gridx = 0;
@@ -67,6 +69,9 @@ public class NewConnectionPanel extends JPanel {
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
             drvfield = new JComboBox(drivervec);
             drvfield.setEditable(false);
+            drvfield.setToolTipText(bundle.getString("ACS_NewConnectionDriverNameComboBoxA11yDesc"));
+            drvfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NewConnectionDriverNameComboBoxA11yName"));
+            label.setLabelFor(drvfield);
             drvfield.addActionListener(new ActionListener() {
                public void actionPerformed(ActionEvent e) {
                    JComboBox combo = (JComboBox)e.getSource();
@@ -90,6 +95,8 @@ public class NewConnectionPanel extends JPanel {
             // Driver class field
 
             label = new JLabel(bundle.getString("NewConnectionDriverClass")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("NewConnectionDriverClass_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NewConnectionDriverClassA11yDesc"));
             constr.anchor = GridBagConstraints.WEST;
             constr.weightx = 0.0;
             constr.fill = GridBagConstraints.NONE;
@@ -107,12 +114,17 @@ public class NewConnectionPanel extends JPanel {
             drvClassField = new JTextField(35);
             drvClassField.setText(xcon.getDriver());
             drvClassField.setEditable(false);
+            drvClassField.setToolTipText(bundle.getString("ACS_NewConnectionDriverClassComboBoxA11yDesc"));
+            drvClassField.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NewConnectionDriverClassComboBoxA11yName"));
+            label.setLabelFor(drvClassField);
             layout.setConstraints(drvClassField, constr);
             add(drvClassField);
 
             // Database field
 
             label = new JLabel(bundle.getString("NewConnectionDatabaseURL")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("NewConnectionDatabaseURL_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NewConnectionDatabaseURLA11yDesc"));
             constr.anchor = GridBagConstraints.WEST;
             constr.weightx = 0.0;
             constr.fill = GridBagConstraints.NONE;
@@ -129,6 +141,9 @@ public class NewConnectionPanel extends JPanel {
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
             dbfield = new JTextField(35);
             dbfield.setText(xcon.getDatabase());
+            dbfield.setToolTipText(bundle.getString("ACS_NewConnectionDatabaseURLTextFieldA11yDesc"));
+            dbfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NewConnectionDatabaseURLTextFieldA11yName"));
+            label.setLabelFor(dbfield);
             layout.setConstraints(dbfield, constr);
             add(dbfield);
 
@@ -149,6 +164,8 @@ public class NewConnectionPanel extends JPanel {
             // Username field
 
             label = new JLabel(bundle.getString("NewConnectionUserName")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("NewConnectionUserName_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NewConnectionUserNameA11yDesc"));
             constr.anchor = GridBagConstraints.WEST;
             constr.weightx = 0.0;
             constr.fill = GridBagConstraints.NONE;
@@ -165,12 +182,17 @@ public class NewConnectionPanel extends JPanel {
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
             userfield = new JTextField(35);
             userfield.setText(xcon.getUser());
+            userfield.setToolTipText(bundle.getString("ACS_NewConnectionUserNameTextFieldA11yDesc"));
+            userfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NewConnectionUserNameTextFieldA11yName"));
+            label.setLabelFor(userfield);
             layout.setConstraints(userfield, constr);
             add(userfield);
 
             // Password field
 
             label = new JLabel(bundle.getString("NewConnectionPassword")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("NewConnectionPassword_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_NewConnectionPasswordA11yDesc"));
             constr.anchor = GridBagConstraints.WEST;
             constr.weightx = 0.0;
             constr.fill = GridBagConstraints.NONE;
@@ -186,12 +208,17 @@ public class NewConnectionPanel extends JPanel {
             constr.gridy = 4;
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
             pwdfield = new JPasswordField(35);
+            pwdfield.setToolTipText(bundle.getString("ACS_NewConnectionPasswordTextFieldA11yDesc"));
+            pwdfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_NewConnectionPasswordTextFieldA11yName"));
+            label.setLabelFor(pwdfield);
             layout.setConstraints(pwdfield, constr);
             add(pwdfield);
 
             // Remember password checkbox
 
             rememberbox = new JCheckBox(bundle.getString("NewConnectionRememberPassword")); //NOI18N
+            rememberbox.setMnemonic(bundle.getString("NewConnectionRememberPassword_Mnemonic").charAt(0));
+            rememberbox.setToolTipText(bundle.getString("ACS_NewConnectionRememberPasswordA11yDesc"));
             constr.anchor = GridBagConstraints.WEST;
             constr.weightx = 0.0;
             constr.fill = GridBagConstraints.NONE;

@@ -41,6 +41,8 @@ public class SchemaPanel extends JPanel {
             ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
             label = new JLabel(bundle.getString("SchemaDialogText")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("SchemaDialogText_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_SchemaDialogTextA11yDesc"));
             con.gridy = 1;
             con.insets = new Insets(12, 12, 0, 11);
             con.anchor = GridBagConstraints.WEST;
@@ -53,6 +55,9 @@ public class SchemaPanel extends JPanel {
             con.insets = new Insets(12, 12, 0, 11);
             con.weightx = 1.0;
             schemas = new JComboBox();
+            schemas.setToolTipText(bundle.getString("ACS_SchemaDialogTextComboBoxA11yDesc"));
+            schemas.getAccessibleContext().setAccessibleName(bundle.getString("ACS_SchemaDialogTextComboBoxA11yName"));
+            label.setLabelFor(schemas);
             setSchemas(items, user);
             layout.setConstraints(schemas, con);
             add(schemas);
@@ -62,7 +67,12 @@ public class SchemaPanel extends JPanel {
             comment.setEditable(false);
             comment.setBackground(getBackground());
             comment.setWrapStyleWord(true);
-            comment.setFont(label.getFont());
+            comment.setFont(javax.swing.UIManager.getFont("Label.font"));  // NOI18N
+            comment.setEnabled(false);
+            comment.setOpaque(false);
+            comment.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));  // NOI18N
+            comment.getAccessibleContext().setAccessibleName(bundle.getString("ACS_SchemaPanelCommentA11yName"));
+            comment.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_SchemaPanelCommentA11yDesc"));
 
             String commentMsg = bundle.getString("MSG_SchemaPanelComment"); //NOI18N
             comment.setText(commentMsg);

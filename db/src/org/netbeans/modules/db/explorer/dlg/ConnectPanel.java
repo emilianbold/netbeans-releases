@@ -41,6 +41,8 @@ public class ConnectPanel extends JPanel {
             // Username field
 
             label = new JLabel(bundle.getString("ConnectDialogUserName")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("ConnectDialogUserName_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ConnectDialogUserNameA11yDesc"));
             con.anchor = GridBagConstraints.WEST;
             con.weightx = 0.0;
             con.fill = GridBagConstraints.NONE;
@@ -57,12 +59,17 @@ public class ConnectPanel extends JPanel {
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             userfield = new JTextField(35);
             userfield.setText(loginname);
+            userfield.setToolTipText(bundle.getString("ACS_ConnectDialogUserNameTextFieldA11yDesc"));
+            userfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_ConnectDialogUserNameTextFieldA11yName"));
+            label.setLabelFor(userfield);
             layout.setConstraints(userfield, con);
             add(userfield);
 
             // Password field
 
             label = new JLabel(bundle.getString("ConnectDialogPassword")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("ConnectDialogPassword_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ConnectDialogPasswordA11yDesc"));
             con.anchor = GridBagConstraints.WEST;
             con.weightx = 0.0;
             con.fill = GridBagConstraints.NONE;
@@ -78,12 +85,17 @@ public class ConnectPanel extends JPanel {
             con.gridy = 3;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             pwdfield = new JPasswordField(35);
+            pwdfield.setToolTipText(bundle.getString("ACS_ConnectDialogPasswordTextFieldA11yDesc"));
+            pwdfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_ConnectDialogPasswordTextFieldA11yName"));
+            label.setLabelFor(pwdfield);
             layout.setConstraints(pwdfield, con);
             add(pwdfield);
 
             // Remember password checkbox
 
             rememberbox = new JCheckBox(bundle.getString("ConnectDialogRememberPassword")); //NOI18N
+            rememberbox.setMnemonic(bundle.getString("ConnectDialogRememberPassword_Mnemonic").charAt(0));
+            rememberbox.setToolTipText(bundle.getString("ACS_ConnectDialogRememberPasswordA11yDesc"));
             con.anchor = GridBagConstraints.WEST;
             con.weightx = 0.0;
             con.fill = GridBagConstraints.NONE;

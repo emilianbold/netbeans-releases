@@ -49,6 +49,8 @@ public class AddIndexDialog {
             // Index name
 
             JLabel label = new JLabel(bundle.getString("AddIndexName")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("AddIndexName_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddIndexNameA11yDesc"));
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
@@ -64,12 +66,16 @@ public class AddIndexDialog {
             con.gridy = 0;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             namefld = new JTextField(35);
+            namefld.setToolTipText(bundle.getString("ACS_AddIndexNameTextFieldA11yDesc"));
+            namefld.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddIndexNameTextFieldA11yName"));
+            label.setLabelFor(namefld);
             layout.setConstraints(namefld, con);
             pane.add(namefld);
 
             // Unique/Non-unique
 
             JLabel label_uq = new JLabel(bundle.getString("AddUniqueIndex")); //NOI18N
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddUniqueIndexA11yDesc"));
             con.weightx = 0.0;
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -84,12 +90,16 @@ public class AddIndexDialog {
             con.gridy = 1;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             cbx_uq = new JCheckBox(bundle.getString("Unique"));
+            cbx_uq.setMnemonic(bundle.getString("Unique_Mnemonic").charAt(0));
+            cbx_uq.setToolTipText(bundle.getString("ACS_UniqueA11yDesc"));
+            label.setLabelFor(cbx_uq);
             layout.setConstraints(cbx_uq, con);
             pane.add(cbx_uq);
 
             // Items list title
 
             label = new JLabel(bundle.getString("AddIndexLabel")); //NOI18N
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddIndexLabelA11yDesc"));
             con.weightx = 0.0;
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -102,6 +112,7 @@ public class AddIndexDialog {
             // Items list
 
             JPanel subpane = new JPanel();
+            label.setLabelFor(subpane);
             int colcount = columns.size();
             colcount = (colcount%2==0?colcount/2:colcount/2+1);
             GridLayout sublayout = new GridLayout(colcount,2);
@@ -114,6 +125,7 @@ public class AddIndexDialog {
                 String colname = (String)iter.next();
                 JCheckBox cbx = new JCheckBox(colname);
                 cbx.setName(colname);
+                cbx.setToolTipText(colname);
                 cbx.addActionListener(cbxlistener);
                 subpane.add(cbx);
             }

@@ -91,6 +91,8 @@ public class DataViewWindow extends TopComponent {
             queryarea.setLineWrap(true);
             queryarea.setWrapStyleWord(true);
             queryarea.setDropTarget(new DropTarget(queryarea, new ViewDropTarget()));
+            queryarea.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTextAreaA11yName"));
+            queryarea.setToolTipText(bundle.getString("ACS_DataViewTextAreaA11yDesc"));
             JScrollPane scrollpane = new JScrollPane(queryarea);
             sublayout.setConstraints(scrollpane, subcon);
             subpane.add(scrollpane);
@@ -105,6 +107,8 @@ public class DataViewWindow extends TopComponent {
             subcon.insets = new java.awt.Insets (0, 0, 5, 5);
             subcon.anchor = GridBagConstraints.SOUTH;
             rcmdscombo = new JComboBox(new ComboModel());
+            rcmdscombo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewComboBoxA11yName"));
+            rcmdscombo.setToolTipText(bundle.getString("ACS_DataViewComboBoxA11yDesc"));
             sublayout.setConstraints(rcmdscombo, subcon);
             subpane.add(rcmdscombo);
             rcmdscombo.addActionListener(new ActionListener() {
@@ -126,6 +130,8 @@ public class DataViewWindow extends TopComponent {
             subcon.fill = GridBagConstraints.HORIZONTAL;
             subcon.anchor = GridBagConstraints.SOUTH;
             JButton fetchbtn = new JButton(bundle.getString("ExecuteButton")); //NOI18N
+            fetchbtn.setToolTipText(bundle.getString("ACS_ExecuteButtonA11yDesc"));
+            fetchbtn.setMnemonic(bundle.getString("ExecuteButton_Mnemonic").charAt(0));
             sublayout.setConstraints(fetchbtn, subcon);
             subpane.add(fetchbtn);
             fetchbtn.addActionListener(new ActionListener() {
@@ -137,6 +143,8 @@ public class DataViewWindow extends TopComponent {
             // Table with results
             //      TableSorter sorter = new TableSorter();
             jtable = new JTable(dbadaptor/*sorter*/);
+            jtable.getAccessibleContext().setAccessibleName(bundle.getString("ACS_DataViewTableA11yName"));
+            jtable.setToolTipText(bundle.getString("ACS_DataViewTableA11yDesc"));
             jtable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             //    	sorter.addMouseListenerToHeaderInTable(table);
             scrollpane = new JScrollPane(jtable);

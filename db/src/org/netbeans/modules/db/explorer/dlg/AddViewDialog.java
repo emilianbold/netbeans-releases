@@ -50,6 +50,8 @@ public class AddViewDialog {
             // Index name
 
             JLabel label = new JLabel(bundle.getString("AddViewName")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("AddViewName_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddViewNameA11yDesc"));
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
@@ -65,12 +67,17 @@ public class AddViewDialog {
             con.gridy = 0;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             namefld = new JTextField(35);
+            namefld.setToolTipText(bundle.getString("ACS_AddViewNameTextFieldA11yDesc"));
+            namefld.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddViewNameTextFieldA11yName"));
+            label.setLabelFor(namefld);
             layout.setConstraints(namefld, con);
             pane.add(namefld);
 
             // Items list title
 
             label = new JLabel(bundle.getString("AddViewLabel")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("AddViewLabel_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddViewLabelA11yDesc"));
             con.weightx = 0.0;
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -83,6 +90,9 @@ public class AddViewDialog {
             // Editor list
 
             tarea = new JTextArea(5,50);
+            tarea.setToolTipText(bundle.getString("ACS_AddViewTextAreaA11yDesc"));
+            tarea.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddViewTextAreaA11yName"));
+            label.setLabelFor(tarea);
 
             con.weightx = 1.0;
             con.weighty = 1.0;

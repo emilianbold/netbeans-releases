@@ -88,6 +88,8 @@ public class CreateTableDialog {
             // Table name field
 
             label = new JLabel(bundle.getString("CreateTableName")); // NOI18N
+            label.setDisplayedMnemonic(bundle.getString("CreateTableName_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableNameA11yDesc"));
             constr.anchor = GridBagConstraints.WEST;
             constr.weightx = 0.0;
             constr.weighty = 0.0;
@@ -105,12 +107,17 @@ public class CreateTableDialog {
             constr.gridy = 0;
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
             dbnamefield = new JTextField(bundle.getString("CreateTableUntitledName"), 50); // NOI18N
+            dbnamefield.setToolTipText(bundle.getString("ACS_CreateTableNameTextFieldA11yDesc"));
+            dbnamefield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CreateTableNameTextFieldA11yName"));
+            label.setLabelFor(dbnamefield);
             layout.setConstraints(dbnamefield, constr);
             pane.add(dbnamefield);
 
             // Table owner combo
 
             label = new JLabel(bundle.getString("CreateTableOwner")); // NOI18N
+            label.setDisplayedMnemonic(bundle.getString("CreateTableOwner_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableOwnerA11yDesc"));
             constr.anchor = GridBagConstraints.WEST;
             constr.weightx = 0.0;
             constr.weighty = 0.0;
@@ -136,6 +143,9 @@ public class CreateTableDialog {
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
             ownercombo = new JComboBox(users);
             ownercombo.setSelectedIndex(0);
+            ownercombo.setToolTipText(bundle.getString("ACS_CreateTableOwnerComboBoxA11yDesc"));
+            ownercombo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CreateTableOwnerComboBoxA11yName"));
+            label.setLabelFor(ownercombo);
             layout.setConstraints(ownercombo, constr);
             pane.add(ownercombo);
 
@@ -151,6 +161,8 @@ public class CreateTableDialog {
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
             table = new DataTable(new DataModel());
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            table.setToolTipText(bundle.getString("ACS_CreateTableColumnTableA11yDesc"));
+            table.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CreateTableColumnTableA11yName"));
             JScrollPane scrollpane = new JScrollPane(table);
             scrollpane.setBorder(new BevelBorder(BevelBorder.LOWERED));
             scrollpane.setPreferredSize(new Dimension(300,150));
@@ -193,6 +205,8 @@ public class CreateTableDialog {
             // Button add column
 
             addbtn = new JButton(bundle.getString("CreateTableAddButtonTitle")); // NOI18N
+            addbtn.setMnemonic(bundle.getString("CreateTableAddButtonTitle_Mnemonic").charAt(0));
+            addbtn.setToolTipText(bundle.getString("ACS_CreateTableAddButtonTitleA11yDesc"));
             btnpane.add(addbtn);
             addbtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
@@ -206,6 +220,8 @@ public class CreateTableDialog {
             // Button delete column
 
             delbtn = new JButton(bundle.getString("CreateTableRemoveButtonTitle")); // NOI18N
+            delbtn.setMnemonic(bundle.getString("CreateTableRemoveButtonTitle_Mnemonic").charAt(0));
+            delbtn.setToolTipText(bundle.getString("ACS_CreateTableRemoveButtonTitleA11yDesc"));
             btnpane.add(delbtn);
             delbtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {

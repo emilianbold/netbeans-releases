@@ -70,6 +70,8 @@ public class AddTableColumnDialog {
             // Column name
 
             label = new JLabel(bundle.getString("AddTableColumnName")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("AddTableColumnName_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnNameA11yDesc"));
             con = new GridBagConstraints ();
             con.gridx = 0;
             con.gridy = 0;
@@ -93,6 +95,9 @@ public class AddTableColumnDialog {
             colnamefield = new JTextField(35);
             colnamefield.setName(ColumnItem.NAME);
             colnamefield.addFocusListener(fldlistener);
+            colnamefield.setToolTipText(bundle.getString("ACS_AddTableColumnNameTextFieldA11yDesc"));
+            colnamefield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddTableColumnNameTextFieldA11yName"));
+            label.setLabelFor(colnamefield);
             pane.add(colnamefield, con);
 
             // Column type
@@ -111,6 +116,8 @@ public class AddTableColumnDialog {
             dmodel.addRow(item);
 
             label = new JLabel(bundle.getString("AddTableColumnType")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("AddTableColumnType_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnTypeA11yDesc"));
             con = new GridBagConstraints ();
             con.gridx = 0;
             con.gridy = 1;
@@ -134,11 +141,16 @@ public class AddTableColumnDialog {
             coltypecombo = new JComboBox(ttab);
             coltypecombo.addActionListener(new ComboBoxListener(dmodel));
             coltypecombo.setName(ColumnItem.TYPE);
+            coltypecombo.setToolTipText(bundle.getString("ACS_AddTableColumnTypeComboBoxA11yDesc"));
+            coltypecombo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddTableColumnTypeComboBoxA11yName"));
+            label.setLabelFor(coltypecombo);
             pane.add(coltypecombo, con);
 
             // Column size
 
             label = new JLabel(bundle.getString("AddTableColumnSize")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("AddTableColumnSize_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnSizeA11yDesc"));
             con = new GridBagConstraints ();
             con.gridx = 0;
             con.gridy = 2;
@@ -162,11 +174,16 @@ public class AddTableColumnDialog {
             colsizefield = new ValidableTextField(new TextFieldValidator.integer());
             colsizefield.setName(ColumnItem.SIZE);
             colsizefield.addFocusListener(intfldlistener);
+            colsizefield.setToolTipText(bundle.getString("ACS_AddTableColumnSizeTextFieldA11yDesc"));
+            colsizefield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddTableColumnSizeTextFieldA11yName"));
+            label.setLabelFor(colsizefield);
             pane.add(colsizefield, con);
 
             // Column scale
 
             label = new JLabel(bundle.getString("AddTableColumnScale")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("AddTableColumnScale_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnScaleA11yDesc"));
             con = new GridBagConstraints ();
             con.gridx = 2;
             con.gridy = 2;
@@ -190,11 +207,16 @@ public class AddTableColumnDialog {
             colscalefield = new ValidableTextField(new TextFieldValidator.integer());
             colscalefield.setName(ColumnItem.SCALE);
             colscalefield.addFocusListener(intfldlistener);
+            colscalefield.setToolTipText(bundle.getString("ACS_AddTableColumnScaleTextFieldA11yDesc"));
+            colscalefield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddTableColumnScaleTextFieldA11yName"));
+            label.setLabelFor(colscalefield);
             pane.add(colscalefield, con);
 
             // Column default value
 
             label = new JLabel(bundle.getString("AddTableColumnDefault")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("AddTableColumnDefault_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnDefaultA11yDesc"));
             con = new GridBagConstraints ();
             con.gridx = 0;
             con.gridy = 3;
@@ -218,6 +240,9 @@ public class AddTableColumnDialog {
             defvalfield = new JTextField(35);
             defvalfield.setName(ColumnItem.DEFVAL);
             defvalfield.addFocusListener(fldlistener);
+            defvalfield.setToolTipText(bundle.getString("ACS_AddTableColumnDefaultTextFieldA11yDesc"));
+            defvalfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddTableColumnDefaultTextFieldA11yName"));
+            label.setLabelFor(defvalfield);
             layout.setConstraints(defvalfield, con);
             pane.add(defvalfield);
 
@@ -242,6 +267,8 @@ public class AddTableColumnDialog {
             pkcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintPKTitle")); //NOI18N
             pkcheckbox.setName(ColumnItem.PRIMARY_KEY);
             pkcheckbox.addActionListener(cbxlistener);
+            pkcheckbox.setMnemonic(bundle.getString("AddTableColumnConstraintPKTitle_Mnemonic").charAt(0));
+            pkcheckbox.setToolTipText(bundle.getString("ACS_AddTableColumnConstraintPKTitleA11yDesc"));
             subpane.add(pkcheckbox, con);
 
             con = new GridBagConstraints ();
@@ -256,6 +283,8 @@ public class AddTableColumnDialog {
             uniquecheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintUniqueTitle")); //NOI18N
             uniquecheckbox.setName(ColumnItem.UNIQUE);
             uniquecheckbox.addActionListener(cbxlistener);
+            uniquecheckbox.setMnemonic(bundle.getString("AddTableColumnConstraintUniqueTitle_Mnemonic").charAt(0));
+            uniquecheckbox.setToolTipText(bundle.getString("ACS_AddTableColumnConstraintUniqueTitleA11yDesc"));
             subpane.add(uniquecheckbox, con);
 
             con = new GridBagConstraints ();
@@ -270,6 +299,8 @@ public class AddTableColumnDialog {
             nullcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintNullTitle")); //NOI18N
             nullcheckbox.setName(ColumnItem.NULLABLE);
             nullcheckbox.addActionListener(cbxlistener);
+            nullcheckbox.setMnemonic(bundle.getString("AddTableColumnConstraintNullTitle_Mnemonic").charAt(0));
+            nullcheckbox.setToolTipText(bundle.getString("ACS_AddTableColumnConstraintNullTitleA11yDesc"));
             subpane.add(nullcheckbox, con);
 
             // Insert subpane
@@ -319,6 +350,8 @@ public class AddTableColumnDialog {
             ixcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnIndexName")); //NOI18N
             ixcheckbox.setName(ColumnItem.INDEX);
             ixcheckbox.addActionListener(cbxlistener);
+            ixcheckbox.setMnemonic(bundle.getString("AddTableColumnIndexName_Mnemonic").charAt(0));
+            ixcheckbox.setToolTipText(bundle.getString("ACS_AddTableColumnIndexNameA11yDesc"));
             pane.add(ixcheckbox, con);
 
             try {
@@ -364,6 +397,8 @@ public class AddTableColumnDialog {
             con.weightx = 1.0;
             con.weighty = 0.0;
             idxcombo = new JComboBox(new Vector(ixmap.keySet()));
+            idxcombo.setToolTipText(bundle.getString("ACS_AddTableColumnIndexNameComboBoxA11yDesc"));
+            idxcombo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddTableColumnIndexNameComboBoxA11yName"));
             //idxcombo.setSelectedIndex(0);
             pane.add(idxcombo, con);
 
@@ -381,6 +416,8 @@ public class AddTableColumnDialog {
             checkcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintCheckTitle")); //NOI18N
             checkcheckbox.setName(ColumnItem.CHECK);
             checkcheckbox.addActionListener(cbxlistener);
+            checkcheckbox.setMnemonic(bundle.getString("AddTableColumnCheckTitle_Mnemonic").charAt(0));
+            checkcheckbox.setToolTipText(bundle.getString("ACS_AddTableColumnCheckTitleA11yDesc"));
             pane.add(checkcheckbox, con);
 
             con = new GridBagConstraints ();
@@ -395,6 +432,8 @@ public class AddTableColumnDialog {
             checkfield = new JTextArea(3, 35);
             checkfield.setName(ColumnItem.CHECK_CODE);
             checkfield.addFocusListener(fldlistener);
+            checkfield.setToolTipText(bundle.getString("ACS_AddTableColumnCheckTextAreaA11yDesc"));
+            checkfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddTableColumnCheckTextAreaA11yName"));
             JScrollPane spane = new JScrollPane(checkfield);
             pane.add(spane, con);
 

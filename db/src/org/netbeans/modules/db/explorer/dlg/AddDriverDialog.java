@@ -44,6 +44,8 @@ public class AddDriverDialog {
             // Driver name
 
             label = new JLabel(bundle.getString("AddDriverDriverName")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("AddDriverDriverName_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddDriverDriverNameA11yDesc"));
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
@@ -57,12 +59,17 @@ public class AddDriverDialog {
             con.gridy = 0;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             namefield = new JTextField(35);
+            namefield.setToolTipText(bundle.getString("ACS_AddDriverDriverNameTextFieldA11yDesc"));
+            namefield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddDriverDriverNameTextFieldA11yName"));
+            label.setLabelFor(namefield);
             layout.setConstraints(namefield, con);
             pane.add(namefield);
 
             // Driver label and field
 
             label = new JLabel(bundle.getString("AddDriverDriverURL")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("AddDriverDriverURL_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddDriverDriverURLA11yDesc"));
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
@@ -76,12 +83,17 @@ public class AddDriverDialog {
             con.gridy = 1;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             drvfield = new JTextField(35);
+            drvfield.setToolTipText(bundle.getString("ACS_AddDriverDriverURLTextFieldA11yDesc"));
+            drvfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddDriverDriverURLTextFieldA11yName"));
+            label.setLabelFor(drvfield);
             layout.setConstraints(drvfield, con);
             pane.add(drvfield);
 
             // Database prefix title and field
 
             label = new JLabel(bundle.getString("AddDriverDatabasePrefix")); //NOI18N
+            label.setDisplayedMnemonic(bundle.getString("AddDriverDatabasePrefix_Mnemonic").charAt(0));
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddDriverDatabasePrefixA11yDesc"));
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
@@ -95,6 +107,9 @@ public class AddDriverDialog {
             con.gridy = 2;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             prefixfield = new JTextField(35);
+            prefixfield.setToolTipText(bundle.getString("ACS_AddDriverDatabasePrefixTextFieldA11yDesc"));
+            prefixfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddDriverDatabasePrefixTextFieldA11yName"));
+            label.setLabelFor(prefixfield);
             layout.setConstraints(prefixfield, con);
             pane.add(prefixfield);
 
@@ -103,9 +118,13 @@ public class AddDriverDialog {
             JTextArea notes = new JTextArea(bundle.getString("AddDriverURLNotes"), 2, 50); //NOI18N
             notes.setLineWrap(true);
             notes.setWrapStyleWord(true);
-            notes.setFont(label.getFont());
+            notes.setFont(javax.swing.UIManager.getFont("Label.font"));  // NOI18N
             notes.setEditable(false);
-            notes.setBackground(label.getBackground());
+            notes.setEnabled(false);
+            notes.setOpaque(false);
+            notes.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));  // NOI18N
+            notes.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddDriverURLNotesA11yName"));
+            notes.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddDriverURLNotesA11yDesc"));
             con.weightx = 1.0;
             con.gridwidth = 2;
             con.fill = GridBagConstraints.HORIZONTAL;
