@@ -76,6 +76,9 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     /** Manages consistency between core ui mode setting. */
     private final UIModeHandler uiModeHandler = new UIModeHandler();
     
+    /** Only for hack 40237, to not call componentShowing twice */ 
+    private TopComponent persistenceShowingTC;
+    
     
     /** Default constructor. Don't use directly, use getDefault()
      * instead.
@@ -824,15 +827,25 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** Overrides superclass method, to enhance access modifier. */
     public void componentShowing(TopComponent tc) {
-        if(tc != null) {
+        if((tc != null) && (tc != persistenceShowingTC)) {
             super.componentShowing(tc);
         }
+    }
+    
+    /** XXX - Hack for 40237, should be changed to fix real reason of 37188
+     * timing of activate events */
+    void specialPersistenceCompShow(TopComponent tc) {
+        componentShowing(tc);
+        persistenceShowingTC = tc;
     }
     
     /** Overrides superclass method, to enhance access modifier. */
     public void componentHidden(TopComponent tc) {
         if(tc != null) {
             super.componentHidden(tc);
+            if (tc == persistenceShowingTC) {
+                persistenceShowingTC = null;
+            }
         }
     }
 
