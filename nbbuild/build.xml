@@ -920,12 +920,17 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
           <fileset dir="modules_exported_interfaces" includes="footer.gen" />
       </concat>
       
+      <tstamp>
+        <format property="modules-javadoc-date" pattern="d MMM yyyy" locale="en" />
+      </tstamp>
+      
       <style 
         in="modules_javadoc/index.xml" 
         out="modules_javadoc/index.html" 
         style="javadoctools/export2html.xsl"
-      />
-      
+      >
+        <param name="date" expression="${modules-javadoc-date}"/>
+      </style>
       <delete dir="modules_exported_interfaces" />
   </target>
 

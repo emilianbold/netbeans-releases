@@ -13,6 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html"/>
+    <xsl:param name="date" />
 
     <!-- unique key over all groups of apis -->
     <xsl:key match="//api[@type='export']" name="apiGroups" use="@group" />
@@ -32,9 +33,15 @@ Microsystems, Inc. All Rights Reserved.
 
         <body>
 
-        <center><h1>NetBeans API List</h1></center>
+        <center>
+            <h1>NetBeans API List</h1>
+            <xsl:if test="$date" >
+                <xsl:value-of select="$date" />
+                <p/>
+            </xsl:if>
+        </center>
 
-         This document provides a list of <em>NetBeans APIs</em> with a short description
+        This document provides a list of <em>NetBeans APIs</em> with a short description
         of what they are used for, and a table describing different types of interfaces
         (see <a href="http://openide.netbeans.org/tutorial/api-design.html#api">What is
         an API?</a> to understand why we list DTDs, file formats, etc.) and with
