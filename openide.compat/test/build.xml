@@ -13,7 +13,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="Openide compatibility tests" basedir="." default="all">
-    <taskdef name="patchclass" classname="org.netbeans.nbbuild.NbPatchClass" classpath="../../../nbbuild/nbantext.jar"/>
 
     <!-- Ant property. Value 'ignore' means that system classpath is ignored
          and only classpath specified in build file is used. -->
@@ -40,7 +39,10 @@ Microsystems, Inc. All Rights Reserved.
          Can have values src, jar, ide -->
     <property name="xtest.source.location" value="src"/>
 
-    
+    <target name="init">
+        <ant dir="../../../nbbuild" target="bootstrap"/>
+        <taskdef name="patchclass" classname="org.netbeans.nbbuild.NbPatchClass" classpath="../../../nbbuild/nbantext.jar"/>
+    </target>
  
     <!-- ============ -->
     <!-- Main targets -->
@@ -57,7 +59,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- generates classes as they appear to virtual machine during runtime 
     of the ide, so we can compile against them -->
-    <target name="generate" >
+    <target name="generate" depends="init">
         <patchclass library="${netbeans.home}/lib/ext/boot.jar" source="${netbeans.home}/lib/openide.jar" targetdir="gensrc" />
     </target>
     
