@@ -14,6 +14,7 @@
 package org.netbeans.jellytools.nodes;
 
 import javax.swing.tree.TreePath;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.*;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
@@ -23,7 +24,10 @@ public class FolderNode extends Node {
     static final ExploreFromHereAction exploreFromHereAction = new ExploreFromHereAction();
     static final FindAction findAction = new FindAction();
     static final RefreshFolderAction refreshFolderAction = new RefreshFolderAction();
-    static final CompileAction compileAction = new CompileAction();
+    // Compile Package
+    static final Action compileAction = new Action(null, 
+                Bundle.getString("org.netbeans.spi.java.project.support.ui.Bundle", 
+                                 "LBL_CompilePackage_Action"));
     static final CopyAction copyAction = new CopyAction();
     static final PasteAction pasteAction = new PasteAction();
     static final CutAction cutAction = new CutAction();
