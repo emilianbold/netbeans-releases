@@ -311,7 +311,7 @@
 		children = ();
 		options = {
 			cut = NO;
-			copy = NO;
+			copy = YES;
 			delete = YES;
 		};
 		children_ordering = {
@@ -1190,7 +1190,6 @@
 			{
 				name = "Refresh";
 				class = org.netbeans.modules.db.explorer.actions.RefreshChildrenAction;
-				perm = "write";
 			},
 			delimiter
 		);

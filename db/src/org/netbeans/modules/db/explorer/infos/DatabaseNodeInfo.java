@@ -615,7 +615,9 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
     public Vector getActions()
     {
+        
         Vector actions = (Vector)get(ACTIONS);
+        actions = (Vector)actions.clone();
         if (actions == null) {
             actions = new Vector();
             put(ACTIONS, actions);
@@ -623,7 +625,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
         if (actions.size() == 0) return actions;
         Object xaction = actions.elementAt(0);
-        if (xaction != null && xaction instanceof DatabaseAction) return actions;
+        //if (xaction != null && xaction instanceof DatabaseAction) return actions;
         boolean ro = isReadOnly();
         for (int i=0; i<actions.size();i++) {
 

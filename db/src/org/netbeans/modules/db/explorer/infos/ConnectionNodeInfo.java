@@ -67,7 +67,11 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
 
             if (dbsys != null) {
                 spec = (Specification)factory.createSpecification(con, dbsys, connection);
-            } else spec = (Specification)factory.createSpecification(con, connection);
+            } else {
+                setReadOnly(false);
+                spec = (Specification)factory.createSpecification(con, connection);
+            }
+            
 
             setSpecification(spec);
 
@@ -79,6 +83,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
 
             UnsupportedDatabaseDialog dlg = new UnsupportedDatabaseDialog();
             dlg.show();
+            setReadOnly(false);
             switch (dlg.getResult()) {
             case UnsupportedDatabaseDialog.GENERIC: connect("GenericDatabaseSystem"); break; //NOI18N
             case UnsupportedDatabaseDialog.READONLY: connectReadOnly(); break;
