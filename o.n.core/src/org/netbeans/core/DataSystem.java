@@ -174,13 +174,16 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
 
     public void propertyChange (PropertyChangeEvent ev) {
       //System.out.println ("Property change");
+      DataSystem ds = getDS ();
+      if (ds == null) return;
+      
       if (ev.getPropertyName ().equals ("hidden")) {
         // change in the hidden state of a file system
-        getDS ().refresh ();
+        ds.refresh ();
       } else if (ev.getPropertyName().equals("root")) {
         FileSystem fs = (FileSystem)ev.getSource ();
-        getDS ().refresh (fs);
-        getDS ().refresh ();
+        ds.refresh (fs);
+        ds.refresh ();
       }
     }
     
@@ -229,6 +232,7 @@ static final long serialVersionUID =-2266375092419944364L;
 
 /*
  * Log
+ *  21   Gandalf   1.20        9/6/99   Jaroslav Tulach #3576
  *  20   Gandalf   1.19        8/9/99   Ian Formanek    Generated Serial Version
  *       UID
  *  19   Gandalf   1.18        8/3/99   Jaroslav Tulach Serialization of 
