@@ -15,8 +15,12 @@ package org.netbeans.modules.j2ee.dd.impl.ejb;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileAlreadyLockedException;
 
 import java.math.BigDecimal;
+import java.io.OutputStream;
 
 /**
  *
@@ -29,28 +33,28 @@ public class EjbJarProxy implements EjbJar {
     public boolean writing=false;
     private org.xml.sax.SAXParseException error;
     private int ddStatus;
-    
-    /** Creates a new instance of EjbJarProxy */  
+
+    /** Creates a new instance of EjbJarProxy */
     public EjbJarProxy(EjbJar ejbJar, String version) {
         this.ejbJar=ejbJar;
         this.version = version;
         listeners = new java.util.ArrayList();
     }
-    
+
     public void setOriginal(EjbJar ejbJar) {
         if (this.ejbJar!=ejbJar) {
             for (int i=0;i<listeners.size();i++) {
-                java.beans.PropertyChangeListener pcl = 
+                java.beans.PropertyChangeListener pcl =
                     (java.beans.PropertyChangeListener)listeners.get(i);
                 if (this.ejbJar!=null) this.ejbJar.removePropertyChangeListener(pcl);
                 if (ejbJar!=null) ejbJar.addPropertyChangeListener(pcl);
-                
+
             }
             this.ejbJar=ejbJar;
             if (ejbJar!=null) setProxyVersion(ejbJar.getVersion().toString());
         }
     }
-    
+
     public EjbJar getOriginal() {
         return ejbJar;
     }
@@ -65,7 +69,7 @@ public class EjbJarProxy implements EjbJar {
             }
         }
     }
-    
+
     /** Setter for version property.
      * Warning : Only the upgrade from lower to higher version is supported.
      * @param version ejb-jar version value
@@ -73,12 +77,12 @@ public class EjbJarProxy implements EjbJar {
     public void setVersion(java.math.BigDecimal version) {
         String newVersion = version.toString();
         if (this.version.equals(newVersion)) return;
-        if (!EjbJar.VERSION_2_1.equals(newVersion)) 
+        if (!EjbJar.VERSION_2_1.equals(newVersion))
             throw new RuntimeException("Only the upgrade from lower to upper version is supported"); //NOI18N
         if (ejbJar!=null) {
             org.w3c.dom.Document document = null;
             if (ejbJar instanceof org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0.EjbJar) {
-                document = 
+                document =
                     ((org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0.EjbJar)ejbJar).graphManager().getXmlDocument();
             }
             if (document!=null) {
@@ -97,7 +101,7 @@ public class EjbJarProxy implements EjbJar {
             }
         }
     }
-    
+
     public java.math.BigDecimal getVersion() {
         return version == null ? BigDecimal.valueOf(0) : new BigDecimal(version);
     }
@@ -106,13 +110,13 @@ public class EjbJarProxy implements EjbJar {
     }
     public void setError(org.xml.sax.SAXParseException error) {
         this.error=error;
-    }    
+    }
     public int getStatus() {
         return ddStatus;
     }
     public void setStatus(int value) {
         if (ddStatus!=value) {
-            java.beans.PropertyChangeEvent evt = 
+            java.beans.PropertyChangeEvent evt =
                 new java.beans.PropertyChangeEvent(this, PROPERTY_STATUS, new Integer(ddStatus), new Integer(value));
             ddStatus=value;
             for (int i=0;i<listeners.size();i++) {
@@ -120,73 +124,73 @@ public class EjbJarProxy implements EjbJar {
             }
         }
     }
-    
+
     public void addPropertyChangeListener(java.beans.PropertyChangeListener pcl) {
         if (ejbJar!=null) ejbJar.addPropertyChangeListener(pcl);
         listeners.add(pcl);
     }
-    
+
     public void removePropertyChangeListener(java.beans.PropertyChangeListener pcl) {
         if (ejbJar!=null) ejbJar.removePropertyChangeListener(pcl);
         listeners.remove(pcl);
     }
-    
+
     public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean createBean(String beanName) throws ClassNotFoundException {
         return ejbJar==null?null:ejbJar.createBean(beanName);
     }
-    
+
     public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean addBean(String beanName, String[] propertyNames, Object[] propertyValues, String keyProperty) throws ClassNotFoundException, org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException {
         return ejbJar==null?null:ejbJar.addBean(beanName, propertyNames, propertyValues, keyProperty);
     }
-    
+
     public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean addBean(String beanName) throws ClassNotFoundException {
         return ejbJar==null?null:ejbJar.addBean(beanName);
     }
-    
+
     public org.netbeans.modules.j2ee.dd.api.common.CommonDDBean findBeanByName(String beanName, String propertyName, String value) {
         return ejbJar==null?null:ejbJar.findBeanByName(beanName, propertyName, value);
     }
-    
+
     public java.util.Map getAllDescriptions() {
         return ejbJar==null?new java.util.HashMap():ejbJar.getAllDescriptions();
     }
-    
+
     public java.util.Map getAllDisplayNames() {
         return ejbJar==null?new java.util.HashMap():ejbJar.getAllDisplayNames();
     }
-    
+
     public java.util.Map getAllIcons() {
         return ejbJar==null?new java.util.HashMap():ejbJar.getAllIcons();
     }
-  
+
     public String getDefaultDescription() {
         return ejbJar==null?null:ejbJar.getDefaultDescription();
     }
-    
+
     public String getDefaultDisplayName() {
         return ejbJar==null?null:ejbJar.getDefaultDisplayName();
     }
-    
+
     public org.netbeans.modules.j2ee.dd.api.common.Icon getDefaultIcon() {
         return ejbJar==null?null:ejbJar.getDefaultIcon();
     }
-    
+
     public String getDescription(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return ejbJar==null?null:ejbJar.getDescription(locale);
     }
-    
+
     public String getDisplayName(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return ejbJar==null?null:ejbJar.getDisplayName(locale);
     }
-    
+
     public java.lang.String getId() {
         return ejbJar==null?null:ejbJar.getId();
     }
-    
+
     public String getLargeIcon() {
         return ejbJar==null?null:ejbJar.getLargeIcon();
     }
-    
+
     public String getLargeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return ejbJar==null?null:ejbJar.getLargeIcon(locale);
     }
@@ -194,7 +198,7 @@ public class EjbJarProxy implements EjbJar {
     public String getSmallIcon() {
         return ejbJar==null?null:ejbJar.getSmallIcon();
     }
-    
+
     public String getSmallIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return ejbJar==null?null:ejbJar.getSmallIcon(locale);
     }
@@ -202,7 +206,7 @@ public class EjbJarProxy implements EjbJar {
     public Object getValue(String name) {
         return ejbJar==null?null:ejbJar.getValue(name);
     }
-  
+
     public void merge(org.netbeans.modules.j2ee.dd.api.common.RootInterface bean, int mode) {
         if (ejbJar!=null) {
             if (ejbJar.getVersion().equals(((EjbJarProxy)bean).getVersion())) {
@@ -215,32 +219,32 @@ public class EjbJarProxy implements EjbJar {
             }
         }
     }
-    
+
     public void removeAllDescriptions() {
-        
+
         if (ejbJar!=null) ejbJar.removeAllDescriptions();
     }
-    
+
     public void removeAllDisplayNames() {
         if (ejbJar!=null) ejbJar.removeAllDisplayNames();
     }
-    
+
     public void removeAllIcons() {
         if (ejbJar!=null) ejbJar.removeAllIcons();
     }
-    
+
     public void removeDescription() {
         if (ejbJar!=null) ejbJar.removeDescription();
     }
-    
+
     public void removeDescriptionForLocale(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.removeDescriptionForLocale(locale);
     }
-    
+
     public void removeDisplayName() {
         if (ejbJar!=null) ejbJar.removeDisplayName();
     }
-    
+
     public void removeDisplayNameForLocale(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.removeDisplayNameForLocale(locale);
     }
@@ -248,51 +252,51 @@ public class EjbJarProxy implements EjbJar {
     public void removeIcon() {
         if (ejbJar!=null) ejbJar.removeIcon();
     }
-    
+
     public void removeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.removeIcon(locale);
     }
-    
+
     public void removeLargeIcon() {
         if (ejbJar!=null) ejbJar.removeLargeIcon();
     }
-    
+
     public void removeLargeIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.removeLargeIcon(locale);
     }
-    
+
     public void removeSmallIcon() {
         if (ejbJar!=null) ejbJar.removeSmallIcon();
     }
-    
+
     public void removeSmallIcon(String locale) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.removeSmallIcon(locale);
     }
-    
+
     public void setAllDescriptions(java.util.Map descriptions) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setAllDescriptions(descriptions);
     }
-    
+
     public void setAllDisplayNames(java.util.Map displayNames) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setAllDisplayNames(displayNames);
     }
-    
+
     public void setAllIcons(String[] locales, String[] smallIcons, String[] largeIcons) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setAllIcons(locales, smallIcons, largeIcons);
     }
-  
+
     public void setDescription(String description) {
         if (ejbJar!=null) ejbJar.setDescription(description);
     }
-    
+
     public void setDescription(String locale, String description) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setDescription(locale, description);
     }
-    
+
     public void setDisplayName(String displayName) {
         if (ejbJar!=null) ejbJar.setDisplayName(displayName);
     }
-    
+
     public void setDisplayName(String locale, String displayName) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setDisplayName(locale, displayName);
     }
@@ -300,15 +304,15 @@ public class EjbJarProxy implements EjbJar {
     public void setIcon(org.netbeans.modules.j2ee.dd.api.common.Icon icon) {
         if (ejbJar!=null) ejbJar.setIcon(icon);
     }
-    
+
     public void setId(java.lang.String value) {
         if (ejbJar!=null) ejbJar.setId(value);
     }
-    
+
     public void setLargeIcon(String icon) {
         if (ejbJar!=null) ejbJar.setLargeIcon(icon);
     }
-    
+
     public void setLargeIcon(String locale, String icon) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setLargeIcon(locale, icon);
     }
@@ -316,7 +320,7 @@ public class EjbJarProxy implements EjbJar {
     public void setSmallIcon(String icon) {
         if (ejbJar!=null) ejbJar.setSmallIcon(icon);
     }
-    
+
     public void setSmallIcon(String locale, String icon) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (ejbJar!=null) ejbJar.setSmallIcon(locale, icon);
     }
@@ -327,17 +331,13 @@ public class EjbJarProxy implements EjbJar {
             ejbJar.write(os);
         }
     }
-    
-    public void write(org.openide.filesystems.FileObject fo) throws java.io.IOException {
-        if (ejbJar!=null) {
-            // trying to use OutputProvider for writing changes
-            DataObject dobj = DataObject.find(fo);
-            if (dobj != null && dobj instanceof EjbJarProxy.OutputProvider) {
-                ((EjbJarProxy.OutputProvider) dobj).write(this);
-            } else {
-                org.openide.filesystems.FileLock lock = fo.lock();
+
+    public void write(FileObject fo) throws java.io.IOException {
+        if (ejbJar != null) {
+            try {
+                FileLock lock = fo.lock();
                 try {
-                    java.io.OutputStream os = fo.getOutputStream(lock);
+                    OutputStream os = fo.getOutputStream(lock);
                     try {
                         writing = true;
                         write(os);
@@ -347,12 +347,18 @@ public class EjbJarProxy implements EjbJar {
                 } finally {
                     lock.releaseLock();
                 }
+            } catch (FileAlreadyLockedException ex) {
+                // trying to use OutputProvider for writing changes
+                DataObject dobj = DataObject.find(fo);
+                if (dobj != null && dobj instanceof EjbJarProxy.OutputProvider) {
+                    ((EjbJarProxy.OutputProvider) dobj).write(this);
+                } else {
+                    throw ex;
+                }
             }
-
-
         }
     }
-    
+
     public Object clone() {
         EjbJarProxy proxy = null;
         if (ejbJar==null)
@@ -377,11 +383,11 @@ public class EjbJarProxy implements EjbJar {
         proxy.setStatus(ddStatus);
         return proxy;
     }
-    
+
     public boolean isWriting() {
         return writing;
     }
-    
+
     public void setWriting(boolean writing) {
         this.writing=writing;
     }
@@ -424,14 +430,14 @@ public class EjbJarProxy implements EjbJar {
         else
             return ejbJar.newAssemblyDescriptor();
     }
-    
+
     public org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans newEnterpriseBeans() {
         if(ejbJar == null)
             return null;
         else
             return ejbJar.newEnterpriseBeans();
     }
-    
+
     public org.netbeans.modules.j2ee.dd.api.ejb.Relationships newRelationships() {
         if(ejbJar == null)
             return null;
