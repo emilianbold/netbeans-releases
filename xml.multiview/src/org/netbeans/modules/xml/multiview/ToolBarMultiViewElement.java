@@ -21,6 +21,7 @@ import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 
+import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.awt.*;
@@ -46,7 +47,11 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
         dObj.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()) && editor != null) {
-                    observer.getTopComponent().setDisplayName(dObj.getEditorSupport().messageName());
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            observer.getTopComponent().setDisplayName(dObj.getEditorSupport().messageName());
+                        }
+                    });
                 }
             }
         });
