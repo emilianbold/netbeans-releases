@@ -675,14 +675,20 @@ public final class NbMainExplorer extends CloneableTopComponent
             // bugfix #15136
             setName(rc.getDisplayName());
             updateTitle();
-            // attach listener
+
             if (weakRcL == null) {
                 weakRcL = WeakListener.propertyChange(rcListener(), rc);
+            }
+            else {
+                rc.removePropertyChangeListener(weakRcL);
             }
             rc.addPropertyChangeListener(weakRcL);
             
             if (weakNRcL == null) {
                 weakNRcL = WeakListener.node(rcListener(), rc);
+            }
+            else {
+                rc.removeNodeListener(weakNRcL);
             }
             rc.addNodeListener(weakNRcL);
         }
