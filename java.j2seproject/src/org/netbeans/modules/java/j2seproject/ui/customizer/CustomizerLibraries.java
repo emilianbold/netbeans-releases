@@ -657,7 +657,9 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     // </editor-fold>//GEN-END:initComponents
 
     private void createNewPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createNewPlatform
-        PlatformsCustomizer.showCustomizer(null);        
+        Object selectedItem = this.jComboBoxTarget.getSelectedItem();
+        JavaPlatform jp = (selectedItem == null ? null : PlatformUiSupport.getPlatform(selectedItem));
+        PlatformsCustomizer.showCustomizer(jp);        
     }//GEN-LAST:event_createNewPlatform
     
     

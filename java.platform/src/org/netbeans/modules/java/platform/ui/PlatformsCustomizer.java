@@ -66,9 +66,12 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
     private PlatformCategoriesChildren children;
     private ExplorerManager manager;
+    private final JavaPlatform initialPlatform;
 
     /** Creates new form PlatformsCustomizer */
-    public PlatformsCustomizer() {
+    public PlatformsCustomizer (JavaPlatform initialPlatform) {
+        this.initialPlatform = (initialPlatform == null) ?
+            JavaPlatformManager.getDefault().getDefaultPlatform() : initialPlatform;
         initComponents();
     }
 
@@ -111,7 +114,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
     public void addNotify () {
         super.addNotify();
-        this.expandPlatforms (JavaPlatformManager.getDefault().getDefaultPlatform());
+        this.expandPlatforms (this.initialPlatform);
     }
 
 
