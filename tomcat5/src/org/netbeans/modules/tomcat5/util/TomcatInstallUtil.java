@@ -111,7 +111,6 @@ public class TomcatInstallUtil {
     public static String getHost(Service service) {
         String host = null;
         if (service != null) {
-            System.err.println("Engine:" + service.dumpBeanNode());
             host = service.getAttributeValue("Engine",0,"defaultHost");
         }
        
