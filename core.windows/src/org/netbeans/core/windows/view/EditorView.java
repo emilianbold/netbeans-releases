@@ -29,6 +29,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
@@ -91,9 +92,22 @@ public class EditorView extends ViewElement {
     private void initComponent() {
         JPanel panel = new EditorComponent(this, windowDnDManager);
         if(editorArea != null) {
+            manageBorder(panel);
             panel.add(editorArea.getComponent(), BorderLayout.CENTER);
         }
         component = panel;
+    }
+    
+    /** Handles special border policy - scroll pane like border only 
+     * if editor area is null.
+     */
+    private void manageBorder (JPanel panel) {
+        if (editorArea != null) {
+            panel.setBorder(null);
+        } else {
+            // special border installed into UI manager by netbeans
+            panel.setBorder((Border)UIManager.get("Netbeans.ScrollPane.border"));
+        }
     }
     
     public ViewElement getEditorArea() {
@@ -114,8 +128,8 @@ public class EditorView extends ViewElement {
         if(this.editorArea != null) {
             editorComp.remove(this.editorArea.getComponent());
         }
-        
         this.editorArea = editorArea;
+        manageBorder(editorComp);
         
         // XXX #36885 When in maximixed and compact mode, we cannot add the components
         // into the editor area, it would remove it from the screen.
