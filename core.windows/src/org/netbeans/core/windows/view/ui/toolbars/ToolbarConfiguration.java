@@ -294,12 +294,11 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
 	/* It is important to recompute row neighbournhood. */
         ToolbarRow prev = null;
         ToolbarRow next = null;
-        try {
-            prev = (ToolbarRow)toolbarRows.elementAt (index - 1);
-        } catch (ArrayIndexOutOfBoundsException e) { }
-        try {
+        int rowCount = toolbarRows.size();
+        if( index > 0 && index <= rowCount )
+            prev = (ToolbarRow)toolbarRows.elementAt( index - 1 );
+        if( index >= 0 && index < rowCount )
             next = (ToolbarRow)toolbarRows.elementAt (index);
-        } catch (ArrayIndexOutOfBoundsException e) { }
 
         if (prev != null)
             prev.setNextRow (row);
