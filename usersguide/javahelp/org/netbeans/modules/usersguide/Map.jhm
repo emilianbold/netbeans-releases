@@ -153,6 +153,7 @@
 <mapID target="gui.menus.events" url="gui/menus/events.html" />
 <mapID target="gui.mdi" url="gui/mdi.html" />
 <mapID target="gui.configuring" url="gui/configuring.html" />
+<mapID target="gui.accessibleform" url="gui/accessibleform.html" />
 <mapID target="gui.custompalette.intro" url="gui/custompalette/intro.html" />
 <mapID target="gui.custompalette.creating" url="gui/custompalette/creating.html" />
 <mapID target="gui.custompalette.moving" url="gui/custompalette/moving.html" />

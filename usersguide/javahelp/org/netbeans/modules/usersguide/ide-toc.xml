@@ -380,6 +380,7 @@
     <tocitem text="Removing Items From the Component Palette" target="gui.custompalette.removing" />
   </tocitem>
   <tocitem text="Configuring the Form Editor" target="gui.configuring" />
+  <tocitem text="Making a Form Accessible" target="gui.accessibleform" />
 </tocitem>
 
 <tocitem text="Working With Java Source" target="java.intro">
