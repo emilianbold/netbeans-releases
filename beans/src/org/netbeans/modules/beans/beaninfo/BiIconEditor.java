@@ -31,6 +31,10 @@ import org.openide.nodes.*;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
+import java.text.MessageFormat;
+
 //import org.openide.explorer.propertysheet.editors.IconEditor.BiImageIcon;
 
 /**
@@ -142,7 +146,7 @@ class BiIconEditor extends PropertyEditorSupport {
                 ii = new BiImageIcon(url);
                 ii.name = string;
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
             throw new IllegalArgumentException(e.toString());
         }
@@ -385,8 +389,15 @@ class BiIconEditor extends PropertyEditorSupport {
             try {
                 if (rbClasspath.isSelected() && s.length() != 0 ) {
                     URL url = TopManager.getDefault().currentClassLoader().getResource(s);
-                    ii = new BiImageIcon(url);
-                    ii.name = s;
+                    try{
+                        ii = new BiImageIcon(url);
+                        ii.name = s;
+                    }
+                    catch(java.lang.Throwable t){
+                        MessageFormat message = new MessageFormat( bundle.getString("CTL_Icon_not_exists")); //NOI18N
+                        Object[] form = {s};//CTL_Icon_not_exists=Image class path for {0} is not valid
+                        TopManager.getDefault().notify(new NotifyDescriptor.Message(message.format(form), NotifyDescriptor.ERROR_MESSAGE ));
+                    }
                 }
             } catch (Exception e) {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
