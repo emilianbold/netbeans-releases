@@ -15,6 +15,7 @@ package org.netbeans.modules.projectimport.eclipse;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -234,15 +235,18 @@ public final class EclipseProject implements Comparable {
     
     private Collection projectsWeDependOn;
     public Collection getProjects() {
-        if (projectsWeDependOn == null) {
-            projectsWeDependOn = new ArrayList();
-            for (Iterator it = cp.getProjects().iterator(); it.hasNext(); ) {
-                ClassPathEntry cp = (ClassPathEntry) it.next();
-                projectsWeDependOn.add(workspace.getProjectByRawPath(
-                        cp.getRawPath()));
+        if (workspace != null) {
+            if (projectsWeDependOn == null) {
+                projectsWeDependOn = new ArrayList();
+                for (Iterator it = cp.getProjects().iterator(); it.hasNext(); ) {
+                    ClassPathEntry cp = (ClassPathEntry) it.next();
+                    projectsWeDependOn.add(workspace.getProjectByRawPath(
+                            cp.getRawPath()));
+                }
             }
         }
-        return projectsWeDependOn;
+        return projectsWeDependOn == null ?
+            Collections.EMPTY_SET : projectsWeDependOn;
     }
     
     /** Convenient delegate to <code>ClassPath</code> */
