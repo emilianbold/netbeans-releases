@@ -18,7 +18,6 @@ import org.netbeans.jellytools.Bundle;
  * "org.openide.actions.OpenLocalExplorerAction".
  * @see Action
  * @see org.netbeans.jellytools.nodes.FolderNode
- * @see org.netbeans.jellytools.nodes.GroupNode
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class ExploreFromHereAction extends Action {
     
