@@ -1711,6 +1711,11 @@ final class Central implements ControllerHandler {
         
     }
     
+    public void userResizedSlidingMode(ModeImpl mode, Rectangle rect) {
+        model.setModeBounds(mode, new Rectangle(rect));
+    }
+    
+    
     public void userDisabledAutoHide(TopComponent tc, ModeImpl source) {
         // unmaximize if needed
         if(getMaximizedMode() != null) {

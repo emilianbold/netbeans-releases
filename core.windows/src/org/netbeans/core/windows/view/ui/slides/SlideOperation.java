@@ -32,6 +32,7 @@ public interface SlideOperation {
     public static final int SLIDE_OUT = 1;
     public static final int SLIDE_INTO_EDGE = 2;
     public static final int SLIDE_INTO_DESKTOP = 3;
+    public static final int SLIDE_RESIZE = 4;
 
     public Component getComponent ();
     

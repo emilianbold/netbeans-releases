@@ -88,6 +88,8 @@ public interface ControllerHandler {
     public void userEnabledAutoHide(TopComponent tc, ModeImpl source, String target);
     
     public void userDisabledAutoHide(TopComponent tc, ModeImpl source);
+    
+    public void userResizedSlidingMode(ModeImpl mode, Rectangle rect);
     // Sliding<<
     
 }

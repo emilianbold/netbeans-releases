@@ -85,5 +85,7 @@ public interface Controller {
     
     public void userTriggeredSlideIntoDesktop(ModeView modeView, SlideOperation operation);
 
+    public void userResizedSlidingWindow(ModeView modeView, SlideOperation operation);
+
 }
 

@@ -74,6 +74,8 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     /** Command indicating request for slide out (hide) of sliding component */
     public static final String COMMAND_SLIDE_OUT = "slideOut"; //NOI18N
 
+    public static final String COMMAND_SLIDE_RESIZE = "slideResize"; //NOI18N
+
     /** Action command indicating that a popup menu should be shown */
     public static final String COMMAND_POPUP_REQUEST = "popup"; //NOI18N
 

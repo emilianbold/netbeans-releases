@@ -23,6 +23,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Map;
 import javax.swing.*;
+import org.netbeans.core.windows.Constants;
 import org.netbeans.swing.tabcontrol.*;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.openide.util.Utilities;
@@ -52,6 +53,29 @@ final class CommandManager implements ActionListener {
     public CommandManager(SlideBar slideBar) {
         this.slideBar = slideBar;
     }
+   
+    public void slideResize(int delta) {
+        if (!isCompSlided()) {
+            return;
+        }
+        SlideOperation op = SlideOperationFactory.createSlideResize(getSlidedTabContainer(), curSlideOrientation);
+        Rectangle finish = getSlidedTabContainer().getBounds(null);
+        String side = orientation2Side(curSlideOrientation);
+        if (Constants.BOTTOM.equals(side)) {
+            finish.height = finish.height - delta;
+            finish.y = finish.y + delta;
+        }
+        if (Constants.RIGHT.equals(side)) {
+            finish.width = finish.width - delta;
+            finish.x = finish.x + delta;
+        }
+        if (Constants.LEFT.equals(side)) {
+            finish.width = finish.width + delta;
+        }
+        op.setFinishBounds(finish);
+        postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_SLIDE_RESIZE, op));
+        
+    }
     
     public void slideIn(int tabIndex) {
         SlideBarDataModel model = slideBar.getModel();
@@ -66,14 +90,15 @@ final class CommandManager implements ActionListener {
         curSlidedComp = model.getTab(tabIndex).getComponent();
         curSlideOrientation = model.getOrientation();
         curSlideButton = slideBar.getButton(tabIndex);
-        
+        TabbedContainer cont = updateSlidedTabContainer(tabIndex);
         SlideOperation operation = SlideOperationFactory.createSlideIn(
-            updateSlidedTabContainer(tabIndex), curSlideOrientation, true, true);
+            cont, curSlideOrientation, true, true);
         
         curSlideButton.setSelected(true);
 
         postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_SLIDE_IN, operation));
-        
+        //TODO - one instance per command manager
+        ResizeGestureRecognizer.attachResizeRecognizer(orientation2Side(curSlideOrientation), cont, this);
     }
     
     /** Fires slide out operation. 
@@ -89,6 +114,9 @@ final class CommandManager implements ActionListener {
             getSlidedTabContainer(), curSlideOrientation, useEffect, requestsActivation);
         
         curSlideButton.setSelected(false);
+        
+        //TODO - one instance per command manager
+        ResizeGestureRecognizer.detachResizeRecognizer(orientation2Side(curSlideOrientation), getSlidedTabContainer());
         
         curSlidedComp = null;
         curSlideButton = null;
@@ -111,6 +139,19 @@ final class CommandManager implements ActionListener {
     public void showPopup(MouseEvent mouseEvent, int tabIndex) {
         postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_POPUP_REQUEST, mouseEvent, tabIndex));
     }
+    
+    protected static String orientation2Side (int orientation) {
+        String side = Constants.LEFT; 
+        if (orientation == SlideBarDataModel.WEST) {
+            side = Constants.LEFT;
+        } else if (orientation == SlideBarDataModel.EAST) {
+            side = Constants.RIGHT;
+        } else if (orientation == SlideBarDataModel.SOUTH) {
+            side = Constants.BOTTOM;
+        }
+        return side;
+    }
+    
     
     /** Activates or deactivates asociated tabbed container used as
      * sliding component.

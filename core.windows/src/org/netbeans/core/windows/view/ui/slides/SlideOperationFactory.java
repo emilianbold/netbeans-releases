@@ -75,4 +75,11 @@ public final class SlideOperationFactory {
         return result;
     }
     
+    public static SlideOperation createSlideResize(Component component, int orientation) {
+        SlideOperation result = new SlideOperationImpl(SlideOperation.SLIDE_RESIZE,
+                component, orientation, null, false);
+                
+        return result;
+    }
+    
 }

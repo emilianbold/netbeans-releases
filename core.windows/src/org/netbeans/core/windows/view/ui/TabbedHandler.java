@@ -322,6 +322,8 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
                 handlePopupMenuShowing(sbe.getMouseEvent(), sbe.getTabIndex());
             } else if (SlideBar.COMMAND_SLIDE_IN.equals(cmd)) {
                 modeView.getController().userTriggeredSlideIn(modeView, sbe.getSlideOperation());
+            } else if (SlideBar.COMMAND_SLIDE_RESIZE.equals(cmd)) {
+                modeView.getController().userResizedSlidingWindow(modeView, sbe.getSlideOperation());
             } else if (SlideBar.COMMAND_SLIDE_OUT.equals(cmd)) {
                 // when the call comes from the change of tehmodel rather than user clicking,
                 // ignore activation requests.
@@ -446,14 +448,16 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             if (!(comp instanceof Component)) {
                 return;
             }
-
             while (comp != null && !(comp instanceof ModeComponent)) {
-                if (comp instanceof TopComponent) {
-                    TopComponent tc = (TopComponent)comp;
+                if (comp instanceof JComponent) {
+                    JComponent c = (JComponent)comp;
                     // don't activate if requested
-                    if (Boolean.TRUE.equals(tc.getClientProperty("dontActivate"))) { //NOI18N
+                    if (Boolean.TRUE.equals(c.getClientProperty("dontActivate"))) { //NOI18N
                         return;
                     }
+                }
+                if (comp instanceof TopComponent) {
+                    TopComponent tc = (TopComponent)comp;
                     // special way of activation for topcomponents in sliding mode
                     if (Boolean.TRUE.equals(tc.getClientProperty("isSliding"))) { //NOI18N
                         tc.requestActive();

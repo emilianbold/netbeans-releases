@@ -245,6 +245,10 @@ public final class DesktopImpl {
         performSlide(operation);
     }
     
+    public void performSlideResize(SlideOperation operation) {
+        performSlide(operation);
+    }
+    
     /************** private stuff ***********/
     
     private void performSlide(SlideOperation operation) {

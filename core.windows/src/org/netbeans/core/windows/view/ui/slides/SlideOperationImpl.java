@@ -111,6 +111,12 @@ class SlideOperationImpl implements SlideOperation, ChangeListener {
             case SLIDE_OUT:
                 pane.remove(component);
                 break;
+            case SLIDE_RESIZE:
+                component.setBounds(finishBounds);
+                component.invalidate();
+                ((JComponent)component).revalidate();
+                component.repaint();
+                break;
         }
     }
 

@@ -932,6 +932,14 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         hierarchy.performSlideIntoEdge(operation);
     }
     
+    public void userResizedSlidingWindow(ModeView modeView, SlideOperation operation) {
+        hierarchy.performSlideResize(operation);
+        ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
+        ModeImpl mode = getModeForModeAccessor(modeAccessor);
+        controllerHandler.userResizedSlidingMode(mode, modeView.getSelectedTopComponent().getBounds());
+    }
+    
+    
     private static ModeImpl getModeForModeAccessor(ModeAccessor accessor) {
         return accessor == null ? null : accessor.getMode();
     }
@@ -1013,6 +1021,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     private static void debugLog(String message) {
         Debug.log(DefaultView.class, message);
     }
+
     
     
 }
