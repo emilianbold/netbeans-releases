@@ -164,9 +164,9 @@ public final class ConstantPool {
                 entry.resolve(cpEntries);
             }
         } catch (IllegalArgumentException ioe) {
-            throw new IOException("invalid class format");
+            throw new InvalidClassFormatException();
 	} catch (IndexOutOfBoundsException iobe) {
-            throw new IOException("invalid class format");
+            throw new InvalidClassFormatException();
         }
     }
 

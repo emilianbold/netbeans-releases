@@ -82,12 +82,14 @@ public class ClassFile {
 	InputStream is = null;
 	this.includeCode = includeCode;
         if( file == null || !file.exists() )
-            throw new IOException("File name is invalid or file not exists");
+            throw new FileNotFoundException(file != null ? 
+					    file.getPath() : "null");
         try {
             is = new BufferedInputStream( new FileInputStream( file ), BUFFER_SIZE);
             load(is);
-        } catch (IOException e) {
-            throw new IOException("Invalid classfile format in " + file.getName());
+        } catch (InvalidClassFormatException e) {
+            throw new InvalidClassFormatException(file.getPath() + '(' +
+						  e.getMessage() + ')');
         } finally {
             if (is != null)
                 is.close();
@@ -127,8 +129,9 @@ public class ClassFile {
                 throw new IOException("input stream not specified");
             in = new BufferedInputStream(new FileInputStream(classFileName), BUFFER_SIZE);
             load(in);
-        } catch (IOException e) {
-            throw new IOException("Invalid classfile format in " + classFileName);
+        } catch (InvalidClassFormatException e) {
+            throw new InvalidClassFormatException(classFileName + '(' +
+						  e.getMessage() + ')');
         } finally {
             if (in != null)
                 in.close();
@@ -147,7 +150,8 @@ public class ClassFile {
         try {
             DataInputStream in = new DataInputStream(classData);
             if (in == null)
-                throw new IOException("invalid class format");
+		// shouldn't happen, unless java.io constructors fail
+                throw new IOException();
             constantPool = loadClassHeader(in);
             interfaces = getCPClassList(in, constantPool);
 
@@ -159,7 +163,7 @@ public class ClassFile {
 		baos.write(buf, 0, c);
 	    laterBytes = baos.toByteArray();
         } catch (IOException ioe) {
-	    throw new IOException(makeErrorMsg(ioe));
+	    throw new InvalidClassFormatException(makeErrorMsg(ioe));
         }
     }
 
@@ -180,11 +184,9 @@ public class ClassFile {
     }
 
     private String makeErrorMsg(IOException ioe) {
-	StringBuffer sb = new StringBuffer("invalid class format");
-	if (sourceFileName != null) {
-	    sb.append(": ");
+	StringBuffer sb = new StringBuffer();
+	if (sourceFileName != null)
 	    sb.append(sourceFileName);
-	}
 	sb.append('(');
 	sb.append(ioe.getMessage());
 	sb.append(')');
@@ -194,7 +196,7 @@ public class ClassFile {
     private ConstantPool loadClassHeader(DataInputStream in) throws IOException {
         int magic = in.readInt();
         if (magic != 0xCAFEBABE) {
-            throw new IOException("invalid class format");
+            throw new InvalidClassFormatException();
         }
             
         minorVersion = in.readShort();
@@ -204,7 +206,7 @@ public class ClassFile {
         classAccess = in.readUnsignedShort();
         classInfo = pool.getClass(in.readUnsignedShort());
         if (classInfo == null)
-            throw new IOException("invalid class format");
+            throw new InvalidClassFormatException();
         int index = in.readUnsignedShort();
         if (index != 0) // true for java.lang.Object
             superClassInfo = pool.getClass(index);
