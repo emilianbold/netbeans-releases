@@ -80,6 +80,7 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
   }
 
   public void setValue (Object object) {
+    if (object == null) current = null;
     if (object instanceof Border) {
       current = (Border) object;
 
@@ -438,6 +439,8 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
 
 /*
  * Log
+ *  18   Gandalf   1.17        1/24/00  Pavel Buzek     #5490 fixed - getText 
+ *       works for null border
  *  17   Gandalf   1.16        1/20/00  Pavel Buzek     
  *  16   Gandalf   1.15        1/13/00  Ian Formanek    NOI18N #2
  *  15   Gandalf   1.14        1/10/00  Ian Formanek    provides better 
