@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
-  <target name="compile">
+  <target name="compile" depends="hack13">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
@@ -40,8 +40,27 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
         <pathelement location="../java/netbeans/modules/java.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+        <pathelement location="tmp"/>
       </classpath>
     </javac>
+  </target>
+
+  <target name="hack13">
+    <available property="hack13" classname="java.lang.CharSequence" />
+    <available property="uptodate" file="tmp/java/awt/image/VolatileImage.java" />
+
+    <antcall target="hack13-check" />
+  </target>
+
+  <target name="hack13-check" unless="hack13">
+    <antcall target="hack13-do" />
+  </target>
+
+  <target name="hack13-do" unless="uptodate">
+    <mkdir dir="tmp/java/awt/image/" />
+    <echo file="tmp/java/awt/image/VolatileImage.java" message="package java.awt.image;public abstract class VolatileImage extends java.awt.Image {}" />
+    <echo file="tmp/java/awt/BufferCapabilities.java" message="package java.awt;public class BufferCapabilities implements Cloneable {public static final class FlipContents {}}" />
+    <javac srcdir="tmp" destdir="tmp" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" />
   </target>
 
   <target name="jars" depends="compile">
@@ -89,8 +108,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="form.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
+    <delete dir="tmp" />
   </target>
 
 </project>
-
-
