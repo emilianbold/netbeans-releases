@@ -96,7 +96,12 @@ public class ImageViewer extends CloneableTopComponent {
     public ImageViewer(ImageDataObject obj) {
         initialize(obj);
     }
-
+    
+    /** Overriden to explicitely set persistence type of ImageViewer
+     * to PERSISTENCE_ONLY_OPENED */
+    public int getPersistenceType() {
+        return TopComponent.PERSISTENCE_ONLY_OPENED;
+    }
     
     /** Reloads icon. */
     protected void reloadIcon(NBImageIcon icon) {
