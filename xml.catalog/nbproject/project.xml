@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
+            <code-name-base>org.netbeans.modules.xml.catalog</code-name-base>
+            <path>xml/catalog</path>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.openide.loaders</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/> <!-- generates manifest entry -->
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.api.xml</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.core</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+               </dependency>
+                <dependency>
+                    <code-name-base>org.openide</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>3.17</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <public-packages>
+                <package>org.netbeans.modules.xml.catalog.spi</package>
+            </public-packages>
+            <javadoc/>
+        </data>
+    </configuration>
+</project>

@@ -22,9 +22,7 @@ import org.openide.cookies.*;
 import org.openide.util.actions.*;
 import org.openide.util.*;
 import org.openide.text.*;
-import org.openide.loaders.*;
 import org.openide.*;
-import org.openide.windows.CloneableTopComponent;
 
 import org.netbeans.modules.xml.catalog.lib.*;
 

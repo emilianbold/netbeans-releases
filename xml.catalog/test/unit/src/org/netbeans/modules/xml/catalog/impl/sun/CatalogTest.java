@@ -35,11 +35,11 @@ public final class CatalogTest extends TestCase {
         String s0 = catalog.resolvePublic("-//NetBeans//IZ53710//EN");
         new URL(s0).openStream();
         String s1 = catalog.resolvePublic("-//NetBeans//IZ53710 1//EN");
-        //new URL(s1).openStream();
+        new URL(s1).openStream();
         String s2 = catalog.resolvePublic("-//NetBeans//IZ53710 2//EN");
-        //new URL(s2).openStream();
+        // new URL(s2).openStream();
         String s3 = catalog.resolvePublic("-//NetBeans//IZ53710 3//EN");
-        //new URL(s3).openStream();
+        new URL(s3).openStream();
 
         InputSource in1 = catalog.resolveEntity("-//NetBeans//IZ53710 1//EN", null);
         InputSource in2 = catalog.resolveEntity("-//NetBeans//IZ53710 2//EN", null);

@@ -23,9 +23,7 @@ import org.openide.util.*;
 import org.openide.actions.*;
 
 import org.netbeans.modules.xml.catalog.spi.*;
-import org.netbeans.modules.xml.catalog.impl.*;
 import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
-import java.awt.event.ActionEvent;
 
 /**
  * Node representing a catalog.

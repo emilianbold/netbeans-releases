@@ -14,11 +14,14 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="xml/catalog/test-unit" basedir="." default="all">
+
+    <property name="module.jar.basename" value="xml-catalog.jar"/>
+
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
 
     <target name="myunit-compiler" depends="init,init-cp">
         <!--ant dir="../../vcsgeneric/test/unit/testprofile" target="compile" /-->
-        <buildTests srcdir="unit/src" compileexcludes="**/data/**">
+       <buildTests srcdir="unit/src" compileexcludes="**/data/**">
             <classpath>
                 <path refid="test.unit.compile.cp"/>
                 <!--pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-vcs-advanced.jar"/>
