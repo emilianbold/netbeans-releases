@@ -208,8 +208,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     roots[0] = ns.repository ();
     System.arraycopy (moduleRoots, 0, roots, 1, moduleRoots.length);
     roots[roots.length - 3] = DesktopNode.createEnvironmentNode ();
-    roots[roots.length - 2] = DesktopNode.createSessionNode ();
-    roots[roots.length - 1] = DesktopNode.createProjectSettingsNode ();
+    roots[roots.length - 2] = DesktopNode.createProjectSettingsNode ();
+    roots[roots.length - 1] = DesktopNode.createSessionNode ();
     return roots;
   }
 
@@ -436,6 +436,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  17   Gandalf   1.16        7/15/99  Ian Formanek    Swapped Global and 
+*       Project settings tabs
 *  16   Gandalf   1.15        7/13/99  Ian Formanek    New MainExplorer tabs 
 *       (usability&intuitiveness discussion results)
 *  15   Gandalf   1.14        7/12/99  Jesse Glick     Context help.
