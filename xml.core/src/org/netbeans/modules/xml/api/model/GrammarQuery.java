@@ -64,21 +64,21 @@ public interface GrammarQuery {
      * @postconditions Let ctx unchanged
      * @time Performs fast up to 300 ms.
      * @stereotype query
-     * @param ctx represents virtual element Node that has to be replaced, its own attributes does not name sense, it can be used just as the navigation start point.
+     * @param virtualElementCtx represents virtual element Node that has to be replaced, its own attributes does not name sense, it can be used just as the navigation start point.
      * @return enumeration of <code>GrammarResult</code>s (ELEMENT_NODEs) that can be queried on name, and attributes.
      *         Every list member represents one possibility.  
      */
-    Enumeration queryElements(HintContext ctx);
+    Enumeration queryElements(HintContext virtualElementCtx);
 
     /**
      * @stereotype query
      * @output list of results that can be queried on name, and attributes
      * @time Performs fast up to 300 ms. 
-     * @param ctx represents owner <code>Element</code> that will host result.
+     * @param ownerElementCtx represents owner <code>Element</code> that will host result.
      * @return enumeration of <code>GrammarResult</code>s (ATTRIBUTE_NODEs) that can be queried on name, and attributes.
      *         Every list member represents one possibility.  
      */
-    Enumeration queryAttributes(HintContext ctx);
+    Enumeration queryAttributes(HintContext ownerElementCtx);
 
     /**
      * Return options for value at given context.
@@ -87,23 +87,40 @@ public interface GrammarQuery {
      * @postconditions Let ctx unchanged
      * @time Performs fast up to 300 ms.
      * @stereotype query
-     * @param ctx represents virtual Node that has to be replaced (parent can be either Attr or Element), its own attributes does not name sense, it can be used just as the navigation start point.
+     * @param virtualTextCtx represents virtual Node that has to be replaced (parent can be either Attr or Element), its own attributes does not name sense, it can be used just as the navigation start point.
      * @return enumeration of <code>GrammarResult</code>s (TEXT_NODEs) that can be queried on name, and attributes.
      *         Every list member represents one possibility.  
      */
-    Enumeration queryValues(HintContext ctx);
+    Enumeration queryValues(HintContext virtualTextCtx);
+
+    /**
+     * Return default value for given context.
+     * @param virtualNodeCtx position for which default is queried
+     * @return default value or <code>null</code>
+     */
+    GrammarResult queryDefault(HintContext virtualNodeCtx);
 
     /**
      * Allow to get names of <b>parsed general entities</b>.
+     * @param prefix prefix filter
      * @return enumeration of <code>GrammarResult</code>s (ENTITY_REFERENCE_NODEs)
      */
     Enumeration queryEntities(String prefix);
 
     /**
      * Allow to get names of <b>declared notations</b>.
+     * @param prefix prefix filter
      * @return enumeration of <code>GrammarResult</code>s (NOTATION_NODEs)
      */    
     Enumeration queryNotations(String prefix);
+
+    /**
+     * Distinquieshes between empty enumaration types.
+     * @return <code>true</code> there is no known result 
+     *         <code>false</code> grammar does not allow here a result
+     */
+    boolean isAllowed(Enumeration en);
+    
     
     
     // Candidates for separate interface ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

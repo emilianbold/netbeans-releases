@@ -103,7 +103,7 @@ public class DTDParser {
      */
     private class Handler extends DefaultHandler implements DeclHandler {
 
-        private Map attrs, elements, models, enums;
+        private Map attrs, elements, models, enums, attrDefaults;
         private Set notations, entities, anys;
         private DTDGrammar dtd;
         
@@ -115,7 +115,8 @@ public class DTDParser {
             entities = new TreeSet();
             anys = new HashSet();
             enums = new HashMap();
-            dtd = new DTDGrammar(elements, models, attrs, enums, entities, notations);
+            attrDefaults = new HashMap();
+            dtd = new DTDGrammar(elements, models, attrs, attrDefaults, enums, entities, notations);
         }
 
         /**
@@ -177,9 +178,12 @@ public class DTDParser {
                 while (tokenizer.hasMoreTokens()) {
                     tokens.add(tokenizer.nextToken());
                 }
-                enums.put(eName + " " + aName, tokens);
+                enums.put(eName + " " + aName, tokens);                         // NOI18N
             }
-            
+
+            // store defaults
+            String key = eName + " " + aName;                                   // NOI18N
+            attrDefaults.put(key, valueDefault);            
         }
         
         public void internalEntityDecl(String name, String value) throws SAXException {

@@ -700,6 +700,16 @@ public class XSLGrammarQuery implements GrammarQuery{
         return EmptyEnumeration.EMPTY;
     }
     
+    public GrammarResult queryDefault(HintContext ctx) {
+        //??? XSLT defaults are missing
+        if (resultGrammarQuery == null) return null;
+        return resultGrammarQuery.queryDefault(ctx);
+    }
+    
+    public boolean isAllowed(Enumeration en) {
+        return true; //!!! not implemented
+    }
+    
     public Enumeration queryEntities(String prefix) {
         QueueEnumeration list = new QueueEnumeration();
         

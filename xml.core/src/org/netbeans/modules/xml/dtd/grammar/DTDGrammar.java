@@ -33,25 +33,29 @@ import org.netbeans.modules.xml.spi.dom.*;
 public class DTDGrammar implements GrammarQuery {
     
     // element name keyed
-    Map elementDecls, attrDecls;
+    private Map elementDecls, attrDecls;
     
     // Map<elementName:String, ContentModel || null>
     // this map is filled asynchronously as it takes some time
-    Map contentModels;
+    private Map contentModels;
     
     // Map<elementname + " " + attributename, List<String>>
-    Map attrEnumerations;
+    private Map attrEnumerations;
     
-    Set entities, notations;
+    // Map<elementname + " " + attributename, String>
+    private Map defaultAttributeValues;
+    
+    private Set entities, notations;
     
     /** Creates new DTDGrammar */
-    DTDGrammar(Map elementDecls, Map contentModels, Map attrDecls, Map enums, Set entities, Set notations) {
+    DTDGrammar(Map elementDecls, Map contentModels, Map attrDecls, Map attrDefs, Map enums, Set entities, Set notations) {
         this.elementDecls = elementDecls;
         this.attrDecls = attrDecls;
         this.entities = entities;
         this.notations = notations;
         this.attrEnumerations = enums;
         this.contentModels = contentModels;
+        this.defaultAttributeValues = attrDefs;
     }
 
     /**
@@ -225,6 +229,31 @@ public class DTDGrammar implements GrammarQuery {
         return EmptyEnumeration.EMPTY;
     }
 
+    // return defaults for attribute values
+    public GrammarResult queryDefault(HintContext ctx) {
+        if (ctx.getNodeType() == Node.TEXT_NODE) {
+            Node parent = ctx.getParentNode();
+            if (parent == null) return null;
+            if (parent.getNodeType() == Node.ATTRIBUTE_NODE) {
+                Attr attr = (Attr) parent;
+                Element element = attr.getOwnerElement();
+                if (element == null) return null;
+                
+                String elementName = element.getNodeName();
+                String attributeName = attr.getNodeName();
+                String key = elementName + " " + attributeName;                 // NOI18N
+                String def = (String) defaultAttributeValues.get(key);
+                if (def == null) return null;
+                return new MyText(def);
+            }
+        }
+        return null;
+    }
+    
+    // it is not yet implemented
+    public boolean isAllowed(Enumeration en) {
+        return true;
+    }
     
     // customizers section ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
