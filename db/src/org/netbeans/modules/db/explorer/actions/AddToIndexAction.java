@@ -46,6 +46,7 @@ public class AddToIndexAction extends DatabaseAction
 //			DatabaseMetaData dmd = con.getMetaData();
 			DatabaseMetaData dmd = info.getSpecification().getMetaData();
 			Specification spec = (Specification)nfo.getSpecification();
+      DriverSpecification drvSpec = info.getDriverSpecification();
 			String index = (String)nfo.get(DatabaseNode.INDEX);
 
 			// List columns used in current index (do not show)
@@ -54,20 +55,22 @@ public class AddToIndexAction extends DatabaseAction
 //			ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),tablename, true, false);
 
 //je to BARBARSTVI, po beta 6 rozumne prepsat
-ResultSet rs;
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	rs = dmd.getIndexInfo(catalog, null, tablename, true, false);
-else
-	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), tablename, true, false);
+//ResultSet rs;
+//if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+//	rs = dmd.getIndexInfo(catalog, null, tablename, true, false);
+//else
+//	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), tablename, true, false);
+      
+	    drvSpec.getIndexInfo(catalog, dmd, tablename, true, false);
 	
-			while (rs.next()) {
-				String ixname = rs.getString("INDEX_NAME");
+			while (drvSpec.rs.next()) {
+				String ixname = drvSpec.rs.getString("INDEX_NAME");
 				if (ixname != null) {
-					String colname = rs.getString("COLUMN_NAME");
+					String colname = drvSpec.rs.getString("COLUMN_NAME");
 					if (ixname.equals(index)) ixrm.add(colname);
 				}
 			}
-			rs.close();
+			drvSpec.rs.close();
 
 			// List columns not present in current index
 
@@ -75,16 +78,18 @@ else
 //			rs = dmd.getColumns(catalog, nfo.getUser(), tablename, null);
 
 //je to BARBARSTVI, po beta 6 rozumne prepsat
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	rs = dmd.getColumns(catalog, null, tablename, null);
-else
-	rs = dmd.getColumns(catalog, dmd.getUserName(), tablename, null);
+//if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+//	rs = dmd.getColumns(catalog, null, tablename, null);
+//else
+//	rs = dmd.getColumns(catalog, dmd.getUserName(), tablename, null);
 	
-			while (rs.next()) {
-				String colname = rs.getString("COLUMN_NAME");
+      drvSpec.getColumns(catalog, dmd, tablename, null);
+      
+			while (drvSpec.rs.next()) {
+				String colname = drvSpec.rs.getString("COLUMN_NAME");
 				if (!ixrm.contains(colname)) cols.add(colname);
 			}
-			rs.close();
+			drvSpec.rs.close();
 			if (cols.size() == 0) throw new Exception("no usable column in place");
 			
 			// Create and execute command
@@ -113,6 +118,7 @@ else
 }
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        2/16/00  Radko Najman    driver adaptor
  *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
  *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

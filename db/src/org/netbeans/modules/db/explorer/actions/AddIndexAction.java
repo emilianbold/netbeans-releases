@@ -47,22 +47,29 @@ public class AddIndexAction extends DatabaseAction
 			DatabaseMetaData dmd = info.getSpecification().getMetaData();
 			Specification spec = (Specification)nfo.getSpecification();
 			String index = (String)nfo.get(DatabaseNode.INDEX);
+      DriverSpecification drvSpec = info.getDriverSpecification();
 
 			// List columns not present in current index
 
 			Vector cols = new Vector(5);
+      
 //			ResultSet rs = dmd.getColumns(catalog, nfo.getUser(), tablename, null);
 
 //je to BARBARSTVI, po beta 6 rozumne prepsat
-ResultSet rs;
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	rs = dmd.getColumns(catalog, null, tablename, null);
-else
-	rs = dmd.getColumns(catalog, dmd.getUserName(), tablename, null);
+//ResultSet rs;
+//if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+//	rs = dmd.getColumns(catalog, null, tablename, null);
+//else
+//	rs = dmd.getColumns(catalog, dmd.getUserName(), tablename, null);
 	
-			while (rs.next()) cols.add(rs.getString("COLUMN_NAME"));
-			rs.close();
-			if (cols.size() == 0) throw new Exception("no usable column in place");
+      drvSpec.getColumns(catalog, dmd, tablename, null);
+      
+			while (drvSpec.rs.next())
+        cols.add(drvSpec.rs.getString("COLUMN_NAME"));
+			drvSpec.rs.close();
+      
+			if (cols.size() == 0)
+        throw new Exception("no usable column in place");
 
 			// Create and execute command
 			
@@ -82,12 +89,13 @@ else
 			}
 
 		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to perform operation "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to perform operation " + node.getName() + ", " + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 		}
 	}
 }
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         2/16/00  Radko Najman    driver adaptor
  *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

@@ -16,24 +16,23 @@ package com.netbeans.enterprise.modules.db.explorer.dlg;
 import java.sql.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.InputStream;
 import java.util.*;
 import java.beans.*;
+
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.*;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
-import java.io.InputStream;
-import com.netbeans.ddl.impl.AddColumn;
-import com.netbeans.ddl.impl.Specification;
-import com.netbeans.ddl.impl.CreateTable;
-import com.netbeans.ddl.util.CommandBuffer;
-import com.netbeans.ddl.impl.CreateIndex;
-import com.netbeans.ddl.util.PListReader;
-import javax.swing.event.TableModelEvent;
+
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
+
+import com.netbeans.ddl.impl.*;
+import com.netbeans.ddl.util.*;
 import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.util.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
@@ -57,8 +56,7 @@ public class AddTableColumnDialog
 	JCheckBox pkcheckbox, ixcheckbox, checkcheckbox, nullcheckbox, uniquecheckbox;
 	DataModel dmodel = new DataModel();
 	
-	public AddTableColumnDialog(final Specification spe, final DatabaseNodeInfo nfo)
-	{  
+	public AddTableColumnDialog(final Specification spe, final DatabaseNodeInfo nfo) {
 		spec = spe;
 		try {
 			JLabel label;
@@ -75,24 +73,24 @@ public class AddTableColumnDialog
 			// Column name
 		
 			label = new JLabel(bundle.getString("AddTableColumnName"));
-            con.weightx = 0.0;
+      con.weightx = 0.0;
 			con.anchor = GridBagConstraints.WEST;
 			con.insets = new java.awt.Insets (2, 2, 2, 2);
-            con.gridx = 0;
-            con.gridy = 0;
+      con.gridx = 0;
+      con.gridy = 0;
 			layout.setConstraints(label, con);
 			pane.add(label);
         
-            con.fill = GridBagConstraints.HORIZONTAL;
-            con.weightx = 1.0;
-            con.gridx = 1;
-            con.gridy = 0;
+      con.fill = GridBagConstraints.HORIZONTAL;
+      con.weightx = 1.0;
+      con.gridx = 1;
+      con.gridy = 0;
 			con.insets = new java.awt.Insets (2, 2, 2, 2);
-            colnamefield = new JTextField(35);
-            colnamefield.setName(ColumnItem.NAME);
-            colnamefield.addFocusListener(fldlistener);
-            layout.setConstraints(colnamefield, con);
-            pane.add(colnamefield);
+      colnamefield = new JTextField(35);
+      colnamefield.setName(ColumnItem.NAME);
+      colnamefield.addFocusListener(fldlistener);
+      layout.setConstraints(colnamefield, con);
+      pane.add(colnamefield);
         
 			// Column type
 			
@@ -110,68 +108,68 @@ public class AddTableColumnDialog
 			dmodel.addRow(item);
 
 			label = new JLabel(bundle.getString("AddTableColumnType"));
-            con.weightx = 0.0;
+      con.weightx = 0.0;
 			con.anchor = GridBagConstraints.WEST;
 			con.insets = new java.awt.Insets (2, 2, 2, 2);
-            con.gridx = 0;
-            con.gridy = 1;
+      con.gridx = 0;
+      con.gridy = 1;
 			layout.setConstraints(label, con);
 			pane.add(label);
 
-            con.fill = GridBagConstraints.HORIZONTAL;
-            con.weightx = 1.0;
-            con.gridx = 1;
-            con.gridy = 1;
+      con.fill = GridBagConstraints.HORIZONTAL;
+      con.weightx = 1.0;
+      con.gridx = 1;
+      con.gridy = 1;
 			con.insets = new java.awt.Insets (2, 2, 2, 2);
-            coltypecombo = new JComboBox(ttab);
-            coltypecombo.addActionListener(new ComboBoxListener(dmodel));
-            coltypecombo.setName(ColumnItem.TYPE);
-            layout.setConstraints(coltypecombo, con);
-            pane.add(coltypecombo);
+      coltypecombo = new JComboBox(ttab);
+      coltypecombo.addActionListener(new ComboBoxListener(dmodel));
+      coltypecombo.setName(ColumnItem.TYPE);
+      layout.setConstraints(coltypecombo, con);
+      pane.add(coltypecombo);
 
 			// Column size
 		
 			label = new JLabel(bundle.getString("AddTableColumnSize"));
-            con.weightx = 0.0;
+      con.weightx = 0.0;
 			con.anchor = GridBagConstraints.WEST;
 			con.insets = new java.awt.Insets (2, 2, 2, 2);
-            con.gridx = 0;
-            con.gridy = 2;
+      con.gridx = 0;
+      con.gridy = 2;
 			layout.setConstraints(label, con);
 			pane.add(label);
         
-            con.fill = GridBagConstraints.HORIZONTAL;
-            con.weightx = 1.0;
-            con.gridx = 1;
-            con.gridy = 2;
+      con.fill = GridBagConstraints.HORIZONTAL;
+      con.weightx = 1.0;
+      con.gridx = 1;
+      con.gridy = 2;
 			con.insets = new java.awt.Insets (2, 2, 2, 2);
-            colsizefield = new ValidableTextField(new TextFieldValidator.integer());
-            colsizefield.setName(ColumnItem.SIZE);
-            colsizefield.addFocusListener(intfldlistener);
-            layout.setConstraints(colsizefield, con);
-            pane.add(colsizefield);
+      colsizefield = new ValidableTextField(new TextFieldValidator.integer());
+      colsizefield.setName(ColumnItem.SIZE);
+      colsizefield.addFocusListener(intfldlistener);
+      layout.setConstraints(colsizefield, con);
+      pane.add(colsizefield);
 
 			// Column default value
 		
 			label = new JLabel(bundle.getString("AddTableColumnDefault"));
-            con.weightx = 0.0;
+      con.weightx = 0.0;
 			con.anchor = GridBagConstraints.WEST;
 			con.insets = new java.awt.Insets (2, 2, 2, 2);
-            con.gridx = 0;
-            con.gridy = 3;
+      con.gridx = 0;
+      con.gridy = 3;
 			layout.setConstraints(label, con);
 			pane.add(label);
         
-            con.fill = GridBagConstraints.HORIZONTAL;
-            con.weightx = 1.0;
-            con.gridx = 1;
-            con.gridy = 3;
+      con.fill = GridBagConstraints.HORIZONTAL;
+      con.weightx = 1.0;
+      con.gridx = 1;
+      con.gridy = 3;
 			con.insets = new java.awt.Insets (2, 2, 2, 2);
-            defvalfield = new JTextField(35);
-            defvalfield.setName(ColumnItem.DEFVAL);
-            defvalfield.addFocusListener(fldlistener);
-            layout.setConstraints(defvalfield, con);
-            pane.add(defvalfield);
+      defvalfield = new JTextField(35);
+      defvalfield.setName(ColumnItem.DEFVAL);
+      defvalfield.addFocusListener(fldlistener);
+      layout.setConstraints(defvalfield, con);
+      pane.add(defvalfield);
                   
 			// Check subpane
 			
@@ -183,72 +181,73 @@ public class AddTableColumnDialog
 			
 			ActionListener cbxlistener = new CheckBoxListener(dmodel);
 						
-            subcon.weightx = 0.0;
+      subcon.weightx = 0.0;
 			subcon.anchor = GridBagConstraints.WEST;
-            subcon.gridx = 0;
-            subcon.gridy = 0;
-            pkcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintPKTitle"));
-            pkcheckbox.setName(ColumnItem.PRIMARY_KEY);
-            pkcheckbox.addActionListener(cbxlistener);
-            sublayout.setConstraints(pkcheckbox, subcon);
-            subpane.add(pkcheckbox);
+      subcon.gridx = 0;
+      subcon.gridy = 0;
+      pkcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintPKTitle"));
+      pkcheckbox.setName(ColumnItem.PRIMARY_KEY);
+      pkcheckbox.addActionListener(cbxlistener);
+      sublayout.setConstraints(pkcheckbox, subcon);
+      subpane.add(pkcheckbox);
 
-            subcon.gridx = 1;
-            subcon.gridy = 0;
-            uniquecheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintUniqueTitle"));
-            sublayout.setConstraints(uniquecheckbox, subcon);
-            uniquecheckbox.setName(ColumnItem.UNIQUE);
-            uniquecheckbox.addActionListener(cbxlistener);
-            subpane.add(uniquecheckbox);
+      subcon.gridx = 1;
+      subcon.gridy = 0;
+      uniquecheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintUniqueTitle"));
+      sublayout.setConstraints(uniquecheckbox, subcon);
+      uniquecheckbox.setName(ColumnItem.UNIQUE);
+      uniquecheckbox.addActionListener(cbxlistener);
+      subpane.add(uniquecheckbox);
 
-            subcon.gridx = 2;
-            subcon.gridy = 0;
-            nullcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintNullTitle"));
-            sublayout.setConstraints(nullcheckbox, subcon);
-            nullcheckbox.setName(ColumnItem.NULLABLE);
-            nullcheckbox.addActionListener(cbxlistener);
-            subpane.add(nullcheckbox);
+      subcon.gridx = 2;
+      subcon.gridy = 0;
+      nullcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintNullTitle"));
+      sublayout.setConstraints(nullcheckbox, subcon);
+      nullcheckbox.setName(ColumnItem.NULLABLE);
+      nullcheckbox.addActionListener(cbxlistener);
+      subpane.add(nullcheckbox);
 		            
 			// Insert subpane
 		
-            con.weightx = 1.0;
-            con.weighty = 0.0;
-            con.gridwidth = 2;
-            con.fill = GridBagConstraints.BOTH;
+      con.weightx = 1.0;
+      con.weighty = 0.0;
+      con.gridwidth = 2;
+      con.fill = GridBagConstraints.BOTH;
 			con.insets = new java.awt.Insets (0, 0, 0, 0);
-            con.gridx = 0;
-            con.gridy = 4;
+      con.gridx = 0;
+      con.gridy = 4;
 			layout.setConstraints(subpane, con);
 			pane.add(subpane);
 
 			// Index name combo
 			
-            con.gridx = 0;
-            con.gridy = 5;
-            con.gridwidth = 1;
-            ixcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintIXTitle"));
-            layout.setConstraints(ixcheckbox, con);
-            ixcheckbox.setName(ColumnItem.INDEX);
-            ixcheckbox.addActionListener(cbxlistener);
-           	pane.add(ixcheckbox);
+      con.gridx = 0;
+      con.gridy = 5;
+      con.gridwidth = 1;
+      ixcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintIXTitle"));
+      layout.setConstraints(ixcheckbox, con);
+      ixcheckbox.setName(ColumnItem.INDEX);
+      ixcheckbox.addActionListener(cbxlistener);
+      pane.add(ixcheckbox);
  
 			try {
-//				DatabaseMetaData dmd = nfo.getConnection().getMetaData();
 				DatabaseMetaData dmd = nfo.getSpecification().getMetaData();
 				String catalog = (String)nfo.get(DatabaseNode.CATALOG);
 				String table = (String)nfo.get(DatabaseNode.TABLE);
+        DriverSpecification drvSpec = nfo.getDriverSpecification();
+
 //				ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),table, true, false);
 
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-ResultSet rs;
-if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-	rs = dmd.getIndexInfo(catalog, null, table, true, false);
-else
-	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
+        drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+        
+//if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+//	rs = dmd.getIndexInfo(catalog, null, table, true, false);
+//else
+//	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
 	
 				ixmap = new HashMap();
-				while (rs.next()) {
-					String ixname = rs.getString("INDEX_NAME");
+				while (drvSpec.rs.next()) {
+					String ixname = drvSpec.rs.getString("INDEX_NAME");
 					if (ixname != null) {
 						Vector ixcols = (Vector)ixmap.get(ixname);
 						if (ixcols == null) {
@@ -256,45 +255,47 @@ else
 							ixmap.put(ixname,ixcols);
 						}
 						
-						ixcols.add(rs.getString("COLUMN_NAME"));
+						ixcols.add(drvSpec.rs.getString("COLUMN_NAME"));
 					}	
 				}
-				rs.close();
-			} catch (Exception e) {}
+				drvSpec.rs.close();
+			} catch (Exception e) {
+//      
+      }
 
-            con.fill = GridBagConstraints.HORIZONTAL;
-            con.weightx = 1.0;
-            con.gridx = 1;
-            con.gridy = 5;
+      con.fill = GridBagConstraints.HORIZONTAL;
+      con.weightx = 1.0;
+      con.gridx = 1;
+      con.gridy = 5;
 			con.insets = new java.awt.Insets (2, 2, 2, 2);
-            idxcombo = new JComboBox(new Vector(ixmap.keySet()));
-            layout.setConstraints(idxcombo, con);
-            pane.add(idxcombo);
+      idxcombo = new JComboBox(new Vector(ixmap.keySet()));
+      layout.setConstraints(idxcombo, con);
+      pane.add(idxcombo);
 
 			// Check title and textarea
 			
-            con.gridx = 0;
-            con.gridy = 6;
-            checkcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintCheckTitle"));
-            layout.setConstraints(checkcheckbox, con);
-            checkcheckbox.setName(ColumnItem.CHECK);
-            checkcheckbox.addActionListener(cbxlistener);
-            pane.add(checkcheckbox);
+      con.gridx = 0;
+      con.gridy = 6;
+      checkcheckbox = new JCheckBox(bundle.getString("AddTableColumnConstraintCheckTitle"));
+      layout.setConstraints(checkcheckbox, con);
+      checkcheckbox.setName(ColumnItem.CHECK);
+      checkcheckbox.addActionListener(cbxlistener);
+      pane.add(checkcheckbox);
 
-            con.fill = GridBagConstraints.BOTH;
+      con.fill = GridBagConstraints.BOTH;
 			con.insets = new java.awt.Insets (0,0,0,0);
-            con.gridwidth = 2;
-            con.gridheight = 1;
-            con.weightx = 1.0;
-            con.weighty = 1.0;
-            con.gridx =0;
-            con.gridy = 7;
-            checkfield = new JTextArea(3, 35);
-            checkfield.setName(ColumnItem.CHECK_CODE);
-            checkfield.addFocusListener(fldlistener);
-            JScrollPane spane = new JScrollPane(checkfield);
-            layout.setConstraints(spane, con);
-            pane.add(spane);
+      con.gridwidth = 2;
+      con.gridheight = 1;
+      con.weightx = 1.0;
+      con.weighty = 1.0;
+      con.gridx =0;
+      con.gridy = 7;
+      checkfield = new JTextArea(3, 35);
+      checkfield.setName(ColumnItem.CHECK_CODE);
+      checkfield.addFocusListener(fldlistener);
+      JScrollPane spane = new JScrollPane(checkfield);
+      layout.setConstraints(spane, con);
+      pane.add(spane);
 
 			if (ixmap.size() == 0) {
 				pkcheckbox.setEnabled(false);
@@ -302,24 +303,24 @@ else
 				idxcombo.setEnabled(false);
 			}
 		
-            item.addPropertyChangeListener(new PropertyChangeListener() {
-	      		public void propertyChange(PropertyChangeEvent evt) {
-	      			String pname = evt.getPropertyName();
-	      			Object nval = evt.getNewValue();
-	      			if (nval instanceof Boolean) {
-		      			boolean set = ((Boolean)nval).booleanValue();
-		      			if (pname.equals(ColumnItem.PRIMARY_KEY)) {
-		      				pkcheckbox.setSelected(set);
-		      			} else if (pname.equals(ColumnItem.INDEX)) {
-		      				ixcheckbox.setSelected(set);
-		      			} else if (pname.equals(ColumnItem.UNIQUE)) {
-		      				uniquecheckbox.setSelected(set);
-		      			} else if (pname.equals(ColumnItem.NULLABLE)) {
-		      				nullcheckbox.setSelected(set);
-						}
-					}
-	      		}
-            });
+      item.addPropertyChangeListener(new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+          String pname = evt.getPropertyName();
+          Object nval = evt.getNewValue();
+          if (nval instanceof Boolean) {
+            boolean set = ((Boolean)nval).booleanValue();
+            if (pname.equals(ColumnItem.PRIMARY_KEY)) {
+              pkcheckbox.setSelected(set);
+            } else if (pname.equals(ColumnItem.INDEX)) {
+              ixcheckbox.setSelected(set);
+            } else if (pname.equals(ColumnItem.UNIQUE)) {
+              uniquecheckbox.setSelected(set);
+            } else if (pname.equals(ColumnItem.NULLABLE)) {
+              nullcheckbox.setSelected(set);
+            }
+          }
+        }
+      });
                 
 			ActionListener listener = new ActionListener() {
 				public void actionPerformed(ActionEvent event) {
@@ -392,34 +393,29 @@ else
 		}
     }
     
-    public boolean run()
-    {
-    	if (dialog != null) dialog.setVisible(true);
-    	return result;
+  public boolean run() {
+    if (dialog != null) dialog.setVisible(true);
+    return result;
 	}
 
-	private boolean validate()
-	{
+	private boolean validate() {
 		Vector cols = dmodel.getData();
 		Enumeration colse = cols.elements();
-		while(colse.hasMoreElements()) {
-			if (!((ColumnItem)colse.nextElement()).validate()) return false;
-		}
+		while(colse.hasMoreElements())
+			if (!((ColumnItem)colse.nextElement()).validate())
+        return false;
 		
 		return true;
 	}
 	
-	public String getColumnName()
-	{
+	public String getColumnName() {
 		return colname;
 	}
 	
-	class CheckBoxListener implements ActionListener
-	{
+	class CheckBoxListener implements ActionListener {
 		private DataModel data;
 		
-		CheckBoxListener(DataModel data)
-		{
+		CheckBoxListener(DataModel data) {
 			this.data = data;
 		}
 		
@@ -430,12 +426,10 @@ else
 		}
 	}
 
-	class ComboBoxListener implements ActionListener
-	{
+	class ComboBoxListener implements ActionListener {
 		private DataModel data;
 		
-		ComboBoxListener(DataModel data)
-		{
+		ComboBoxListener(DataModel data) {
 			this.data = data;
 		}
 		
@@ -446,12 +440,10 @@ else
 		}
 	}
 
-	class TextFieldListener implements FocusListener
-	{
+	class TextFieldListener implements FocusListener {
 		private DataModel data;
 		
-		TextFieldListener(DataModel data)
-		{
+		TextFieldListener(DataModel data) {
 			this.data = data;
 		}
 
@@ -465,12 +457,10 @@ else
 		}
 	}
 
-	class IntegerFieldListener implements FocusListener
-	{
+	class IntegerFieldListener implements FocusListener {
 		private DataModel data;
 		
-		IntegerFieldListener(DataModel data)
-		{
+		IntegerFieldListener(DataModel data) {
 			this.data = data;
 		}
 
@@ -490,6 +480,7 @@ else
 }
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        2/16/00  Radko Najman    driver adaptor
  *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
