@@ -159,6 +159,31 @@ public class TransactionNode extends AbstractNode {
 	};
     }
 
+
+    public SystemAction[] getActions () {
+
+	if(current) {
+	    return new SystemAction[] {
+		SystemAction.get(DisplayAction.class),
+		SystemAction.get(SaveAction.class),
+		null,
+		SystemAction.get(ReplayAction.class),
+		SystemAction.get(EditReplayAction.class),
+		null,
+		SystemAction.get(DeleteAction.class)
+	    };
+	}
+     
+	return new SystemAction[] {
+	    SystemAction.get(DisplayAction.class),
+	    null,
+	    SystemAction.get(ReplayAction.class),
+	    SystemAction.get(EditReplayAction.class),
+	    null,
+	    SystemAction.get(DeleteAction.class),
+	};
+    }
+
     /** Can this node be copied?
      * @return <code>true</code> in the default implementation
      */
@@ -210,6 +235,7 @@ public class TransactionNode extends AbstractNode {
 	    setIconBase("/org/netbeans/modules/web/monitor/client/icons/other"); //NOI18N
 	
 	setNameString();
+	setShortDescription(uri);
     }
     
     public void setNameString() {
