@@ -17,12 +17,4 @@ Microsystems, Inc. All Rights Reserved.
   -->
 
 <list module="catalog">
-    <item>
-        <summary>RuntimeCatalog does not work now</summary>
-        <description>Correct support of org.openide.loaders.XMLDataObjectImpl.RuntimeCatalog which does not work now.</description>
-    </item>
-    <item>
-        <summary>FileEntityResolver support</summary>
-        <description>Add support for org.netbeans.core.xml.FileEntityResolver.</description>
-    </item>
 </list>

@@ -18,23 +18,22 @@ Microsystems, Inc. All Rights Reserved.
 
 <list module="core">
     <item>
-        <summary>DataNode and EditorSupport in ???DataObject</summary>
-        <description>Bad model of DataNode and EditorSupport in XML- and DTD- DataObject.</description>
-    </item>
-    <item>
-        <summary>TextEditorSupport should extend CloneableEditorSupport</summary>
-        <description>Class org.netbeans.modules.xml.core.text.TextEditorSupport should extend CloneableEditorSupport instead of DataEditorSupport which is associated with DataObject.</description>
-    </item>
-    <item>
         <summary>XML- and DTD- DataObject and XMLDataObjectLook</summary>
         <description>Clear XML- and DTD- DataObject and XMLDataObjectLook, use cookies model mainly.</description>
     </item>
+
     <item>
         <summary>XML API</summary>
-        <description>We could create 'xml-api' module which will specify API for other xml module; 'xml-core' will implement xml-api. See <a href="http://openide.netbeans.org/versioning-policy.html">API &amp; Module Versioning Policy</a> -- org.netbeans.modules.xml.[core.api|api].</description>
+        <description>We could create 'xml-api' module which will specify API for other xml module; 'xml-core' will implement xml-api. See <a href="http://openide.netbeans.org/versioning-policy.html">API &amp; Module Versioning Policy</a> -- <b>org.netbeans.modules.xml.api</b> and <b>org.netbeans.api.xml</b>.</description>
     </item>
+
     <item>
         <summary>XML- and DTD- DataLoader</summary>
         <description>XML- and DTD- DataLoader could have common super-class.</description>
+    </item>
+
+    <item>
+        <summary>Use putProperty, getProperty instead og static fields in CoreSettings.</summary>
+        <description>Instead of static fields in CoreSettings, use methods <b>putProperty</b>, <b>getProperty</b> (from SharedClassObject).</description>
     </item>
 </list>

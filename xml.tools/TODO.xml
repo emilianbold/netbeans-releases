@@ -26,8 +26,4 @@ Microsystems, Inc. All Rights Reserved.
 </ul>
         </description>
     </item>
-    <item priority="4">
-        <summary>Doclet could generate html with link to source DTD.</summary>
-        <description>Doclet could generate html with link to source DTD to be able to see / download original document.</description>
-    </item>
 </list>
