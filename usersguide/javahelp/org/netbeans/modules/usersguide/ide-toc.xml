@@ -43,6 +43,7 @@
       <tocitem text="Writing A Debug Target for a Free-Form Java Project" target="proj_free_debug" />
       <tocitem text="Writing A Debug Target for a Free-Form Web Project" target="proj_webfree_debug" />
       <tocitem text="Storing IDE Targets in a Separate Ant Script" target="proj_free_nbtargs" />
+      <tocitem text="Editing the project.xml File" target="proj_free_projectxml" />
     </tocitem>
   </tocitem>
 
