@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -62,7 +62,7 @@ public final class ServerRegistry implements java.io.Serializable {
         servers = new HashMap();
         instances = new HashMap();
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        FileObject dir = rep.findResource(DIR_JSR88_PLUGINS);
+        FileObject dir = rep.getDefaultFileSystem().findResource(DIR_JSR88_PLUGINS);
         dir.addFileChangeListener(new PluginInstallListener());
         FileObject[] ch = dir.getChildren();
         for(int i = 0; i < ch.length; i++) {
@@ -71,7 +71,7 @@ public final class ServerRegistry implements java.io.Serializable {
             //System.out.println("ServerRegistry.addPlugin("+ch[i]+")="+(System.currentTimeMillis()-t1));
         }
         
-        dir = rep.findResource(DIR_INSTALLED_SERVERS);
+        dir = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS);
         dir.addFileChangeListener(new InstanceInstallListener());
         ch = dir.getChildren();
         
@@ -219,7 +219,7 @@ public final class ServerRegistry implements java.io.Serializable {
     
     public static FileObject getInstanceFileObject(String url) {
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        FileObject[] installedServers = rep.findResource(DIR_INSTALLED_SERVERS).getChildren();
+        FileObject[] installedServers = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS).getChildren();
         for (int i=0; i<installedServers.length; i++) {
             String val = (String) installedServers[i].getAttribute(URL_ATTR);
             if (val != null && val.equals(url))
@@ -247,7 +247,7 @@ public final class ServerRegistry implements java.io.Serializable {
             return;
         }
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
-        FileObject dir = rep.findResource(DIR_INSTALLED_SERVERS);
+        FileObject dir = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS);
         FileObject instanceFOs[] = dir.getChildren();
         FileObject instanceFO = null;
         for (int i=0; i<instanceFOs.length; i++) {
