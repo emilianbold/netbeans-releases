@@ -30,6 +30,7 @@ class SessionNode extends EjbSectionNode {
         addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, session, helper));
         addChild(new BeanEnvironmentNode(sectionNodeView, session));
         addChild(new BeanDetailNode(sectionNodeView, session));
+        helpProvider = true;
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {

@@ -20,6 +20,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 
 import java.util.List;
 import java.util.LinkedList;
@@ -35,6 +36,7 @@ public class SectionNode extends AbstractNode {
     private SectionNodePanel sectionPanel = null;
     private final String iconBase;
     private final SectionNodeView sectionNodeView;
+    protected boolean helpProvider = false;
 
     /**
      * Create a new section node with a given child set.
@@ -96,6 +98,18 @@ public class SectionNode extends AbstractNode {
         boxPanel.setComponents((Component[]) nodeList.toArray(new Component[0]));
     }
 
+
+    public HelpCtx getHelpCtx() {
+        if (helpProvider) {
+            return new HelpCtx(getClass());
+        }
+        final Node parentNode = getParentNode();
+        if (parentNode instanceof SectionNode) {
+            return ((SectionNode) parentNode).getHelpCtx();
+        } else {
+            return new HelpCtx(sectionNodeView.getClass());
+        }
+    }
 
     public boolean canDestroy() {
         return true;

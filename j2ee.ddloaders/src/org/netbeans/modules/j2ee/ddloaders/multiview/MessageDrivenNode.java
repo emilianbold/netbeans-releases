@@ -29,6 +29,7 @@ class MessageDrivenNode extends EjbSectionNode {
         addChild(new MdbImplementationNode(sectionNodeView, messageDriven));
         addChild(new BeanEnvironmentNode(sectionNodeView, messageDriven));
         addChild(new BeanDetailNode(sectionNodeView, messageDriven));
+        helpProvider = true;
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {

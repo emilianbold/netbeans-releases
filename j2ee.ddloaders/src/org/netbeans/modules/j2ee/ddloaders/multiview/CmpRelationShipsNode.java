@@ -25,6 +25,7 @@ class CmpRelationShipsNode extends EjbSectionNode {
     CmpRelationShipsNode(SectionNodeView sectionNodeView, EjbJar ejbJar) {
         super(sectionNodeView, true, ejbJar, Utils.getBundleMessage("LBL_CmpRelationships"), Utils.ICON_BASE_MISC_NODE);
         setExpanded(true);
+        helpProvider = true;
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {

@@ -37,6 +37,7 @@ class EntityNode extends EjbSectionNode {
         }
         addChild(new BeanEnvironmentNode(sectionNodeView, entity));
         addChild(new BeanDetailNode(sectionNodeView, entity));
+        helpProvider = true;
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {

@@ -84,7 +84,9 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                 component.addFocusListener(focusListener);
             }
             if (component instanceof Container) {
-                addFocusListenerRecursively((Container) component, focusListener);
+                if (!(component instanceof SectionNodePanel)) {
+                    addFocusListenerRecursively((Container) component, focusListener);
+                }
             }
         }
     }

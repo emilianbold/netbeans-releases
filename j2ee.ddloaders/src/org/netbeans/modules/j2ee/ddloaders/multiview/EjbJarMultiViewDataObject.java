@@ -500,6 +500,11 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             }
         }
 
+        public HelpCtx getHelpCtx() {
+            final EjbJarMultiViewDataObject dataObject = ((EjbJarMultiViewDataObject)getDataObject());
+            return new HelpCtx(dataObject.getActiveMultiViewElement().getSectionView().getClass());
+        }
+
         public Image getIcon() {
             return Utilities.loadImage(Utils.ICON_BASE_DD_VALID + ".gif"); //NOI18N
         }
