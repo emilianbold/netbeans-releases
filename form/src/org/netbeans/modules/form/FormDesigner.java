@@ -133,11 +133,12 @@ public class FormDesigner extends TopComponent
     public void open(Workspace workspace) {
         if (formModel == null)
             return;
-        if (isOpened())
-            return;
         
         if (workspace == null)
             workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+        
+        if (isOpened(workspace))
+            return;
         
         Mode mode = workspace.findMode("Form"); // NOI18N
         

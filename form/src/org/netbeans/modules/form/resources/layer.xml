@@ -705,6 +705,27 @@ SystemFileSystem
                 <folder name="editor">
                 </folder>
             </folder>
+            <folder name="Editing">
+                <file name="Form.wsmode" url="windowmanager/Editing/Form.wsmode" />
+                <folder name="Form">
+                    <file name="ComponentInspector.wstcref" url="windowmanager/Editing/Form/ComponentInspector.wstcref" />
+                    <file name="ComponentPalette.wstcref" url="windowmanager/Editing/Form/ComponentPalette.wstcref" />
+                </folder>
+            </folder>
+            <folder name="Debugging">
+                <file name="Form.wsmode" url="windowmanager/Debugging/Form.wsmode" />
+                <folder name="Form">
+                    <file name="ComponentInspector.wstcref" url="windowmanager/Debugging/Form/ComponentInspector.wstcref" />
+                    <file name="ComponentPalette.wstcref" url="windowmanager/Debugging/Form/ComponentPalette.wstcref" />
+                </folder>
+            </folder>
+            <folder name="Running">
+                <file name="Form.wsmode" url="windowmanager/Running/Form.wsmode" />
+                <folder name="Form">
+                    <file name="ComponentInspector.wstcref" url="windowmanager/Running/Form/ComponentInspector.wstcref" />
+                    <file name="ComponentPalette.wstcref" url="windowmanager/Running/Form/ComponentPalette.wstcref" />
+                </folder>
+            </folder>
         </folder>
         <folder name="Components">
             <file name="ComponentInspector.settings" url="components/ComponentInspector.settings" />
