@@ -52,7 +52,6 @@ import org.openide.util.RequestProcessor;
  */
 public class MainClassChooser extends JPanel {
 
-    private static final Node NO_CLASSES_NODE = new AbstractNode (Children.LEAF);
     private ChangeListener changeListener;
     private String dialogSubtitle = null;
     private List/*<String>*/ possibleMainClasses;
@@ -66,7 +65,6 @@ public class MainClassChooser extends JPanel {
         dialogSubtitle = subtitle;
         initComponents();
         initClassesView (sourcesRoot);
-        NO_CLASSES_NODE.setName (NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE")); // NOI18N
     }
     
     private void initClassesView (final FileObject sourcesRoot) {
@@ -75,9 +73,12 @@ public class MainClassChooser extends JPanel {
         jMainClassList.setListData (getWarmupList ());
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                //jMainClassList.setListData (getAllMainClasses (sourcesRoot));
                 possibleMainClasses = J2SEProjectUtil.getMainClasses (sourcesRoot);
-                jMainClassList.setListData (possibleMainClasses.toArray ());
+                if (possibleMainClasses.isEmpty ()) {
+                    jMainClassList.setListData (new String[] { NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE") } ); // NOI18N
+                } else {
+                    jMainClassList.setListData (possibleMainClasses.toArray ());
+                }
             }
         });
         jMainClassList.addListSelectionListener (new ListSelectionListener () {
