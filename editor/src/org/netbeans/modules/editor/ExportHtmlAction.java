@@ -55,7 +55,7 @@ public class ExportHtmlAction extends CookieAction {
 
 
     protected final Class[] cookieClasses() {
-        return new Class[] {EditorCookie.class, DataObject.class};
+        return new Class[] {EditorCookie.class};
     }
 
     protected final void performAction(Node[] activatedNodes) {
