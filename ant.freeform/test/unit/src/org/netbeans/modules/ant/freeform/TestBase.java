@@ -17,6 +17,7 @@ import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
@@ -36,13 +37,25 @@ abstract class TestBase extends NbTestCase {
     
     protected File egdir;
     protected FreeformProject simple;
+    protected FileObject myAppJava;
+    protected FileObject specialTaskJava;
+    protected FileObject buildProperties;
+    
     protected void setUp() throws Exception {
         super.setUp();
         egdir = FileUtil.normalizeFile(new File(System.getProperty("test.eg.dir")));
         assertTrue("example dir exists", egdir.exists());
-        Project _simple = ProjectManager.getDefault().findProject(FileUtil.toFileObject(egdir).getFileObject("simple"));
+        FileObject projdir = FileUtil.toFileObject(egdir).getFileObject("simple");
+        assertNotNull("found projdir", projdir);
+        Project _simple = ProjectManager.getDefault().findProject(projdir);
         assertNotNull("have a project", _simple);
         simple = (FreeformProject)_simple;
+        myAppJava = projdir.getFileObject("src/org/foo/myapp/MyApp.java");
+        assertNotNull("found MyApp.java", myAppJava);
+        specialTaskJava = projdir.getFileObject("antsrc/org/foo/ant/SpecialTask.java");
+        assertNotNull("found SpecialTask.java", specialTaskJava);
+        buildProperties = projdir.getFileObject("build.properties");
+        assertNotNull("found build.properties", buildProperties);
     }
     
 }
