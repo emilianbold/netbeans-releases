@@ -8,5 +8,5 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.web.core/1 > 1.6, org.n
 OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
   org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
 OpenIDE-Module-Package-Dependencies: [javax.servlet.ServletException], [org.apache.jasper.Constants], [org.apache.jasper.Options]
-Class-Path: ext/jasper-runtime-4.0.4.jar ext/jasper-compiler-4.0.4.jar
+Class-Path: ext/jasper-runtime-4.0.6.jar ext/jasper-compiler-4.0.6.jar
 
