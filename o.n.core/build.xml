@@ -14,39 +14,22 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="core" default="nbm" basedir=".">
   <target name="compile">
-    <!-- What pitomec...? This should be fixed, probably TSM cannot even access these classes at runtime: -->
-    <javac srcdir="src" destdir="src">
-      <include name="**/org/netbeans/core/execution/TopSecurityManager.java"/>
-      <classpath>
-        <pathelement location="../icebrowser/release/modules/ext/icebrowserlitebean.jar"/>
-	<pathelement location="../openide/netbeans/lib/openide.jar"/>
-	<pathelement location="release/lib/ext/regexp.jar"/>
-	<pathelement location="release/lib/ext/jaxp.jar"/>
-	<pathelement location="release/lib/ext/parser.jar"/>
-	<pathelement location="release/lib/ext/jh.jar"/>
-      </classpath>
-    </javac>
-    <ant dir="../core" target="compile-1.2.2">
-      <property name="build.compile" value="classic"/>
+    <!-- Force use of classic compiler, though slower; modern compiler on Linux 1.3 -->
+    <!-- has bugs which prevents it from compiling entire module correctly -->
+    <!-- (though compiling in pieces *sometimes* works). -->
+    <!-- XXX Apparently Win2000 1.3 can compile it with modern compiler, so make this -->
+    <!-- test conditional on Linux, to avoid penalizing others with a slow compiler. -->
+    <ant dir="../core" target="compile-with-classic-Javac">
+      <property name="build.compiler" value="classic"/>
     </ant>
-    <javac srcdir="src" destdir="src">
-      <exclude name="**/org/netbeans/core/execution/TopSecurityManager.java"/>
-      <exclude name="**/org/netbeans/core/ui/NewNewAction.java"/>
-      <classpath>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-	<pathelement location="release/lib/ext/regexp.jar"/>
-	<pathelement location="release/lib/ext/jaxp.jar"/>
-	<pathelement location="release/lib/ext/parser.jar"/>
-	<pathelement location="release/lib/ext/jh.jar"/>
-      </classpath>
-    </javac>
     <javac srcdir="libsrc" destdir="libsrc"/>
   </target>
-  <target name="compile-1.2.2">
-    <!-- Compiler bugs. -->
+  <target name="compile-with-classic-Javac">
     <javac srcdir="src" destdir="src">
-      <include name="**/org/netbeans/core/ui/NewNewAction.java"/>
       <classpath>
+        <!-- XXX This should be fixed, possibly TopSecurityManager -->
+	<!-- cannot even access ICE Browser classes at runtime: -->
+        <pathelement location="../icebrowser/release/modules/ext/icebrowserlitebean.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
 	<pathelement location="release/lib/ext/regexp.jar"/>
 	<pathelement location="release/lib/ext/jaxp.jar"/>
@@ -61,6 +44,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   <target name="jars" depends="compile,tojar">
     <mkdir dir="netbeans/lib/ext"/>
+    <!-- Hack to subst a key in Versioning.properties, but not permanently change it: -->
     <rename src="src/org/netbeans/core/Versioning.properties"
            dest="src/org/netbeans/core/Versioning.properties-"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
@@ -88,5 +72,16 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   <target name="nbm" depends="jars,release">
     <zip zipfile="core.nbm" includes="netbeans/" basedir="."/>
+  </target>
+  <target name="clean">
+    <delete dir="src">
+      <include name="**/*.class"/>
+      <include name="**/*.jar"/>
+    </delete>
+    <delete dir="libsrc">
+      <include name="**/*.class"/>
+    </delete>
+    <delete file="core.nbm"/>
+    <deltree dir="netbeans"/>
   </target>
 </project>
