@@ -259,7 +259,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="UI">
 
       <folder name="Services">
-
         <folder name="DebuggingAndExecuting">
 
           <file name="org-netbeans-modules-debugger-support-DebuggerSettings.shadow">
@@ -338,6 +337,14 @@ SystemFileSystem
             </folder>
 
         </folder>
+     </folder>
+   </folder>
+   
+   <folder name="Services">
+     <folder name="Hidden">
+        <file name="debugger.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.multisession.EnterpriseDebugger" />
+        </file>
      </folder>
    </folder>
 
