@@ -12,32 +12,11 @@
  */
 package org.netbeans.performance;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Collection;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Enumeration;
-import java.util.StringTokenizer;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
-
-import junit.framework.Test;
-import junit.framework.TestResult;
-
-import org.netbeans.performance.bde.LoadDefinition;
-import org.netbeans.performance.bde.StoreDefinition;
-import org.netbeans.performance.bde.TestSpecBuilder;
-import org.netbeans.performance.bde.TestDefinition;
-import org.netbeans.performance.bde.ArgumentSeries;
-import org.netbeans.performance.bde.Interval;
+import java.lang.reflect.*;
+import java.io.*;
+import java.util.*;
+import junit.framework.*;
+import org.netbeans.performance.bde.*;
 
 /**
  * A suite for Benchmarks;
@@ -45,6 +24,8 @@ import org.netbeans.performance.bde.Interval;
 public final class BenchmarkSuite implements Test {
     
     public static final String TESTS_SPECS = "tests.specs";
+
+    public static final String TESTS_OUTPUT = "tests.output";
     
     private ArrayList benchmarks;
     private TestsSpecifications testSpecs;
@@ -103,7 +84,19 @@ public final class BenchmarkSuite implements Test {
     
     /** Run this suite */
     public void run(TestResult result) {
-        Reporter reporter = new XMLReporter();
+        Reporter reporter = null;
+        String output = System.getProperty(TESTS_OUTPUT);
+        
+        if( output == null ) {
+            reporter = new XMLReporter();
+        } else {
+            try {
+                reporter = new XMLReporter( new FileOutputStream( output ), "UTF-8");
+            } catch( IOException e ) {
+                Assert.fail( e.getMessage() );
+            }
+        }
+        
         Benchmark.setReporter( reporter );
         loadData(result);
         
