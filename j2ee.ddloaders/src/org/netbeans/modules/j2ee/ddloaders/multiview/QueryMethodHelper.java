@@ -41,7 +41,7 @@ public class QueryMethodHelper {
     public QueryMethodHelper(EntityHelper helper, Query query) {
         this.query = query;
         this.entityHelper = helper;
-        isSelectMethod = query.getQueryMethod().getMethodName().startsWith("ejbSelectBy"); //NOI18N
+        isSelectMethod = query.getQueryMethod().getMethodName().startsWith(EntityHelper.Queries.SELECT_PREFIX);
         init();
     }
 

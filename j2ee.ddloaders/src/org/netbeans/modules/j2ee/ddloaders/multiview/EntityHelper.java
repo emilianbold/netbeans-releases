@@ -263,8 +263,8 @@ public class EntityHelper extends EntityAndSessionHelper {
         private HashMap queryMethodHelperMap = new HashMap();
         private Query[] selectMethods;
         private Query[] finderMethods;
-        private static final String SELECT_PREFIX = "ejbSelect";
-        private static final String FIND_PREFIX = "find";
+        public static final String SELECT_PREFIX = "ejbSelect"; //NOI18N
+        public static final String FIND_PREFIX = "find"; //NOI18N
 
         public Queries() {
             initQueryMethods();
