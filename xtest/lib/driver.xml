@@ -29,6 +29,7 @@ Microsystems, Inc. All Rights Reserved.
    
    <property name="driver.classpath" location="${xtest.home}/lib/xtest.jar"/>
    <property name="xerces.classpath" location="${xtest.home}/lib/xerces.jar"/>
+   <property name="xmlapis.classpath" location="${xtest.home}/lib/xml-apis.jar"/>
    
    <!-- ============== -->
    <!-- Initialization -->
@@ -37,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
    <target name="init" depends="check-classpath">
      <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
                  classpath="${driver.classpath}"/>
-     <nbtaskdef classpath="${driver.classpath};${xerces.classpath}">
+     <nbtaskdef classpath="${driver.classpath};${xerces.classpath};${xmlapis.classpath}">
      	<taskdef name="for" classname="org.netbeans.xtest.driver.ForTask"/>  
      	<taskdef name="checkout" classname="org.netbeans.xtest.driver.CheckoutNeeded"/>
      	<taskdef name="list" classname="org.netbeans.xtest.driver.ListReader"/>
@@ -61,7 +62,7 @@ Microsystems, Inc. All Rights Reserved.
       </antcall>
    </target>
    
-   <target name="check-xerces-classpath">
+   <target name="check-xerces-classpath" depends="check-xml-apis-classpath">
       <condition property="classpath.notfound">
         <not>
       	   <available file="${xerces.classpath}"/>
@@ -71,7 +72,18 @@ Microsystems, Inc. All Rights Reserved.
         <param name="not.found.message" location="${xerces.classpath}"/>
       </antcall>
    </target>
-  
+
+   <target name="check-xml-apis-classpath">
+      <condition property="classpath.notfound">
+        <not>
+      	   <available file="${xmlapis.classpath}"/>
+        </not>
+      </condition>
+      <antcall target="classpath-notfound">
+        <param name="not.found.message" location="${xmlapis.classpath}"/>
+      </antcall>
+   </target>
+
    <target name="classpath-notfound" if="classpath.notfound">
      <fail message="Driver can't find ${not.found.message}."/>
    </target>

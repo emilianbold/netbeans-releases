@@ -27,6 +27,7 @@ import javax.xml.parsers.*;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Map;
+import org.netbeans.xtest.util.XMLFactoryUtil;
 
 /**
  * @author  Michal Zlamal
@@ -193,7 +194,7 @@ public class CheckoutNeeded extends Task {
         log("Reading config "+config+" from "+file.getAbsolutePath());
         
         try {
-            DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            DocumentBuilder db = XMLFactoryUtil.newDocumentBuilder();
             db.setEntityResolver(new org.netbeans.xtest.XTestEntityResolver());
             doc = db.parse(file);
         } catch (SAXException saxe) {

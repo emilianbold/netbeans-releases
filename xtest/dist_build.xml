@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
     	   <available file="lib/xtest.jar"/>
     	   <available file="lib/junit-ext.jar"/>
     	   <available file="lib/junit.jar"/>
+    	   <available file="lib/xml-apis.jar"/>
     	   <available file="lib/xerces.jar"/>
     	   <available file="lib/xalan.jar"/>
     	   <available file="lib/xtest-ext.jar"/>

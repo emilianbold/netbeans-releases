@@ -28,6 +28,7 @@ import java.util.*;
 import java.io.IOException;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import org.netbeans.xtest.util.XMLFactoryUtil;
 
 /**
  * This is a scanner of DOM tree.
@@ -62,8 +63,7 @@ public class NbTestConfig extends Task {
         
         Document document = null;
         try {
-            DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbfac.newDocumentBuilder();
+            DocumentBuilder db = XMLFactoryUtil.newDocumentBuilder();
             db.setEntityResolver(new XTestEntityResolver());
             document = db.parse(file);
         } catch (SAXException saxe) {

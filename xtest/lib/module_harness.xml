@@ -52,9 +52,6 @@ Microsystems, Inc. All Rights Reserved.
                  classpath="${xtest.home}/lib/xtest.jar"/>
                  
         <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">
-            <taskdef name="test-configurator" classname="org.netbeans.xtest.MTestConfigurator"/>
-            <taskdef name="test-executor" classname="org.netbeans.xtest.MTestExecutor"/>            
-            <taskdef name="test-compiler" classname="org.netbeans.xtest.MTestCompiler"/>            
             <taskdef name="nbpath" classname="org.netbeans.xtest.NbPath"/>
             <!--
             <taskdef name="sysinfo" classname="org.netbeans.xtest.SysInfo"/>
@@ -76,6 +73,9 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher"/>
             <taskdef name="nbjr" classname="org.netbeans.xtest.junit.XMLResultAggregator"/>
             -->
+            <taskdef name="test-configurator" classname="org.netbeans.xtest.MTestConfigurator"/>
+            <taskdef name="test-compiler" classname="org.netbeans.xtest.MTestCompiler"/>            
+            <taskdef name="test-executor" classname="org.netbeans.xtest.MTestExecutor"/>            
             <taskdef name="sysinfo" classname="org.netbeans.xtest.pe.SystemInfoTask"/>
             <taskdef name="testruninfo" classname="org.netbeans.xtest.pe.TestRunInfoTask"/>
             <taskdef name="testbaginfo" classname="org.netbeans.xtest.pe.TestBagInfoTask"/>

@@ -159,10 +159,15 @@ public class NbPath extends Task {
         // find xerces.jar
         String xerces_jar = getProject().getProperty(XERCES_JAR);
         if (null == xerces_jar) {
-            String xerces_jars [] = new String [] { "xerces.jar" };
-            File f = new File(xtexhome, "lib/xerces.jar");
-            if (f.exists())
-                xerces_jar = f.getAbsolutePath().replace(File.separatorChar, '/');
+            String xerces_jars [] = new String [] { "xerces.jar", "xml-apis.jar" };
+            File f1 = new File(xtexhome, "lib/xerces.jar");
+            File f2 = new File(xtexhome, "lib/xml-apis.jar");
+            if (f1.exists()&&f2.exists()) {
+                list.setLength(0);
+                addPath(list, f1.getAbsolutePath().replace(File.separatorChar, '/'));
+                addPath(list, f2.getAbsolutePath().replace(File.separatorChar, '/'));
+                xerces_jar = list.toString();
+            }
             if (null == xerces_jar)
                 xerces_jar = lookupJarsFromPath(System.getProperty("java.class.path", ""), xerces_jars);
             if (null == xerces_jar)
@@ -196,12 +201,12 @@ public class NbPath extends Task {
         if (null == xalan_path) {
             list.setLength(0);
             // since xalan is now part of JDK 1.4 and greater - do not add it
-            if (!NbPath.isJDK14AndOver()) {
+//            if (!NbPath.isJDK14AndOver()) {
                 //System.out.println("NbPath: Adding xalan");
                 addPath(list, xalan_jar);
-            } else {
+//            } else {
                 //System.out.println("NbPath: not adding xalan");
-            }
+//            }
             addPath(list, xerces_jar);
             xalan_path = list.toString();
             getProject().setProperty(XALAN_PATH, xalan_path);

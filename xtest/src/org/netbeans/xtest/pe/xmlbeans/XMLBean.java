@@ -24,6 +24,7 @@ import javax.xml.parsers.*;
 import java.util.*;
 
 import java.lang.reflect.*;
+import org.netbeans.xtest.util.XMLFactoryUtil;
 
 /**
  * name of the class = name of the XML element
@@ -211,7 +212,7 @@ public abstract class XMLBean {
     
      private static DocumentBuilder getDocumentBuilder() {
         try {
-            return DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            return XMLFactoryUtil.newDocumentBuilder();
         }
         catch(Exception e) {
             throw new ExceptionInInitializerError(e);

@@ -36,6 +36,7 @@ public class NbMultiTaskDef extends Task {
     private LinkedList taskdefs = new LinkedList();
     private String name = null;
     private String classname = null;
+    private ClassLoader loader = null;
     
     public void setClasspath(Path classpath) {
         if (this.classpath == null) {
@@ -69,17 +70,15 @@ public class NbMultiTaskDef extends Task {
     }
     
     public void execute () throws BuildException {
-        ClassLoader loader = null;
-
         if (null != System.getProperty("test.ant.file")) {
             log("Using Netbeans classloader.", Project.MSG_DEBUG);
             loader = TopManager.getDefault().currentClassLoader();
         }
 
-        if (loader == null && classpath != null) {
+        if (classpath != null) {
             log("Using Ant classloader.", Project.MSG_DEBUG);
-            AntClassLoader al = new AntClassLoader(project, classpath,
-                                                   false);
+            AntClassLoader al = new AntClassLoader(loader, project, classpath,
+                                                 true);
             // need to load Task via system classloader or the new
             // task we want to define will never be a Task but always
             // be wrapped into a TaskAdapter.
@@ -89,8 +88,14 @@ public class NbMultiTaskDef extends Task {
             // system loader (packages java, javax are by default loaded using
             // system classloader)
             al.addLoaderPackageRoot("javax.xml");
+            al.addLoaderPackageRoot("org.w3c.dom");
+            al.addLoaderPackageRoot("org.xml.sax");
+            al.addLoaderPackageRoot("org.apache.xerces");
+            al.addLoaderPackageRoot("org.apache.html");
+            al.addLoaderPackageRoot("org.apache.wml");
+            al.addLoaderPackageRoot("org.apache.xml");
             al.addLoaderPackageRoot("org.apache.xalan");
-            //al.addLoaderPackageRoot("org.apache.xerces");
+            al.addLoaderPackageRoot("org.apache.xpath"); 
             loader = al;
         }
 

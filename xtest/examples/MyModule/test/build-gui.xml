@@ -91,7 +91,8 @@ Microsystems, Inc. All Rights Reserved.
                    example: <property name="compile.srcdir" value="unit/src1;unit/src2"/>
              -->
            <property name="compile.srcdir" value="gui/src"/>
-       </ant>
+           <property name="compile.excludes" value="**/data/**"/>
+        </ant>
     </target>
     
     <!-- ========= -->
@@ -107,6 +108,16 @@ Microsystems, Inc. All Rights Reserved.
            <property name="xtest.exectype" value="ide"/>
            <property name="xtest.ide.winsys" value="sdi"/>
         </ant>
+    </target>
+    
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes standalone tests -->
+    <target name="runcodetest" depends="set_classpath">
+        <ant dir="." antfile="${xtest.module_harness.antfile}"
+             target="test">
+           <property name="xtest.exectype" value="code"/>
+       </ant>
     </target>
 
    <!-- =============================================================
