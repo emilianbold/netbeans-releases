@@ -575,9 +575,9 @@ public class BeanInfoGeneration extends JellyTestCase {
         //new EventTool().waitNoEvent(750);
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_preferred")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_preferred")).getValue());
         //new EventTool().waitNoEvent(750);
-        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_displayName")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_displayName")).getValue());
+//IT ISN'T POSSIBLE TO READ AND WRITE AGAIN THE SAME VALUE//        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_displayName")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_displayName")).getValue());
         //new EventTool().waitNoEvent(750);
-        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).getValue());
+////        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).getValue());
         //new EventTool().waitNoEvent(750);
         propertySheetTabOperator = propertySheetOperator.getPropertySheetTabOperator(Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_expert"));
         new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_customizer")).getValue();
@@ -597,7 +597,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         //new EventTool().waitNoEvent(750);
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_preferred")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_preferred")).getValue());
         //new EventTool().waitNoEvent(750);
-        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).getValue());
+////        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).getValue());
         //new EventTool().waitNoEvent(750);
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_included")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_included")).getValue());
         //new EventTool().waitNoEvent(750);
@@ -608,7 +608,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         //new EventTool().waitNoEvent(750);
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_mode")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_mode")).getValue());
         //new EventTool().waitNoEvent(750);
-        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_propertyEditorClass")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_propertyEditorClass")).getValue());
+////        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_propertyEditorClass")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_propertyEditorClass")).getValue());
         //new EventTool().waitNoEvent(750);
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_niGetter")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_niGetter")).getValue());
         //new EventTool().waitNoEvent(750);
@@ -627,9 +627,9 @@ public class BeanInfoGeneration extends JellyTestCase {
         //new EventTool().waitNoEvent(750);
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_preferred")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_preferred")).getValue());
         //new EventTool().waitNoEvent(750);
-        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_displayName")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_displayName")).getValue());
+////        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_displayName")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_displayName")).getValue());
         //new EventTool().waitNoEvent(750);
-        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).getValue());
+////        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).setValue(new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_shortDescription")).getValue());
         //new EventTool().waitNoEvent(750);
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_included")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_included")).getValue());
         //new EventTool().waitNoEvent(750);
@@ -638,11 +638,13 @@ public class BeanInfoGeneration extends JellyTestCase {
         //new EventTool().waitNoEvent(750);
         new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_inDefaultEventSet")).setValue(new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_inDefaultEventSet")).getValue());
         //new EventTool().waitNoEvent(750);
+
         nbDialogOperator.ok();
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE+"BeanInfo");
     }
+
     public void testCheckBeanInfoCompilability() {
         createContent();
         ExplorerOperator explorerOperator = new ExplorerOperator();
