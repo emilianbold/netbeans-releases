@@ -316,7 +316,7 @@ final class SourceWizardPanel extends JPanel {
            
             descPanel.fireStateChanged();
         } catch (UserCancelException uce) {
-            ErrorManager.getDefault().notify(ErrorManager.USER, uce);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, uce);
 
         }
     }//GEN-LAST:event_addButtonActionPerformed

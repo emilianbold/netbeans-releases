@@ -173,7 +173,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         try {
             textField.getDocument().insertString(textField.getCaretPosition(), replace, null); // NOI18N
         } catch(BadLocationException ble) {
-            ErrorManager.getDefault().notify(ErrorManager.USER, ble);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
         }
     }
 

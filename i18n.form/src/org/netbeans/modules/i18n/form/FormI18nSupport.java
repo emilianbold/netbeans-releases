@@ -522,11 +522,11 @@ public class FormI18nSupport extends JavaI18nSupport {
                 try {
                     value = property.getValue();
                 } catch(IllegalAccessException iae) {
-                    ErrorManager.getDefault().notify(ErrorManager.USER, iae);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iae);
                     validProp = null;
                     continue; // next property
                 } catch(InvocationTargetException ite) {
-                    ErrorManager.getDefault().notify(ErrorManager.USER, ite);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ite);
                     validProp = null;
                     continue; // next property
                 }
@@ -942,7 +942,7 @@ public class FormI18nSupport extends JavaI18nSupport {
                        try {
                            ((FormI18nFinder)finder).setLastPosition(document.createPosition(lastP));                   
                        } catch (BadLocationException ble) {
-                           ErrorManager.getDefault().notify(ErrorManager.USER, ble);
+                           ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
                        } finally {
                            if(document instanceof AbstractDocument)
                                ((AbstractDocument)document).readUnlock();
@@ -950,9 +950,9 @@ public class FormI18nSupport extends JavaI18nSupport {
                     }
                });
             } catch (IllegalAccessException iae) {
-                ErrorManager.getDefault().notify(ErrorManager.USER, iae);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iae);
             } catch (InvocationTargetException ite) {
-                ErrorManager.getDefault().notify(ErrorManager.USER, ite);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ite);
             }
         }   
 

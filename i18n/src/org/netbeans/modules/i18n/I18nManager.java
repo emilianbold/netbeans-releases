@@ -105,7 +105,7 @@ public class I18nManager {
         try {
             initSupport(sourceDataObject);
         } catch(IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.USER, ioe);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
             return;
         }
 

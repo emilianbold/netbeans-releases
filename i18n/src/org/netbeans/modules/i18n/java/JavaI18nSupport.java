@@ -244,9 +244,9 @@ public class JavaI18nSupport extends I18nSupport {
                 // Trying to add new field.
                 sourceClass.addField(newField);
         } catch(SourceException se) {
-            ErrorManager.getDefault().notify(ErrorManager.USER, se);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, se);
         } catch(NullPointerException npe) {
-            ErrorManager.getDefault().notify(ErrorManager.USER, npe);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
         }
     }
 
@@ -647,7 +647,7 @@ public class JavaI18nSupport extends I18nSupport {
                             return new HardCodedString(extractString(hardString), hardStringStart, hardStringEnd);
                         }
                     } catch(BadLocationException ble) {
-                        ErrorManager.getDefault().notify(ErrorManager.USER, ble);
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
                     } finally {
                         currentStringStart = -1;
                         currentStringEnd = -1;
@@ -709,7 +709,7 @@ public class JavaI18nSupport extends I18nSupport {
             /*
              * Handle the situation that some syntax error has been detected:
              */
-            ErrorManager.getDefault().notify(ErrorManager.USER, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
 
             // Indicate error, but allow user what to do with the found hard coded string to be able go thru
             // this problem.

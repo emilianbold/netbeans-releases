@@ -468,7 +468,7 @@ final class ResourceWizardPanel extends JPanel {
                     try {
                         support = FactoryRegistry.getFactory(source.getClass()).create(source);
                     } catch(IOException ioe) {
-                        ErrorManager.getDefault().notify(ErrorManager.USER, ioe);
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
 
                         // Remove source from settings.
                         sourceMap.remove(source);
