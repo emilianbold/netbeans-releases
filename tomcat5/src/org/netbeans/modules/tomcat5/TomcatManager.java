@@ -329,12 +329,12 @@ public class TomcatManager implements DeploymentManager {
                 Object o = s.lookupFirst(AttachingDICookie.class);
                 if (o != null) {
                     AttachingDICookie attCookie = (AttachingDICookie)o;
-                    if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
-                        if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
-                            if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
-                                return true;
-                            }
-                        } else {
+                    if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                        if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
+                            return true;
+                        }
+                    } else {
+                        if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
                             if (attCookie.getPortNumber() == sdi.getPort()) {
                                 return true;
                             }
@@ -372,18 +372,18 @@ public class TomcatManager implements DeploymentManager {
                 Object o = s.lookupFirst(AttachingDICookie.class);
                 if (o != null) {
                     AttachingDICookie attCookie = (AttachingDICookie)o;
-                    if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
-                        if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
-                            if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
-                                Object d = s.lookupFirst(JPDADebugger.class);
-                                if (d != null) {
-                                    JPDADebugger jpda = (JPDADebugger)d;
-                                    if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
-                                        return true;
-                                    }
+                    if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                        if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
+                            Object d = s.lookupFirst(JPDADebugger.class);
+                            if (d != null) {
+                                JPDADebugger jpda = (JPDADebugger)d;
+                                if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
+                                    return true;
                                 }
                             }
-                        } else {
+                        }
+                    } else {
+                        if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
                             if (attCookie.getPortNumber() == sdi.getPort()) {
                                 Object d = s.lookupFirst(JPDADebugger.class);
                                 if (d != null) {

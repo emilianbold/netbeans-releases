@@ -228,12 +228,12 @@ class WebActionProvider implements ActionProvider {
                 Object o = s.lookupFirst(AttachingDICookie.class);
                 if (o != null) {
                     AttachingDICookie attCookie = (AttachingDICookie)o;
-                    if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
-                        if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
-                            if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
-                                return true;
-                            }
-                        } else {
+                    if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                        if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
+                            return true;
+                        }
+                    } else {
+                        if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
                             if (attCookie.getPortNumber() == sdi.getPort()) {
                                 return true;
                             }
