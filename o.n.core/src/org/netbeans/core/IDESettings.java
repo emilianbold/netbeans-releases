@@ -553,7 +553,10 @@ public class IDESettings extends SystemOption {
                 IDESettings.ignoredFiles = ignoredFiles;
                 firePropertyChange (PROP_IGNORED_FILES, oldIgnoredfiles, ignoredFiles);
             } catch (PatternSyntaxException e) {
-                throw new IllegalArgumentException(e.getLocalizedMessage());
+                IllegalArgumentException iae = new IllegalArgumentException();
+                iae.initCause( e );
+                ErrorManager.getDefault().annotate( iae, e.getLocalizedMessage() );
+                throw iae;
             }
         }
     }
