@@ -278,7 +278,23 @@ public final class StartTomcat extends StartServer implements ProgressObject
             // install the monitor
             if (command == CommandType.START) {
                 try {
-                    MonitorSupport.synchronizeMonitorWithFlag(tm, true, true);
+                    MonitorSupport.synchronizeMonitorWithFlag(tm, true, !tm.isItBundledTomcat());
+                } catch (IOException e) {
+                    if (MonitorSupport.getMonitorFlag(tm)) {
+                        // tomcat has been started with monitor enabled
+                        MonitorSupport.setMonitorFlag(tm, false);
+                        fireCmdExecProgressEvent("MSG_enableMonitorSupportErr", StateType.FAILED);
+                    } else {
+                        // tomcat has been started with monitor disabled
+                        fireCmdExecProgressEvent("MSG_disableMonitorSupportErr", StateType.FAILED);
+                    }
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    return;
+                } catch (SAXException e) {
+                    // fault, but not a critical one
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+                try {
                     DebugSupport.allowDebugging(tm);
                 }
                 catch (IOException e) {

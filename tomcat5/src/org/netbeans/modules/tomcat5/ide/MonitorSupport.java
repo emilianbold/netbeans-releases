@@ -113,14 +113,14 @@ public class MonitorSupport {
         boolean needsSave = false;
         boolean result;
         if (shouldInstall) {
+            if (alsoCopyJars) {
+                addMonitorJars(tm);
+            }
             result = changeFilterMonitor(webApp, true);
             needsSave = needsSave || result;
             if (alsoSetPort) {                  
                 result = specifyFilterPortParameter(webApp);
                 needsSave = needsSave || result;
-            }
-            if (alsoCopyJars) {
-                addMonitorJars(tm);
             }
         }
         else {                               
@@ -251,9 +251,10 @@ public class MonitorSupport {
     
     private static void copyFromIDEInstToDir(String sourceRelPath, File copyTo, String targetRelPath) throws IOException {
         File targetFile = findFileUnderBase(copyTo, targetRelPath);
-        if (!targetFile.exists()) {
-            File sourceFile = findInstallationFile(sourceRelPath);
-            if ((sourceFile != null) && sourceFile.exists()) {
+        File sourceFile = findInstallationFile(sourceRelPath);
+        if (sourceFile != null && sourceFile.exists()) {
+            if (!targetFile.exists() 
+                || sourceFile.length() != targetFile.length()) {
                 copy(sourceFile,targetFile);
             }
         }
