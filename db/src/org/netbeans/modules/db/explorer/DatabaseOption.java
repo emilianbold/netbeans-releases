@@ -16,15 +16,17 @@ package com.netbeans.enterprise.modules.db.explorer;
 import java.beans.*;
 import java.io.*;
 import java.io.IOException;
-import java.util.MissingResourceException;
-import java.util.Vector;
+import java.util.*;
 import java.sql.SQLException;
 import com.netbeans.ide.*;
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.options.SystemOption;
- 
+import com.netbeans.enterprise.modules.db.explorer.*;
+import com.netbeans.enterprise.modules.db.explorer.infos.*;
+import com.netbeans.enterprise.modules.db.explorer.nodes.*;
+
 /** Root system option. It stores a list of available drivers and open connections.
 * These connections will be restored at startup, drivers will be placed in Drivers
 * directory owned by Database node.
@@ -46,7 +48,21 @@ public class DatabaseOption extends SystemOption
 	/** Returns vector of registered drivers */
 	public Vector getAvailableDrivers() 
 	{
-		if (drivers == null) drivers = new Vector();
+		Vector rvec = null;
+		if (drivers == null) {			
+			Map xxx = (Map)DatabaseNodeInfo.getGlobalNodeInfo(DatabaseNode.DRIVER_LIST);
+			Vector def = (Vector)xxx.get("defaultdriverlist");
+			if (def != null && def.size()>0) {
+				rvec = new Vector(def.size());
+				Enumeration defe = def.elements();
+				while(defe.hasMoreElements()) {
+					Object rit = defe.nextElement();
+					if (rit instanceof Map) rit = new DatabaseDriver((String)((Map)rit).get("name"), (String)((Map)rit).get("driver"));
+					if (rit != null) rvec.add(rit);
+				}				
+			} else rvec = new Vector();
+			drivers = rvec;
+		}
     	return drivers;
   	}
 

@@ -57,6 +57,7 @@ public class RootNode extends DatabaseNode
 			DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(null, "root");
 			if (sfactory != null) nfo.setSpecificationFactory(sfactory);
 			else throw new Exception("no specification factory");
+						
 			setInfo(nfo);
 			getInfo().setNode(this);
 		} catch (Exception e) {

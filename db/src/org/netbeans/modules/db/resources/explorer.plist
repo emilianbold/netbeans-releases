@@ -55,6 +55,24 @@
 		iconbase = "/com/netbeans/ide/resources/defaultFolder";
 		children = ();
 		properties = ();
+		defaultdriverlist = (
+			{
+				name = "Oracle";
+				driver = "oracle.jdbc.driver.OracleDriver";
+			},
+			{
+				name = "Sybase";
+				driver = "com.sybase.jdbc.SybDriver";
+			},
+			{
+				name = "ODBC Bridge";
+				driver = "sun.jdbc.odbc.JdbcOdbcDriver";
+			},
+			{
+				name = "Cloudscape";
+				driver = "COM.cloudscape.core.JDBCDriver";
+			}
+		);	
 		actions = (
 			{
 				name = "Add new driver";

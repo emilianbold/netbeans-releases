@@ -22,27 +22,4 @@ import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
 
 public class DriverListNode extends DatabaseNode
 {		
-	public void setInfo(DatabaseNodeInfo info)
-	{
-		super.setInfo(info);
-		DatabaseNodeInfo nfo = getInfo();
-		Vector cons = RootNode.getOption().getAvailableDrivers();
-		System.out.println("restoring drivers "+cons);
-		if (cons != null) {
-			try {
-				Vector children = nfo.getChildren();
-				Enumeration cons_e = cons.elements();
-				while (cons_e.hasMoreElements()) {
-					DatabaseDriver drv = (DatabaseDriver)cons_e.nextElement();
-					DriverNodeInfo chinfo = (DriverNodeInfo)DatabaseNodeInfo.createNodeInfo(nfo, DatabaseNode.DRIVER);
-					if (chinfo != null && drv != null) {
-						chinfo.setDatabaseDriver(drv);
-						children.add(chinfo);
-					} else throw new Exception("driver "+drv);
-				}
-			} catch (Exception e) {
-				System.out.println("can't restore all drivers; "+e);
-			}
-		}
-	}
 }

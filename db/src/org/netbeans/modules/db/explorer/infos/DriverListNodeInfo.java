@@ -28,12 +28,28 @@ import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseDriver;
 import com.netbeans.enterprise.modules.db.explorer.nodes.RootNode;
 
-public class DriverListNodeInfo extends RootNodeInfo 
+public class DriverListNodeInfo extends DatabaseNodeInfo 
 implements DriverOperations
 {	
-	public void completeChildren(Vector children)
+	protected void initChildren(Vector children)
 	throws DatabaseException
 	{
+		Vector cons = RootNode.getOption().getAvailableDrivers();
+		if (cons != null) {
+			try {
+				Enumeration cons_e = cons.elements();
+				while (cons_e.hasMoreElements()) {
+					DatabaseDriver drv = (DatabaseDriver)cons_e.nextElement();
+					DriverNodeInfo chinfo = (DriverNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.DRIVER);
+					if (chinfo != null && drv != null) {
+						chinfo.setDatabaseDriver(drv);
+						children.add(chinfo);
+					} else throw new Exception("driver "+drv);
+				}
+			} catch (Exception e) {
+				System.out.println("can't restore all drivers; "+e);
+			}
+		}
 	}
 
 	/** Adds driver specified in drv into list.
