@@ -15,43 +15,47 @@ package org.netbeans.spi.viewmodel;
 
 
 /**
- * Filters content of some existing {@link NodeModel}.
+ * Filters content of some existing {@link NodeModel}. You can change display 
+ * name, tooltip, or icon for some existing object here.
  *
  * @author   Jan Jancura
  */
 public interface NodeModelFilter {
     
     /**
-     * Returns filterred display name for given node.
+     * Returns filterred display name for given node. You should not 
+     * throw UnknownTypeException directly from this method!
      *
      * @throws  ComputingException if the display name resolving process 
      *          is time consuming, and the value will be updated later
-     * @throws  UnknownTypeException if this NodeModel implementation is not
-     *          able to resolve display name for given node type
+     * @throws  UnknownTypeException this exception can be thrown from 
+     *          <code>original.getDisplayName (...)</code> method call only!
      * @return  display name for given node
      */
     public abstract String getDisplayName (NodeModel original, Object node) 
     throws ComputingException, UnknownTypeException;
     
     /**
-     * Returns filterred icon for given node.
+     * Returns filterred icon for given node. You should not throw 
+     * UnknownTypeException directly from this method!
      *
      * @throws  ComputingException if the icon resolving process 
      *          is time consuming, and the value will be updated later
-     * @throws  UnknownTypeException if this NodeModel implementation is not
-     *          able to resolve icon for given node type
+     * @throws  UnknownTypeException this exception can be thrown from 
+     *          <code>original.getIconBase (...)</code> method call only!
      * @return  icon for given node
      */
     public abstract String getIconBase (NodeModel original, Object node) 
     throws ComputingException, UnknownTypeException;
     
     /**
-     * Returns filterred tooltip for given node.
+     * Returns filterred tooltip for given node. You should not throw 
+     * UnknownTypeException directly from this method!
      *
      * @throws  ComputingException if the tooltip resolving process 
      *          is time consuming, and the value will be updated later
-     * @throws  UnknownTypeException if this NodeModel implementation is not
-     *          able to resolve tooltip for given node type
+     * @throws  UnknownTypeException this exception can be thrown from 
+     *          <code>original.getShortDescription (...)</code> method call only!
      * @return  tooltip for given node
      */
     public abstract String getShortDescription (NodeModel original, Object node) 

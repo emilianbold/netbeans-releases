@@ -34,6 +34,10 @@ public interface TreeModelFilter {
     
     /** 
      * Returns filtered children for given parent on given indexes.
+     * Typically you should get original nodes 
+     * (<code>original.getChildren (...)</code>), and modify them, or return
+     * it without modifications. You should not throw UnknownTypeException
+     * directly from this method!
      *
      * @param   original the original tree model
      * @param   parent a parent of returned nodes
@@ -41,8 +45,8 @@ public interface TreeModelFilter {
      *          resolved
      * @throws  ComputingException if the children resolving process 
      *          is time consuming, and will be performed off-line 
-     * @throws  UnknownTypeException if this TreeModelFilter implementation is not
-     *          able to resolve dchildren for given node type
+     * @throws  UnknownTypeException this exception can be thrown from 
+     *          <code>original.getChildren (...)</code> method call only!
      *
      * @return  children for given parent on given indexes
      */
@@ -54,11 +58,12 @@ public interface TreeModelFilter {
     ) throws NoInformationException, ComputingException, UnknownTypeException;
     
     /**
-     * Returns true if node is leaf.
+     * Returns true if node is leaf. You should not throw UnknownTypeException
+     * directly from this method!
      * 
      * @param   original the original tree model
-     * @throws  UnknownTypeException if this TreeModel implementation is not
-     *          able to resolve dchildren for given node type
+     * @throws  UnknownTypeException this exception can be thrown from 
+     *          <code>original.isLeaf (...)</code> method call only!
      * @return  true if node is leaf
      */
     public abstract boolean isLeaf (

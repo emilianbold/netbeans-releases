@@ -18,6 +18,8 @@ import javax.swing.Action;
 
 /**
  * Filters actions provided by some original {@link NodeActionsProvider}.
+ * It can be used to add some new actions to nodes pop-up menu, remove
+ * some actions or redefine behaviour of some actions.
  *
  * @author   Jan Jancura
  */
@@ -25,10 +27,11 @@ public interface NodeActionsProviderFilter {
     
     
     /**
-     * Performs default action for given node.
+     * Performs default action for given node. You should not throw 
+     * UnknownTypeException directly from this method!
      *
-     * @throws  UnknownTypeException if this NodeActionsProvider implementation 
-     *          is not able to resolve actions for given node type
+     * @throws  UnknownTypeException this exception can be thrown from 
+     *          <code>original.performDefaultAction (...)</code> method call only!
      */
     public abstract void performDefaultAction (
         NodeActionsProvider original,
@@ -36,10 +39,11 @@ public interface NodeActionsProviderFilter {
     ) throws UnknownTypeException;
     
     /**
-     * Returns set of actions for given node.
+     * Returns set of actions for given node. You should not throw UnknownTypeException
+     * directly from this method!
      *
-     * @throws  UnknownTypeException if this NodeActionsProvider implementation 
-     *          is not able to resolve actions for given node type
+     * @throws  UnknownTypeException this exception can be thrown from 
+     *          <code>original.getActions (...)</code> method call only!
      * @return  set of actions for given node
      */
     public abstract Action[] getActions (

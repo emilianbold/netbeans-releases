@@ -19,7 +19,9 @@ import javax.swing.table.TableCellRenderer;
 
 
 /**
- * Allows to filter content of some existing {@link TableModel}.
+ * Allows to filter content of some existing {@link TableModel}. You can add
+ * a new column, remmove some existing one, or change content of some existing
+ * column.
  *
  * @author   Jan Jancura
  */
@@ -30,15 +32,16 @@ public interface TableModelFilter {
      * Returns filterred value to be displayed in column <code>columnID</code>
      * and row <code>node</code>. Column ID is defined in by 
      * {@link ColumnModel#getID}, and rows are defined by values returned from 
-     * {@TreeModel#getChildren}.
+     * {@TreeModel#getChildren}. You should not throw UnknownTypeException
+     * directly from this method!
      *
      * @param   original the original table model
      * @param   node a object returned from {@TreeModel#getChildren} for this row
      * @param   columnID a id of column defined by {@link ColumnModel#getID}
      * @throws  ComputingException if the value is not known yet and will 
      *          be computed later
-     * @throws  UnknownTypeException if there is no TableModel defined for given
-     *          parameter type
+     * @throws  UnknownTypeException this exception can be thrown from 
+     *          <code>original.getValueAt (...)</code> method call only!
      *
      * @return value of variable representing given position in tree table.
      */
@@ -49,13 +52,15 @@ public interface TableModelFilter {
     ) throws ComputingException, UnknownTypeException;
     
     /**
-     * Filters original isReadOnly value from given table model.
+     * Filters original isReadOnly value from given table model. You should 
+     * not throw UnknownTypeException
+     * directly from this method!
      *
      * @param  original the original table model
      * @param  node a object returned from {@TreeModel#getChildren} for this row
      * @param  columnID a id of column defined by {@link ColumnModel#getID}
-     * @throws UnknownTypeException if there is no TableModel defined for given
-     *         parameter type
+     * @throws  UnknownTypeException this exception can be thrown from 
+     *          <code>original.isReadOnly (...)</code> method call only!
      *
      * @return true if variable on given position is read only
      */
@@ -69,14 +74,15 @@ public interface TableModelFilter {
      * Changes a value displayed in column <code>columnID</code>
      * and row <code>node</code>. Column ID is defined in by 
      * {@link ColumnModel#getID}, and rows are defined by values returned from 
-     * {@TreeModel#getChildren}.
+     * {@TreeModel#getChildren}. You should not throw UnknownTypeException
+     * directly from this method!
      *
      * @param  original the original table model
      * @param  node a object returned from {@TreeModel#getChildren} for this row
      * @param  columnID a id of column defined by {@link ColumnModel#getID}
      * @param  value a new value of variable on given position
-     * @throws UnknownTypeException if there is no TableModel defined for given
-     *         parameter type
+     * @throws  UnknownTypeException this exception can be thrown from 
+     *          <code>original.setValueAt (...)</code> method call only!
      */
     public abstract void setValueAt (
         TableModel original,
