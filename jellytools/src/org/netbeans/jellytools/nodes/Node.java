@@ -16,8 +16,6 @@ package org.netbeans.jellytools.nodes;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyVersion;
@@ -25,6 +23,7 @@ import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.operators.*;
+import org.openide.explorer.view.Visualizer;
 
 /** Ancestor class for all nodes.<p>
  * Nodes should help to easier testing of JTree's.
@@ -152,6 +151,14 @@ public class Node {
      * @return String path of parent node */
     public String getParentPath() {
         return convertPath(treePath.getParentPath());
+    }
+    
+    /** Returns Object instance which represents org.openide.nodes.Node
+     * for this jellytools node.
+     * @return Object instance which represents org.openide.nodes.Node
+     */
+    public Object getOpenideNode() {
+        return Visualizer.findNode(this.getTreePath().getLastPathComponent());
     }
     
     /** calls popup menu on node
