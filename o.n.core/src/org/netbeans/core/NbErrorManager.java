@@ -40,7 +40,7 @@ final class NbErrorManager extends ErrorManager {
     private static Map lastException = new WeakHashMap (27);
 
     /** Minimum value of severity to write message to the log file*/
-    private int minLogSeverity = ErrorManager.INFORMATIONAL;
+    private int minLogSeverity = ErrorManager.INFORMATIONAL; // NOI18N
 
     /** Prefix preprended to customized loggers, if any. */
     private String prefix = null;
@@ -248,7 +248,11 @@ final class NbErrorManager extends ErrorManager {
     /** Lazy getter for the writer */
     private PrintWriter getLogWriter() {
         if (logWriter == null) {
-            logWriter = new PrintWriter (TopLogging.getLogOutputStream ());
+            if (minLogSeverity < -1) {
+                logWriter = new PrintWriter (System.err);
+            } else {
+                logWriter = new PrintWriter (TopLogging.getLogOutputStream ());
+            }
         }
         return logWriter;
     }
