@@ -31,6 +31,7 @@ import org.openide.util.datatransfer.ExClipboard;
  */
 public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
     private Clip clip;
+    private javax.swing.JTextField field;
     
     public NbClipboardIsUsedBySwingComponentsTest (String name) {
         super(name);
@@ -56,14 +57,20 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
             System.setSecurityManager (m);
             org.netbeans.TopSecurityManager.makeSwingUseSpecialClipboard (this.clip);
         }
+        
+        field = new javax.swing.JTextField ();
     }
     protected boolean runInEQ () {
         return true;
     }
     
+    protected javax.swing.JTextField getField () {
+        return field;
+    }
+    
     
     public void testClipboardOurClipboardUsedDuringCopy () {
-        javax.swing.JTextField f = new javax.swing.JTextField ();
+        javax.swing.JTextField f = getField ();
         f.setText ("Ahoj");
         f.selectAll ();
         assertEquals ("Ahoj", f.getSelectedText ());
@@ -74,7 +81,7 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
     }
     
     public void testClipboardOurClipboardUsedDuringCut () {
-        javax.swing.JTextField f = new javax.swing.JTextField ();
+        javax.swing.JTextField f = getField ();
         f.setText ("DoCut");
         f.selectAll ();
         assertEquals ("DoCut", f.getSelectedText ());
@@ -87,7 +94,7 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
     }
     
     public void testClipboardOurClipboardUsedDuringPaste () {
-        javax.swing.JTextField f = new javax.swing.JTextField ();
+        javax.swing.JTextField f = getField ();
         
         StringSelection sel = new StringSelection ("DoPaste");
         clip.setContents (sel, sel);
@@ -98,6 +105,20 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
         
         Clip.assertCalls ("Paste should call getContent", 0, 1);
         assertEquals ("Text is there", "DoPaste", f.getText ());
+    }
+    
+    public void testCopyFromEditorPasteToTheSameOneIssue40785 () {
+        javax.swing.JTextField f = getField ();
+        f.setText (getName ());
+        f.selectAll ();
+        assertEquals ("Selection is correct", getName (), f.getSelectedText ());
+        f.copy ();
+        Clip.assertCalls ("Once in, none out", 1, 0);
+        f.setText ("");
+        f.paste ();
+        Clip.assertCalls ("Once out, none in", 0, 1);
+        
+        assertEquals ("Test is again the same", getName (), f.getText ());
     }
     
     public void assertClipboard (String text) {

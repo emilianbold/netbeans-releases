@@ -30,6 +30,7 @@ import org.openide.util.RequestProcessor;
 public final class NbClipboard extends ExClipboard
     implements LookupListener, AWTEventListener, Runnable
 {
+    private org.openide.ErrorManager log;
     private Clipboard systemClipboard;
     private Convertor[] convertors;
     private Lookup.Result result;
@@ -39,6 +40,7 @@ public final class NbClipboard extends ExClipboard
     public NbClipboard() {
         super("NBClipboard");   // NOI18N
         systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        log = org.openide.ErrorManager.getDefault ().getInstance ("org.netbeans.core.NbClipboard"); // NOI18N
 
         result = Lookup.getDefault().lookup(new Lookup.Template(ExClipboard.Convertor.class));
         result.addLookupListener(this);
@@ -96,7 +98,15 @@ public final class NbClipboard extends ExClipboard
     public synchronized void setContents(Transferable contents, ClipboardOwner owner) {
         // XXX(-dstrupl) the following line might lead to a double converted
         // transferable. Can be fixed as Jesse describes in #32485
+        if (log.isLoggable (log.INFORMATIONAL)) {
+            log.log (log.INFORMATIONAL, "setContents called with: "); // NOI18N
+            logFlavors (contents.getTransferDataFlavors ());
+        }
         contents = convert(contents);
+        if (log.isLoggable (log.INFORMATIONAL)) {
+            log.log (log.INFORMATIONAL, "After conversion:"); // NOI18N
+            logFlavors (contents.getTransferDataFlavors ());
+        }
 
         if (slowSystemClipboard) {
             super.setContents(contents, owner);
@@ -112,10 +122,19 @@ public final class NbClipboard extends ExClipboard
 
     public synchronized Transferable getContents(Object requestor) {
         try {
-            if (slowSystemClipboard)
-                return convert(super.getContents(requestor));
-            else
-                return convert(systemClipboard.getContents(requestor));
+            Transferable prev = slowSystemClipboard ? super.getContents (requestor) : systemClipboard.getContents (requestor);
+			if (log.isLoggable (log.INFORMATIONAL)) {
+                log.log (log.INFORMATIONAL, "getContents by " + requestor); // NOI18N
+                logFlavors (prev.getTransferDataFlavors ());
+            }
+            Transferable res = convert (prev);
+			if (log.isLoggable (log.INFORMATIONAL)) {
+                log.log (log.INFORMATIONAL, "getContents by " + requestor); // NOI18N
+                logFlavors (res.getTransferDataFlavors ());
+                
+                res = new LoggableTransferable (res);
+            }
+            return res;
         }
         catch (ThreadDeath ex) {
             throw ex;
@@ -163,5 +182,38 @@ public final class NbClipboard extends ExClipboard
         if (ev.getID() == WindowEvent.WINDOW_ACTIVATED) {
             syncTask.schedule(0);
         }
+    }
+    
+    private void logFlavors (java.awt.datatransfer.DataFlavor[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            log.log (log.INFORMATIONAL, "  " + i + " = " + arr[i]);
+        }
+    }
+    
+    /** Transferable that logs operations on itself.
+     */
+    private final class LoggableTransferable implements Transferable {
+        private Transferable delegate;
+        
+        public LoggableTransferable (Transferable delegate) {
+            this.delegate = delegate;
+        }
+        public Object getTransferData (DataFlavor flavor) throws UnsupportedFlavorException, java.io.IOException {
+            log.log (log.INFORMATIONAL, "Request for flavor: " + flavor); // NOI18N
+            Object res = delegate.getTransferData (flavor);
+            log.log (log.INFORMATIONAL, "Returning value: " + res); // NOI18N
+            return res;
+        }
+        
+        public DataFlavor[] getTransferDataFlavors () {
+            return delegate.getTransferDataFlavors ();
+        }
+        
+        public boolean isDataFlavorSupported (DataFlavor flavor) {
+            boolean res = delegate.isDataFlavorSupported (flavor);
+            log.log (log.INFORMATIONAL, "isDataFlavorSupported: " + flavor + " result: " + res); // NOI18N
+            return res;
+        }
+        
     }
 }

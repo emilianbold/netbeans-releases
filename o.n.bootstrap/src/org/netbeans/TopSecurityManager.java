@@ -446,15 +446,16 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
      */
     public static void makeSwingUseSpecialClipboard (java.awt.datatransfer.Clipboard clip) {
         try {
+            javax.swing.JComponent source = new javax.swing.JPanel ();
             CLIPBOARD_FORBIDDEN.set (clip);
             javax.swing.TransferHandler.getPasteAction ().actionPerformed (
-                new java.awt.event.ActionEvent (clip, 0, "")
+                new java.awt.event.ActionEvent (source, 0, "")
             );
             javax.swing.TransferHandler.getCopyAction ().actionPerformed (
-                new java.awt.event.ActionEvent (clip, 0, "")
+                new java.awt.event.ActionEvent (source, 0, "")
             );
             javax.swing.TransferHandler.getCutAction ().actionPerformed (
-                new java.awt.event.ActionEvent (clip, 0, "")
+                new java.awt.event.ActionEvent (source, 0, "")
             );
             if (! (CLIPBOARD_FORBIDDEN.get () instanceof TopSecurityManager) ) {
                 System.err.println("Cannot install our clipboard to swing components, TopSecurityManager is not the security manager"); // NOI18N
