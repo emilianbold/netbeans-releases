@@ -22,6 +22,7 @@ import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.taskdefs.Jar;
+import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.taskdefs.SignJar;
 import org.apache.tools.ant.types.FileSet;
 
@@ -335,7 +336,29 @@ public class MakeNBM extends MatchingTask {
 	Jar jar = (Jar) project.createTask ("jar");
 	jar.setJarfile (file);
 	//jar.setBasedir (topdir.getAbsolutePath ());
-	jar.setCompress ("true");
+//	jar.setCompress ("true");
+        try {
+            Class[] params = {Boolean.TYPE};
+            Object[] objs = {Boolean.TRUE};
+            // Trying to invoke setCompess with parameter Boolean - ANT 1.3
+            Zip.class.getDeclaredMethod("setCompress",params).invoke(jar,objs);
+            // Looks like ANT 1.3 - I hope that is ANT 1.3
+        }
+        catch (NoSuchMethodException ex)
+        {
+            // Looks like ANT 1.2 so use setCompress with String
+            Class[] params = {String.class};
+            Object[] objs = {"false"};
+            try {
+                Zip.class.getDeclaredMethod("setCompress",params).invoke(jar,objs);
+            }
+            catch (Exception ex1) {
+                throw new BuildException(ex1.fillInStackTrace());
+            }
+        }
+        catch (Exception ex) {
+            throw new BuildException(ex.fillInStackTrace());
+        }
 	//jar.createInclude ().setName ("netbeans/");
 	//jar.createInclude ().setName ("Info/info.xml");
         FileSet fs = fileset;		//makes in apperance to excludes and includes files defined in XML
