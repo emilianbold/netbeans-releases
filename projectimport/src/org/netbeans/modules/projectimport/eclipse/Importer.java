@@ -89,7 +89,7 @@ final class Importer {
         JavaPlatform defPlf = JavaPlatformManager.getDefault().getDefaultPlatform();
         Collection installFolder = defPlf.getInstallFolders();
         if (installFolder.isEmpty()) {
-            logWarning("There is not any platform in NetBeans..."); // NOI18N
+            logWarning(NbBundle.getMessage(Importer.class, "MSG_NotValidPlatformsInNB")); // NOI18N
             return;
         } else {
             nbDefPlfDir = FileUtil.toFile(
@@ -196,7 +196,8 @@ final class Importer {
             if (eclLib.exists()) {
                 nbProjectClassPath.addArchiveFile(FileUtil.toFileObject(eclLib));
             } else {
-                logWarning(eclLib + " doesn't exist. Skipping..."); // NOI18N
+                logWarning(NbBundle.getMessage(Importer.class, "MSG_LibraryDoesnExist", // NOI18N
+                        eclProject.getName(), eclLib.getAbsolutePath()), true);
             }
         }
         
@@ -283,8 +284,8 @@ final class Importer {
                             "platform will be used."); // NOI18N
                 }
             } else {
-                logWarning("Cannot create platform in NetBeans. \"" + // NOI18N
-                        f.getAbsolutePath() + "\" doesn't exists."); // NOI18N
+                logWarning(NbBundle.getMessage(Importer.class, "MSG_JDKDoesnExistUseDefault", // NOI18N
+                        eclProject.getName(), f.getAbsolutePath()), true);
             }
         }
         // tzezula: The platform is changed to explicit one only in case when
