@@ -10,9 +10,6 @@
 <link rel="StyleSheet" href="../ide.css" type="text/css">
 </HEAD>
 <BODY>
-<!-- TODO figure out where it reads the browsers that are installed, and where
-the default browser comes from in all platforms. Also state how to add a browser
-type if needed-->
 <!--linked to from web/advanced help set - file webmod/mod_browser.html-->
 <h2>Specifying the Default Web Browser</h2>
 <p>
@@ -32,7 +29,20 @@ type if needed-->
     <li>Any other browsers installed on your computer.</li>
   </ul>
 </ol>
-<table>
+<p>If you select a web browser in the Setup Wizard and the web browser still does 
+  not open, check that the IDE has the correct location of the browser executable.</p>
+<p><b>To specify the location of the browser executable:</b></p>
+<ol>
+  <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options 
+    from the main menu. </li>
+  <li>Expand IDE Configuration <img src="../images/expand.gif" alt="and expand">&nbsp;Server 
+    and External Tools Settings <img src="../images/expand.gif" alt="and expand">&nbsp;Web 
+    Browsers and select the browser type you are using.</li>
+  <li>Open the property editor for Browser Executable property and set the full 
+    path to the executable in the Process field. You can click the ellipsis button 
+    (...) to browse to the executable.</li>
+</ol>
+  <table>
 <tr>
 <th colspan="2" align="left"><a name="seealso">See Also</a></th>
 </tr>

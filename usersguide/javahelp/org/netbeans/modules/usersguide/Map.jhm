@@ -57,6 +57,7 @@
 <mapID target="objects.packages" url="objects/objects_packages.html" />
 <mapID target="objects.properties" url="objects/objects_properties.html" />
 <mapID target="objects.refresh" url="objects/objects_refreshing.html" />
+<mapID target="objects.redisplaying" url="objects/objects_redisplaying.html" />
 <mapID target="objects.runtime" url="objects/objects_runtime.html" />
 <mapID target="objects.saving" url="objects/objects_saving.html" />
 <mapID target="objects.new" url="objects/objects_new.html" />
@@ -75,7 +76,6 @@
 <mapID target="search.status" url="objects/search/search_status.html" />
 <mapID target="search.text" url="objects/search/search_text.html" />
 
-<mapID target="template.jump" url="objects/templates/template_jump.html" />
 <mapID target="template.new" url="objects/templates/template_new.html" />
 <mapID target="template.group" url="objects/templates/template_group.html" />
 <mapID target="template.macros" url="objects/templates/template_macros.html" />
@@ -328,7 +328,6 @@
 <mapID target="editing.macros.recording" url="editing/macros/recording.html" />
 <mapID target="editing.macros.editing" url="editing/macros/editing.html" />
 <mapID target="editing.macros.invoking" url="editing/macros/invoking.html" />
-<mapID target="editing.othershortcuts" url="editing/othershortcuts.html" />
 <mapID target="editing.toolbar" url="editing/editing_toolbar.html" />
 <mapID target="editing.jumplist" url="editing/jumplist.html" />
 <mapID target="editing.bookmarks" url="editing/bookmarks.html" />
@@ -349,6 +348,9 @@
 <mapID target="editing_error-marks" url="editing/editing_error-marks.html" />
 <mapID target="editing.tasks" url="editing/tasks_viewing.html" />
 <mapID target="editor.hiding" url="editing/editor_hiding.html" />
+<mapID target="editorwindow.maximize" url="editing/editorwindow_maximize.html" />
+<mapID target="editor.navigation" url="editing/editor_navigation.html" />
+<mapID target="editor.smart-brackets" url="editing/editor_smart-brackets.html" />
 
 <mapID target="editing.configuring.annotations" url="editing/configuring/annotations.html" />
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
@@ -398,6 +400,8 @@
 <mapID target="debug.view.customize" url="debug/environment/customize_views.html" />
 
 <mapID target="debug.sessions.jump" url="debug/sessions/sessions.html" />
+<!--mapped to from jsp/jsp_debug.html in the jspie help set-->
+
 <mapID target="debug.attach" url="debug/sessions/attach.html" />
 <mapID target="debug.sessions.finishsession" url="debug/sessions/finishsession.html" />
 <mapID target="debug.sessions.64bit" url="debug/sessions/64bit_jvm_debug.html" />
@@ -406,6 +410,8 @@
 <mapID target="debug.attachvm.window" url="debug/environment/attachvm_window.html" />
 
 <mapID target="debug.breakpoint" url="debug/breakpoint/breakpoint_set.html" />
+<!--mapped to from jsp/jsp_debug.html in the jspie help set-->
+
 <mapID target="debug.breakpoint.java" url="debug/breakpoint/breakpoint_java.html" />
 <mapID target="debug.breakpoint.line" url="debug/breakpoint/breakpoint_line.html" />
 <mapID target="debug.breakpoint.method" url="debug/breakpoint/breakpoint_method.html" />
@@ -417,7 +423,10 @@
 <mapID target="debug.breakpoint.message" url="debug/breakpoint/print_text.html" />
 
 <mapID target="debug.breakpoint.group" url="debug/breakpoint/group.html" />
+
 <mapID target="debug.breakpoint.properties" url="debug/breakpoint/breakpoint_properties.html" />
+<!--mapped to from jsp/jsp_debug.html in the jspie help set-->
+
 <mapID target="debug.breakpoint.source" url="debug/breakpoint/breakpoint_source.html" />
 <mapID target="debug.breakpoint.enable" url="debug/breakpoint/breakpoint_enable.html" />
 <mapID target="debug.breakpoint.remove" url="debug/breakpoint/breakpoint_remove.html" />
@@ -426,9 +435,13 @@
 <mapID target="debug.running.cursor" url="debug/running/running_cursor.html" />
 <mapID target="debug.running.resume" url="debug/running/running_resume.html" />
 <mapID target="debug.running.pause" url="debug/running/pause.html" />
+
 <mapID target="debug.step" url="debug/running/stepping.html" />
+<!--mapped to from jsp/jsp_debug.html in the jspie help set-->
 
 <mapID target="debug.variables.jump" url="debug/variables/variables_jump.html" />
+<!--mapped to from jsp/jsp_debug.html in the jspie help set-->
+
 <mapID target="debug.variables.value" url="debug/variables/value.html" />
 <mapID target="debug.watch" url="debug/watches/watch.html" />
 <mapID target="debug.watch.fix" url="debug/watches/fix.html" />
@@ -439,6 +452,8 @@
 <mapID target="debug.callstack.pop" url="debug/callstack/pop.html" />
 
 <mapID target="debug.fix" url="debug/fix/fix.html" />
+<!--mapped to from jsp/jsp_debug.html in the jspie help set-->
+
 <mapID target="debug.fix.alert" url="debug/fix/old_stack_call.html" />
 
 <mapID target="debug.threads.jump" url="debug/threads/threads_jump.html" />
@@ -653,8 +668,7 @@
 
 <!-- To Do window help -->
 <mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />
-<!--TODO - get unique help ID here - SystemOption is generic and applies to other nodes as well
-<mapID target="org.openide.options.SystemOption" url="editing/tasks_viewing.html" /> -->
+<mapID target="org.netbeans.modules.tasklist.docscan.Settings" url="editing/tasks_viewing.html" /> -->
 
 <!-- Ant CSH -->
 
@@ -662,8 +676,7 @@
 <mapID target="ant.wizard.properties" url="ant/ant-props.html" />
 <mapID target="org.apache.tools.ant.module.run.NBInputHandler" url="ant/input_handler.html" />
 <!-- Ant prop sheet CSH -->
-<mapID target="org.apache.tools.ant.module.nodes.AntProjectNode.Properties" url="ant/ant_script_props.html" />
-<mapID target="org.apache.tools.ant.module.nodes.AntProjectNode.Execution" url="ant/ant_script_props.html" />
+<mapID target="org.apache.tools.ant.module.nodes.AntProjectNode.propertysheet" url="ant/ant_script_props.html" />
 <mapID target="org.apache.tools.ant.module.nodes.AntTargetNode.Properties" url="ant/ant_targ_props.html" />
 <!-- depenency dialog box CSH -->
 <!--TODO check that Help button for Dependency Property Editor has a help topic, or else remove-->
@@ -1298,9 +1311,24 @@
 <!--PENDING - map the following, which appears as a category node for JAR options-->
    <mapID target="org.netbeans.modules.jarpackager.options.JarOptionNode" url="jarpackager/jarpackager_options.html" />
 
+   
+   <mapID target="vcsgeneric.profile.cvs.commit" url="vcs-nb/cvs-nb/args/args_commit.html" />
+   <mapID target="vcsgeneric.profile.cvs.update" url="vcs-nb/cvs-nb/args/args_update.html" />
+   <mapID target="vcsgeneric.profile.cvs.addDir" url="vcs-nb/cvs-nb/args/args_add.html" />
+   <mapID target="vcsgeneric.profile.cvs.addFile" url="vcs-nb/cvs-nb/args/args_add.html" />
+   <mapID target="vcsgeneric.profile.cvs.remove" url="vcs-nb/cvs-nb/args/args_remove.html" />
+   <mapID target="vcsgeneric.profile.cvs.log" url="vcs-nb/cvs-nb/args/args_log.html" />
+   <mapID target="vcsgeneric.profile.cvs.annotate" url="vcs-nb/cvs-nb/args/args_annotate.html" />
+   <mapID target="vcsgeneric.profile.cvs.checkout" url="vcs-nb/cvs-nb/args/args_checkout.html" />
+   <mapID target="vcsgeneric.profile.cvs.addTag" url="vcs-nb/cvs-nb/args/args_tag.html" />
+   <mapID target="vcsgeneric.profile.cvs.diffG" url="vcs-nb/cvs-nb/args/args_diff.html" />
+   <mapID target="vcsgeneric.profile.cvs.diffT" url="vcs-nb/cvs-nb/args/args_diff.html" />
+   
    <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeMainNode" url="vcs-nb/vcs_commands_node.html" />
    <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode" url="vcs-nb/vcs_commands_node.html" />
    <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeCommandNode" url="vcs-nb/vcs_commands_node.html" />
+   <mapID target="org.netbeans.modules.vcscore.versioning.impl.VersioningDataSystem" url="vcs-nb/vcs_revexplorer.html" />
+   <mapID target="org.netbeans.modules.vcscore.versioning.impl.VersioningDataFolder" url="vcs-nb/vcs_revexplorer.html" />
    <mapID target="org.netbeans.modules.vcscore.versioning.impl.RootFolderNode" url="vcs-nb/vcs_revexplorer.html" />
    <mapID target="org.netbeans.modules.vcscore.versioning.impl.VersioningDataNode" url="vcs-nb/vcs_revexplorer.html" />
    <mapID target="org.netbeans.modules.vcscore.versioning.RevisionNode" url="vcs-nb/vcs_revexplorer.html" />
@@ -1316,8 +1344,7 @@
    <mapID target="org.netbeans.modules.debugger.support.nodes.DebuggerView" url="pending.html" />
    <mapID target="org.netbeans.modules.group.CreateGroupAction" url="pending.html" />
 
-   <!--TODO: future; needs mapping, or ID needs to be removed.Source creation and Management, Version Control Settings, Generic VCS Profiles-->
-   <mapID target="org.netbeans.modules.vcs.advanced.profilesSettings.VcsSettingsNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcs.advanced.profilesSettings.VcsSettingsNode" url="vcs-nb/vcsgeneric/vcsgeneric_newprofile.html" />
    
    <!--VCS CSH and VCS property sheet helpIDs-->
    <mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem_properties" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
@@ -1454,7 +1481,7 @@
   <!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions--> 
   <mapID target="org.netbeans.modules.j2ee.impl.DeployAction" url="pending.html" />
 
-  <mapID target="org.netbeans.modules.j2ee.deployment.config.ConfigDataObject" url="pending.html" />
+  <mapID target="org.netbeans.modules.j2ee.deployment.config.ConfigDataObject" url="j2eeserver/nodes/context_descriptor_node.html" />
   <!--ID used for server nodes if not overridden by ID for specific server-->
   
   <mapID target="org.netbeans.modules.j2ee.deployment.execution.ServerDebuggerType" url="debug/debugger/j2ee_debugger.html" />

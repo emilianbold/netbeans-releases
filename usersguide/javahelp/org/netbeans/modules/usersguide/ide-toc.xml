@@ -6,9 +6,9 @@
 
 <!DOCTYPE toc
   PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
-         "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+         "http://java.sun.com/products/javahelp/toc_1_0.dtd">
 
-<toc version="2.0">
+<toc version="1.0">
 
 <tocitem text="Core IDE Help"  >
   <tocitem text="Legal Notices" target="ide.credits" />
@@ -55,6 +55,7 @@
       <tocitem text="Search Results Window" target="search.window" />
     </tocitem>
     <tocitem text="Refreshing a View" target="objects.refresh" />
+    <tocitem text="Redisplaying a Window" target="objects.redisplaying" />
     <tocitem text="Runtime Window" target="objects.runtime" />
     <tocitem text="Specifying an Extension for a Text File" target="objects.specify-extension" />
     <tocitem text="Adding a File Extension to an Object Type" target="objects.file-extensions" />
@@ -82,16 +83,19 @@
   </tocitem>
 
   <tocitem text="Editing Source Files" >
-<!--    <tocitem text="About" target="editing.intro"/>-->
-    <tocitem text="Source Editor Window" target="editing.editorwindow"/>
+    <tocitem text="About" target="editing.intro"/>
+    <tocitem text="Source Editor" target="editing.editorwindow"/>
     <tocitem text="Opening a File in the Source Editor" target="editing.opening"/>
+    <tocitem text="Maximizing the Source Editor" target="editorwindow.maximize"/>
     <tocitem text="Splitting the Source Editor" target="workspace.clone"/>
-    <tocitem text="Creating New Java Code" target="editing.newcode"/>
+    <tocitem text="Code Navigation Tips" target="editor.navigation"/>
+    <tocitem text="Editing Java Code" target="editing.newcode"/>
     <tocitem text="Error Marking" target="editing_error-marks"/>
     <tocitem text="Formatting Code" target="editing.formatting"/>
     <tocitem text="Working With Tabs" target="editing.tabs"/>
     <tocitem text="Finding and Replacing Text" target="editing.find"/>
-    <tocitem text="Collapsing Blocks of Code" target="editor.hiding"/>
+    <tocitem text="Folding Blocks of Code" target="editor.hiding"/>
+    <tocitem text="Pair Completion, Smart Enter, and Smart Semicolons" target="editor.smart-brackets"/>
     <tocitem text="Displaying Line Numbers" target="editing.linenumbers"/>
     <tocitem text="Scanning for TODOs in Source Code" target="editing.tasks"/>
     <tocitem text="Using Annotations" target="editing.annotations"/>
@@ -128,13 +132,7 @@
       <tocitem text="Deleting Code Completion Database Entries" target="editing.deleting-pdb"/>
       <tocitem text="Code Completion Database Manager" target="editing.parserdatabase_customizer"/>
     </tocitem>
-    <tocitem text="Using the Import Management Tool">
-      <tocitem text="About" target="java.import"/>
-      <tocitem text="Resolve Identifiers Page" target="java.import.resolve-ids" />
-      <tocitem text="Create Import Statements Page" target="java.import.create-imports" />
-      <tocitem text="Remove Unused Imports Page" target="java.import.remove-unused" />
-      <tocitem text="Configuring the Import Management Tool" target="java.import.configuring" />
-    </tocitem>
+    <tocitem text="Using the Import Management Tool" target="java.import"/>
     <tocitem text="Synchronizing Source Code">
       <tocitem text="About" target="java.sync.intro"/>
       <tocitem text="Setting Source Synchronization Properties" target="java.sync.properties" />
