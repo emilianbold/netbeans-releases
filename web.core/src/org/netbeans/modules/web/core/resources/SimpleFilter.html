@@ -1,0 +1,33 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<HTML><BODY>
+Using this template you can design a simple Filter class.
+<P>
+A filter implements <b>javax.servlet.Filter</b> and defines its three methods: 
+<ul>
+<li><b>void setFilterConfig(FilterConfig config)</b>: Sets the filter's configuration object
+<li><b>FilterConfig getFilterConfig()</b>: Returns the filter's configuration object
+<li><b>void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)</b>: Performs the actual filtering work
+</ul> 
+The server calls <b>setFilterConfig()</b> once to prepare the filter for service, then calls <b>doFilter()</b> any number of times for various requests.<br>
+The <b>FilterConfig</b> interface has methods to retrieve the filter's name, its init parameters, and the active servlet context.
+<P>
+Each filter receives in its <b>doFilter()</b> method the current request and response objects, as well as a <b>FilterChain</b> containing the filters that still must be processed.<br>
+In the <b>doFilter()</b> method, a filter may do what it wants with the request and response objects(see the <b>doBeforeProcessing</b> method). The filter then calls <b>chain.doFilter()</b> to transfer control to the next filter. When that call returns, a filter can, at the end of its own <b>doFilter()</b> method, perform additional work on the request/response objects(see the <b>doAfterProcessing</b> method).
+<p> The most important methods that should be implemented in this template are :
+<ul>
+<li>private void <b>doBeforeProcessing(ServletRequest req, ServletResponse res)</b>: write code here to process the request and/or response before the rest of the filter chain is invoked.
+<li>private void <b>doAfterProcessing(ServletRequest req, ServletResponse res</b>:  write code here to process the request and/or response after the rest of the filter chain is invoked.
+</ul>
+</BODY></HTML>
