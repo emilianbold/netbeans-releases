@@ -53,12 +53,11 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
         if (helpIDs == null)
         {
             helpIDs = new HashMap(7);
-            helpIDs.put(org.netbeans.editor.MacroSavePanel.class.getName(), HELP_ID_MacroSavePanel);
-            helpIDs.put(org.netbeans.editor.KeySequenceInputPanel.class.getName(), HELP_ID_KeySequenceInputPanel);
-            helpIDs.put(org.netbeans.editor.ext.FindDialogSupport.FindPanel.class.getName(), HELP_ID_FindPanel);
-            helpIDs.put(org.netbeans.editor.ext.GotoDialogPanel.class.getName(), HELP_ID_GotoDialogPanel);
-            helpIDs.put(org.netbeans.editor.ext.ScrollCompletionPane.class.getName(), HELP_ID_ScrollCompletionPane);
-            // the folowing class are not public, so I had to simply name them
+            helpIDs.put("org.netbeans.editor.MacroSavePanel", HELP_ID_MacroSavePanel);
+            helpIDs.put("org.netbeans.editor.KeySequenceInputPanel", HELP_ID_KeySequenceInputPanel);
+            helpIDs.put("org.netbeans.editor.ext.FindDialogSupport.FindPanel", HELP_ID_FindPanel);
+            helpIDs.put("org.netbeans.editor.ext.GotoDialogPanel", HELP_ID_GotoDialogPanel);
+            helpIDs.put("org.netbeans.editor.ext.ScrollCompletionPane", HELP_ID_ScrollCompletionPane);
             helpIDs.put("org.netbeans.editor.ext.java.JavaFastImportPanel", HELP_ID_JavaFastImportPanel);
             helpIDs.put("org.netbeans.editor.ext.java.JavaFastOpenPanel", HELP_ID_JavaFastOpenPanel);
         }
