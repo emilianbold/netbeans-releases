@@ -43,12 +43,6 @@ public class TextEditModuleInstall extends ModuleInstall {
 
     private static final long serialVersionUID = -7645158417177075459L;
 
-    // name of kit class that was replaced
-    private static transient String originalXMLKit;
-    
-    // name of kit class that was replaced    
-    private static transient String originalDTDKit;
-
     public void installed() {
         restored();
     }
@@ -73,30 +67,12 @@ public class TextEditModuleInstall extends ModuleInstall {
     /**
      */
     public void restoredTextEditor () {
+        //??? layer based defaults does not work
         Settings.addInitializer (new XMLSettingsInitializer());
-
-        ClassLoader loader = this.getClass().getClassLoader();
-        
-        
-        // Registration of the editor kits to JEditorPane
-        
-        originalXMLKit =
-            JEditorPane.getEditorKitClassNameForContentType(XMLDataObject.MIME_TYPE);
-        originalDTDKit =
-            JEditorPane.getEditorKitClassNameForContentType(DTDDataObject.MIME_TYPE);
-        
-        JEditorPane.registerEditorKitForContentType
-            (XMLDataObject.MIME_TYPE, XMLKit.class.getName(), loader);
-        JEditorPane.registerEditorKitForContentType
-            (EntityDataObject.MIME_TYPE, XMLKit.class.getName(), loader);
-        JEditorPane.registerEditorKitForContentType
-            (DTDDataObject.MIME_TYPE, DTDKit.class.getName(), loader);
 
         // editor options
         
         AllOptions ao = (AllOptions)AllOptions.findObject (AllOptions.class, true);
-        ao.addOption ((XMLOptions)XMLOptions.findObject(XMLOptions.class, true));
-        ao.addOption ((DTDOptions)DTDOptions.findObject(DTDOptions.class, true));
         
         PrintSettings ps = (PrintSettings)PrintSettings.findObject (PrintSettings.class, true);
         ps.addOption ((XMLPrintOptions)XMLPrintOptions.findObject(XMLPrintOptions.class, true));
@@ -110,14 +86,6 @@ public class TextEditModuleInstall extends ModuleInstall {
         // remove options
         AllOptions ao = (AllOptions)AllOptions.findObject (AllOptions.class, true);
         
-        XMLOptions xo = (XMLOptions) ao.findObject (XMLOptions.class, false);
-        if (xo != null)
-	    ao.removeOption(xo);
-
-        DTDOptions xdo = (DTDOptions) ao.findObject (DTDOptions.class, false);
-        if (xdo != null)
-	    ao.removeOption(xdo);
-
         PrintSettings ps = (PrintSettings) PrintSettings.findObject (PrintSettings.class, true);
         
         SystemOption opt = (SystemOption) SystemOption.findObject (XMLPrintOptions.class, false);
@@ -127,21 +95,7 @@ public class TextEditModuleInstall extends ModuleInstall {
         opt = (SystemOption) SystemOption.findObject (DTDPrintOptions.class, false);
         if (opt != null)
 	    ps.removeOption (opt);
-        
-        // uninstall kits
-
-        ClassLoader loader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
-        
-        if (XMLKit.class.getName().equals(JEditorPane.getEditorKitClassNameForContentType(XMLDataObject.MIME_TYPE))) {
-            originalXMLKit = originalXMLKit == null ? "org.netbeans.modules.editor.plain.PlainKit" : originalXMLKit;
-            JEditorPane.registerEditorKitForContentType(XMLDataObject.MIME_TYPE, originalXMLKit, loader);
-        }
-        
-        if (DTDKit.class.getName().equals(JEditorPane.getEditorKitClassNameForContentType(DTDDataObject.MIME_TYPE))) {
-            originalDTDKit = originalDTDKit == null ? "org.netbeans.modules.editor.plain.PlainKit" : originalDTDKit;
-            JEditorPane.registerEditorKitForContentType(DTDDataObject.MIME_TYPE, originalDTDKit, loader);
-        }
-        
+                
     }
     
 }

@@ -68,71 +68,29 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
         }
 
 
-        List commonActionNames = null;
-        if ( ( kitClass == XMLKit.class ) ||
-             ( kitClass == DTDKit.class ) ) {
-            commonActionNames = new ArrayList
-                (Arrays.asList (new String[] {
-// <comment> Wait for indentation engine.
-//                     BaseKit.formatAction,
-//                     null,
-// </comment>
-                    TopComponent.class.getName(),
-                    null,
-                    BaseKit.cutAction,
-                    BaseKit.copyAction,
-                    BaseKit.pasteAction,
-                    null,
-                    BaseKit.removeSelectionAction,
-                    null,
-// <comment> Wait for context sensitive activated nodes implementation.
-//                     NewAction.class.getName(),
-//                     null,
-// </comment>
-                    ToolsAction.class.getName(),
-// <comment> Wait for context sensitive activated nodes implementation.
-//                     CustomizeAction.class.getName(),
-//                     PropertiesAction.class.getName(),
-// </comment>
-                }));
-        }
-
 
         /** Add editor actions to DTD Kit. */
         if (kitClass == DTDKit.class) {
 
+            // layer based default does not work!
             settingsMap.put (SettingsNames.ABBREV_MAP, getDTDAbbrevMap());
 
             SettingsUtil.updateListSetting (settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
                     new TokenContext[] { DTDTokenContext.context }
             );
 
-            List dtdActionNames = new ArrayList
-                (Arrays.asList (new String[] {
-                    "org.openide.actions.OpenAction", // NOI18N
-                    "org.netbeans.modules.xml.core.actions.CollectDTDAction", // NOI18N
-                }));
-            dtdActionNames.addAll (commonActionNames);
-            settingsMap.put (ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST, dtdActionNames);
         }
 
 
         /** Add editor actions to XML Kit. */
         if (kitClass == XMLKit.class) {
 
+            // layer based default does not work!
             settingsMap.put (SettingsNames.ABBREV_MAP, getXMLAbbrevMap());
 
             SettingsUtil.updateListSetting (settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
                     new TokenContext[] { XMLDefaultTokenContext.context }
             );
-
-            List xmlActionNames = new ArrayList
-                (Arrays.asList (new String[] {
-                    "org.netbeans.modules.xml.text.syntax.XMLSettingsInitializer$WeakXMLActions", // NOI18N
-                    "org.netbeans.modules.xml.core.actions.CollectXMLAction", // NOI18N
-                }));
-            xmlActionNames.addAll (commonActionNames);
-            settingsMap.put (ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST, xmlActionNames);
             
             settingsMap.put(SettingsNames.MACRO_MAP, getXMLMacroMap());
             
@@ -190,6 +148,8 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
         return dtdAbbrevMap;
     }
 
+    
+    
 
     /*
      * Editor is bundled with one usefull macro, bind it
@@ -448,51 +408,5 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
     } // static class DTDTokenColoringInitializer
 
-
-
-    //
-    // class WeakXMLActions
-    //
-
-    private static final class WeakXMLActions extends CollectSystemAction {
-        /** Serial Version UID */
-        private static final long serialVersionUID = 8223872687291078210L;
-
-        /**
-         */
-        protected final Class getActionLookClass () {
-            // will not be called because rewritten getPossibleActions by subclasses
-            return null;
-        }
-
-        protected Collection getPossibleActions () {
-            Collection actions = new Vector();
-            actions.add (SystemAction.get (OpenAction.class));
-            actions.add (SystemAction.get (ViewAction.class));
-            return actions;
-        }
-
-
-        /* Do nothing.
-         * This action itself does nothing, it only presents other actions.
-         * @param ev ignored
-         */
-        public void actionPerformed (java.awt.event.ActionEvent e) {
-        }
-
-
-        /* Getter for name
-         */
-        public String getName () {
-            return Util.THIS.getString ("NAME_WeakXMLActions");
-        }
-    
-        /* Getter for help.
-         */
-        public HelpCtx getHelpCtx () {
-            return new HelpCtx (WeakXMLActions.class);
-        }
-        
-    } // class WeakXMLActions
 
 }

@@ -12,12 +12,14 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd" [
+  <!ENTITY dtd-editor SYSTEM "DTDEditor.ent">
+  <!ENTITY xml-editor SYSTEM "XMLEditor.ent">
+]>
 
 <filesystem>
 
     <folder name="Services">
-
         <folder name="IndentEngine">
             <file name="org-netbeans-modules-xml-text-settings-XMLIndentEngine.settings" url="XMLIndentEngine.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.indent.Bundle"/>
@@ -28,112 +30,27 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-xml-text-completion-ReloadActionPerformer.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.core.actions.XMLUpdateDocumentAction$Performer" />
             </file>
-        </folder>
-        
+        </folder>        
     </folder> <!-- Services -->
-
 
     <folder name="Editors">
         <folder name="text">
             <folder name="xml">
-            
-<!--                <folder name="Popup">
-                    <file name="goto-help"/>
-                    <attr name="goto-help/Separator3.instance" boolvalue="true"/>
+                &xml-editor;
+            </folder>
+        </folder>
 
-                    <file name="Separator3.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator3.instance/goto-source" boolvalue="true"/>
+        <folder name="application">
+            <folder name="xml-dtd">
+                &dtd-editor;
+            </folder>
+        </folder>        
 
-                    <file name="goto-source"/>
-                    <attr name="goto-source/goto-declaration" boolvalue="true"/>
-
-                    <file name="goto-declaration"/>
-                    <attr name="goto-declaration/Separator4.instance" boolvalue="true"/>
-
-                    <file name="Separator4.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator4.instance/format" boolvalue="true"/>
-
-                    <file name="format"/>
-                    <attr name="format/Separator5.instance" boolvalue="true"/>
-
-                    <file name="Separator5.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator5.instance/org-openide-windows-TopComponent" boolvalue="true"/>
-
-                    <attr name="Separator1.instance/org-openide-actions-CompileAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-CompileAction.instance"/>
-                    <attr name="org-openide-actions-CompileAction.instance/Separator6.instance" boolvalue="true"/>
-
-                    <file name="Separator6.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator6.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true"/>
-
-                    <file name="org-openide-actions-ExecuteAction.instance"/>
-                    <attr name="org-openide-actions-ExecuteAction.instance/Separator7.instance" boolvalue="true"/>
-
-                    <file name="Separator7.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator7.instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true"/>
-
-                    <file name="org-openide-actions-ToggleBreakpointAction.instance"/>
-                    <attr name="org-openide-actions-ToggleBreakpointAction.instance/add-watch" boolvalue="true"/>
-
-                    <file name="add-watch"/>
-                    <attr name="add-watch/Separator8.instance" boolvalue="true"/>
-
-                    <file name="Separator8.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator8.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-
-                    <attr name="org-openide-actions-DeleteAction.instance/Separator9.instance" boolvalue="true"/>
-
-                    <file name="Separator9.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator9.instance/org-openide-actions-NewAction.instance" boolvalue="true"/>
-
-                    <file name="org-openide-actions-NewAction.instance"/>
-                    <attr name="org-openide-actions-NewAction.instance/Separator10.instance" boolvalue="true"/>
-
-                    <file name="Separator10.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="Separator10.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
-
-                    <file name="org-openide-actions-ToolsAction.instance"/>
-                    <attr name="org-openide-actions-ToolsAction.instance/generate-gutter-popup" boolvalue="true"/>
-
-                    <file name="generate-gutter-popup"/>
-                    <attr name="generate-gutter-popup/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
-                </folder> <!__ Popup -->
-                
-<!--                <folder name="Toolbars">
-                    <folder name="Default">
-                        <attr name="stop-macro-recording/XMLSeparator1.instance" boolvalue="true"/>
-                        <file name="XMLSeparator1.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        </file>
-                        
-                        <attr name="XMLSeparator1.instance/xml-comment" boolvalue="true"/>
-                        <file name="xml-comment"/>
-                        <attr name="xml-comment/xml-uncomment" boolvalue="true"/>
-                        <file name="xml-uncomment"/>
-                    </folder> <!__ Default __>
-
-                </folder> <!__ Toolbars -->
-
-            </folder> <!-- xml -->
-        </folder> <!-- text -->                
-    </folder> <!-- Editors -->
+        <folder name="text">
+            <folder name="xml-external-parsed-entity">
+                &xml-editor;
+            </folder>
+        </folder>
+    </folder>
 
 </filesystem>
