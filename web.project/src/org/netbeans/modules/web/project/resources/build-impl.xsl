@@ -25,7 +25,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <xsl:variable name="name" select="/p:project/p:name"/>
 <project name="{$name}-impl" default="build" basedir="..">
-
     <target name="init">
         <!--
         <xsl:variable name="cp">
@@ -73,6 +72,7 @@ Microsystems, Inc. All Rights Reserved.
         <condition property="no.javadoc.preview">
             <isfalse value="${{javadoc.preview}}"/>
         </condition>
+        <taskdef name="copyfiles" classname="org.netbeans.modules.web.project.ant.CopyFiles" classpath="${{libs.copyfiles.classpath}}"/>
         <condition property="do.compile.jsps">
             <istrue value="${{compile.jsps}}"/>
         </condition>
@@ -111,7 +111,7 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-libraries/web:library[web:path-in-war]">
             <xsl:variable name="copyto" select=" web:path-in-war"/>
             <xsl:variable name="libfile" select="web:file"/>
-            <copy todir="${{build.dir}}/{$copyto}" file="{$libfile}"/>
+            <copyfiles todir="${{build.dir}}/{$copyto}" files="{$libfile}"/>
         </xsl:for-each>
     </target>
 
