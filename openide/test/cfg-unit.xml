@@ -58,6 +58,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/explorer/FindHelpTest.class"/>
                 -->                
                 <include name="org/openide/explorer/propertysheet/PropertyPanelTest.class"/>
+                <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetTab"/>
                 <include name="org/openide/compiler/*Test.class"/>
             </patternset>
         </testset>      
