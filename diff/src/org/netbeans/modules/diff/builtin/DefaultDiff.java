@@ -339,7 +339,7 @@ public class DefaultDiff extends Diff implements Serializable {
         
     }
     
-    private static class DiffTopComponent extends TopComponent {
+    public static class DiffTopComponent extends TopComponent {
         
         public DiffTopComponent(Component c) {
             setLayout(new BorderLayout());
