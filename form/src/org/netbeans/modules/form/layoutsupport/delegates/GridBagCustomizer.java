@@ -19,15 +19,16 @@ import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
 import java.lang.Math;
+import java.lang.reflect.Method;
 
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.util.*;
-import org.netbeans.api.javahelp.Help;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
+import org.openide.ErrorManager;
 
 /** A customizer providing better editing facility for GridBagLayout
  *
@@ -1298,11 +1299,32 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             if (ev.getActionCommand().equals("close")) // NOI18N
                 dispose();
             else if (ev.getActionCommand().equals("help")) { // NOI18N
-                Help help = (Help) Lookup.getDefault().lookup(Help.class);
-                if (help != null)
-                    help.showHelp(HelpCtx.findHelp(customizerPanel));
+                
+                ClassLoader ldr = (ClassLoader) Lookup.getDefault().lookup(
+                    ClassLoader.class);
+                
+                Class clazz = null;
+                try {
+                    clazz = ldr.loadClass("org.netbeans.api.javahelp.Help"); //NOI18N
+                } catch (ClassNotFoundException cnfe) {
+                    //Help not installed
+                }
+                if (clazz != null) {
+                    Object help = Lookup.getDefault().lookup(clazz);
+                    if (help != null) {
+                        try {
+                            Method m = clazz.getDeclaredMethod ("showHelp", new Class[] {HelpCtx.class});
+                            m.setAccessible(true);
+                            m.invoke(help, new Object[] {HelpCtx.findHelp(customizerPanel)});
+                        } catch (Exception e) {
+                            //should never get here
+                            ErrorManager.getDefault().notify(e);
+                        }
+                    }
+                }
             }
         }
     }
+    
 
 }
