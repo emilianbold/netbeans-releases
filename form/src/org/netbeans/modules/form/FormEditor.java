@@ -15,13 +15,14 @@ package com.netbeans.developer.modules.loaders.form;
 
 import java.awt.*;
 import java.beans.*;
+import java.lang.reflect.Method;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.text.MessageFormat;
 import javax.swing.*;
 
 import com.netbeans.ide.*;
-import com.netbeans.ide.awt.SplittedPanel;
+import com.netbeans.ide.awt.*;
 import com.netbeans.ide.windows.ActivatedNodesListener;
 import com.netbeans.ide.windows.NodesEvent;
 import com.netbeans.ide.explorer.*;
@@ -33,7 +34,8 @@ import com.netbeans.ide.nodes.Node;
 import com.netbeans.developer.modules.loaders.form.actions.*;
 import com.netbeans.developer.modules.loaders.form.FormDataObject;
 import com.netbeans.developer.modules.loaders.form.FormLoaderSettings;
-import com.netbeans.developer.modules.loaders.form.palette.PaletteAction;
+import com.netbeans.developer.modules.loaders.form.palette.*;
+import com.netbeans.developerx.loaders.form.formeditor.layouts.*;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.support.*;
 
 /** A static class that manages global FormEditor issues.
@@ -205,7 +207,9 @@ final public class FormEditor extends Object {
       }
     }
     else if (comp instanceof JLabel) {
+      System.out.println("FormEditor.java:213");;
       if ("".equals (((JLabel)comp).getText ())) {
+        System.out.println("FormEditor.java:215");;
         propName = "text";
         propValue = varName;
       }
@@ -233,8 +237,9 @@ final public class FormEditor extends Object {
     if (propName != null) {
       Node.Property prop = radComp.getPropertyByName (propName);
       if (prop != null) {
-        try {
+        try {System.out.println("FormEditor.java:243");;
           prop.setValue (propValue);
+          System.out.println("FormEditor.java:245");;
         } catch (IllegalAccessException e) {
           // never mind, ignore
         } catch (java.lang.reflect.InvocationTargetException e) {
@@ -326,6 +331,74 @@ final public class FormEditor extends Object {
       return new JLayeredPaneSupportLayout ();
     return null;
   } 
+
+  /** @return The DesignLayout support for container represented by this PaletteNode, or
+  * null, if this PaletteNode does not represent a Container or there is no design-time
+  * support for the layout of the container
+  */
+  public static DesignLayout findDesignLayout (PaletteItem item) {
+    if (!item.isContainer ()) return null;
+    Class itemClass = item.getItemClass ();
+    DesignSupportLayout supportLayout = getSupportLayout (itemClass);
+    if (supportLayout != null) return supportLayout;
+
+    Object sharedInstance = null;
+    try {
+      sharedInstance = item.getSharedInstance ();
+    } catch (Exception e) {
+    }
+    if (sharedInstance == null) {
+      return null;    // in the case when creation of new instance fails, we just return null
+                      // to say, that we do not provide a design-time layout for such bean
+    }
+
+    DesignLayout newDesignLayout = null;
+    
+    Container container = null;
+    try {
+      Object value = item.getBeanInfo ().getBeanDescriptor ().getValue ("containerDelegate");
+      if ((value != null) && (value instanceof String) && ((String)value).equals ("getContentPane")) {
+        Method m = sharedInstance.getClass ().getMethod ("getContentPane", new Class [0]);
+        container = (Container) m.invoke (sharedInstance, new Object [0]);
+      }
+    } catch (Exception e) { // effectively ignored - simply no containerDelegate
+    }
+
+    if (container == null)
+      container = (Container)sharedInstance;
+    LayoutManager lm = container.getLayout();
+
+    if (lm != null) {
+      if (lm instanceof FlowLayout) {
+        newDesignLayout = new DesignFlowLayout ();
+      } else if (lm instanceof BorderLayout) {
+        newDesignLayout = new DesignBorderLayout ();
+      } else if (lm instanceof CardLayout) {
+        newDesignLayout = new DesignCardLayout ();
+      } else if (lm instanceof GridLayout) {
+        newDesignLayout = new DesignGridLayout ();
+      } else if (lm instanceof GridBagLayout) {
+        newDesignLayout = new DesignGridBagLayout ();
+      } else if (lm instanceof EqualFlowLayout) {
+        newDesignLayout = new DesignEqualFlowLayout ();
+      } else if (lm instanceof AbsoluteLayout) {
+        newDesignLayout = new DesignAbsoluteLayout ();
+      } else if (lm instanceof BoxLayout) {
+        newDesignLayout = new DesignBoxLayout ();
+      }
+      // [PENDING - dynamic layouts search]
+      
+/*      Class layoutClass = getDesignLayout(lm.getClass());
+      
+      try {
+        newDesignLayout = (DesignLayout)layoutClass.newInstance();
+      } catch (Exception e) { // if problem occurs ==>> null layout
+        newDesignLayout = null;
+      } */
+    }
+
+    return newDesignLayout;
+  }
 
 // ---------------------------------------------------
 // inner classes
@@ -517,6 +590,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  10   Gandalf   1.9         5/15/99  Ian Formanek    
  *  9    Gandalf   1.8         5/14/99  Ian Formanek    
  *  8    Gandalf   1.7         5/14/99  Ian Formanek    
  *  7    Gandalf   1.6         5/12/99  Ian Formanek    

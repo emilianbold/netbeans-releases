@@ -53,7 +53,7 @@ public class RADVisualComponent extends RADComponent {
 
   /** @return The index of this component within all the subcomponents of its parent */
   public int getComponentIndex () {
-    return -1; // [PENDING] ((OrderCookie) Cookies.getInstanceOf (getParentNode ().getCookie (), OrderCookie.class)).getIndexOf (this);
+    return getParentContainer ().getIndexOf (this);
   }
   
 // -----------------------------------------------------------------------------
@@ -100,6 +100,7 @@ public class RADVisualComponent extends RADComponent {
 
 /*
  * Log
+ *  7    Gandalf   1.6         5/15/99  Ian Formanek    
  *  6    Gandalf   1.5         5/14/99  Ian Formanek    
  *  5    Gandalf   1.4         5/12/99  Ian Formanek    
  *  4    Gandalf   1.3         5/11/99  Ian Formanek    Build 318 version

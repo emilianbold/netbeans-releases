@@ -13,8 +13,10 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import com.netbeans.ide.actions.*;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.NbBundle;
+import com.netbeans.ide.util.actions.SystemAction;
 
 import java.awt.Image;
 import java.text.MessageFormat;
@@ -42,15 +44,19 @@ public class RADComponentNode extends AbstractNode implements FormNodeCookie {
     this.component = component;
     component.setNodeReference (this);
     getCookieSet ().add (this);
+    updateName ();
+  }
+
+  void updateName () {
     String className = component.getComponentClass ().getName ();
-    if (component instanceof RADVisualFormContainer) {
-      // [PENDING - handle this better and also for non-visual forms]
+    if (component instanceof FormContainer) {
+      // [PENDING - handle this better]
       setName (component.getName () + " [form]");
     } else {
       setName (nameFormat.format (new Object[] {component.getName (), className, className.substring (className.lastIndexOf (".") + 1) } ));
     }
   }
-
+  
   public Image getIcon (int iconType) {
     Image ic = BeanSupport.getBeanIcon (component.getComponentClass (), iconType);
     if (ic != null) return ic;
@@ -65,6 +71,54 @@ public class RADComponentNode extends AbstractNode implements FormNodeCookie {
     return component.getProperties ();
   }
 
+  /** Lazily initialize set of node's actions (overridable).
+  * The default implementation returns <code>null</code>.
+  * <p><em>Warning:</em> do not call {@link #getActions} within this method.
+  * If necessary, call {@link NodeOp#getDefaultActions} to merge in.
+  * @return array of actions for this node, or <code>null</code> to use the default node actions
+  */
+  protected SystemAction [] createActions () {
+    return new SystemAction [] {
+      SystemAction.get(PasteAction.class),
+      SystemAction.get(CopyAction.class),
+      SystemAction.get(CutAction.class),
+      null,
+      SystemAction.get(RenameAction.class),
+      SystemAction.get(DeleteAction.class),
+      null,
+      SystemAction.get(PropertiesAction.class),
+    };
+  }
+
+  /** Can this node be renamed?
+  * @return <code>false</code>
+  */
+  public boolean canRename () {
+    return !(component instanceof FormContainer);
+  }
+
+  /** Can this node be destroyed?
+  * @return <CODE>false</CODE>
+  */
+  public boolean canDestroy () {
+    return !(component instanceof FormContainer);
+  }
+
+  /** Remove the node from its parent and deletes it.
+  * The default
+  * implementation obtains write access to
+  * the {@link Children#MUTEX children's lock}, and removes
+  * the node from its parent (if any). Also fires a property change.
+  * <P>
+  * This may be overridden by subclasses to do any additional
+  * cleanup.
+  *
+  * @exception IOException if something fails
+  */
+  public void destroy () throws java.io.IOException {
+    component.getFormManager ().deleteComponent (component);
+    super.destroy ();
+  }
 // -----------------------------------------------------------------------------
 // FormNodeCookie implementation
   
@@ -76,6 +130,7 @@ public class RADComponentNode extends AbstractNode implements FormNodeCookie {
 
 /*
  * Log
+ *  6    Gandalf   1.5         5/15/99  Ian Formanek    
  *  5    Gandalf   1.4         5/14/99  Ian Formanek    
  *  4    Gandalf   1.3         5/12/99  Ian Formanek    
  *  3    Gandalf   1.2         5/4/99   Ian Formanek    Package change

@@ -88,7 +88,7 @@ public class ParametersPicker extends javax.swing.JPanel {
       return codeArea.getText ();
     } else if (propertyButton.isSelected ()) {
       StringBuffer sb = new StringBuffer ();
-      if (!(selectedComponent instanceof RADVisualFormContainer)) { // [PENDING - also non-visual forms]
+      if (!(selectedComponent instanceof FormContainer)) {
         sb.append (selectedComponent.getName ());
         sb.append (".");
       }
@@ -97,7 +97,7 @@ public class ParametersPicker extends javax.swing.JPanel {
       return  sb.toString ();
     } else if (methodButton.isSelected ()) {
       StringBuffer sb = new StringBuffer ();
-      if (!(selectedComponent instanceof RADVisualFormContainer)) { // [PENDING - also non-visual forms]
+      if (!(selectedComponent instanceof FormContainer)) { 
         sb.append (selectedComponent.getName ());
         sb.append (".");
       }
@@ -288,7 +288,7 @@ public class ParametersPicker extends javax.swing.JPanel {
       selectedComponent = picker.getSelectedComponent ();
       selectedMethod = picker.getSelectedMethod ();
       methodLabel.setEnabled (true);
-      if (selectedComponent instanceof RADVisualFormContainer) {  // [PENDING - also non-visual forms]
+      if (selectedComponent instanceof FormContainer) {
         methodLabel.setText (selectedMethod.getName ());
       } else {
         methodLabel.setText (selectedComponent.getName () + "." + selectedMethod.getName ());
@@ -311,7 +311,7 @@ public class ParametersPicker extends javax.swing.JPanel {
       selectedComponent = propertyPicker.getSelectedComponent ();
       selectedProperty = propertyPicker.getSelectedProperty ();
       propertyLabel.setEnabled (true);
-      if (selectedComponent instanceof RADVisualFormContainer) {  // [PENDING - also non-visual forms]
+      if (selectedComponent instanceof FormContainer) {
         propertyLabel.setText (selectedProperty.getName ());
       } else {
         propertyLabel.setText (selectedComponent.getName () + "." + selectedProperty.getName ());
@@ -368,6 +368,7 @@ public class ParametersPicker extends javax.swing.JPanel {
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/15/99  Ian Formanek    
  *  1    Gandalf   1.0         5/13/99  Ian Formanek    
  * $
  */

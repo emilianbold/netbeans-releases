@@ -81,6 +81,14 @@ public class PaletteItem implements java.io.Serializable {
     return beanClass;
   }
 
+  public java.beans.BeanInfo getBeanInfo () {
+    try {
+      return java.beans.Introspector.getBeanInfo (beanClass);
+    } catch (java.beans.IntrospectionException e) {
+      return null;
+    }
+  }
+
   public DesignBorder createBorder () throws InstantiationException, IllegalAccessException {
     return new DesignBorder ((BorderInfo)createInstance ());
   }
@@ -104,6 +112,7 @@ public class PaletteItem implements java.io.Serializable {
 
 /*
  * Log
+ *  4    Gandalf   1.3         5/15/99  Ian Formanek    
  *  3    Gandalf   1.2         5/14/99  Ian Formanek    
  *  2    Gandalf   1.1         5/14/99  Ian Formanek    
  *  1    Gandalf   1.0         4/26/99  Ian Formanek    

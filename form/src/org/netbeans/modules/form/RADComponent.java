@@ -118,7 +118,7 @@ public class RADComponent {
   RADComponentNode getNodeReference () {
     return componentNode;
   }
-  
+
 // -----------------------------------------------------------------------------
 // Public interface
 
@@ -151,6 +151,9 @@ public class RADComponent {
     String oldValue = componentName;
     componentName = value;
     getFormManager ().fireComponentChanged (this, PROP_NAME, oldValue, componentName);
+    if (getNodeReference () != null) {
+      getNodeReference ().updateName ();
+    }
   }
   
   public Map getChangedProperties () {
@@ -650,6 +653,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  11   Gandalf   1.10        5/15/99  Ian Formanek    
  *  10   Gandalf   1.9         5/14/99  Ian Formanek    
  *  9    Gandalf   1.8         5/14/99  Ian Formanek    
  *  8    Gandalf   1.7         5/12/99  Ian Formanek    

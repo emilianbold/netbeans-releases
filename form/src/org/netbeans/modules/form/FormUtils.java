@@ -205,7 +205,7 @@ public class FormUtils extends Object {
   */
   public static String getDefaultEventName (RADComponent component, Method listenerMethod) {
     String componentName = component.getName ();
-    if ((component instanceof RADFormContainer) || (component instanceof RADVisualFormContainer)) {
+    if (component instanceof FormContainer) {
       componentName = "form";
     }
     StringBuffer sb = new StringBuffer (componentName);
@@ -384,6 +384,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  10   Gandalf   1.9         5/15/99  Ian Formanek    
  *  9    Gandalf   1.8         5/13/99  Ian Formanek    
  *  8    Gandalf   1.7         5/10/99  Ian Formanek    
  *  7    Gandalf   1.6         5/4/99   Ian Formanek    Package change

@@ -19,7 +19,13 @@ import com.netbeans.developerx.loaders.form.formeditor.layouts.support.DesignSup
 import java.awt.Container;
 
 /** 
-*
+* Initialization order: <UL>
+* <LI> Constructor: new RADVisualContainer ();
+* <LI> FormManager init: initialize (FormManager)
+* <LI> Bean init: setComponent (Class)
+* <LI> SubComponents init: initSubComponents (RADComponent[])
+* <LI> DesignLayout init: setDesignLayout (DesignLayout) </UL>
+ 
 * @author Ian Formanek
 */
 public class RADVisualContainer extends RADVisualComponent implements ComponentContainer {
@@ -43,6 +49,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     return designLayout;
   }
   
+  /** Must be called after initSubComponents!!! */
   public void setDesignLayout (DesignLayout layout) {
     if (designLayout instanceof DesignSupportLayout) {
       throw new InternalError ("Cannot change a design layout on this container");
@@ -99,10 +106,37 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     getNodeReference ().getChildren ().add (new com.netbeans.ide.nodes.Node[] { new RADComponentNode (comp) });
   }
 
+  public void remove (RADVisualComponent comp) {
+    designLayout.removeComponent (comp);
+    int index = -1;
+    for (int i = 0; i < subComponents.length; i++) {
+      if (subComponents[i] == comp) {
+        index = i;
+        break;
+      }
+    }
+    if (index != -1) {
+      RADVisualComponent[] newComponents = new RADVisualComponent[subComponents.length-1];
+      System.arraycopy (subComponents, 0, newComponents, 0, index);
+      if (index != subComponents.length - 1) {
+        System.arraycopy (subComponents, index+1, newComponents, index, subComponents.length-index-1);
+      }
+      subComponents = newComponents;
+    }
+  }
+
+  public int getIndexOf (RADVisualComponent comp) {
+    for (int i = 0; i < subComponents.length; i++) {
+      if (subComponents[i] == comp)
+        return i;
+    }
+    return -1;
+  }
 }
 
 /*
  * Log
+ *  9    Gandalf   1.8         5/15/99  Ian Formanek    
  *  8    Gandalf   1.7         5/14/99  Ian Formanek    
  *  7    Gandalf   1.6         5/12/99  Ian Formanek    Removed debug print
  *  6    Gandalf   1.5         5/12/99  Ian Formanek    

@@ -174,11 +174,12 @@ public class JavaCodeGenerator extends CodeGenerator {
             text.append ("\n");
             generateComponentAddCode (children[i], (RADVisualContainer)comp, text, indent);
           } else {
-            generateComponentAddCode (children[i], (RADVisualContainer)comp, text, indent + oneIndent);
+            generateComponentAddCode (children[i], (RADVisualContainer)comp, text, indent);
           }
         } // [PENDING - adding to non-visual containers
       }
     }
+    text.append ("\n");
   }
   
   private void generateComponentCreate (RADComponent comp, StringBuffer text, String indent) {
@@ -616,6 +617,11 @@ public class JavaCodeGenerator extends CodeGenerator {
 // Innerclasses
 
   private class JCGFormListener implements FormListener {
+
+    public void formChanged () {
+      regenerateInitializer ();
+    }
+    
     /** Called when a new component is added to the form
     * @param evt the event object describing the event
     */
@@ -682,6 +688,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  12   Gandalf   1.11        5/15/99  Ian Formanek    
  *  11   Gandalf   1.10        5/14/99  Ian Formanek    
  *  10   Gandalf   1.9         5/14/99  Ian Formanek    
  *  9    Gandalf   1.8         5/14/99  Ian Formanek    
