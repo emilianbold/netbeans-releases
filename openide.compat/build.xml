@@ -129,6 +129,7 @@ Microsystems, Inc. All Rights Reserved.
         <include name="**/*.class" />
       </fileset>
     </delete>
+    <delete dir="gensrc"/>
     <delete dir="src/org/openide/explorer"/>
     <delete dir="src/org/openide/util"/>
     <delete file="manifest-subst.mf"/>
