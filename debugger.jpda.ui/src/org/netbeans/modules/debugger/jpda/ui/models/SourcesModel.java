@@ -52,6 +52,7 @@ NodeActionsProvider {
     private Set filters = new HashSet ();
     private Set enabledFilters = new HashSet ();
     private String FILTER_PREFIX = "Do not stop in: ";
+    private String DISP_FILTER_PREFIX = NbBundle.getBundle(SourcesModel.class).getString("CTL_SourcesModel_Name_DoNotStopIn");
     
     
     public SourcesModel (ContextProvider lookupProvider) {
@@ -119,7 +120,7 @@ NodeActionsProvider {
             ep = (String[]) filters.toArray (ep);
             int i, k = ep.length;
             for (i = 0; i < k; i++) {
-                ep [i] = FILTER_PREFIX + ep [i];
+                ep [i] = DISP_FILTER_PREFIX + ep [i];
             }
             Object[] os = new Object [sr.length + ep.length];
             System.arraycopy (sr, 0, os, 0, sr.length);
@@ -322,7 +323,7 @@ NodeActionsProvider {
     
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node instanceof String) {
-            if (((String) node).startsWith (FILTER_PREFIX))
+            if (((String) node).startsWith (DISP_FILTER_PREFIX))
                 return new Action[] {
                     NEW_FILTER_ACTION,
                     DELETE_ACTION
@@ -346,9 +347,9 @@ NodeActionsProvider {
     // other methods ...........................................................
     
     private boolean isEnabled (String root) {
-        if (root.startsWith (FILTER_PREFIX)) {
+        if (root.startsWith (DISP_FILTER_PREFIX)) {
             return enabledFilters.contains (root.substring (
-                FILTER_PREFIX.length ()
+                DISP_FILTER_PREFIX.length ()
             ));
         }
         String[] sr = context.getSourceRoots ();
@@ -359,8 +360,8 @@ NodeActionsProvider {
     }
 
     private void setEnabled (String root, boolean enabled) {
-        if (root.startsWith (FILTER_PREFIX)) {
-            String filter = root.substring (FILTER_PREFIX.length ());
+        if (root.startsWith (DISP_FILTER_PREFIX)) {
+            String filter = root.substring (DISP_FILTER_PREFIX.length ());
             if (enabled) {
                 enabledFilters.add  (filter);
                 debugger.getSmartSteppingFilter ().addExclusionPatterns (
@@ -403,6 +404,22 @@ NodeActionsProvider {
         Properties properties = Properties.getDefault().getProperties ("debugger").getProperties("sourcefilter");
         Set stopIn = new HashSet(properties.getCollection("stop", Collections.EMPTY_SET));
         Set skipThrough = new HashSet(properties.getCollection("skip", Collections.EMPTY_SET));
+        for (Iterator i = stopIn.iterator(); i.hasNext(); ) {
+            String sif = (String) i.next();
+            if (sif.startsWith(FILTER_PREFIX)) {
+                if (!filters.contains(sif.substring(FILTER_PREFIX.length()))) {
+                    i.remove();
+                }
+            }
+        }
+        for (Iterator i = skipThrough.iterator(); i.hasNext(); ) {
+            String sif = (String) i.next();
+            if (sif.startsWith(FILTER_PREFIX)) {
+                if (!filters.contains(sif.substring(FILTER_PREFIX.length()))) {
+                    i.remove();
+                }
+            }
+        }
         for (Iterator i = filters.iterator(); i.hasNext();) {
             String filter = (String) i.next();
             if (enabledFilters.contains(filter)) {
@@ -450,7 +467,7 @@ NodeActionsProvider {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++)
                     filters.remove (((String) nodes [i]).substring (
-                        FILTER_PREFIX.length ()
+                        DISP_FILTER_PREFIX.length ()
                     ));
                 saveFilters();
                 fireTreeChanged ();
