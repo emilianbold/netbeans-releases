@@ -263,7 +263,6 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
 
             dragarea.setName ("grip");
             add (dragarea);
-            addSeparator (new Dimension (4, 1));
         }
     }
 
