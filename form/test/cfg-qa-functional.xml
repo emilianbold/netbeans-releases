@@ -72,4 +72,5 @@ Microsystems, Inc. All Rights Reserved.
     
     <resultsprocessor name="qa-functional" antfile="build.xml" target="test_report"/>
     <executor name="ide" antfile="build.xml" target="runidetest"/>
+    <compiler name="qa-functional-compiler" antfile="build.xml" target="qa-functional-compiler" default="true" />
 </mconfig>

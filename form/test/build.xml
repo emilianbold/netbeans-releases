@@ -281,6 +281,21 @@ Microsystems, Inc. All Rights Reserved.
  	      -->  
     	</path>
     </target>
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+    
+    <target name="qa-functional-compiler" depends="init">
+       <ant dir="." antfile="${xtest.module_harness.antfile}" target="buildtests">
+           <!-- This property contains directories to compile.
+    	        These directories will be compiled separately. 
+                   example: <property name="compile.srcdir" value="unit/src1;unit/src2"/>
+             -->
+           <property name="compile.srcdir" value="qa-functional/src"/>
+	   <property name="compile.excludes" value="**/data/**" />
+       </ant>
+    </target>
+    
     
 </project>
 
