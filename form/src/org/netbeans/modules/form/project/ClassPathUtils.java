@@ -212,7 +212,7 @@ public class ClassPathUtils {
                         artifacts[i].getScriptLocation().getParent()
                         + File.separator
                         + artifactLocations[j].getPath());
-                    outputs[i] = outputFile.getAbsolutePath();
+                    outputList.add(outputFile.getAbsolutePath());
                 }
             }
             outputs = (String[])outputList.toArray(new String[0]);
