@@ -35,6 +35,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.openide.TopManager;
 import org.openide.windows.WindowManager;
 
 /**
@@ -107,20 +108,20 @@ public class MainWindowOperator extends JFrameOperator {
      * @return  true if IDE is in MDI mode; false otherwise (SDI mode)
      */
     public static boolean isMDI() {
-        return ((WindowManagerImpl)WindowManager.getDefault()).
+        return ((WindowManagerImpl)TopManager.getDefault().getWindowManager()).
                     uiModeManager().getUIMode() == UIModeManager.MDI_MODE;
     }
     
     /** Makes IDE to switch to MDI (full screen) mode. */
     public static void setMDI() {
-        ((WindowManagerImpl)WindowManager.getDefault()).
+        ((WindowManagerImpl)TopManager.getDefault().getWindowManager()).
                     uiModeManager().setUIMode(UIModeManager.MDI_MODE);
         new EventTool().waitNoEvent(1000);
     }
     
     /** Makes IDE to switch to SDI (multiple smaller windows) mode. */
     public static void setSDI() {
-        ((WindowManagerImpl)WindowManager.getDefault()).
+        ((WindowManagerImpl)TopManager.getDefault().getWindowManager()).
                     uiModeManager().setUIMode(UIModeManager.SDI_MODE);
         new EventTool().waitNoEvent(1000);
     }
