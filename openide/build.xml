@@ -831,7 +831,6 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <ant dir="api/examples" target="clean"/>
   </target>
 
-  <!-- PENDING
     <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates ZIP file suitable for download. ZIP file contains all JARs necessary for using standalone filesystems (excluding a JAXP implementation).">
         <zip compress="true" zipfile="standalone/nbfilesystems.zip">
             <fileset dir="standalone">
@@ -840,27 +839,32 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
                 <include name="openide-lookup.jar"/>
                 <include name="README-FS.txt"/>
             </fileset>
+            <fileset dir="util/netbeans/lib">
+                <include name="openide-util.jar"/>
+            </fileset>
+            <fileset dir="fs/netbeans/lib">
+                <include name="openide-fs.jar"/>
+            </fileset>
         </zip>
     </target>
 
-    <target name="standalone-fs-prepare" depends="lib-lookup,lib-util,lib-fs">
+    <target name="standalone-fs-prepare" depends="lib-util,lib-fs">
         <mkdir dir="standalone"/>
         <echo file="standalone/README-FS.txt"><![CDATA[Filesystems Library
 ===================
 
 Please visit the documentation at http://openide.netbeans.org/fs/
 
-If you want to use the library in your application just put nbfilesystems.jar
-into your classpath:
+If you want to use the library in your application just put openide-fs.jar
+and openide-util.jar into your classpath:
 
-	java -cp nbfilesystems.jar yourpackage.YourClass
+	java -cp openide-fs.jar:openide-util.jar yourpackage.YourClass
 
-You need a JAXP-compliant XML parser in the classpath too.
+You shall use the library on JRE 1.4 or newer.
 
 Comments or questions? Post to the dev@openide.netbeans.org mailing list.
 ]]></echo>
 
     </target>
-  -->
 
 </project>
