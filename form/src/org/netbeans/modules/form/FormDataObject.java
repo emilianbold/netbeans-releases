@@ -59,9 +59,8 @@ public class FormDataObject extends JavaDataObject {
 
     static final long serialVersionUID =-975322003627854168L;
 
-    public FormDataObject(FileObject ffo, FileObject jfo, FormDataLoader loader) throws DataObjectExistsException {
+    public FormDataObject(FileObject jfo, FormDataLoader loader) throws DataObjectExistsException {
         super(jfo, loader);
-        formEntry =(FileEntry)registerEntry(ffo);
         init();
     }
 
@@ -71,8 +70,8 @@ public class FormDataObject extends JavaDataObject {
         modifiedInit = false;
         componentRefRegistered = false;
 
-        getCookieSet().add(OpenCookie.class, this);
-        getCookieSet().add(EditCookie.class, this);
+        getCookieSet().add(new Class[] { OpenCookie.class, EditCookie.class},
+                           this);
     }
 
     //--------------------------------------------------------------------

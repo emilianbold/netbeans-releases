@@ -122,7 +122,7 @@ public class FormDataLoader extends JavaDataLoader {
     protected MultiDataObject createMultiObject(FileObject primaryFile)
         throws DataObjectExistsException, java.io.IOException {
         //    Thread.dumpStack();
-        return new FormDataObject(findFile(primaryFile, FORM_EXTENSION), primaryFile, this);
+        return new FormDataObject(primaryFile, this);
     }
 
     /** Creates the right primary entry for given primary file.
