@@ -52,6 +52,7 @@ public class FormDataLoader extends JavaDataLoader {
       null,
       SystemAction.get (SaveAsTemplateAction.class),
       null,
+      SystemAction.get(ToolsAction.class),
       SystemAction.get (PropertiesAction.class),
     });
 
@@ -138,6 +139,7 @@ public class FormDataLoader extends JavaDataLoader {
 
 /*
  * Log
+ *  14   Gandalf   1.13        6/2/99   Ian Formanek    ToolsAction, Reorder
  *  13   Gandalf   1.12        5/14/99  Ian Formanek    extends JavaLoader to 
  *       provide substitutions during createFromTemplate
  *  12   Gandalf   1.11        3/26/99  Ian Formanek    Fixed use of obsoleted 

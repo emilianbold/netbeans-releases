@@ -19,9 +19,11 @@ import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.Utilities;
 import com.netbeans.ide.util.actions.SystemAction;
+import com.netbeans.ide.util.datatransfer.PasteType;
 import com.netbeans.developer.modules.loaders.form.actions.*;
 
 import java.awt.Image;
+import java.awt.datatransfer.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 
@@ -30,6 +32,16 @@ import java.util.ArrayList;
 * @author Ian Formanek
 */
 public class RADComponentNode extends AbstractNode implements RADComponentCookie {
+
+  static DataFlavor RAD_COMPONENT_COPY_FLAVOR = new RADDataFlavor (
+    RADComponentNode.class,
+    "RAD_COMPONENT_COPY_FLAVOR"//FormEditor.getFormBundle ().getString ("radVisualNodeFlavorName")
+  );
+  static DataFlavor RAD_COMPONENT_CUT_FLAVOR = new RADDataFlavor (
+    RADComponentNode.class,
+    "RAD_COMPONENT_CUT_FLAVOR"//FormEditor.getFormBundle ().getString ("radVisualNodeFlavorName")
+  );
+
 
   private final static MessageFormat nameFormat = new MessageFormat (NbBundle.getBundle (RADComponentNode.class).getString ("FMT_ComponentName"));
   
@@ -48,6 +60,9 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     this.component = component;
     component.setNodeReference (this);
     getCookieSet ().add (this);
+    if (component instanceof ComponentContainer) {
+      getCookieSet ().add (new ComponentsIndex ());
+    }
     updateName ();
   }
 
@@ -90,9 +105,19 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     }
     
     if (component instanceof ComponentContainer) {
+      actions.add (SystemAction.get(ReorderAction.class));
+      if (!(component instanceof FormContainer)) {
+        actions.add (SystemAction.get(MoveUpAction.class));
+        actions.add (SystemAction.get(MoveDownAction.class));
+      }
+      actions.add (null);
       actions.add (SystemAction.get(PasteAction.class));
+    } else {
+      actions.add (SystemAction.get(MoveUpAction.class));
+      actions.add (SystemAction.get(MoveDownAction.class));
+      actions.add (null);
     }
-    
+     
     actions.add (SystemAction.get(CopyAction.class));
     actions.add (SystemAction.get(CutAction.class));
     actions.add (null);
@@ -101,6 +126,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
       actions.add (SystemAction.get(DeleteAction.class));
       actions.add (null);
     }
+    actions.add (SystemAction.get(ToolsAction.class));
     actions.add (SystemAction.get(PropertiesAction.class));
 
     SystemAction[] array = new SystemAction [actions.size ()];
@@ -188,6 +214,27 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     return !(component instanceof FormContainer);
   }
 
+  /** Copy this node to the clipboard.
+  *
+  * @return The transferable for RACComponentNode
+  * @throws IOException if it could not copy
+  */
+  public Transferable clipboardCopy () throws java.io.IOException {
+    System.out.println("Copying...");
+    return new RADTransferable (RAD_COMPONENT_COPY_FLAVOR, component);
+  }
+
+  /** Cut this node to the clipboard.
+  *
+  * @return {@link ExTransferable.Single} with one flavor, {@link NodeTransfer#nodeCopyFlavor}
+  * @throws IOException if it could not cut
+  */
+  public Transferable clipboardCut () throws java.io.IOException {
+    System.out.println("Cutting...");
+    final RADComponent comp = component;
+    destroy (); // delete node and component from form
+    return new RADTransferable (RAD_COMPONENT_CUT_FLAVOR, component);
+  }
   /** Accumulate the paste types that this node can handle
   * for a given transferable.
   * <P>
@@ -199,11 +246,56 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   * @param s a list of {@link PasteType}s that will have added to it all types
   *    valid for this node
   */
-/*  protected void createPasteTypes (Transferable t, List s) {
-    if (t.isDataFlavorSupported (NodeTransfer.nodePasteFlavor)) {
+  protected void createPasteTypes (final Transferable t, java.util.List s) {
+    System.out.println("Create paste types: "+t);
+    if ((component instanceof RADVisualContainer) && 
+        (t.isDataFlavorSupported (RAD_COMPONENT_COPY_FLAVOR) || t.isDataFlavorSupported (RAD_COMPONENT_CUT_FLAVOR))) {
+    System.out.println("Create paste types2: "+t);
+      PasteType pasteType = new PasteType () {
+      
+        /** Perform the paste action.
+        * @return transferable which should be inserted into the clipboard after the
+        *         paste action. It can be <code>null</code>, meaning that the clipboard content
+        *         is not affected. Use e.g. {@link ExTransferable#EMPTY} to clear it.
+        * @throws IOException if something fails
+        */
+        public Transferable paste() throws java.io.IOException {
+          System.out.println("Paste...");
+          try {
+            DataFlavor[] flavors = t.getTransferDataFlavors ();
+            System.out.println("COPY FLAVOR: "+RAD_COMPONENT_COPY_FLAVOR);
+            System.out.println("CUT FLAVOR: "+RAD_COMPONENT_CUT_FLAVOR);
+            for (int i = 0; i < flavors.length; i++) {
+              System.out.println("Flavor["+i+"] = "+flavors[i]);
+            }
+            if (t.isDataFlavorSupported (RAD_COMPONENT_CUT_FLAVOR)) {
+              System.out.println("CUT SUPPORTED !!!");
+              final RADComponent originalComp = (RADComponent)t.getTransferData (RAD_COMPONENT_CUT_FLAVOR);
+              originalComp.initialize (component.getFormManager ()); // if pasting into another form
+              component.getFormManager ().addVisualComponent ((RADVisualComponent)originalComp, (RADVisualContainer)component, null);
+              System.out.println("Original Component: "+originalComp);
+              // [PENDING!!! - visual component flavors]
+              
+              // put copy flavor as the new one, as the first instance was used already
+              return new RADTransferable (RAD_COMPONENT_COPY_FLAVOR, originalComp);
+            }
+            
+            if (t.isDataFlavorSupported (RAD_COMPONENT_COPY_FLAVOR)) {
+              System.out.println("COPY SUPPORTED !!!");
+              RADComponent copyComp = (RADComponent)t.getTransferData (RAD_COMPONENT_COPY_FLAVOR);
+              System.out.println("Copy!!!");
+              return null;
+            }
+          } catch (java.awt.datatransfer.UnsupportedFlavorException e) {
+            // ignored
+          }
+          return null;
+        }
+              
+      };
       s.add (pasteType);
     }
-  } */
+  } 
 
 // -----------------------------------------------------------------------------
 // RADComponentCookie implementation
@@ -212,10 +304,106 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     return component;
   }
 
+// -----------------------------------------------------------------------------
+// Innerclasses
+  
+  /** Index support for reordering of file system pool.
+  */
+  private final class ComponentsIndex extends com.netbeans.ide.nodes.Index.Support {
+    
+    /** Get the nodes; should be overridden if needed.
+    * @return the nodes
+    * @throws NotImplementedException always
+    */
+    public Node[] getNodes () {
+      RADComponent[] comps = ((ComponentContainer)getRADComponent ()).getSubBeans ();
+      Node[] nodes = new Node[comps.length];
+      for (int i = 0; i < comps.length; i++) {
+        nodes[i] = comps[i].getNodeReference ();
+      }
+      return nodes;
+    }
+
+    /** Get the node count. Subclasses must provide this.
+    * @return the count
+    */
+    public int getNodesCount () {
+      return getNodes ().length;
+    }
+
+    /** Reorder by permutation. Subclasses must provide this.
+    * @param perm the permutation
+    */
+    public void reorder (int[] perm) {
+      ((ComponentContainer)getRADComponent ()).reorderSubComponents (perm);
+      ((RADChildren)getChildren ()).updateKeys ();
+    }
+  }
+  
+  static class RADDataFlavor extends DataFlavor {
+    RADDataFlavor (Class representationClass, String name) {
+      super (representationClass, name);
+    }
+  }
+  
+  public static class RADTransferable implements Transferable {
+    private RADComponent radComponent;
+    private DataFlavor[] flavors;
+    
+    RADTransferable (DataFlavor flavor, RADComponent radComponent) {
+      this (new DataFlavor[] { flavor }, radComponent);
+    }
+    
+    RADTransferable (DataFlavor[] flavors, RADComponent radComponent) {
+      this.flavors = flavors;
+      this.radComponent = radComponent;
+    }
+    
+    /** Returns an array of DataFlavor objects indicating the flavors the data 
+    * can be provided in.  The array should be ordered according to preference
+    * for providing the data (from most richly descriptive to least descriptive).
+    * @return an array of data flavors in which this data can be transferred
+    */
+    public DataFlavor[] getTransferDataFlavors() {
+      return flavors;
+    }
+    
+    /** Returns whether or not the specified data flavor is supported for
+    * this object.
+    * @param flavor the requested flavor for the data
+    * @return boolean indicating wjether or not the data flavor is supported
+    */
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+      for (int i = 0; i < flavors.length; i++) {
+        if (flavors[i] == flavor) { // comparison based on exact instances, as these are static in this node
+          return true;
+        }
+      }
+      return false;
+    }
+    
+    /** Returns an object which represents the data to be transferred.  The class 
+    * of the object returned is defined by the representation class of the flavor.
+    *
+    * @param flavor the requested flavor for the data
+    * @see DataFlavor#getRepresentationClass
+    * @exception IOException                if the data is no longer available
+    *              in the requested flavor.
+    * @exception UnsupportedFlavorException if the requested data flavor is
+    *              not supported.
+    */
+    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, java.io.IOException {
+      if (flavor instanceof RADDataFlavor) {
+        return radComponent;
+      }
+      throw new UnsupportedFlavorException (flavor);
+    }
+  }
 }
 
 /*
  * Log
+ *  13   Gandalf   1.12        6/2/99   Ian Formanek    ToolsAction, Reorder
  *  12   Gandalf   1.11        6/1/99   Ian Formanek    Fixed last change
  *  11   Gandalf   1.10        6/1/99   Ian Formanek    Rename implemented 
  *       correctly, actions provided according to component type (Rename, 

@@ -642,6 +642,16 @@ public class JavaCodeGenerator extends CodeGenerator {
       regenerateInitializer ();
     }
     
+    /** Called when the order of components within their parent changes
+    * @param cont the container on which the components were reordered
+    */
+    public void componentsReordered (ComponentContainer cont) {
+      // 1. regenerate variables
+      regenerateVariables ();
+      // 2. regenerate initializer
+      regenerateInitializer ();
+    }
+
     /** Called when a new component is added to the form
     * @param evt the event object describing the event
     */
@@ -709,6 +719,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  19   Gandalf   1.18        6/2/99   Ian Formanek    ToolsAction, Reorder
  *  18   Gandalf   1.17        5/31/99  Ian Formanek    
  *  17   Gandalf   1.16        5/26/99  Ian Formanek    
  *  16   Gandalf   1.15        5/24/99  Ian Formanek    Non-Visual components

@@ -78,10 +78,9 @@ final public class FormEditor extends Object {
   public static final int DEFAULT_INSPECTOR_HEIGHT = 400;
   /** The default percents of the splitting of the ComponentInspector */
   public static final int DEFAULT_INSPECTOR_PERCENTS = 30;
+
+  static ExplorerActions actions = new ExplorerActions ();  
   
-  /** Default icon base for control panel. */
-  private static final String EMPTY_INSPECTOR_ICON_BASE =
-    "/com/netbeans/developer/modules/loaders/form/resources/emptyInspector";
 // ---------------------------------------------------
 // Private static variables
 
@@ -89,6 +88,9 @@ final public class FormEditor extends Object {
   private static ComponentInspector componentInspector;
   private static EmptyInspectorNode emptyInspectorNode;
   
+  /** Default icon base for control panel. */
+  private static final String EMPTY_INSPECTOR_ICON_BASE =
+    "/com/netbeans/developer/modules/loaders/form/resources/emptyInspector";
 // -----------------------------------------------------------------------------
 // Static initializer
 
@@ -606,6 +608,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  17   Gandalf   1.16        6/2/99   Ian Formanek    ToolsAction, Reorder
  *  16   Gandalf   1.15        5/31/99  Ian Formanek    Design/Test Mode
  *  15   Gandalf   1.14        5/24/99  Ian Formanek    
  *  14   Gandalf   1.13        5/20/99  Ian Formanek    FormNodeCookie->RADComponentCookie

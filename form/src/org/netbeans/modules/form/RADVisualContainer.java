@@ -17,6 +17,7 @@ import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.support.DesignSupportLayout;
 
 import java.awt.Container;
+import java.util.ArrayList;
 
 /** 
 * Initialization order: <UL>
@@ -29,7 +30,7 @@ import java.awt.Container;
 * @author Ian Formanek
 */
 public class RADVisualContainer extends RADVisualComponent implements ComponentContainer {
-  private RADVisualComponent[] subComponents;
+  private ArrayList subComponents;
   private DesignLayout designLayout;
   private DesignLayout previousLayout;
 
@@ -102,55 +103,57 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 // SubComponents Management
 
   public RADComponent[] getSubBeans () {
-    return subComponents;
+    RADVisualComponent[] components = new RADVisualComponent [subComponents.size ()];
+    subComponents.toArray (components);
+    return components;
   }
   
   public RADVisualComponent[] getSubComponents () {
-    return subComponents;
+    RADVisualComponent[] components = new RADVisualComponent [subComponents.size ()];
+    subComponents.toArray (components);
+    return components;
   }
 
   public void initSubComponents (RADComponent[] initComponents) {
-    subComponents = new RADVisualComponent[initComponents.length];
-    System.arraycopy (initComponents, 0, subComponents, 0, initComponents.length);
-    for (int i = 0; i < subComponents.length; i++) {
-      subComponents[i].initParent (this);
+    subComponents = new ArrayList (initComponents.length);
+    for (int i = 0; i < initComponents.length; i++) {
+      subComponents.add (initComponents[i]);
+      ((RADVisualComponent)initComponents[i]).initParent (this);
     }
   }
 
+  public void reorderSubComponents (int[] perm) {
+    for (int i = 0; i < perm.length; i++) {
+      int from = i;
+      int to = perm[i];
+      if (from == to) continue;
+      Object value = subComponents.remove (from);
+      if (from < to) {
+        subComponents.add (to - 1, value);
+      } else {
+        subComponents.add (to, value);
+      }
+    }
+    getDesignLayout ().updateLayout ();
+    getFormManager ().fireComponentsReordered (this);
+   }
+  
   public void add (RADVisualComponent comp) {
-    RADVisualComponent[] newComponents = new RADVisualComponent [subComponents.length + 1];
-    System.arraycopy (subComponents, 0, newComponents, 0, subComponents.length);
-    newComponents[newComponents.length - 1] = comp;
+    subComponents.add (comp);
     comp.initParent (this);
-    subComponents = newComponents;
     getNodeReference ().getChildren ().add (new com.netbeans.ide.nodes.Node[] { new RADComponentNode (comp) });
   }
 
   public void remove (RADVisualComponent comp) {
     designLayout.removeComponent (comp);
-    int index = -1;
-    for (int i = 0; i < subComponents.length; i++) {
-      if (subComponents[i] == comp) {
-        index = i;
-        break;
-      }
-    }
+    int index = subComponents.indexOf (comp);
     if (index != -1) {
-      RADVisualComponent[] newComponents = new RADVisualComponent[subComponents.length-1];
-      System.arraycopy (subComponents, 0, newComponents, 0, index);
-      if (index != subComponents.length - 1) {
-        System.arraycopy (subComponents, index+1, newComponents, index, subComponents.length-index-1);
-      }
-      subComponents = newComponents;
+      subComponents.remove (index);
     }
   }
 
   public int getIndexOf (RADVisualComponent comp) {
-    for (int i = 0; i < subComponents.length; i++) {
-      if (subComponents[i] == comp)
-        return i;
-    }
-    return -1;
+    return subComponents.indexOf (comp);
   }
 
 // -----------------------------------------------------------------------------
@@ -167,6 +170,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  14   Gandalf   1.13        6/2/99   Ian Formanek    ToolsAction, Reorder
  *  13   Gandalf   1.12        5/26/99  Ian Formanek    toString
  *  12   Gandalf   1.11        5/17/99  Ian Formanek    Fixed bug 1850 - An 
  *       exception is thrown when opening form, which contains JInternalFrame 

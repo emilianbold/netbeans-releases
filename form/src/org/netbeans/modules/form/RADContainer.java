@@ -28,6 +28,10 @@ public class RADContainer extends RADComponent implements ComponentContainer {
     subComponents = initComponents;
   }
 
+  public void reorderSubComponents (int[] perm) {
+    // [PENDING]
+  }
+  
   public String getContainerGenName () {
     return "";
   }
@@ -35,6 +39,7 @@ public class RADContainer extends RADComponent implements ComponentContainer {
 
 /*
  * Log
+ *  7    Gandalf   1.6         6/2/99   Ian Formanek    ToolsAction, Reorder
  *  6    Gandalf   1.5         5/12/99  Ian Formanek    
  *  5    Gandalf   1.4         5/11/99  Ian Formanek    Build 318 version
  *  4    Gandalf   1.3         5/10/99  Ian Formanek    
