@@ -589,7 +589,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             getContentPane().setLayout(new GridLayout(2, 2));
             //a11y fix for issue 31669, add accessible description, labelfor - TDB
             JLabel pLabel = new JLabel(NbBundle.getMessage(JavaHelp.class, "LBL_parsing_help_sets"));  //NOI18N
-            JLable mLabel = new JLabel(NbBundle.getMessage(JavaHelp.class, "LBL_merging_help_sets"));  //NOI18N
+            JLabel mLabel = new JLabel(NbBundle.getMessage(JavaHelp.class, "LBL_merging_help_sets"));  //NOI18N
             JProgressBar pBar = new JProgressBar (HelpSetProcessor.parseModel);
             JProgressBar mBar = new JProgressBar(mergeModel);
             getContentPane().add(pLabel);
