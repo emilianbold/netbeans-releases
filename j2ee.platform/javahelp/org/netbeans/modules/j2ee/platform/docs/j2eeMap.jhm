@@ -49,6 +49,7 @@
 		<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html" />
         	<mapID target="jsp_create" url="web/create/jsp/jsp_create.html" />
 		<mapID target="jsp_edit" url="web/create/jsp/jsp_edit.html" />
+		<mapID target="jsp_foldcode" url="web/create/jsp/jsp_foldcode.html" />
 		<mapID target="jsp_queryparams" url="web/create/jsp/jsp_queryparams.html" />
 		<mapID target="jsp_run" url="web/create/jsp/jsp_run.html" />
 		<mapID target="jsp_servletview" url="web/create/jsp/jsp_servletview.html" />
