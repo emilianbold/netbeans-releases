@@ -10,13 +10,24 @@
 
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html"/>
+    
+    <xsl:param name="arch.stylesheet"/>
+    <xsl:param name="arch.overviewlink"/>
+    <xsl:param name="arch.footer"/>
 
     <xsl:template match="/">
         <html>
             <head>
                 <title><xsl:value-of select="api-answers/@module" /> - NetBeans Architecture Questions</title>
+                <xsl:if test="$arch.stylesheet">
+                    <link rel="stylesheet" type="text/css" href="{$arch.stylesheet}"/>
+                </xsl:if>
             </head>
             <body>
+            
+                <xsl:if test="$arch.overviewlink">
+                    <p class="overviewlink"><a href="{$arch.overviewlink}">Overview</a></p>
+                </xsl:if>
             
                 <h1>NetBeans Architecture Answers for <xsl:value-of select="api-answers/@module" /><xsl:text> module</xsl:text></h1>
                 
@@ -25,10 +36,10 @@
                 <xsl:variable name="afor" select="api-answers/@question-version" />
                 
                 <ul>
-                <li><b>Author:</b> <xsl:value-of select="api-answers/@author" /></li>
-                <li><b>Version of answers:</b> <xsl:value-of select="$aver" /></li>
-                <li><b>Answers for questions:</b> <xsl:value-of select="$afor" /></li>
-                <li><b>Version of questions:</b> <xsl:value-of select="$qver" /></li>
+                <li><b>Author:</b><xsl:text> </xsl:text><xsl:value-of select="api-answers/@author" /></li>
+                <li><b>Version of answers:</b><xsl:text> </xsl:text><xsl:value-of select="$aver" /></li>
+                <li><b>Answers for questions:</b><xsl:text> </xsl:text><xsl:value-of select="$afor" /></li>
+                <li><b>Version of questions:</b><xsl:text> </xsl:text><xsl:value-of select="$qver" /></li>
                 </ul>
                 
                 <xsl:if test="not($qver=$afor)">
@@ -84,6 +95,11 @@
                     </table>
                     <hr/>
                 </xsl:if>
+                
+                <xsl:if test="$arch.footer">
+                    <p><xsl:value-of select="$arch.footer"/></p>
+                </xsl:if>
+                
             </body>
         </html>
     </xsl:template>

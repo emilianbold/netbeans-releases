@@ -24,13 +24,14 @@ import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 
 import org.w3c.dom.*;
+import org.xml.sax.*;
 import org.apache.xml.serialize.*;
 
 /**
  * Task to process Arch questions & answers document.
  *
  */
-public class Arch extends Task implements org.xml.sax.EntityResolver {
+public class Arch extends Task implements ErrorHandler {
 
     /** map from String ids -> Elements */
     private Map answers;
@@ -55,6 +56,20 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
      */
     public void setOutput (File f) {
         output = f;
+    }
+    
+    // For use when generating API documentation:
+    private String stylesheet = null;
+    public void setStylesheet(String s) {
+        stylesheet = s;
+    }
+    private String overviewlink = null;
+    public void setOverviewlink(String s) {
+        overviewlink = s;
+    }
+    private String footer = null;
+    public void setFooter(String s) {
+        footer = s;
     }
     
     
@@ -84,18 +99,21 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         org.w3c.dom.Document q;
         try {
             javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance ();
-            factory.setValidating(false);
+            factory.setValidating(true);
             
             javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
-            builder.setEntityResolver(this);
+            builder.setErrorHandler(this);
 
             if (generateTemplate) {
                 q = builder.parse(getClass().getResourceAsStream("Arch-api-questions.xml"));
             } else {
                 q = builder.parse (questionsFile);
             }
+        } catch (SAXParseException ex) {
+            log(ex.getSystemId() + ":" + ex.getLineNumber() + ": " + ex.getLocalizedMessage(), Project.MSG_ERR);
+            throw new BuildException(questionsFile.getAbsolutePath() + " is malformed or invalid", ex, location);
         } catch (Exception ex) {
-            throw new BuildException ("File " + questionsFile + " cannot be parsed: " + ex.getLocalizedMessage(), ex);
+            throw new BuildException ("File " + questionsFile + " cannot be parsed: " + ex.getLocalizedMessage(), ex, location);
         }
 
         questions = readElements (q, "question");
@@ -148,9 +166,9 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
             }
             
             if (!removeRevisionTags (answersVersion).equals (removeRevisionTags (questionsVersion))) {
-                String msg = "Answers were created for questions version \"" + answersVersion + "\" but current version of questions is \"" + questionsVersion + "\"";
+                String msg = questionsFile.getAbsolutePath() + ": answers were created for questions version \"" + answersVersion + "\" but current version of questions is \"" + questionsVersion + "\"";
                 if ("true".equals (this.getProject().getProperty("arch.warn"))) {
-                    log (msg);
+                    log (msg, Project.MSG_WARN);
                 } else {
                     throw new BuildException (msg);
                 }
@@ -172,9 +190,9 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
                     }
                 } else {
                     log (
-                        "Some questions have not been answered " + s + "\n" + 
+                        questionsFile.getAbsolutePath() + ": some questions have not been answered: " + s + "\n" + 
                         "Run with -Darch.generate=true to add missing questions into the end of question file"
-                    );
+                    , Project.MSG_WARN);
                 }
             }
         }
@@ -198,9 +216,20 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
                 );
             }
             
+            log("Transforming " + questionsFile + " into " + output);
+            
             javax.xml.transform.Transformer t = javax.xml.transform.TransformerFactory.newInstance().newTransformer(ss);
             javax.xml.transform.Source s = new javax.xml.transform.dom.DOMSource (q);
             javax.xml.transform.Result r = new javax.xml.transform.stream.StreamResult (output);
+            if (stylesheet != null) {
+                t.setParameter("arch.stylesheet", stylesheet);
+            }
+            if (overviewlink != null) {
+                t.setParameter("arch.overviewlink", overviewlink);
+            }
+            if (footer != null) {
+                t.setParameter("arch.footer", footer);
+            }
 
             t.transform(s, r);
         } catch (javax.xml.transform.TransformerConfigurationException ex) {
@@ -226,12 +255,12 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         ElementToString convertor;
         try {
             Class c = Class.forName (getClass ().getName () + "$XercesE2S");
-            Constructor cc = c.getConstructor(new Class[] {});
+            Constructor cc = c.getDeclaredConstructor(new Class[] {});
             cc.setAccessible(true);
             convertor = (ElementToString)cc.newInstance(null);
             convertor.convertElement(null);
         } catch (Throwable ex) {
-            log ("Cannot initialize xerces to print out DOM elements. Trying org.w3c.dom.Node.toString() which might work as well");
+            log ("Cannot initialize xerces to print out DOM elements: " + ex + ". Trying org.w3c.dom.Node.toString() which might work as well");
             convertor = new ToStringE2S ();
         }
         
@@ -327,20 +356,22 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         return map;
     }
 
-    /** Entity resolver to map publicId to valid data */
-    public org.xml.sax.InputSource resolveEntity(String publicId, String systemId) 
-    throws org.xml.sax.SAXException, IOException {
-        if (systemId != null && systemId.endsWith ("api-questions.xml")) {
-            return new org.xml.sax.InputSource (getClass ().getResourceAsStream("Arch-api-questions.xml"));
-        }
-        if (systemId != null && systemId.endsWith ("Arch.dtd")) {
-            return new org.xml.sax.InputSource (new ByteArrayInputStream (new byte[0]));
-        }
-        System.out.println("resolve: " + publicId);
-        System.out.println("      s: " + systemId);
-        return null;
+    public void error(SAXParseException exception) throws SAXException {
+        log(exception.getSystemId() + ":" + exception.getLineNumber() + ": " + exception.getLocalizedMessage(), Project.MSG_ERR);
     }
-
+    
+    public void fatalError(SAXParseException exception) throws SAXException {
+        throw exception;
+    }
+    
+    public void warning(SAXParseException exception) throws SAXException {
+        if (exception.getLocalizedMessage().startsWith("Using original entity definition for")) {
+            // Pointless message, always logged when using XHTML. Ignore.
+            return;
+        }
+        log(exception.getSystemId() + ":" + exception.getLineNumber() + ": " + exception.getLocalizedMessage(), Project.MSG_WARN);
+    }
+    
     private static interface ElementToString {
         public String convertElement (Element e) throws BuildException;
     }
