@@ -65,13 +65,13 @@ public class DialogDisplayerImplTest extends NbTestCase {
         return false;
     }
     
-    public void XXXtestUnitTestByDefaultReturnsRESULT () throws Exception {
+    public void testUnitTestByDefaultReturnsRESULT () throws Exception {
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation ("AnyQuestion?");
         Object r = dd.notify (nd);
         assertEquals (RESULT, r);
     }
 
-    public void XXXtestWorksFromAWTImmediatelly () throws Exception {
+    public void testWorksFromAWTImmediatelly () throws Exception {
         class FromAWT implements Runnable {
             public void run () {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ("HowAreYou?");
@@ -83,7 +83,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         javax.swing.SwingUtilities.invokeAndWait (new FromAWT ());
     }
     
-    public void XXXtestDeadlock41544IfItIsNotPossibleToAccessAWTReturnAfterTimeout () throws Exception {
+    public void testDeadlock41544IfItIsNotPossibleToAccessAWTReturnAfterTimeout () throws Exception {
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation ("HowAreYou?");
         
         class BlockAWT implements Runnable {
