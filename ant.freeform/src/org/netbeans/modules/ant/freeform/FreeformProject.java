@@ -83,6 +83,10 @@ public final class FreeformProject implements Project {
     public PropertyEvaluator evaluator() {
         return eval;
     }
+
+    public String toString() {
+        return "FreeformProject[" + getProjectDirectory() + "]"; // NOI18N
+    }
     
     private final class Info implements ProjectInformation {
         
@@ -95,6 +99,10 @@ public final class FreeformProject implements Project {
         public String getDisplayName() {
             Element genldata = helper.getPrimaryConfigurationData(true);
             Element nameEl = Util.findElement(genldata, "name", FreeformProjectType.NS_GENERAL); // NOI18N
+            if (nameEl == null) {
+                // Corrupt. Cf. #48267 (cause unknown).
+                return "???"; // NOI18N
+            }
             return Util.findText(nameEl);
         }
         
