@@ -50,7 +50,7 @@
 #
 # testant=/opt/ant-1.4.1/bin/ant
 # Ant 1.4.1 installation directory for use with XTest. 1.5.x is not yet officially supported.
-# By default, same as ant. However the hacked 1.4.1 without Crimson above will not work with XTest.
+# By default, same as ant.
 # YOU MUST TEST WITH 1.4.1 IF EDITING BUILD SCRIPTS
 #
 # doclean=no
@@ -185,7 +185,9 @@ if [ $doclean = yes ]
 then
     cleantarget=real-clean
 fi
-echo "----------BUILDING AND TRYING NETBEANS----------" 1>&2
+echo "----------BUILDING NETBEANS----------" 1>&2
+# Intentionally skipping check-commit-validation.
+# Running sanity-start just so you have a good chance to see deprecation messages etc.
 $antcmd -f $sources/nbbuild/build.xml $cleantarget nozip-check
 status=$?
 if [ $status != 0 ]
@@ -198,6 +200,8 @@ function browse() {
     if [ -n "$mozbrowser" ]
     then
         DISPLAY=$origdisplay $mozbrowser -remote "openURL(file://$1,new-window)"
+    else
+        echo "---- SEE RESULTS: $1 ----"
     fi
 }
 
@@ -226,9 +230,17 @@ then
     fi
     echo "----------RUNNING TESTS----------" 1>&2
     # Always run validation suite.
-    # XXX this will soon become part of regular build step
     $testantcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb runtests
-    browse $sources/xtest/instance/results/index.html
+    if [ $testedmodule = validate ]
+    then
+        browse $sources/xtest/instance/results/index.html
+    else
+        # Don't let these be clobbered by subsequent tests!
+        dir=/tmp/xtest-validation-suite-results-$USER
+        rm -rf $dir
+        cp -r $sources/xtest/instance/results $dir
+        browse $dir/index.html
+    fi
     if [ $testedmodule = full ]
     then
         # Run full developer test suite.
