@@ -59,6 +59,7 @@ final class SpunPhadhail extends Spin {
                 if (args[i] instanceof PhadhailListener) {
                     // Need to wrap these too!
                     Spin spin = new Spin(args[i], Spin.SPIN_OVER, starter);
+                    // XXX should really be refiring different events...
                     args[i] = spin.getProxy();
                 }
             }

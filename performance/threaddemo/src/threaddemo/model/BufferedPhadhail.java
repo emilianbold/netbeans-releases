@@ -41,7 +41,7 @@ final class BufferedPhadhail implements Phadhail, PhadhailListener {
     
     private final Phadhail ph;
     private Reference kids; // Reference<List<Phadhail>>
-    private int listenerCount = 0;
+    private List listeners = null; // List<PhadhailListener>
     
     private BufferedPhadhail(Phadhail ph) {
         this.ph = ph;
@@ -91,20 +91,20 @@ final class BufferedPhadhail implements Phadhail, PhadhailListener {
     }
     
     public void addPhadhailListener(PhadhailListener l) {
-        // XXX actually this is not 100% correct because the fired events
-        // will refer to an *unbuffered* phadhail
-        ph.addPhadhailListener(l);
-        if (listenerCount == 0) {
+        if (listeners == null) {
             ph.addPhadhailListener(this);
+            listeners = new ArrayList();
         }
-        listenerCount++;
+        listeners.add(l);
     }
     
     public void removePhadhailListener(PhadhailListener l) {
-        ph.removePhadhailListener(l);
-        listenerCount--;
-        if (listenerCount == 0) {
-            ph.removePhadhailListener(this);
+        if (listeners != null) {
+            listeners.remove(l);
+            if (listeners.isEmpty()) {
+                listeners = null;
+                ph.removePhadhailListener(this);
+            }
         }
     }
     
@@ -135,10 +135,23 @@ final class BufferedPhadhail implements Phadhail, PhadhailListener {
     public void childrenChanged(PhadhailEvent ev) {
         // clear cache
         kids = null;
+        if (listeners != null) {
+            ev = PhadhailEvent.create(this);
+            Iterator it = listeners.iterator();
+            while (it.hasNext()) {
+                ((PhadhailListener)it.next()).childrenChanged(ev);
+            }
+        }
     }
     
     public void nameChanged(PhadhailNameEvent ev) {
-        // ignore
+        if (listeners != null) {
+            ev = PhadhailNameEvent.create(this, ev.getOldName(), ev.getNewName());
+            Iterator it = listeners.iterator();
+            while (it.hasNext()) {
+                ((PhadhailListener)it.next()).childrenChanged(ev);
+            }
+        }
     }
     
     public String toString() {

@@ -25,7 +25,7 @@ import org.openide.util.Mutex;
  * the caller would. But this is a rough approximation.
  * @author Jesse Glick
  */
-final class LockedPhadhail implements Phadhail {
+final class LockedPhadhail implements Phadhail, PhadhailListener {
     
     private static final Mutex.Privileged PMUTEX = new Mutex.Privileged();
     private static final Mutex MUTEX = new Mutex(PMUTEX);
@@ -50,6 +50,7 @@ final class LockedPhadhail implements Phadhail {
     }
     
     private final Phadhail ph;
+    private List listeners = null; // List<PhadhailListener>
     
     private LockedPhadhail(Phadhail ph) {
         this.ph = ph;
@@ -115,9 +116,11 @@ final class LockedPhadhail implements Phadhail {
         PMUTEX.enterReadAccess();
         try {
             synchronized (LISTENER_LOCK) {
-                // XXX actually this is not 100% correct because the fired events
-                // will refer to an *unlocked* phadhail
-                ph.addPhadhailListener(l);
+                if (listeners == null) {
+                    ph.addPhadhailListener(this);
+                    listeners = new ArrayList();
+                }
+                listeners.add(l);
             }
         } finally {
             PMUTEX.exitReadAccess();
@@ -128,7 +131,13 @@ final class LockedPhadhail implements Phadhail {
         PMUTEX.enterReadAccess();
         try {
             synchronized (LISTENER_LOCK) {
-                ph.removePhadhailListener(l);
+                if (listeners != null) {
+                    listeners.remove(l);
+                    if (listeners.isEmpty()) {
+                        listeners = null;
+                        ph.removePhadhailListener(this);
+                    }
+                }
             }
         } finally {
             PMUTEX.exitReadAccess();
@@ -197,6 +206,26 @@ final class LockedPhadhail implements Phadhail {
     
     public String toString() {
         return "LockedPhadhail<" + ph + ">";
+    }
+    
+    public void childrenChanged(PhadhailEvent ev) {
+        if (listeners != null) {
+            ev = PhadhailEvent.create(this);
+            Iterator it = listeners.iterator();
+            while (it.hasNext()) {
+                ((PhadhailListener)it.next()).childrenChanged(ev);
+            }
+        }
+    }
+    
+    public void nameChanged(PhadhailNameEvent ev) {
+        if (listeners != null) {
+            ev = PhadhailNameEvent.create(this, ev.getOldName(), ev.getNewName());
+            Iterator it = listeners.iterator();
+            while (it.hasNext()) {
+                ((PhadhailListener)it.next()).childrenChanged(ev);
+            }
+        }
     }
     
 }
