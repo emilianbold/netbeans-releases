@@ -22,6 +22,7 @@ import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 
 import org.openide.loaders.UniFileLoader;
+import org.openide.TopManager;
 import org.openide.util.Utilities;
 
 
@@ -36,8 +37,8 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
         } catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                ie.printStackTrace ();
+            TopManager.getDefault().getErrorManager().notify(ie);
+            
             return null;
         }
     }
@@ -47,9 +48,9 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
      */
     public Image getIcon(int type) {
         if((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage("/org/netbeans/modules/url/urlObject.gif"); // NOI18N
+            return Utilities.loadImage("org/netbeans/modules/url/urlObject.gif"); // NOI18N
         } else {
-            return Utilities.loadImage("/org/netbeans/modules/url/urlObject32.gif"); // NOI18N
+            return Utilities.loadImage("org/netbeans/modules/url/urlObject32.gif"); // NOI18N
         }
     }
 
