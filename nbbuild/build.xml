@@ -90,7 +90,8 @@ ToDo:
     <available property="jdkhome-valid" file="${jdkhome}/lib/tools.jar"/>
   </target>
   <target name="setup-jdkhome-4" depends="setup-jdkhome-2,setup-jdkhome-3" unless="jdkhome-valid">
-    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
+    <available property="tools-classes-found" classname="sun.tools.javac.Main"/>
+    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed." unless="tools-classes-found"/>
   </target>
 
   <target name="init-module-list" depends="bootstrap,setup-jdkhome-4">
