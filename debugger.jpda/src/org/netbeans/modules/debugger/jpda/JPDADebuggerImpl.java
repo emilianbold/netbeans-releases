@@ -14,10 +14,11 @@
 package org.netbeans.modules.debugger.jpda;
 
 import javax.swing.JComponent;
-import org.openide.debugger.Debugger;
 
-import org.netbeans.modules.debugger.*;
-import org.netbeans.modules.debugger.support.*;
+import org.netbeans.modules.debugger.CoreBreakpoint;
+import org.netbeans.modules.debugger.ConnectSupport;
+import org.netbeans.modules.debugger.AbstractDebugger;
+import org.netbeans.modules.debugger.support.DebuggerImplSupport;
 
 
 /**
@@ -71,7 +72,13 @@ implements ConnectSupport {
      * Returns a new instance of Debugger.
      */
     public AbstractDebugger createDebugger () {
-        return new JPDADebugger ();
+        try {
+            Class c = Class.forName ("org.netbeans.modules.debugger.jpda.JPDADebugger");
+            return (AbstractDebugger) c.newInstance ();
+        } catch (Exception e) {
+            e.printStackTrace ();
+        }
+        return null;
     }
 }
 
