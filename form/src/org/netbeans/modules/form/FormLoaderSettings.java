@@ -396,13 +396,17 @@ public class FormLoaderSettings extends SystemOption {
         variablesLocal = value;
 
         int varType = variablesLocal ?
-            CodeVariable.LOCAL | (variablesModifier & CodeVariable.FINAL)
+            CodeVariable.LOCAL //| (variablesModifier & CodeVariable.FINAL)
                                | CodeVariable.EXPLICIT_DECLARATION
             :
-            CodeVariable.FIELD | variablesModifier;
+            CodeVariable.FIELD | CodeVariable.PRIVATE; //variablesModifier;
         CodeStructure.setGlobalDefaultVariableType(varType);
 
+        int oldModif = variablesModifier;
+        variablesModifier = varType & CodeVariable.ALL_MODIF_MASK;
+
         firePropertyChange(PROP_VARIABLES_LOCAL, new Boolean(oldValue), new Boolean(variablesLocal));
+        firePropertyChange(PROP_VARIABLES_MODIFIER, new Integer(oldModif), new Integer(variablesModifier));
     }
 
     /** Getter for the variablesModifier option */
@@ -415,11 +419,13 @@ public class FormLoaderSettings extends SystemOption {
         int oldValue = variablesModifier;
         variablesModifier = value;
 
-        int varType = variablesLocal ?
-            CodeVariable.LOCAL | variablesModifier
-                               | CodeVariable.EXPLICIT_DECLARATION
-            :
-            CodeVariable.FIELD | variablesModifier;
+        int varType;
+        if (variablesLocal) {
+            varType = CodeVariable.LOCAL | variablesModifier;
+            if ((variablesModifier & CodeVariable.FINAL) == 0)
+                varType |= CodeVariable.EXPLICIT_DECLARATION;
+        }
+        else varType = CodeVariable.FIELD | variablesModifier;
         CodeStructure.setGlobalDefaultVariableType(varType);
 
         firePropertyChange(PROP_VARIABLES_MODIFIER, new Integer(oldValue), new Integer(variablesModifier));

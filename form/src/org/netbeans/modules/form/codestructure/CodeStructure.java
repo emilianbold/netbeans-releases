@@ -531,6 +531,9 @@ public class CodeStructure {
             type &= CodeVariable.ALL_MASK;
             if ((type & CodeVariable.SCOPE_MASK) == CodeVariable.NO_VARIABLE)
                 type |= CodeVariable.FIELD;
+            int fdMask = CodeVariable.EXPLICIT_DECLARATION | CodeVariable.FINAL;
+            if ((type & fdMask) == fdMask)
+                type &= ~CodeVariable.EXPLICIT_DECLARATION;
 
             globalDefaultVariableType = type;
         }
@@ -546,6 +549,9 @@ public class CodeStructure {
             type &= CodeVariable.ALL_MASK;
             if ((type & CodeVariable.SCOPE_MASK) == CodeVariable.NO_VARIABLE)
                 type |= CodeVariable.FIELD;
+            int fdMask = CodeVariable.EXPLICIT_DECLARATION | CodeVariable.FINAL;
+            if ((type & fdMask) == fdMask)
+                type &= ~CodeVariable.EXPLICIT_DECLARATION;
 
             defaultVariableType = type;
         }
@@ -594,6 +600,8 @@ public class CodeStructure {
         private CodeStatement declarationStatement;
 
         Variable(int type, Class declaredType, String name) {
+            if ((type & FINAL) != 0)
+                type &= ~EXPLICIT_DECLARATION;
             this.type = type;
             this.declaredType = declaredType;
             this.name = name;
@@ -614,7 +622,7 @@ public class CodeStructure {
 
         public Collection getAttachedExpressions() {
             return expressionsMap != null ?
-                     Collections.unmodifiableCollection(expressionsMap.values()) :
+                     Collections.unmodifiableCollection(expressionsMap.keySet()) :
                      Collections.EMPTY_LIST;
         }
 
