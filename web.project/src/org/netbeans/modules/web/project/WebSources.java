@@ -36,7 +36,7 @@ import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
-public class WebSources implements Sources, PropertyChangeListener, ChangeListener {
+public class WebSources implements Sources, PropertyChangeListener  {
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -58,11 +58,8 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
     public SourceGroup[] getSourceGroups(final String type) {
         return (SourceGroup[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
-                synchronized (WebSources.this) {
-                    if (delegate == null) {                    
-                        delegate = initSources();
-                        delegate.addChangeListener(WebSources.this);
-                    }
+                if (delegate == null) {
+                    delegate = initSources();
                 }
                 return delegate.getSourceGroups(type);
             }
@@ -166,24 +163,15 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
         }
     }
 
-//temporary changes to public - fix for issue #54454 - deadlock when upgrading project.xml
-    public void fireChange() {
+    private void fireChange() {
         ChangeListener[] _listeners;
-        
-        synchronized (this) {
-            if (delegate != null) {
-                delegate.removeChangeListener(this);
-                delegate = null;
-            }
-        }
-        
         synchronized (listeners) {
+            delegate = null;
             if (listeners.isEmpty()) {
                 return;
             }
             _listeners = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
         }
-
         ChangeEvent ev = new ChangeEvent(this);
         for (int i = 0; i < _listeners.length; i++) {
             _listeners[i].stateChanged(ev);
@@ -191,21 +179,9 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-//temporary commented out - fix for issue #54454 - deadlock when upgrading project.xml
-
-//        synchronized (this) {
-//            if (SourceRoots.PROP_ROOT_PROPERTIES.equals(evt.getPropertyName())) {
-//                this.fireChange();
-//            }
-//        }
-    }
-
-    public void stateChanged (ChangeEvent event) {
-//temporary commented out - fix for issue #54454 - deadlock when upgrading project.xml
-
-//        synchronized (this) {
-//            this.fireChange();
-//        }
+        if (SourceRoots.PROP_ROOT_PROPERTIES.equals(evt.getPropertyName())) {
+            this.fireChange();
+        }
     }
 
 }

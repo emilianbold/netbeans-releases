@@ -344,10 +344,6 @@ public class WebProjectProperties {
                 if (!cp.equals(oldCP))
                     wm.setContextPath(serverId, cp);
             }
-            
-            //temporary fix for issue #54454 - deadlock when upgrading project.xml
-            WebSources ws = (WebSources) project.getLookup().lookup(WebSources.class);
-            ws.fireChange();
         } 
         catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());
