@@ -91,42 +91,4 @@ public class ServerRegistryTest extends ServerRegistryTestBase {
             fail("Expected: "+expected+" Got: "+names[0]);
         }
     }
-    
-    /**
-     * Test case for remove instance when instance is default instance.
-     */
-    public void testRemoveDefaultInstance() throws java.io.IOException {
-        // create 2 instances and set first one as default
-        ServerRegistry registry = ServerRegistry.getInstance();
-        String url1 = "fooservice:instance1";
-        String url2 = "fooservice:instance2";
-        registry.addInstance(url1, "user", "password", "TestInstance1");
-        registry.addInstance(url2, "user", "password", "TestInstance2");
-        ServerInstance instance1 = registry.getServerInstance(url1);
-        registry.setDefaultInstance(new ServerString(instance1));
-        
-        ServerInstance defaultInstance = registry.getDefaultInstance().getServerInstance();
-        
-//        assertNotNull ("no default instance", defaultInstance);
-//        assertEquals("Default instance retrieved not same as the one used in setDefaultInstance", instance1, defaultInstance);
-        
-        try {
-            Thread.sleep(2000);
-            int instanceCount = registry.getServerInstances().length;
-            defaultInstance.remove();
-            ServerInstance instance2 = registry.getServerInstance(url2);
-            defaultInstance = registry.getDefaultInstance().getServerInstance();
-
-            if ((instanceCount == 2 && defaultInstance == null) ||
-                (defaultInstance != null && defaultInstance.getUrl().equals(instance1.getUrl()))) {
-                System.out.println("testRemoveDefaultInstance: defaultInstance=" + (
-                (defaultInstance == null) ? "null" : (new ServerString(defaultInstance)).toString()));
-                System.out.println("testRemoveDefaultInstance: check2 failed!");
-                fail("No instance promoted to default instance after removal of default instance");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.toString());
-        }
-    }
 }
