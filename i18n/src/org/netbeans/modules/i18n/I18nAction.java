@@ -60,6 +60,10 @@ public class I18nAction extends CookieAction {
         I18nManager.getDefault().internationalize(dataObject);
     }
 
+    protected boolean asynchronous() {
+        return false;
+    }
+
     /** Implements superclass abstract method.
      * @return MODE_EXACTLY_ONE.
      */

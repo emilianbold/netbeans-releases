@@ -114,21 +114,14 @@ public class I18nManager {
             return;
 
         // do the search
-        if(find()) {
-            // XXX It's necessary to send it to AWT Thread thus assure the 
-            // editor cookie succed to open the panes via open() method ->
-            // subclasses usually sends opening to AWT thread.
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    initCaret(ec);
-                    highlightHCString();
+        if (find()) {
+            initCaret(ec);
+            highlightHCString();
 
-                    // Add i18n panel to top component.
-                    getDialog(sourceDataObject.getName());
+            // Add i18n panel to top component.
+            getDialog(sourceDataObject.getName());
 
-                    fillDialogValues();
-                }
-            });
+            fillDialogValues();
         } else {
             NotifyDescriptor.Message message = new NotifyDescriptor.Message(
                 I18nUtil.getBundle().getString("MSG_NoInternationalizableString"), NotifyDescriptor.INFORMATION_MESSAGE); // to info message
