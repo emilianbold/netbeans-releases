@@ -245,6 +245,7 @@ final class NbModuleProject implements Project {
         
         protected void projectClosed() {
             // ignore for now
+            // XXX could discard caches, etc.
         }
         
     }
