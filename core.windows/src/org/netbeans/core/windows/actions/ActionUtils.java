@@ -14,6 +14,7 @@
 
 package org.netbeans.core.windows.actions;
 
+import java.awt.Frame;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -122,21 +123,6 @@ public abstract class ActionUtils {
         }
     } // End of class CloneDocumentAction.
     
-    private static class MaximizeWindowAction extends AbstractAction {
-        private final TopComponent tc;
-        public MaximizeWindowAction(TopComponent tc) {
-            this.tc = tc;
-            if(getModeToMaximize(tc) == null) {
-                putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_RestoreWindowAction"));
-            } else {
-                putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_MaximizeWindowAction"));
-            }
-        }
-        
-        public void actionPerformed(ActionEvent evt) {
-            maximizeWindow(tc);
-        }
-    } // End of class MaximizeAction.
 
     
     // Utility methods >>
@@ -189,21 +175,7 @@ public abstract class ActionUtils {
         }
     }
     
-    private static void maximizeWindow(TopComponent tc) {
-        WindowManagerImpl.getInstance().setMaximizedMode(getModeToMaximize(tc));
-    }
-    
-    private static ModeImpl getModeToMaximize(TopComponent tc) {
-         WindowManagerImpl wm = WindowManagerImpl.getInstance();
-         ModeImpl mode = (ModeImpl)wm.findMode(tc);
-         ModeImpl maximizedMode = wm.getMaximizedMode();
-         
-         if(mode == maximizedMode) {
-             return null;
-         } else {
-             return mode;
-         }
-    }
+
     // Utility methods <<
 }
 

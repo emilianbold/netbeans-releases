@@ -35,6 +35,7 @@ import org.openide.windows.TopComponent;
 public class MaximizeWindowAction extends AbstractAction {
 
     private final PropertyChangeListener propListener;
+    private TopComponent topComponent;
     
     public MaximizeWindowAction() {
         propListener = new PropertyChangeListener() {
@@ -54,23 +55,42 @@ public class MaximizeWindowAction extends AbstractAction {
         
         updateState();
     }
+    /**
+     * alternate constructor for use in the context menu, invoked from ActionUtils.java
+     * see #38801 for details
+     */
+    MaximizeWindowAction(TopComponent tc) {
+        topComponent = tc;
+        propListener = null;
+        updateState();
+    }
     
     /** Perform the action. Sets/unsets maximzed mode. */
     public void actionPerformed(java.awt.event.ActionEvent ev) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         
         if(wm.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
-            ModeImpl mode = wm.getMaximizedMode();
-            if(mode != null) {
-                wm.setMaximizedMode(null);
+            if (topComponent != null) {
+                wm.setMaximizedMode(getModeToMaximize(topComponent));
             } else {
-                ModeImpl activeMode = wm.getActiveMode();
-                if(activeMode != null) {
-                    wm.setMaximizedMode(activeMode);
+                ModeImpl mode = wm.getMaximizedMode();
+                if(mode != null) {
+                    wm.setMaximizedMode(null);
+                } else {
+                    ModeImpl activeMode = wm.getActiveMode();
+                    if(activeMode != null) {
+                        wm.setMaximizedMode(activeMode);
+                    }
                 }
             }
         } else {
-            ModeImpl activeMode = wm.getActiveMode();
+            ModeImpl activeMode;
+            if (topComponent != null) {
+                activeMode = (ModeImpl)wm.findMode(topComponent);
+            }
+            else {
+                activeMode = wm.getActiveMode();
+            }
             if(activeMode != null) {
                 if(activeMode.getKind() == Constants.MODE_KIND_EDITOR) {
                     if(wm.getEditorAreaFrameState() == Frame.NORMAL) {
@@ -92,7 +112,12 @@ public class MaximizeWindowAction extends AbstractAction {
     }
     
     private void updateState() {
-        TopComponent active = TopComponent.getRegistry().getActivated();
+        TopComponent active = null;
+        if (topComponent != null) {
+            active = topComponent;
+        } else {
+            active = TopComponent.getRegistry().getActivated();
+        }
         Object param = active == null ? "" : active.getName(); // NOI18N
 
         boolean maximize;
@@ -118,6 +143,18 @@ public class MaximizeWindowAction extends AbstractAction {
         }
 
         setEnabled(active != null);
+    }
+    
+    private static ModeImpl getModeToMaximize(TopComponent tc) {
+         WindowManagerImpl wm = WindowManagerImpl.getInstance();
+         ModeImpl mode = (ModeImpl)wm.findMode(tc);
+         ModeImpl maximizedMode = wm.getMaximizedMode();
+         
+         if(mode == maximizedMode) {
+             return null;
+         } else {
+             return mode;
+         }
     }
     
 }
