@@ -330,6 +330,7 @@ public class JHIndexer extends MatchingTask {
                         "-db", db.getAbsolutePath()
                     });
                     if (locale != null) {
+                        args = new ArrayList(args); // #35244
                         args.add("-locale");
                         args.add(locale);
                     }
