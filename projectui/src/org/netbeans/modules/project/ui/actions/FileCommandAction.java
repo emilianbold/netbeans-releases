@@ -51,7 +51,7 @@ public class FileCommandAction extends ProjectAction {
         else {
             FileObject[] files = ActionsUtil.getFilesFromLookup( context, command, projects[0] );
             setEnabled( true );
-            setDisplayName( ActionsUtil.formatName( getNamePattern(), files.length, files[0].getNameExt() ) );
+            setDisplayName( ActionsUtil.formatName( getNamePattern(), files.length, files.length > 0 ? files[0].getNameExt() : "" ) ); // NOI18N
         }
     }
     
