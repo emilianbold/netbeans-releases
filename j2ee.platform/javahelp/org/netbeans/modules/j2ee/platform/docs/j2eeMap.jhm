@@ -152,14 +152,21 @@
         <!-- PROJECT PROPERTIES DIALOG BOX FOR A FREE-FORM WEB APPLICATION: -->
 	<!-- The Web Sources panel in Project Properties for a Free-Form Web Application: -->
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsPanel" url="web/csh/dbox_projprops_freeform/WebLocationsPanel.html" />
+	<!-- The Web Sources Classpath panel in Project Properties for a Free-Form Web Application: -->
 	<mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathPanel" url="web/csh/dbox_projprops_freeform/WebClasspathPanel.html" />
 
-	<!-- NEW PROJECT WIZARD FOR A STANDARD WEB APPLICATION :-->
+	<!-- NEW PROJECT WIZARD FOR A FREE-FORM WEB APPLICATION: -->
+	<!-- The Web Sources panel in New Project Wizard for a Free-Form Web Application: -->
+	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsPanel" url="web/csh/dbox_projprops_freeform/WebLocationsWizardPanel.html" />
+	<!-- The Web Sources Classpath panel in New Project Wizard for a Free-Form Web Application: -->
+	<mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathPanel" url="web/csh/dbox_projprops_freeform/WebClasspathWizardPanel.html" />
+
+	<!-- NEW PROJECT WIZARD FOR A STANDARD WEB APPLICATION:-->
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="web/csh/projwiz_standard/PanelConfigureProject.html" />
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$ThePanel" url="web/csh/projwiz_standard/ThePanel.html" />
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSourceFolders" url="web/csh/projwiz_standard/SecondPanel.html" />
 
-	<!-- GRAPHIC EDITOR FOR WEB.XML FILES :-->
+	<!-- GRAPHIC EDITOR FOR WEB.XML FILES:-->
 	<mapID target="dd_multiview_overview_overviewNode" url="web/csh/graphic_editor/dd_multiview_overview_overviewNode.html" />
 	<mapID target="dd_multiview_overview_contextParamsNode" url="web/csh/graphic_editor/dd_multiview_overview_contextParamsNode.html" />
 	<mapID target="dd_multiview_overview_listenersNode" url="web/csh/graphic_editor/dd_multiview_overview_listenersNode.html" />
