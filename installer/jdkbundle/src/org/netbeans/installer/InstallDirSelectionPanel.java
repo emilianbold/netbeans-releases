@@ -13,24 +13,34 @@
 
 package org.netbeans.installer;
 
-import java.io.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.text.MessageFormat;
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.border.*;
-
-import com.installshield.util.*;
-import com.installshield.wizard.*;
-import com.installshield.wizard.awt.*;
-import com.installshield.wizard.service.*;
-import com.installshield.wizardx.panels.*;
-import com.installshield.product.*;
-import com.installshield.product.service.product.*;
-
+import com.installshield.product.service.product.ProductService;
+import com.installshield.util.Log;
+import com.installshield.wizard.WizardBeanEvent;
+import com.installshield.wizard.WizardBuilderSupport;
+import com.installshield.wizard.awt.AWTWizardUI;
+import com.installshield.wizard.awt.MessageDialog;
 import com.installshield.wizard.console.ConsoleWizardPanelImpl;
+import com.installshield.wizard.service.ServiceException;
+import com.installshield.wizardx.panels.ExtendedWizardPanel;
+
+import java.awt.BorderLayout;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.StringTokenizer;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 
 public class InstallDirSelectionPanel extends ExtendedWizardPanel implements ActionListener{
     
@@ -61,7 +71,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     private static int NB_INSTALL_DIR   = 1;
     private static int J2SE_INSTALL_DIR = 2;
 
-    private boolean jdkExists = false;
     private boolean emptyExistingDirNB   = false;
     private boolean emptyExistingDirJ2SE = false;
     
@@ -140,19 +149,20 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         
 	displayPanel = new JPanel(new java.awt.BorderLayout(0,10));
 	displayPanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
-
+        
         infoTextArea = new JTextArea();	
-
-	String desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.description,"
-        + "$L(org.netbeans.installer.Bundle,JDK.name),"
-        + "$L(org.netbeans.installer.Bundle,Product.displayName))");
-
-        if (installedJdk != null) {
-            // if the jdk is already installed, show error message.
-            desc = resolveString("$L(org.netbeans.installer.Bundle,DIR_SELECTION_DESC_ERR)");
-            jdkExists = true;
-            //System.getProperties().put("installedJdk",installedJdk);
-	}
+        
+        String desc;
+        if (Util.isJDKAlreadyInstalled()) {
+            desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.dirSelectionDescErr,"
+            + "$L(org.netbeans.installer.Bundle,JDK.name),"
+            + installedJdk + ","
+            + "$L(org.netbeans.installer.Bundle,Product.displayName))");
+        } else {
+            desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.description,"
+            + "$L(org.netbeans.installer.Bundle,JDK.name),"
+            + "$L(org.netbeans.installer.Bundle,Product.displayName))");
+        }
         
         infoTextArea.setText(desc);
         
@@ -237,7 +247,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	}
 	j2seLabel = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.jdkInstallDirectoryLabel)");
 
-	if (!jdkExists) {
+	if (!Util.isJDKAlreadyInstalled()) {
 	    j2seInputLabel = new JLabel(j2seLabel);
 	    j2seInputLabel.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
 	    gridBagConstraints = new GridBagConstraints();
@@ -369,10 +379,10 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 		j2seMsgStart = j2seLabel;
 	    }
 	    String j2seInstallDir = null;
-	    if (jdkExists && Util.isWindowsOS()) {
+	    if (Util.isJDKAlreadyInstalled() && Util.isWindowsOS()) {
 		try {
 		    ProductService service = (ProductService)getService(ProductService.NAME);
-		    service.setProductBeanProperty(productURL, "beanJ2SE", "active", Boolean.FALSE);
+		    service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "active", Boolean.FALSE);
 		}catch(ServiceException ex) {
 		    ex.printStackTrace();
 		    Util.logStackTrace(this,ex);
