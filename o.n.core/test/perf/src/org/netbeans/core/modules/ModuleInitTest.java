@@ -37,11 +37,22 @@ import org.openide.TopManager;
 // So dependencies only seem to have a small startup time impact
 // for a lot of modules (hundreds, a second or so).
 
-// 7ms/module to read manifest & .xml file, plus .25ms/module to get file list from Modules/
+// 7ms/module to read manifest & .xml file, plus .25ms/module to get file list from Modules/ (mostly file access?)
 // .35ms/module to check dependency & orderings
 // 2.4ms/module to open JAR & create classloader
 // .2ms/m to look for nonexistent sections [already improving]
 // .14ms/m to look for nonexistent module installs [how to improve?]
+
+// after some tweaks (05-sep-02), measured inside NB w/ term:
+// 0    - 0.87Mb, 3.0s
+// 10   - 1.32Mb, 3.7s
+// 100  - 1.73Mb, 4.6s
+// 1000 - 6.29Mb, 11.3s
+// measured outside from a shell:
+// 0    - 1.15Mb, 2.9s
+// 10   - 0.82Mb, 3.1s
+// 100  - 1.66Mb, around 4s
+// 1000 - 5.74Mb, 10.5s
 
 /**
  * Benchmark measuring initialization of the module system.
@@ -183,6 +194,7 @@ public class ModuleInitTest extends Benchmark {
             Manifest mani = new Manifest();
             Attributes attr = mani.getMainAttributes();
             attr.putValue("Manifest-Version", "1.0");
+            // XXX should create some package prefix to be more representative
             String name = names[which] + "_" + cycleS;
             attr.putValue("OpenIDE-Module", name + "/1");
             // Avoid requiring javahelp:
@@ -283,7 +295,7 @@ public class ModuleInitTest extends Benchmark {
             "-Dnetbeans.home=" + homedir.getAbsolutePath(),
             "-Dnetbeans.user=" + userdir.getAbsolutePath(),
             //"-Dmodules.dir=" + new File(homedir, "modules").getAbsolutePath(),
-            log ? "-Dorg.netbeans.log.startup=print" : "-Dignore=me",
+            //log ? "-Dorg.netbeans.log.startup=print" : "-Dignore=me",
             "-Dnetbeans.suppress.sysprop.warning=true",
             "-Dlog=" + log,
             "-classpath",
@@ -344,8 +356,9 @@ public class ModuleInitTest extends Benchmark {
     public static final class Main {
         public static void main(String[] x) {
             TopManager.getDefault();
-            Runtime r = Runtime.getRuntime();
             if (Boolean.getBoolean("log")) {
+                // XXX should GC first to be more accurate!
+                Runtime r = Runtime.getRuntime();
                 double megs = (r.totalMemory() - r.freeMemory()) / 1024.0 / 1024.0;
                 System.out.println("Used memory: " + new DecimalFormat("0.00 Mb").format(megs));
             }
