@@ -31,6 +31,8 @@ import org.xml.sax.InputSource;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 
 public class LibrariesStorage extends FileChangeAdapter implements WriteableLibraryProvider {
 
@@ -100,6 +102,7 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
         for (int i = 0; i < libraryDefinitions.length; i++) {
             FileObject descriptorFile = libraryDefinitions[i];
             try {
+                handler.setLibrary (null);
                 readLibrary (descriptorFile, parser);
                 LibraryImplementation impl = handler.getLibrary ();
                 LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
@@ -124,11 +127,16 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
         }
     }
 
-    private static LibraryImplementation readLibrary (FileObject descriptorFile) throws SAXException, javax.xml.parsers.ParserConfigurationException, IOException {
+    private static LibraryImplementation readLibrary (FileObject descriptorFile) throws SAXException, javax.xml.parsers.ParserConfigurationException, IOException{
+        return readLibrary (descriptorFile, (LibraryImplementation) null);
+    }
+    
+    private static LibraryImplementation readLibrary (FileObject descriptorFile, LibraryImplementation impl) throws SAXException, javax.xml.parsers.ParserConfigurationException, IOException {
         LibraryDeclarationHandlerImpl handler = new LibraryDeclarationHandlerImpl();
         EntityResolver resolver = EntityCatalog.getDefault();
         LibraryDeclarationConvertorImpl convertor = new LibraryDeclarationConvertorImpl();
         LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,resolver,convertor);
+        handler.setLibrary (impl);
         readLibrary (descriptorFile, parser);
         return handler.getLibrary();
     }
@@ -145,55 +153,59 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
         }
     }
 
-    private static void writeLibrary (final FileObject storage, final LibraryImplementation library) throws IOException {
+    private void writeLibrary (final FileObject storage, final LibraryImplementation library) throws IOException {
         storage.getFileSystem().runAtomicAction(
                 new FileSystem.AtomicAction () {
                     public void run() throws IOException {
                         String libraryType = library.getType ();
                         LibraryTypeProvider libraryTypeProvider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (libraryType);
-			if (libraryTypeProvider == null) {
+                        if (libraryTypeProvider == null) {
                             ErrorManager.getDefault().log ("Can not store library, the library type is not recognized by any of the LibraryTypeProviders.");	//NOI18N
                             return;
-			}
-                        FileObject fo = storage.createData (library.getName(),"xml");   //NOI18N
-                        FileLock lock = null;
-                        PrintWriter out = null;
-                        try {
-                            lock = fo.lock();
-                            out = new PrintWriter(new OutputStreamWriter(fo.getOutputStream (lock),"UTF-8"));							
-                            out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");      //NOI18N
-                            out.println("<!DOCTYPE library PUBLIC \"-//NetBeans//DTD Library Declaration 1.0//EN\" \"http://www.netbeans.org/dtds/library-declaration-1_0.dtd\">"); //NOI18N
-                            out.println("<library version=\"1.0\">");       			//NOI18N
-                            out.println("\t<name>"+library.getName()+"</name>");        //NOI18N
-							out.println("\t<type>"+libraryType+"</type>");
-                            String description = library.getDescription();
-                            if (description != null && description.length() > 0) {
-                                out.println("\t<description>"+description+"</description>");   //NOI18N
-                            }
-                            String[] volumeTypes = libraryTypeProvider.getSupportedVolumeTypes ();
-                            for (int i = 0; i < volumeTypes.length; i++) {
-                                out.println("\t<volume>");      //NOI18N
-                                out.println ("\t\t<type>"+volumeTypes[i]+"</type>");   //NOI18N
-                                List volume = library.getContent (volumeTypes[i]);
-                                if (volume != null) {
-                                    //If null -> broken library, repair it.
-                                    for (Iterator eit = volume.iterator(); eit.hasNext();) {
-                                        URL url = (URL) eit.next ();
-                                        out.println("\t\t<resource>"+url+"</resource>"); //NOI18N
-                                    }
-                                }
-                                out.println("\t</volume>");     //NOI18N
-                            }
-                            out.println("</library>");  //NOI18N
-                        } finally {
-                            if (out !=  null)
-                                out.close();
-                            if (lock != null)
-                                lock.releaseLock();
                         }
+                        FileObject fo = storage.createData (library.getName(),"xml");   //NOI18N
+                        writeLibraryDefinition (fo, library, libraryTypeProvider);
                     }
                 }
         );
+    }
+
+    private static void writeLibraryDefinition (final FileObject definitionFile, final LibraryImplementation library, final LibraryTypeProvider libraryTypeProvider) throws IOException {
+        FileLock lock = null;
+        PrintWriter out = null;
+        try {
+            lock = definitionFile.lock();
+            out = new PrintWriter(new OutputStreamWriter(definitionFile.getOutputStream (lock),"UTF-8"));
+            out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");      //NOI18N
+            out.println("<!DOCTYPE library PUBLIC \"-//NetBeans//DTD Library Declaration 1.0//EN\" \"http://www.netbeans.org/dtds/library-declaration-1_0.dtd\">"); //NOI18N
+            out.println("<library version=\"1.0\">");       			//NOI18N
+            out.println("\t<name>"+library.getName()+"</name>");        //NOI18N
+            out.println("\t<type>"+library.getType()+"</type>");
+            String description = library.getDescription();
+            if (description != null && description.length() > 0) {
+                out.println("\t<description>"+description+"</description>");   //NOI18N
+            }
+            String[] volumeTypes = libraryTypeProvider.getSupportedVolumeTypes ();
+            for (int i = 0; i < volumeTypes.length; i++) {
+                out.println("\t<volume>");      //NOI18N
+                out.println ("\t\t<type>"+volumeTypes[i]+"</type>");   //NOI18N
+                List volume = library.getContent (volumeTypes[i]);
+                if (volume != null) {
+                    //If null -> broken library, repair it.
+                    for (Iterator eit = volume.iterator(); eit.hasNext();) {
+                        URL url = (URL) eit.next ();
+                        out.println("\t\t<resource>"+url+"</resource>"); //NOI18N
+                    }
+                }
+                out.println("\t</volume>");     //NOI18N
+            }
+            out.println("</library>");  //NOI18N
+        } finally {
+            if (out !=  null)
+                out.close();
+            if (lock != null)
+                lock.releaseLock();
+        }
     }
 
 
@@ -235,6 +247,32 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                 if (fo != null) {
                     fo.delete();
                     return;
+                }
+            }
+        }
+    }
+
+    public void updateLibrary(final LibraryImplementation oldLibrary, final LibraryImplementation newLibrary) throws IOException {
+        assert this.storage != null : "Storage is not initialized";
+        for (Iterator it = this.librariesByFileNames.keySet().iterator(); it.hasNext();) {
+            String key = (String) it.next ();
+            LibraryImplementation lib = (LibraryImplementation) this.librariesByFileNames.get(key);
+            if (oldLibrary.equals(lib)) {
+                final FileObject fo = this.storage.getFileSystem().findResource(key);
+                if (fo != null) {
+                    String libraryType = newLibrary.getType ();
+                    final LibraryTypeProvider libraryTypeProvider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (libraryType);
+                    if (libraryTypeProvider == null) {
+                        ErrorManager.getDefault().log ("Can not store library, the library type is not recognized by any of the LibraryTypeProviders.");	//NOI18N
+                        return;
+                    }
+                    this.storage.getFileSystem().runAtomicAction(
+                            new FileSystem.AtomicAction () {
+                                public void run() throws IOException {
+                                    writeLibraryDefinition (fo, newLibrary, libraryTypeProvider);
+                                }
+                            }
+                    );
                 }
             }
         }
@@ -284,6 +322,26 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
         }
         if (impl != null) {
             this.fireLibrariesChanged();
+        }
+    }
+
+    public void fileChanged(FileEvent fe) {
+        FileObject definitionFile = fe.getFile();
+        String fileName = definitionFile.getPath();
+        LibraryImplementation impl;
+        synchronized (this) {
+            impl = (LibraryImplementation) this.librariesByFileNames.get (fileName);
+        }
+        if (impl != null) {
+            try {
+                readLibrary (definitionFile, impl);
+            } catch (SAXException se) {
+                ErrorManager.getDefault().notify(se);
+            } catch (ParserConfigurationException pce) {
+                ErrorManager.getDefault().notify(pce);
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ioe);
+            }
         }
     }
 

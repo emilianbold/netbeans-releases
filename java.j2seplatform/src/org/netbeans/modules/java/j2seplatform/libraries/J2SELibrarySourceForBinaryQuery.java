@@ -110,7 +110,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         }
         
         public void propertyChange (PropertyChangeEvent event) {
-            if (Library.PROP_CONTENT.equals(event)) {
+            if (Library.PROP_CONTENT.equals(event.getPropertyName())) {
                 synchronized (this) {                    
                     this.cache = null;
                 }

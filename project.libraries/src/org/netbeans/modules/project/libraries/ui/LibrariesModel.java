@@ -130,8 +130,7 @@ class LibrariesModel extends javax.swing.AbstractListModel implements PropertyCh
             ProxyLibraryImplementation proxy = (ProxyLibraryImplementation) it.next ();
             LibraryProvider storage = (LibraryProvider) this.storageByLib.get (proxy.getOriginal());
             if (storage == this.writeableProvider) {
-                this.writeableProvider.removeLibrary (proxy.getOriginal());
-                this.writeableProvider.addLibrary (proxy);
+                this.writeableProvider.updateLibrary (proxy.getOriginal(), proxy);
             }
             else {
                 ErrorManager.getDefault().log ("Can not find storage for library: "+proxy.getOriginal().getName());  //NOI18N

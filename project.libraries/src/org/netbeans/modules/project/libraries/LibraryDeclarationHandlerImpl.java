@@ -91,17 +91,37 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     
     public void end_library() throws SAXException {
         LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider(this.libraryType);
-        if (provider == null)
+        if (provider == null) {
             throw new SAXParseException("Invalid library type " + libraryType, null); //NOI18N
-        this.library = provider.createLibrary();
-        this.library.setLocalizingBundle (this.localizingBundle);
-        this.library.setName (this.libraryName);
-        this.library.setDescription (this.libraryDescription);
+        }
+        boolean update;
+        if (this.library != null) {
+            if (this.libraryType == null || !this.libraryType.equals(this.library.getType())) {
+                throw new SAXParseException("Changing library type of library: "+this.libraryName+" from: "+
+                        library.getType()+" to: " + libraryType, null); //NOI18N
+            }
+            update = true;
+        }
+        else {
+            this.library = provider.createLibrary();
+            update = false;
+        }
+        if (!update || !safeEquals(this.library.getLocalizingBundle(), localizingBundle)) {
+            this.library.setLocalizingBundle (this.localizingBundle);
+        }
+        if (!update || !safeEquals(this.library.getName(), libraryName)) {
+            this.library.setName (this.libraryName);
+        }
+        if (!update || !safeEquals(this.library.getDescription(), libraryDescription)) {
+            this.library.setDescription (this.libraryDescription);
+        }
         for (Iterator it = this.contentTypes.keySet().iterator(); it.hasNext();) {
             String contentType = (String) it.next();
             List cp = (List) this.contentTypes.get (contentType);
             try {
-                this.library.setContent(contentType, cp);
+                if (!update || !safeEquals (this.library.getContent(contentType),cp)) {
+                    this.library.setContent(contentType, cp);
+                }
             } catch (IllegalArgumentException e) {
                 throw (SAXException) new SAXException(e.toString()).initCause(e);
             }
@@ -129,8 +149,19 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         this.localizingBundle = data;
     }
 
+    public void setLibrary (LibraryImplementation library) {
+        this.library = library;
+    }
+
     public LibraryImplementation getLibrary () {
-        return library;
+        LibraryImplementation lib = this.library;
+        this.library = null;
+        return lib;
+    }
+
+
+    private static boolean safeEquals (Object o1, Object o2) {
+        return o1 == null ? o2 == null : o1.equals (o2);
     }
 
 }
