@@ -154,7 +154,7 @@ public class NewProjectWizardOperator extends WizardOperator {
      */
     public JLabelOperator lblDescription() {
         if (_lblDescription==null) {
-            _lblDescription = new JLabelOperator(this, Bundle.getString("org.netbeans.modules.project.ui.Bundle", "CTL_Description"));
+            _lblDescription = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "CTL_Description"));
         }
         return _lblDescription;
     }

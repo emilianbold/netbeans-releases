@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -62,17 +62,6 @@ import javax.swing.JTextField;
  * <li>Label and TextField Project Folder: <code>txtProjectFolder().setText()</code>
  * <li>Button for browsing Project location: <code>btBrowseProjectLocation().pushNoBlock()</code>
  * </ol>
- * <u>Web Application</u><br>
- * <ol>
- * <li>Label and TextField Project Name: <code>txtProjectName().setText()</code>
- * <li>Label and TextField Project Location: <code>txtProjectLocation().setText()</code>
- * <li>Label and TextField Project Folder: <code>txtProjectFolder().getText()</code>
- * <li>Button for browsing Project Location: <code>btBrowseProjectLocation().pushNoBlock()</code>
- * <li>CheckBox Set as Main Project: <code>cbSetAsMainProject().setSelected(true)</code>
- * <li>Label and TextField Context Path: <code>txtContextPath().getText()</code>
- * <li>ComboBox J2EE Specification level <code>cbJ2EESpecificationLevel().selectItem("item")</code>
- * <li>EditorPanel Description: <code>txtDescription().getText()</code>
- * </ol>
  * 
  */
 public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator {
@@ -97,14 +86,6 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
     private JTextFieldOperator  _txtBuildScript;
     private JButtonOperator     _btBrowseBuildScript;
     private JButtonOperator     _btBrowseProjectFolder;
-    //Web Application
-    private JLabelOperator      _lblContextPath;
-    private JTextFieldOperator  _txtContextPath;
-    private JLabelOperator      _lblOnlineError;
-    private JComboBoxOperator   _cbJ2EESpecificationLevel;
-    private JEditorPaneOperator _txtDescription;
-    
-    
     
     /** Returns operator for label Project Location
      * @return JLabelOperator
@@ -334,55 +315,6 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
         return _btBrowseProjectFolder;
     }
     
-    /** Returns operator for label ContextPath:
-     * @return JLabelOperator
-     */
-    public JLabelOperator lblContextPath() {
-        if(_lblContextPath == null) {
-            _lblContextPath = new JLabelOperator(this,
-                                            Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", 
-                                                                    "LBL_NWP1_ContextPath_Label"));
-        }
-        return _lblContextPath;
-    }
-    
-    /** Returns operator of Context Path: text field
-     * @return JTextOperator
-     */
-    public JTextFieldOperator txtContextPath() {
-        if (  lblContextPath().getLabelFor()!=null ) {
-            _txtContextPath = new JTextFieldOperator((JTextField)lblContextPath().getLabelFor());
-      }
-      return _txtContextPath;
-    }
-    
-    
-    /** Returns operator of J2EE Specification Level combo box
-     *  @return JComboBoxOperator
-     */
-    public JComboBoxOperator cbJ2EESpecificationLevel() {
-        if ( _cbJ2EESpecificationLevel==null ) {
-            _cbJ2EESpecificationLevel = new JComboBoxOperator(this, 0);
-        }
-        return _cbJ2EESpecificationLevel;
-    }
-    
-    /** Selects level in J2EE Specification Level combo box
-     */
-    public void selectJ2EESpecificationLevel(String level) {
-        cbJ2EESpecificationLevel().selectItem(level);
-    }
-    
-    /** returns operator of Description
-     * @return JEditorPaneOperator
-     */
-    public JEditorPaneOperator txtDescription() {
-        if ( _txtDescription==null ) {
-            _txtDescription = new JEditorPaneOperator(this,0);
-        }
-        return _txtDescription;
-    }
-        
     /** Performs verification by accessing all sub-components */    
     public void verify() {
         /*
