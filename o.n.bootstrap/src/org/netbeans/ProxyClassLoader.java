@@ -143,7 +143,9 @@ public class ProxyClassLoader extends ClassLoader {
         zombieCheck(name);
         String filename = name.replace('.', '/').concat(".class"); // NOI18N
         int idx = filename.lastIndexOf('/'); // NOI18N
-        if (idx == -1) throw new ClassNotFoundException("Will not load classes from default package"); // NOI18N
+        if (idx == -1) {
+            throw new ClassNotFoundException("Will not load classes from default package (" + name + ")"); // NOI18N
+        }
         String pkg = filename.substring(0, idx + 1); // "org/netbeans/modules/foo/"
         Class c = smartLoadClass(name, filename, pkg);
         if(c == null) throw new ClassNotFoundException(name);
