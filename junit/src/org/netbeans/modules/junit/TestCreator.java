@@ -281,7 +281,7 @@ public class TestCreator extends java.lang.Object {
         Method method = createSuiteMethod(pkg);
         
         StringBuffer body = new StringBuffer(1024);
-        body.append("\njunit.framework.TestSuite suite = new junit.framework.TestSuite(");
+        body.append("junit.framework.TestSuite suite = new junit.framework.TestSuite(");
         body.append(tgtClass.getSimpleName());
         body.append(".class);\n");
         
@@ -358,7 +358,6 @@ public class TestCreator extends java.lang.Object {
             
         // create body of the method
         StringBuffer newBody = new StringBuffer(512);
-        newBody.append("\n");
         if (JUnitSettings.getDefault().isBodyContent()) {
             // generate default bodies, printing the name of method
             newBody.append("System.out.println(\"" + newName + "\");\n");
@@ -596,7 +595,6 @@ public class TestCreator extends java.lang.Object {
         String      name;
         
         
-        body.append('\n');
         //body.append("//" + GENERATED_SUITE_BLOCK_START + "\n");
         //body.append(NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.suiteBlock.comment")+"\n");
         body.append("junit.framework.TestSuite suite = new junit.framework.TestSuite(\"" + testName + "\");\n");
@@ -716,7 +714,6 @@ public class TestCreator extends java.lang.Object {
         
         // prepare the body of method implementation
         StringBuffer    body = new StringBuffer(200);
-        body.append('\n');
         if (JUnitSettings.getDefault().isBodyComments()) {
             body.append(NbBundle.getMessage(TestCreator.class,"TestCreator.methodImpl.bodyComment"));
             body.append('\n');
@@ -757,7 +754,7 @@ public class TestCreator extends java.lang.Object {
             
             if (0 == (ctr.getModifiers() & Modifier.PRIVATE)) {
                 Constructor nctr = pkg.getConstructor().createConstructor();
-                nctr.setBodyText("\nsuper(" + getParameterString(ctr.getParameters()) + ");\n");
+                nctr.setBodyText("super(" + getParameterString(ctr.getParameters()) + ");\n");
                 nctr.getParameters().addAll(TestUtil.cloneParams(ctr.getParameters(),pkg));
                 tgtClass.getFeatures().add(nctr);
             }
