@@ -57,7 +57,7 @@ public class FormDesigner extends TopComponent
 
     private JMenuBar formJMenuBar;
     private MenuBar formMenuBar;
-    
+
     private FormModel formModel;
     private FormModelListener formModelListener;
 
@@ -111,7 +111,7 @@ public class FormDesigner extends TopComponent
     
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
-        out.writeObject(FormEditorSupport.getFormDataObject(formModel));
+        out.writeObject(formEditorSupport.getFormDataObject());
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
