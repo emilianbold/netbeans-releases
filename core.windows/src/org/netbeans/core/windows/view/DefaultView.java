@@ -865,17 +865,25 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     }
     
     public void userTriggeredSlideIn(ModeView modeView, SlideOperation operation) {
-        /*ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
-        ModeImpl mode = getModeForModeAccessor(modeAccessor);
-        controllerHandler.userTriggeredSlideIn(mode, operation);*/
         hierarchy.performSlideIn(operation);
     }    
     
     public void userTriggeredSlideOut(ModeView modeView, SlideOperation operation) {
-        /*ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
-        ModeImpl mode = getModeForModeAccessor(modeAccessor);
-        controllerHandler.userTriggeredSlideOut(mode, operation);*/
         hierarchy.performSlideOut(operation);
+        // restore focus if needed
+        if (operation.requestsActivation()) {
+            ModeView lastNonSlidingActive = hierarchy.getLastNonSlidingActiveModeView();
+            ModeImpl mode = null;
+            if (lastNonSlidingActive != null) {
+                mode = getModeForModeAccessor((ModeAccessor)hierarchy.getAccessorForView(lastNonSlidingActive));
+            }
+            if (mode != null) {
+                controllerHandler.userActivatedMode(mode);
+            } else {
+                // no appropriate mode exists - select editor as last resort
+                controllerHandler.userActivatedEditorWindow();
+            }
+        }
     }    
     
     

@@ -125,10 +125,9 @@ public abstract class AbstractModeContainer implements ModeContainer {
         // PENDING focus gets main window sometimes, investgate and refine (jdk1.4.1?).
         TopComponent selectedTopComponent = tabbedHandler.getSelectedTopComponent();
         if(selectedTopComponent != null) {
-            if(SwingUtilities.findFocusOwner(selectedTopComponent) == null) {
-                //#39204: Call requestFocusInWindow to avoid changing active window
-                selectedTopComponent.requestFocusInWindow();
-            }
+            // test for focus owner deleted, didn't work correctly during shorcut maximization
+            //#39204: Call requestFocusInWindow to avoid changing active window
+            selectedTopComponent.requestFocusInWindow();
         }
     }
 

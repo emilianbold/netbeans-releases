@@ -243,7 +243,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
             if (selIndex != -1) {
                 commandMgr.slideIn(selIndex);
             } else {
-                commandMgr.slideOut();
+                commandMgr.slideOut(false);
             }
         }
     }

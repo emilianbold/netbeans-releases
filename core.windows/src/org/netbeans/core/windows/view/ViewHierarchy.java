@@ -57,6 +57,9 @@ final class ViewHierarchy {
     private ModeView maximizedModeView;
     private ViewElement currentSplitRoot;
     
+    /** Last non sliding mode view that were active in the past, or null if no such exists */
+    private ModeView lastNonSlidingActive;
+    
     /** */
     private final Map accessor2view = new HashMap(10);
     /** */
@@ -335,6 +338,10 @@ final class ViewHierarchy {
         setActiveModeView(modeView);
         if(modeView != null) {
             modeView.focusSelectedTopComponent();
+            // remember last non sliding active view
+            if (!(modeView instanceof SlidingView)) {
+                lastNonSlidingActive = modeView;
+            }
         }
     }
     
@@ -359,6 +366,13 @@ final class ViewHierarchy {
     /** Gets active mode view. */
     public ModeView getActiveModeView() {
         return activeModeView;
+    }
+    
+    /** Gets last non sliding mode view that was active in the past or null
+     * if no such exists
+     */
+    ModeView getLastNonSlidingActiveModeView() {
+        return lastNonSlidingActive;
     }
     
     public void setMaximizedModeView(ModeView modeView) {
