@@ -81,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
         ]]>
     </file>
 
-      <folder name="JavadocExecutorsSettings">
+      <folder name="JavadocExecutors">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
 
@@ -116,7 +116,7 @@ Microsystems, Inc. All Rights Reserved.
         </file>
       </folder>  
 
-      <folder name="JavadocDocletsSettings">
+      <folder name="JavadocDoclets">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
 
