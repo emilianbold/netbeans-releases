@@ -394,6 +394,7 @@ class HTTPRootFileObject
      * Note that this is a *hack*, since it depends on some strange name given to the
      * IDESettings instance by the Core. But otherwise I don't know about a way
      * how to force the setting to be read.
+     * //!!!
      */
     static void initHTTPProxyHack() {
         if (proxyInit)

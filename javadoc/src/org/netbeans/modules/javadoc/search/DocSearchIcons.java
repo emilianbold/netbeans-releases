@@ -21,7 +21,7 @@ import org.openide.util.Utilities;
 
  @author Petr Hrebejk
 */
-class DocSearchIcons extends Object {
+final class DocSearchIcons extends Object {
 
     public static final int ICON_NOTRESOLVED = 0;
     public static final int ICON_PACKAGE = ICON_NOTRESOLVED + 1 ;

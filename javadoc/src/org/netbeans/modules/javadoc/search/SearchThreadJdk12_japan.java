@@ -78,7 +78,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
         }
         else {
             try {
-                contextURL = this.fo.getURL();
+                contextURL = this.indexRoot.getURL();
                 //contextURL = this.fo.getParent().getURL();
             }
             catch ( org.openide.filesystems.FileStateInvalidException e ) {
@@ -103,7 +103,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
 
         ParserDelegator pd = new ParserDelegator();
         
-        if ( fo == null || lastField == null || lastField.length() == 0) {
+        if ( indexRoot == null || lastField == null || lastField.length() == 0) {
             taskFinished();
             return;
         }
@@ -121,14 +121,14 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 }
                 
                 findFileObject( sc.badFile );
-                if ( fo == null ) {
+                if ( indexRoot == null ) {
                     // No other file to search
                     break;
                 }
             }
 
             try {    
-                in = new BufferedReader( new InputStreamReader( fo.getInputStream (), JapanEncoding ));        
+                in = new BufferedReader( new InputStreamReader( indexRoot.getInputStream (), JapanEncoding ));        
 		// System.out.println("Encoding: " + JapanEncoding);
                 pd.parse( in, sc = new SearchCallbackJdk12_japan( splitedIndex, caseSensitive ), true );
             }
@@ -166,7 +166,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
             
             // Assure the only one direction of looking for Files
             if ( currentIndexNumber < 0 || currentIndexNumber > 27 ) {
-                fo = null;
+                indexRoot = null;
                 return;
             }
 
@@ -175,15 +175,15 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
             String fileName = new String( "index-" + fileNumber.toString() ); // NOI18N
 
             if ( folder == null ) {
-                fo = null;
+                indexRoot = null;
                 return;
             }
 
-            fo = folder.getFileObject( fileName, "html" ); // NOI18N
+            indexRoot = folder.getFileObject( fileName, "html" ); // NOI18N
 
-            if ( fo != null ) {
+            if ( indexRoot != null ) {
                 try {
-                    contextURL = this.fo.getURL();
+                    contextURL = this.indexRoot.getURL();
                 }
                 catch ( org.openide.filesystems.FileStateInvalidException e ) {
                     throw new InternalError( "Can't create documentation folder URL - file state invalid" ); // NOI18N
@@ -194,7 +194,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 currentIndexNumber += direction > 0 ? 1 : -1;
             }
         }
-        while ( fo == null );
+        while ( indexRoot == null );
         
     }
 

@@ -15,6 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
 
+  <!-- Contribute actions to main menu -->
   <folder name="Menu">
 	<folder name="View">
             <file name="org-netbeans-modules-javadoc-search-SearchDocAction.instance"/>
@@ -30,8 +31,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-javadoc-ManageDocAction.instance" />            
             <attr name="org-netbeans-modules-javadoc-ManageDocAction.instance/org-netbeans-modules-autoupdate-UpdateAction" boolvalue="true" /> 
         </folder>
-  </folder>
+  </folder>  <!-- Main menu -->
 
+
+
+  <!-- Register actions in actions pool -->
   <folder name="Actions">
     <folder name="Help">
       <file name="Search Doc Action.instance">
@@ -42,7 +46,11 @@ Microsystems, Inc. All Rights Reserved.
       <file name="Generate Javadoc Action.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.GenerateDocAction"/>
       </file>
+      <file name="Show Doc Action.instance">
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.ShowDocAction"/>
+      </file>
     </folder>
+    
     <folder name="Tools">
       <file name="Auto Comment Action.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.comments.AutoCommentAction"/>
@@ -51,7 +59,8 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction"/>
       </file>
     </folder>
-  </folder>
+  </folder> <!-- Action pool -->
+
 
   <folder name="Shortcuts">
       <file name="S-F1.instance">
@@ -77,6 +86,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
 
+  <!-- pseudolibraries, naked javadoc resource -->
   <folder name="Mount">
     <folder name="Javadoc">
       <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.FileSystem.docroots"/>
@@ -105,7 +115,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Services">
 
-        <file name="org-netbeans-modules-javadoc-settings-DocumentationSettings.settings" url="DocumentationSettings.settings">
+        <file name="org-netbeans-modules-javadoc-settings-DocumentationSettings.settings" url="DocumentationSettings.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavadocSettings.gif"/>
             <attr name="SystemFileSystem.layer" stringvalue="project"/>

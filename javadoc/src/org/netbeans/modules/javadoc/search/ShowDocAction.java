@@ -11,11 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * ShowDocAction.java
- *
- * Created on 3. leden 2001, 11:23
- */
 
 package org.netbeans.modules.javadoc.search;
 
@@ -24,7 +19,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.java.JavaDataObject;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
@@ -34,11 +28,14 @@ import org.openide.util.actions.CookieAction;
 import org.openide.windows.TopComponent;
 
 /**
- *  On selected node try to find generated and mounted documentation
+ * Try to find generated and mounted documentation for selected node.
+ * //!!! It has mixed semantics with the find doc action because
+ * it tries to inspect opened editor too
+ *
  * @author  Petr Suchomel
  * @version 1.0
  */
-public class ShowDocAction extends CookieAction {
+public final class ShowDocAction extends CookieAction {
 
     static final long serialVersionUID =3578357584245478L;
     
@@ -53,7 +50,7 @@ public class ShowDocAction extends CookieAction {
     /** Cookie classes contains one class returned by cookie () method.
     */
     protected final Class[] cookieClasses () {
-        return new Class[] { JavaDataObject.class };
+        return new Class[] { EditorCookie.class };
     }
 
     /** All must be DataFolders or JavaDataObjects
@@ -103,7 +100,7 @@ public class ShowDocAction extends CookieAction {
                 for (int i = 0; i < panes.length; i++) {
                     if (activetc.isAncestorOf(panes[i])) {
                         // we have found the correct JEditorPane
-                        String s = extractTextFromPane(panes[i]);
+                        String s = GetJavaWord.forPane(panes[i]);
                         if (s != null)
                             return s;
                         else
@@ -113,55 +110,5 @@ public class ShowDocAction extends CookieAction {
             }
         }
         return n.getName();
-    }
-    
-    private String extractTextFromPane(JEditorPane p) {
-        int selStart = p.getSelectionStart();
-        int selEnd = p.getSelectionEnd();
-        try {
-            if (selEnd > selStart) {
-                // read the non-empty selection
-                return p.getDocument().getText(selStart, selEnd - selStart);
-            }
-            // try to guess which word is underneath the caret's dot.
-            Document doc = p.getDocument();
-            Element lineRoot;
-
-            if (doc instanceof StyledDocument) {
-                lineRoot = NbDocument.findLineRootElement((StyledDocument)doc);
-            } else {
-                lineRoot = doc.getDefaultRootElement();
-            }
-            int dot = p.getCaret().getDot();
-            Element line = lineRoot.getElement(lineRoot.getElementIndex(dot));
-            String contents;
-            if (line == null)
-                return null;
-            dot -= line.getStartOffset();
-            contents = doc.getText(line.getStartOffset(), 
-                line.getEndOffset() - line.getStartOffset());
-            // search forwards and backwards for the identifier boundary:
-            int begin = dot; 
-            int end;
-            if (begin < contents.length() && Character.isJavaIdentifierPart(contents.charAt(begin))) {
-                while (begin > 0 && Character.isJavaIdentifierPart(contents.charAt(begin - 1)))
-                    begin--;
-                end = dot + 1;
-            } else {
-                while (begin < contents.length() &&
-                    !Character.isJavaIdentifierStart(contents.charAt(begin)))
-                    begin++;
-                end = begin + 1;
-            }
-            if (begin >= contents.length())
-                return null;
-            while (end < contents.length() &&
-                Character.isJavaIdentifierStart(contents.charAt(end)))
-                end++;
-            return contents.substring(begin, end);
-        } catch (BadLocationException ex) {
-            ex.printStackTrace();
-            return null;
-        }
     }
 }

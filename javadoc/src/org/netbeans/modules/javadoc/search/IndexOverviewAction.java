@@ -37,9 +37,10 @@ import org.openide.util.actions.Presenter;
 /**
  * Action which shows mounted Javadoc filesystems with known indexes as a submenu,
  * so you can choose a Javadoc set.
+ *
  * @author Jesse Glick
  */
-public class IndexOverviewAction extends SystemAction implements Presenter.Menu {
+public final class IndexOverviewAction extends SystemAction implements Presenter.Menu {
     
     private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.javadoc.search.IndexOverviewAction.IndexMenu"); // NOI18N
         
@@ -148,7 +149,7 @@ public class IndexOverviewAction extends SystemAction implements Presenter.Menu 
         
         public IndexMenuItem(String display, FileObject index) throws FileStateInvalidException {
             super(display);
-            u = index.getURL();
+            u = JavadocURLMapper.findURL(index);
             addActionListener(this);
         }
         

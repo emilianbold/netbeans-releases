@@ -11,19 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* Base class providing search for JDK1.2/1.3 documentation
- * Jdk12SearchType.java
- *
- * Created on 19. ?or 2001, 17:14
- * @author Petr Hrebejk, Petr Suchomel
- */
-
-/*
- * JapanJavadocEncodings.java
- *
- * Created on March 7, 2001, 5:37 PM
- */
-
 package org.netbeans.modules.javadoc.search;
 
 import java.beans.*;
@@ -34,7 +21,7 @@ import java.beans.*;
  * @version 
  */
 
-public class JapanJavadocEncodings extends PropertyEditorSupport {
+public final class JapanJavadocEncodings extends PropertyEditorSupport {
     
     private static final String[] tags = { "JISAutoDetect", "SJIS", "EUC-JP", "ISO-2022-JP", "UTF-8"};     //NOI18N
     

@@ -31,7 +31,9 @@ public abstract class IndexSearchThread extends Thread  {
     // PENDING: Add some abstract methods
 
     //protected String                toFind;
-    protected FileObject            fo;
+
+    // documentation index file (or foldee for splitted index)
+    protected FileObject            indexRoot;
     private   DocIndexItemConsumer  ddiConsumer;
     RequestProcessor.Task           rpTask = null;
     protected boolean caseSensitive;
@@ -48,7 +50,7 @@ public abstract class IndexSearchThread extends Thread  {
 
     public IndexSearchThread( String toFind, FileObject fo, DocIndexItemConsumer ddiConsumer, boolean caseSensitive ) {
         this.ddiConsumer = ddiConsumer;
-        this.fo = fo;
+        this.indexRoot = fo;
         this.caseSensitive = caseSensitive;
         
         //this.toFind = toFind;

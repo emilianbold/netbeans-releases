@@ -661,7 +661,7 @@ class HTTPFileObject extends FileObject {
      */
     public FileObject getFileObject( String fileName, String extension ) {
         
-        if( !extension.equals( "" ) ) { //NOI18N
+        if( extension != null && extension.equals( "" ) == false ) { //NOI18N
             return child( fileName + "." + extension ); //NOI18N
         } else {
             return child( fileName );

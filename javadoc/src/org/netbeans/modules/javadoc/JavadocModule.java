@@ -31,7 +31,7 @@ import org.openide.windows.TopComponent;
 
  @author Petr Hrebejk
 */
-public class JavadocModule extends ModuleInstall {
+public final class JavadocModule extends ModuleInstall {
 
     /** serialVersionUID */
     private static final long serialVersionUID = 984124010415492146L;

@@ -11,15 +11,10 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * JavadocSearchType.java
- *
- * Created on 19. únor 2001, 16:27
- */
-
 package org.netbeans.modules.javadoc.search;
 
 import java.util.*;
+import java.util.regex.*;
 import java.io.File;
 
 import org.openide.filesystems.FileObject;
@@ -29,12 +24,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 
-import org.apache.regexp.RE;
-import org.apache.regexp.REProgram;
-import org.apache.regexp.RESyntaxException;
-import org.apache.regexp.RECompiler;
-
 /**
+ * Service that knows how to parse doclet output and can
+ * search in it.
  *
  * @author  Petr Suchomel
  * @version 1.1
@@ -51,7 +43,7 @@ public abstract class JavadocSearchType extends ServiceType {
     */
     public abstract FileObject getDocFileObject( FileSystem fs , String rootOffset );
     
-    private RE[]  overviewLabelFilters;
+    private Pattern[]  overviewLabelFilters;
 
     private synchronized void prepareOverviewFilter() {
         if (overviewLabelFilters != null)
@@ -61,16 +53,14 @@ public abstract class JavadocSearchType extends ServiceType {
         LinkedList ll = new LinkedList();
         for (int i = 0; tok.hasMoreTokens(); i++) {
             try {
-                RECompiler rec = new RECompiler();
                 String expr = tok.nextToken();
-                REProgram rep = rec.compile(expr);
-                RE re = new RE(rep, RE.MATCH_CASEINDEPENDENT);
+                Pattern re = Pattern.compile(expr, Pattern.CASE_INSENSITIVE);
                 ll.add(re);
-            } catch (RESyntaxException e) {
+            } catch (PatternSyntaxException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
-        overviewLabelFilters = (RE[])ll.toArray(new RE[ll.size()]);
+        overviewLabelFilters = (Pattern[])ll.toArray(new Pattern[ll.size()]);
     }
     
     /**
@@ -82,18 +72,16 @@ public abstract class JavadocSearchType extends ServiceType {
      */
     public String getOverviewTitleBase(String overviewTitle) {
         prepareOverviewFilter();
-        RE match = null;
+        Matcher match;
         String t = overviewTitle.trim();
         
         for (int i = 0; i < overviewLabelFilters.length; i++) {
-            if (overviewLabelFilters[i].match(t)) {
-                match = overviewLabelFilters[i];
-                break;
+            match = overviewLabelFilters[i].matcher(t);
+            if  (match.matches()) {
+                return match.group(1);
             }
         }
-        if (match == null)
-            return overviewTitle;
-        return match.getParen(1);
+        return overviewTitle;
     }
 
     /** Returns Java doc search thread for doument
@@ -101,7 +89,6 @@ public abstract class JavadocSearchType extends ServiceType {
      * @param fo File object containing index-files
      * @param diiConsumer consumer for parse events
      * @return IndexSearchThread
-     * @see IndexSearchThread
      */    
     public abstract IndexSearchThread getSearchThread( String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer );
 }

@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
-<!--
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- -*- sgml-indent-step: 2 -*- --><!--
                 Sun Public License Notice
 
 The contents of this file are subject to the Sun Public License
@@ -18,13 +18,16 @@ Microsystems, Inc. All Rights Reserved.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+  <property name="nb_all" location=".."/>
+  <property name="build.compiler.debug" value="on"/>
+  
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
   <target name="compile">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <javac debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" destdir="src" srcdir="src" source="1.4">
       <classpath>
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
@@ -33,10 +36,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
-	<fileset dir="../libs/external">
-	    <include name="regexp*.jar"/>
-	</fileset>
         <pathelement location="../java/netbeans/modules/java.jar"/>
+        <!--pathelement location="../openide/registry/netbeans/modules/org-netbeans-modules-registry.jar"/-->        
       </classpath>
     </javac>
   </target>
@@ -54,6 +55,15 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
 
+    <!-- I call this target from IDE directly, while debugging module. -->
+    <target name="try" depends="jars" description="Compile, package, deploy and run in debugging JVM mode.">
+        <copy file="netbeans/modules/javadoc.jar" tofile="${nb_all}/nbbuild/netbeans/modules/javadoc.jar"/>
+        <exec executable="${nb_all}/nbbuild/netbeans/bin/runide.sh">
+            <arg line="-userdir /tmp/prj-ud -fontsize 13 -J-Xdebug -J-Xnoagent -J-Djava.compiler=NONE -J-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888"/>
+        </exec>
+    </target>
+  
+  
   <target name="netbeans" depends="jars">
     <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>

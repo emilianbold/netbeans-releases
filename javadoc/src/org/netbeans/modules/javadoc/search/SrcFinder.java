@@ -30,7 +30,7 @@ import org.openide.src.*;
  * @author  Administrator
  * @version 
  */
-public class SrcFinder extends Object {
+public final class SrcFinder extends Object {
 
     private static final ElementFormat FORMATOR = new ElementFormat( "{C}" ); // NOI18N
 

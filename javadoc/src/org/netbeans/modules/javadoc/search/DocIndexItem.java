@@ -17,11 +17,15 @@ package org.netbeans.modules.javadoc.search;
 import java.net.URL;
 import java.util.Comparator;
 
-/** Represents one item found in document index
 
- @author Petr Hrebejk
-*/
-class DocIndexItem extends Object {
+/**
+ * Represents one item found in document index.
+ * It's produced by {@link IndexSearchThread} and communicated
+ * back to {@link IndexSearch} UI.
+ *
+ * @author Petr Hrebejk
+ */
+final class DocIndexItem extends Object {
 
     /** Standard comparators */
     public static final Comparator REFERENCE_COMPARATOR = new ReferenceComparator();
@@ -109,7 +113,7 @@ class DocIndexItem extends Object {
 
     // COMPARATOR INNER CLASSES ----------------------------------------------------------------
 
-    static class ReferenceComparator implements java.util.Comparator {
+    static final class ReferenceComparator implements java.util.Comparator {
 
         public int compare( Object dii1, Object dii2 ) {
             int res = ((DocIndexItem)dii1).getPackage().compareTo( ((DocIndexItem)dii2).getPackage() );
@@ -121,9 +125,13 @@ class DocIndexItem extends Object {
             return ( comp instanceof ReferenceComparator );
         }
 
+        public int hashCode() {
+            return 353;
+        }
+
     }
 
-    static class TypeComparator implements java.util.Comparator {
+    static final class TypeComparator implements java.util.Comparator {
 
         public int compare( Object dii1, Object dii2 ) {
             return ((DocIndexItem)dii1).getIconIndex() - ((DocIndexItem)dii2).getIconIndex();
@@ -133,9 +141,13 @@ class DocIndexItem extends Object {
             return ( comp instanceof TypeComparator );
         }
 
+        public int hashCode() {
+            return -34;
+        }
+        
     }
 
-    static class AlphaComparator implements java.util.Comparator {
+    static final class AlphaComparator implements java.util.Comparator {
 
         public int compare( Object dii1, Object dii2 ) {
             return ((DocIndexItem)dii1).toString().compareTo( ((DocIndexItem)dii2).toString() );
@@ -145,5 +157,8 @@ class DocIndexItem extends Object {
             return ( comp instanceof AlphaComparator );
         }
 
+        public int hashCode() {
+            return 33;
+        }
     }
 }

@@ -16,14 +16,15 @@ package org.netbeans.modules.javadoc.search;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
+
 import javax.swing.SwingUtilities;
 
 /**
-* Search doc action.
-*
-* @author   Petr Hrebejk
-*/
-public class SearchDocAction extends CallableSystemAction {
+ * Search doc global action (working with whole solution).
+ *
+ * @author   Petr Hrebejk
+ */
+public final class SearchDocAction extends CallableSystemAction {
 
     /** Human presentable name of the action. This should be
      * presented as an item in a menu.

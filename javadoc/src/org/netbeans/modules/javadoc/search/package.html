@@ -1,0 +1,32 @@
+#ifdef prj40
+<h2>Search JavaDoc Package</h2>
+
+<h3>Entry Points</h3>
+{@link SearchDocAction} registered in module layer.
+{@link ShowDocAction} registered in module layer.
+
+
+<h3>Control Flow</h3>
+
+<pre>
+performAction() toFind
+    IndexSearch UI button_actionPerformed
+    JavadocSearchEngine[Impl]
+        foreach javadoc fs
+            javadocSearchType = fs.getJavadocSearchType()
+            javadocSearchType.getSearchThread(toFind)
+            IndexSearchThread (Jdk12SearchThread[_japan])
+                insertDocIndexItem()
+    JavadocSearchEngine[Impl] callback (presenting them in UI)
+</pre>
+
+
+<h3>Projectization Tasks</h3>
+
+DocFileSystems must be found in project resources.
+Define javadoc resources lookup criteria. Mimics classpath lookup.
+(Library ref FileObjects has something in their lookup. the
+something is provided by JavaDocVolumeProvider.)
+
+How do I list project resource PMs. In project resource (descriptor) containers.
+#endif /* prj40 */
