@@ -13,6 +13,8 @@
 
 package org.openide.loaders;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.Enumeration;
 import java.util.ArrayList;
@@ -873,6 +875,7 @@ class DataLoaderPool$FolderLoader extends UniFileLoader {
     *   actions
     */
     protected SystemAction[] defaultActions () {
+        listenForCompilerAPI();
         // #30138: try to add compiler-related actions, if they exist.
         // When Looks & new Datasystems are ready, this will no longer
         // be necessary.
@@ -925,6 +928,45 @@ class DataLoaderPool$FolderLoader extends UniFileLoader {
                     SystemAction.get (org.openide.actions.PropertiesAction.class)
                 };
         }
+    }
+    
+    /**
+     * If we have not done so already, listen for changes in the enablement of the
+     * Compiler API. This will affect the default actions.
+     * @see "#34330"
+     */
+    private void listenForCompilerAPI() {
+        String flag = "listenForCompilerAPI"; // NOI18N
+        if (getProperty(flag) != null) {
+            // Already listening.
+            return;
+        }
+        // Need to listen.
+        putProperty(flag, Boolean.TRUE, false);
+        Iterator it = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances().iterator();
+        ModuleInfo compilerAPI = null;
+        while (it.hasNext()) {
+            ModuleInfo mi = (ModuleInfo)it.next();
+            if (mi.getCodeNameBase().equals("org.openide.compiler")) { // NOI18N
+                compilerAPI = mi;
+                break;
+            }
+        }
+        if (compilerAPI == null) {
+            // Not installed. XXX technically we should listen for changes in the lookup
+            // template in case it is added and enabled. In practice this is very unlikely.
+            return;
+        }
+        compilerAPI.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent ev) {
+                if (ModuleInfo.PROP_ENABLED.equals(ev.getPropertyName())) {
+                    // Need to refresh default actions list. XXX design of DataLoader, with
+                    // getActions being final, makes it impossible to do this cleanly.
+                    putProperty("defaultActions", null, false); // NOI18N
+                    firePropertyChange(PROP_ACTIONS, null, null);
+                }
+            }
+        });
     }
 
     /** Get the default display name of this loader.
