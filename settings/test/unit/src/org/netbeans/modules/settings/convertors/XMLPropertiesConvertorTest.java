@@ -56,13 +56,18 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
     
     protected void setUp() throws java.lang.Exception {
         super.setUp();
-        
         org.openide.TopManager.getDefault();
         java.net.URL layer = this.getClass().getResource("data/layer.xml");
         fs = new XMLFileSystem(layer);
         sfs = Repository.getDefault().getDefaultFileSystem();
         root = sfs.getRoot();
         assertNotNull("SFS root not found", root);
+        
+        FileObject serdata = sfs.findResource("xml/lookups/NetBeans/DTD_Session_settings_1_0.instance");
+        assertNotNull("missing registration for serialdata format", serdata);
+        Object attr = serdata.getAttribute("instanceCreate");
+        assertNotNull("core's registration for serialdata format", attr);
+        assertEquals(SerialDataConvertor.Provider.class, attr.getClass());
     }
     
     public void testReadWrite() throws Exception {
@@ -220,6 +225,8 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         assertEquals("localhost", foo.getProperty1());
     }
 
+    /* default instance in serial data format -> xml properties format
+     */
     public void testUpgradeSetting() throws Exception {
         String res = "Settings/org-netbeans-modules-settings-convertors-FooSettingSerialData.settings";
         FileObject fo = sfs.findResource(res);
@@ -227,6 +234,29 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         long last = fo.lastModified().getTime();
         
         DataObject dobj = DataObject.find (fo);
+        InstanceCookie.Of ic = (InstanceCookie.Of) dobj.getCookie(InstanceCookie.Of.class);
+        assertNotNull (dobj + " does not contain instance cookie", ic);
+        assertTrue("instanceOf failed", ic.instanceOf(FooSetting.class));
+        assertEquals("instanceClass failed", FooSetting.class, ic.instanceClass());
+        
+        FooSetting foo = (FooSetting) ic.instanceCreate();
+        assertEquals("too early upgrade", last, fo.lastModified().getTime());
+        
+        foo.setProperty1("A");
+        Thread.sleep(3000);
+        assertTrue("upgrade failed", last != fo.lastModified().getTime());
+    }
+    
+    /* object of deprecated class persisted in serial data format -> new object
+     * persisted in xml properties format
+     */
+    public void testUpgradeSetting2() throws Exception {
+        String res = "Settings/testUpgradeSetting2/ObsoleteClass.settings";
+        FileObject fo = sfs.findResource(res);
+        assertNotNull(res, fo);
+        long last = fo.lastModified().getTime();
+        
+        DataObject dobj = DataObject.find(fo);
         InstanceCookie.Of ic = (InstanceCookie.Of) dobj.getCookie(InstanceCookie.Of.class);
         assertNotNull (dobj + " does not contain instance cookie", ic);
         assertTrue("instanceOf failed", ic.instanceOf(FooSetting.class));

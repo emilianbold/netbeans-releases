@@ -147,6 +147,73 @@ final class XMLSettingsSupport {
 
     }
     
+    /** Stream allowing upgrade to a new class inside the origin .settings file
+     */
+    private static class SpecialObjectInputStream extends java.io.ObjectInputStream {
+        
+        public SpecialObjectInputStream(InputStream is) throws IOException {
+            super(is);
+            try {
+                enableResolveObject (true);
+            } catch (SecurityException ex) {
+                throw new IOException (ex.toString ());
+            }
+        }
+
+        /* Uses NetBeans module classloader to load the class.
+         * @param v description of the class to load
+         */
+        protected Class resolveClass(ObjectStreamClass v) throws IOException, ClassNotFoundException {
+            ClassLoader cl = getNBClassLoader();
+            try {
+                return Class.forName(v.getName(), false, cl);
+            } catch (ClassNotFoundException cnfe) {
+                String msg = "Offending classloader: " + cl; // NOI18N
+                ErrorManager.getDefault ().annotate(cnfe, ErrorManager.INFORMATIONAL, msg, null, null, null);
+                throw cnfe;
+            }
+        }
+        
+        /** use Utilities.translate to try to upgrade to new setting's class.
+         * If the old class exists the origin descriptor is used and upgrade is
+         * postponed to readResolve;
+         * otherwise the same implementation like NbObjectInputStream.readClassDescriptor
+         */
+        protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
+            ObjectStreamClass ose = super.readClassDescriptor();
+
+            String name = ose.getName();
+            String newN = org.openide.util.Utilities.translate(name);
+
+            if (name == newN) {
+                // no translation
+                return ose;
+            }
+
+            ClassLoader cl = getNBClassLoader();
+            try {
+                Class origCl = Class.forName(name, false, cl);
+                // translation postponed to readResolve
+                return ObjectStreamClass.lookup(origCl);
+            } catch (ClassNotFoundException ex) {
+                // ok look up new descriptor
+            }
+            
+            Class clazz = Class.forName(newN, false, cl);
+            ObjectStreamClass newOse = ObjectStreamClass.lookup(clazz);
+
+            return newOse;
+        }
+    
+        /** Lazy create default NB classloader for use during deserialization. */
+        private static ClassLoader getNBClassLoader() {
+            ClassLoader c = (ClassLoader) org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+            return c != null ? c : ClassLoader.getSystemClassLoader();
+        }
+        
+    }
+    
+    
     // enlarged to not need do the test for negative byte values
     private final static char[] HEXDIGITS = {'0', '1', '2', '3', '4', '5', '6', '7',
                                              '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
@@ -355,6 +422,7 @@ final class XMLSettingsSupport {
                 instanceMethod = attribs.getValue(ATR_INSTANCE_METHOD);
             } else if (ELM_SERIALDATA.equals(qName)) {
                 instanceClass = attribs.getValue(ATR_SERIALDATA_CLASS);
+                instanceClass = org.openide.util.Utilities.translate(instanceClass);
                 if (header) throw new StopSAXException();
             }
         }
@@ -415,7 +483,7 @@ final class XMLSettingsSupport {
         private Object readSerial(InputStream is) throws IOException, ClassNotFoundException {
             if (is == null) return null;
             try {
-                ObjectInput oi = new org.openide.util.io.NbObjectInputStream (is);
+                ObjectInput oi = new SpecialObjectInputStream (is);
                 try {
                     Object o = oi.readObject ();
                     return o;
