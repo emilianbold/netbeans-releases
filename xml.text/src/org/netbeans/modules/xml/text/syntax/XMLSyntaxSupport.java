@@ -557,9 +557,11 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                     
                 case '<':
                 case '&':
+                case '"':
+                case '\'':
                     retVal = COMPLETION_POPUP;
-                    break;                    
-            }
+                    break;
+             }
             return retVal;
         } else { // the pane is already visible
             switch (typedText.charAt(0)) {
