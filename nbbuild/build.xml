@@ -449,14 +449,8 @@ workspaceswitcher
   </target>
 
   <target name="localclean">
-    <deltree dir="virgin"/>
-    <deltree dir="firststart"/>
-<!--
-    <delete>
-      <fileset dir="virgin"/>
-      <fileset dir="firststart"/>
-    </delete>
--->
+    <delete dir="virgin"/>
+    <delete dir="firststart"/>
     <echo message="Manually delete unwanted builds as needed."/>
   </target>
 
