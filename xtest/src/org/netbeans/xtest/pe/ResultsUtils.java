@@ -300,6 +300,37 @@ public class ResultsUtils {
         return (UnitTestSuite[])(suiteList.toArray(new UnitTestSuite[0]));
     }
         
+    //
+    public static File getTestRunFile(File reportRoot, TestRun testRun) {
+        File testRunDir = new File(reportRoot,testRun.xmlat_runID);
+        File testRunXMLDir = new File(testRunDir,PEConstants.XMLRESULTS_DIR);
+        File testRunFile = new File(testRunXMLDir,PEConstants.TESTRUN_XML_FILE);
+        return testRunFile;
+    }
+    
+    
+    public static File getTestBagFile(File reportRoot, TestRun testRun, TestBag testBag) {
+        File testRunDir = new File(reportRoot,testRun.xmlat_runID);
+        File testBagDir = new File(testRunDir,testBag.xmlat_bagID);
+        File testBagXMLDir = new File(testBagDir,PEConstants.XMLRESULTS_DIR);
+        File testBagFile = new File(testBagXMLDir,PEConstants.TESTBAG_XML_FILE);
+        return testBagFile;
+    }
+    
+    public static File getTestSuiteFile(File reportRoot, TestRun testRun, TestBag testBag, UnitTestSuite testSuite) {
+        File testRunDir = new File(reportRoot,testRun.xmlat_runID);
+        File testBagDir = new File(testRunDir,testBag.xmlat_bagID);
+        File testBagXMLDir = new File(testBagDir,PEConstants.XMLRESULTS_DIR);
+        File testSuitesDir = new File(testBagXMLDir,PEConstants.TESTSUITES_SUBDIR);
+        File testSuiteFile = new File(testSuitesDir,"TEST-"+testSuite.xmlat_name+".xml");
+        return testSuiteFile;
+    }
+    
+    /*
+     *
+     *
+     *
+     */
     
     public static void moveDir(File fromDir, File toDir) throws IOException {
         copyDir(fromDir, toDir, true);

@@ -29,68 +29,109 @@
 </xsl:template>
 
 <xsl:template name="MakeProjectsTestsSummaryTable">
-	<xsl:variable name="differentProjectsExpression" select="//ManagedReport[not(./@project = preceding-sibling::ManagedReport/@project)]"/>
+	
 	<H1>XTest Overall Results:</H1>	
 	<BR/>
 	<BR/>
-	<TABLE width="90%" cellspacing="2" cellpadding="5" border="0" >		
+	
+	<xsl:for-each select="//ManagedReport[not(./@testingGroup = preceding-sibling::ManagedReport/@testingGroup)]">
+		<xsl:sort select="@testingGroup" order = "descending"/>
+		<xsl:variable name="currentTestingGroup" select="@testingGroup"/>	
+	
+		<H2>Department: <xsl:value-of select="@testingGroup"/></H2>
+		<TABLE width="90%" cellspacing="2" cellpadding="5" border="0" >		
+		
+		<xsl:variable name="differentProjectsExpression" select="//ManagedReport[(./@testingGroup = $currentTestingGroup) and not(./@project = preceding-sibling::ManagedReport[./@testingGroup = $currentTestingGroup]/@project)]"/>
+		
 		<TR align="center">
-			<TD></TD><TD></TD>
-			<TD colspan="{count($differentProjectsExpression)}" bgcolor="#A6CAF0">
+			<!--
+			<TD bgcolor="#A6CAF0" rowspan="3"><B>Testing Group</B></TD>
+			-->
+			<TD bgcolor="#A6CAF0" rowspan="3"><B>Tested Type</B></TD>
+			<TD colspan="{count($differentProjectsExpression) * 3}" bgcolor="#A6CAF0">
 				<B>Tested Products</B>
 			</TD>
 		</TR>				
 		<TR align="center">
-		<TD bgcolor="#A6CAF0"><B>Testing Group</B></TD><TD bgcolor="#A6CAF0"><B>Tested Type</B></TD>
-		<xsl:for-each select="$differentProjectsExpression">
-			<xsl:sort select="@project"/>
-			<TD class="pass">
-				<B><xsl:value-of select="@project"/></B>
-			</TD>
-		</xsl:for-each>
+			<!--
+			<TD bgcolor="#A6CAF0"><B>Testing Group</B></TD><TD bgcolor="#A6CAF0"><B>Tested Type</B></TD>
+			-->
+			<xsl:for-each select="$differentProjectsExpression">
+				<xsl:sort select="@project"/>
+				<TD class="pass" colspan="3">
+					<B><xsl:value-of select="@project"/></B>
+				</TD>
+			</xsl:for-each>
 		</TR>
-		<xsl:for-each select="//ManagedReport[not(./@testingGroup = preceding-sibling::ManagedReport/@testingGroup)]">
-			<xsl:sort select="@testingGroup"/>
-			<xsl:variable name="currentTestingGroup" select="@testingGroup"/>					
+		<TR align="center">			
+			<xsl:for-each select="$differentProjectsExpression">
+				<xsl:sort select="@project"/>
+				<TD class="pass">
+					<B>Last build</B>
+				</TD>
+				<TD class="pass">
+					<B>Passed</B>
+				</TD>
+				<TD class="pass">
+					<B>Total</B>
+				</TD>
+			</xsl:for-each>
+		</TR>
+
+				
 					
 			<xsl:for-each select="//ManagedReport[(@testingGroup=$currentTestingGroup) and not (./@testedType = preceding-sibling::ManagedReport[@testingGroup=$currentTestingGroup]/@testedType)]">
 				<xsl:sort select="@testedType"/>
 				<xsl:variable name="currentTestedType" select="@testedType"/>
 				<TR align="center">
 				<!-- now do owned test types -->
+					<!--
 					<TD class="pass">
 						<B><xsl:value-of select="@testingGroup"/></B>
 					</TD>
+					-->
 					<TD class="pass">
 						<B><xsl:value-of select="@testedType"/></B>
 					</TD>
 					<!-- now get results for these tests -->
-					<xsl:for-each select="//ManagedReport[not(./@project = preceding-sibling::ManagedReport/@project)]">
+					<xsl:for-each select="$differentProjectsExpression">
 						<xsl:sort select="@project"/>
 						<xsl:variable name="currentProject" select="@project"/>
-						<xsl:variable name="expression" select="//ManagedReport[(@testingGroup=$currentTestingGroup)and(@testedType=$currentTestedType)and(@project=$currentProject)]"/>
-						<TD class="pass">
-							<xsl:variable name="testsTotal" select="sum($expression/@testsTotal)"/>
-							
-							<xsl:if test="$testsTotal &gt; 0">
-								<A HREF="{$currentProject}-{$currentTestingGroup}-{$currentTestedType}.html">
-								Q: <xsl:value-of select="format-number(sum(($expression)/@testsPass) div sum(($expression)/@testsTotal),'0.00%')"/>, 
-								T: <xsl:value-of select="sum($expression/@testsTotal)"/>,
-								R:<xsl:value-of select="count($expression)"/>
-								</A>
+						<xsl:variable name="expression" select="//ManagedReport[(@testingGroup=$currentTestingGroup)and(@testedType=$currentTestedType)and(@project=$currentProject) and not(@build &lt; //ManagedReport[(@testingGroup=$currentTestingGroup)and(@testedType=$currentTestedType)and(@project=$currentProject)]/@build)]"/>
+							<xsl:variable name="testsTotal" select="sum($expression/@testsTotal)"/>							
+							<xsl:if test="$testsTotal &gt; 0">								
+								<TD class="pass">
+									<A HREF="{$currentProject}-{$currentTestingGroup}-{$currentTestedType}.html">
+										<xsl:value-of select="$expression/@build"/>
+									</A>
+								</TD>
+								<TD class="pass">
+									<A HREF="{$currentProject}-{$currentTestingGroup}-{$currentTestedType}.html">
+										<xsl:value-of select="format-number(sum(($expression)/@testsPass) div sum(($expression)/@testsTotal),'0.00%')"/>
+									</A>
+								</TD>
+								<TD class="pass">
+									<A HREF="{$currentProject}-{$currentTestingGroup}-{$currentTestedType}.html">
+										<xsl:value-of select="sum($expression/@testsTotal)"/>
+									</A>
+								</TD>
 							</xsl:if>
 							<xsl:if test="$testsTotal = 0">
-								-
+								<TD class="pass" colspan="3">-</TD>
 							</xsl:if>
-						</TD>
 					</xsl:for-each>
 				</TR>	
 			</xsl:for-each>
-			
+			</TABLE>
+			<P>
+				<BR/>
+			</P>
 		</xsl:for-each>
 		
-	</TABLE>	
+	
+	
 	<P>
+	<!--
 	<H5>Legend:</H5>
 	<UL>
 		<LI>Q: - quality of the product - (passed tests)/(total tests) in %</LI>
@@ -112,6 +153,7 @@
 			Total amount of time spent on running tests: <xsl:value-of select="format-number($totalMinutes,'00.00')"/> minutes.
 		</LI>
 	</UL>
+	-->
 	<HR width="90%"/>
 	</P>
 	<P>
