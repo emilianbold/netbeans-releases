@@ -48,34 +48,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     private Dimension designerSize;
 
 
-    public String getJavaContainerDelegateString() {
-        String delegateGetter = getContainerDelegateGetterName();
-        if (delegateGetter != null) {
-            return delegateGetter + "()"; // NOI18N
-        }
-        else
-            return "";          // NOI18N
-    }
-    
-    /** Called to obtain a Java code to be used to generate code to access the
-     * container for adding subcomponents.  It is expected that the returned
-     * code is either ""(in which case the form is the container) or is a name
-     * of variable or method call ending with
-     * "."(e.g. "container.getContentPane().").  This implementation simply
-     * delegates to FormInfo.getContainerGenName().
-     * @return the prefix code for generating code to add subcomponents to this
-     * container
-     */
-    public String getContainerGenName() {
-        String delegateGetter = getContainerDelegateGetterName();
-        if (delegateGetter != null) {
-            return delegateGetter + "()."; // NOI18N
-        }
-        else
-            return "";          // NOI18N
-//        return formInfo.getContainerGenName();
-    }
-
     // ------------------------------------------------------------------------------
     // Form synthetic properties
 

@@ -30,6 +30,10 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     private RADMenuComponent containerMenu;
 
+    private Method containerDelegateGetter;
+    private boolean noContainerDelegate;
+
+
     public boolean initialize(FormModel formModel) {
         if (super.initialize(formModel)) {
             if (getBeanClass() != null)
@@ -42,6 +46,9 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     protected void setBeanInstance(Object beanInstance) {
         if (isLayoutSupportSet())
             layoutSupport.clearPrimaryContainer();
+
+        containerDelegateGetter = null;
+        noContainerDelegate = false;
 
         super.setBeanInstance(beanInstance);
 
@@ -63,7 +70,57 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         return layoutSupport.getLayoutDelegate() != null;
     }
 
-    public String getContainerDelegateGetterName() {
+    /**
+     * @return The JavaBean visual container represented by this
+     * RADVisualComponent
+     */
+    
+    public Container getContainerDelegate(Object container) {
+        if (container instanceof RootPaneContainer)
+            return ((RootPaneContainer)container).getContentPane();
+        if (container instanceof JRootPane)
+            return ((JRootPane)container).getContentPane();
+
+        Container containerDelegate = (Container) container;
+        Method m = getContainerDelegateMethod();
+        if (m != null) {
+            try {
+                containerDelegate =
+                    (Container) m.invoke(container, new Object[0]);
+            }
+            catch (Exception ex) {
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
+            }
+        }
+        return containerDelegate;
+    }
+
+    public Method getContainerDelegateMethod() {
+        if (containerDelegateGetter == null && !noContainerDelegate) {
+            String delegateGetterName = getContainerDelegateGetterName();
+            if (delegateGetterName == null
+                && (RootPaneContainer.class.isAssignableFrom(getBeanClass())
+                    || JRootPane.class.isAssignableFrom(getBeanClass())))
+                delegateGetterName = "getContentPane"; // NOI18N
+
+            if (delegateGetterName != null) {
+                try {
+                    containerDelegateGetter =
+                        getBeanClass().getMethod(
+                            delegateGetterName, new Class[0]);
+                }
+                catch (NoSuchMethodException ex) {
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        ex.printStackTrace();
+                }
+            }
+            else noContainerDelegate = true;
+        }
+        return containerDelegateGetter;
+    }
+
+    String getContainerDelegateGetterName() {
         Object value = getBeanInfo().getBeanDescriptor()
                                         .getValue("containerDelegate"); // NOI18N
         
@@ -71,55 +128,6 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             return (String) value;
         else
             return null;
-    }
-
-    public String getJavaContainerDelegateString() {
-        String delegateGetter = getContainerDelegateGetterName();
-        if (delegateGetter != null) {
-            return getName() + "." + delegateGetter + "()"; // NOI18N
-        }
-        else
-            return getName();
-    }
-    
-    /**
-     * @return The JavaBean visual container represented by this
-     * RADVisualComponent
-     */
-    
-    public Container getContainerDelegate(Object container) {
-        if (container instanceof javax.swing.RootPaneContainer)
-            return ((javax.swing.RootPaneContainer)container).getContentPane();
-        else if (container instanceof javax.swing.JRootPane)
-            return ((javax.swing.JRootPane)container).getContentPane();
-        
-        Container containerDelegate = (Container) container;
-        
-        String delegateGetter = getContainerDelegateGetterName();
-        if (delegateGetter != null) {
-            try {
-                Method m = getBeanClass().getMethod(delegateGetter, new Class[0]);
-                containerDelegate = (Container) m.invoke(container, new Object[0]);
-            } catch (Exception e) {
-                // IGNORE
-            }
-        }
-        
-        return containerDelegate;
-    }
-
-    public Method getContainerDelegateMethod() {
-        String delegateGetter = getContainerDelegateGetterName();
-        if (delegateGetter != null) {
-            try {
-                return getBeanClass().getMethod(delegateGetter, new Class[0]);
-            }
-            catch (NoSuchMethodException ex) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
-            }
-        }
-        return null;
     }
 
     public void setLayoutNodeReference(LayoutNode node) {
@@ -141,25 +149,6 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
                (MenuBar.class.isAssignableFrom(menuClass)
                   && Frame.class.isAssignableFrom(getBeanClass())
                   && !JFrame.class.isAssignableFrom(getBeanClass()));
-    }
-
-    // -----------------------------------------------------------------------------
-    // Layout Manager management
-
-    /** Called to obtain a Java code to be used to generate code to access the
-     * container for adding subcomponents.  It is expected that the returned
-     * code is either ""(in which case the form is the container) or is a name
-     * of variable or method call ending with
-     * "."(e.g. "container.getContentPane().").
-     * @return the prefix code for generating code to add subcomponents to this
-     * container
-     */
-    public String getContainerGenName() {
-        String delegateGetter = getContainerDelegateGetterName();
-        if (delegateGetter != null)
-            return getName() + "." + delegateGetter + "()."; // NOI18N
-        else
-            return getName() + "."; // NOI18N
     }
 
     // -----------------------------------------------------------------------------
