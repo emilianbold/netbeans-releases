@@ -100,28 +100,6 @@ Microsystems, Inc. All Rights Reserved.
              compress="true"/>
     </target>
 
-    <!-- Check all XML files in all sub-modules. -->
-    <target name="check">
-        <ant dir="${nbroot}/core/external" target="unscramble"/>
-        <ant dir="external" target="unscramble"/>
-        <taskdef name="validatexml" classname="org.netbeans.nbbuild.XMLValidate">
-            <classpath>
-                <pathelement location="${nbroot}/nbbuild/nbantext.jar"/>
-                <fileset dir="external">
-                    <include name="resolver*.jar"/>
-                </fileset>
-            </classpath>
-        </taskdef>
-        <validatexml basedir="." catalog="${nbroot}/www/www/dtds/catalog" warnings="true">
-            <include name="**/build.xml"/>
-            <include name="**/TODO.xml"/>
-            <include name="**/src/**/mf-layer.xml"/>
-            <exclude name="core/src/org/netbeans/modules/xml/core/resources/mf-layer.xml"/>
-        </validatexml>
-
-        <ant dir="www" target="check"/>
-    </target>
-
     <target name="test">
         <for-each locations="${submodules}"/>
     </target>

@@ -55,8 +55,6 @@ ToDo:
      <fileset dir="..">
         <!-- For JavaHelp indexing: -->
         <include name="nbbuild/external/jhall*.jar"/>
-        <!-- For XMLValidate Ant task: -->
-        <include name="nbbuild/external/resolver*.jar"/>
       </fileset>
     </path>
     <javac srcdir="antsrc" destdir="antsrc" deprecation="true" debug="${build.compiler.debug}" source="1.4">
@@ -2499,22 +2497,6 @@ the ${netbeans.dest}/bin/ directory.
     </echo>
   </target>
 
-  <target name="checkXMLs" depends="bootstrap">
-    <ant dir="../xml/external" target="unscramble"/>
-    <taskdef name="validatexml" classname="org.netbeans.nbbuild.XMLValidate">
-      <classpath>
-        <pathelement location="nbantext.jar"/>
-        <fileset dir="external">
-          <include name="resolver*.jar"/>
-        </fileset>
-      </classpath>
-    </taskdef>
-    <validatexml basedir="../" catalog="../www/www/dtds/catalog">
-        <include name="*/build.xml"/>
-	<include name="*/src/**/*.xml/"/>
-    </validatexml>
-  </target>
-  
   <target name="delete-and-merge" depends="merge-delete,merge" />   
 
   <target name="merge-delete" depends="init">
