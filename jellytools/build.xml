@@ -13,6 +13,14 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="jellytools" default="jars" basedir=".">
 
+  <property name="nbext" value="../nbbuild"/>
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="license.file" value="${nbext}/standard-nbm-license.txt"/>
+
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
+  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
+
     <!-- Standard jar excludes - can be obtained from
     	 excludesfile="../nbbuild/standard-jar-excludes.txt" -->
     <patternset id="standard-jar-excludes">
@@ -54,10 +62,13 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="../xtest" target="jars"/>
     </target>
 
-    <target name="jars" depends="compile" description="Create jars">
-        <tstamp>
-            <format property="buildnumber" pattern="yyyyMMddHHmm"/>
-        </tstamp>
+    <target name="timestamp" unless="buildnumber">
+      <tstamp>
+          <format property="buildnumber" pattern="yyyyMMddHHmm"/>
+      </tstamp>
+    </target>
+
+    <target name="jars" depends="compile" description="timestamp,Create jars">
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
 
         <!-- Create jelly1 jar -->
@@ -141,8 +152,44 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/*.jar"/>
             </fileset>
         </delete>
+        <delete file="jellytools.nbm"/>
         <delete file="manifest-subst.mf"/>
+        <delete file="module-manifest-subst.mf"/>
         <delete dir="javadoc"/>
+        <delete dir="netbeans/docs"/>
+        <delete dir="netbeans/modules"/>
+        <delete dir="Info"/>
     </target>
+
+  <target name="nbm" depends="javadoc,jars">
+    <property file="src/org/netbeans/jellytools/version_info"/>
+    <filter token="MAJOR_VERSION_SUBST" value="${Jellytools-MajorVersion}"/>
+    <filter token="MINOR_VERSION_SUBST" value="${Jellytools-MinorVersion}"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="module-manifest.mf" tofile="module-manifest-subst.mf" filtering="on"/>
+    <mkdir dir="netbeans/modules"/>
+    <locjar jarfile="netbeans/modules/jellytools.jar"
+         manifest="module-manifest-subst.mf"
+         basedir="modulesrc"
+	 excludesfile="../nbbuild/standard-jar-excludes.txt"
+	 compress="false">
+    </locjar>
+
+    <mkdir dir="netbeans/modules/ext"/>
+    <copy file="jelly-nb.jar" tofile="netbeans/modules/ext/jelly-nb.jar" filtering="off"/>
+    <copy file="jelly2-nb.jar" tofile="netbeans/modules/ext/jelly2-nb.jar" filtering="off"/>
+    <mkdir dir="netbeans/docs"/>
+    <copy file="jelly-nb-javadoc.zip" tofile="netbeans/docs/jelly-nb-javadoc.zip" filtering="off"/>
+    <copy file="jelly2-nb-javadoc.zip" tofile="netbeans/docs/jelly2-nb-javadoc.zip" filtering="off"/>
+
+    <makenbm file="jellytools.nbm"
+             topdir="."
+             module="netbeans/modules/jellytools.jar"
+             homepage="http://jellytools.${homepage.base}"
+	         distribution="http://${dist.base}/jellytools.nbm">
+      <license file="${license.file}"/>
+<!--      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/> -->
+    </makenbm>
+  </target>
 
 </project>
