@@ -15,6 +15,7 @@ package threaddemo.util;
 
 import java.lang.ref.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 import org.openide.util.Mutex;
 
 // XXX implement!
@@ -111,13 +112,16 @@ import org.openide.util.Mutex;
  * responsible for detecting it and reacting appropriately.
  *
  * <p>Another kind of "clobbering" can occur in case the underlying model is not
- * completely controlled by the mutex. For example, it might the native filesystem,
+ * completely controlled by the mutex. For example, it might be the native filesystem,
  * which can change at any time without acquiring a lock in the JVM. In that case
  * an attempted mutation may be operating against a model derived from an older
  * state of the underlying model. Again, this support does <em>not</em> provide a
  * solution for this problem. Subclasses should attempt to detect such a condition
  * and recover from it gracefully, e.g. by throwing an exception from
- * <code>doRecreate</code> or by merging changes.
+ * <code>doRecreate</code> or by merging changes. Using TwoWaySupport may not be
+ * appropriate for such cases anyway, since derivation could then cause an existing
+ * reader to see state changes within its read mutex, which could violate its
+ * assumptions about the underlying model.
  *
  * <p>Derivation and recreation may throw checked exceptions. In such cases the
  * underlying and derived models should be left in a consistent state if at all
@@ -137,24 +141,65 @@ import org.openide.util.Mutex;
  */
 public abstract class TwoWaySupport {
     
-    private final Mutex m;
+    /** lock used for all static vars */
+    private static final Object LOCK = new String("TwoWaySupport");
+    
+    /** supports which are scheduled to be derived but haven't been yet */
+    private static final SortedSet toDerive = new TreeSet(); // SortedSet<DeriveTask>
+    
+    /** same as toDerive but unscheduled and unordered */
+    private static final Set toDeriveUnordered = new HashSet(); // Set<TwoWaySupport>
+    
+    /** the support currently being derived, if any */
+    private static TwoWaySupport currentlyDeriving = null;
+    
+    /** whether derivation thread has been started yet */
+    private static boolean startedThread = false;
+    
+    /** associated mutex */
+    private final Mutex mutex;
+    
+    /** listener list */
+    private final List listeners; // List<TwoWayListener>
+    
+    /** current derived model, if any */
+    private Reference model = null; // Reference<Object>
+    
+    /** current derivation problem, if any */
+    private Exception problem = null;
+    
+    /** if model is not null, whether it is fresh or stale */
+    private boolean fresh = false;
+    
+    /** if true, derivation has been initiated */
+    private boolean active = false;
+    
+    /** underlying delta, if one is being processed thru initiate + doDerive */
+    private Object underlyingDelta = null;
+    
+    /** currently in doRecreate() */
+    private boolean mutating = false;
+    
+    /** currently in doDerive() */
+    private boolean deriving = false;
     
     /**
      * Create an uninitialized support.
      * No derivation or recreation is scheduled initially.
-     * @param m the associated mutex
+     * @param mutex the associated mutex
      */
-    protected TwoWaySupport(Mutex m) {
-        if (m == Mutex.EVENT) throw new IllegalArgumentException("Mutex.EVENT can deadlock TwoWaySupport!");
-        this.m = m;
+    protected TwoWaySupport(Mutex mutex) {
+        if (mutex == Mutex.EVENT) throw new IllegalArgumentException("Mutex.EVENT can deadlock TwoWaySupport!");
+        this.mutex = mutex;
+        listeners = new ArrayList();
     }
     
     /**
      * Get the associated mutex.
      * @return the mutex
      */
-    public Mutex getMutex() {
-        return m;
+    public final Mutex getMutex() {
+        return mutex;
     }
     
     /**
@@ -209,9 +254,22 @@ public abstract class TwoWaySupport {
      */
     protected abstract Object doRecreate(Object oldValue, Object derivedDelta) throws Exception;
     
+    private boolean stateConsistent(boolean checkMutatingDeriving) {
+        assert Thread.holdsLock(LOCK);
+        if (checkMutatingDeriving && mutating) return false;
+        if (checkMutatingDeriving && deriving) return false;
+        if (fresh && model == null) return false;
+        if (fresh && problem != null) return false;
+        if (fresh && active) return false;
+        if (active != (toDeriveUnordered.contains(this) || currentlyDeriving == this)) return false;
+        // XXX check that toDerive contains a DeriveTask for this iff active
+        // XXX what else?
+        return true;
+    }
+    
     /**
      * Get the value of the derived model, blocking as needed until it is ready.
-     * This method acquires the read mutex and may block further for
+     * This method requires the read mutex and may block further for
      * {@link #doDerive}.
      * @return the value of the derived model (never null)
      * @throws InvocationTargetException if <code>doDerive</code> was called
@@ -219,36 +277,47 @@ public abstract class TwoWaySupport {
      *                                   earlier derivation run that is still broken)
      */
     public final Object getValueBlocking() throws InvocationTargetException {
+        assert mutex.canRead();
+        synchronized (LOCK) {
+            assert stateConsistent(true);
+            // XXX
+        }
         // XXX
         return null;
     }
     
     /**
      * Get the value of the derived model, if it is ready and fresh.
-     * This method acquires the read mutex but otherwise does not block.
+     * This method requires the read mutex but otherwise does not block.
      * @return the value of the derived model, or null if it is stale or has never
      *         been computed at all
      */
     public final Object getValueNonBlocking() {
-        // XXX
-        return null;
+        assert mutex.canRead();
+        synchronized (LOCK) {
+            assert stateConsistent(true);
+            return fresh ? model.get() : null;
+        }
     }
     
     /**
      * Get the value of the derived model, if it is ready (fresh or stale).
-     * This method acquires the read mutex but otherwise does not block.
+     * This method requires the read mutex but otherwise does not block.
      * @return the value of the derived model, or null if it has never been
      *         computed at all
      */
     public final Object getStaleValueNonBlocking() {
-        // XXX
-        return null;
+        assert mutex.canRead();
+        synchronized (LOCK) {
+            assert stateConsistent(true);
+            return (model != null) ? model.get() : null;
+        }
     }
     
     /**
      * Change the value of the derived model and correspondingly update the
      * underlying model.
-     * <p>This method acquires the write mutex and calls {@link #doRecreate}
+     * <p>This method requires the write mutex and calls {@link #doRecreate}
      * if it does not throw <code>ClobberException</code>.
      * @param derivedDelta a change to the derived model
      * @return the new value of the derived model
@@ -260,6 +329,12 @@ public abstract class TwoWaySupport {
      */
     public final Object mutate(Object derivedDelta) throws ClobberException, InvocationTargetException {
         if (derivedDelta == null) throw new NullPointerException();
+        assert mutex.canWrite();
+        synchronized (LOCK) {
+            assert stateConsistent(true);
+            // XXX
+            // XXX set & clear mutating
+        }
         // XXX
         return null;
     }
@@ -267,22 +342,34 @@ public abstract class TwoWaySupport {
     /**
      * Indicate that any current value of the derived model is invalid and
      * should no longer be used if exact results are desired.
-     * <p>This method acquires the read mutex but does not block otherwise.
+     * <p>This method requires the read mutex but does not block otherwise.
      * @param underlyingDelta a change to the underlying model
      */
     public final void invalidate(Object underlyingDelta) {
         if (underlyingDelta == null) throw new NullPointerException();
-        // XXX
+        assert mutex.canRead();
+        synchronized (LOCK) {
+            assert stateConsistent(true);
+            // XXX
+        }
     }
 
     /**
      * Initiate creation of the derived model from the underlying model.
      * This is a no-op unless that process has not yet been started or if the
      * value of the derived model is already fresh and needs no rederivation.
-     * <p>This method does not attempt to acquire the mutex nor does it block.
+     * <p>This method does not require the mutex nor does it block.
      */
     public final void initiate() {
-        // XXX
+        synchronized (LOCK) {
+            assert stateConsistent(false);
+            if (!active) {
+                toDeriveUnordered.add(this);
+                toDerive.add(new DeriveTask(this));
+                active = true;
+                LOCK.notifyAll();
+            }
+        }
     }
     
     /**
@@ -293,7 +380,9 @@ public abstract class TwoWaySupport {
      * @param l a listener to add
      */
     public final void addTwoWayListener(TwoWayListener l) {
-        // XXX
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
     
     /**
@@ -302,7 +391,43 @@ public abstract class TwoWaySupport {
      * @param l a listener to remove
      */
     public final void removeTwoWayListener(TwoWayListener l) {
-        // XXX
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
+
+    /**
+     * Fire an event to all listeners in the read mutex.
+     */
+    private void fireChange(final TwoWayEvent e) {
+        final TwoWayListener[] ls;
+        synchronized (listeners) {
+            if (listeners.isEmpty()) {
+                return;
+            }
+            ls = (TwoWayListener[])listeners.toArray(new TwoWayListener[listeners.size()]);
+        }
+        mutex.readAccess(new Mutex.Action() {
+            public Object run() {
+                for (int i = 0; i < ls.length; i++) {
+                    if (e instanceof TwoWayEvent.Derived) {
+                        ls[i].derived((TwoWayEvent.Derived)e);
+                    } else if (e instanceof TwoWayEvent.Invalidated) {
+                        ls[i].invalidated((TwoWayEvent.Invalidated)e);
+                    } else if (e instanceof TwoWayEvent.Recreated) {
+                        ls[i].recreated((TwoWayEvent.Recreated)e);
+                    } else if (e instanceof TwoWayEvent.Clobbered) {
+                        ls[i].clobbered((TwoWayEvent.Clobbered)e);
+                    } else if (e instanceof TwoWayEvent.Forgotten) {
+                        ls[i].forgotten((TwoWayEvent.Forgotten)e);
+                    } else {
+                        assert e instanceof TwoWayEvent.Broken;
+                        ls[i].broken((TwoWayEvent.Broken)e);
+                    }
+                }
+                return null;
+            }
+        });
     }
     
     /**
@@ -343,7 +468,11 @@ public abstract class TwoWaySupport {
         // Does not matter what the queue is.
         return new StrongReference(value, q);
     }
-    
+
+    /**
+     * A strong reference whose referent will not be collected unless the
+     * reference is too.
+     */
     private static final class StrongReference extends WeakReference {
         private Object value;
         public StrongReference(Object value, ReferenceQueue q) {
@@ -358,6 +487,47 @@ public abstract class TwoWaySupport {
             super.clear();
             value = null;
         }
+    }
+    
+    private static final class DeriveTask implements Comparable {
+        
+        public final TwoWaySupport support;
+        
+        public final long schedule;
+        
+        public DeriveTask(TwoWaySupport support) {
+            this.support = support;
+            this.schedule = System.currentTimeMillis() + support.delay();
+        }
+        
+        public int compareTo(Object o) {
+            DeriveTask t = (DeriveTask)o;
+            if (t == this) return 0;
+            if (schedule > t.schedule) return 1;
+            if (schedule < t.schedule) return -1;
+            return hashCode() - t.hashCode();
+        }
+        
+    }
+    
+    private static void startDerivationThread() {
+        synchronized (LOCK) {
+            if (!startedThread) {
+                Thread t = new Thread(new DerivationThread());
+                t.setPriority(Thread.MIN_PRIORITY);
+                t.setDaemon(true);
+                t.start();
+                startedThread = true;
+            }
+        }
+    }
+    
+    private static final class DerivationThread implements Runnable {
+        
+        public void run() {
+            // XXX
+        }
+        
     }
     
 }
