@@ -238,7 +238,14 @@ public class AddTableColumnDialog
 				String catalog = (String)nfo.get(DatabaseNode.CATALOG);
 				String table = (String)nfo.get(DatabaseNode.TABLE);
 //				ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),table, true, false);
-				ResultSet rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+ResultSet rs;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getIndexInfo(catalog, null, table, true, false);
+else
+	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
+	
 				ixmap = new HashMap();
 				while (rs.next()) {
 					String ixname = rs.getString("INDEX_NAME");
@@ -483,6 +490,7 @@ public class AddTableColumnDialog
 }
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         10/8/99  Radko Najman    getUser() method 

@@ -51,7 +51,14 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String name = (String)get(DatabaseNode.PROCEDURE);
 //			ResultSet rs = dmd.getProcedureColumns(catalog, getUser(), name, null);
-			ResultSet rs = dmd.getProcedureColumns(catalog, dmd.getUserName(), name, null);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+ResultSet rs;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getProcedureColumns(catalog, null, name, null);
+else
+	rs = dmd.getProcedureColumns(catalog, dmd.getUserName(), name, null);
+			
 			while (rs.next()) {
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, rs);
 				if (info != null) {
@@ -93,6 +100,7 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
 
 /*
  * <<Log>>
+ *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         10/8/99  Radko Najman    getUser() method 

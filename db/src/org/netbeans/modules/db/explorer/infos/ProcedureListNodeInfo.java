@@ -35,7 +35,14 @@ implements ProcedureOwnerOperations
 			DatabaseMetaData dmd = getSpecification().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 //			ResultSet rs = dmd.getProcedures(catalog, getUser(), null);
-			ResultSet rs = dmd.getProcedures(catalog, dmd.getUserName(), null);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+ResultSet rs;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getProcedures(catalog, null, null);
+else
+	rs = dmd.getProcedures(catalog, dmd.getUserName(), null);
+			
 			while (rs.next()) {
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE, rs);
 				info.put(DatabaseNode.PROCEDURE, info.getName());
@@ -64,6 +71,7 @@ implements ProcedureOwnerOperations
 }
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         10/8/99  Radko Najman    getUser() method 

@@ -107,7 +107,14 @@ public class IndexNode extends DatabaseNode
 					String index = destinfo.getName();
 					HashSet ixrm = new HashSet();
 //					ResultSet rs = dmd.getIndexInfo(catalog,info.getUser(),info.getTable(), true, false);
-					ResultSet rs = dmd.getIndexInfo(catalog, dmd.getUserName(),info.getTable(), true, false);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+ResultSet rs;
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getIndexInfo(catalog, null,info.getTable(), true, false);
+else
+	rs = dmd.getIndexInfo(catalog, dmd.getUserName(),info.getTable(), true, false);
+					
 					while (rs.next()) {
 						String ixname = rs.getString("INDEX_NAME");
 						String colname = rs.getString("COLUMN_NAME");
@@ -128,7 +135,13 @@ public class IndexNode extends DatabaseNode
 					icmd.execute();
 					
 //					rs = dmd.getIndexInfo(catalog,destinfo.getUser(),destinfo.getTable(), true, false);
-					rs = dmd.getIndexInfo(catalog, dmd.getUserName(), destinfo.getTable(), true, false);
+
+//je to BARBARSTVI, po beta 6 rozumne prepsat
+if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
+	rs = dmd.getIndexInfo(catalog, null, destinfo.getTable(), true, false);
+else
+	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), destinfo.getTable(), true, false);
+					
 					while (rs.next()) {
 						String ixname = rs.getString("INDEX_NAME");
 						String colname = rs.getString("COLUMN_NAME");
@@ -152,6 +165,7 @@ public class IndexNode extends DatabaseNode
 }
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         11/15/99 Radko Najman    MS ACCESS
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         10/8/99  Radko Najman    getUser() method 
