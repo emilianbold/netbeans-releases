@@ -45,7 +45,8 @@ public class MergeDialogComponent extends TopComponent {
     /** Creates new form MergeDialogComponent */
     public MergeDialogComponent() {
         initComponents();
-        getRootPane().setDefaultButton(okButton);
+        javax.swing.JRootPane root = getRootPane();
+        if (root != null) root.setDefaultButton(okButton);
         //mergePanels = new ArrayList();
         //chSupport = new VetoableChangeSupport(this);
     }
@@ -67,6 +68,7 @@ public class MergeDialogComponent extends TopComponent {
         setLayout(new java.awt.GridBagLayout());
 
         mergeTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
+        mergeTabbedPane.setPreferredSize(new java.awt.Dimension(600, 600));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -174,6 +176,8 @@ public class MergeDialogComponent extends TopComponent {
     public synchronized void addMergePanel(MergePanel panel, ActionListener actionL) {
         mergeTabbedPane.addTab(panel.getName(), panel);
         actionListenerMap.put(panel, actionL);
+        javax.swing.JRootPane root = getRootPane();
+        if (root != null) root.setDefaultButton(okButton);
     }
     
 }
