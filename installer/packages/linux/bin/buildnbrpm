@@ -7,9 +7,26 @@
 #
 # Helps with building NetBeans RPMs. Customize following variables to your
 # environment.
-# DON'T COMMIT YOUR SETTINGS TO CVS
-#
-# TODO: should be more self-acting
+
+# Enter value that apply to your environment
+
+# netbeans binary distribution archive
+#NB_BIN_ZIP=/usr/share/java/0_netbeans-latest/netbeans-4_1-daily-bin-latest.zip
+# mobility cluster archive
+#MOBILITY_ZIP=/usr/share/java/0_netbeans-latest/mobility-latest.zip
+# wtk emulator archive
+#WTK_LIN_ZIP=/usr/share/java/0_netbeans-latest/wtk_lin-latest.zip
+
+# where to store final RPMs
+TARGET_DIR="$PWD/nbrpm"
+
+# storage used for unzipped distribution(s)
+NB_BLD_TMP=/tmp/netbeans-rpms/netbeans-building
+
+# debuggin options
+# (un)comment to (don't) use the option
+#NOBUILD="-nobuild"
+#NOCLEAN="-noclean"
 
 # What to do
 CREATE_PLATFORM5=true
@@ -19,51 +36,45 @@ CREATE_ENTERPRISE1=true
 CREATE_IDE=true
 CREATE_MOBILITY=true
 
-# Enter value that apply to your environment
-
-# netbeans binary distribution archive
-NB_BIN_ZIP=/usr/share/java/0_netbeans-latest/netbeans-4_1-daily-bin-latest.zip
-# mobility cluster archive
-MOBILITY_ZIP=/usr/share/java/0_netbeans-latest/mobility-latest.zip
-# wtk emulator archive
-WTK_LIN_ZIP=/usr/share/java/0_netbeans-latest/wtk_lin-latest.zip
-
-# where to store final RPMs
-TARGET_DIR=~/tmp/nbrpm
-
-# storage used for unzipped distribution(s)
-NB_BLD_TMP=~/tmp/netbeans-building
-
-# debuggin options
-# (un)comment to (don't) use the option
-#NOBUILD="-nobuild"
-#NOCLEAN="-noclean"
-
-# compute other variables ==================================================== #
-
-SPEC_DIR=../spec
-
 # functions ================================================================== #
 
-function pinfo {
+function usage()
+{
+  echo "Usage: `basename $0` [-h|--help] [-n nb_distibution|--nbdist nb_distibution] [-m|--mobility mobility_pack] [-t|--wtk wtk_archive_zip] [-w|--work work_dir]"
+  echo ""
+  echo "Builds RMP packages"
+  echo "  --help     |-h                  display this help"
+  echo "  --nbdist   |-n nb_distibution   ZIP file containing NetBeans distribution"
+  echo "                                  (e.g. latest daily build)"
+  echo "  --mobility |-m mobility_pack    ZIP file containing mobility pack"
+  echo "                                  (something like mobility-latest.zip)"
+  echo "  --wtk      |-w wtk_archive_zip  ZIP file containing wtk emulator archive"
+  echo "                                  (something like wtk_lin-latest.zip)"
+  echo "  --target   |-t work_dir         the target directory where the packages will be placed. Default is the current directory."
+  exit 1
+}
+
+function pinfo()
+{
   echo "INFORMATION: $1"
 }
 
-function exitIfNotDir {
-  if [ -z "$1" ]; then
-    pinfo "Usage: checkDirExistence dir"
-    exit 1
-  fi
+function perror()
+{
+  echo -e "\nERROR: $1"
+}
+
+function exitIfNotDir()
+{
   if [ ! -d "$1" ]; then
     pinfo "Directory \"$1\" doesn't exist!";
     exit 1
-  else
-    return 0
   fi
 }
 
 unzipped=0
-function unzipNB {
+function unzipNB()
+{
   if [ $unzipped -ne 1 ]; then
     mkdir -p $NB_BLD_TMP
     pinfo "Unzipping $NB_BIN_ZIP..."
@@ -74,29 +85,101 @@ function unzipNB {
   fi
 }
 
+# pass argument_name and its value
+function checkArgument()
+{
+  if [ -z "$1" ]; then
+    perror "Option \"$2\" requires an argument"
+    usage
+  fi
+}
+
+function processParams()
+{
+  while [ $# != 0 ]; do
+    #pinfo "processing param: $1"
+    case "$1" in
+      --help|-h)
+          usage
+          ;;
+      --nbdist|-n)
+        checkArgument "$2" "$1"
+        NB_BIN_ZIP=$2
+        shift
+        ;;
+      --mobility|-m)
+        checkArgument "$2" "$1"
+        MOBILITY_ZIP=$2
+        shift
+        ;;
+      --wtk|-w)
+        checkArgument "$2" "$1"
+        WTK_LIN_ZIP=$2
+        shift
+        ;;
+      --target|-t)
+        checkArgument "$2" "$1"
+        TARGET_DIR=$2/nbrpm
+        shift
+        ;;
+      --) break ;;
+      *)
+        perror "\"$1\": invalid argument"
+        usage
+        ;;
+    esac
+    shift
+  done
+}
+
+function checkFile()
+{
+  if [ ! -f "$1" ]; then
+    perror "\"$1\" doesn't exist or is not a regular file.\n"
+    exit 1
+  fi
+}
+
+function checkParams()
+{
+  if [ -z "$NB_BIN_ZIP" -o -z "$MOBILITY_ZIP" -o -z "$WTK_LIN_ZIP" ]; then
+    usage
+  fi
+  checkFile "$NB_BIN_ZIP"
+  checkFile "$MOBILITY_ZIP"
+  checkFile "$WTK_LIN_ZIP"
+  if [ -d "$TARGET_DIR" ]; then
+    perror "Directory \"$TARGET_DIR\" must not exist."
+    exit 1
+  fi
+}
+
 # script phase =============================================================== #
+
+SPEC_DIR="../spec"
+
+processParams $@
+checkParams $@
 
 EOPTIONS="$NOCLEAN $NOBUILD"
 
 # Backup previous build
-if [ -d $NB_BLD_TMP ]; then
-  pinfo "Backuping old build to $NB_BLD_TMP.bck"
-  [ -d $NB_BLD_TMP.bck ] && rm -r $NB_BLD_TMP.bck
-  mv $NB_BLD_TMP $NB_BLD_TMP.bck
-fi
+#if [ -d $NB_BLD_TMP ]; then
+  #pinfo "Backuping old build to $NB_BLD_TMP.bck"
+  #[ -d $NB_BLD_TMP.bck ] && rm -r $NB_BLD_TMP.bck
+  #mv $NB_BLD_TMP $NB_BLD_TMP.bck
+#fi
 
 if [ ! -d $SPEC_DIR ]; then
-  pinfo "ERROR: The installer module is probably missing.";
+  perror "The \"$SPEC_DIR\" directory doesn't exist. Be sure you are running the script directly from it's directory.";
   exit 1
 fi
 
 # perl script must be run from the 'spec' dir - because of 'erpm_common.spec' file
 cd $SPEC_DIR
-[ -d $TARGET_DIR ] && rm -r $TARGET_DIR
 mkdir -p $TARGET_DIR
 exitIfNotDir $TARGET_DIR
-pinfo "Producing RPMs into $TARGET_DIR..."
-
+pinfo "Producing RPMs into \"$PWD/`basename $TARGET_DIR`\"..."
 
 # PLATFORM5 cluster RPM
 if [ "$CREATE_PLATFORM5" = "true" ]; then
@@ -108,7 +191,6 @@ if [ "$CREATE_PLATFORM5" = "true" ]; then
 else
   pinfo "Skipping RPM creation for platform5 cluster"
 fi
-
 
 # IDE5 cluster RPM
 if [ "$CREATE_IDE5_MODULES" = "true" ]; then
@@ -191,6 +273,10 @@ fi
 
 # clean up
 
-pinfo "INFO: Produced RPMs are stored in $TARGET_DIR. Listing follows..."
-ls -l1 $TARGET_DIR
+pinfo "Deleting tmp directory \"$NB_BLD_TMP\"...."
+rm -r "$NB_BLD_TMP"
+
+echo
+pinfo "Produced RPMs are stored in \"$TARGET_DIR\". Listing follows..."
+ls -l $TARGET_DIR
 
