@@ -835,7 +835,9 @@
 <mapID target="debug.add.breakpoint.java.exception" url="debug/breakpoint/breakpoint_exception.html" />
 <mapID target="debug.add.breakpoint.java.thread" url="debug/breakpoint/breakpoint_thread.html" />
 
-<mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver_expert.html" />
+<mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver_properties.html" />
+
+<!--most likely obsolete - since there is no expert tab anymore-->
 <mapID target="org.netbeans.modules.httpserver.HttpServerNode_expert" url="webbrowser/httpserver_expert.html" />
 
 
