@@ -1443,7 +1443,7 @@ public class Evaluator implements JavaParserVisitor {
         return value;
     }
 
-    static int INVOKE_TIMEOUT_MILLIS = 5000;
+    static int INVOKE_TIMEOUT_MILLIS = 700;
 
     public static Value invokeVirtual (
         ObjectReference objectReference, 
@@ -1466,10 +1466,10 @@ public class Evaluator implements JavaParserVisitor {
             } catch (InterruptedException e) {
             }
             if (!evalThread.isFinished ()) {
-              evalThread.interrupt ();
-              throw new TimeoutException ();
+                evalThread.stop();  // we cannot gracefully finish the thread, it's stuck in JDI
+                throw new TimeoutException ();
             }
-            if (evalThread.getException () != null) 
+            if (evalThread.getException () != null)
                 throw new InvalidExpressionException (evalThread.getException ());
             return evalThread.getValue ();
         }
@@ -1500,12 +1500,14 @@ public class Evaluator implements JavaParserVisitor {
         }
 
         public void run() {
+            try {
+                value = obj.invokeMethod(evaluationThread, method, args, options);
+            } catch (ThreadDeath e) {
+                return; // killed by the caller, no need to notify
+            } catch (Throwable e) {
+                exception = e;
+            }
             synchronized (this) {
-                try {
-                    value = obj.invokeMethod(evaluationThread, method, args, options);
-                } catch (Throwable e) {
-                    exception = e;
-                }
                 finished = true;
                 notify();
             }
