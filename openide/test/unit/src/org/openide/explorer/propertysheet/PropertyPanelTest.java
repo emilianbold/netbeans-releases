@@ -213,7 +213,6 @@ public final class PropertyPanelTest extends NbTestCase {
         PropertyPanel pp = new PropertyPanel (model, PropertyPanel.PREF_CUSTOM_EDITOR);
         addToPanel(pp);
         
-        
         assertTrue ("Ed editor created", pp.getPropertyEditor() instanceof Ed);
         
         Ed ed = (Ed)pp.getPropertyEditor ();
@@ -229,6 +228,7 @@ public final class PropertyPanelTest extends NbTestCase {
         panelListener.assertChanges ("Change notified in panel", 1, 0);
         
         removeFromPanel(pp);
+        pp.removePropertyChangeListener(panelListener);
         
         WeakReference weak = new WeakReference (pp);
         pp = null;
@@ -350,9 +350,91 @@ public final class PropertyPanelTest extends NbTestCase {
         
         model.setValue (model);
         assertEquals("Value change propagated into prop", model, panel.getProperty().getValue());
+    }
+    
+    public void testPropertyPanelPropagatesChangesEvenWhenItDoesntExist() throws Exception {
+        class PM implements PropertyModel {
+            private Object value;
+            private PropertyChangeListener listener=null;
+            private PropertyChangeListener listener2=null;
+            
+            public PM() {
+            }
+            
+            public void addPropertyChangeListener(PropertyChangeListener l) {
+                if (listener != null) {
+                    listener2 = l;
+                } else {
+                    listener = l;
+                }
+            }
+            
+            public void removePropertyChangeListener(PropertyChangeListener l) {
+                if (l == listener) {
+                    listener = null;
+                    return;
+                }
+                if (l == listener2) {
+                    listener2 = null;
+                    return;
+                }
+                fail("Tried to remove a listener that was never attached: " + l);
+            }
+            
+            public Class getPropertyType() {
+                return Runnable.class;
+            }
+            
+            public Object getValue() {
+                return value;
+            }
+            
+            public void setValue(Object o) {
+                Object old = value;
+                this.value = o;
+                if (listener != null) {
+                    listener.propertyChange(new PropertyChangeEvent(this, "value", old, o));
+                }
+                if (listener2 != null) {
+                    listener2.propertyChange(new PropertyChangeEvent(this, "value", old, o));
+                }
+                assertTrue ("Some listener should still be listenening", listener != null || listener2 != null);
+            }
+            
+            public void assertValueChangedTo(Object o) throws Exception {
+                assertSame("Value should have been updated even though property panel doesn't exist", value, o);
+            }
+            
+            public Class getPropertyEditorClass() {
+                return Ed.class;
+            }
+        }
         
+        PM model = new PM();
+        PropertyPanel pp = new PropertyPanel(model, PropertyPanel.PREF_CUSTOM_EDITOR);
+        
+        addToPanel(pp);
+        
+        assertTrue("Ed editor created", pp.getPropertyEditor() instanceof Ed);
+        
+        Ed ed = (Ed)pp.getPropertyEditor();
+        
+        removeFromPanel(pp);
+        
+        WeakReference weak = new WeakReference(pp);
+        pp = null;
+        
+        Runnable toTest = new Runnable() {
+            public void run() {
+            }
+        };
+        
+        ed.setValue(toTest);
+        
+        model.assertValueChangedTo(toTest);
         
     }
+    
     
     /** Listener that counts changes.
      */
@@ -402,6 +484,10 @@ public final class PropertyPanelTest extends NbTestCase {
         public PropertyEnv env;
         
         public Ed () {
+        }
+        
+        public void addPropertyChangeListener (PropertyChangeListener pcl) {
+            super.addPropertyChangeListener(pcl);
         }
         
         public void attachEnv(PropertyEnv env) {
