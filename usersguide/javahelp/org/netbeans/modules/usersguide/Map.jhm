@@ -348,7 +348,7 @@
 <mapID target="editing.indentation" url="editing/configuring/indentation.html" />
 <mapID target="editing_error-marks" url="editing/editing_error-marks.html" />
 <mapID target="editing.tasks" url="editing/tasks_viewing.html" />
-
+<mapID target="editor.hiding" url="editing/editor_hiding.html" />
 
 <mapID target="editing.configuring.annotations" url="editing/configuring/annotations.html" />
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
