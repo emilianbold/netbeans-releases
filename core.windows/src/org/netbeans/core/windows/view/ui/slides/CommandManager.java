@@ -23,6 +23,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Map;
 import javax.swing.*;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.swing.tabcontrol.*;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
@@ -241,6 +243,11 @@ final class CommandManager implements ActionListener {
             TabDataModel slidedCompModel = new DefaultTabDataModel();
             slidedTabContainer = new TabbedContainer(slidedCompModel, TabbedContainer.TYPE_VIEW, slideBar);
             slidedTabContainer.addActionListener(this);
+            Border b = (Border) UIManager.get ("floatingBorder"); //NOI18N
+            if (b != null) {
+                slidedTabContainer.setBorder (b);
+            }
+            
             registerEscHandler(slidedTabContainer);
         }
         return slidedTabContainer;
