@@ -127,6 +127,10 @@ public class MergePanel extends javax.swing.JPanel {
         diffSplitPane.setResizeWeight(0.5);
         mergeSplitPane.setResizeWeight(0.5);
         putClientProperty("PersistenceType", "Never");
+        acceptLeftButton.setMnemonic(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptLeftButton.text_Mnemonic").charAt(0));  // NOI18N
+        acceptAndNextLeftButton.setMnemonic(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptAndNextLeftButton_Mnemonic").charAt(0));  // NOI18N
+        acceptRightButton.setMnemonic(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptRightButton.text_Mnemonic").charAt(0));  // NOI18N
+        acceptAndNextRightButton.setMnemonic(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptAndNextRightButton_Mnemonic").charAt(0));  // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -247,6 +251,7 @@ public class MergePanel extends javax.swing.JPanel {
 
         leftCommandPanel.setLayout(new java.awt.GridBagLayout());
 
+        acceptLeftButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptLeftButton.textA11yDesc"));
         acceptLeftButton.setText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptLeftButton.text"));
         acceptLeftButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -260,6 +265,7 @@ public class MergePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 1);
         leftCommandPanel.add(acceptLeftButton, gridBagConstraints);
 
+        acceptAndNextLeftButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptAndNextLeftButtonA11yDesc"));
         acceptAndNextLeftButton.setText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptAndNextLeftButton"));
         acceptAndNextLeftButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -308,6 +314,7 @@ public class MergePanel extends javax.swing.JPanel {
 
         rightCommandPanel.setLayout(new java.awt.GridBagLayout());
 
+        acceptRightButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptRightButton.textA11yDesc"));
         acceptRightButton.setText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptRightButton.text"));
         acceptRightButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -320,6 +327,7 @@ public class MergePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 1);
         rightCommandPanel.add(acceptRightButton, gridBagConstraints);
 
+        acceptAndNextRightButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptAndNextRightButtonA11yDesc"));
         acceptAndNextRightButton.setText(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptAndNextRightButton"));
         acceptAndNextRightButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
