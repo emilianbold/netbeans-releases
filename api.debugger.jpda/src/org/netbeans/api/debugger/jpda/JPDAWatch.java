@@ -21,7 +21,7 @@ package org.netbeans.api.debugger.jpda;
  * @author   Jan Jancura
  */
 
-public interface JPDAWatch {
+public interface JPDAWatch extends Variable {
 
     /**
      * Watched expression.

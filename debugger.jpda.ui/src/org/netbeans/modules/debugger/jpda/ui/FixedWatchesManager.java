@@ -113,7 +113,7 @@ NodeActionsProvider, NodeActionsProviderFilter {
     private void createFixedWatch (Object node) {
         if (node instanceof JPDAWatch) {
             JPDAWatch jw = (JPDAWatch) node;
-            createFixedWatch (jw.getExpression (), jw.getType (), jw.getValue ());
+            createFixedWatch (jw.getExpression (), jw);
         } else {
             Variable variable = (Variable) node;
             String name = null;
