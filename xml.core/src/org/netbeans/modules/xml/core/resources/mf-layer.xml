@@ -24,14 +24,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- register templates -->  
     <folder name="Templates">
-        <!-- !?! order ?!? -->
-        <attr name="Other/XML" boolvalue="true"/>
-        <attr name="RMI/XML" boolvalue="true"/>
-        <attr name="Scripting/XML" boolvalue="true"/>
 
         <folder name="XML">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/XML.html" />
 
             <file name="XMLWizard.xml">
                 <![CDATA[<empty/>]]>
@@ -121,9 +115,6 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="MIMEResolver">
             &schema-resolvers;
-            <file name="xslt-mime-resolver.xml" url="xslt-mime-resolver.xml">
-                &localize-it;
-            </file>
         </folder>
         
 

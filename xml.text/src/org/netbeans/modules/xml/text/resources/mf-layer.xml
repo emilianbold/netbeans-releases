@@ -26,4 +26,108 @@ Microsystems, Inc. All Rights Reserved.
 
     </folder> <!-- Services -->
 
+
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="xml">
+            
+<!--                <folder name="Popup">
+                    <file name="goto-help"/>
+                    <attr name="goto-help/Separator3.instance" boolvalue="true"/>
+
+                    <file name="Separator3.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="Separator3.instance/goto-source" boolvalue="true"/>
+
+                    <file name="goto-source"/>
+                    <attr name="goto-source/goto-declaration" boolvalue="true"/>
+
+                    <file name="goto-declaration"/>
+                    <attr name="goto-declaration/Separator4.instance" boolvalue="true"/>
+
+                    <file name="Separator4.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="Separator4.instance/format" boolvalue="true"/>
+
+                    <file name="format"/>
+                    <attr name="format/Separator5.instance" boolvalue="true"/>
+
+                    <file name="Separator5.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="Separator5.instance/org-openide-windows-TopComponent" boolvalue="true"/>
+
+                    <attr name="Separator1.instance/org-openide-actions-CompileAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CompileAction.instance"/>
+                    <attr name="org-openide-actions-CompileAction.instance/Separator6.instance" boolvalue="true"/>
+
+                    <file name="Separator6.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="Separator6.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true"/>
+
+                    <file name="org-openide-actions-ExecuteAction.instance"/>
+                    <attr name="org-openide-actions-ExecuteAction.instance/Separator7.instance" boolvalue="true"/>
+
+                    <file name="Separator7.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="Separator7.instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true"/>
+
+                    <file name="org-openide-actions-ToggleBreakpointAction.instance"/>
+                    <attr name="org-openide-actions-ToggleBreakpointAction.instance/add-watch" boolvalue="true"/>
+
+                    <file name="add-watch"/>
+                    <attr name="add-watch/Separator8.instance" boolvalue="true"/>
+
+                    <file name="Separator8.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="Separator8.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+
+                    <attr name="org-openide-actions-DeleteAction.instance/Separator9.instance" boolvalue="true"/>
+
+                    <file name="Separator9.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="Separator9.instance/org-openide-actions-NewAction.instance" boolvalue="true"/>
+
+                    <file name="org-openide-actions-NewAction.instance"/>
+                    <attr name="org-openide-actions-NewAction.instance/Separator10.instance" boolvalue="true"/>
+
+                    <file name="Separator10.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="Separator10.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/generate-gutter-popup" boolvalue="true"/>
+
+                    <file name="generate-gutter-popup"/>
+                    <attr name="generate-gutter-popup/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                </folder> <!__ Popup -->
+                
+<!--                <folder name="Toolbars">
+                    <folder name="Default">
+                        <attr name="stop-macro-recording/XMLSeparator1.instance" boolvalue="true"/>
+                        <file name="XMLSeparator1.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        </file>
+                        
+                        <attr name="XMLSeparator1.instance/xml-comment" boolvalue="true"/>
+                        <file name="xml-comment"/>
+                        <attr name="xml-comment/xml-uncomment" boolvalue="true"/>
+                        <file name="xml-uncomment"/>
+                    </folder> <!__ Default __>
+
+                </folder> <!__ Toolbars -->
+
+            </folder> <!-- xml -->
+        </folder> <!-- text -->
+    </folder> <!-- Editors -->
+
 </filesystem>
