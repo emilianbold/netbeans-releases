@@ -170,7 +170,7 @@ final class ShortcutsFolder extends FolderInstance {
      */
     static String getActionName (Action action) {
         String name = getActionBasicName(action);
-
+        
         Keymap map = (Keymap)Lookup.getDefault().lookup(Keymap.class);
         KeyStroke[] strokes = map.getKeyStrokesForAction(action);
 
@@ -307,7 +307,7 @@ final class ShortcutsFolder extends FolderInstance {
      * Now it goes through the HashMap and saves the bindings into
      * the shortcuts folder.
      */
-    public static void installBindings (HashMap strokesMap) throws IOException { 
+    public static void installBindings (HashMap strokesMap) throws IOException {
         FileObject fo = Repository.getDefault().getDefaultFileSystem()
                 .getRoot().getFileObject(SHORTCUTS_FOLDER);
         DataFolder f = DataFolder.findFolder(fo);
@@ -420,7 +420,17 @@ final class ShortcutsFolder extends FolderInstance {
                     if (r.add) {
                         if (InstanceDataObject.find (f, r.instanceName (), r.instanceClass ()) == null) {
                             // bugfix #37064, bind the actual object instead of a default instance
-                            InstanceDataObject.create(f, r.instanceName(), r.instanceCreate (), null);
+                            //Bugfix #37637 Create data shadow instead of IDO .settings file
+                            DataObject actionDO = findForAction(null, action);
+                            if (actionDO != null) {
+                                //DO for action found create DataShadow
+                                DataObject shadow = actionDO.createShadow(f);
+                                //Rename to shortcut code
+                                shadow.rename(r.instanceName());
+                            } else {
+                                //create .instance file
+                                InstanceDataObject.create(f, r.instanceName(), r.instanceCreate().getClass().getName());
+                            }
                         }
                     } else {
                         InstanceDataObject.remove(f, r.instanceName(), r.instanceClass());
@@ -447,7 +457,36 @@ final class ShortcutsFolder extends FolderInstance {
             }
         }
     }
-    
+
+    private static DataObject findForAction (DataFolder actionsFolder, Action a) {
+        if (actionsFolder == null) {
+            actionsFolder = NbPlaces.getDefault().actions ();
+        }
+        DataObject[] actionsChildren = actionsFolder.getChildren ();
+        for (int i = 0; i < actionsChildren.length; i++) {
+            if (actionsChildren[i] instanceof DataFolder) {
+                DataObject obj = findForAction ((DataFolder)actionsChildren[i], a);
+                if (obj != null) {
+                    return obj;
+                }
+            } else {
+                InstanceCookie ic = (InstanceCookie)actionsChildren[i].getCookie(InstanceCookie.class);
+                if (ic != null) {
+                    Object obj = null;
+                    try {
+                        obj = ic.instanceCreate();
+                    } catch (java.io.IOException exc) {
+                    } catch (ClassNotFoundException exc) {
+                    }
+                    if ((obj != null) && a.equals(obj)) {
+                        return actionsChildren[i];
+                    }
+                }
+            }
+        }
+        return null;
+    }
+        
     /** A holder for Name of the key and corresponding action.*/
     private static class KeyActionPair implements InstanceCookie {
         private String name;
