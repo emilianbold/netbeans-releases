@@ -64,7 +64,7 @@ public class ImageViewer extends CloneableTopComponent {
     private JPanel panel;
     
     /** Height to width image factor. */
-    private float factor;
+    private double factor;
     
     /** Numerator for scale. */
     private int scale_x = 1;
@@ -82,8 +82,6 @@ public class ImageViewer extends CloneableTopComponent {
     private boolean grid = false;
     
     /** Distance between two lines in grid.*/
-    private int grid_dis = 1;
-
     /** Grid color. */
     private Color grid_color = Color.black;
     
@@ -109,7 +107,7 @@ public class ImageViewer extends CloneableTopComponent {
         // Reset values.
         storedImage = icon;
         
-        factor = (float)storedImage.getIconHeight() / storedImage.getIconWidth(); // y/x
+        factor = ((double)storedImage.getIconHeight()) / storedImage.getIconWidth(); // y/x
         
         resizePanel();
         panel.repaint();
@@ -120,7 +118,7 @@ public class ImageViewer extends CloneableTopComponent {
         storedObject = obj;
         storedImage = new NBImageIcon(storedObject);
         
-        factor = (float)storedImage.getIconHeight() / storedImage.getIconWidth(); // y/x
+        factor = ((double)storedImage.getIconHeight()) / storedImage.getIconWidth(); // y/x
         
         panel = new JPanel() {
             protected void paintComponent(Graphics g) {
@@ -142,17 +140,24 @@ public class ImageViewer extends CloneableTopComponent {
                 if (grid) {
                     int x = (int)(storedImage.getIconWidth() * getScale());
                     int y = (int)((storedImage.getIconWidth() * getScale()) * factor);
-                    int true_grid_dis = (int)(grid_dis * getScale());
                     
-                    if(true_grid_dis < 2) 
+                    double gridDistance = getScale();
+                    
+                    if(gridDistance < 2) 
                         // Disable painting of grid if no image pixels would be visible.
                         return;
                     
                     g.setColor(grid_color);
-                    for(int i = true_grid_dis; i < x ;i += true_grid_dis)
+                    
+                    double actualDistance = gridDistance;
+                    for(int i = (int)actualDistance; i < x ;actualDistance += gridDistance, i = (int)actualDistance) {
                         g.drawLine(i,0,i,y);
-                    for(int j = true_grid_dis; j < y; j += true_grid_dis)
+                    }
+
+                    actualDistance = gridDistance;
+                    for(int j = (int)actualDistance; j < y; actualDistance += gridDistance, j = (int)actualDistance) {
                         g.drawLine(0,j,x,j);
+                    }
                 }
                 
             }
@@ -160,7 +165,7 @@ public class ImageViewer extends CloneableTopComponent {
             /** Calculates factor of image when fully loaded. Overrides superclass method. */
             public boolean imageUpdate(Image img, int infoflags, int x, int y, int w, int h) {
                 if ((infoflags & (FRAMEBITS|ALLBITS)) != 0) {
-                    factor = (float)h/w;
+                    factor = ((double)h)/w;
                 }
                 return (infoflags & (ALLBITS|ABORT)) == 0;
             }
@@ -314,11 +319,21 @@ public class ImageViewer extends CloneableTopComponent {
     
     /** Draws zoom out scaled image. */
     public void zoomOut() {
-        if (isNewSizeOK()) { // You can't still make picture smaller, but bigger why not?
-            scaleOut();
-            resizePanel();
-            panel.repaint(0, 0, panel.getWidth(), panel.getHeight());
-        } // Show dialog ? I thing no.
+        int oldScaleX = scale_x;
+        int oldScaleY = scale_y;
+        
+        scaleOut();
+        
+         // You can't still make picture smaller, but bigger why not?
+        if(!isNewSizeOK()) {
+            scale_x = oldScaleX;
+            scale_y = oldScaleY;
+            
+            return;
+        }
+        
+        resizePanel();
+        panel.repaint(0, 0, panel.getWidth(), panel.getHeight());
     }
     
     /** Resizes panel. */
@@ -334,13 +349,11 @@ public class ImageViewer extends CloneableTopComponent {
      *  size(1x1) zooming will be not performed.
      */
     private boolean isNewSizeOK() {
-        scaleOut();
         if ((storedImage.getIconWidth() * getScale()) > 1
         && ((storedImage.getIconWidth() * getScale()) * factor) > 1) {
-            scaleIn();
             return true;
         }
-        scaleIn();
+        
         return false;
     }
     
@@ -349,32 +362,41 @@ public class ImageViewer extends CloneableTopComponent {
      * @param fy denominator for scaled
      */
     public void customZoom(int fx, int fy) {
+        int oldScaleX = scale_x;
+        int oldScaleY = scale_y;
+
         scale_x = fx;
         scale_y = fy;
+        
+        if(!isNewSizeOK()) {
+            scale_x = oldScaleX;
+            scale_y = oldScaleY;
+            
+            return;
+        }
+        
         resizePanel();
         panel.repaint(0, 0, panel.getWidth(), panel.getHeight());
     }
     
     /** Return zooming factor.*/
-    private float getScale() {
-        return scale_x/(float)scale_y;
+    private double getScale() {
+        return scale_x/(double)scale_y;
     }
     
     /** Change proportion "out"*/
     private void scaleOut() {
-        if (scale_x > 1) {
+        if(scale_x > 1)
             scale_x--;
-            return;
-        }
+        
         scale_y++;
     }
     
     /** Change proportion "in"*/
     private void scaleIn() {
-        if (scale_y > 1) {
+        if(scale_y > 1)
             scale_y--;
-            return;
-        }
+        
         scale_x++;
     }
     
