@@ -59,10 +59,8 @@ class EjbJarActionProvider implements ActionProvider {
         COMMAND_REBUILD, 
         COMMAND_COMPILE_SINGLE, 
         COMMAND_RUN, 
-        COMMAND_RUN_SINGLE, 
         COMMAND_DEBUG, 
         J2eeProjectConstants.COMMAND_REDEPLOY,
-        COMMAND_DEBUG_SINGLE, 
         JavaProjectConstants.COMMAND_JAVADOC, 
         COMMAND_TEST, 
         COMMAND_TEST_SINGLE, 
@@ -89,10 +87,8 @@ class EjbJarActionProvider implements ActionProvider {
         commands.put(COMMAND_REBUILD, new String[] {"clean", "dist"}); // NOI18N
         commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
         commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
-        commands.put(COMMAND_RUN_SINGLE, new String[] {"run"}); // NOI18N
         commands.put(J2eeProjectConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
         commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-        commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
         commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
         commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
