@@ -62,9 +62,6 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     
     // static .....................................................................................
     
-    /** Color chooser instance. */
-    private static JColorChooser staticChooser;
-
     /** AWT Palette mode. */
     public static final int AWT_PALETTE = 1;
     /** System Palette mode. */
@@ -145,8 +142,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
 
     /** Gets <code>staticChooser</code> instance. */
     public static JColorChooser getStaticChooser(ColorEditor ce) {
-        if (staticChooser == null) {
-            staticChooser = new JColorChooser (new DefaultColorSelectionModel(Color.white)
+        JColorChooser staticChooser = new JColorChooser (new DefaultColorSelectionModel(Color.white)
                                                 {
                                                     public void setSelectedColor(Color color) {
                                                         if (color instanceof SuperColor) {
@@ -176,7 +172,6 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                 new NbColorChooserPanel (SYSTEM_PALETTE, getSystemColorNames(), systemColors,
                                          getString ("CTL_SystemPalette"), ce)
             );
-        }
         return staticChooser;
     }
 
