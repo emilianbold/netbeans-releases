@@ -352,7 +352,7 @@
       <tocitem text="Reordering Components Within a Container" target="gui.components.reordering" />
       <tocitem text="Editing Component Labels" target="gui.components.inplace-editing" />
       <tocitem text="Editing Component Properties" target="gui.components.editing" />
-      <tocitem text="Customizing the Component Palette"> 
+      <tocitem text="Customizing the Palette Window"> 
         <tocitem text="Adding a Bean to the Palette Window" target="beans.adding" />
         <tocitem text="Creating a Palette Window Category" target="gui.custompalette.creating" />
         <tocitem text="Removing Items From the Palette Window" target="gui.custompalette.removing" />
