@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.loaders.form;
 import java.io.*;
 
 import com.netbeans.ide.TopManager;
+import com.netbeans.ide.NotifyDescriptor;
 import com.netbeans.ide.loaders.MultiDataObject;
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
 import com.netbeans.developer.modules.loaders.form.formeditor.*;
@@ -47,7 +48,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   * @see OpenCookie#open
   */
   public void open () {
-    System.out.println("Form: opening: "+formObject.getName ());
     TopManager.getDefault ().setStatusText (
       java.text.MessageFormat.format (
         com.netbeans.ide.util.NbBundle.getBundle (FormEditorSupport.class).getString ("FMT_OpeningForm"),
@@ -57,11 +57,14 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
     synchronized (OPEN_FORM_LOCK) {
       if (!formLoaded)
-        if (!loadForm ()) return;
+        if (!loadForm ()) {
+          TopManager.getDefault ().setStatusText ("");
+          return;
+        }
     }
 
     // show the ComponentInspector
-    FormEditor.getComponentInspector().setVisible(true);
+    FormEditor.getComponentInspector().open ();
 
 /*    designForm.getRADWindow().show(); */
     super.open();
@@ -89,7 +92,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   /** Method from FormCookie */
   public void gotoInspector() {
     // show the ComponentInspector
-//    FormEditor.getComponentInspector().setVisible(true);
+    FormEditor.getComponentInspector().open ();
   }
 
   /** @returns the DesignForm of this Form */
@@ -119,7 +122,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
   /** Loads the DesignForm from the .form file */
   protected boolean loadForm () {
-    System.out.println("FormDataObject.java:74:loadForm");
     InputStream is = null;
     try {
       is = formObject.getFormEntry ().getFile().getInputStream();
@@ -135,50 +137,21 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     try {
       ois = new FormBCObjectInputStream(is); 
       Object deserializedForm = ois.readObject ();
-      if (deserializedForm instanceof DesignForm) {
-        DesignForm designForm = (DesignForm) deserializedForm;
-        System.out.println("Hele, Design Form... !!!: " + designForm);
-//      FormEditor.displayErrorLog ();
-      }
-      formLoaded = true;
-//      designForm.initialize (this);
-//      if (!modifiedInit) {
-//        setModified (false);
-/*        if (editorLock != null) {
-          editorLock.releaseLock();
-          editorLock = null;
-        } */
-        // though we regenerated, it should
-        // not be different (AKA modified)
-//      }
-    } catch (Throwable e) {
-/*      if (System.getProperty ("netbeans.full.hack") != null) {
-        e.printStackTrace ();
-        System.out.println ("IOException during opening form: Opening empty form");
-        switch (new FormLoaderSettings ().getEmptyFormType ()) {
-          default:
-          case 0: designForm = new JFrameForm(); break;
-          case 1: designForm = new JDialogForm(); break;
-          case 2: designForm = new JAppletForm(); break;
-          case 3: designForm = new JPanelForm(); break;
-          case 4: designForm = new FrameForm(); break;
-          case 5: designForm = new DialogForm(); break;
-          case 6: designForm = new AppletForm(); break;
-          case 7: designForm = new PanelForm(); break;
-          case 8: designForm = new JInternalFrameForm(); break;
-        }
+      
+      FormEditor.displayErrorLog ();
 
-        formLoaded = true;
-        designForm.initialize (this);
-        if (!modifiedInit)
-          setModified (false); // though we regenerated, it should not be different (AKA modified)
-      } else {
-        Stringring message = MessageFormat.format(formBundle.getString("FMT_ERR_LoadingForm"),
-                                              new Object[] {getName(), e.getClass().getName()});
-        TopManager.getDefault().notify(new NotifyDescriptor.Exception(e, message));
-        return false;
-      } */
-      e.printStackTrace ();
+      TopManager.getDefault ().notify (new NotifyDescriptor.Message (
+            com.netbeans.ide.util.NbBundle.getBundle (FormEditorSupport.class).getString ("MSG_BackwardCompatibility_OK"),
+            NotifyDescriptor.INFORMATION_MESSAGE
+          )
+       );
+      formLoaded = true;
+    } catch (Throwable e) {
+      TopManager.getDefault ().notify (new NotifyDescriptor.Message (
+            com.netbeans.ide.util.NbBundle.getBundle (FormEditorSupport.class).getString ("ERR_BackwardCompatibilityBreach"),
+            NotifyDescriptor.WARNING_MESSAGE
+          )
+       );
       return false;
     }
     finally {
@@ -191,8 +164,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       }
     }
 
-    // enforce recreation of children
-//    ((FormDataNode)nodeDelegate).updateFormNode ();
     return true;
   }
 
@@ -200,6 +171,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  5    Gandalf   1.4         4/7/99   Ian Formanek    Backward-compatible 
+ *       deserialization finalized for Gandalf beta
  *  4    Gandalf   1.3         3/28/99  Ian Formanek    
  *  3    Gandalf   1.2         3/27/99  Ian Formanek    
  *  2    Gandalf   1.1         3/26/99  Ian Formanek    

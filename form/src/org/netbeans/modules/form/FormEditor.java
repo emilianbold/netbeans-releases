@@ -500,11 +500,11 @@ final public class FormEditor extends Object {
     errorLog.removeAllElements ();
   }
 
-  static void fileError (String desc, Throwable t) {
+  public static void fileError (String desc, Throwable t) {
     errorLog.addElement (new ErrorLogItem (desc, t, ErrorLogItem.ERROR));
   }
 
-  static void fileWarning (String desc, Throwable t) {
+  public static void fileWarning (String desc, Throwable t) {
     errorLog.addElement (new ErrorLogItem (desc, t, ErrorLogItem.WARNING));
   }
 
@@ -518,6 +518,8 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  4    Gandalf   1.3         4/7/99   Ian Formanek    Backward-compatible 
+ *       deserialization finalized for Gandalf beta
  *  3    Gandalf   1.2         3/24/99  Ian Formanek    
  *  2    Gandalf   1.1         3/24/99  Ian Formanek    
  *  1    Gandalf   1.0         3/24/99  Ian Formanek    
