@@ -31,15 +31,15 @@ package org.netbeans.api.debugger.jpda;
 public final class LineBreakpoint extends JPDABreakpoint {
 
     /** Property name constant */
-    public static final String          PROP_LINE_NUMBER = "lineNumber"; // NOI18N
+    public static final String          PROP_LINE_NUMBER = new String ("lineNumber"); // NOI18N
     /** Property name constant */
-    public static final String          PROP_URL = "url"; // NOI18N
+    public static final String          PROP_URL = new String ("url"); // NOI18N
     /** Property name constant. */
-    public static final String          PROP_CONDITION = "condition"; // NOI18N
+    public static final String          PROP_CONDITION = new String ("condition"); // NOI18N
     /** Property name constant. */
-    public static final String          PROP_SOURCE_NAME = "sourceName"; // NOI18N
+    public static final String          PROP_SOURCE_NAME = new String ("sourceName"); // NOI18N
     /** Property name constant. */
-    public static final String          PROP_STRATUM = "stratum"; // NOI18N
+    public static final String          PROP_STRATUM = new String ("stratum"); // NOI18N
     
     private String                      url = "";
     private int                         lineNumber;

@@ -24,6 +24,7 @@ import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.Context;
+import org.netbeans.modules.debugger.jpda.ui.breakpoints.BreakpointAnnotationListener;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 
 
@@ -79,16 +80,23 @@ implements PropertyChangeListener {
         if (url == null) return;
         
         // 2) find and remove existing line breakpoint
-        Breakpoint[] bs = d.getBreakpoints ();
-        int i, k = bs.length;
-        for (i = 0; i < k; i++) {
-            if (!(bs [i] instanceof LineBreakpoint)) continue;
-            LineBreakpoint lb = (LineBreakpoint) bs [i];
-            if (ln != lb.getLineNumber ()) continue;
-            if (!url.equals (lb.getURL ())) continue;
+        LineBreakpoint lb = getBreakpointAnnotationListener ().findBreakpoint (
+            url, ln
+        );
+        if (lb != null) {
             d.removeBreakpoint (lb);
             return;
         }
+//        Breakpoint[] bs = d.getBreakpoints ();
+//        int i, k = bs.length;
+//        for (i = 0; i < k; i++) {
+//            if (!(bs [i] instanceof LineBreakpoint)) continue;
+//            LineBreakpoint lb = (LineBreakpoint) bs [i];
+//            if (ln != lb.getLineNumber ()) continue;
+//            if (!url.equals (lb.getURL ())) continue;
+//            d.removeBreakpoint (lb);
+//            return;
+//        }
         
         // 3) create a new line breakpoint
         Breakpoint p = LineBreakpoint.create (
@@ -96,5 +104,14 @@ implements PropertyChangeListener {
             ln
         );
         d.addBreakpoint (p);
+    }
+    
+    private BreakpointAnnotationListener breakpointAnnotationListener;
+    private BreakpointAnnotationListener getBreakpointAnnotationListener () {
+        if (breakpointAnnotationListener == null)
+            breakpointAnnotationListener = (BreakpointAnnotationListener) 
+                DebuggerManager.getDebuggerManager ().lookupFirst 
+                (BreakpointAnnotationListener.class);
+        return breakpointAnnotationListener;
     }
 }

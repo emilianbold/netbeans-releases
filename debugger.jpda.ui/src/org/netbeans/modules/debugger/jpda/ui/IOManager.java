@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda.ui;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -47,6 +48,7 @@ public class IOManager {
     protected InputOutput                   debuggerIO = null;
     private OutputWriter                    debuggerOut;
     private String                          name;
+    private JPDADebugger                    debugger;
     
     /** output writer Thread */
     private Hashtable                       lines = new Hashtable ();
@@ -56,11 +58,13 @@ public class IOManager {
     // init ....................................................................
     
     public IOManager (
-        String title
+        String title,
+        JPDADebugger debugger
     ) {
         debuggerIO = IOProvider.getDefault ().getIO (title, true);
         debuggerIO.setFocusTaken (false);
         debuggerOut = debuggerIO.getOut ();
+        this.debugger = debugger;
     }
     
     
@@ -144,16 +148,17 @@ public class IOManager {
     }
     
     static class Line {
-        String url;
-        int lineNumber;
+        private String url;
+        private int lineNumber;
+        private JPDADebugger debugger;
         
-        Line (String url, int lineNumber) {
+        Line (String url, int lineNumber, JPDADebugger debugger) {
             this.url = url;
             this.lineNumber = lineNumber;
         }
         
         void show () {
-            Context.showSource (url, lineNumber);
+            Context.showSource (url, lineNumber, debugger);
         }
     }
 }

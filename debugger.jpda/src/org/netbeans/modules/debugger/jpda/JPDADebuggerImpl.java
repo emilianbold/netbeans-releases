@@ -20,6 +20,7 @@ import com.sun.jdi.request.EventRequestManager;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -653,7 +654,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
 
     // private helper methods ..................................................
-
+    
     private void setState (int state) {
         if (state == this.state) return;
         int o = this.state;

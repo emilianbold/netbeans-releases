@@ -76,7 +76,7 @@ PropertyChangeListener {
         if (title == null)
             title = NbBundle.getBundle (IOManager.class).getString 
                 ("CTL_DebuggerConsole_Title");
-        ioManager = new IOManager (title);
+        ioManager = new IOManager (title, debugger);
         managers.add (ioManager);
         
         debugger.addPropertyChangeListener (
@@ -218,7 +218,8 @@ PropertyChangeListener {
                 if (lineNumber > 0 && url != null)
                     line = new IOManager.Line (
                         url, 
-                        lineNumber 
+                        lineNumber,
+                        debugger
                     );
 
                 if (lineNumber > 0)
