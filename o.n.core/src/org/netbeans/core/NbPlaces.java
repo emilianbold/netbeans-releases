@@ -21,6 +21,7 @@ import java.util.*;
 import org.openide.*;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.util.NotImplementedException;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
@@ -268,61 +269,3 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
         }
     }
 }
-
-/*
-* Log
-*  35   Jaga      1.33.1.0    3/16/00  Jaroslav Tulach IDE is initialized 
-*       immediatelly when somebody calls TopManager.getDefault.
-*  34   Gandalf   1.33        1/19/00  Jesse Glick     Localized filenames.
-*  33   Gandalf   1.32        1/13/00  Jaroslav Tulach I18N
-*  32   Gandalf   1.31        11/29/99 Jaroslav Tulach new packages 
-*       implementation.
-*  31   Gandalf   1.30        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  30   Gandalf   1.29        9/10/99  Jaroslav Tulach Services API.
-*  29   Gandalf   1.28        8/3/99   Jaroslav Tulach Project settings node.
-*  28   Gandalf   1.27        8/1/99   Jaroslav Tulach MainExplorer now listens 
-*       to changes in root elements.
-*  27   Gandalf   1.26        7/30/99  David Simonek   again serialization of 
-*       nodes repaired
-*  26   Gandalf   1.25        7/30/99  David Simonek   serialization fixes
-*  25   Gandalf   1.24        7/21/99  Ian Formanek    Fixed starup 
-*       NullPointerException
-*  24   Gandalf   1.23        7/11/99  David Simonek   window system change...
-*  23   Gandalf   1.22        7/8/99   Jesse Glick     Context help.
-*  22   Gandalf   1.21        6/28/99  Jaroslav Tulach Debugger types are like 
-*       Executors
-*  21   Gandalf   1.20        6/8/99   Ian Formanek    ---- Package Change To 
-*       org.openide ----
-*  20   Gandalf   1.19        6/8/99   Ian Formanek    Added method actions() to
-*       obtain folder for ActionsPool
-*  19   Gandalf   1.18        5/27/99  Jaroslav Tulach Executors rearanged.
-*  18   Gandalf   1.17        5/7/99   Jan Jancura     Places.Nodes.packages () 
-*       method added
-*  17   Gandalf   1.16        3/29/99  Jaroslav Tulach places ().nodes 
-*       ().session ()
-*  16   Gandalf   1.15        3/25/99  Jaroslav Tulach Faster startup.
-*  15   Gandalf   1.14        3/19/99  Jaroslav Tulach TopManager.getDefault 
-*       ().getRegistry ()
-*  14   Gandalf   1.13        3/13/99  Jaroslav Tulach Places.roots ()
-*  13   Gandalf   1.12        3/11/99  Ian Formanek    
-*  12   Gandalf   1.11        3/11/99  Ian Formanek    Bookmarks & Startup added
-*       to Session Settings
-*  11   Gandalf   1.10        2/26/99  David Simonek   
-*  10   Gandalf   1.9         2/19/99  Jaroslav Tulach added startup directory
-*  9    Gandalf   1.8         2/12/99  Ian Formanek    Reflected renaming 
-*       Desktop -> Workspace
-*  8    Gandalf   1.7         2/11/99  Ian Formanek    Renamed FileSystemPool ->
-*       Repository
-*  7    Gandalf   1.6         2/2/99   Jaroslav Tulach Tries to create non 
-*       existing folders
-*  6    Gandalf   1.5         1/25/99  Jaroslav Tulach Added default project, 
-*       its desktop and changed default explorer in Main.
-*  5    Gandalf   1.4         1/25/99  David Peroutka  support for menus and 
-*       toolbars
-*  4    Gandalf   1.3         1/20/99  Jaroslav Tulach 
-*  3    Gandalf   1.2         1/20/99  David Peroutka  
-*  2    Gandalf   1.1         1/6/99   Jan Jancura     
-*  1    Gandalf   1.0         1/5/99   Ian Formanek    
-* $
-*/
