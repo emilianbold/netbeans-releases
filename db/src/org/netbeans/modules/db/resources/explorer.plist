@@ -135,6 +135,16 @@
 				prefix = "jdbc:firebirdsql:[//<HOST>[:<PORT>]/]<DB>";
 			},
 			{
+				name = "FirstSQL/J Enterprise Server Edition";
+				driver = "COM.FirstSQL.Dbcp.DbcpDriver";
+				prefix = "jdbc:dbcp://<HOST>:<PORT>";
+			},
+			{
+				name = "FirstSQL/J Professional Edition";
+				driver = "COM.FirstSQL.Dbcp.DbcpDriver";
+				prefix = "jdbc:dbcp://local";
+			},
+			{
 				name = "IDS Server";
 				driver = "ids.sql.IDSDriver";
 				prefix = "jdbc:ids://<HOST>:<PORT>/conn?dsn='<ODBC_DSN_NAME>'";
