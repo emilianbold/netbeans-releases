@@ -395,7 +395,7 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
     org.w3c.dom.NamedNodeMap attributes = element.getAttributes ();
     try {
       String info = attributes.getNamedItem (ATTR_INFO).getNodeValue ();
-      BorderInfo bi = (BorderInfo)org.openide.TopManager.getDefault ().systemClassLoader ().loadClass (info).newInstance ();
+      BorderInfo bi = (BorderInfo)org.openide.TopManager.getDefault ().currentClassLoader ().loadClass (info).newInstance ();
       org.w3c.dom.NodeList children = element.getChildNodes ();
       for (int i = 0; i < children.getLength (); i++) {
         if (children.item (i).getNodeType () == org.w3c.dom.Node.ELEMENT_NODE) {
@@ -431,6 +431,8 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
 
 /*
  * Log
+ *  14   Gandalf   1.13        12/3/99  Pavel Buzek     in readFromXML creating 
+ *       instance with currentClassLoader
  *  13   Gandalf   1.12        11/27/99 Patrik Knakal   
  *  12   Gandalf   1.11        11/24/99 Pavel Buzek     added support for saving
  *       in XML format
