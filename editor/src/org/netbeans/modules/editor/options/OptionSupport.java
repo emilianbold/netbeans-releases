@@ -207,7 +207,7 @@ public class OptionSupport extends SystemOption {
      * to these options.
      */
     protected String getSettingsInitializerName() {
-        return getTypeName() + "-options-initalizer";
+        return getTypeName() + "-options-initalizer"; // NOI18N
     }
 
     protected void updateSettingsMap(Class kitClass, Map settingsMap) {

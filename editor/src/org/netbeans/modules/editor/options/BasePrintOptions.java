@@ -88,7 +88,7 @@ public class BasePrintOptions extends OptionSupport {
      * to these options.
      */
     protected String getSettingsInitializerName() {
-        return getTypeName() + "-print-options-initalizer";
+        return getTypeName() + "-print-options-initalizer"; // NOI18N
     }
 
     protected void updateSettingsMap(Class kitClass, Map settingsMap) {
@@ -121,7 +121,7 @@ public class BasePrintOptions extends OptionSupport {
 
             printColoringMapInitializer = SettingsUtil.getColoringMapInitializer(
                 getKitClass(), coloringMap, true,
-                getTypeName() + "-print-coloring-map-initializer"
+                getTypeName() + "-print-coloring-map-initializer" // NOI18N
             );
 
 

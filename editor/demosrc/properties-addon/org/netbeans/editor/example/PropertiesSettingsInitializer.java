@@ -34,7 +34,7 @@ import org.netbeans.modules.properties.syntax.*;
 public class PropertiesSettingsInitializer extends Settings.AbstractInitializer {
 
     /** Name assigned to initializer */
-    public static final String NAME = "properties-settings-initializer";
+    public static final String NAME = "properties-settings-initializer"; // NOI18N
     private Class propertiesClass;
 
     public PropertiesSettingsInitializer( Class propertiesClass ) {

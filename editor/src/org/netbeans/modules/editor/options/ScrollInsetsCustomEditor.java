@@ -86,13 +86,13 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
 
 
     public static String int2percent( int i ) {
-        if( i < 0 ) return( "" + (-i) + "%" );
+        if( i < 0 ) return( "" + (-i) + "%" ); // NOI18N
         else return( "" + i );
     }
 
     private int percent2int( String val ) throws NumberFormatException {
         val = val.trim();
-        if( val.endsWith( "%" ) ) {
+        if( val.endsWith( "%" ) ) { // NOI18N
             return -Math.abs( Integer.parseInt( val.substring( 0, val.length() - 1 ) ) );
         } else {
             return Integer.parseInt( val );

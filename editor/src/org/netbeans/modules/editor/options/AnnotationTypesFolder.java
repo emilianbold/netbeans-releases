@@ -49,7 +49,7 @@ import org.openide.filesystems.Repository;
 public class AnnotationTypesFolder extends FolderInstance{
     
     /** folder for annotation type XML files */
-    private static final String FOLDER = "Editors/AnnotationTypes";
+    private static final String FOLDER = "Editors/AnnotationTypes"; // NOI18N
     
     /** instance of this class */
     private static AnnotationTypesFolder folder;
@@ -143,13 +143,13 @@ public class AnnotationTypesFolder extends FolderInstance{
         if (type.getProp(AnnotationType.PROP_GLYPH_URL) != null)
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_GLYPH, type.getGlyph().toExternalForm());
         if (type.getProp(AnnotationType.PROP_HIGHLIGHT_COLOR) != null && type.isUseHighlightColor())
-            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_HIGHLIGHT, "0x"+Integer.toHexString(type.getHighlight().getRGB() & 0x00FFFFFF));
+            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_HIGHLIGHT, "0x"+Integer.toHexString(type.getHighlight().getRGB() & 0x00FFFFFF)); // NOI18N
 
         if (type.getProp(AnnotationType.PROP_WAVEUNDERLINE_COLOR) != null && type.isUseWaveUnderlineColor())
-            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_WAVEUNDERLINE, "0x"+Integer.toHexString(type.getWaveUnderlineColor().getRGB() & 0x00FFFFFF));
+            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_WAVEUNDERLINE, "0x"+Integer.toHexString(type.getWaveUnderlineColor().getRGB() & 0x00FFFFFF)); // NOI18N
 
         if (type.getProp(AnnotationType.PROP_FOREGROUND_COLOR) != null && !type.isInheritForegroundColor())
-            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_FOREGROUND, "0x"+Integer.toHexString(type.getForegroundColor().getRGB() & 0x00FFFFFF));
+            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_FOREGROUND, "0x"+Integer.toHexString(type.getForegroundColor().getRGB() & 0x00FFFFFF)); // NOI18N
         if (type.getProp(AnnotationType.PROP_ACTIONS_FOLDER) != null)
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_ACTIONS, (String)type.getProp(AnnotationType.PROP_ACTIONS_FOLDER));
         

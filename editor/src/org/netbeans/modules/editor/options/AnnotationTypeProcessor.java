@@ -167,14 +167,14 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
             switch (depth++) {
                 case 0:
                     if (! TAG_TYPE.equals(name)) {
-                        throw new SAXException("malformed AnnotationType xml file");
+                        throw new SAXException("malformed AnnotationType xml file"); // NOI18N
                     }
                     // basic properties
                     at.setName(amap.getValue(ATTR_TYPE_NAME));
                     if (amap.getValue(ATTR_TYPE_TYPE) == null)
                         at.setWholeLine(true);
                     else
-                        at.setWholeLine("line".equals(amap.getValue(ATTR_TYPE_TYPE)));
+                        at.setWholeLine("line".equals(amap.getValue(ATTR_TYPE_TYPE))); // NOI18N
 
                     // localization stuff
                     if (amap.getValue(ATTR_TYPE_VISIBLE) == null)
@@ -237,7 +237,7 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                     
                 case 1: // <combination ...
                    if (! TAG_COMBINATION.equals(name)) {
-                        throw new SAXException("malformed AnnotationType xml file");
+                        throw new SAXException("malformed AnnotationType xml file"); // NOI18N
                    }
                    
                    combinations = new ArrayList();
@@ -260,14 +260,14 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                  case 2: // <combine ...
                      combinations.add(new AnnotationType.CombinationMember(
                         amap.getValue(ATTR_COMBINE_ANNOTATIONTYPE),
-                        amap.getValue(ATTR_COMBINE_ABSORBALL) == null ? false : "true".equals(amap.getValue(ATTR_COMBINE_ABSORBALL)) ? true : false,
-                        amap.getValue(ATTR_COMBINE_OPTIONAL) == null ? false : "true".equals(amap.getValue(ATTR_COMBINE_OPTIONAL)) ? true : false,
+                        amap.getValue(ATTR_COMBINE_ABSORBALL) == null ? false : "true".equals(amap.getValue(ATTR_COMBINE_ABSORBALL)) ? true : false, // NOI18N
+                        amap.getValue(ATTR_COMBINE_OPTIONAL) == null ? false : "true".equals(amap.getValue(ATTR_COMBINE_OPTIONAL)) ? true : false, // NOI18N
                         amap.getValue(ATTR_COMBINE_MIN)
                      ));
 
                      break;
                 default:
-                    throw new SAXException("malformed AnnotationType xml file");
+                    throw new SAXException("malformed AnnotationType xml file"); // NOI18N
             }
         }
         

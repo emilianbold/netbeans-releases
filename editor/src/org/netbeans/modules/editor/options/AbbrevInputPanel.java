@@ -72,7 +72,7 @@ public class AbbrevInputPanel extends javax.swing.JPanel {
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
         abbrevLabel.setLabelFor(abbrevField);
-        abbrevLabel.setText(getBundleString( "AIP_Abbrev" ));
+        abbrevLabel.setText(getBundleString( "AIP_Abbrev" )); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -88,7 +88,7 @@ public class AbbrevInputPanel extends javax.swing.JPanel {
         add(abbrevField, gridBagConstraints);
 
         expandLabel.setLabelFor(expandTextArea);
-        expandLabel.setText(getBundleString( "AIP_Expand" ));
+        expandLabel.setText(getBundleString( "AIP_Expand" )); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;

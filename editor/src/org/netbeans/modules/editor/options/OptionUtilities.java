@@ -54,13 +54,13 @@ public class OptionUtilities {
     }
     
     private static String wrap(String s){
-        return (s.length()==1)? "0"+s : s;
+        return (s.length()==1)? "0"+s : s; // NOI18N
     }
     
     /** Converts Color to hexadecimal String representation */
     public static String color2String(Color c){
         StringBuffer sb = new StringBuffer();
-        sb.append("#");
+        sb.append("#"); // NOI18N
         sb.append(wrap(Integer.toHexString(c.getRed()).toUpperCase()));
         sb.append(wrap(Integer.toHexString(c.getGreen()).toUpperCase()));
         sb.append(wrap(Integer.toHexString(c.getBlue()).toUpperCase()));
@@ -96,10 +96,10 @@ public class OptionUtilities {
     
     /** Encodes font style to string representation */
     public static String style2String(int i){
-        if (Font.BOLD   == i) return "bold";
-        if (Font.ITALIC == i) return "italic";
-        if ( (Font.BOLD+Font.ITALIC) == i ) return "bold-italic";
-        return "plain";
+        if (Font.BOLD   == i) return "bold"; // NOI18N
+        if (Font.ITALIC == i) return "italic"; // NOI18N
+        if ( (Font.BOLD+Font.ITALIC) == i ) return "bold-italic"; // NOI18N
+        return "plain"; // NOI18N
     }
     
     
@@ -134,12 +134,12 @@ public class OptionUtilities {
 
     /** Creates textual representation of KeyStroke[]. */
     public static String keysToString(KeyStroke[] stroke){
-        if (stroke == null) return "NULL";
+        if (stroke == null) return "NULL"; // NOI18N
         StringBuffer sb = new StringBuffer();
         
         for (int i=0; i<stroke.length; i++){
             sb.append(org.openide.util.Utilities.keyToString(stroke[i]));
-            if (i<stroke.length-1) sb.append("$");
+            if (i<stroke.length-1) sb.append("$"); // NOI18N
         }
         
         return sb.toString();
@@ -147,19 +147,19 @@ public class OptionUtilities {
 
     /** Creates textual representation of KeyStroke. */    
     public static String keyToString(KeyStroke stroke){
-        if (stroke == null) return "NULL";
+        if (stroke == null) return "NULL"; // NOI18N
         return org.openide.util.Utilities.keyToString(stroke);
     }
     
     /** Converts textual representatin of Keystroke */    
     public static KeyStroke stringToKey(String s){
-        if (s.equals("NULL")) return null;
+        if (s.equals("NULL")) return null; // NOI18N
         return org.openide.util.Utilities.stringToKey(s);
     }
 
     /** Converts textual representatin of Keystroke[] */        
     public static KeyStroke[] stringToKeys(String s){
-        if (s.equals("NULL")) return null;
+        if (s.equals("NULL")) return null; // NOI18N
         
         StringTokenizer st = new StringTokenizer(s.toUpperCase(), "$"); // NOI18N
         ArrayList arr = new ArrayList();
@@ -175,19 +175,19 @@ public class OptionUtilities {
     }
     
     public static void printDefaultAbbrevs(Map map){
-        System.out.println("-----------------------------------------------------------");
-        System.out.println("<?xml version=\"1.0\"?>");
-        System.out.println("<!DOCTYPE catalog PUBLIC \""+AbbrevsMIMEProcessor.PUBLIC_ID+"\"");
-        System.out.println(" \""+AbbrevsMIMEProcessor.SYSTEM_ID+"\">");
+        System.out.println("-----------------------------------------------------------"); // NOI18N
+        System.out.println("<?xml version=\"1.0\"?>"); // NOI18N
+        System.out.println("<!DOCTYPE catalog PUBLIC \""+AbbrevsMIMEProcessor.PUBLIC_ID+"\""); // NOI18N
+        System.out.println(" \""+AbbrevsMIMEProcessor.SYSTEM_ID+"\">"); // NOI18N
         System.out.println("");
-        System.out.println("<"+AbbrevsMIMEOptionFile.TAG_ROOT+">");
+        System.out.println("<"+AbbrevsMIMEOptionFile.TAG_ROOT+">"); // NOI18N
         for ( Iterator i = map.keySet().iterator(); i.hasNext(); ) {
             String key = (String)i.next();
             String value = (String)map.get(key);
-            System.out.println("<"+AbbrevsMIMEOptionFile.TAG_ABBREV+" "+AbbrevsMIMEOptionFile.ATTR_KEY+"=\""+key+"\">"
-            +value+"</"+AbbrevsMIMEOptionFile.TAG_ABBREV+">");
+            System.out.println("<"+AbbrevsMIMEOptionFile.TAG_ABBREV+" "+AbbrevsMIMEOptionFile.ATTR_KEY+"=\""+key+"\">" // NOI18N
+            +value+"</"+AbbrevsMIMEOptionFile.TAG_ABBREV+">"); // NOI18N
         }
-        System.out.println("</"+AbbrevsMIMEOptionFile.TAG_ROOT+">");
+        System.out.println("</"+AbbrevsMIMEOptionFile.TAG_ROOT+">"); // NOI18N
     }
     
     /** Prints given Abbreviations Map to XML file with given FO */

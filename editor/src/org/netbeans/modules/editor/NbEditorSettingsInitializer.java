@@ -54,7 +54,7 @@ import org.netbeans.modules.editor.options.BaseOptions;
 
 public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
 
-    public static final String NAME = "nb-editor-settings-initializer";
+    public static final String NAME = "nb-editor-settings-initializer"; // NOI18N
 
     private static boolean inited;
 

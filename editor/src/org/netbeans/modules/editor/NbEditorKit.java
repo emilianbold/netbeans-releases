@@ -86,29 +86,29 @@ import org.openide.util.NbBundle;
 public class NbEditorKit extends ExtKit {
 
     /** Action property that stores the name of the corresponding nb-system-action */
-    public static final String SYSTEM_ACTION_CLASS_NAME_PROPERTY = "systemActionClassName";
+    public static final String SYSTEM_ACTION_CLASS_NAME_PROPERTY = "systemActionClassName"; // NOI18N
 
-    public static final String BOOKMARK_ANNOTATION_TYPE = "editor-bookmark";
+    public static final String BOOKMARK_ANNOTATION_TYPE = "editor-bookmark"; // NOI18N
     
     static final long serialVersionUID =4482122073483644089L;
     
     private static final Map contentTypeTable;
     
     /** Name of the action for generating of Go To popup menu*/
-    public static final String generateGoToPopupAction = "generate-goto-popup";
+    public static final String generateGoToPopupAction = "generate-goto-popup"; // NOI18N
 
     /** Name of the action for generating of code folding popup menu*/
-    public static final String generateFoldPopupAction = "generate-fold-popup";
+    public static final String generateFoldPopupAction = "generate-fold-popup"; // NOI18N
     
     static {
         contentTypeTable = new HashMap();
-        contentTypeTable.put("org.netbeans.modules.properties.syntax.PropertiesKit", "text/x-properties");
-        contentTypeTable.put("org.netbeans.modules.web.core.syntax.JSPKit", "text/x-jsp");
-        contentTypeTable.put("org.netbeans.modules.css.text.syntax.CSSEditorKit", "text/css"); // new  - open source package
-        contentTypeTable.put("org.netbeans.modules.xml.css.editor.CSSEditorKit", "text/css"); // old  - close source package
-        contentTypeTable.put("org.netbeans.modules.xml.text.syntax.DTDKit", "text/x-dtd");
-        contentTypeTable.put("org.netbeans.modules.xml.text.syntax.XMLKit", "text/xml");
-        contentTypeTable.put("org.netbeans.modules.corba.idl.editor.coloring.IDLKit", "text/x-idl");
+        contentTypeTable.put("org.netbeans.modules.properties.syntax.PropertiesKit", "text/x-properties"); // NOI18N
+        contentTypeTable.put("org.netbeans.modules.web.core.syntax.JSPKit", "text/x-jsp"); // NOI18N
+        contentTypeTable.put("org.netbeans.modules.css.text.syntax.CSSEditorKit", "text/css"); // new  - open source package // NOI18N
+        contentTypeTable.put("org.netbeans.modules.xml.css.editor.CSSEditorKit", "text/css"); // old  - close source package // NOI18N
+        contentTypeTable.put("org.netbeans.modules.xml.text.syntax.DTDKit", "text/x-dtd"); // NOI18N
+        contentTypeTable.put("org.netbeans.modules.xml.text.syntax.XMLKit", "text/xml"); // NOI18N
+        contentTypeTable.put("org.netbeans.modules.corba.idl.editor.coloring.IDLKit", "text/x-idl"); // NOI18N
     }
 
     public NbEditorKit(){
@@ -186,7 +186,7 @@ public class NbEditorKit extends ExtKit {
 
         public ToggleToolbarAction() {
             super(ExtKit.toggleToolbarAction);
-            putValue ("helpID", ToggleToolbarAction.class.getName ());
+            putValue ("helpID", ToggleToolbarAction.class.getName ()); // NOI18N
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -220,7 +220,7 @@ public class NbEditorKit extends ExtKit {
             EditorUI ui = Utilities.getEditorUI(target);            
             BaseOptions bo = BaseOptions.getOptions(NbEditorKit.this.getClass());
             if (bo != null){
-                l = OptionUtilities.getPopupStrings(bo.getOrderedMultiPropertyFolderFiles("Popup"));
+                l = OptionUtilities.getPopupStrings(bo.getOrderedMultiPropertyFolderFiles("Popup")); // NOI18N
             }else{
                 l = (List)Settings.getValue(Utilities.getKitClass(target),
                     (ui == null || ui.hasExtComponent())
@@ -290,9 +290,9 @@ public class NbEditorKit extends ExtKit {
                     }
                 }
                 item.setEnabled(a.isEnabled());
-                Object helpID = a.getValue ("helpID");
+                Object helpID = a.getValue ("helpID"); // NOI18N
                 if (helpID != null && (helpID instanceof String))
-                    item.putClientProperty ("HelpID", helpID);
+                    item.putClientProperty ("HelpID", helpID); // NOI18N
             }
             if (item != null) {
                 if (item.getAccelerator() == null){
@@ -777,9 +777,9 @@ public class NbEditorKit extends ExtKit {
                         Mnemonics.setLocalizedText(item, itemText);
                         addAcceleretors(a, item, target);
                         item.setEnabled(a.isEnabled() && foldingEnabled);
-                        Object helpID = a.getValue ("helpID");
+                        Object helpID = a.getValue ("helpID"); // NOI18N
                         if (helpID != null && (helpID instanceof String))
-                            item.putClientProperty ("HelpID", helpID);
+                            item.putClientProperty ("HelpID", helpID); // NOI18N
                     }
                 }
 

@@ -20,7 +20,7 @@ import org.netbeans.editor.ext.html.dtd.Registry;
 
 public class SAReaderProvider implements ReaderProvider {
 
-    private static final String DTD_FOLDER = "DTDs"; // NOI18
+    private static final String DTD_FOLDER = "DTDs"; // NOI18 // NOI18N
     private static final String CATALOG_FILE_NAME = "catalog"; // NOI18N
 
     Map mapping = null;
@@ -138,13 +138,13 @@ public class SAReaderProvider implements ReaderProvider {
             if( line == null ) break;
             
             StringTokenizer st = new StringTokenizer( line );
-            if( st.hasMoreTokens() && "PUBLIC".equals( st.nextToken() ) && st.hasMoreTokens() ) {
-                st.nextToken( "\"" );
+            if( st.hasMoreTokens() && "PUBLIC".equals( st.nextToken() ) && st.hasMoreTokens() ) { // NOI18N
+                st.nextToken( "\"" ); // NOI18N
 		if( !st.hasMoreTokens() ) continue;
-                String id = st.nextToken( "\"" );
+                String id = st.nextToken( "\"" ); // NOI18N
 
 		if( !st.hasMoreTokens() ) continue;
-                st.nextToken( " \t\n\r\f" );
+                st.nextToken( " \t\n\r\f" ); // NOI18N
 		
 		if( !st.hasMoreTokens() ) continue;
                 String file = st.nextToken();

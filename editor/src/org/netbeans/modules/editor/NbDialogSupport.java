@@ -51,12 +51,12 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
         if (helpIDs == null)
         {
             helpIDs = new HashMap(7);
-            helpIDs.put("org.netbeans.editor.MacroSavePanel", HELP_ID_MacroSavePanel);
-            helpIDs.put("org.netbeans.editor.ext.FindDialogSupport$FindPanel", HELP_ID_FindPanel);
-            helpIDs.put("org.netbeans.editor.ext.GotoDialogPanel", HELP_ID_GotoDialogPanel);
-            helpIDs.put("org.netbeans.editor.ext.ScrollCompletionPane", HELP_ID_ScrollCompletionPane);
-            helpIDs.put("org.netbeans.editor.ext.java.JavaFastImportPanel", HELP_ID_JavaFastImportPanel);
-            helpIDs.put("org.netbeans.editor.ext.java.JavaFastOpenPanel", HELP_ID_JavaFastOpenPanel);
+            helpIDs.put("org.netbeans.editor.MacroSavePanel", HELP_ID_MacroSavePanel); // NOI18N
+            helpIDs.put("org.netbeans.editor.ext.FindDialogSupport$FindPanel", HELP_ID_FindPanel); // NOI18N
+            helpIDs.put("org.netbeans.editor.ext.GotoDialogPanel", HELP_ID_GotoDialogPanel); // NOI18N
+            helpIDs.put("org.netbeans.editor.ext.ScrollCompletionPane", HELP_ID_ScrollCompletionPane); // NOI18N
+            helpIDs.put("org.netbeans.editor.ext.java.JavaFastImportPanel", HELP_ID_JavaFastImportPanel); // NOI18N
+            helpIDs.put("org.netbeans.editor.ext.java.JavaFastOpenPanel", HELP_ID_JavaFastOpenPanel); // NOI18N
         }
     }
     

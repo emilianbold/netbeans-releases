@@ -101,7 +101,7 @@ public class HTMLKit extends ExtKit {
 
     private static class SaHTMLSettingsInitializer extends Settings.AbstractInitializer {
         public SaHTMLSettingsInitializer() {
-            super( "sa-html-settings-initializer" );
+            super( "sa-html-settings-initializer" ); // NOI18N
         }
             
         public void updateSettingsMap(Class kitClass, Map settingsMap) {

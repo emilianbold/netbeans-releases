@@ -39,7 +39,7 @@ import org.openide.filesystems.Repository;
 public class AnnotationTypeActionsFolder extends FolderInstance{
     
     /** root folder for annotation type actions subfolders */
-    private static final String FOLDER = "Editors/AnnotationTypes/";
+    private static final String FOLDER = "Editors/AnnotationTypes/"; // NOI18N
     
     private AnnotationType type;
     

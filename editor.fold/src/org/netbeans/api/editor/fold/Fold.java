@@ -252,7 +252,7 @@ public final class Fold {
     
     void setCollapsed(boolean collapsed) {
         if (isRootFold()) {
-            throw new IllegalStateException("Cannot set collapsed flag on root fold.");
+            throw new IllegalStateException("Cannot set collapsed flag on root fold."); // NOI18N
         }
         this.collapsed = collapsed;
     }

@@ -48,13 +48,13 @@ public class Editor extends javax.swing.JFrame {
     }
     
     /** Document property holding String name of associated file */
-    private static final String FILE = "file";
+    private static final String FILE = "file"; // NOI18N
     /** Document property holding Boolean if document was created or opened */
-    private static final String CREATED = "created";
+    private static final String CREATED = "created"; // NOI18N
     /** Document property holding Boolean modified information */
-    private static final String MODIFIED = "modified";
+    private static final String MODIFIED = "modified"; // NOI18N
         
-    private ResourceBundle settings = ResourceBundle.getBundle( "settings" );
+    private ResourceBundle settings = ResourceBundle.getBundle( "settings" ); // NOI18N
 
     private JFileChooser fileChooser;
 
@@ -64,7 +64,7 @@ public class Editor extends javax.swing.JFrame {
     private int fileCounter = -1;
     Map com2text = new HashMap();
     
-    private Impl impl = new Impl("org.netbeans.editor.Bundle");
+    private Impl impl = new Impl("org.netbeans.editor.Bundle"); // NOI18N
     
     private class Impl extends FileView implements WindowListener,
                                     ActionListener, LocaleSupport.Localizer {
@@ -133,7 +133,7 @@ public class Editor extends javax.swing.JFrame {
                 } else if (src == exitItem) {
                     doExit();
                 } else if (src instanceof JMenuItem) {
-                    Object ki = ((JMenuItem) src).getClientProperty("kitInfo");
+                    Object ki = ((JMenuItem) src).getClientProperty("kitInfo"); // NOI18N
 
                     if (ki instanceof KitInfo) {
                         createNewFile((KitInfo) ki);
@@ -144,7 +144,7 @@ public class Editor extends javax.swing.JFrame {
     }
     
     public Editor() {
-        super( "NetBeans Editor" );
+        super( "NetBeans Editor" ); // NOI18N
         LocaleSupport.addLocalizer(impl);
 
         // Feed our kits with their default Settings
@@ -208,34 +208,34 @@ public class Editor extends javax.swing.JFrame {
         getContentPane().add(tabPane);
 
         fileMenu.setMnemonic(KeyEvent.VK_F);
-        fileMenu.setText("File");
+        fileMenu.setText("File"); // NOI18N
         newMenu.setMnemonic(KeyEvent.VK_N);
-        newMenu.setText("New...");
+        newMenu.setText("New..."); // NOI18N
         fileMenu.add(newMenu);
         openItem.setMnemonic(KeyEvent.VK_O);
         openItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
-        openItem.setText("Open File...");
+        openItem.setText("Open File..."); // NOI18N
         fileMenu.add(openItem);
         closeItem.setMnemonic(KeyEvent.VK_C);
         closeItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.CTRL_MASK));
-        closeItem.setText("Close");
+        closeItem.setText("Close"); // NOI18N
         fileMenu.add(closeItem);
         fileMenu.add(sep1);
         saveItem.setMnemonic(KeyEvent.VK_S);
         saveItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-        saveItem.setText("Save");
+        saveItem.setText("Save"); // NOI18N
         fileMenu.add(saveItem);
         saveAsItem.setMnemonic(KeyEvent.VK_A);
-        saveAsItem.setText("Save As...");
+        saveAsItem.setText("Save As..."); // NOI18N
         fileMenu.add(saveAsItem);
         saveAllItem.setMnemonic(KeyEvent.VK_L);
         saveAllItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
-        saveAllItem.setText("Save All");
+        saveAllItem.setText("Save All"); // NOI18N
         fileMenu.add(saveAllItem);
         fileMenu.add(sep2);
         exitItem.setMnemonic(KeyEvent.VK_E);
         exitItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_MASK));
-        exitItem.setText("Exit");
+        exitItem.setText("Exit"); // NOI18N
         fileMenu.add(exitItem);
         menuBar.add(fileMenu);
         setJMenuBar(menuBar);
@@ -251,8 +251,8 @@ public class Editor extends javax.swing.JFrame {
         if( checkOverwrite && file.exists() ) {
             tabPane.setSelectedComponent( comp );
             int choice = JOptionPane.showOptionDialog(this,
-            "File " + file.getName() + " already exists, overwrite?",
-            "File exists",
+            "File " + file.getName() + " already exists, overwrite?", // NOI18N
+            "File exists", // NOI18N
             JOptionPane.YES_NO_CANCEL_OPTION,
             JOptionPane.QUESTION_MESSAGE,
             null,     // don't use a custom Icon
@@ -262,8 +262,8 @@ public class Editor extends javax.swing.JFrame {
             if( choice != 0 ) return false;
         }
 
-        File safeSaveFile = new File(file.getAbsolutePath() + "~~");
-        File backupFile = new File(file.getAbsolutePath() + "~");
+        File safeSaveFile = new File(file.getAbsolutePath() + "~~"); // NOI18N
+        File backupFile = new File(file.getAbsolutePath() + "~"); // NOI18N
 
         if (safeSave || createBackups) {
             file.renameTo(safeSaveFile);
@@ -283,8 +283,8 @@ public class Editor extends javax.swing.JFrame {
                 }
             }
         } catch( IOException exc ) {
-            JOptionPane.showMessageDialog( this, "Can't write to file '" +
-            file.getName() + "'.", "Error", JOptionPane.ERROR_MESSAGE );
+            JOptionPane.showMessageDialog( this, "Can't write to file '" + // NOI18N
+            file.getName() + "'.", "Error", JOptionPane.ERROR_MESSAGE ); // NOI18N
 
             if (safeSave)
                 safeSaveFile.renameTo(file);
@@ -346,8 +346,8 @@ public class Editor extends javax.swing.JFrame {
         try {
             pane.read( new FileInputStream( file ), file.getCanonicalPath() );
         } catch( IOException exc ) {
-            JOptionPane.showMessageDialog( this, "Can't read from file '" +
-            file.getName() + "'.", "Error", JOptionPane.ERROR_MESSAGE );
+            JOptionPane.showMessageDialog( this, "Can't read from file '" + // NOI18N
+            file.getName() + "'.", "Error", JOptionPane.ERROR_MESSAGE ); // NOI18N
             return;
         }
         addEditorPane( pane, info.getIcon(), file, false, focus );
@@ -410,13 +410,13 @@ public class Editor extends javax.swing.JFrame {
         
         for( ;; ) {
             int choice = JOptionPane.showOptionDialog(this,
-            "File " + file.getName() + " was modified, save it?",
-            "File modified",
+            "File " + file.getName() + " was modified, save it?", // NOI18N
+            "File modified", // NOI18N
             JOptionPane.YES_NO_CANCEL_OPTION,
             JOptionPane.QUESTION_MESSAGE,
             null,     // don't use a custom Icon
-            new String[] { "Save", "Save As...", "Discard", "Cancel" },     // use standard button titles
-            "Cancel"      //default selection
+            new String[] { "Save", "Save As...", "Discard", "Cancel" },     // use standard button titles // NOI18N
+            "Cancel"      //default selection // NOI18N
             );
             
             switch( choice ) {
@@ -459,8 +459,8 @@ public class Editor extends javax.swing.JFrame {
     
     private void createNewFile( KitInfo info ) {
         final String fileName = ((++fileCounter == 0 ) ?
-            "unnamed" :
-            ("unnamed" + fileCounter)) + info.getDefaultExtension();
+            "unnamed" : // NOI18N
+            ("unnamed" + fileCounter)) + info.getDefaultExtension(); // NOI18N
         final File file = new File( fileName ).getAbsoluteFile();
 
         final JEditorPane pane = new JEditorPane( info.getType(), "" );
@@ -469,7 +469,7 @@ public class Editor extends javax.swing.JFrame {
             try {
                 pane.read( template.openStream(), file.getCanonicalPath() );
             } catch( IOException e ) {
-                JOptionPane.showMessageDialog( this, "Can't read template", "Error", JOptionPane.ERROR_MESSAGE );
+                JOptionPane.showMessageDialog( this, "Can't read template", "Error", JOptionPane.ERROR_MESSAGE ); // NOI18N
             }
         }
         addEditorPane( pane, info.getIcon(), file, true, true );
@@ -557,7 +557,7 @@ public class Editor extends javax.swing.JFrame {
     }
 
     private String generateMenuItemName(int index, String file) {
-        return "" + index + ". " + file;
+        return "" + index + ". " + file; // NOI18N
     }
 
     private void addToRecent(String fileToAdd) {
@@ -645,8 +645,8 @@ public class Editor extends javax.swing.JFrame {
     }
     
     private void readUserConfiguration(ResourceBundle bundle) {
-        String[] openedFiles = readStrings(bundle, "Open-File");
-        String[] recentFiles = readStrings(bundle, "Recent-File");
+        String[] openedFiles = readStrings(bundle, "Open-File"); // NOI18N
+        String[] recentFiles = readStrings(bundle, "Recent-File"); // NOI18N
         String   recentFilesMaxCount = bundle.getString("Max-Recent-Files");
         String   safeSaveString = bundle.getString("Safe-Save");
         String   createBackupsString = bundle.getString("Create-Backups");
@@ -665,30 +665,30 @@ public class Editor extends javax.swing.JFrame {
     }
 
     private void writeUserConfiguration(PrintWriter output) {
-        output.println("Max-Recent-Files=" + maxRecent);
-        output.println("Safe-Save=" + safeSave);
-        output.println("Create-Backups=" + createBackups);
+        output.println("Max-Recent-Files=" + maxRecent); // NOI18N
+        output.println("Safe-Save=" + safeSave); // NOI18N
+        output.println("Create-Backups=" + createBackups); // NOI18N
 
         for (int cntr = 0; cntr < recentFiles.size(); cntr++) {
-            output.println("Recent-File_" + cntr + "=" + recentFiles.get(cntr));
+            output.println("Recent-File_" + cntr + "=" + recentFiles.get(cntr)); // NOI18N
         }
         String[] openFiles = getOpenedFiles();
 
         for (int cntr = 0; cntr < openFiles.length; cntr++) {
-            output.println("Open-File_" + cntr + "=" + openFiles[cntr]);
+            output.println("Open-File_" + cntr + "=" + openFiles[cntr]); // NOI18N
         }
     }
 
     private File getConfigurationFileName() {
         File homedir = new File( System.getProperty( "user.home" ) ).getAbsoluteFile();
-        File configurationFile = new File(homedir, ".nb-editor");
+        File configurationFile = new File(homedir, ".nb-editor"); // NOI18N
 
         return configurationFile;
     }
 
     private void writeUserConfiguration() {
         File configurationFile = getConfigurationFileName();
-        File configurationFileBackup = new File(configurationFile.getAbsolutePath() + "~");
+        File configurationFileBackup = new File(configurationFile.getAbsolutePath() + "~"); // NOI18N
         boolean backup = false;
 
         if (configurationFile.exists()) {
@@ -771,7 +771,7 @@ public class Editor extends javax.swing.JFrame {
         String kits = settings.getString( "InstalledEditors" );
         String defaultKit = settings.getString( "DefaultEditor" );
         
-        StringTokenizer st = new StringTokenizer( kits, "," );
+        StringTokenizer st = new StringTokenizer( kits, "," ); // NOI18N
         while( st.hasMoreTokens() ) {
             String kitName = st.nextToken();
             // At the first, we have to read ALL info about kit
@@ -789,7 +789,7 @@ public class Editor extends javax.swing.JFrame {
             try {
                 kitClass = Class.forName( kit );
             } catch( ClassNotFoundException exc ) { // we really need it
-                throw new MissingResourceException( "Missing class", kit, "KitClass" ); 
+                throw new MissingResourceException( "Missing class", kit, "KitClass" ); // NOI18N
             }
 
             // At the third, it is nice to have icon although we could live without one
@@ -806,7 +806,7 @@ public class Editor extends javax.swing.JFrame {
 
             // Finally, convert the list of extensions to, ehm, List :-)
             List l = new ArrayList( 5 );
-            StringTokenizer extST = new StringTokenizer( extList, "," );
+            StringTokenizer extST = new StringTokenizer( extList, "," ); // NOI18N
             while( extST.hasMoreTokens() ) l.add( extST.nextToken() );            
             
             // Actually create the KitInfo from provided informations
@@ -815,7 +815,7 @@ public class Editor extends javax.swing.JFrame {
             // Make the MenuItem for it
             JMenuItem item = new JMenuItem( menuTitle, icon );
             item.setMnemonic( menuMnemonic );
-            item.putClientProperty( "kitInfo", ki );
+            item.putClientProperty( "kitInfo", ki ); // NOI18N
             item.addActionListener( impl );
 	    newMenu.add( item );
 
@@ -827,7 +827,7 @@ public class Editor extends javax.swing.JFrame {
 
         fileChooser.addChoosableFileFilter( new FileFilter() {
             public String getDescription() {
-                return "All recognized files";
+                return "All recognized files"; // NOI18N
             }
         
             public boolean accept( File f ) {
@@ -835,7 +835,7 @@ public class Editor extends javax.swing.JFrame {
             }
         });
         
-        if( KitInfo.getDefault() == null ) throw new MissingResourceException( "Missing default kit definition", defaultKit, "DefaultEditor" ); 
+        if( KitInfo.getDefault() == null ) throw new MissingResourceException( "Missing default kit definition", defaultKit, "DefaultEditor" ); // NOI18N
     }
             
     private static final class KitInfo extends FileFilter{

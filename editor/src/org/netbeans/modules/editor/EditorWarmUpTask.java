@@ -138,7 +138,7 @@ public class EditorWarmUpTask implements Runnable{
                 // Start of a code block that tries to force hotspot to compile
                 // the view hierarchy and related classes for faster performance
                 if (debug) {
-                    System.out.println("Kit instances initialized: "
+                    System.out.println("Kit instances initialized: " // NOI18N
                         + (System.currentTimeMillis()-startTime));
                     startTime = System.currentTimeMillis();
                 }
@@ -297,7 +297,7 @@ public class EditorWarmUpTask implements Runnable{
                 // Candidates Annotations.getLineAnnotations()
 
                 if (debug) {
-                    System.out.println("View hierarchy initialized: "
+                    System.out.println("View hierarchy initialized: " // NOI18N
                         + (System.currentTimeMillis()-startTime));
                     startTime = System.currentTimeMillis();
                 }

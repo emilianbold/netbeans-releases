@@ -64,7 +64,7 @@ public class SimpleFoldManagerTest extends NbTestCase {
                 Fold rootFold = hierarchy.getRootFold();
                 int foldCount = rootFold.getFoldCount();
                 int expectedFoldCount = 1;
-                assertTrue("Incorrect fold count " + foldCount, 
+                assertTrue("Incorrect fold count " + foldCount, // NOI18N
                     (foldCount == expectedFoldCount)
                 );
                 
@@ -72,15 +72,15 @@ public class SimpleFoldManagerTest extends NbTestCase {
                 FoldType foldType = fold.getType();
                 int foldStartOffset = fold.getStartOffset();
                 int foldEndOffset = fold.getEndOffset();
-                assertTrue("Incorrect fold type " + foldType,
+                assertTrue("Incorrect fold type " + foldType, // NOI18N
                     (foldType == AbstractFoldManager.REGULAR_FOLD_TYPE));
-                assertTrue("Incorrect fold start offset " + foldStartOffset,
+                assertTrue("Incorrect fold start offset " + foldStartOffset, // NOI18N
                     (foldStartOffset == FOLD_START_OFFSET_1));
-                assertTrue("Incorrect fold end offset " + foldEndOffset,
+                assertTrue("Incorrect fold end offset " + foldEndOffset, // NOI18N
                     (foldEndOffset == FOLD_END_OFFSET_1));
                 
                 // Check fold size
-                assertSize("Size of the fold " , Collections.singleton(fold),
+                assertSize("Size of the fold " , Collections.singleton(fold), // NOI18N
                     MAX_FOLD_MEMORY_SIZE, new FoldMemoryFilter(fold));
                 
             } finally {
@@ -98,7 +98,7 @@ public class SimpleFoldManagerTest extends NbTestCase {
             try {
                 getOperation().addToHierarchy(
                     REGULAR_FOLD_TYPE,
-                    "...", // non-null to properly count fold's size (non-null desc gets set)
+                    "...", // non-null to properly count fold's size (non-null desc gets set) // NOI18N
                     false,
                     FOLD_START_OFFSET_1, FOLD_END_OFFSET_1, 1, 1,
                     null,

@@ -70,7 +70,7 @@ class LayerProvider extends FoldManagerFactoryProvider {
                     Repository repository = Repository.getDefault();
                     FileSystem defaultFS;
                     if (repository != null && (defaultFS = repository.getDefaultFileSystem()) != null) {
-                        FileObject dir = defaultFS.findResource("Editors/" + mimeType + "/" + FOLDER_NAME);
+                        FileObject dir = defaultFS.findResource("Editors/" + mimeType + "/" + FOLDER_NAME); // NOI18N
                         if (dir!=null){
                             try {
                                 DataObject dob = DataObject.find(dir);

@@ -63,8 +63,8 @@ import org.openide.options.SystemOption;
 public class AllOptionsFolder{
     
     /** folder for Editor Settings main node */
-    public static final String FOLDER = "Editors";
-    public static final String OPTION_FILE_NAME = "Settings.settings";
+    public static final String FOLDER = "Editors"; // NOI18N
+    public static final String OPTION_FILE_NAME = "Settings.settings"; // NOI18N
     
     /** Global Multi Property Folders registration map */
     private static Map globalMPFolder = new HashMap();
@@ -149,7 +149,7 @@ public class AllOptionsFolder{
         // first XMLized options
         
         List retList = new ArrayList();
-        String[] MIMES = new String[] {"text", "application"};  //#25246 application/xml-dtd
+        String[] MIMES = new String[] {"text", "application"};  //#25246 application/xml-dtd // NOI18N
         for (int in = 0; in<MIMES.length; in++) {
             FileObject mainFolderFO = Repository.getDefault().getDefaultFileSystem().
             findResource(AllOptionsFolder.FOLDER+"/" + MIMES[in]); //NOI18N
@@ -161,7 +161,7 @@ public class AllOptionsFolder{
                         if (!(subFolders[i] instanceof DataFolder)) continue;
                         DataFolder subFolder = (DataFolder) subFolders[i];
                         FileObject optionInstance = Repository.getDefault().getDefaultFileSystem().
-                            findResource(subFolder.getPrimaryFile().getPath()+"/"+AllOptionsFolder.OPTION_FILE_NAME);
+                            findResource(subFolder.getPrimaryFile().getPath()+"/"+AllOptionsFolder.OPTION_FILE_NAME); // NOI18N
                         if (optionInstance == null) continue;
                         try{
                             DataObject optionDO = DataObject.find(optionInstance);

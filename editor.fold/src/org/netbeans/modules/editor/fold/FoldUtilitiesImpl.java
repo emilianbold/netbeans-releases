@@ -402,18 +402,18 @@ public final class FoldUtilitiesImpl {
         StringBuffer sb = new StringBuffer();
         int removedFoldCount = evt.getRemovedFoldCount();
         for (int i = 0; i < removedFoldCount; i++) {
-            sb.append("R[");
+            sb.append("R["); // NOI18N
             sb.append(i);
-            sb.append("]: ");
+            sb.append("]: "); // NOI18N
             sb.append(evt.getRemovedFold(i));
             sb.append('\n');
         }
         
         int addedFoldCount = evt.getAddedFoldCount();
         for (int i = 0; i < addedFoldCount; i++) {
-            sb.append("A[");
+            sb.append("A["); // NOI18N
             sb.append(i);
-            sb.append("]: ");
+            sb.append("]: "); // NOI18N
             sb.append(evt.getAddedFold(i));
             sb.append('\n');
         }
@@ -421,21 +421,21 @@ public final class FoldUtilitiesImpl {
         int foldStateChangeCount = evt.getFoldStateChangeCount();
         for (int i = 0; i < foldStateChangeCount; i++) {
             FoldStateChange change = evt.getFoldStateChange(i);
-            sb.append("SC[");
+            sb.append("SC["); // NOI18N
             sb.append(i);
-            sb.append("]: ");
+            sb.append("]: "); // NOI18N
             sb.append(change);
             sb.append('\n');
         }
         if (foldStateChangeCount == 0) {
-            sb.append("No FoldStateChange\n");
+            sb.append("No FoldStateChange\n"); // NOI18N
         }
         
-        sb.append("affected: <");
+        sb.append("affected: <"); // NOI18N
         sb.append(evt.getAffectedStartOffset());
-        sb.append(",");
+        sb.append(","); // NOI18N
         sb.append(evt.getAffectedEndOffset());
-        sb.append(">\n");
+        sb.append(">\n"); // NOI18N
         
         return sb.toString();
     }
@@ -443,15 +443,15 @@ public final class FoldUtilitiesImpl {
     public static String foldStateChangeToString(FoldStateChange change) {
         StringBuffer sb = new StringBuffer();
         if (change.isCollapsedChanged()) {
-            sb.append("C");
+            sb.append("C"); // NOI18N
         }
         if (change.isDescriptionChanged()) {
-            sb.append("D");
+            sb.append("D"); // NOI18N
         }
         if (change.isEndOffsetChanged()) {
-            sb.append("E");
+            sb.append("E"); // NOI18N
         }
-        sb.append(" fold=");
+        sb.append(" fold="); // NOI18N
         sb.append(change.getFold());
         return sb.toString();
     }

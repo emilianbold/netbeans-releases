@@ -113,10 +113,10 @@ public final class FoldOperationImpl {
         if (debug) {
             /*DEBUG*/System.err.println("Creating fold: type=" + type // NOI18N
                 + ", description='" + description + "', collapsed=" + collapsed // NOI18N
-                + ", startOffset=" + startOffset + ", endOffset=" + endOffset
-                + ", startGuardedLength=" + startGuardedLength
-                + ", endGuardedLength=" + endGuardedLength
-                + ", extraInfo=" + extraInfo
+                + ", startOffset=" + startOffset + ", endOffset=" + endOffset // NOI18N
+                + ", startGuardedLength=" + startGuardedLength // NOI18N
+                + ", endGuardedLength=" + endGuardedLength // NOI18N
+                + ", extraInfo=" + extraInfo // NOI18N
             );
             
             if (debugStack) {
@@ -205,9 +205,9 @@ public final class FoldOperationImpl {
         FoldOperationImpl foldOperation = getAccessor().foldGetOperation(fold);
         if (foldOperation != this) {
             throw new IllegalStateException(
-                "Attempt to use the fold " + fold
-                + " with invalid fold operation "
-                + foldOperation + " instead of " + this
+                "Attempt to use the fold " + fold // NOI18N
+                + " with invalid fold operation " // NOI18N
+                + foldOperation + " instead of " + this // NOI18N
             );
         }
     }

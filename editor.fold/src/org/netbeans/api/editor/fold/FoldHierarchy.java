@@ -84,7 +84,7 @@ public final class FoldHierarchy {
     /**
      * Fold type for the root fold.
      */
-    public static final FoldType ROOT_FOLD_TYPE = new FoldType("root-fold");
+    public static final FoldType ROOT_FOLD_TYPE = new FoldType("root-fold"); // NOI18N
     
     private static boolean apiPackageAccessorRegistered;
 

@@ -257,7 +257,7 @@ public class EditorModule extends ModuleInstall {
         }
 
         private Object findKit(String type) {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors/" + type + "/EditorKit.instance");
+            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors/" + type + "/EditorKit.instance"); // NOI18N
             if (fo == null) return null;
 
             DataObject dobj;
@@ -311,7 +311,7 @@ public class EditorModule extends ModuleInstall {
                 }
             }
 
-	    if ((retVal == null || retVal.getClass().getName().startsWith("javax.swing."))
+	    if ((retVal == null || retVal.getClass().getName().startsWith("javax.swing.")) // NOI18N
                 && key instanceof String
             ) {
                 // first check the type registry
@@ -320,7 +320,7 @@ public class EditorModule extends ModuleInstall {
                     System.err.println("Found kitClassName=" + kitClassName + " for mimeType=" + key);
                 }
                 
-                if (kitClassName == null || kitClassName.startsWith("javax.swing.")) { // prefer layers
+                if (kitClassName == null || kitClassName.startsWith("javax.swing.")) { // prefer layers // NOI18N
                     Object kit = findKit((String)key);
                     if (kit != null) {
                         retVal = kit;
@@ -343,8 +343,8 @@ public class EditorModule extends ModuleInstall {
             
             if (debug) {
                 System.err.println("registering mimeType=" + key
-                    + " -> kitInstance=" + value
-                    + " original was " + ret);
+                    + " -> kitInstance=" + value // NOI18N
+                    + " original was " + ret); // NOI18N
             }
              
             return ret;
@@ -355,7 +355,7 @@ public class EditorModule extends ModuleInstall {
             
             if (debug) {
                 System.err.println("removing kitInstance=" + ret
-                    + " for mimeType=" + key);
+                    + " for mimeType=" + key); // NOI18N
             }
             
             return ret;
@@ -379,15 +379,15 @@ public class EditorModule extends ModuleInstall {
         public Object put(Object key, Object value) {
             Object ret = super.put(key, value);
             System.err.println("registering mimeType=" + key
-                + " -> kitClassName=" + value
-                + " original was " + ret);
+                + " -> kitClassName=" + value // NOI18N
+                + " original was " + ret); // NOI18N
             return ret;
         }
         
         public Object remove(Object key) {
             Object ret = super.remove(key);
             System.err.println("removing kitClassName=" + ret
-                + " for mimeType=" + key);
+                + " for mimeType=" + key); // NOI18N
             return ret;
         }
         

@@ -126,8 +126,8 @@ public class NbToolTip extends FileChangeAdapter {
 
                                 if (debug) {
                                     System.err.println("Found tooltip annotation=" + a
-                                        + ", class " + a.getClass()
-                                        + " for mimeType=" + mimeType
+                                        + ", class " + a.getClass() // NOI18N
+                                        + " for mimeType=" + mimeType // NOI18N
                                     );
                                 }
                                 

@@ -48,7 +48,7 @@ public class InstalledOptionsFolder extends org.openide.loaders.FolderInstance
 implements TaskListener{
     
     /** folder for itutor options XML files */
-    public static final String FOLDER = "Editors/Options/Installed";
+    public static final String FOLDER = "Editors/Options/Installed"; // NOI18N
     
     private static Map globalMPFolder = new HashMap();
     
@@ -60,7 +60,7 @@ implements TaskListener{
     
     private static PropertyChangeSupport propertySupport;
     
-    public static final String INSTALLED_OPTIONS = "installedOptions";
+    public static final String INSTALLED_OPTIONS = "installedOptions"; // NOI18N
     
     private static Map installedOld = new HashMap();
     
@@ -96,15 +96,15 @@ implements TaskListener{
     protected Object createInstance(InstanceCookie[] cookies)
     throws java.io.IOException, ClassNotFoundException {
         for (int i = 0; i < cookies.length; i++) {
-            System.out.println("installing:"+cookies[i].instanceName());
+            System.out.println("installing:"+cookies[i].instanceName()); // NOI18N
             if (!installedOptions.containsKey(cookies[i].instanceName())){
                 Object instance = cookies[i].instanceCreate();
                 if (!(instance instanceof BaseOptions)){
-                    System.out.println("it is not instance of BO !!!");
+                    System.out.println("it is not instance of BO !!!"); // NOI18N
                     continue;
                 }
                 BaseOptions bop = (BaseOptions) instance;
-                System.out.println("installed");
+                System.out.println("installed"); // NOI18N
                 installedOptions.put(bop.getKitClass(), bop);
             }
         }

@@ -32,7 +32,7 @@ class FoldHierarchyTestEnv {
         FoldManagerFactoryProvider.setForceCustomProvider(true);
         FoldManagerFactoryProvider provider = FoldManagerFactoryProvider.getDefault();
         assert (provider instanceof CustomProvider)
-            : "setForceCustomProvider(true) did not ensure CustomProvider use";
+            : "setForceCustomProvider(true) did not ensure CustomProvider use"; // NOI18N
 
         CustomProvider customProvider = (CustomProvider)provider;
         customProvider.removeAllFactories(); // cleanup all registered factories

@@ -65,7 +65,7 @@ public class NestedFoldManagerTest extends TestCase {
                 Fold rootFold = hierarchy.getRootFold();
                 int foldCount = rootFold.getFoldCount();
                 int expectedFoldCount = 1;
-                assertTrue("Incorrect fold count " + foldCount, 
+                assertTrue("Incorrect fold count " + foldCount, // NOI18N
                     (foldCount == expectedFoldCount)
                 );
                 
@@ -73,31 +73,31 @@ public class NestedFoldManagerTest extends TestCase {
                 FoldType foldType = fold.getType();
                 int foldStartOffset = fold.getStartOffset();
                 int foldEndOffset = fold.getEndOffset();
-                assertTrue("Incorrect fold type " + foldType,
+                assertTrue("Incorrect fold type " + foldType, // NOI18N
                     (foldType == AbstractFoldManager.REGULAR_FOLD_TYPE));
-                assertTrue("Incorrect fold start offset " + foldStartOffset,
+                assertTrue("Incorrect fold start offset " + foldStartOffset, // NOI18N
                     (foldStartOffset == FOLD_START_OFFSET_OUTER));
-                assertTrue("Incorrect fold end offset " + foldEndOffset,
+                assertTrue("Incorrect fold end offset " + foldEndOffset, // NOI18N
                     (foldEndOffset == FOLD_END_OFFSET_OUTER));
                 
                 // Test inner fold
                 Fold outerFold = fold;
                 foldCount = outerFold.getFoldCount();
                 expectedFoldCount = 1;
-                assertTrue("Incorrect fold count " + foldCount, 
+                assertTrue("Incorrect fold count " + foldCount, // NOI18N
                     (foldCount == expectedFoldCount)
                 );
                 
                 fold = outerFold.getFold(0);
-                assertTrue("Folds must differ", (fold != outerFold));
+                assertTrue("Folds must differ", (fold != outerFold)); // NOI18N
                 foldType = fold.getType();
                 foldStartOffset = fold.getStartOffset();
                 foldEndOffset = fold.getEndOffset();
-                assertTrue("Incorrect fold type " + foldType,
+                assertTrue("Incorrect fold type " + foldType, // NOI18N
                     (foldType == AbstractFoldManager.REGULAR_FOLD_TYPE));
-                assertTrue("Incorrect fold start offset " + foldStartOffset,
+                assertTrue("Incorrect fold start offset " + foldStartOffset, // NOI18N
                     (foldStartOffset == FOLD_START_OFFSET_INNER));
-                assertTrue("Incorrect fold end offset " + foldEndOffset,
+                assertTrue("Incorrect fold end offset " + foldEndOffset, // NOI18N
                     (foldEndOffset == FOLD_END_OFFSET_INNER));
 
             } finally {

@@ -95,7 +95,7 @@ public class BaseOptions extends OptionSupport {
      */
     protected static final int LATEST_OPTIONS_VERSION = UpgradeOptions.LATEST_VERSION;
     
-    protected static final String OPTIONS_VERSION_PROP = "optionsVersion";
+    protected static final String OPTIONS_VERSION_PROP = "optionsVersion"; // NOI18N
     
     public static final String ABBREV_MAP_PROP = "abbrevMap"; // NOI18N
     public static final String BASE = "base"; // NOI18N
@@ -276,7 +276,7 @@ public class BaseOptions extends OptionSupport {
                 
                 if (fo != null){
                     try{
-                        StringTokenizer stok = new StringTokenizer(name,"/");
+                        StringTokenizer stok = new StringTokenizer(name,"/"); // NOI18N
                         while (stok.hasMoreElements()) {
                             String newFolder = stok.nextToken();
                             if (fo.getFileObject(newFolder) == null){
@@ -290,7 +290,7 @@ public class BaseOptions extends OptionSupport {
                     }
                     
                     f = Repository.getDefault().getDefaultFileSystem().
-                    findResource(AllOptionsFolder.FOLDER+"/"+name);
+                    findResource(AllOptionsFolder.FOLDER+"/"+name); // NOI18N
                 }
             }
             

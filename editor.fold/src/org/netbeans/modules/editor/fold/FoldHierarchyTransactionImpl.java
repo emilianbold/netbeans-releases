@@ -413,7 +413,7 @@ public final class FoldHierarchyTransactionImpl {
 
         } else { // not present in hierarchy - must be blocked (or error)
             if (!execution.isBlocked(fold)) { // not blocked i.e. already removed
-                throw new IllegalStateException("Fold already removed: " + fold);
+                throw new IllegalStateException("Fold already removed: " + fold); // NOI18N
             }
             execution.unmarkBlocked(fold);
             // If the fold was blocking other folds then unblock them here

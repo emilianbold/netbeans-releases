@@ -70,7 +70,7 @@ public class MacroInputPanel extends javax.swing.JPanel {
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
         macroLabel.setLabelFor(macroField);
-        macroLabel.setText(getBundleString( "MIP_Macro" ));
+        macroLabel.setText(getBundleString( "MIP_Macro" )); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -87,7 +87,7 @@ public class MacroInputPanel extends javax.swing.JPanel {
         add(macroField, gridBagConstraints);
 
         expandLabel.setLabelFor(expandTextArea);
-        expandLabel.setText(getBundleString( "MIP_Expand" ));
+        expandLabel.setText(getBundleString( "MIP_Expand" )); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;

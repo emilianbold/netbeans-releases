@@ -171,7 +171,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
             rootFold = ApiPackageAccessor.get().createFold(
                 new FoldOperationImpl(this, null, Integer.MAX_VALUE),
                 FoldHierarchy.ROOT_FOLD_TYPE,
-                "root",
+                "root", // NOI18N
                 false,
                 doc,
                 0, doc.getEndPosition().getOffset(),
@@ -318,7 +318,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
      */
     public boolean add(Fold fold, FoldHierarchyTransactionImpl transaction) {
         if (fold.getParent() != null || isBlocked(fold)) {
-            throw new IllegalStateException("Fold already added: " + fold);
+            throw new IllegalStateException("Fold already added: " + fold); // NOI18N
         }
         
         boolean added = transaction.addFold(fold);
@@ -395,7 +395,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
         // Find block for the given blocked fold
         Fold block = (Fold)blocked2block.remove(blocked);
         if (block == null) { // not blocked
-            throw new IllegalArgumentException("Not blocked: " + blocked);
+            throw new IllegalArgumentException("Not blocked: " + blocked); // NOI18N
         }
 
         // Remove the fold from set of blocked folds of the block
@@ -424,7 +424,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
             int size = blocked2block.size();
             blocked2block.keySet().removeAll(blockedSet);
             if (size - blocked2block.size() != blockedSet.size()) { // not all removed
-                throw new IllegalStateException("Not all removed: " + blockedSet);
+                throw new IllegalStateException("Not all removed: " + blockedSet); // NOI18N
             }
         }
         return blockedSet;
@@ -596,7 +596,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
 
         if (debug) {
             /*DEBUG*/System.err.println("FoldHierarchy rebuild():" // NOI18N
-                + " FoldManager factory count=" + factoryListLength 
+                + " FoldManager factory count=" + factoryListLength // NOI18N
             );
         }
         
@@ -794,7 +794,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
     
     public String toString() {
         StringBuffer sb = new StringBuffer();
-        sb.append("component=");
+        sb.append("component="); // NOI18N
         sb.append(System.identityHashCode(getComponent()));
         sb.append('\n');
 
@@ -807,7 +807,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
             sb.append("BLOCKED\n"); // NOI18N
             for (Iterator it = blocked2block.entrySet().iterator(); it.hasNext();) {
                 Map.Entry entry = (Map.Entry)it.next();
-                sb.append("    ");
+                sb.append("    "); // NOI18N
                 sb.append(entry.getKey());
                 sb.append(" blocked-by "); // NOI18N
                 sb.append(entry.getValue());
@@ -820,7 +820,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
             sb.append("BLOCKERS\n"); // NOI18N
             for (Iterator it = block2blockedSet.entrySet().iterator(); it.hasNext();) {
                 Map.Entry entry = (Map.Entry)it.next();
-                sb.append("    ");
+                sb.append("    "); // NOI18N
                 sb.append(entry.getKey());
                 sb.append('\n');
                 Set blockedSet = (Set)entry.getValue();

@@ -90,12 +90,12 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     /** Name of the main folder where the particular toolbars' folders
      * are located.
      */
-    private static final String TOOLBARS_FOLDER_NAME = "Toolbars";
+    private static final String TOOLBARS_FOLDER_NAME = "Toolbars"; // NOI18N
     
     /** Name of the folder for the default toolbar. */
-    private static final String DEFAULT_TOOLBAR_NAME = "Default";
+    private static final String DEFAULT_TOOLBAR_NAME = "Default"; // NOI18N
     
-    static final String BASE_MIME_TYPE = "text/base";
+    static final String BASE_MIME_TYPE = "text/base"; // NOI18N
 
     /** Runnable for returning the focus back to the last active text component. */
     private static final Runnable returnFocusRunnable
@@ -175,7 +175,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     
     public String getName() {
         //Required for Aqua L&F toolbar UI
-        return "editorToolbar";
+        return "editorToolbar"; // NOI18N
     }
     
     public void setUI(ToolBarUI ui){
@@ -230,8 +230,8 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
      * or "text/base" for the global folder.
      */
     private static DataFolder getToolBarFolder(String type, boolean forceCreate) {
-        String toolbarFolderPath = "Editors/" + type + "/"
-            + TOOLBARS_FOLDER_NAME + "/" + DEFAULT_TOOLBAR_NAME;
+        String toolbarFolderPath = "Editors/" + type + "/" // NOI18N
+            + TOOLBARS_FOLDER_NAME + "/" + DEFAULT_TOOLBAR_NAME; // NOI18N
 
         DataFolder toolbarFolder = null;
         FileObject f = Repository.getDefault().
@@ -402,7 +402,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                         if (icon == null) {
                             String resourceId = (String)a.getValue(BaseAction.ICON_RESOURCE_PROPERTY);
                             if (resourceId == null) { // use default icon
-                                resourceId = "org/netbeans/modules/editor/resources/default.gif";
+                                resourceId = "org/netbeans/modules/editor/resources/default.gif"; // NOI18N
                             }
                             Image img = org.openide.util.Utilities.loadImage(resourceId);
                             if (img != null) {
@@ -419,7 +419,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                                 MultiKeyBinding binding = (MultiKeyBinding)o;
                                 if (actionName.equals(binding.actionName)) {
                                     button.setToolTipText(button.getToolTipText()
-                                        + " (" + getMnemonic(binding) + ")");
+                                        + " (" + getMnemonic(binding) + ")"); // NOI18N
                                     break; // multiple shortcuts ?
                                 }
                             }
@@ -469,27 +469,27 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                 sortSupport.addEdge(firstName, secondName);
             } else { // edge not added
                 if (debugSort) {
-                    System.out.println("Edge not added: "
-                        + firstName + " -> " + name2dob.containsKey(firstName)
-                        + ", " + secondName + " -> " + name2dob.containsKey(secondName)
+                    System.out.println("Edge not added: " // NOI18N
+                        + firstName + " -> " + name2dob.containsKey(firstName) // NOI18N
+                        + ", " + secondName + " -> " + name2dob.containsKey(secondName) // NOI18N
                     );
                 }
             }
         }
 
         if (debugSort) {
-            System.out.println("Names: " + names + "\nsortSupport:" + sortSupport);
+            System.out.println("Names: " + names + "\nsortSupport:" + sortSupport); // NOI18N
         }
 
         List standalones = sortSupport.eliminateMultipleStarts(names, true);
         if (debugSort) {
-            System.out.println("Eliminated multiple starts: " + sortSupport
-                + "\nStandalones: " + standalones);
+            System.out.println("Eliminated multiple starts: " + sortSupport // NOI18N
+                + "\nStandalones: " + standalones); // NOI18N
         }
 
         List sortedNameList = sortSupport.createSortedList();
         if (debugSort) {
-            System.out.println("Sorted Name List: " + sortedNameList);
+            System.out.println("Sorted Name List: " + sortedNameList); // NOI18N
         }
 
         sortedNameList.addAll(standalones);
@@ -540,7 +540,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
             e.hasMoreElements();
         ) {
             String name = (String)e.nextElement();
-            int slashIndex = name.indexOf("/");
+            int slashIndex = name.indexOf("/"); // NOI18N
             if (slashIndex != -1) { //NOI18N
                 Object value = primaryFile.getAttribute(name);
                 if ((value instanceof Boolean) && ((Boolean) value).booleanValue()){
@@ -600,7 +600,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
             if (verts.indexOf(end) == -1) { // not yet added
                 verts.add(end);
                 if (debugSort) {
-                    System.out.println("added edge " + start + " -> " + end);
+                    System.out.println("added edge " + start + " -> " + end); // NOI18N
                 }
                 if (mdfs(start)) { // cycle created by added edge
                     verts.remove(verts.size() - 1);
@@ -608,7 +608,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                         vert2edges.remove(start);
                     }
                     if (debugSort) {
-                        System.out.println("REMOVED edge " + start + " -> " + end);
+                        System.out.println("REMOVED edge " + start + " -> " + end); // NOI18N
                     }
                 }
             }
@@ -660,11 +660,11 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
             allVerts.removeAll(edgesEnds);
             Iterator it = allVerts.iterator();
             if (!it.hasNext()) {
-                throw new IllegalStateException("No first item");
+                throw new IllegalStateException("No first item"); // NOI18N
             }
             Object first = it.next();
             if (it.hasNext()) { // [PENDING] 
-                throw new IllegalStateException("More than one start item");
+                throw new IllegalStateException("More than one start item"); // NOI18N
             }
             
             mdfs(first);
@@ -710,8 +710,8 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         }
 
         public String toString() {
-            return "edgesEnds=" + edgesEnds
-                + "\n\n vert2edges=" + vert2edges;
+            return "edgesEnds=" + edgesEnds // NOI18N
+                + "\n\n vert2edges=" + vert2edges; // NOI18N
         }
 
     }

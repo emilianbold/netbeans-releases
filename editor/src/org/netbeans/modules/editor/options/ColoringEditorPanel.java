@@ -276,7 +276,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
     //-------------------------------------------------
     private static class PropWithDefaultPanel extends JPanel {
 
-        public static final String PROP_VALUE = "RealValue";
+        public static final String PROP_VALUE = "RealValue"; // NOI18N
 
         Object value;
         Object defaultValue;
@@ -392,7 +392,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
 
         private class PropertyModelSupport implements ExPropertyModel {
 
-            public static final String PROP_MOD_VALUE = "value";
+            public static final String PROP_MOD_VALUE = "value"; // NOI18N
 
             /** support for the properties changes. */
             private PropertyChangeSupport support;

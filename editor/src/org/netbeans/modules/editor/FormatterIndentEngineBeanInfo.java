@@ -78,20 +78,20 @@ public abstract class FormatterIndentEngineBeanInfo extends SimpleBeanInfo {
                 // Create property without read/write methods
                 pd = new PropertyDescriptor(propName, null, null);
             } catch (IntrospectionException e2) {
-                throw new IllegalStateException("Invalid property name=" + propName);
+                throw new IllegalStateException("Invalid property name=" + propName); // NOI18N
             }
 
             // Try a simple search for get/set methods - just by name
             // Successor can customize it if necessary
             String cap = capitalize(propName);
-            Method m = findMethod("get" + cap);
+            Method m = findMethod("get" + cap); // NOI18N
             if (m != null) {
                 try {
                     pd.setReadMethod(m);
                 } catch (IntrospectionException e2) {
                 }
             }
-            m = findMethod("set" + cap);
+            m = findMethod("set" + cap); // NOI18N
             if (m != null) {
                 try {
                     pd.setWriteMethod(m);
@@ -181,7 +181,7 @@ public abstract class FormatterIndentEngineBeanInfo extends SimpleBeanInfo {
     
     private String getValidIconPrefix() {
         return (iconPrefix != null) ? iconPrefix
-            : "org/netbeans/modules/editor/resources/indentEngine";
+            : "org/netbeans/modules/editor/resources/indentEngine"; // NOI18N
     }
     
     private Image getDefaultIcon(String iconResource){
@@ -193,13 +193,13 @@ public abstract class FormatterIndentEngineBeanInfo extends SimpleBeanInfo {
             if (icon == null) {
                 icon = loadImage(getValidIconPrefix() + ".gif"); // NOI18N
             }
-            return (icon != null) ? icon : getDefaultIcon(getValidIconPrefix() + ".gif");
+            return (icon != null) ? icon : getDefaultIcon(getValidIconPrefix() + ".gif"); // NOI18N
 
         } else {
             if (icon32 == null) {
                 icon32 = loadImage(getValidIconPrefix() + "32.gif"); // NOI18N
             }
-            return (icon32 != null) ? icon32 : getDefaultIcon(getValidIconPrefix() + "32.gif");
+            return (icon32 != null) ? icon32 : getDefaultIcon(getValidIconPrefix() + "32.gif"); // NOI18N
         }
     }
 

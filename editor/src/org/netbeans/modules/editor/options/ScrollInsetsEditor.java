@@ -61,7 +61,7 @@ public class ScrollInsetsEditor extends java.beans.PropertyEditorSupport {
         if (val == null)
             return null;
         else {
-            return "[" + int2percent( val.top ) + ',' + int2percent( val.left ) + ',' +
+            return "[" + int2percent( val.top ) + ',' + int2percent( val.left ) + ',' + // NOI18N
                    int2percent( val.bottom ) + ',' + int2percent( val.right ) + ']';
         }
     }
@@ -114,7 +114,7 @@ public class ScrollInsetsEditor extends java.beans.PropertyEditorSupport {
 
     private int percent2int( String val ) throws NumberFormatException {
         val = val.trim();
-        if( val.endsWith( "%" ) ) {
+        if( val.endsWith( "%" ) ) { // NOI18N
             return -Integer.parseInt( val.substring( 0, val.length() - 1 ) );
         } else {
             return Integer.parseInt( val );

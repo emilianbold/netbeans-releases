@@ -48,7 +48,7 @@ public class JavaKit extends ExtKit {
     public static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
 
     private static final String[] getSetIsPrefixes = new String[] {
-                "get", "set", "is"
+                "get", "set", "is" // NOI18N
             };
 
     /** Switch first letter of word to capital and insert 'get'
@@ -76,7 +76,7 @@ public class JavaKit extends ExtKit {
         Settings.addInitializer( new SaJavaSettingsInitializer() );
         Settings.reset();
 
-        ResourceBundle settings = ResourceBundle.getBundle( "settings" );
+        ResourceBundle settings = ResourceBundle.getBundle( "settings" ); // NOI18N
         String jcPath = null;
         try {
             jcPath = settings.getString( "Java_Completion" );
@@ -141,9 +141,9 @@ public class JavaKit extends ExtKit {
     protected Action[] createActions() {
         Action[] javaActions = new Action[] {
                                    new JavaDefaultKeyTypedAction(),
-                                   new PrefixMakerAction(makeGetterAction, "get", getSetIsPrefixes),
-                                   new PrefixMakerAction(makeSetterAction, "set", getSetIsPrefixes),
-                                   new PrefixMakerAction(makeIsAction, "is", getSetIsPrefixes),
+                                   new PrefixMakerAction(makeGetterAction, "get", getSetIsPrefixes), // NOI18N
+                                   new PrefixMakerAction(makeSetterAction, "set", getSetIsPrefixes), // NOI18N
+                                   new PrefixMakerAction(makeIsAction, "is", getSetIsPrefixes), // NOI18N
                                    new AbbrevDebugLineAction(),
                                };
         return TextAction.augmentList(super.createActions(), javaActions);
@@ -161,22 +161,22 @@ public class JavaKit extends ExtKit {
                 /* Check whether the user has written the ending 'e'
                  * of the first 'else' on the line.
                  */
-                if ("e".equals(typedText)) {
+                if ("e".equals(typedText)) { // NOI18N
                     try {
                         int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                         if (fnw >= 0 && fnw + 4 == dotPos
-                            && "else".equals(doc.getText(fnw, 4))
+                            && "else".equals(doc.getText(fnw, 4)) // NOI18N
                         ) {
                             reindent = true;
                         }
                     } catch (BadLocationException e) {
                     }
 
-                } else if (":".equals(typedText)) {
+                } else if (":".equals(typedText)) { // NOI18N
                     try {
                         int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                         if (fnw >= 0 && fnw + 4 <= doc.getLength()
-                            && "case".equals(doc.getText(fnw, 4))
+                            && "case".equals(doc.getText(fnw, 4)) // NOI18N
                         ) {
                             reindent = true;
                         }
@@ -241,7 +241,7 @@ public class JavaKit extends ExtKit {
     
     private static class SaJavaSettingsInitializer extends Settings.AbstractInitializer {
         public SaJavaSettingsInitializer() {
-            super( "sa-java-settings-initializer" );
+            super( "sa-java-settings-initializer" ); // NOI18N
         }
         
         
@@ -304,7 +304,7 @@ public class JavaKit extends ExtKit {
         /** Not implemented
          */
         public void append(byte[] buffer, int off, int len) throws IOException {
-	    throw new IllegalArgumentException("read only!");
+	    throw new IllegalArgumentException("read only!"); // NOI18N
         }
     
         /**
@@ -332,7 +332,7 @@ public class JavaKit extends ExtKit {
          *  @param requestWrite if true, file is opened for read/write operation.
          */
         public void open(boolean requestWrite) throws IOException {
-	    if(requestWrite) throw new IllegalArgumentException("read only!");
+	    if(requestWrite) throw new IllegalArgumentException("read only!"); // NOI18N
         }
     
         /** Closes DataAccessor file resource  */
@@ -355,7 +355,7 @@ public class JavaKit extends ExtKit {
     
         /** Clears the file and sets the offset to 0 */
         public void resetFile() throws IOException {
-            throw new IllegalArgumentException("read only!");
+            throw new IllegalArgumentException("read only!"); // NOI18N
         }
     
         /**
@@ -381,7 +381,7 @@ public class JavaKit extends ExtKit {
 	    while (streamOff < off) {
 		long len = stream.skip(off - streamOff);
 		streamOff += (int)len;
-		if (len == 0) throw new IOException("EOF");
+		if (len == 0) throw new IOException("EOF"); // NOI18N
 	    }
 
 	    return stream;

@@ -65,15 +65,15 @@ implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
 NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocument.Annotatable {
 
     /** Name of the formatter setting. */
-    public static final String FORMATTER = "formatter";
+    public static final String FORMATTER = "formatter"; // NOI18N
 
     /** Mime type of the document. The name of this property corresponds
      * to the property that is filled in the document by CloneableEditorSupport.
      */
-    public static final String MIME_TYPE_PROP = "mimeType";
+    public static final String MIME_TYPE_PROP = "mimeType"; // NOI18N
 
     /** Indent engine for the given kitClass. */
-    public static final String INDENT_ENGINE = "indentEngine";
+    public static final String INDENT_ENGINE = "indentEngine"; // NOI18N
 
     /** Formatter being used. */
     private Formatter formatter;

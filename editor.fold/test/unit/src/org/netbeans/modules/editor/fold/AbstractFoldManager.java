@@ -29,7 +29,7 @@ import org.netbeans.spi.editor.fold.FoldOperation;
 
 public abstract class AbstractFoldManager implements FoldManager {
     
-    public static final FoldType REGULAR_FOLD_TYPE = new FoldType("regular");
+    public static final FoldType REGULAR_FOLD_TYPE = new FoldType("regular"); // NOI18N
     
     private FoldOperation operation;
     

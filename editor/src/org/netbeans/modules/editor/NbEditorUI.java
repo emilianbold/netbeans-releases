@@ -294,7 +294,7 @@ public class NbEditorUI extends ExtEditorUI {
             } else if ("editorKit".equals(propName)) { // NOI18N
                 reset();
 
-            } else if ("ancestor".equals(propName)) {
+            } else if ("ancestor".equals(propName)) { // NOI18N
                 if (((Component)evt.getSource()).isDisplayable()) { // now displayable
                     startTCRegistryListening();
                 } else { // not displayable
