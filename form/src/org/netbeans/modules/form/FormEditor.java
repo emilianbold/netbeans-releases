@@ -535,7 +535,7 @@ static final long serialVersionUID =7424646018839457544L;
     public Object readResolve() {
       return FormEditor.getComponentInspector ();
     }
-  };
+  }
 
   static class EmptyInspectorNode extends org.openide.nodes.AbstractNode {
     public EmptyInspectorNode () {
@@ -595,47 +595,32 @@ static final long serialVersionUID =7424646018839457544L;
   public static void displayErrorLog () {
     if (errorLog.size () == 0) return;
 
-/*    JButton closeButton = new JButton (getFormBundle ().getString ("CTL_CLOSE"));
-    JButton detailsButton = new JButton (getFormBundle ().getString ("CTL_DETAILS"));
-    if (TopManager.getDefault ().notify (new NotifyDescriptor (
-          getFormBundle ().getString ("ERR_ErrorsNotification"),
-          getFormBundle ().getString ("CTL_ErrorsNotificationTitle"),
-          NotifyDescriptor.DEFAULT_OPTION,
-          NotifyDescriptor.WARNING_MESSAGE,
-          null, // icon
-          new Object[] { detailsButton, closeButton }, // options
-          closeButton
-        )) == detailsButton) 
-    { */
-      for (Iterator it = errorLog.iterator (); it.hasNext ();) {
-        ErrorLogItem item = (ErrorLogItem)it.next ();
-        if (item.getType () == ErrorLogItem.WARNING) {
-          System.out.println("WARNING: "+item.getDescription ()); // NOI18N
-        } else {
-          System.out.println("ERROR: "+item.getDescription ()); // NOI18N
+    ErrorLogDialog eld = new ErrorLogDialog ((ErrorLogItem[])errorLog.toArray (new ErrorLogItem[errorLog.size ()]));
+    errDlg = TopManager.getDefault ().createDialog (new DialogDescriptor (
+        eld, 
+        FormEditor.getFormBundle ().getString ("CTL_ErrorsNotificationTitle"), 
+        true,
+        new Object[] { FormEditor.getFormBundle ().getString ("CTL_CLOSE") },
+        FormEditor.getFormBundle ().getString ("CTL_CLOSE"),
+        DialogDescriptor.BOTTOM_ALIGN,
+        null,
+        new java.awt.event.ActionListener() {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            errDlg.setVisible (false);
+          }
         }
-        if (item.getThrowable () != null) {
-          System.out.println("Details:"); // NOI18N
-          item.getThrowable ().printStackTrace ();
-        }
-      }
-      
-      //new ErrorLogDialog (errorLog).show (); // [PENDING]
-//    }
-
-    TopManager.getDefault ().notify (new NotifyDescriptor.Message (
-          org.openide.util.NbBundle.getBundle (FormEditor.class).getString ("ERR_BetaErrorsNotification"),
-          NotifyDescriptor.WARNING_MESSAGE
-        )
-     ); 
+      )
+    );
+    errDlg.show ();
 
     clearLog ();
   }
-
+  private static java.awt.Dialog errDlg;
 }
 
 /*
  * Log
+ *  45   Gandalf   1.44        1/15/00  Ian Formanek    I18N
  *  44   Gandalf   1.43        1/13/00  Ian Formanek    NOI18N #2
  *  43   Gandalf   1.42        1/12/00  Pavel Buzek     I18N
  *  42   Gandalf   1.41        1/11/00  Pavel Buzek     
