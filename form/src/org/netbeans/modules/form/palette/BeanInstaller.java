@@ -489,7 +489,7 @@ public final class BeanInstaller extends Object {
       }
     }
 
-    String[] categories = ComponentPalette.sharedInstance ().getPaletteCategories();
+    String[] categories = ComponentPalette.getDefault ().getPaletteCategories();
     for (int i = 0; i < list.length; i++) {
       if (list[i].getName ().endsWith(JAR_EXT)) {
         if (alreadyInstalled.get(list[i].getName ()) == null) {
@@ -591,7 +591,7 @@ public final class BeanInstaller extends Object {
     /** Creates a new ExceptionBox for given exception descriptor. */
     public PaletteSelector() {
       super(null);
-      String[] categories = ComponentPalette.sharedInstance ().getPaletteCategories();
+      String[] categories = ComponentPalette.getDefault ().getPaletteCategories();
 
       list = new JList(categories);
       list.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -716,6 +716,8 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  25   Gandalf   1.24        11/5/99  Jaroslav Tulach ComponentPalette.getDefault
+ *        is back.
  *  24   Gandalf   1.23        11/4/99  Jaroslav Tulach Component palette is 
  *       faster/better/etc.
  *  23   Gandalf   1.22        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
