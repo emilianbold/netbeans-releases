@@ -60,7 +60,7 @@ public class RootContextTest extends NbTestCase {
 
     
     // initialize the test variables
-    public void initText () {
+    public void initTest () {
         
         // do init only once
         if (initialized) {
@@ -107,7 +107,7 @@ public class RootContextTest extends NbTestCase {
         return true;
     }
     
-    // asure the node selections with given manager
+    // assure the node selections with given manager
     public void doViewTest (final ExplorerManager mgr) throws Exception {
         mgr.setRootContext (root1);
         mgr.setSelectedNodes (new Node[] {arr1[0], arr1[2]});
@@ -134,7 +134,7 @@ public class RootContextTest extends NbTestCase {
     
     public void testBeanTreeView() throws Exception {
         
-        initText ();
+        initTest ();
         
         TreeView view = new BeanTreeView ();
         view.setSelectionMode (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
@@ -151,7 +151,7 @@ public class RootContextTest extends NbTestCase {
     
     public void testContextTreeView() throws Exception {
         
-        initText ();
+        initTest ();
         
         TreeView view = new ContextTreeView ();
         view.setSelectionMode (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
@@ -168,7 +168,7 @@ public class RootContextTest extends NbTestCase {
     
     public void testTreeTableView() throws Exception {
         
-        initText ();
+        initTest ();
         
         TreeTableView view = new TreeTableView ();
         view.setSelectionMode (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
@@ -185,7 +185,7 @@ public class RootContextTest extends NbTestCase {
     
     public void testListView() throws Exception {
         
-        initText ();
+        initTest ();
         
         ListView view = new ListView (); 
         view.setSelectionMode (ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -202,7 +202,7 @@ public class RootContextTest extends NbTestCase {
     
     public void testListTableView() throws Exception {
         
-        initText ();
+        initTest ();
         
         ListTableView view = new ListTableView ();
         view.setSelectionMode (ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
