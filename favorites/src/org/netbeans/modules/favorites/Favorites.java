@@ -215,6 +215,7 @@ final class Favorites extends FilterNode {
                         path = f.getAbsolutePath();
                     } else {
                         path = ds.getOriginal().getPrimaryFile().getPath();
+                        // XXX this should include filesystem display name, too; better to use #37549
                     }
                     return NbBundle.getMessage(Favorites.class, "CTL_DisplayNameTemplate", name, path);
                 } else {
