@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<mconfig name="java unit test config">
+
+    <testbag testattribs="ide" executor="ide" name="Breakpoints" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/test/debugger/breakpoints/disabled/JDK11DisabledBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/disabled/JDK11ImplDisabledBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/exception/JDK11ExceptionBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/exception/JDK11ImplExceptionBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/hidden/JDK11HiddenBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/hidden/JDK11ImplHiddenBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/line/JDK11LineBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/line/JDK11ImplLineBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/method/JDK11MethodBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/method/JDK11ImplMethodBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/suspending/JDK11SuspendingBreakpointTestCase.class"/>
+                <include name="org/netbeans/test/debugger/breakpoints/suspending/JDK11ImplSuspendingBreakpointTestCase.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="ide" executor="ide" name="Bugs" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/test/debugger/bugs/JDK11BugsTestCase.class"/>
+                <include name="org/netbeans/test/debugger/bugs/JDK11ImplBugsTestCase.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="ide" executor="ide" name="Watches" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/test/debugger/watches/JDK11BasicWatchesTestCase.class"/>
+                <include name="org/netbeans/test/debugger/watches/JDK11ImplBasicWatchesTestCase.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <executor name="ide" antfile="build.xml" target="runidetest"/>
+
+    <compiler name="unit-compiler" antfile="build.xml" target="unit-compiler" default="true"/>
+    
+    <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
+    
+</mconfig>
