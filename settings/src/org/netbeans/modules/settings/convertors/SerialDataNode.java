@@ -14,6 +14,7 @@
 package org.netbeans.modules.settings.convertors;
 
 import java.awt.Image;
+import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.PropertyChangeEvent;
@@ -413,17 +414,31 @@ public final class SerialDataNode extends DataNode {
             // properties
             BeanInfo beanInfo = Utilities.getBeanInfo (ic.instanceClass ());
             BeanNode.Descriptor descr = BeanNode.computeProperties (ic.instanceCreate (), beanInfo);
+            BeanDescriptor bd = beanInfo.getBeanDescriptor();
             initPList();
 
             props = Sheet.createPropertiesSet();
             if (descr.property != null) {
                 convertProps (props, descr.property, this);
             }
+            if (bd != null) {
+                // #29550: help from the beaninfo on property tabs
+                Object helpID = bd.getValue("propertiesHelpID"); // NOI18N
+                if (helpID != null && helpID instanceof String) {
+                    props.setValue("helpID", helpID); // NOI18N
+                }
+            }
             orig.put (props);
 
             if (descr.expert != null && descr.expert.length != 0) {
                 Sheet.Set p = Sheet.createExpertSet();
                 convertProps (p, descr.expert, this);
+                if (bd != null) {
+                    Object helpID = bd.getValue("expertHelpID"); // NOI18N
+                    if (helpID != null && helpID instanceof String) {
+                        p.setValue("helpID", helpID); // NOI18N
+                    }
+                }
                 orig.put (p);
             }
         } catch (ClassNotFoundException ex) {
