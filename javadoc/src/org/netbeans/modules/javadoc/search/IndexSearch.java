@@ -39,6 +39,7 @@ import org.openide.util.NbBundle;
 import org.openide.src.Element;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.HelpCtx;
+import org.openide.util.SharedClassObject;
 
 import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 
@@ -64,7 +65,7 @@ public class IndexSearch
     private SearchEngine searchEngine = null;
 
     /** The state of the window is stored in hidden options of DocumentationSettings */
-    DocumentationSettings ds = new DocumentationSettings();
+    DocumentationSettings ds = ((DocumentationSettings)SharedClassObject.findObject(DocumentationSettings.class, true));
 
     private String quickFind;
 
