@@ -560,6 +560,11 @@ final class Central implements ControllerHandler {
         } else {
             newActive = oldActive;
         }
+
+        // Unmaximize mode if necessary.
+        if(model.getMaximizedMode() == mode && model.getModeOpenedTopComponents(mode).isEmpty()) {
+            model.setMaximizedMode(null);
+        }
         
         if(isVisible() && opened) {
             viewRequestor.scheduleRequest(
@@ -646,6 +651,11 @@ final class Central implements ControllerHandler {
             newActive = oldActive;
         }
 
+        // Unmaximize mode if necessary.
+        if(model.getMaximizedMode() == mode && model.getModeOpenedTopComponents(mode).isEmpty()) {
+            model.setMaximizedMode(null);
+        }
+        
         // Remove mode from model if is not permanennt and emptied.
         boolean modeRemoved = false;
         if(!mode.isPermanent() && model.getModeTopComponents(mode).isEmpty()) {

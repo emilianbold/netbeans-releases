@@ -19,9 +19,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 
-import org.netbeans.core.windows.Constants;
-import org.netbeans.core.windows.ModeImpl;
-
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -44,7 +41,7 @@ implements PropertyChangeListener {
     public void actionPerformed(java.awt.event.ActionEvent ev) {
         TopComponent tc = TopComponent.getRegistry().getActivated();
         if(tc != null) {
-            tc.close();
+            ActionUtils.closeWindow(tc);
         }
     }
 

@@ -54,9 +54,7 @@ implements PropertyChangeListener {
         }
         
         if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
-            TopComponent cloned = ((TopComponent.Cloneable)tc).cloneComponent();
-            cloned.open();
-            cloned.requestActive();
+            ActionUtils.cloneWindow(tc);
         }
     }
 

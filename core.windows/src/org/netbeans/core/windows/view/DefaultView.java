@@ -253,6 +253,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             } else if(changeType == CHANGE_MODE_TOPCOMPONENT_REMOVED) {
                 debugLog("TopComponent removed"); // NOI18N
 
+                hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
                 hierarchy.updateDesktop(wsa);
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
                 if(modeView != null) {

@@ -26,7 +26,7 @@ import java.beans.PropertyChangeSupport;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.core.windows.actions.ActionFactory;
+import org.netbeans.core.windows.actions.ActionUtils;
 
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -774,7 +774,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     protected Action[] topComponentDefaultActions(TopComponent tc) {
-        return ActionFactory.createDefaultPopupActions(tc);
+        return ActionUtils.createDefaultPopupActions(tc);
     }
     
     protected String topComponentID (TopComponent tc, String preferredID) {
