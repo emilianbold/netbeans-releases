@@ -31,7 +31,7 @@ import org.xml.sax.InputSource;
 public class UpdateTracking {
     private static final String ELEMENT_MODULES = "installed_modules"; // NOI18N
     private static final String ELEMENT_MODULE = "module"; // NOI18N
-    private static final String ATTR_CODENAMEBASE = "codenamebase"; // NOI18N
+    private static final String ATTR_CODENAMEBASE = "codename"; // NOI18N
     private static final String ELEMENT_VERSION = "module_version"; // NOI18N
     private static final String ATTR_VERSION = "specification_version"; // NOI18N
     private static final String ATTR_ORIGIN = "origin"; // NOI18N
