@@ -28,14 +28,13 @@ public final class TomcatModule implements TargetModuleID {
     private final String docRoot;
     
     public TomcatModule (Target target, String path) {
-        this.target = (TomcatTarget) target;
-        this.path = path;
-        this.docRoot = null;
+        this(target, path, null);
     }
     
     public TomcatModule (Target target, String path, String docRoot) {
         this.target = (TomcatTarget) target;
-        this.path = path;
+        // Tomcat ROOT context path bug hack
+        this.path = "".equals(path) ? "/" : path; // NOI18N
         this.docRoot = docRoot;
     }
     

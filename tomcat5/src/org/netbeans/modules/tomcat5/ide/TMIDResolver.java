@@ -39,7 +39,10 @@ public class TMIDResolver extends org.netbeans.modules.j2ee.deployment.plugins.a
         String contextRoot = (String) queryInfo.get(KEY_CONTEXT_ROOT);
         if (contextRoot == null)
             return EMPTY_TMID_ARRAY;
-
+        // Tomcat ROOT context path bug hack
+        if ("".equals(contextRoot)) { // NOI18N
+            contextRoot = "/"; // NOI18N
+        }
         ArrayList result = new ArrayList();
         try {
             TargetModuleID[] tmidList = tm.getAvailableModules(ModuleType.WAR, targetList);
