@@ -55,7 +55,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     protected static final String DEBUGGER_PORT = "debugger_port"; //NOI18N
     protected static final String DEBUGGING_TYPE = "debugging_type"; //NOI18N
     protected static final String DISPLAY_NAME= "display_name";//NOI18N    
-    protected static final String SERVER_PORT= "server_port";//NOI18N
+    protected static final String SERVER_PORT= TomcatManager.SERVER_PORT;//NOI18N
     protected static final String ADMIN_PORT= "admin_port";//NOI18N
     protected static final String MONITOR_ENABLED= "monitor_enabled";//NOI18N
     protected static final String OPEN_CONTEXT_LOG_ON_RUN_ENABLED= "open_context_log_on_run_enabled";//NOI18N

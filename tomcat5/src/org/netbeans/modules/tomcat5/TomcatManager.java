@@ -85,7 +85,7 @@ public class TomcatManager implements DeploymentManager {
     public static final String DEBUG_PORT = "debugger_port";
     
     /** http server port property */
-    public static final String SERVER_PORT = "server_port";
+    public static final String SERVER_PORT = InstanceProperties.HTTP_PORT_NUMBER;
 
     public static final String HOST = "host";
     
