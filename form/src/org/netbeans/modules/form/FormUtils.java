@@ -452,7 +452,7 @@ public class FormUtils
                 oos.close();
 
                 ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                return new OIS(bais, formModel).readObject();
+                return new OIS(bais, bean.getClass().getClassLoader(), formModel).readObject();
             }
             catch (Exception ex) {
                 ErrorManager em = ErrorManager.getDefault();
@@ -1187,10 +1187,10 @@ public class FormUtils
         private ClassLoader classLoader;
         private FormModel formModel;
 
-        public OIS(InputStream is, FormModel formModel) throws IOException {
+        public OIS(InputStream is, ClassLoader loader, FormModel formModel) throws IOException {
             super(is);
             this.formModel = formModel;
-            classLoader = getClass().getClassLoader();
+            classLoader = loader;
         }
 
         protected Class resolveClass(ObjectStreamClass streamCls)
@@ -1214,11 +1214,12 @@ public class FormUtils
         }
         
         private Class loadClass(String name) throws ClassNotFoundException {
-            try {
-                return classLoader.loadClass(name);
-            } catch (ClassNotFoundException ex) {
-                return FormUtils.loadClass(name, formModel);
+            if (classLoader != null) {
+                try {
+                    return classLoader.loadClass(name);
+                } catch (ClassNotFoundException ex) {}
             }
+            return FormUtils.loadClass(name, formModel);
         }
         
     }
