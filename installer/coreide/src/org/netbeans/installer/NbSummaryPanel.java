@@ -18,8 +18,6 @@ import com.installshield.product.service.product.ProductService;
 import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizardx.panels.TextDisplayPanel;
 import com.installshield.util.Log;
-import com.installshield.product.GenericSoftwareObject;
-import com.installshield.product.ProductTree;
 
 import java.util.Properties;
 
@@ -43,22 +41,25 @@ public class NbSummaryPanel extends TextDisplayPanel
     
     public boolean queryEnter(WizardBeanEvent evt) {
         boolean okay = super.queryEnter(evt);
-
+        
         try {
             ProductService service = (ProductService) getService(ProductService.NAME);
-            
             if (type == ProductService.POST_INSTALL) {
-                ProductTree pt = service.getSoftwareObjectTree(ProductService.DEFAULT_PRODUCT_SOURCE);
-                GenericSoftwareObject gso = (GenericSoftwareObject) pt.getRoot();
-                
-                if (gso.getInstallStatus() == gso.UNINSTALLED) {
-                    // intallation failed
-                    
+                //#48305: Method GenericSoftwareObject.getInstallStatus() does not work. It returns
+                //always 0. We must use getWizard().getExitCode() as workaround.
+                //if (gso.getInstallStatus() == gso.UNINSTALLED) {
+                //ProductTree productTree = service.getSoftwareObjectTree(ProductService.DEFAULT_PRODUCT_SOURCE,null);
+                //GenericSoftwareObject gso = (GenericSoftwareObject) productTree.getRoot();
+                logEvent(this, Log.DBG, "queryEnter exitCode: " + getWizard().getExitCode());
+                if (getWizard().getExitCode() != -1) {
+                    //Installation failed or was cancelled.
                     Properties summary = service.getProductSummary(
                     ProductService.DEFAULT_PRODUCT_SOURCE,
                     ProductService.POST_INSTALL,
                     ProductService.HTML);
-                    setText(summary.getProperty(ProductService.SUMMARY_MSG));
+                    String summaryMessage = summary.getProperty(ProductService.SUMMARY_MSG);
+                    summaryMessage += resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.error)");
+                    setText(summaryMessage);
                 } else {
                     if (Util.isWindowsOS()) {
                         setText(resolveString
