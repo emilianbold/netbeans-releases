@@ -13,10 +13,12 @@
 
 package com.netbeans.enterprise.modules.db.explorer.actions;
 
-import java.util.Enumeration;
-import java.sql.Connection;
+import java.util.*;
+//import java.sql.Connection;
 import org.openide.*;
 import org.openide.nodes.*;
+import org.openide.util.NbBundle;
+
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
 import com.netbeans.enterprise.modules.db.explorer.dataview.*;
@@ -40,6 +42,8 @@ public class ViewDataAction extends DatabaseAction
 		String expression = "";
 		StringBuffer cols = new StringBuffer();
 		Node node;
+    ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+
 		if (activatedNodes != null && activatedNodes.length>0) {
 			try {
 
@@ -75,16 +79,17 @@ public class ViewDataAction extends DatabaseAction
 				
 				DataViewWindow win = new DataViewWindow(info.getDatabaseConnection(), info.getUser(), expression);
 				win.open();
-				win.fetch();
+				win.executeCommand();
 				
 			} catch(Exception e) {
-				TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to show data, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+				TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("ShowDataError") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 			}
 		}				 
 	}
 }
 /*
  * <<Log>>
+ *  7    Gandalf   1.6         2/10/00  Radko Najman    
  *  6    Gandalf   1.5         11/27/99 Patrik Knakal   
  *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
