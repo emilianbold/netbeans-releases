@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.core;
@@ -27,7 +27,7 @@ import org.openide.filesystems.multifs.MultiXMLFSTest.FileWrapper;
 import org.openide.filesystems.ReadOnlyFSTest;
 import org.openide.loaders.Utilities;
 
-import org.netbeans.core.modules.ProxyClassLoader;
+import org.netbeans.ProxyClassLoader;
 
 import org.netbeans.performance.MapArgBenchmark;
 import org.netbeans.performance.DataManager;
