@@ -20,16 +20,11 @@
 
 package org.netbeans.modules.javadoc.search;
 
-import java.util.*;
-import java.io.File;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.ServiceType;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.TopManager;
-import org.openide.NotifyDescriptor;
 
 public class Jdk12SearchType_japan extends JavadocSearchType {
 

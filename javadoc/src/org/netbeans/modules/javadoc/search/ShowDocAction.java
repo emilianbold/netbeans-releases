@@ -19,28 +19,19 @@
 
 package org.netbeans.modules.javadoc.search;
 
-import java.awt.Rectangle;
-import java.awt.BorderLayout;
 import javax.swing.JEditorPane;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-
-import org.openide.cookies.EditorCookie;
-
-import org.openide.DialogDescriptor;
-import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.CookieAction;
-import org.openide.src.ClassElement;
-import org.openide.cookies.SourceCookie;
-import org.openide.windows.TopComponent;
-import org.openide.windows.Workspace;
-import org.openide.windows.Mode;
-
 import org.netbeans.modules.java.JavaDataObject;
+import org.openide.cookies.EditorCookie;
+import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CookieAction;
+import org.openide.windows.TopComponent;
 
 /**
  *  On selected node try to find generated and mounted documentation
@@ -134,15 +125,15 @@ public class ShowDocAction extends CookieAction {
             }
             // try to guess which word is underneath the caret's dot.
             Document doc = p.getDocument();
-            javax.swing.text.Element lineRoot;
+            Element lineRoot;
 
             if (doc instanceof StyledDocument) {
-                lineRoot = org.openide.text.NbDocument.findLineRootElement((StyledDocument)doc);
+                lineRoot = NbDocument.findLineRootElement((StyledDocument)doc);
             } else {
                 lineRoot = doc.getDefaultRootElement();
             }
             int dot = p.getCaret().getDot();
-            javax.swing.text.Element line = lineRoot.getElement(lineRoot.getElementIndex(dot));
+            Element line = lineRoot.getElement(lineRoot.getElementIndex(dot));
             String contents;
             if (line == null)
                 return null;
@@ -168,7 +159,7 @@ public class ShowDocAction extends CookieAction {
                 Character.isJavaIdentifierStart(contents.charAt(end)))
                 end++;
             return contents.substring(begin, end);
-        } catch (javax.swing.text.BadLocationException ex) {
+        } catch (BadLocationException ex) {
             ex.printStackTrace();
             return null;
         }

@@ -26,7 +26,7 @@ import java.awt.Rectangle;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
-
+import org.netbeans.api.javahelp.Help;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.SplittedPanel;
 import org.openide.windows.TopComponent;
@@ -34,7 +34,6 @@ import org.openide.windows.Mode;
 import org.openide.windows.Workspace;
 import org.openide.windows.WindowManager;
 import org.openide.util.RequestProcessor;
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.src.Element;
@@ -45,6 +44,7 @@ import org.openide.execution.NbClassPath;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.javadoc.settings.DocumentationSettings;
+import org.openide.DialogDisplayer;
 
 /** Main window for documentation index search
  *
@@ -397,7 +397,9 @@ public class IndexSearch
     }//GEN-END:initComponents
 
     private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
-        TopManager.getDefault().showHelp(getHelpCtx());
+        Help help=(Help)Lookup.getDefault().lookup(Help.class);
+        
+        help.showHelp(getHelpCtx());
     }//GEN-LAST:event_helpButtonActionPerformed
 
     private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showSource
@@ -495,7 +497,7 @@ public class IndexSearch
                 }, 100 );      
             }
             else
-                TopManager.getDefault().showUrl( url );
+                HtmlBrowser.URLDisplayer.getDefault().showURL( url );
         }
         catch ( java.net.MalformedURLException ex ) {
             // Do nothing if the URL isn't O.K.
@@ -524,12 +526,12 @@ public class IndexSearch
                 }
                 else {
                     NotifyDescriptor.Message nd = new NotifyDescriptor.Message( ResourceUtils.getBundledString( "MSG_SEARCH_SrcNotFound" ) );   //NOI18N
-                    TopManager.getDefault().notify( nd );
+                    DialogDisplayer.getDefault().notify( nd );
                 }
             }
             else {
                 NotifyDescriptor.Message nd = new NotifyDescriptor.Message( ResourceUtils.getBundledString( "MSG_SEARCH_SrcNotFound" ) );   //NOI18N
-                TopManager.getDefault().notify( nd );
+                DialogDisplayer.getDefault().notify( nd );
             }
 
         }
@@ -620,14 +622,6 @@ public class IndexSearch
             indexSearch = new IndexSearch ();
             Workspace workspace = WindowManager.getDefault().getCurrentWorkspace();
             org.netbeans.modules.javadoc.JavadocModule.registerTopComponent(indexSearch);
-            /*
-            Mode myMode = workspace.createMode(
-              "JavaDocSearch", //NOI8N // NOI18N
-              org.openide.util.ResourceUtils.getBundledString("IndexSearch.workspace.name"), 
-              IndexSearch.class.getResource (ICON_RESOURCE));
-            myMode.setBounds(new Rectangle( 200, 200, 600, 400 ) );
-            myMode.dockInto( indexSearch );
-            */
 
             indexSearch.setName( ResourceUtils.getBundledString ("CTL_SEARCH_WindowTitle") );   //NOI18N
         }
@@ -696,7 +690,6 @@ public class IndexSearch
         searchComboBox.getEditor().setItem( toFind );
 
         resultsList.setModel( waitModel );
-        //((DefaultListModel)resultsList.getModel()).clear();
 
         try {
             searchEngine.search(new String[]{toFind}, new JavadocSearchEngine.SearchEngineCallback(){
@@ -709,7 +702,7 @@ public class IndexSearch
             });
         }
         catch(NoJavadocException noJdc){
-            TopManager.getDefault().notify( new NotifyDescriptor.Message( noJdc.getMessage() ) );   //NOI18N
+            DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( noJdc.getMessage() ) );   //NOI18N
             searchStoped();
             return;
         }
@@ -731,16 +724,10 @@ public class IndexSearch
             if ( comp == DocIndexItem.REFERENCE_COMPARATOR &&
                     !dii.getPackage().equals( pckg ) &&
                     dii.getIconIndex() != DocSearchIcons.ICON_PACKAGE ) {
-                // try {
                 DocIndexItem ndii = new DocIndexItem(  "PACKAGE ", dii.getPackage(), null, "" ); // NOI18N
                 ndii.setIconIndex( DocSearchIcons.ICON_PACKAGE );
                 model.addElement( ndii );
                 pckg = dii.getPackage();
-                // }
-                // catch ( java.net.MalformedURLException e ) {
-                //System.out.println( e );
-                // Do nothing if bad URL
-                // }
             }
 
             model.addElement( dii );

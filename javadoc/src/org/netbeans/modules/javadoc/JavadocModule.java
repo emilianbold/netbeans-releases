@@ -13,41 +13,19 @@
 
 package org.netbeans.modules.javadoc;
 
-import java.io.File;
-import java.io.IOException;
-import java.beans.*;
 import java.awt.Image;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.beans.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Enumeration;
-import java.lang.reflect.Method;
-import javax.swing.event.*;
-import javax.swing.KeyStroke;
-import javax.swing.text.Keymap;
-
-import org.openide.ErrorManager;
-import org.openide.util.Utilities;
-import org.openide.src.nodes.FilterFactory;
-import org.openide.actions.CutAction;
-import org.openide.util.actions.SystemAction;
-import org.openide.modules.*;
-import org.openide.TopManager;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.util.SharedClassObject;
+import java.util.LinkedList;
+import org.netbeans.modules.javadoc.search.IndexBuilder;
+import org.openide.filesystems.FileSystemCapability;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.modules.ModuleInstall;
 import org.openide.windows.TopComponent;
 
-import org.netbeans.modules.javadoc.settings.StdDocletSettingsService;
-import org.netbeans.modules.javadoc.comments.JavaDocPropertySupportFactory;
-import org.netbeans.modules.javadoc.comments.AutoCommentAction;
-import org.netbeans.modules.javadoc.search.SearchDocAction;
-import org.netbeans.modules.javadoc.search.DocFileSystem;
-
-import org.openide.util.RequestProcessor;
 
 /** Class for initializing Javadoc module on IDE startup.
 
@@ -62,12 +40,12 @@ public class JavadocModule extends ModuleInstall {
 
     public void installed() {
         super.installed();
-        org.netbeans.modules.javadoc.search.IndexBuilder.initialize();
+        IndexBuilder.initialize();
     }
 
     public void restored() {
         super.restored();
-        org.netbeans.modules.javadoc.search.IndexBuilder.initialize();
+        IndexBuilder.initialize();
     }
 
     protected Object writeReplace(){
@@ -76,7 +54,7 @@ public class JavadocModule extends ModuleInstall {
     
     public synchronized static void registerTopComponent(TopComponent tc) {
         if (floatingTopComponents == null)
-            floatingTopComponents = new java.util.LinkedList();
+            floatingTopComponents = new LinkedList();
         floatingTopComponents.add(tc);
     }
     

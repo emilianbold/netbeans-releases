@@ -14,22 +14,19 @@
 package org.netbeans.modules.javadoc.search;
 
 import java.awt.event.ActionEvent;
-import java.io.*;
 import java.util.*;
 import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.html.parser.*;
-
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.awt.Actions;
-import org.openide.awt.JInlineMenu;
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem;
+import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.*;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.actions.Presenter;
 
 /**
  * @author Jesse Glick
@@ -106,7 +103,7 @@ public class IndexOverviewAction extends SystemAction implements Presenter.Menu,
         public void performActionAt(int index) {
             FileObject f = (FileObject)associatedInfo.get(index);
             try {
-                TopManager.getDefault().showUrl(f.getURL());
+                HtmlBrowser.URLDisplayer.getDefault().showURL(f.getURL());
             } catch (FileStateInvalidException fsie) {
                 ErrorManager.getDefault().notify(fsie);
             }
@@ -130,98 +127,6 @@ public class IndexOverviewAction extends SystemAction implements Presenter.Menu,
         }
         
         void addNotify() {
-            /*
-            displayNames = new ArrayList();
-            associatedInfo = new ArrayList();
-            Enumeration e = FileSystemCapability.DOC.fileSystems();
-            String[] names = {
-                "overview-summary.html", // NOI18N
-                "api/overview-summary.html", // NOI18N
-                "index.html", // NOI18N
-                "api/index.html", // NOI18N
-                "index.htm", // NOI18N
-                "api/index.htm", // NOI18N
-            };
-            while (e.hasMoreElements()) {
-                FileSystem fs = (FileSystem)e.nextElement();
-                FileObject index = null;
-                for (int i = 0; i < names.length; i++) {
-                    if ((index = fs.findResource(names[i])) != null) {
-                        break;
-                    }
-                }
-                if (index == null || index.getName().equals("index")) { // NOI18N
-                    // For single-package doc sets, overview-summary.html is not present,
-                    // and index.html is less suitable (it is framed). Look for a package
-                    // summary.
-                    // [PENDING] Display name is not ideal, e.g. "org.openide.windows (NetBeans Input/Output API)"
-                    // where simply "NetBeans Input/Output API" is preferable... but standard title filter
-                    // regexps are not so powerful (to avoid matching e.g. "Servlets (Main Documentation)").
-                    FileObject packageList = fs.findResource("package-list"); // NOI18N
-                    if (packageList == null) {
-                        packageList = fs.findResource("api/package-list"); // NOI18N
-                    }
-                    if (packageList != null) {
-                        try {
-                            InputStream is = packageList.getInputStream();
-                            try {
-                                BufferedReader r = new BufferedReader(new InputStreamReader(is));
-                                String line = r.readLine();
-                                if (line != null && r.readLine() == null) {
-                                    // Good, exactly one line as expected. A package name.
-                                    String resName = line.replace('.', '/') + "/package-summary.html"; // NOI18N
-                                    FileObject pindex = fs.findResource(resName);
-                                    if (pindex == null) {
-                                        pindex = fs.findResource("api/" + resName); // NOI18N
-                                    }
-                                    if (pindex != null) {
-                                        index = pindex;
-                                    }
-                                    // else fall back to index.html if available
-                                }
-                            } finally {
-                                is.close();
-                            }
-                        } catch (IOException ioe) {
-                                // Oh well, skip this one.
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-                        }
-                    }
-                }
-                if (index != null) {
-                    // Try to find a title.
-                    final String[] title = new String[1];
-                    try {
-                        Reader r = new InputStreamReader(index.getInputStream());
-                        try {
-                            class TitleParser extends Parser {
-                                public TitleParser() throws IOException {
-                                    super(DTD.getDTD("html32")); // NOI18N
-                                }
-                                protected void handleTitle(char[] text) {
-                                    title[0] = new String(text);
-                                }
-                            }
-                            new TitleParser().parse(r);
-                        } finally {
-                            r.close();
-                        }
-                    } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-                    }
-                    JavaDocFSSettings fss = JavaDocFSSettings.getSettingForFS(fs);
-                    if (title[0] != null && fss != null) {
-                        title[0] = fss.getSearchTypeEngine().getOverviewTitleBase(title[0]);
-                    }
-                    if (displayNames.isEmpty()) {
-                        displayNames.add(null);
-                        associatedInfo.add(null);
-                    }
-                    displayNames.add(title[0] != null ? title[0] : fs.getDisplayName());
-                    associatedInfo.add(index);
-                }
-            }
-            */
             IndexBuilder index = IndexBuilder.getDefault();
             List[] overviews = index.getIndices();
             if (overviews[0].isEmpty()) {
@@ -234,7 +139,5 @@ public class IndexOverviewAction extends SystemAction implements Presenter.Menu,
                 associatedInfo = overviews[1];
             }
         }
-
     }
-
 }
