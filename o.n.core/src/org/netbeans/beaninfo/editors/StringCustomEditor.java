@@ -57,7 +57,6 @@ public class StringCustomEditor extends javax.swing.JPanel implements NbCustomPr
     textAreaScroll = new javax.swing.JScrollPane ();
 
       textArea = new javax.swing.JTextArea ();
-      textAreaScroll.add (textArea);
 
     textAreaScroll.setViewportView (textArea);
     add (textAreaScroll, "Center");
@@ -75,6 +74,8 @@ public class StringCustomEditor extends javax.swing.JPanel implements NbCustomPr
 
 /*
  * Log
+ *  2    Gandalf   1.1         4/3/99   Ian Formanek    Fixed bug 1320 - 
+ *       Connecion wizard does not work. No wizard window is opened.
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  */
