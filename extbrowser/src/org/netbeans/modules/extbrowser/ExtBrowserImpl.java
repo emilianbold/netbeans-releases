@@ -163,7 +163,7 @@ public abstract class ExtBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
         ||  protocol.equals ("nbrescurrloc"))      // NOI18N
             return true;
         
-        if (protocol.startsWith ("nb"))
+        if (protocol.startsWith ("nb"))            // NOI18N
             return true;
         
         return false;
