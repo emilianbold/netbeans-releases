@@ -106,6 +106,10 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="base">
                 <folder name="Popup">
+                    <file name="org-netbeans-modules-editor-NbSelectInPopupAction.instance"/>
+                    <attr name="generate-goto-popup/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-editor-NbSelectInPopupAction.instance/format" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-editor-NbSelectInPopupAction.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-CutAction.instance"/>
                     <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-CopyAction.instance"/>
