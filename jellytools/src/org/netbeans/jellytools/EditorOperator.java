@@ -47,7 +47,6 @@ import org.openide.loaders.DataObject;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 import org.openide.text.CloneableEditor;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.text.Line.Set;
@@ -136,14 +135,6 @@ public class EditorOperator extends TopComponentOperator {
         this.requestFocus(); // needed for pushKey() methods
     }
 
-    /** Closes this editor and discards all changes.
-     * It works also if file is not modified, so it is a safe way how to close
-     * Editor and no block further execution.
-     */
-    public void closeDiscard() {
-        close(false);
-    }
-
     /** Closes all opened documents and discards all changes.
      * It works also if no file is modified, so it is a safe way how to close
      * documents and no block further execution.
@@ -161,36 +152,26 @@ public class EditorOperator extends TopComponentOperator {
      * @param save true - save changes, false - discard changes
      */
     public void close(boolean save) {
-        close((TopComponent)getSource(), save);
+        if(save) {
+            super.save();
+            close();
+        } else {
+            closeDiscard();
+        }
     }
     
-    /** Closes top component. If it is CloneableEditor top component,
-     * it saves it or not depending on given flag. Other top components like
-     * VCS outputs are closed directly.
+    /** Closes top component. It saves it or not depending on given flag. 
+     * Other top components like VCS outputs are closed directly.
      * It is package private because it is also used by EditorWindowOperator. 
      */
     static void close(TopComponent tc, boolean save) {
-        if(tc instanceof CloneableEditor) {
-            CloneableEditor ce = (CloneableEditor)tc;
-            try {
-                Method cloneableEditorSupport = CloneableEditor.class.getDeclaredMethod("cloneableEditorSupport", null); // NOI18N
-                cloneableEditorSupport.setAccessible(true);
-                CloneableEditorSupport ces = (CloneableEditorSupport)cloneableEditorSupport.invoke(ce, null);
-                if(ces.isModified()) {
-                    if(save) {
-                        ces.saveDocument();
-                    } else {
-                        // make editor unmodified
-                        Method notifyUnmodified = CloneableEditorSupport.class.getDeclaredMethod("notifyUnmodified", null); // NOI18N
-                        notifyUnmodified.setAccessible(true);
-                        notifyUnmodified.invoke(ces, null);
-                    }
-                }
-            } catch (Exception e) {
-                throw new JemmyException("Setting editor unmodified by reflection or saving failed.", e);// NOI18N
-            }
+        TopComponentOperator tco = new TopComponentOperator(tc);
+        if(save) {
+            tco.save();
+            tco.close();
+        } else {
+            tco.closeDiscard();
         }
-        tc.close();
     }
 
     /** Returns operator of currently shown editor pane.

@@ -13,8 +13,8 @@
 package org.netbeans.jellytools;
 
 import java.awt.Component;
-import java.awt.EventQueue;
 import java.awt.Point;
+import java.io.IOException;
 import javax.swing.JComponent;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabLayoutModel;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
@@ -36,6 +36,8 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.windows.TopComponent;
 
 /** Represents org.openide.windows.TopComponent. It is IDE wrapper for a lot of
@@ -155,23 +157,13 @@ public class TopComponentOperator extends JComponentOperator {
         // for example for PropertySheetOperator in Options window.
         // In that case do nothing.
         if(getSource() instanceof TopComponent) {
-            // activate TopComponent, i.e. switch tab control to be active
-            if(EventQueue.isDispatchThread()) {
-                // if in dispatch thread, invoke directly
-                ((TopComponent)getSource()).requestActive();
-            } else {
-                // run it in dispatch thread
-                try {
-                    // actions has to be invoked in dispatch thread (see http://www.netbeans.org/issues/show_bug.cgi?id=35755)
-                    EventQueue.invokeAndWait(new Runnable() {
-                        public void run() {
-                            ((TopComponent)getSource()).requestActive();
-                        }
-                    });
-                } catch (Exception e) {
-                    throw new JemmyException("Exception while calling requestActive()", e);
+            // activate TopComponent, i.e. switch tab control to be active.
+            // run in dispatch thread
+            runMapping(new MapVoidAction("close") {
+                public void map() {
+                    ((TopComponent)getSource()).requestActive();
                 }
-            }
+            });
         }
     }
 
@@ -222,28 +214,71 @@ public class TopComponentOperator extends JComponentOperator {
         waitComponentShowing(false);
     }
 
+    /** Closes this TopComponent instance by IDE API call and wait until
+     * it is not closed. If this TopComponent is modified (e.g. editor top
+     * component), it discards possible changes.
+     * @see #close
+     */
+    public void closeDiscard() {
+        setUnmodified();
+        close();
+    }
+    
+    /** Finds DataObject for the content of this TopComponent and set it
+     * unmodified. Used in closeDiscard method.
+     */
+    private void setUnmodified() {
+        // should be just one node
+        org.openide.nodes.Node[] nodes = ((TopComponent)getSource()).getActivatedNodes();
+        // TopComponent like Execution doesn't have any nodes associated
+        if(nodes != null) {
+            for(int i=0;i<nodes.length;i++) {
+                DataObject dob = (DataObject)nodes[i].getCookie(DataObject.class);
+                dob.setModified(false);
+            }
+        }
+    }
+
+    /** Saves content of this TopComponent. If it is not applicable or content 
+     * of TopComponent is not modified, it does nothing.
+     */
+    public void save() {
+        // should be just one node
+        org.openide.nodes.Node[] nodes = ((TopComponent)getSource()).getActivatedNodes();
+        // TopComponent like Execution doesn't have any nodes associated
+        if(nodes != null) {
+            for(int i=0;i<nodes.length;i++) {
+                SaveCookie sc = (SaveCookie)nodes[i].getCookie(SaveCookie.class);
+                if(sc != null) {
+                    try {
+                        sc.save();
+                    } catch (IOException e) {
+                        throw new JemmyException("Exception while saving this TopComponent.", e);
+                    }
+                }
+            }
+        }
+    }
+    
     /** Closes this TopComponent instance by IDE API call and wait until 
-     * it is not closed.
+     * it is not closed. If this TopComponent is modified (e.g. editor top
+     * component), question dialog is shown and you have to close it. To close 
+     * this TopComponent and discard possible changes use {@link #closeDiscard}
+     * method.
      */
     public void close() {
-        // used direct call of IDE API method because CloseViewAction closes
-        // active TopComponent and not neccesarily this one
-        if(EventQueue.isDispatchThread()) {
-            // if in dispatch thread, invoke directly
-            ((TopComponent)getSource()).close();
-        } else {
-            // run it in dispatch thread
-            try {
-                // actions has to be invoked in dispatch thread (see http://www.netbeans.org/issues/show_bug.cgi?id=35755)
-                EventQueue.invokeAndWait(new Runnable() {
-                    public void run() {
+        // run in a new thread because question may block further execution
+        new Thread(new Runnable() {
+            public void run() {
+                // run in dispatch thread
+                runMapping(new MapVoidAction("close") {
+                    public void map() {
                         ((TopComponent)getSource()).close();
                     }
                 });
-            } catch (Exception e) {
-                throw new JemmyException("Exception while calling close()", e);
             }
-        }
+        }, "thread to close TopComponent").start();
+        // wait to be away
         waitComponentShowing(false);
     }
 
