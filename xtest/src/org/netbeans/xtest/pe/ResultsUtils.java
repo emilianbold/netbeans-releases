@@ -356,10 +356,12 @@ public class ResultsUtils {
     
     
     
-    // helper methods
-    
-
-    
+    /** loads whole report from the given reportRoot file (directory) 
+     * @param reportRoot - directory where report is stored
+     * @param divided - if false, method expects the whole report is saved in a single file, if true
+     *      the usuall directory structure is searched
+     * @returns the whole report 
+     */
     public static XTestResultsReport loadXTestResultsReport(File reportRoot, boolean divided) throws IOException, ClassNotFoundException {
         if (!reportRoot.isDirectory()) {
             throw new IOException("specified reportRoot is not a valid directory: "+reportRoot);
@@ -381,8 +383,7 @@ public class ResultsUtils {
             // is this correct?
             return xtr;
         }
-        
-        
+                
         // load test runs
         for (int i=0; i< xtr.xmlel_TestRun.length; i++) {            
             File aTestRunFile = getTestRunFile(reportRoot, xtr.xmlel_TestRun[i]);
@@ -420,6 +421,13 @@ public class ResultsUtils {
         xtr.xmlat_fullReport = true;
         return xtr;
     }
-
     
+    
+    /** loads whole report from the given reportRoot file (directory) 
+     * @param reportRoot - directory where xtest report is stored (the whole structure is expected)
+     * @returns loaded report
+     */
+    public static XTestResultsReport loadXTestResultsReport(File reportRoot) throws IOException, ClassNotFoundException {    
+        return loadXTestResultsReport(reportRoot, true);
+    }
 }

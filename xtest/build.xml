@@ -34,6 +34,7 @@ Microsystems, Inc. All Rights Reserved.
            debug="${build.compiler.debug}">
       <exclude name="org/netbeans/junit/**"/>
       <exclude name="org/netbeans/xtest/pe/server/**"/>
+      <exclude name="org/netbeans/xtest/util/NetUtils.java"/>
       <classpath>
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
@@ -127,6 +128,7 @@ Microsystems, Inc. All Rights Reserved.
            debug="${build.compiler.debug}">
       <include name="org/netbeans/xtest/pe/**"/>      
       <include name="org/netbeans/xtest/util/**"/>
+      <include name="org/netbeans/xtest/xmlserializer/**"/>
       <classpath>		
         <pathelement location="src"/>
         <fileset dir="external">
@@ -148,7 +150,7 @@ Microsystems, Inc. All Rights Reserved.
             basedir="src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false"
-            includes="org/netbeans/xtest/pe/**,org/netbeans/xtest/util/**"/>
+            includes="org/netbeans/xtest/pe/**,org/netbeans/xtest/util/**,org/netbeans/xtest/xmlserializer/**,org/netbeans/xtest/NestedException.class"/>            
     <copy file="external/xml-apis-1.0b2.jar" tofile="lib/xml-apis.jar"/>
     <copy file="external/xerces-2.0.1.jar" tofile="lib/xerces.jar"/>
     <copy file="external/xalan-2.3.1.jar" tofile="lib/xalan.jar"/>
@@ -158,7 +160,6 @@ Microsystems, Inc. All Rights Reserved.
     <zip zipfile="xtest-pes-distribution.zip">
      	<zipfileset dir="lib" prefix="lib" includes="**/*.jar,**/*.xsl"/>
      	<zipfileset dir="bin" prefix="bin" includes="xtest-pes.sh"/>
-     	<!-- again - this shoudn't be done this way -->
      	<zipfileset  dir="external/" prefix="lib" includes="ant-1.4.1.jar"/>
      </zip>  
   </target>

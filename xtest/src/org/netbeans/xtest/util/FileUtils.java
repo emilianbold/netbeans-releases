@@ -89,6 +89,44 @@ public class FileUtils {
     }
     
     
+    public static File[] listFiles(File directory, final String prefix, final String suffix) {
+        return listFiles(directory,prefix,suffix,0);
+    }
+    
+    // list all files with given prefix and/or suffix
+    public static File[] listFiles(File directory, final String prefix, final String suffix, final long modTime) {
+        if (!directory.isDirectory()) {
+            throw new IllegalArgumentException("directory argument is not a directory: "+directory.getPath());
+        }
+        // do the scan
+        File files[] = directory.listFiles(new FileFilter() {
+            public boolean accept(File file) {
+                String name = file.getName();
+                if (prefix != null) {
+                    if (!name.startsWith(prefix)) {
+                        return false;
+                    }
+                }
+                if (suffix != null) {
+                    if (!name.endsWith(suffix)) {
+                        return false;
+                    }
+                }
+                if (modTime > 0 ) {
+                    long currentTime = System.currentTimeMillis();
+                    long fileModTime = file.lastModified();
+                     // accept files older than modTime
+                     if ((currentTime - fileModTime) <= modTime) {
+                         return false;
+                     }
+                }
+                return true;
+            }
+        });
+        return files;
+    }
+    
+    
     // list all subdirectories
     public static File[] listSubdirectories(File rootDir) {
         if (rootDir == null) {
@@ -227,7 +265,7 @@ public class FileUtils {
         }
         
         
-        public static boolean delete(File file)  {            
+        public static boolean delete(File file)  {
             if (!file.exists()) {
                 // well, it doesn't exist, so the work is already done :-)
                 return true;
@@ -240,25 +278,36 @@ public class FileUtils {
         }
         
         
+        // libor's method .... do we still use it ?
         public static void deleteDirContent(File dir) {
-        File subfiles[] = dir.listFiles();
-        boolean warning = false;
-        if (subfiles != null && subfiles.length > 0) {
-            for (int i=0; i<subfiles.length; i++) {
-                if (subfiles[i].isDirectory())
-                    deleteDirContent(subfiles[i]);
-                else {
-                    warning = true;
-                    subfiles[i].delete();
+            File subfiles[] = dir.listFiles();
+            boolean warning = false;
+            if (subfiles != null && subfiles.length > 0) {
+                for (int i=0; i<subfiles.length; i++) {
+                    if (subfiles[i].isDirectory())
+                        deleteDirContent(subfiles[i]);
+                    else {
+                        warning = true;
+                        subfiles[i].delete();
+                    }
+                }
+                if (warning) {
+                    File warn_file = new File(dir,"content_of_this_directory_was_deleted");
+                    try { warn_file.createNewFile(); }
+                    catch (IOException e) { e.printStackTrace(); }
                 }
             }
-            if (warning) {
-                File warn_file = new File(dir,"content_of_this_directory_was_deleted");
-                try { warn_file.createNewFile(); }
-                catch (IOException e) { e.printStackTrace(); }
-            }
         }
-    }
+        
+        public static boolean deleteFiles(File[] files) {
+            boolean result = true;
+            for (int i=0; i<files.length; i++) {
+                if (files[i] != null) {
+                    result &= delete(files[i]);
+                }
+            }
+            return result;
+        }
         
               
        

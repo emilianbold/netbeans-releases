@@ -42,6 +42,8 @@ public class XTestResultsReportTask extends Task{
     private String testedType;
     private String host;
     private String comment;
+    private String project_id;
+    private String team;
     
     
     public void setTestingGroup(String testingGroup) {
@@ -59,6 +61,18 @@ public class XTestResultsReportTask extends Task{
     public void setProject(String project) {
         this.project = project;
     }    
+    
+    public void setProject_id(String project_id) {
+        this.project_id = project_id;
+    }
+    
+    public void setTeam(String team) {
+        if ((team != null) & (team.length() > 0)) {
+            this.team = team;
+        } else {
+            this.team = null;
+        }
+    }
     
     public void setBuild(String build) {
         this.build = build;
@@ -81,11 +95,13 @@ public class XTestResultsReportTask extends Task{
     public XTestResultsReport getReport() {
         XTestResultsReport report = new XTestResultsReport();
         report.xmlat_project = project;
+        report.xmlat_project_id = project_id;
         report.xmlat_build = build;
         report.xmlat_testingGroup = testingGroup;
         report.xmlat_testedType = testedType;
         report.xmlat_host = host;
         report.xmlat_comment = comment;
+        report.xmlat_team = team;
         report.xmlat_timeStamp = new java.sql.Timestamp(System.currentTimeMillis());
         return report;
     }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,7 +28,7 @@ import java.io.*;
  * @version 
  */
 public class XTestResultsReport extends XMLBean {
-
+    
     /** Creates new XTestReport */
     public XTestResultsReport() {
     }
@@ -48,8 +48,16 @@ public class XTestResultsReport extends XMLBean {
     public long     xmlat_testsFail;
     public long     xmlat_testsError;
     public boolean  xmlat_fullReport;
-    // only for compatibility reasons -> have to remove it
+    // only for compatibility reasons -> should to remove it
     public String   xmlat_platform;
+    // project_id - project_id of the report in the database 
+    public String   xmlat_project_id;
+    // link - link to local pes -> this is not full link, but only the part from         
+    // root of team web server
+    public String   xmlat_webLink;
+    // team - id of team which submitted the results
+    public String   xmlat_team;
+    
     // child elements
     public SystemInfo[] xmlel_SystemInfo;
     public TestRun[] xmlel_TestRun;
@@ -65,6 +73,7 @@ public class XTestResultsReport extends XMLBean {
         if (xmlat_testedType == null) return false;
         if (xmlat_host == null) return false;        
         if (xmlat_testsTotal < 1) return false;
+        if (xmlel_SystemInfo == null || xmlel_SystemInfo.length < 1) return false;
         return true;
     }
     
@@ -268,9 +277,42 @@ public class XTestResultsReport extends XMLBean {
         this.systemInfo_id = systemInfo_id;
     }
     
+    /** getter for weblink 
+     */
+    public void setWebLink(String webLink) {
+        xmlat_webLink = webLink;
+    }
+
+    /** setter for weblink 
+     */
+    public String getWebLink() {
+        return xmlat_webLink;
+    }
+    
+    public void setProject_id(String project_id) {
+        this.xmlat_project_id = project_id;
+    }
+    
+    public String getProject_id() {
+        return this.xmlat_project_id;
+    }
+    
+    /** getter for team
+    */
+    public void setTeam(String team) {
+        xmlat_team = team;
+    }
+
+    /** setter for weblink 
+     */
+    public String getTeam() {
+        return xmlat_team;
+    }
+    
+    
     
     // load XTestResultsReport from a file
-    /**
+    /** this one should be deprecated as well :-(
      * @param reportFile
      * @throws IOException
      * @throws ClassNotFoundException
@@ -283,6 +325,18 @@ public class XTestResultsReport extends XMLBean {
         }
         return (XTestResultsReport)xmlBean;
     }
+    
+    public static XTestResultsReport loadXTestResultsReportFromFile(File reportFile) throws IOException {
+        try {
+            XMLBean xmlBean = XMLBean.loadXMLBean(reportFile);
+            if (!(xmlBean instanceof XTestResultsReport)) {
+                throw new ClassNotFoundException("Loaded file "+reportFile+" does not contain XTestRestultsReport");
+            }
+            return (XTestResultsReport)xmlBean;
+        } catch (ClassNotFoundException cnfe) {
+            throw new IOException("Loaded file "+reportFile+" does not contain XTestRestultsReport, caused by ClassNotFoundException :"+cnfe.getMessage());
+        }
+    }    
     
     // old method name - should be deprecated
     /**

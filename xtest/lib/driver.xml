@@ -120,10 +120,13 @@ Microsystems, Inc. All Rights Reserved.
                 buildProjectNameProperty="xtest.tested.project" />
      <echo message="Testing build ${xtest.ide.build.name} in project ${xtest.tested.project}"/>
      <property name="xtest.tested.project" value="unknown"/>
+     <property name="xtest.tested.project_id" value="unknown"/>
+     <property name="xtest.testing.team" value=""/>
      <property name="xtest.testing.group" value="unknown"/>
      <property name="xtest.tested.type" value="unknown"/>
      <reportinfo  outFile="${xtest.results}/xmlresults/testreport.xml"
-            project="${xtest.tested.project}" build="${xtest.ide.build.name}"
+            project="${xtest.tested.project}" project_id="${xtest.tested.project_id}"
+            team="${xtest.testing.team}" build="${xtest.ide.build.name}"
             testingGroup="${xtest.testing.group}" testedType="${xtest.tested.type}"
             host="${xtest.machine}" comment="${xtest.testrun.comment}" />
      
