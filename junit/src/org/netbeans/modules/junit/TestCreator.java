@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -202,7 +202,7 @@ public class TestCreator extends java.lang.Object {
         MethodElement method = new MethodElement();
         method.setName(Identifier.create("suite"));
         method.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
-        method.setReturn(Type.createClass(Identifier.create("Test")));
+        method.setReturn(org.openide.src.Type.createClass(Identifier.create("Test")));
         
         // !-- GENERATE NbJUnit no longer supported
         // prepare the body - if we generate nbjunit - we have to generate NbTestSuite otherwise TestSuite        
@@ -237,7 +237,7 @@ public class TestCreator extends java.lang.Object {
         ConstructorElement constr = new ConstructorElement();
         constr.setName(className);
         constr.setModifiers(Modifier.PUBLIC);
-        MethodParameter[] params = {new MethodParameter("testName", Type.createFromClass(java.lang.String.class), false)};
+        MethodParameter[] params = {new MethodParameter("testName", org.openide.src.Type.createFromClass(java.lang.String.class), false)};
         constr.setParameters(params);
         constr.setBody("\nsuper(testName);\n");
         return constr;
@@ -286,7 +286,7 @@ public class TestCreator extends java.lang.Object {
                         newBody.append(NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.defaultBody")+"\n");
                     }
                     method.setBody(newBody.toString());
-                    method.setReturn(Type.VOID);
+                    method.setReturn(org.openide.src.Type.VOID);
                     methodList.add(method);
                 }
             }
@@ -321,8 +321,8 @@ public class TestCreator extends java.lang.Object {
         return false;
     }
      
-    static private Type[] getParameterTypes(MethodParameter[] params) {
-        Type[] types = new Type[params.length];
+    static private org.openide.src.Type[] getParameterTypes(MethodParameter[] params) {
+        org.openide.src.Type[] types = new org.openide.src.Type[params.length];
         for (int i = 0; i < params.length; i++) {
             types[i] = params[i].getType();
         }
@@ -359,7 +359,7 @@ public class TestCreator extends java.lang.Object {
         classTest.setModifiers(Modifier.PUBLIC);
 
         // remove default ctor, if exists (shouldn't throw exception)
-        constr = classTest.getConstructor(new Type[] {});
+        constr = classTest.getConstructor(new org.openide.src.Type[] {});
         if (null != constr)
             classTest.removeConstructor(constr);
         
@@ -442,7 +442,7 @@ public class TestCreator extends java.lang.Object {
 
         removeSuiteMethod(classTest);
 
-        MethodElement oldMethod = classTest.getMethod(Identifier.create("suite"), new Type[] {});
+        MethodElement oldMethod = classTest.getMethod(Identifier.create("suite"), new org.openide.src.Type[] {});
         if (oldMethod == null) {
             method = new MethodElement();
             method.setName(Identifier.create("suite"));
@@ -451,7 +451,7 @@ public class TestCreator extends java.lang.Object {
             method = oldMethod;
         }
         method.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
-        method.setReturn(Type.createClass(Identifier.create("Test")));
+        method.setReturn(org.openide.src.Type.createClass(Identifier.create("Test")));
         method.getJavaDoc().setText(NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.JavaDoc.comment"));
         
         // generate the body of suite method
@@ -606,9 +606,9 @@ public class TestCreator extends java.lang.Object {
         }
         if (newMethod.getReturn().isClass() || newMethod.getReturn().isArray()) {
             body.append("\nreturn null;\n");
-        } else if (newMethod.getReturn().equals(Type.BOOLEAN)) {
+        } else if (newMethod.getReturn().equals(org.openide.src.Type.BOOLEAN)) {
             body.append("\nreturn false;\n");
-        } else if (!newMethod.getReturn().equals(Type.VOID)) {
+        } else if (!newMethod.getReturn().equals(org.openide.src.Type.VOID)) {
             body.append("\nreturn 0;\n");
         }
         newMethod.setBody(body.toString());
@@ -752,8 +752,8 @@ public class TestCreator extends java.lang.Object {
         MethodElement mainMethod = new MethodElement();
         mainMethod.setName(Identifier.create("main"));
         mainMethod.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
-        mainMethod.setReturn(Type.VOID);
-        MethodParameter parameter = new MethodParameter("args", Type.createArray(Type.createFromClass(String.class)), false);
+        mainMethod.setReturn(org.openide.src.Type.VOID);
+        MethodParameter parameter = new MethodParameter("args", org.openide.src.Type.createArray(org.openide.src.Type.createFromClass(String.class)), false);
         mainMethod.setParameters(new MethodParameter[] {parameter} );
         return mainMethod;
     }
