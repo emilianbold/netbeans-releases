@@ -37,7 +37,7 @@ import java.util.*;
 final class ViewHelper {
     
     /** Debugging flag. */
-    private static final boolean DEBUG = true;//Debug.isLoggable(ViewHelper.class);
+    private static final boolean DEBUG = Debug.isLoggable(ViewHelper.class);
     
     
     /** Creates a new instance of ViewHelper */
