@@ -15,6 +15,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 import java.awt.event.MouseListener;
@@ -48,6 +49,7 @@ public class jemmy_003 extends JemmyTest {
 	    Demonstrator.setTitle("jemmy_003 test");
 
 	    JLabelOperator lbo = new JLabelOperator(wino, "Button has not been pushed yet");
+            JProgressBarOperator progress = new JProgressBarOperator(wino);
 
 	    for(int i = 1; i < 4; i++) {
 		for(int j = 1; j < 4; j++) {
@@ -74,6 +76,8 @@ public class jemmy_003 extends JemmyTest {
 		    }
 		    bo.push();
 		    lbo.waitText("Button \"" + bText + "\" has been pushed");
+                    progress.waitValue(bText);
+                    progress.waitValue(i*4 + j + 1);
 		}
 	    }
 	    final JButtonOperator bbo = new JButtonOperator(wino, "0-0");

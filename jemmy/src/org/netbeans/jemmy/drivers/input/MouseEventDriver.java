@@ -165,6 +165,7 @@ public class MouseEventDriver extends EventDriver implements MouseDriver {
 				     id, 
 				     System.currentTimeMillis(), 
 				     modifiers | mouseButton, x, y, clickCount,
-				     mouseButton == Operator.getPopupMouseButton()));
+				     mouseButton == Operator.getPopupMouseButton() &&
+                                     id == MouseEvent.MOUSE_PRESSED));
     }
 }

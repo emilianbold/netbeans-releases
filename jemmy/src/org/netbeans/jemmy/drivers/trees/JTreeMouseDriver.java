@@ -87,9 +87,11 @@ public class JTreeMouseDriver extends LightSupportiveDriver implements TreeDrive
                 });
         }
         //1.5 workaround
-        queueTool.waitEmpty(10);
-        queueTool.waitEmpty(10);
-        queueTool.waitEmpty(10);
+        if(!QueueTool.isDispatchThread()) {
+            queueTool.waitEmpty(10);
+            queueTool.waitEmpty(10);
+            queueTool.waitEmpty(10);
+        }
         //end of 1.5 workaround
     }
 

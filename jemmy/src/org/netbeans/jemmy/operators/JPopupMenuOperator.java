@@ -289,7 +289,7 @@ implements Outputable, Timeoutable {
         oper.getQueueTool().waitEmpty(10);
         oper.getQueueTool().waitEmpty(10);
         //end of 1.5 workaround
-	oper.clickForPopup(x, y, mouseButton);
+        oper.clickForPopup(x, y, mouseButton);
         oper.getTimeouts().sleep("JMenuOperator.WaitBeforePopupTimeout");
 	return(waitJPopupMenu(waitJPopupWindow(new ComponentChooser() {
                 public boolean checkComponent(Component cmp) {
@@ -1019,6 +1019,10 @@ implements Outputable, Timeoutable {
 	public JPopupMenuFinder() {
             super(JPopupMenu.class);
 	}
+        public boolean checkComponent(Component comp) {
+            return(comp.isShowing() &&
+                   super.checkComponent(comp));
+        }
     }
 
     /**
@@ -1032,12 +1036,11 @@ implements Outputable, Timeoutable {
          * @param sf searching criteria for a JPopupMenu inside the window..
          */
 	public JPopupWindowFinder(ComponentChooser sf) {
-	    subFinder = sf;
+	    subFinder = new JPopupMenuFinder(sf);
             ppFinder = new ComponentChooser() {
                     public boolean checkComponent(Component comp) {
                         return(comp.isShowing() &&
                                comp.isVisible() &&
-                               comp instanceof JPopupMenu &&
                                subFinder.checkComponent(comp));
                     }
                     public String getDescription() {

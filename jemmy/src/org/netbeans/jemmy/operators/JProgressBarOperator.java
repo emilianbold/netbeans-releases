@@ -247,6 +247,7 @@ public class JProgressBarOperator extends JComponentOperator
      * Waits for criteria defined by <code>chooser</code> to be reached.
      * @param chooser an object specifying waiting criteria.
      * @see #waitValue(int)
+     * @deprecated Use waitState(ComponentChooser) instead.
      */
     public void waitValue(final ValueChooser chooser) {
 	output.printLine("Wait \"" + chooser.getDescription() + 
@@ -278,18 +279,45 @@ public class JProgressBarOperator extends JComponentOperator
      * Waits progress bar value to be less or equal to <code>value</code> parameter.
      * Can be used for typical progress bar (when value is increasing).
      * @param value a value to reach.
-     * @see #waitValue(JProgressBarOperator.ValueChooser)
+     * @see Operator.waitState(ComponentChooser)
      */
     public void waitValue(final int value) {
-	waitValue(new ValueChooser() {
-		public boolean checkValue(int val) {
-		    return(value <= val);
+	output.printLine("Wait \"" + value + 
+			 "\" value in progressbar\n    : " +
+			 getSource().toString());
+	output.printGolden("Wait \"" + value +
+			 "\" value in progressbar");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(((JProgressBar)comp).getValue() >= value);
 		}
 		public String getDescription() {
 		    return("greater then " + Integer.toString(value));
 		}
 	    });
     }
+
+    /**
+     * Waits progress bar string to match <code>value</code> parameter.
+     * @param value a string value.
+     * @see Operator.waitState(ComponentChooser)
+     */
+    public void waitValue(final String value) {
+	output.printLine("Wait \"" + value + 
+			 "\" string in progressbar\n    : " +
+			 getSource().toString());
+	output.printGolden("Wait \"" + value +
+			 "\" string in progressbar");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+		    return(getComparator().equals(((JProgressBar)comp).getString(), value));
+		}
+		public String getDescription() {
+		    return("'" + value + "' string");
+		}
+	    });
+    }
+
 
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
@@ -456,6 +484,7 @@ public class JProgressBarOperator extends JComponentOperator
      * Interface to define criteria for <code>waitValue(ValueChooser)</code>
      * method.
      * @see #waitValue(int)
+     * @deprecated Use waitState(ComponentChooser) instead.
      */
     public interface ValueChooser {
         /**
