@@ -212,7 +212,7 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
 		{
 			super (
 				new int[] {	DefaultAdaptor.NOT_SET, DefaultAdaptor.YES, DefaultAdaptor.NO },
-		    	new String[] { "", "Yes", "No" }
+		    	new String[] { "Not set", "Yes", "No" }
 			);
 		}
 	}
@@ -252,6 +252,7 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
 	
 		public String getAsText() 
 		{
+			if (index == 0) return "";
 			return name;
 		}
 		

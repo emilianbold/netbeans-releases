@@ -238,7 +238,8 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	private int getBoolean(String key)
 	{
 		Boolean val = (Boolean)properties.get(key);
-		return (val.booleanValue() ? YES : NO);
+		if (val != null) return (val.booleanValue() ? YES : NO);
+		return NOT_SET;
 	}
 
 	private void setBoolean(String key, int value)
@@ -991,7 +992,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 			else throw new SQLException("no database metadata available");
 			properties.put(PROP_ALTER_ADD, alterAdd);
 		}
-
+			
 		return alterAdd.booleanValue();
 	}
 
