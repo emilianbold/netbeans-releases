@@ -480,12 +480,6 @@ public final class NbMainExplorer extends CloneableTopComponent
             return view;
         }
 
-        /** Request focus also for asociated view */
-        public void requestFocus () {
-            super.requestFocus();
-            view.requestFocus();
-        }
-
         /** Ensures that component is valid before opening */
         public void open (Workspace workspace) {
             performCommand(null);
