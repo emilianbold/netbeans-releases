@@ -62,7 +62,6 @@
             </Component>
             <Component class="javax.swing.JTextField" name="directoryName">
               <Properties>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.beaninfo.editors.StringEditor" value="jTextField1"/>
                 <Property name="enabled" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
               </Properties>
               <Constraints>
