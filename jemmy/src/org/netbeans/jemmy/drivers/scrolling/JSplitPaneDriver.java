@@ -32,19 +32,32 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JSplitPaneOperator;
 
+/**
+ * ScrollDriver for javax.swing.JSplitPane component type.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class JSplitPaneDriver extends LightSupportiveDriver implements ScrollDriver {
+
+    /**
+     * Constructs a JSplitPaneDriver.
+     */
     public JSplitPaneDriver() {
 	super(new String[] {"org.netbeans.jemmy.operators.JSplitPaneOperator"});
     }
+
     public void scroll(ComponentOperator oper, ScrollAdjuster adj) {
 	moveDividerTo((JSplitPaneOperator)oper, adj);
     }
+
     public void scrollToMinimum(ComponentOperator oper, int orientation) {
 	expandTo((JSplitPaneOperator)oper, 0);
     }
+
     public void scrollToMaximum(ComponentOperator oper, int orientation) {
 	expandTo((JSplitPaneOperator)oper, 1);
     }
+
     private void moveDividerTo(JSplitPaneOperator oper, ScrollAdjuster adj) {
 	ContainerOperator divOper = oper.getDivider();
 	/* workaround */
@@ -60,6 +73,7 @@ public class JSplitPaneDriver extends LightSupportiveDriver implements ScrollDri
 	    moveOnce(oper, divOper, adj, 0, oper.getHeight());
 	}
     }
+
     private void moveOnce(JSplitPaneOperator oper, 
 			  ContainerOperator divOper,
 			  ScrollAdjuster adj, 
@@ -114,6 +128,7 @@ public class JSplitPaneDriver extends LightSupportiveDriver implements ScrollDri
 	    moveTo(oper, divOper, divOper.getCenterX(), divOper.getCenterY() + nextPosition);
 	}
     }
+
     private void expandTo(JSplitPaneOperator oper, int index) {
 	ContainerOperator divOper = oper.getDivider();
 	JButtonOperator bo = 

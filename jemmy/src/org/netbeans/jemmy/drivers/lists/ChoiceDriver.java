@@ -31,11 +31,21 @@ import org.netbeans.jemmy.drivers.ListDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ChoiceOperator;
 
+/**
+ * List driver for java.awt.Choice component type.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class ChoiceDriver extends LightSupportiveDriver implements ListDriver {
     private final static int RIGHT_INDENT = 10;
+
+    /**
+     * Constructs a ChoiceDriver.
+     */
     public ChoiceDriver() {
 	super(new String[] {"org.netbeans.jemmy.operators.ChoiceOperator"});
     }
+
     public void selectItem(ComponentOperator oper, int index) {
         ChoiceOperator coper = (ChoiceOperator)oper;
         Point pointToClick = getClickPoint(oper);
@@ -66,6 +76,7 @@ public class ChoiceDriver extends LightSupportiveDriver implements ListDriver {
         }
         kdriver.pushKey(oper, KeyEvent.VK_ENTER, 0, pushTimeout);
     }
+
     private Point getClickPoint(ComponentOperator oper) {
         return(new Point(oper.getWidth() - RIGHT_INDENT, oper.getHeight()/2));
     }

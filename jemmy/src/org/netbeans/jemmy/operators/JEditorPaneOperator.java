@@ -55,7 +55,7 @@ import javax.swing.text.EditorKit;
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
  * ComponentOperator.WaitFocusTimeout - time to wait component focus <BR>
  * JScrollBarOperator.OneScrollClickTimeout - time for one scroll click <BR>
- * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
+ * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -64,17 +64,28 @@ import javax.swing.text.EditorKit;
 
 public class JEditorPaneOperator extends JTextComponentOperator {
 
+    /**
+     * Identifier for a "content type" property.
+     * @see #getDump
+     */
     public static final String CONTENT_TYPE_DPROP = "Content type";
 
     private boolean pageNavigation = false;
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JEditorPaneOperator(JEditorPane b) {
 	super(b);
     }
 
+    /**
+     * Constructs a JEditorPaneOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JEditorPaneOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JEditorPane)cont.
              waitSubComponent(new JEditorPaneFinder(chooser),
@@ -82,6 +93,11 @@ public class JEditorPaneOperator extends JTextComponentOperator {
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JEditorPaneOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JEditorPaneOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -90,6 +106,7 @@ public class JEditorPaneOperator extends JTextComponentOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
@@ -109,6 +126,7 @@ public class JEditorPaneOperator extends JTextComponentOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -121,6 +139,7 @@ public class JEditorPaneOperator extends JTextComponentOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -136,6 +155,7 @@ public class JEditorPaneOperator extends JTextComponentOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @throws TimeoutExpiredException
      */
     public JEditorPaneOperator(ContainerOperator cont) {
@@ -145,7 +165,7 @@ public class JEditorPaneOperator extends JTextComponentOperator {
     /**
      * Searches JEditorPane in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JEditorPane instance or null if component was not found.
      */
@@ -156,7 +176,7 @@ public class JEditorPaneOperator extends JTextComponentOperator {
     /**
      * Searches JEditorPane in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JEditorPane instance or null if component was not found.
      */
     public static JEditorPane findJEditorPane(Container cont, ComponentChooser chooser) {
@@ -197,7 +217,7 @@ public class JEditorPaneOperator extends JTextComponentOperator {
     /**
      * Waits JEditorPane in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JEditorPane instance.
      * @throws TimeoutExpiredException
@@ -209,7 +229,7 @@ public class JEditorPaneOperator extends JTextComponentOperator {
     /**
      * Waits JEditorPane in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JEditorPane instance.
      * @throws TimeoutExpiredException
      */
@@ -254,6 +274,9 @@ public class JEditorPaneOperator extends JTextComponentOperator {
      * Notifies whether "PageUp" and "PageDown" should be used
      * to change caret position. If can be useful if text takes 
      * some pages.
+     * @param yesOrNo whether to use "PageUp" and "PageDown"
+     * @deprecated vlue set by this method is not used anymore:
+     * all navigating is performed by TextDriver.
      */
     public void usePageNavigationKeys(boolean yesOrNo) {
 	pageNavigation = yesOrNo;
@@ -365,10 +388,20 @@ public class JEditorPaneOperator extends JTextComponentOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Checks component type.
+     */
     public static class JEditorPaneFinder extends Finder {
+        /**
+         * Constructs JEditorPaneFinder.
+         * @param sf other searching criteria.
+         */
 	public JEditorPaneFinder(ComponentChooser sf) {
             super(JEditorPane.class, sf);
 	}
+        /**
+         * Constructs JEditorPaneFinder.
+         */
 	public JEditorPaneFinder() {
             super(JEditorPane.class);
 	}

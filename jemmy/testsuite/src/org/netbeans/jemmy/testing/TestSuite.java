@@ -41,9 +41,17 @@ public class TestSuite extends Task {
     }
     public void setTestList(File testList) throws IOException {
 	BufferedReader reader = new BufferedReader(new FileReader(testList));
-	String test;
-	while((test = reader.readLine()) != null) {
-	    tests.add(test);
+        String test;
+	String testLine;
+        String javaVersion = System.getProperty("java.version").substring(0, 3);
+	while((testLine = reader.readLine()) != null) {
+            if(testLine.indexOf("!" + javaVersion) == -1) {
+                if(testLine.indexOf(" ") > -1) {
+                    tests.add(testLine.substring(0, testLine.indexOf(" ")));
+                } else {
+                    tests.add(testLine);
+                }
+            }
 	}
     }
     public void setResultDir(File runDir) {

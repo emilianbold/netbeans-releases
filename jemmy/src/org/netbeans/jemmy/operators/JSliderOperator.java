@@ -17,16 +17,6 @@
 
 package org.netbeans.jemmy.operators;
 
-import org.netbeans.jemmy.ComponentSearcher;
-import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.Outputable;
-import org.netbeans.jemmy.TestOut;
-import org.netbeans.jemmy.Timeoutable;
-import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.Timeouts;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
-
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -41,17 +31,28 @@ import javax.swing.event.ChangeListener;
 
 import javax.swing.plaf.SliderUI;
 
+import org.netbeans.jemmy.Action;
+import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.Outputable;
+import org.netbeans.jemmy.TestOut;
+import org.netbeans.jemmy.Timeoutable;
+import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.Timeouts;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
+
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.ScrollDriver;
+
+import org.netbeans.jemmy.drivers.scrolling.ScrollAdjuster;
+
 /**
- *
- * Operator is supposed to be used to operate with an instance of
- * javax.swing.JSlider class.
+ * Covers <code>javax.swing.JSlider</code> component.
  *
  * <BR><BR>Timeouts used: <BR>
- * JSliderOperator.OneScrollClickTimeout - timeout for one scroll click <BR>
- * JSliderOperator.WholeScrollTimeout - timeout for the whole scrolling <BR>
- * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
- *
- * @see org.netbeans.jemmy.Timeouts
+ * JSliderOperator.WholeScrollTimeout - time for the whole scrolling. <BR>
+ * JSliderOperator.ScrollingDelta - time delta to verify result durong scrolling. <BR>
  *
  * @author Alexandre Iline (alexandre.iline@sun.com)
  */
@@ -61,24 +62,64 @@ public class JSliderOperator extends JComponentOperator
 
     private final static long ONE_SCROLL_CLICK_TIMEOUT = 0;
     private final static long WHOLE_SCROLL_TIMEOUT = 60000;
+    private final static long SCROLLING_DELTA = 0;
 
+    private ScrollDriver driver;
+
+    /**
+     * Identifier for a "minimum" property.
+     * @see #getDump
+     */
     public static final String MINIMUM_DPROP = "Minimum";
+
+    /**
+     * Identifier for a "maximum" property.
+     * @see #getDump
+     */
     public static final String MAXIMUM_DPROP = "Maximum";
+
+    /**
+     * Identifier for a "value" property.
+     * @see #getDump
+     */
     public static final String VALUE_DPROP = "Value";
+
+    /**
+     * Identifier for a "orientation" property.
+     * @see #getDump
+     */
     public static final String ORIENTATION_DPROP = "Orientation";
+
+    /**
+     * Identifier for a "HORIZONTAL" value of "orientation" property.
+     * @see #getDump
+     */
     public static final String HORIZONTAL_ORIENTATION_DPROP_VALUE = "HORIZONTAL";
+
+    /**
+     * Identifier for a "VERTICAL" value of "orientation" property.
+     * @see #getDump
+     */
     public static final String VERTICAL_ORIENTATION_DPROP_VALUE = "VERTICAL";
+
+    /**
+     * Identifier for a "inverted" property.
+     */
     public static final String IS_INVERTED_DPROP = "Inverted";
 
     /**
-     * Click scroll model. Mouse is clicked till necessary position reached.
+     * Scrolling model.
      * @see #setScrollModel(int)
+     * @deprecated All actions are prformed throw a <code>ScrollDriver</code> registered
+     * for this component, So this field is useless.
      */
     public static final int CLICK_SCROLL_MODEL = 1;
 
     /**
      * Push and wait scroll model. Mouse is pressed, and released after necessary position reached.
      * @see #setScrollModel(int)
+     * @deprecated All actions are prformed throw a <code>ScrollDriver</code> registered
+     * for this component, So this field is useless.
      */
     public static final int PUSH_AND_WAIT_SCROLL_MODEL = 2;
 
@@ -94,8 +135,15 @@ public class JSliderOperator extends JComponentOperator
      */
     public JSliderOperator(JSlider b) {
 	super(b);
+	driver = DriverManager.getScrollDriver(getClass());
     }
 
+    /**
+     * Constructs a JSliderOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JSliderOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JSlider)cont.
              waitSubComponent(new JSliderFinder(chooser),
@@ -103,6 +151,11 @@ public class JSliderOperator extends JComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JSliderOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JSliderOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -220,6 +273,7 @@ public class JSliderOperator extends JComponentOperator
     static {
 	Timeouts.initDefault("JSliderOperator.OneScrollClickTimeout", ONE_SCROLL_CLICK_TIMEOUT);
 	Timeouts.initDefault("JSliderOperator.WholeScrollTimeout", WHOLE_SCROLL_TIMEOUT);
+	Timeouts.initDefault("JSliderOperator.ScrollingDelta", SCROLLING_DELTA);
     }
 
     /**
@@ -229,57 +283,58 @@ public class JSliderOperator extends JComponentOperator
      * @see #PUSH_AND_WAIT_SCROLL_MODEL
      * @see #getScrollModel()
      * @see #scrollToValue(int)
+     * @deprecated All actions are prformed throw a <code>ScrollDriver</code> registered
+     * for this component, so value set by this method is ignored.
      */
     public void setScrollModel(int model) {
-	scrollModel = model;
+        scrollModel = model;
     }
 
     /**
-     * @param model New scroll model value.
+     * Specifies the scroll model.
      * @return Current scroll model value.
      * @see #setScrollModel(int)
+     * @deprecated All actions are prformed throw a <code>ScrollDriver</code> registered
+     * for this component, so value returned by this method is ignored.
      */
     public int getScrollModel() {
 	return(scrollModel);
     }
 
-    /**
-     * Sets operator's output.
-     * @param out org.netbeans.jemmy.TestOut instance.
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
-    /**
-     * Sets operator's timeouts.
-     * @param timeouts org.netbeans.jemmy.Timeouts instance.
-     */
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
 	super.setTimeouts(timeouts);
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
+    }
+
+    /**
+     * Scrolls slider to the position defined by a ScrollAdjuster implementation.
+     * @param adj defines scrolling direction, and so on.
+     * @throws TimeoutExpiredException
+     */
+    public void scrollTo(final ScrollAdjuster adj) {
+        makeComponentVisible();
+	produceTimeRestricted(new Action() {
+		public Object launch(Object obj) {
+		    driver.scroll(JSliderOperator.this, adj);
+		    return(null);
+		}
+		public String getDescription() {
+		    return("Scrolling");
+		}
+	    }, getTimeouts().getTimeout("JSliderOperator.WholeScrollTimeout"));
     }
 
     /**
@@ -291,36 +346,31 @@ public class JSliderOperator extends JComponentOperator
 	output.printTrace("Move JSlider to " + Integer.toString(value) +
 			  " value\n" + getSource().toString());
 	output.printGolden("Move JSlider to " + Integer.toString(value) + " value");
-	scrollTo(value);
+        scrollTo(new ValueScrollAdjuster(value));
     }
 
     /**
      * Moves slider to the maximal value.
-     * @param value Value to move slider to.
      * @throws TimeoutExpiredException
      */
     public void scrollToMaximum() {
 	output.printTrace("Move JSlider to maximum value\n" +
 			  getSource().toString());
 	output.printGolden("Move JSlider to maximum value");
-	scrollTo(getMaximum());
+	scrollToValue(getMaximum());
     }
 
     /**
      * Moves slider to the minimal value.
-     * @param value Value to move slider to.
      * @throws TimeoutExpiredException
      */
     public void scrollToMinimum() {
 	output.printTrace("Move JSlider to minimum value\n" +
 			  getSource().toString());
 	output.printGolden("Move JSlider to minimum value");
-	scrollTo(getMinimum());
+	scrollToValue(getMinimum());
     }
 
-    /**
-     * Returns information about component.
-     */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	result.put(MINIMUM_DPROP, Integer.toString(((JSlider)getSource()).getMinimum()));
@@ -591,86 +641,44 @@ public class JSliderOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private void scrollTo(int value) {
-	if(value == getValue()) {
-	    return;
-	}
-	makeComponentVisible();
-	boolean increase = (value > getValue());
-	int xClick, yClick;
-	if(getOrientation() == JSlider.HORIZONTAL) {
-	    yClick = getHeight() / 2;
-	    Timeouts times = timeouts.cloneThis();
-	    times.setTimeout("ComponentOperator.MouseClickTimeout",
-			     times.getTimeout("JSliderOperator.OneScrollClickTimeout"));
-	    super.setTimeouts(times);
-	    if(!getInverted() &&  increase ||
-	        getInverted() && !increase) {
-		xClick = getWidth() - 1;
-	    } else {
-		xClick = 0;
-	    }
-	} else {
-	    xClick = getWidth() / 2;
-	    if(!getInverted() &&  increase ||
-	        getInverted() && !increase) {
-		yClick = 0;
-	    } else {
-		yClick = getHeight() - 1;
-	    }
-	}
-	if(getScrollModel() == CLICK_SCROLL_MODEL) {
-	    long startTime = System.currentTimeMillis();
-	    while(getValue() < value &&  increase ||
-		  getValue() > value && !increase) {
-		if(System.currentTimeMillis() - startTime > 
-		   timeouts.getTimeout("JSliderOperator.WholeScrollTimeout")) {
-		    throw(new TimeoutExpiredException("JSlider scrolling"));
-		}
-		clickMouse(xClick, yClick, 1);
-	    }
-	} else {
-	    Waiter valueWaiter = new Waiter(new Waitable() {
-		public Object actionProduced(Object obj) {
-		    int vl = ((Integer)((Object[])obj)[0]).intValue();
-		    boolean inc = ((Boolean)((Object[])obj)[1]).booleanValue();
-		    if(((JSlider)getSource()).getValue() < vl &&  inc ||
-		       ((JSlider)getSource()).getValue() > vl && !inc) {
-			return(null);
-		    } else {
-			return("");
-		    }
-		}
-		public String getDescription() {
-		    return("JSlider has been scrolled");
-		}
-	    });
-	    Timeouts times = timeouts.cloneThis();
-	    times.setTimeout("Waiter.TimeDelta", 1);
-	    times.setTimeout("Waiter.WaitingTime",
-			     times.getTimeout("JSliderOperator.WholeScrollTimeout"));
-	    times.setTimeout("Waiter.AfterWaitingTime", 0);
-	    valueWaiter.setOutput(output.createErrorOutput());
-	    valueWaiter.setTimeouts(times);
-	    moveMouse(xClick, yClick);
-	    pressMouse(xClick, yClick);
-	    try {
-		Object[] param = {new Integer(value), increase ? Boolean.TRUE : Boolean.FALSE};
-		valueWaiter.waitAction(param);
-	    } catch(InterruptedException e) {
-		output.printStackTrace(e);
-	    }
-	    releaseMouse(xClick, yClick);
-	}
-    }
-
+    /**
+     * Checks component type.
+     */
     public static class JSliderFinder extends Finder {
+        /**
+         * Constructs JSliderFinder.
+         * @param sf other searching criteria.
+         */
 	public JSliderFinder(ComponentChooser sf) {
             super(JSlider.class, sf);
 	}
+        /**
+         * Constructs JSliderFinder.
+         */
 	public JSliderFinder() {
             super(JSlider.class);
 	}
     }
 
+    private class ValueScrollAdjuster implements ScrollAdjuster {
+	int value;
+	public ValueScrollAdjuster(int value) {
+	    this.value = value;
+	}
+	public int getScrollDirection() {
+	    if(getValue() == value) {
+		return(ScrollAdjuster.DO_NOT_TOUCH_SCROLL_DIRECTION);
+	    } else {
+		return((getValue() < value) ?
+		       ScrollAdjuster.INCREASE_SCROLL_DIRECTION :
+		       ScrollAdjuster.DECREASE_SCROLL_DIRECTION);
+	    }
+	}
+	public int getScrollOrientation() {
+	    return(getOrientation());
+	}
+	public String getDescription() {
+	    return("Scroll to " + Integer.toString(value) + " value");
+	}
+    }
 }

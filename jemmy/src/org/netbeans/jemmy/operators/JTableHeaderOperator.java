@@ -47,7 +47,7 @@ import org.netbeans.jemmy.drivers.OrderedListDriver;
 /**
  * ComponentOperator.BeforeDragTimeout - time to sleep before column moving <BR>
  * ComponentOperator.AfterDragTimeout - time to sleep after column moving <BR>
- * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
+ * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>.
  *
  * @author Alexandre Iline (alexandre.iline@sun.com)
  *	
@@ -63,12 +63,19 @@ implements Outputable, Timeoutable {
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JTableHeaderOperator(JTableHeader b) {
 	super(b);
         driver = DriverManager.getOrderedListDriver(getClass());
     }
 
+    /**
+     * Constructs a JTableHeaderOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JTableHeaderOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JTableHeader)cont.
              waitSubComponent(new JTableHeaderFinder(chooser),
@@ -76,10 +83,20 @@ implements Outputable, Timeoutable {
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JTableHeaderOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JTableHeaderOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
 
+    /**
+     * Constructs a JTableHeaderOperator object.
+     * @param cont a container
+     * @param index an index between appropriate ones.
+     */
     public JTableHeaderOperator(ContainerOperator cont, int index) {
 	this((JTableHeader)
 	     waitComponent(cont, 
@@ -89,11 +106,12 @@ implements Outputable, Timeoutable {
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JTableHeaderOperator object.
+     * @param cont a container
+     */
     public JTableHeaderOperator(ContainerOperator cont) {
 	this(cont, 0);
-    }
-
-    static {
     }
 
     public void setTimeouts(Timeouts times) {
@@ -114,18 +132,36 @@ implements Outputable, Timeoutable {
 	return(output);
     }
 
+    /**
+     * Selects a column.
+     * @param columnIndex an index of a column to select.
+     */
     public void selectColumn(int columnIndex) {
         driver.selectItem(this, columnIndex);
     }
 
+    /**
+     * Selects some columns.
+     * @param columnIndices indices of columns to select.
+     */
     public void selectColumns(int[] columnIndices) {
         driver.selectItems(this, columnIndices);
     }
 
+    /**
+     * Moves a column to a different location.
+     * @param moveColumn an original column index.
+     * @param moveTo a desctination column index.
+     */
     public void moveColumn(int moveColumn, int moveTo) {
         driver.moveItem(this, moveColumn, moveTo);
     }
 
+    /**
+     * Return a point to click on column header.
+     * @param columnIndex an index of a column to click on.
+     * @return the point to click.
+     */
     public Point getPointToClick(int columnIndex) {
         Rectangle rect = getHeaderRect(columnIndex);
         return(new Point(rect.x + rect.width/2,
@@ -343,8 +379,15 @@ implements Outputable, Timeoutable {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Checks component type.
+     */
     public static class JTableHeaderFinder implements ComponentChooser {
 	ComponentChooser subFinder;
+        /**
+         * Constructs JTableHeaderFinder.
+         * @param sf other searching criteria.
+         */
 	public JTableHeaderFinder(ComponentChooser sf) {
 	    subFinder = sf;
 	}

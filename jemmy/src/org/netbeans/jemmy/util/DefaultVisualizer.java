@@ -74,6 +74,7 @@ public class DefaultVisualizer implements ComponentVisualizer, Cloneable {
 
     /**
      * Informs that a window contained component should be activated.
+     * @param yesOrNo true if windows need to be activated.
      */
     public void activateWindow(boolean yesOrNo) {
 	window = yesOrNo;
@@ -82,6 +83,7 @@ public class DefaultVisualizer implements ComponentVisualizer, Cloneable {
     /**
      * Informs that an internal frame contained component
      * should be activated.
+     * @param yesOrNo true if internal frames need to be activated.
      */
     public void activateInternalFrame(boolean yesOrNo) {
 	internalFrame = yesOrNo;
@@ -89,6 +91,7 @@ public class DefaultVisualizer implements ComponentVisualizer, Cloneable {
 
     /**
      * Informs that scrolling should be made.
+     * @param yesOrNo true if scroll panes need to be scrolled.
      */
     public void scroll(boolean yesOrNo) {
 	scroll = yesOrNo;
@@ -96,21 +99,37 @@ public class DefaultVisualizer implements ComponentVisualizer, Cloneable {
 
     /**
      * Informs that tab switching should be made.
+     * @param yesOrNo true if tabbed panes need to be switched.
      */
     public void switchTab(boolean yesOrNo) {
 	switchTab = yesOrNo;
     }
 
+    /**
+     * Returns true if window is active.
+     * @param winOper an operator representing the window.
+     * @return true is window is active.
+     */
     protected boolean isWindowActive(WindowOperator winOper) {
         return(winOper.isFocused() && winOper.isActive());
     }
 
+    /**
+     * Performs an atomic window-activization precedure.
+     * A window is sopposed to be prepared for the activization
+     * (i.e. put "to front").
+     * @param winOper an operator representing the window.
+     */
     protected void makeWindowActive(WindowOperator winOper) {
         winOper.activate();
     }
 
-    protected void activate(WindowOperator winOper) 
-	throws TimeoutExpiredException {
+    /**
+     * Activates a window. Uses makeWindowActive if necessary.
+     * @param winOper an operator representing the window.
+     * @see #makeWindowActive
+     */
+    protected void activate(WindowOperator winOper) {
         boolean active = isWindowActive(winOper);
 	winOper.toFront();
         if(!active) {
@@ -118,18 +137,32 @@ public class DefaultVisualizer implements ComponentVisualizer, Cloneable {
         }
     }
 
+    /**
+     * Inits an internal frame.
+     * @param intOper an operator representing the frame.
+     */
     protected void initInternalFrame(JInternalFrameOperator intOper) {
 	if(!intOper.isSelected()) {
 	    intOper.activate();
 	}
     }
 
+    /**
+     * Scrolls JScrollPane to make the component visible.
+     * @param scrollOper an operator representing a scroll pane.
+     * @param target a component - target to be made visible.
+     */
     protected void scroll(JScrollPaneOperator scrollOper, Component target) {
 	if(!scrollOper.checkInside(target)) {
 	    scrollOper.scrollToComponent(target);
 	}
     }
 
+    /**
+     * Switches tabs to make the component visible.
+     * @param tabOper an operator representing a tabbed pane.
+     * @param target a component - target to be made visible.
+     */
     protected void switchTab(JTabbedPaneOperator tabOper, Component target) {
 	int tabInd = 0;
 	for(int j = 0; j < tabOper.getTabCount(); j++) {
@@ -144,6 +177,8 @@ public class DefaultVisualizer implements ComponentVisualizer, Cloneable {
     }
 
     /**
+     * Prepares the component for user input.
+     * @param compOper an operator representing the component.
      * @throws JemmyInputException
      * @see #checkForModal(boolean)
      */
@@ -190,6 +225,10 @@ public class DefaultVisualizer implements ComponentVisualizer, Cloneable {
 	}
     }
 
+    /**
+     * Creates an exact copy of this visualizer.
+     * @return new instance.
+     */
     public DefaultVisualizer cloneThis() {
         try {
             return((DefaultVisualizer)super.clone());

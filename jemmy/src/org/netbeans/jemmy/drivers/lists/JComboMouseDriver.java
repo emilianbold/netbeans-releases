@@ -27,10 +27,20 @@ import org.netbeans.jemmy.operators.JListOperator;
 
 import org.netbeans.jemmy.util.EmptyVisualizer;
 
+/**
+ * List driver for javax.swing.JCompoBox component type.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class JComboMouseDriver extends LightSupportiveDriver implements ListDriver {
+
+    /**
+     * Constructs a JComboMouseDriver.
+     */
     public JComboMouseDriver() {
 	super(new String[] {"org.netbeans.jemmy.operators.JComboBoxOperator"});
     }
+
     public void selectItem(ComponentOperator oper, int index) {
 	JComboBoxOperator coper = (JComboBoxOperator)oper;
 	if(!coper.isPopupVisible()) {

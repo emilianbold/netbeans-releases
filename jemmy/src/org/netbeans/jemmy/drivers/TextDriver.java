@@ -21,6 +21,8 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
  * Defines how to work with text components.
+ * 
+ * @author Alexandre Iline (alexandre.iline@sun.com)
  */
 public interface TextDriver {
 
@@ -34,8 +36,8 @@ public interface TextDriver {
     /**
      * Selects text.
      * @param oper Text component operator.
-     * @param startPosition
-     * @param finalPosition
+     * @param startPosition a posistion of selction start
+     * @param finalPosition a posistion of selction end
      */
     public void selectText(ComponentOperator oper, int startPosition, int finalPosition);
 

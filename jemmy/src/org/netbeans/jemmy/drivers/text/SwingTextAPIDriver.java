@@ -25,7 +25,16 @@ import org.netbeans.jemmy.Timeout;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 
+/**
+ * TextDriver for swing component types.
+ * Uses API calls.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class SwingTextAPIDriver extends TextAPIDriver {
+    /**
+     * Constructs a SwingTextAPIDriver.
+     */
     public SwingTextAPIDriver() {
 	super(new String[] {"org.netbeans.jemmy.operators.JTextComponentOperator"});
     }

@@ -31,13 +31,12 @@ import java.io.PrintWriter;
 
 public class JemmyException extends RuntimeException{
 
-    private Exception innerException = null;
+    private Throwable innerException = null;
     private Object object = null;
-    private String description;
 
     /**
      * Constructor.
-     * @param description
+     * @param description An exception description.
      */
     public JemmyException(String description) {
 	super(description);
@@ -45,17 +44,17 @@ public class JemmyException extends RuntimeException{
 
     /**
      * Constructor.
-     * @param description
+     * @param description An exception description.
      * @param innerException Exception from code invoked from jemmy.
      */
-    public JemmyException(String description, Exception innerException) {
+    public JemmyException(String description, Throwable innerException) {
 	this(description);
 	this.innerException = innerException;
     }
 
     /**
      * Constructor.
-     * @param description
+     * @param description An exception description.
      * @param object Object regarding which exception is thrown.
      */
     public JemmyException(String description, Object object) {
@@ -65,17 +64,18 @@ public class JemmyException extends RuntimeException{
 
     /**
      * Constructor.
-     * @param description
+     * @param description An exception description.
      * @param innerException Exception from code invoked from jemmy.
      * @param object Object regarding which exception is thrown.
      */
-    public JemmyException(String description, Exception innerException, Object object) {
+    public JemmyException(String description, Throwable innerException, Object object) {
 	this(description, innerException);
 	this.object = object;
     }
 
     /**
      * Returns "object" constructor parameter.
+     * @return the Object value associated with the exception.
      */
     public Object getObject() {
 	return(object);
@@ -83,9 +83,23 @@ public class JemmyException extends RuntimeException{
 
     /**
      * Returns inner exception.
+     * @return An inner exception.
+     * @deprecated Use getInnerThrowable()
      */
     public Exception getInnerException() {
-	return(innerException);
+        if(innerException instanceof Exception) {
+            return((Exception)innerException);
+        } else {
+            return(null);
+        }
+    }
+
+    /**
+     * Returns inner throwable.
+     * @return An inner throwable.
+     */
+    public Throwable getInnerThrowable() {
+        return(innerException);
     }
 
     /**
@@ -100,7 +114,6 @@ public class JemmyException extends RuntimeException{
      * @param ps PrintStream to print stack trace into.
      */
     public void printStackTrace(PrintStream ps) {
-	ps.println(description);
 	super.printStackTrace(ps);
 	if(innerException != null) {
 	    ps.println("Inner exception:");
@@ -114,10 +127,11 @@ public class JemmyException extends RuntimeException{
 
     /**
      * Prints stack trace.
-     * @param ps PrintWriter to print stack trace into.
+     * 
+     * @param	pw PrintWriter to print stack trace into.
+     * 	
      */
     public void printStackTrace(PrintWriter pw) {
-	pw.println(description);
 	super.printStackTrace(pw);
 	if(innerException != null) {
 	    pw.println("Inner exception:");

@@ -95,12 +95,17 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 /**
- * @author Alexandre Iline (alexandre.iline@sun.com)
- *
- * Class is supposed to be used from ComponentExplorer application,<br>
- * while testing by ffjshell or beanshell to display information<br>
- * about all created frames and dialog and all components on them.
+ * An application allowing to explore a Java GUI application.
+ * Could be executed by command: <br>
+ * <pre>
+ * java "application java options" \
+ *   org.netbeans.jemmy.explorer.GUIBrowser \
+ *   "application main class" \
+ *   "application parameters"
+ * </pre>
+ * or from java code by <code>GUIBrowser.showBrowser()</code> method using.
  *	
+ * @author Alexandre Iline (alexandre.iline@sun.com)
  */
 public class GUIBrowser extends JFrame{
 
@@ -122,9 +127,6 @@ public class GUIBrowser extends JFrame{
     JMenuItem collapseItem;
     JSplitPane split;
 
-    /**
-     * @param exit If true System.exit method will be invoked on window closing.
-     */
     private GUIBrowser(boolean exitNecessary) {
 	super("GUI Browser");
 
@@ -268,12 +270,16 @@ public class GUIBrowser extends JFrame{
 	viewItem.setEnabled(false);
     }
 
+    /**
+     * Specifies a status text.
+     * @param st a status text.
+     */
     public void setStatus(String st) {
 	status.setText(st);
     }	
 
     /**
-     * Method to invoke GUIBrowser from fjscript/beanshell
+     * Method to invoke GUIBrowser from java code.
      */
     public static void showBrowser() {
 	showBrowser(new String[0], false);

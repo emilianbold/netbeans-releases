@@ -42,6 +42,9 @@ public class TestOut {
 
     /**
      * Constructor.
+     * @param	in Input stream
+     * @param	out Output stream
+     * @param	err Errput stream
      */
     public TestOut(InputStream in, PrintStream out, PrintStream err) {
 	this(in, out, err, null);
@@ -49,6 +52,10 @@ public class TestOut {
 
     /**
      * Constructor.
+     * @param	in Input stream
+     * @param	out Output stream
+     * @param	err Errput stream
+     * @param	golden Golgen output stream
      */
     public TestOut(InputStream in, PrintStream out, PrintStream err, PrintStream golden) {
 	super();
@@ -69,6 +76,9 @@ public class TestOut {
 
     /**
      * Constructor.
+     * @param	in Input stream
+     * @param	out Output stream
+     * @param	err Errput stream
      */
     public TestOut(InputStream in, PrintWriter out, PrintWriter err) {
 	this(in, out, err, null);
@@ -76,6 +86,10 @@ public class TestOut {
 
     /**
      * Constructor.
+     * @param	in Input stream
+     * @param	out Output stream
+     * @param	err Errput stream
+     * @param	golden Golgen output stream
      */
     public TestOut(InputStream in, PrintWriter out, PrintWriter err, PrintWriter golden) {
 	super();
@@ -95,14 +109,17 @@ public class TestOut {
 
     /**
      * Creates output which does not print any message anywhere.
+     * @return a TestOut object which does not print any message anywhere.
      */
     public static TestOut getNullOutput() {
 	return(new TestOut((InputStream)null, (PrintWriter)null, (PrintWriter)null));
     }
     
     /**
-     * @param autoFlushMode If true flush is invoking after any output.
+     * Specifies either flush is invoked after each output.
+     * @param autoFlushMode If true flush is invoking after each output.
      * @return Old value of the auto flush mode.
+     * @see #getAutoFlushMode
      */
     public boolean setAutoFlushMode(boolean autoFlushMode) {
 	boolean oldValue = getAutoFlushMode();
@@ -111,7 +128,9 @@ public class TestOut {
     }
     
     /**
+     * Says if flush is invoked after each output.
      * @return Value of the auto flush mode.
+     * @see #setAutoFlushMode
      */
     public boolean getAutoFlushMode() {
 	return(autoFlushMode);
@@ -119,6 +138,8 @@ public class TestOut {
 
     /**
      * Read one byte from input.
+     * @return an int from input stream.
+     * @exception	IOException
      */
     public int read() throws IOException{
 	if(input != null) {
@@ -130,6 +151,8 @@ public class TestOut {
 
     /**
      * Read a line from input.
+     * @return a line from input stream.
+     * @exception	IOException
      */
     public String readLine() throws IOException{
 	if(buffInput != null) {
@@ -141,6 +164,7 @@ public class TestOut {
 
     /**
      * Prints a line into output.
+     * @param	line a string to print into output stream.
      */
     public void print(String line) {
 	if(output != null) {
@@ -150,6 +174,7 @@ public class TestOut {
 
     /**
      * Prints a line and then terminate the line by writing the line separator string.
+     * @param	line a string to print into output stream.
      */
     public void printLine(String line) {
 	if(output != null) {
@@ -162,6 +187,7 @@ public class TestOut {
 
     /**
      * Prints a line into golden output.
+     * @param	line a string to print into golden output stream.
      */
     public void printGolden(String line) {
 	if(golden_output != null) {
@@ -174,6 +200,7 @@ public class TestOut {
 
     /**
      * Prints a line into error output.
+     * @param	line a string to print into error output stream.
      */
     public void printErrLine(String line) {
 	if(errput != null) {
@@ -186,7 +213,8 @@ public class TestOut {
 
     /**
      * Prints a line into either output or errput.
-     * @param toOut If true prints a line into output.
+     * @param	toOut If true prints a line into output.
+     * @param	line a string to print.
      */
     public void printLine(boolean toOut, String line) {
 	if(toOut) {
@@ -198,6 +226,7 @@ public class TestOut {
 
     /**
      * Prints a trace line.
+     * @param	text a trace text.
      */
     public void printTrace(String text) {
 	printLine("Trace:");
@@ -206,6 +235,7 @@ public class TestOut {
 
     /**
      * Prints a error line.
+     * @param	text a error text.
      */
     public void printError(String text) {
 	printErrLine("Error:");
@@ -213,7 +243,8 @@ public class TestOut {
     }
 
     /**
-     * Prints an exception stack trace.
+     * Prints an exception stack trace into error stream.
+     * @param e exception
      */
     public void printStackTrace(Throwable e) {
 	if(errput != null) {
@@ -226,6 +257,7 @@ public class TestOut {
 
     /**
      * Returns input stream.
+     * @return an input stream
      */
     public InputStream getInput() {
 	return(input);
@@ -233,6 +265,7 @@ public class TestOut {
 
     /**
      * Returns output writer.
+     * @return an output stream
      */
     public PrintWriter getOutput() {
 	return(output);
@@ -240,6 +273,7 @@ public class TestOut {
 
     /**
      * Returns errput writer.
+     * @return a error stream
      */
     public PrintWriter getErrput() {
 	return(errput);
@@ -247,6 +281,7 @@ public class TestOut {
 
     /**
      * Returns golden output writer.
+     * @return a golden output stream
      */
     public PrintWriter getGolden() {
 	return(golden_output);
@@ -254,12 +289,14 @@ public class TestOut {
 
     /**
      * Creates an output which prints only error messages.
+     * @return a TestOut instance which has only error stream.
      */
     public TestOut createErrorOutput() {
 	return(new TestOut(null, null, getErrput()));
     }
     
-    /*
+    /**
+     * Flushes all output threads.
      */
     public void flush() {
 	if(output != null) {

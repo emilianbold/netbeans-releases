@@ -31,6 +31,7 @@ import org.netbeans.jemmy.operators.Operator.StringComparator;
 public class RegExComparator implements StringComparator {
     private static final int ANY_SIMBOL = -1;
     private static final int IGNORE_SIMBOL = -999;
+
     public boolean equals(String caption, String match) {
         if(System.getProperty("java.version").startsWith("1.4")) {
             try {
@@ -56,6 +57,15 @@ public class RegExComparator implements StringComparator {
             return(parse(new String(caption), new String(match)));
         }
     }
+    /**
+     * Checks that caption matshes the pattern.
+     * Understands only "." (any symbol) and "*" (repeat symbol).
+     * Used for 1.3 and earclier javas, starting from 1.4
+     * <code>java.util.regex.Pattern</code> class is used.
+     * @param caption a caption to compare with the pattern.
+     * @param match a pattern
+     * @return true if the caption matches the pattern.
+     */
     public boolean parse(String caption, String match) {
         if(match.length() == 0 &&
            caption.length() == 0) {
@@ -114,14 +124,28 @@ public class RegExComparator implements StringComparator {
             }
         }
     }
+
     private boolean checkOne(String caption, int simbol) {
         return(simbol == ANY_SIMBOL ||
                simbol == caption.charAt(0));
     }
+
+    /**
+     * Thrown in case of parsing error.
+     */
     public static class RegExParsingException extends JemmyException {
+        /**
+         * Constructs a RegExComparator$RegExParsingException object.
+         * @param message an error message
+         */
         public RegExParsingException(String message) {
             super(message);
         }
+        /**
+         * Constructs a RegExComparator$RegExParsingException object.
+         * @param message an error message
+         * @param innerException a parsing exception.
+         */
         public RegExParsingException(String message, Exception innerException) {
             super(message, innerException);
         }

@@ -50,7 +50,6 @@ public class NameComponentChooser implements ComponentChooser {
     /**
      * Creates an instance to search for a component by name using exact comparision.
      * @param name Expecten component name pattern.
-     * @param comparator Comparator for a comparision of a component name with a pattern.
      */
     public NameComponentChooser(String name) {
         this(name, new Operator.DefaultStringComparator(true, true));

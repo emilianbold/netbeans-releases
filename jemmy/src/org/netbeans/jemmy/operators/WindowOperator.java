@@ -46,7 +46,7 @@ import java.util.ResourceBundle;
 /**
  * <BR><BR>Timeouts used: <BR>
  * WindowWaiter.WaitWindowTimeout - time to wait window displayed <BR>
- * WindowWaiter.AfterWindowTimeout - time to sleep after window has been dispayed <BR>
+ * WindowWaiter.AfterWindowTimeout - time to sleep after window has been dispayed <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  * 
@@ -62,12 +62,19 @@ implements Outputable{
 
     /**
      * Constructor.
+     * @param w a component
      */
     public WindowOperator(Window w) {
 	super(w);
 	driver = DriverManager.getWindowDriver(getClass());
     }
 
+    /**
+     * Constructs a DialogOperator object.
+     * @param owner window - owner
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public WindowOperator(WindowOperator owner, ComponentChooser chooser, int index) {
 	this((Window)owner.
              waitSubWindow(chooser,
@@ -75,6 +82,11 @@ implements Outputable{
 	copyEnvironment(owner);
     }
 
+    /**
+     * Constructs a DialogOperator object.
+     * @param owner window - owner
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public WindowOperator(WindowOperator owner, ComponentChooser chooser) {
 	this(owner, chooser, 0);
     }
@@ -84,7 +96,7 @@ implements Outputable{
      * Waits for the index'th displayed owner's child.
      * Uses owner's timeout and output for waiting and to init operator.
      * @param owner Operator pointing on a window owner.
-     * @param index
+     * @param index an index between appropriate ones.
      * @throws TimeoutExpiredException
      */
     public WindowOperator(WindowOperator owner, int index) {
@@ -110,9 +122,8 @@ implements Outputable{
      * Waits for the index'th displayed window.
      * Constructor can be used in complicated cases when
      * output or timeouts should differ from default.
-     * @param index
-     * @param timeouts 
-     * @param output
+     * @param index an index between appropriate ones.
+     * @param env an operator to copy environment from.
      * @throws TimeoutExpiredException
      */
     public WindowOperator(int index, Operator env) {
@@ -127,7 +138,7 @@ implements Outputable{
      * Uses current timeouts and output values.
      * @see JemmyProperties#getCurrentTimeouts()
      * @see JemmyProperties#getCurrentOutput()
-     * @param index
+     * @param index an index between appropriate ones.
      * @throws TimeoutExpiredException
      */
     public WindowOperator(int index) {
@@ -149,6 +160,9 @@ implements Outputable{
 
     /**
      * Searches an index'th window.
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     * @return a window
      */
     public static Window findWindow(ComponentChooser chooser, int index) {
 	return(WindowWaiter.getWindow(chooser, index));
@@ -156,6 +170,8 @@ implements Outputable{
 
     /**
      * Searches a window.
+     * @param chooser a component chooser specifying searching criteria.
+     * @return a window
      */
     public static Window findWindow(ComponentChooser chooser) {
 	return(findWindow(chooser, 0));
@@ -164,6 +180,9 @@ implements Outputable{
     /**
      * Searches an index'th window.
      * @param owner Window - owner.
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     * @return a window
      */
     public static Window findWindow(Window owner, ComponentChooser chooser, int index) {
 	return(WindowWaiter.getWindow(owner, chooser, index));
@@ -172,6 +191,8 @@ implements Outputable{
     /**
      * Searches a window.
      * @param owner Window - owner.
+     * @param chooser a component chooser specifying searching criteria.
+     * @return a window
      */
     public static Window findWindow(Window owner, ComponentChooser chooser) {
 	return(findWindow(owner, chooser, 0));
@@ -179,7 +200,10 @@ implements Outputable{
 
     /**
      * Waits an index'th window.
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
      * @throws TimeoutExpiredException
+     * @return a window
      */
     public static Window waitWindow(ComponentChooser chooser, int index) {
 	return(waitWindow(chooser, index,
@@ -189,7 +213,9 @@ implements Outputable{
 
     /**
      * Waits a window.
+     * @param chooser a component chooser specifying searching criteria.
      * @throws TimeoutExpiredException
+     * @return a window
      */
     public static Window waitWindow(ComponentChooser chooser) {
 	return(waitWindow(chooser, 0));
@@ -198,7 +224,10 @@ implements Outputable{
     /**
      * Waits an index'th window.
      * @param owner Window - owner.
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
      * @throws TimeoutExpiredException
+     * @return a window
      */
     public static Window waitWindow(Window owner, ComponentChooser chooser, int index) {
 	return(waitWindow(owner, chooser, index,
@@ -209,30 +238,19 @@ implements Outputable{
     /**
      * Waits a window.
      * @param owner Window - owner.
+     * @param chooser a component chooser specifying searching criteria.
      * @throws TimeoutExpiredException
+     * @return a window
      */
     public static Window waitWindow(Window owner, ComponentChooser chooser) {
 	return(waitWindow(owner, chooser, 0));
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setOutput(TestOut out) {
 	super.setOutput(out);
 	output = out;
     }
     
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -246,24 +264,44 @@ implements Outputable{
 		      anotherOperator.getProperties());
     }
 
+    /**
+     * Activates the window.
+     * Uses WindowDriver registered for the operator type.
+     */
     public void activate() {
  	output.printLine("Activate window\n    " + getSource().toString());
  	output.printGolden("Activate window");
 	driver.activate(this);
     }
 
+    /**
+     * Closes the window.
+     * Uses WindowDriver registered for the operator type.
+     */
     public void close() {
  	output.printLine("Closing window\n    " + getSource().toString());
  	output.printGolden("Closing window");
 	driver.close(this);
     }
 
+    /**
+     * Moves the window to another location.
+     * Uses WindowDriver registered for the operator type.
+     * @param x coordinate in screen coordinate system
+     * @param y coordinate in screen coordinate system
+     */
     public void move(int x, int y) {
  	output.printLine("Moving frame\n    " + getSource().toString());
  	output.printGolden("Moving frame");
 	driver.move(this, x, y);
     }
 
+    /**
+     * Resizes the window.
+     * Uses WindowDriver registered for the operator type.
+     * @param width new width
+     * @param height new height
+     */
     public void resize(int width, int height) {
  	output.printLine("Resizing frame\n    " + getSource().toString());
  	output.printGolden("Resizing frame");
@@ -272,6 +310,9 @@ implements Outputable{
 
     /**
      * Searches an index'th window between windows owned by this window.
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     * @return a subwindow
      */
     public Window findSubWindow(ComponentChooser chooser, int index) {
         getOutput().printLine("Looking for \"" + chooser.getDescription() +
@@ -281,6 +322,8 @@ implements Outputable{
 
     /**
      * Searches a window between windows owned by this window.
+     * @param chooser a component chooser specifying searching criteria.
+     * @return a subwindow
      */
     public Window findSubWindow(ComponentChooser chooser) {
 	return(findSubWindow(chooser, 0));
@@ -288,6 +331,9 @@ implements Outputable{
 
     /**
      * Waits an index'th window between windows owned by this window.
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     * @return a subwindow
      */
     public Window waitSubWindow(ComponentChooser chooser, int index) {
         getOutput().printLine("Waiting for \"" + chooser.getDescription() +
@@ -305,11 +351,16 @@ implements Outputable{
 
     /**
      * Waits a window between windows owned by this window.
+     * @param chooser a component chooser specifying searching criteria.
+     * @return a subwindow
      */
     public Window waitSubWindow(ComponentChooser chooser) {
 	return(waitSubWindow(chooser, 0));
     }
 
+    /**
+     * Waits the window to be closed.
+     */
     public void waitClosed() {
 	getOutput().printLine("Wait window to be closed \n    : "+
 			      getSource().toString());
@@ -417,7 +468,8 @@ implements Outputable{
     ////////////////////////////////////////////////////////
     //Mapping 1.4                                         //
 
-    /**Maps <code>Window.isFocused()</code> through queue*/
+    /**Maps <code>Window.isFocused()</code> through queue. 
+       @return result of the mapped method */
     public boolean isFocused() {
         if(System.getProperty("java.version").startsWith("1.4")) {
             return(runMapping(new MapBooleanAction("isFocused") {
@@ -438,7 +490,8 @@ implements Outputable{
         }
     }
 
-    /**Maps <code>Window.isActive()</code> through queue*/
+    /**Maps <code>Window.isActive()</code> through queue. 
+       @return result of the mapped method */
     public boolean isActive() {
         if(System.getProperty("java.version").startsWith("1.4")) {
             return(runMapping(new MapBooleanAction("isActive") {
@@ -462,6 +515,15 @@ implements Outputable{
     //End of mapping 1.4                                  //
     ////////////////////////////////////////////////////////
 
+    /**
+     * A method to be used from subclasses.
+     * Uses timeouts and output passed as parameters during the waiting.
+     * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
+     * @param index Ordinal component index.
+     * @param timeouts timeouts to be used during the waiting.
+     * @param output an output to be used during the waiting.
+     * @return Component instance or null if component was not found.
+     */
     protected static Window waitWindow(ComponentChooser chooser, int index,
 				       Timeouts timeouts, TestOut output) {
 	try {
@@ -475,12 +537,30 @@ implements Outputable{
 	}
     }
 
+    /**
+     * A method to be used from subclasses.
+     * Uses <code>owner</code>'s timeouts and output during the waiting.
+     * @param owner a window - dialog owner.
+     * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
+     * @param index Ordinal component index.
+     * @return Component instance or null if component was not found.
+     */
     protected static Window waitWindow(WindowOperator owner, ComponentChooser chooser, int index) {
 	return(waitWindow((Window)owner.getSource(), 
 			  chooser, index, 
 			  owner.getTimeouts(), owner.getOutput()));
     }
 
+    /**
+     * A method to be used from subclasses.
+     * Uses timeouts and output passed as parameters during the waiting.
+     * @param owner a window - dialog owner.
+     * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
+     * @param index Ordinal component index.
+     * @param timeouts timeouts to be used during the waiting.
+     * @param output an output to be used during the waiting.
+     * @return Component instance or null if component was not found.
+     */
     protected static Window waitWindow(Window owner, ComponentChooser chooser, int index,
 				       Timeouts timeouts, TestOut output) {
 	try {

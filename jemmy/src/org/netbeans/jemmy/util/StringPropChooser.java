@@ -19,23 +19,45 @@ package org.netbeans.jemmy.util;
 
 import java.util.StringTokenizer;
 
+import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
+import org.netbeans.jemmy.operators.Operator.StringComparator;
+
 /**
  * 
  * Implementation of org.netbeans.jemmy.ComponentChooser interface.
- * Class can be used to find component by its field/methods values converted to String.
+ * Class can be used to find component by its field/methods values converted to String.<br>
  * 
  * Example:
+ * <pre>
  *	    JLabel label = JLabelOperator.findJLabel(frm0, new StringPropChooser("getText=JLabel",
  *										 false, true));
+ * </pre>
  * @author Alexandre Iline (alexandre.iline@sun.com)
  */
 
 public class StringPropChooser extends PropChooser{
 
-    private boolean compareExactly;
-    private boolean compareCaseSensitive;
+    private StringComparator comparator;
 
     /**
+     * Constructs a StringPropChooser object.
+     * @param propNames Names of methods/fields
+     * @param params Parameters values for methods. <BR>
+     * @param classes Parameters classes.
+     * @param results Objects to compare converted to String method/field values to.
+     * @param comparator Defines string comparision criteria.
+     */
+    public StringPropChooser(String[] propNames, 
+			     Object[][] params, 
+			     Class[][] classes, 
+			     String[] results,
+			     StringComparator comparator) {
+	super(propNames, params, classes, results);
+        this.comparator = comparator;
+    }
+
+    /**
+     * Constructs a StringPropChooser object.
      * @param propNames Names of methods/fields
      * @param params Parameters values for methods. <BR>
      * @param classes Parameters classes.
@@ -52,16 +74,28 @@ public class StringPropChooser extends PropChooser{
 			     String[] results,
 			     boolean ce,
 			     boolean ccs) {
-	super(propNames, params, classes, results);
-	compareExactly = ce;
-	compareCaseSensitive = ccs;
+        this(propNames, params, classes, results, new DefaultStringComparator(ce, ccs));
     }
 
     /**
+     * Constructs a StringPropChooser object.
+     * @param propNames Names of methods/fields
+     * @param results Objects to compare converted to String method/field values to.
+     * @param comparator Defines string comparision criteria.
+     */
+    public StringPropChooser(String[] propNames, 
+			     String[] results,
+			     StringComparator comparator) {
+	this(propNames, (Object[][])null, (Class[][])null, results, comparator);
+    }
+
+    /**
+     * Constructs a StringPropChooser object.
      * @param propNames Names of methods/fields
      * @param results Objects to compare converted to String method/field values to.
      * @param ce Compare exactly.
      * @param ccs Compare case sensitive.
+     * @param @deprecated Use constructors with <code>StringComparator</code> parameters.
      */
     public StringPropChooser(String[] propNames, 
 			     String[] results,
@@ -71,15 +105,36 @@ public class StringPropChooser extends PropChooser{
     }
 
     /**
+     * Constructs a StringPropChooser object.
      * @param props Method/field names && values <BR>
      * Like "getText=button;isVisible=true"
      * @param semicolonChar Method(field) names separator.
      * @param equalChar Method(field) name - expected value separator.
      * @param params Parameters values for methods.
      * @param classes Parameters classes.
-     * @param results Objects to compare converted to String method/field values to.
+     * @param comparator Defines string comparision criteria.
+     */
+    public StringPropChooser(String props, 
+			     String semicolonChar,
+			     String equalChar,
+			     Object[][] params, 
+			     Class[][] classes, 
+			     StringComparator comparator) {
+	this(cutToArray(props, semicolonChar, equalChar, true), params, classes,
+	     cutToArray(props, semicolonChar, equalChar, false), comparator);
+    }
+
+    /**
+     * Constructs a StringPropChooser object.
+     * @param props Method/field names && values <BR>
+     * Like "getText=button;isVisible=true"
+     * @param semicolonChar Method(field) names separator.
+     * @param equalChar Method(field) name - expected value separator.
+     * @param params Parameters values for methods.
+     * @param classes Parameters classes.
      * @param ce Compare exactly.
      * @param ccs Compare case sensitive.
+     * @param @deprecated Use constructors with <code>StringComparator</code> parameters.
      */
     public StringPropChooser(String props, 
 			     String semicolonChar,
@@ -93,12 +148,27 @@ public class StringPropChooser extends PropChooser{
     }
 
     /**
+     * Constructs a StringPropChooser object.
      * @param props Method/field names && values
      * @param semicolonChar Method(field) names separator.
      * @param equalChar Method(field) name - expected value separator.
-     * @param results Objects to compare converted to String method/field values to.
+     * @param comparator Defines string comparision criteria.
+     */
+    public StringPropChooser(String props, 
+			     String semicolonChar,
+			     String equalChar,
+			     StringComparator comparator) {
+	this(props, semicolonChar, equalChar, (Object[][])null, (Class[][])null, comparator);
+    }
+
+    /**
+     * Constructs a StringPropChooser object.
+     * @param props Method/field names && values
+     * @param semicolonChar Method(field) names separator.
+     * @param equalChar Method(field) name - expected value separator.
      * @param ce Compare exactly.
      * @param ccs Compare case sensitive.
+     * @param @deprecated Use constructors with <code>StringComparator</code> parameters.
      */
     public StringPropChooser(String props, 
 			     String semicolonChar,
@@ -109,14 +179,31 @@ public class StringPropChooser extends PropChooser{
     }
 
     /**
+     * Constructs a StringPropChooser object.
      * @param props Method/field names && values <BR>
      * ";" is used as a method(field) names separator. <BR>
      * "=" is used as a method(field) name - expected value separator.
-     * @param semicolonChar Char to divide one method/field from another.
+     * @param params Parameters values for methods.
      * @param classes Parameters classes.
-     * @param results Objects to compare converted to String method/field values to.
+     * @param comparator Defines string comparision criteria.
+     */
+    public StringPropChooser(String props, 
+			     Object[][] params, 
+			     Class[][] classes, 
+			     StringComparator comparator) {
+	this(props, ";", "=", params, classes, comparator);
+    }
+
+    /**
+     * Constructs a StringPropChooser object.
+     * @param props Method/field names && values <BR>
+     * ";" is used as a method(field) names separator. <BR>
+     * "=" is used as a method(field) name - expected value separator.
+     * @param params Parameters values for methods.
+     * @param classes Parameters classes.
      * @param ce Compare exactly.
      * @param ccs Compare case sensitive.
+     * @param @deprecated Use constructors with <code>StringComparator</code> parameters.
      */
     public StringPropChooser(String props, 
 			     Object[][] params, 
@@ -127,9 +214,25 @@ public class StringPropChooser extends PropChooser{
     }
 
     /**
+     * Constructs a StringPropChooser object.
      * @param props Method/field names && values
+     * ";" is used as a method(field) names separator. <BR>
+     * "=" is used as a method(field) name - expected value separator.
+     * @param comparator Defines string comparision criteria.
+     */
+    public StringPropChooser(String props, 
+			     StringComparator comparator) {
+	this(props, (Object[][])null, (Class[][])null, comparator);
+    }
+
+    /**
+     * Constructs a StringPropChooser object.
+     * @param props Method/field names && values
+     * ";" is used as a method(field) names separator. <BR>
+     * "=" is used as a method(field) name - expected value separator.
      * @param ce Compare exactly.
      * @param ccs Compare case sensitive.
+     * @param @deprecated Use constructors with <code>StringComparator</code> parameters.
      */
     public StringPropChooser(String props, 
 			     boolean ce,
@@ -153,24 +256,13 @@ public class StringPropChooser extends PropChooser{
 
     /**
      * Method to check property.
-     * Compares <value>.toString() to (String)etalon according ce and ccs constructor parameters.
+     * Compares "value".toString() to (String)etalon according ce and ccs constructor parameters.
      * @param value Method/field value
      * @param etalon Object to compare to.
+     * @return true if the value matches the etalon.
      */
     protected boolean checkProperty(Object value, Object etalon) {
-	String v, e;
-	if(compareCaseSensitive) {
-	    v = value.toString().toUpperCase();
-	    e = ((String)etalon).toUpperCase();
-	} else {
-	    v = value.toString();
-	    e = ((String)etalon);
-	}
-	if(compareExactly) {
-	    return(v.equals(e));
-	} else {
-	    return(v.indexOf(e) != -1);
-	}
+        return(comparator.equals(value.toString(), (String)etalon));
     }
 
     /*split string to array*/

@@ -50,6 +50,7 @@ public class JemmyInputException extends JemmyException {
 
     /**
      * Returns component.
+     * @return the Component associated with the exception.
      */
     public Component getComponent() {
 	return((Component)getObject());

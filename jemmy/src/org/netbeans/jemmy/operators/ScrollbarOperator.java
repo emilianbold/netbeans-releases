@@ -43,6 +43,16 @@ import java.awt.event.AdjustmentListener;
 
 import java.util.Hashtable;
 
+/**
+ * <BR><BR>Timeouts used: <BR>
+ * ScrollbarOperator.WholeScrollTimeout - time for one scroll click <BR>
+ * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>.
+ *
+ * @see org.netbeans.jemmy.Timeouts
+ *
+ * @author Alexandre Iline (alexandre.iline@sun.com)
+ *	
+ */
 public class ScrollbarOperator extends ComponentOperator
     implements Timeoutable, Outputable{
 
@@ -60,11 +70,21 @@ public class ScrollbarOperator extends ComponentOperator
 
     private ScrollDriver driver;
 
+    /**
+     * Constructs a ScrollbarOperator object.
+     * @param b a component
+     */
     public ScrollbarOperator(Scrollbar b) {
 	super(b);
 	driver = DriverManager.getScrollDriver(getClass());
     }
 
+    /**
+     * Constructs a ScrollbarOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public ScrollbarOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((Scrollbar)cont.
              waitSubComponent(new ScrollbarFinder(chooser),
@@ -72,39 +92,111 @@ public class ScrollbarOperator extends ComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a ScrollbarOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public ScrollbarOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
+
+    /**
+     * Constructs a ScrollbarOperator object.
+     * @param cont a container
+     * @param index an index between appropriate ones.
+     */
     public ScrollbarOperator(ContainerOperator cont, int index) {
 	this((Scrollbar)waitComponent(cont, 
 				       new ScrollbarFinder(), 
 				       index));
 	copyEnvironment(cont);
     }
+
+    /**
+     * Constructs a ScrollbarOperator object.
+     * @param cont a container
+     */
     public ScrollbarOperator(ContainerOperator cont) {
 	this(cont, 0);
     }
+
+    /**
+     * Finds a scrollbar.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     * @return the scrollbar fitting searching criteria
+     */
     public static Scrollbar findScrollbar(Container cont, ComponentChooser chooser, int index) {
 	return((Scrollbar)findComponent(cont, new ScrollbarFinder(chooser), index));
     }
+
+    /**
+     * Finds a scrollbar.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @return the scrollbar fitting searching criteria
+     */
     public static Scrollbar findScrollbar(Container cont, ComponentChooser chooser) {
 	return(findScrollbar(cont, chooser, 0));
     }
+
+    /**
+     * Finds a scrollbar.
+     * @param cont a container
+     * @param index an index between appropriate ones.
+     * @return the scrollbar fitting searching criteria
+     */
     public static Scrollbar findScrollbar(Container cont, int index) {
 	return(findScrollbar(cont, ComponentSearcher.getTrueChooser(Integer.toString(index) + "'th Scrollbar instance"), index));
     }
+
+    /**
+     * Finds a scrollbar.
+     * @param cont a container
+     * @return the scrollbar fitting searching criteria
+     */
     public static Scrollbar findScrollbar(Container cont) {
 	return(findScrollbar(cont, 0));
     }
+
+    /**
+     * Waits a scrollbar.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     * @return the scrollbar fitting searching criteria
+     */
     public static Scrollbar waitScrollbar(Container cont, ComponentChooser chooser, int index)  {
 	return((Scrollbar)waitComponent(cont, new ScrollbarFinder(chooser), index));
     }
+
+    /**
+     * Waits a scrollbar.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @return the scrollbar fitting searching criteria
+     */
     public static Scrollbar waitScrollbar(Container cont, ComponentChooser chooser) {
 	return(waitScrollbar(cont, chooser, 0));
     }
+
+    /**
+     * Waits a scrollbar.
+     * @param cont a container
+     * @param index an index between appropriate ones.
+     * @return the scrollbar fitting searching criteria
+     */
     public static Scrollbar waitScrollbar(Container cont, int index)  {
 	return(waitScrollbar(cont, ComponentSearcher.getTrueChooser(Integer.toString(index) + "'th Scrollbar instance"), index));
     }
+
+    /**
+     * Waits a scrollbar.
+     * @param cont a container
+     * @return the scrollbar fitting searching criteria
+     */
     public static Scrollbar waitScrollbar(Container cont) {
 	return(waitScrollbar(cont, 0));
     }
@@ -115,17 +207,21 @@ public class ScrollbarOperator extends ComponentOperator
 	Timeouts.initDefault("ScrollbarOperator.BeforeDropTimeout", BEFORE_DROP_TIMEOUT);
 	Timeouts.initDefault("ScrollbarOperator.DragAndDropScrollingDelta", DRAG_AND_DROP_SCROLLING_DELTA);
     }
+
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
+
     public TestOut getOutput() {
 	return(output);
     }
+
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
 	super.setTimeouts(timeouts);
     }
+
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
@@ -139,9 +235,23 @@ public class ScrollbarOperator extends ComponentOperator
 		      anotherOperator.getProperties());
     }
 
+    /**
+     * Scrolls scrollbar to the position defined by w parameter.
+     * Uses ScrollDriver registered to this operator type.
+     * @param w Scrolling is stopped when w.actionProduced(waiterParam) != null
+     * @param waiterParam a waiting parameter.
+     * @param increase a scrolling direction.
+     * @throws TimeoutExpiredException
+     */
     public void scrollTo(Waitable w, Object waiterParam, boolean increase) {
 	scrollTo(new WaitableChecker(w, waiterParam, increase, this));
     }
+
+    /**
+     * Scrolls scrollbar to the position defined by a ScrollAdjuster implementation.
+     * @param adj defines scrolling direction, and so on.
+     * @throws TimeoutExpiredException
+     */
     public void scrollTo(final ScrollAdjuster adj) {
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
@@ -153,12 +263,24 @@ public class ScrollbarOperator extends ComponentOperator
 		}
 	    }, getTimeouts().getTimeout("ScrollbarOperator.WholeScrollTimeout"));
     }
+
+    /**
+     * Scrolls scroll bar to necessary value.
+     * @param value Scroll bar value to scroll to.
+     * @throws TimeoutExpiredException
+     */
     public void scrollToValue(int value) {
 	output.printTrace("Scroll Scrollbar to " + Integer.toString(value) +
 			  " value\n" + getSource().toString());
 	output.printGolden("Scroll Scrollbar to " + Integer.toString(value) + " value");
 	scrollTo(new ValueScrollAdjuster(value));
     }
+
+    /**
+     * Scrolls scroll bar to necessary proportional value.
+     * @param proportionalValue Proportional scroll to. Must be >= 0 and <= 1.
+     * @throws TimeoutExpiredException
+     */
     public void scrollToValue(double proportionalValue) {
 	output.printTrace("Scroll Scrollbar to " + Double.toString(proportionalValue) +
 			  " proportional value\n" + getSource().toString());
@@ -168,6 +290,11 @@ public class ScrollbarOperator extends ComponentOperator
 						getVisibleAmount() - 
 						getMinimum()) * proportionalValue)));
     }
+
+    /**
+     * Scrolls to minimum value.
+     * @throws TimeoutExpiredException
+     */
     public void scrollToMinimum() {
 	output.printTrace("Scroll Scrollbar to minimum value\n" +
 			  getSource().toString());
@@ -182,6 +309,11 @@ public class ScrollbarOperator extends ComponentOperator
 		}
 	    }, getTimeouts().getTimeout("ScrollbarOperator.WholeScrollTimeout"));
     }
+
+    /**
+     * Scrolls to maximum value.
+     * @throws TimeoutExpiredException
+     */
     public void scrollToMaximum() {
 	output.printTrace("Scroll Scrollbar to maximum value\n" +
 			  getSource().toString());
@@ -373,10 +505,20 @@ public class ScrollbarOperator extends ComponentOperator
 	    return(w.getDescription());
 	}
     }
+    /**
+     * Checks component type.
+     */
     public static class ScrollbarFinder extends Finder {
+        /**
+         * Constructs ScrollbarFinder.
+         * @param sf other searching criteria.
+         */
 	public ScrollbarFinder(ComponentChooser sf) {
             super(Scrollbar.class, sf);
 	}
+        /**
+         * Constructs ScrollbarFinder.
+         */
 	public ScrollbarFinder() {
             super(Scrollbar.class);
 	}

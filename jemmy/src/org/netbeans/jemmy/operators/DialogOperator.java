@@ -35,7 +35,7 @@ import java.util.Hashtable;
  * <BR><BR>Timeouts used: <BR>
  * DialogWaiter.WaitDialogTimeout - time to wait dialog displayed <BR>
  * DialogWaiter.AfterDialogTimeout - time to sleep after dialog has been dispayed <BR>
- * ComponentOperator.WaitStateTimeout - time to wait for title <BR>
+ * ComponentOperator.WaitStateTimeout - time to wait for title <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  * 
@@ -45,14 +45,38 @@ import java.util.Hashtable;
 
 public class DialogOperator extends WindowOperator {
 
+    /**
+     * Identifier for a title property.
+     * @see #getDump
+     */
     public static final String TITLE_DPROP = "Title";
+
+    /**
+     * Identifier for a modal property.
+     * @see #getDump
+     */
     public static final String IS_MODAL_DPROP = "Modal";
+
+    /**
+     * Identifier for a resizable property.
+     * @see #getDump
+     */
     public static final String IS_RESIZABLE_DPROP = "Resizable";
 
+    /**
+     * Constructs a DialogOperator object.
+     * @param w window
+     */
     public DialogOperator(Dialog w) {
 	super(w);
     }
 
+    /**
+     * Constructs a DialogOperator object.
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     * @param env an operator to copy environment from.
+     */
     public DialogOperator(ComponentChooser chooser, int index, Operator env) {
 	this(waitDialog(new DialogFinder(chooser),
                         index, 
@@ -61,14 +85,29 @@ public class DialogOperator extends WindowOperator {
 	copyEnvironment(env);
     }
 
+    /**
+     * Constructs a DialogOperator object.
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public DialogOperator(ComponentChooser chooser, int index) {
 	this(chooser, index, Operator.getEnvironmentOperator());
     }
 
+    /**
+     * Constructs a DialogOperator object.
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public DialogOperator(ComponentChooser chooser) {
 	this(chooser, 0);
     }
 
+    /**
+     * Constructs a DialogOperator object.
+     * @param owner window - owner
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public DialogOperator(WindowOperator owner, ComponentChooser chooser, int index) {
 	this((Dialog)owner.
              waitSubWindow(new DialogFinder(chooser),
@@ -76,6 +115,11 @@ public class DialogOperator extends WindowOperator {
 	copyEnvironment(owner);
     }
 
+    /**
+     * Constructs a DialogOperator object.
+     * @param owner window - owner
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public DialogOperator(WindowOperator owner, ComponentChooser chooser) {
 	this(owner, chooser, 0);
     }
@@ -121,6 +165,7 @@ public class DialogOperator extends WindowOperator {
      * Constructor.
      * Waits for the index'th dialog between owner's children.
      * Uses owner'th timeout and output for waiting and to init operator.
+     * @param owner Operator pointing to a window owner.
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -136,6 +181,7 @@ public class DialogOperator extends WindowOperator {
      * Constructor.
      * Waits for the first dialog between owner's children.
      * Uses owner'th timeout and output for waiting and to init operator.
+     * @param owner Operator pointing to a window owner.
      * @throws TimeoutExpiredException
      */
     public DialogOperator(WindowOperator owner) {
@@ -147,10 +193,9 @@ public class DialogOperator extends WindowOperator {
      * Waits for the dialog with "title" subtitle.
      * Constructor can be used in complicated cases when
      * output or timeouts should differ from default.
-     * @param title
-     * @param index
-     * @param timeouts 
-     * @param output
+     * @param title a window title
+     * @param index Ordinal component index.
+     * @param env an operator to copy environment from.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
      */
@@ -165,8 +210,8 @@ public class DialogOperator extends WindowOperator {
      * Constructor.
      * Waits for the dialog with "title" subtitle.
      * Uses current timeouts and output values.
-     * @param title
-     * @param index
+     * @param title a window title
+     * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @see JemmyProperties#getCurrentTimeouts()
      * @see JemmyProperties#getCurrentOutput()
@@ -181,7 +226,7 @@ public class DialogOperator extends WindowOperator {
      * Constructor.
      * Waits for the dialog with "title" subtitle.
      * Uses current timeouts and output values.
-     * @param title
+     * @param title a window title
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @see JemmyProperties#getCurrentTimeouts()
      * @see JemmyProperties#getCurrentOutput()
@@ -287,6 +332,15 @@ public class DialogOperator extends WindowOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * A method to be used from subclasses.
+     * Uses timeouts and output passed as parameters during the waiting.
+     * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
+     * @param index Ordinal component index.
+     * @param timeouts timeouts to be used during the waiting.
+     * @param output an output to be used during the waiting.
+     * @return Component instance or null if component was not found.
+     */
     protected static Dialog waitDialog(ComponentChooser chooser, int index,
 					 Timeouts timeouts, TestOut output) {
 	try {
@@ -301,12 +355,30 @@ public class DialogOperator extends WindowOperator {
 	}
     }
 
+    /**
+     * A method to be used from subclasses.
+     * Uses <code>owner</code>'s timeouts and output during the waiting.
+     * @param owner a window - dialog owner.
+     * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
+     * @param index Ordinal component index.
+     * @return Component instance or null if component was not found.
+     */
     protected static Dialog waitDialog(WindowOperator owner, ComponentChooser chooser, int index) {
 	return(waitDialog((Window)owner.getSource(), 
 			  chooser, index, 
 			  owner.getTimeouts(), owner.getOutput()));
     }
 
+    /**
+     * A method to be used from subclasses.
+     * Uses timeouts and output passed as parameters during the waiting.
+     * @param owner a window - dialog owner.
+     * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
+     * @param index Ordinal component index.
+     * @param timeouts timeouts to be used during the waiting.
+     * @param output an output to be used during the waiting.
+     * @return Component instance or null if component was not found.
+     */
     protected static Dialog waitDialog(Window owner, ComponentChooser chooser, int index,
 					 Timeouts timeouts, TestOut output) {
 	try {
@@ -322,22 +394,44 @@ public class DialogOperator extends WindowOperator {
     }
 
 
+    /**
+     * Checks component type.
+     */
     public static class DialogFinder extends Finder {
+        /**
+         * Constructs DialogFinder.
+         * @param sf other searching criteria.
+         */
 	public DialogFinder(ComponentChooser sf) {
             super(Dialog.class, sf);
 	}
+        /**
+         * Constructs DialogFinder.
+         */
 	public DialogFinder() {
             super(Dialog.class);
 	}
     }
 
+    /**
+     * Allows to find component by title.
+     */
     public static class DialogByTitleFinder implements ComponentChooser {
 	String title;
 	StringComparator comparator;
+        /**
+         * Constructs DialogByTitleFinder.
+         * @param t a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public DialogByTitleFinder(String t, StringComparator comparator) {
 	    title = t;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs DialogByTitleFinder.
+         * @param t a text pattern
+         */
 	public DialogByTitleFinder(String t) {
             this(t, Operator.getDefaultStringComparator());
 	}

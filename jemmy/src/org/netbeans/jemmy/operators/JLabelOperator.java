@@ -34,7 +34,7 @@ import javax.swing.plaf.LabelUI;
 /**
  * <BR><BR>Timeouts used: <BR>
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
- * ComponentOperator.WaitStateTimeout - time to wait for text <BR>
+ * ComponentOperator.WaitStateTimeout - time to wait for text <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  * @author Alexandre Iline (alexandre.iline@sun.com)
@@ -43,15 +43,26 @@ import javax.swing.plaf.LabelUI;
 
 public class JLabelOperator extends JComponentOperator {
 
+    /**
+     * Identifier for a "text" property.
+     * @see #getDump
+     */
     public static final String TEXT_DPROP = "Text";
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JLabelOperator(JLabel b) {
 	super(b);
     }
 
+    /**
+     * Constructs a JLabelOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JLabelOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JLabel)cont.
              waitSubComponent(new JLabelFinder(chooser),
@@ -59,6 +70,11 @@ public class JLabelOperator extends JComponentOperator {
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JLabelOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JLabelOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -67,10 +83,11 @@ public class JLabelOperator extends JComponentOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      */
     public JLabelOperator(ContainerOperator cont, String text, int index) {
 	this((JLabel)waitComponent(cont, 
@@ -84,9 +101,10 @@ public class JLabelOperator extends JComponentOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      */
     public JLabelOperator(ContainerOperator cont, String text) {
 	this(cont, text, 0);
@@ -96,8 +114,9 @@ public class JLabelOperator extends JComponentOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
-     * @throws TimeoutExpiredException
+     * 
      */
     public JLabelOperator(ContainerOperator cont, int index) {
 	this((JLabel)
@@ -111,7 +130,8 @@ public class JLabelOperator extends JComponentOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
-     * @throws TimeoutExpiredException
+     * @param cont a container
+     * 
      */
     public JLabelOperator(ContainerOperator cont) {
 	this(cont, 0);
@@ -120,7 +140,7 @@ public class JLabelOperator extends JComponentOperator {
     /**
      * Searches JLabel in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JLabel instance or null if component was not found.
      */
@@ -131,7 +151,7 @@ public class JLabelOperator extends JComponentOperator {
     /**
      * Searches JLabel in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JLabel instance or null if component was not found.
      */
     public static JLabel findJLabel(Container cont, ComponentChooser chooser) {
@@ -168,10 +188,10 @@ public class JLabelOperator extends JComponentOperator {
     /**
      * Waits JLabel in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JLabel instance.
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JLabel waitJLabel(final Container cont, final ComponentChooser chooser, final int index) {
 	return((JLabel)waitComponent(cont, new JLabelFinder(chooser), index));
@@ -180,9 +200,9 @@ public class JLabelOperator extends JComponentOperator {
     /**
      * Waits JLabel in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JLabel instance.
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JLabel waitJLabel(Container cont, ComponentChooser chooser) {
 	return(waitJLabel(cont, chooser, 0));
@@ -197,7 +217,7 @@ public class JLabelOperator extends JComponentOperator {
      * @param index Ordinal component index.
      * @return JLabel instance.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JLabel waitJLabel(Container cont, String text, boolean ce, boolean ccs, int index) {
 	return(waitJLabel(cont, new JLabelByLabelFinder(text, new DefaultStringComparator(ce, ccs)), index));
@@ -211,7 +231,7 @@ public class JLabelOperator extends JComponentOperator {
      * @param ccs Compare text case sensitively.
      * @return JLabel instance.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JLabel waitJLabel(Container cont, String text, boolean ce, boolean ccs) {
 	return(waitJLabel(cont, text, ce, ccs, 0));
@@ -408,13 +428,25 @@ public class JLabelOperator extends JComponentOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Allows to find component by text.
+     */
     public static class JLabelByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
+        /**
+         * Constructs JLabelByLabelFinder.
+         * @param lb a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public JLabelByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs JLabelByLabelFinder.
+         * @param lb a text pattern
+         */
 	public JLabelByLabelFinder(String lb) {
             this(lb, Operator.getDefaultStringComparator());
 	}
@@ -432,10 +464,20 @@ public class JLabelOperator extends JComponentOperator {
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JLabelFinder extends Finder {
+        /**
+         * Constructs JLabelFinder.
+         * @param sf other searching criteria.
+         */
 	public JLabelFinder(ComponentChooser sf) {
             super(JLabel.class, sf);
 	}
+        /**
+         * Constructs JLabelFinder.
+         */
 	public JLabelFinder() {
             super(JLabel.class);
 	}

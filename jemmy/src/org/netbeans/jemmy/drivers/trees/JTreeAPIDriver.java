@@ -34,18 +34,30 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
+/**
+ * TreeDriver for javax.swing.JTree component type.
+ * Uses API calls.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class JTreeAPIDriver extends LightSupportiveDriver implements TreeDriver {
+    /**
+     * Constructs a JTreeAPIDriver.
+     */
     public JTreeAPIDriver() {
 	super(new String[] {"org.netbeans.jemmy.operators.JTreeOperator"});
     }
+
     public void selectItem(ComponentOperator oper, int index) {
 	selectItems(oper, new int[] {index});
     }
+
     public void selectItems(ComponentOperator oper, int[] indices) {
 	checkSupported(oper);
 	((JTreeOperator)oper).clearSelection();
 	((JTreeOperator)oper).addSelectionRows(indices);
     }
+
     public void expandItem(ComponentOperator oper, int index) {
 	checkSupported(oper);
 	((JTreeOperator)oper).expandRow(index);

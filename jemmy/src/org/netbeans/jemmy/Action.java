@@ -38,6 +38,7 @@ public interface Action{
     public Object launch(Object obj);
 
     /**
+     * Returns the description value.
      * @return Action description.
      */
     public String getDescription();

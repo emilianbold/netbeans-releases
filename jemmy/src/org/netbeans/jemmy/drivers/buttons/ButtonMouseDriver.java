@@ -24,6 +24,11 @@ import org.netbeans.jemmy.drivers.MouseDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+/**
+ * Driver to push a button by mouse click.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class ButtonMouseDriver extends LightSupportiveDriver implements ButtonDriver {
     public ButtonMouseDriver() {
 	super(new String[] {"org.netbeans.jemmy.operators.ComponentOperator"});

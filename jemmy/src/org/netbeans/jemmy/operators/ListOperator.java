@@ -47,7 +47,7 @@ import java.util.Vector;
 /**
  * <BR><BR>Timeouts used: <BR>
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
- * ComponentOperator.WaitComponentEnabledTimeout - time to wait component enabled <BR>
+ * ComponentOperator.WaitComponentEnabledTimeout - time to wait component enabled <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -58,7 +58,16 @@ import java.util.Vector;
 public class ListOperator extends ComponentOperator
     implements Outputable {
 
+    /**
+     * Identifier for a "item" properties.
+     * @see #getDump
+     */
     public static final String ITEM_PREFIX_DPROP = "Item";
+
+    /**
+     * Identifier for a "selected item" property.
+     * @see #getDump
+     */
     public static final String SELECTED_ITEM_PREFIX_DPROP = "SelectedItem";
 
     private TestOut output;
@@ -66,12 +75,19 @@ public class ListOperator extends ComponentOperator
 
     /**
      * Constructor.
+     * @param b a component
      */
     public ListOperator(List b) {
 	super(b);
 	driver = DriverManager.getMultiSelListDriver(getClass());
     }
 
+    /**
+     * Constructs a ListOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public ListOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((List)cont.
              waitSubComponent(new ListFinder(chooser),
@@ -79,6 +95,11 @@ public class ListOperator extends ComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a ListOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public ListOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -87,6 +108,7 @@ public class ListOperator extends ComponentOperator
      * Constructor.
      * Waits item text first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of item which is currently selected. 
      * @param itemIndex Item index.
      * @param index Ordinal component index.
@@ -104,6 +126,7 @@ public class ListOperator extends ComponentOperator
      * Constructor.
      * Waits component by selected item text first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of item which is currently selected. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
@@ -117,6 +140,7 @@ public class ListOperator extends ComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of item which is currently selected. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -129,6 +153,7 @@ public class ListOperator extends ComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -144,6 +169,7 @@ public class ListOperator extends ComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @throws TimeoutExpiredException
      */
     public ListOperator(ContainerOperator cont) {
@@ -171,24 +197,11 @@ public class ListOperator extends ComponentOperator
 	return(findList(cont, chooser, 0));
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param output Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut output) {
 	super.setOutput(output.createErrorOutput());
 	this.output = output;
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -216,10 +229,21 @@ public class ListOperator extends ComponentOperator
 	return(-1);
     }
 
+    /**
+     * Searches an item index. 
+     * @param item item text.
+     * @param index an ordinal index between appropriate ones.
+     * @return an index.
+     */
     public int findItemIndex(String item, int index){
 	return(findItemIndex(item, getComparator(), index));
     }
     
+    /**
+     * Searches an item index. 
+     * @param item item text.
+     * @return an index.
+     */
     public int findItemIndex(String item){
 	return(findItemIndex(item, 0));
     }
@@ -228,14 +252,27 @@ public class ListOperator extends ComponentOperator
 	selectItem(findItemIndex(item, comparator, index));
     }
 
+    /**
+     * Selects an item. 
+     * @param item item text.
+     * @param index an ordinal index between appropriate ones.
+     */
     public void selectItem(String item, int index) {
 	selectItem(item, getComparator(), index);
     }
 
+    /**
+     * Selects an item. 
+     * @param item item text.
+     */
     public void selectItem(String item) {
 	selectItem(item, 0);
     }
 
+    /**
+     * Selects an item. 
+     * @param index an item index.
+     */
     public void selectItem(int index) {
 	output.printLine("Select " + Integer.toString(index) + "`th item in list\n    : " +
 			 getSource().toString());
@@ -246,6 +283,11 @@ public class ListOperator extends ComponentOperator
         }
     }
 
+    /**
+     * Selects some items. 
+     * @param from start selection index.
+     * @param to end selection index.
+     */
     public void selectItems(int from, int to) {
 	output.printLine("Select items from " + Integer.toString(from) + 
 			 "`th to " + Integer.toString(from) + "'th in list\n    : " +
@@ -290,16 +332,13 @@ public class ListOperator extends ComponentOperator
 
     /**
      * Waits for item to be selected.
-     * @param itemIndex
+     * @param itemIndex an item index to be selected.
      * @param selected Selected (true) or unselected (false).
      */
     public void waitItemSelection(final int itemIndex, final boolean selected) {
         waitItemsSelection(itemIndex, itemIndex, selected);
     }
 
-    /**
-     * Returns information about component.
-     */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	addToDump(result, ITEM_PREFIX_DPROP, ((List)getSource()).getItems());
@@ -495,15 +534,29 @@ public class ListOperator extends ComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Allows to find component by item text.
+     */
     public static class ListByItemFinder implements ComponentChooser {
 	String label;
 	int itemIndex;
 	StringComparator comparator;
+        /**
+         * Constructs ListByItemFinder.
+         * @param lb a text pattern
+         * @param ii item index to check. If equal to -1, selected item is checked.
+         * @param comparator specifies string comparision algorithm.
+         */
 	public ListByItemFinder(String lb, int ii, StringComparator comparator) {
 	    label = lb;
 	    itemIndex = ii;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs ListByItemFinder.
+         * @param lb a text pattern
+         * @param ii item index to check. If equal to -1, selected item is checked.
+         */
 	public ListByItemFinder(String lb, int ii) {
             this(lb, ii, Operator.getDefaultStringComparator());
 	}
@@ -532,10 +585,20 @@ public class ListOperator extends ComponentOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class ListFinder extends Finder {
+        /**
+         * Constructs ListFinder.
+         * @param sf other searching criteria.
+         */
 	public ListFinder(ComponentChooser sf) {
             super(List.class, sf);
 	}
+        /**
+         * Constructs ListFinder.
+         */
 	public ListFinder() {
             super(List.class);
 	}

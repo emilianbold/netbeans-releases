@@ -39,28 +39,57 @@ import org.netbeans.jemmy.operators.TextComponentOperator;
 import org.netbeans.jemmy.operators.TextFieldOperator;
 
 
+/**
+ * Installs drivers for low-level drivers.
+ * 
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class InputDriverInstaller {
     Timeout robotAutoDelay;
     boolean useEventDrivers;
+
+    /**
+     * Constructs an InputDriverInstaller object. 
+     * @param useEventDrivers Tells whether to use event drivers, otherwise robot drivers.
+     * @param robotAutoDelay Time for <code>Robot.setAutoDelay(long)</code> method.
+     */
     public InputDriverInstaller(boolean useEventDrivers, Timeout robotAutoDelay) {
 	this.robotAutoDelay = robotAutoDelay;
 	this.useEventDrivers = useEventDrivers;
     }
+
+    /**
+     * Constructs an InputDriverInstaller object. Takes autodelay time
+     * from JemmyProperties' timeouts.
+     * @param useEventDrivers Tells whether to use event drivers, otherwise robot drivers.
+     */
     public InputDriverInstaller(boolean useEventDrivers) {
 	this(useEventDrivers,
 	     JemmyProperties.getCurrentTimeouts().
 	     create("EventDispatcher.RobotAutoDelay"));
     }
+    /**
+     * Constructs an InputDriverInstaller object. Uses event drivers.
+     * @param robotAutoDelay Time for <code>Robot.setAutoDelay(long)</code> method.
+     */
     public InputDriverInstaller(Timeout robotAutoDelay) {
 	this(true,
 	     robotAutoDelay);
     }
+    /**
+     * Constructs an InputDriverInstaller object. Takes autodelay time
+     * from JemmyProperties' timeouts. Uses event drivers.
+     */
     public InputDriverInstaller() {
 	this(true);
     }
     static {
 	Class clss= EventDispatcher.class;
     }
+
+    /**
+     * Installs input drivers.
+     */
     public void install() {
 	if(useEventDrivers) {
 	    LightDriver keyE = new KeyEventDriver();

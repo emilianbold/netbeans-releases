@@ -71,7 +71,7 @@ import javax.swing.plaf.basic.ComboPopup;
  * JTextComponentOperator.PushKeyTimeout - time between key pressing and releasing during text typing <BR>
  * JTextComponentOperator.BetweenKeysTimeout - time to sleep between two chars typing <BR>
  * JTextComponentOperator.ChangeCaretPositionTimeout - maximum time to chenge caret position <BR>
- * JTextComponentOperator.TypeTextTimeout - maximum time to type text <BR>
+ * JTextComponentOperator.TypeTextTimeout - maximum time to type text <BR>.
  *
  * @see Timeouts
  *
@@ -82,7 +82,16 @@ import javax.swing.plaf.basic.ComboPopup;
 public class JComboBoxOperator extends JComponentOperator
 implements Timeoutable, Outputable {
 
+    /**
+     * Identifier for a "text" property.
+     * @see #getDump
+     */
     public static final String TEXT_DPROP = "Text";
+
+    /**
+     * Identifier for a "item" property values.
+     * @see #getDump
+     */
     public static final String ITEM_PREFIX_DPROP = "Item";
 
     private final static long BEFORE_SELECTING_TIMEOUT = 0;
@@ -98,13 +107,20 @@ implements Timeoutable, Outputable {
     ListDriver driver;
 
     /**
-     * Constructor
+     * Constructs a JComboBoxOperator object.
+     * @param b a component
      */
     public JComboBoxOperator(JComboBox b) {
 	super(b);
 	driver = DriverManager.getListDriver(getClass());
     }
 
+    /**
+     * Constructs a JComboBoxOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JComboBoxOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JComboBox)cont.
              waitSubComponent(new JComboBoxFinder(chooser),
@@ -112,6 +128,11 @@ implements Timeoutable, Outputable {
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JComboBoxOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JComboBoxOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -120,6 +141,7 @@ implements Timeoutable, Outputable {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of item which is currently selected. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
@@ -137,6 +159,7 @@ implements Timeoutable, Outputable {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of item which is currently selected. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -149,6 +172,7 @@ implements Timeoutable, Outputable {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -164,6 +188,7 @@ implements Timeoutable, Outputable {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @throws TimeoutExpiredException
      */
     public JComboBoxOperator(ContainerOperator cont) {
@@ -287,45 +312,20 @@ implements Timeoutable, Outputable {
 	Timeouts.initDefault("JComboBoxOperator.WaitListTimeout", WAIT_LIST_TIMEOUT);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param timeouts A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts timeouts) {
 	super.setTimeouts(timeouts);
 	this.timeouts = timeouts;
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param output Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut output) {
 	super.setOutput(output);
 	this.output = output;
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -340,6 +340,7 @@ implements Timeoutable, Outputable {
     }
 
     /**
+     * Searches JButton inside component.
      * @return JButton which is used to expand this JComboBox.
      */
     public JButton findJButton() {
@@ -354,6 +355,7 @@ implements Timeoutable, Outputable {
     }
 
     /**
+     * Searches JTextField inside component.
      * @return JTextField if JComboBox is editable, null otherwise.
      */
     public JTextField findJTextField() {
@@ -367,11 +369,21 @@ implements Timeoutable, Outputable {
 	    }));
     }
 
+    /**
+     * Creates an operator for button returned by
+     * <code>findJButton()</code> method.
+     * @return new JButtonOperator instance.
+     */
     public JButtonOperator getButton() {
 	init();
 	return(button);
     }
 
+    /**
+     * Creates an operator for button returned by
+     * <code>findJTextField()</code> method.
+     * @return new JTextField instance.
+     */
     public JTextFieldOperator getTextField() {
 	init();
 	return(text);
@@ -407,6 +419,12 @@ implements Timeoutable, Outputable {
 	getButton().push();
     }
 
+    /**
+     * Finds an item between list items.
+     * @param item a text pattern.
+     * @param comparator a searching criteria.
+     * @return an item index.
+     */
     public int findItemIndex(String item, StringComparator comparator) {
 	ComboBoxModel model = getModel();
 	for(int i = 0; i < model.getSize(); i++) {
@@ -417,6 +435,11 @@ implements Timeoutable, Outputable {
 	return(-1);
     }
     
+    /**
+     * Selects an item by text.
+     * @param item a text pattern.
+     * @param comparator a searching criteria.
+     */
     public void selectItem(String item, StringComparator comparator) {
 	output.printLine("Select \"" + item + "\" item in combobox\n    : " +
 			 getSource().toString());
@@ -468,6 +491,7 @@ implements Timeoutable, Outputable {
     /**
      * Types text in the editable combobox.
      * If combobox has no focus, does simple mouse click on it first.
+     * @param text text to type.
      * @throws TimeoutExpiredException
      */
     public void typeText(String text) {
@@ -526,7 +550,7 @@ implements Timeoutable, Outputable {
 
     /**
      * Waits for item to be selected. Uses getComparator() comparator.
-     * @param item.
+     * @param item wait an item to be selected.
      */
     public void waitItemSelected(final String item) {
 	getOutput().printLine("Wait \"" + item + 
@@ -892,15 +916,29 @@ implements Timeoutable, Outputable {
 	}
     }
 
+    /**
+     * Allows to find component by an item.
+     */
     public static class JComboBoxByItemFinder implements ComponentChooser {
 	String label;
 	int itemIndex;
 	StringComparator comparator;
+        /**
+         * Constructs JComboBoxByItemFinder.
+         * @param lb a text pattern
+         * @param ii item index to check. If equal to -1, selected item is checked.
+         * @param comparator specifies string comparision algorithm.
+         */
 	public JComboBoxByItemFinder(String lb, int ii, StringComparator comparator) {
 	    label = lb;
 	    itemIndex = ii;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs JComboBoxByItemFinder.
+         * @param lb a text pattern
+         * @param ii item index to check. If equal to -1, selected item is checked.
+         */
 	public JComboBoxByItemFinder(String lb, int ii) {
             this(lb, ii, Operator.getDefaultStringComparator());
 	}
@@ -929,10 +967,20 @@ implements Timeoutable, Outputable {
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JComboBoxFinder extends Finder {
+        /**
+         * Constructs JComboBoxFinder.
+         * @param sf other searching criteria.
+         */
 	public JComboBoxFinder(ComponentChooser sf) {
             super(JComboBox.class, sf);
 	}
+        /**
+         * Constructs JComboBoxFinder.
+         */
 	public JComboBoxFinder() {
             super(JComboBox.class);
 	}

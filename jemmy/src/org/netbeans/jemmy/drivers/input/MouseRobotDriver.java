@@ -28,31 +28,51 @@ import org.netbeans.jemmy.drivers.MouseDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.Operator;
 
+/**
+ * MouseDriver using robot operations.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class MouseRobotDriver extends RobotDriver implements MouseDriver {
+
+    /**
+     * Constructs a MouseRobotDriver object.
+     * @param autoDelay Time for <code>Robot.setAutoDelay(long)</code> method.
+     */
     public MouseRobotDriver(Timeout autoDelay) {
 	super(autoDelay);
     }
+
+    /**
+     * Constructs a MouseRobotDriver object.
+     * @param autoDelay Time for <code>Robot.setAutoDelay(long)</code> method.
+     * @param supported an array of supported class names
+     */
     public MouseRobotDriver(Timeout autoDelay, String[] supported) {
 	super(autoDelay, supported);
     }
+
     public void pressMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers) {
 	pressModifiers(oper, modifiers);
 	makeAnOperation("mousePress", 
 			new Object[] {new Integer(mouseButton)}, 
 			new Class[] {Integer.TYPE});
     }
+
     public void releaseMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers) {
 	makeAnOperation("mouseRelease", 
 			new Object[] {new Integer(mouseButton)}, 
 			new Class[] {Integer.TYPE});
 	releaseModifiers(oper, modifiers);
     }
+
     public void moveMouse(ComponentOperator oper, int x, int y) {
 	makeAnOperation("mouseMove", 
 			new Object[] {new Integer(getAbsoluteX(oper, x)), 
 				      new Integer(getAbsoluteY(oper, y))}, 
 			new Class[] {Integer.TYPE, Integer.TYPE});
     }
+
     public void clickMouse(ComponentOperator oper, int x, int y, int clickCount, int mouseButton, 
 			   int modifiers, Timeout mouseClick) {
 	pressModifiers(oper, modifiers);
@@ -74,9 +94,11 @@ public class MouseRobotDriver extends RobotDriver implements MouseDriver {
 			new Class[] {Integer.TYPE});
 	releaseModifiers(oper, modifiers);
     }
+
     public void dragMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers) {
 	moveMouse(oper, x, y);
     }
+
     public void dragNDrop(ComponentOperator oper, int start_x, int start_y, int end_x, int end_y, 
 			  int mouseButton, int modifiers, Timeout before, Timeout after) {
 	moveMouse(oper, start_x, start_y);
@@ -86,18 +108,34 @@ public class MouseRobotDriver extends RobotDriver implements MouseDriver {
 	after.sleep();
 	releaseMouse(oper, end_x, end_y, mouseButton, modifiers);
     }
+
     public void enterMouse(ComponentOperator oper) {
 	moveMouse(oper, oper.getCenterXForClick(), oper.getCenterYForClick());
     }
+
     public void exitMouse(ComponentOperator oper) {
 	//better not go anywhere
 	//exit will be executed during the next
 	//mouse move anyway.
 	//	moveMouse(oper, -1, -1);
     }
+
+    /**
+     * Returns absolute x coordinate for relative x coordinate.
+     * @param oper an operator
+     * @param x a relative x coordinate.
+     * @return an absolute x coordinate.
+     */
     protected int getAbsoluteX(ComponentOperator oper, int x) {
 	return(oper.getSource().getLocationOnScreen().x + x);
     }
+
+   /**
+     * Returns absolute y coordinate for relative y coordinate.
+     * @param oper an operator
+     * @param y a relative y coordinate.
+     * @return an absolute y coordinate.
+     */
     protected int getAbsoluteY(ComponentOperator oper, int y) {
 	return(oper.getSource().getLocationOnScreen().y + y);
     }

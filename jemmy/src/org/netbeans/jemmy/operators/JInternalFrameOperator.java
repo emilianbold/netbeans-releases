@@ -67,7 +67,7 @@ import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
  * ComponentOperator.MouseClickTimeout - time between mouse pressing and releasing <BR>
  * AbstractButtonOperator.PushButtonTimeout - time between button pressing and releasing<BR>
- * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
+ * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  * @see WrongInternalFrameStateException
@@ -77,18 +77,72 @@ import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 public class JInternalFrameOperator extends JComponentOperator
     implements Outputable, Timeoutable {
 
+    /**
+     * Identifier for a "title" property.
+     * @see #getDump
+     */
     public static final String TITLE_DPROP = "Title";
+
+    /**
+     * Identifier for a "state" property.
+     * @see #getDump
+     */
     public static final String STATE_DPROP = "State";
+
+    /**
+     * Identifier for a "normal" value of "state" property.
+     * @see #getDump
+     */
     public static final String STATE_NORMAL_DPROP_VALUE = "NORMAL";
+
+    /**
+     * Identifier for a "closed" value of "state" property.
+     * @see #getDump
+     */
     public static final String STATE_CLOSED_DPROP_VALUE = "CLOSED";
+
+    /**
+     * Identifier for a "iconified" value of "state" property.
+     * @see #getDump
+     */
     public static final String STATE_ICONIFIED_DPROP_VALUE = "ICONIFIED";
+
+    /**
+     * Identifier for a "maximized" value of "state" property.
+     * @see #getDump
+     */
     public static final String STATE_MAXIMAZED_DPROP_VALUE = "MAXIMIZED";
+
+    /**
+     * Identifier for a "resizable" property.
+     * @see #getDump
+     */
     public static final String IS_RESIZABLE_DPROP = "Resizable";
+
+    /**
+     * Identifier for a "selected" property.
+     * @see #getDump
+     */
     public static final String IS_SELECTED_DPROP = "Selected";
 
+    /**
+     * A minimizing button.
+     */
     protected JButtonOperator minOper = null;
+
+    /**
+     * A maximizing button.
+     */
     protected JButtonOperator maxOper = null;
+
+    /**
+     * A close button.
+     */
     protected JButtonOperator closeOper = null;
+
+    /**
+     * A title operator.
+     */
     protected ContainerOperator titleOperator = null;
     private TestOut output;
     private Timeouts timeouts;
@@ -100,6 +154,7 @@ public class JInternalFrameOperator extends JComponentOperator
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JInternalFrameOperator(JInternalFrame b) {
 	super(b);
@@ -108,6 +163,12 @@ public class JInternalFrameOperator extends JComponentOperator
 	iDriver = DriverManager.getInternalFrameDriver(getClass());
     }
 
+    /**
+     * Constructs a JInternalFrameOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JInternalFrameOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JInternalFrame)cont.
              waitSubComponent(new JInternalFrameFinder(chooser),
@@ -115,6 +176,11 @@ public class JInternalFrameOperator extends JComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JInternalFrameOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JInternalFrameOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -123,10 +189,11 @@ public class JInternalFrameOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      */
     public JInternalFrameOperator(ContainerOperator cont, String text, int index) {
 	this(findOne(cont, text, index));
@@ -137,9 +204,10 @@ public class JInternalFrameOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      */
     public JInternalFrameOperator(ContainerOperator cont, String text) {
 	this(cont, text, 0);
@@ -149,8 +217,9 @@ public class JInternalFrameOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
-     * @throws TimeoutExpiredException
+     * 
      */
     public JInternalFrameOperator(ContainerOperator cont, int index) {
 	this((JInternalFrame)
@@ -164,7 +233,8 @@ public class JInternalFrameOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
-     * @throws TimeoutExpiredException
+     * @param cont a container
+     * 
      */
     public JInternalFrameOperator(ContainerOperator cont) {
 	this(cont, 0);
@@ -173,7 +243,7 @@ public class JInternalFrameOperator extends JComponentOperator
     /**
      * Searches JInternalframe in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JInternalframe instance or null if component was not found.
      */
@@ -191,7 +261,7 @@ public class JInternalFrameOperator extends JComponentOperator
     /**
      * Searches JInternalframe in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JInternalframe instance or null if component was not found.
      */
     public static JInternalFrame findJInternalFrame(Container cont, ComponentChooser chooser) {
@@ -250,10 +320,10 @@ public class JInternalFrameOperator extends JComponentOperator
     /**
      * Waits JInternalframe in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JInternalframe instance.
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JInternalFrame waitJInternalFrame(final Container cont, final ComponentChooser chooser, final int index) {
 	Component res = waitComponent(cont, new JInternalFrameFinder(chooser), index);
@@ -269,9 +339,9 @@ public class JInternalFrameOperator extends JComponentOperator
     /**
      * Waits JInternalframe in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JInternalframe instance.
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JInternalFrame waitJInternalFrame(Container cont, ComponentChooser chooser) {
 	return(waitJInternalFrame(cont, chooser, 0));
@@ -286,7 +356,7 @@ public class JInternalFrameOperator extends JComponentOperator
      * @param index Ordinal component index.
      * @return JInternalframe instance.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JInternalFrame waitJInternalFrame(Container cont, String text, boolean ce, boolean ccs, int index) {
 	return(waitJInternalFrame(cont, 
@@ -303,65 +373,26 @@ public class JInternalFrameOperator extends JComponentOperator
      * @param ccs Compare text case sensitively.
      * @return JInternalframe instance.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JInternalFrame waitJInternalFrame(Container cont, String text, boolean ce, boolean ccs) {
 	return(waitJInternalFrame(cont, text, ce, ccs, 0));
     }
 
-    private static JInternalFrame findOne(ContainerOperator cont, String text, int index) {
-	Component source = waitComponent(cont, 
-					 new JInternalFrameByTitleFinder(text, 
-									 cont.getComparator()),
-					 index);
-	if(source instanceof JInternalFrame) {
-	    return((JInternalFrame)source);
-	} else if(source instanceof JInternalFrame.JDesktopIcon) {
-	    return(((JInternalFrame.JDesktopIcon)source).getInternalFrame());
-	} else {
-	    throw(new TimeoutExpiredException("No internal frame was found"));
-	}
-    }
-
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param times A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts times) {
 	timeouts = times;
 	super.setTimeouts(timeouts);
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
@@ -369,10 +400,8 @@ public class JInternalFrameOperator extends JComponentOperator
     /**
      * Iconifies frame.
      * Note: frame should not be iconified and should be iconifiable.
-     * @see #isIcon()
-     * @see #isIconifiable()
      * @throws WrongInternalFrameStateException
-     * @throws TimeoutExpiredException
+     * 
      */
     public void iconify() {
 	output.printLine("Iconify JInternalFrame\n    : " + getSource().toString());
@@ -388,9 +417,8 @@ public class JInternalFrameOperator extends JComponentOperator
     /**
      * Deiconifies frame.
      * Note: frame should be iconified.
-     * @see #isIcon()
      * @throws WrongInternalFrameStateException
-     * @throws TimeoutExpiredException
+     * 
      */
     public void deiconify() {
 	output.printLine("Deiconify JInternalFrame\n    : " + getSource().toString());
@@ -405,8 +433,7 @@ public class JInternalFrameOperator extends JComponentOperator
     /**
      * Maximizes frame.
      * Note: frame should not be iconified.
-     * @see #isIcon()
-     * @throws TimeoutExpiredException
+     * 
      * @throws WrongInternalFrameStateException
      */
     public void maximize() {
@@ -423,8 +450,7 @@ public class JInternalFrameOperator extends JComponentOperator
     /**
      * Demaximizes frame.
      * Note: frame should not be iconified.
-     * @see #isIcon()
-     * @throws TimeoutExpiredException
+     * 
      * @throws WrongInternalFrameStateException
      */
     public void demaximize() {
@@ -443,7 +469,6 @@ public class JInternalFrameOperator extends JComponentOperator
      * Note: frame should not be iconified.
      * @param x X coordinate of a new frame location.
      * @param y Y coordinate of a new frame location.
-     * @see #isIcon()
      * @throws WrongInternalFrameStateException
      */
     public void move(int x, int y) {
@@ -466,7 +491,6 @@ public class JInternalFrameOperator extends JComponentOperator
      * Note: frame should not be iconified.
      * @param width New frame width.
      * @param height New frame height.
-     * @see #isIcon()
      * @throws WrongInternalFrameStateException
      */
     public void resize(int width, int height) {
@@ -486,7 +510,6 @@ public class JInternalFrameOperator extends JComponentOperator
     /**
      * Activates frame.
      * Note: frame should not be iconified.
-     * @see #isIcon()
      * @throws WrongInternalFrameStateException
      */
     public void activate() {
@@ -494,6 +517,9 @@ public class JInternalFrameOperator extends JComponentOperator
 	wDriver.activate(this);
     }
 
+    /**
+     * Closes the frame.
+     */
     public void close() {
 	checkIconified(false);
 	wDriver.close(this);
@@ -501,7 +527,11 @@ public class JInternalFrameOperator extends JComponentOperator
 
     /**
      * Scrolls to internal frame's rectangle.
-     * @throws TimeoutExpiredException
+     * @param x Horizontal rectangle coordinate
+     * @param y Vertical rectangle  coordinate
+     * @param width rectangle width
+     * @param height rectangle height
+     * 
      */
     public void scrollToRectangle(int x, int y, int width, int height) {
 	output.printTrace("Scroll desktop pane to make \"" + getTitle() + "\" internal frame visible");
@@ -533,7 +563,7 @@ public class JInternalFrameOperator extends JComponentOperator
 
     /**
      * Scrolls to internal frame's rectangle.
-     * @throws TimeoutExpiredException
+     * @param rect a rectangle to scroll to.
      */
     public void scrollToRectangle(Rectangle rect) {
 	scrollToRectangle(rect.x, rect.y, rect.width, rect.height);
@@ -541,7 +571,7 @@ public class JInternalFrameOperator extends JComponentOperator
 
     /**
      * Scrolls to internal frame.
-     * @throws TimeoutExpiredException
+     * 
      */
     public void scrollToFrame() {
 	if(isIcon()) {
@@ -551,31 +581,55 @@ public class JInternalFrameOperator extends JComponentOperator
 	}
     }
 
+    /**
+     * Waits for a minimize button inside the title pane.
+     * @return a button operator
+     */
     public JButtonOperator getMinimizeButton() {
 	initOperators();
 	return(minOper);
     }
 
+    /**
+     * Waits for a maximize button inside the title pane.
+     * @return a button operator
+     */
     public JButtonOperator getMaximizeButton() {
 	initOperators();
 	return(maxOper);
     }
 
+    /**
+     * Waits for a close button inside the title pane.
+     * @return a button operator
+     */
     public JButtonOperator getCloseButton() {
 	initOperators();
 	return(closeOper);
     }
 
+    /**
+     * Waits for the title pane.
+     * @return a button operator
+     */
     public ContainerOperator getTitleOperator() {
 	initOperators();
 	return(titleOperator);
     }
 
+    /**
+     * Creates an operator for an desktop icon.
+     * @return an icon operator.
+     */
     public JDesktopIconOperator getIconOperator() {
 	initOperators();
 	return(iconOperator);
     }
 
+    /**
+     * Waits for the frame to be iconified or deiconified.
+     * @param icon whether the frame needs to be iconified.
+     */
     public void waitIcon(final boolean icon) {
         waitState(new ComponentChooser() {
                 public boolean checkComponent(Component comp) {
@@ -587,6 +641,10 @@ public class JInternalFrameOperator extends JComponentOperator
             });
     }
 
+    /**
+     * Waits for the frame to be maximized or demaximized.
+     * @param maximum whether the frame needs to be maximized.
+     */
     public void waitMaximum(final boolean maximum) {
         waitState(new ComponentChooser() {
                 public boolean checkComponent(Component comp) {
@@ -946,12 +1004,16 @@ public class JInternalFrameOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Uses InternalframeDriver to get a title pane.
+     * @return a title pane.
+     */
     protected Container findTitlePane() {
         return((Container)iDriver.getTitlePane(this));
     }
 
     /**
-     * Initiaites suboperators
+     * Initiaites suboperators.
      */
     protected void initOperators() {
 	iconOperator = new JDesktopIconOperator(((JInternalFrame)getSource()).getDesktopIcon());
@@ -1006,24 +1068,55 @@ public class JInternalFrameOperator extends JComponentOperator
 	}
     }
 
+    private static JInternalFrame findOne(ContainerOperator cont, String text, int index) {
+	Component source = waitComponent(cont, 
+					 new JInternalFrameByTitleFinder(text, 
+									 cont.getComparator()),
+					 index);
+	if(source instanceof JInternalFrame) {
+	    return((JInternalFrame)source);
+	} else if(source instanceof JInternalFrame.JDesktopIcon) {
+	    return(((JInternalFrame.JDesktopIcon)source).getInternalFrame());
+	} else {
+	    throw(new TimeoutExpiredException("No internal frame was found"));
+	}
+    }
+
     /**
      * Exception can be throwht if as a result of an attempt to produce
      * operation for the frame in incorrect state.
      * Like activate iconified frame, for example.
      */
     public class WrongInternalFrameStateException extends JemmyInputException {
+        /**
+         * Constructs a JInternalFrameOperator$WrongInternalFrameStateException object.
+         * @param message  an exception message.
+         * @param comp an internal frame.
+         */
 	public WrongInternalFrameStateException(String message, Component comp) {
 	    super(message, comp);
 	}
     }
 
+    /**
+     * Allows to find component by title.
+     */
     public static class JInternalFrameByTitleFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
+        /**
+         * Constructs JInternalFrameByTitleFinder.
+         * @param lb a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public JInternalFrameByTitleFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs JInternalFrameByTitleFinder.
+         * @param lb a text pattern
+         */
 	public JInternalFrameByTitleFinder(String lb) {
             this(lb, Operator.getDefaultStringComparator());
 	}
@@ -1057,6 +1150,10 @@ public class JInternalFrameOperator extends JComponentOperator
 	private TestOut output;
 	private Timeouts timeouts;
 	
+        /**
+         * Constructs JDesktopIconOperator.
+         * @param b a component
+         */
 	public JDesktopIconOperator(JInternalFrame.JDesktopIcon b) {
 	    super(b);
 	    setOutput(JemmyProperties.getCurrentOutput());
@@ -1068,10 +1165,6 @@ public class JInternalFrameOperator extends JComponentOperator
 	    super.setOutput(output.createErrorOutput());
 	}
 
-	/**
-	 * @see org.netbeans.jemmy.Outputable
-	 * @see org.netbeans.jemmy.TestOut
-	 */
 	public TestOut getOutput() {
 	    return(output);
 	}
@@ -1081,14 +1174,14 @@ public class JInternalFrameOperator extends JComponentOperator
 	    super.setTimeouts(timeouts);
 	}
 
-	/**
-	 * @see org.netbeans.jemmy.Timeoutable
-	 * @see org.netbeans.jemmy.Timeouts
-	 */
 	public Timeouts getTimeouts() {
 	    return(timeouts);
 	}
 
+        /**
+         * Creates an operator for the correspondent intenal frame.
+         * @return an operator.
+         */
 	public JInternalFrame getInternalFrame() {
 	    return((JInternalFrame)getEventDispatcher().
 		invokeExistingMethod("getInternalFrame", 
@@ -1097,16 +1190,29 @@ public class JInternalFrameOperator extends JComponentOperator
 				     output));
 	}
 
+        /**
+         * Pushs the deiconifying button.
+         */
 	public void pushButton() {
 	    new JButtonOperator(this).push();
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JInternalFrameFinder implements ComponentChooser {
         ComponentChooser sf = null;
+        /**
+         * Constructs JInternalFrameFinder.
+         * @param sf other searching criteria.
+         */
 	public JInternalFrameFinder(ComponentChooser sf) {
             this.sf = sf;
 	}
+        /**
+         * Constructs JInternalFrameFinder.
+         */
 	public JInternalFrameFinder() {
             this(ComponentSearcher.getTrueChooser("JInternalFrame or JInternalFrame.JDesktopIcon"));
 	}

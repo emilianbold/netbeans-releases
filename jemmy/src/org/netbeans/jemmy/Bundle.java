@@ -55,7 +55,9 @@ public class Bundle extends Object {
 
     /**
      * Loads resources from an input stream.
-     * @param stream Stream to load resources from.
+     * 
+     * @param	stream Stream to load resources from.
+     * @exception	IOException
      */
     public void load(InputStream stream) 
 	throws IOException {
@@ -64,7 +66,10 @@ public class Bundle extends Object {
 
     /**
      * Loads resources from a simple file.
-     * @param fileName Name of the file to load resources from.
+     * 
+     * @param	fileName Name of the file to load resources from.
+     * @exception	IOException
+     * @exception	FileNotFoundException
      */
     public void loadFromFile(String fileName) 
 	throws IOException, FileNotFoundException {
@@ -73,8 +78,11 @@ public class Bundle extends Object {
 
     /**
      * Loads resources from a file in a jar archive.
-     * @param fileName Name of the jar archive.
-     * @param enryName Name of the file to load resources from.
+     * 
+     * @param	fileName Name of the jar archive.
+     * @param	entryName ?enryName? Name of the file to load resources from.
+     * @exception	IOException
+     * @exception	FileNotFoundException
      */
     public void loadFromJar(String fileName, String entryName) 
 	throws IOException, FileNotFoundException {
@@ -84,8 +92,12 @@ public class Bundle extends Object {
 
     /**
      * Loads resources from a file in a zip archive.
-     * @param fileName Name of the zip archive.
-     * @param enryName Name of the file to load resources from.
+     * 
+     * @param	fileName Name of the zip archive.
+     * @param	entryName ?enryName? Name of the file to load resources from.
+     * @exception	ZipException
+     * @exception	IOException
+     * @exception	FileNotFoundException
      */
     public void loadFromZip(String fileName, String entryName)
 	throws IOException, FileNotFoundException, ZipException {

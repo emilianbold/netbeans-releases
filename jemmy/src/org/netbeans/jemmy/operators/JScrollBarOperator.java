@@ -63,10 +63,9 @@ import javax.swing.plaf.ScrollBarUI;
  * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
  * JScrollBarOperator.BeforeDropTimeout - to sleep before drop
  * JScrollBarOperator.DragAndDropScrollingDelta - to sleep before drag steps
- * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
+ * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
- * @see #getUnitIncrement(int)
  *
  * @author Alexandre Iline (alexandre.iline@sun.com)
  */
@@ -74,11 +73,40 @@ import javax.swing.plaf.ScrollBarUI;
 public class JScrollBarOperator extends JComponentOperator
     implements Timeoutable, Outputable{
 
+    /**
+     * Identifier for a "minimum" property.
+     * @see #getDump
+     */
     public static final String MINIMUM_DPROP = "Minimum";
+
+    /**
+     * Identifier for a "maximum" property.
+     * @see #getDump
+     */
     public static final String MAXIMUM_DPROP = "Maximum";
+
+    /**
+     * Identifier for a "value" property.
+     * @see #getDump
+     */
     public static final String VALUE_DPROP = "Value";
+
+    /**
+     * Identifier for a "orientation" property.
+     * @see #getDump
+     */
     public static final String ORIENTATION_DPROP = "Orientation";
+
+    /**
+     * Identifier for a "HORIZONTAL" value of "orientation" property.
+     * @see #getDump
+     */
     public static final String HORIZONTAL_ORIENTATION_DPROP_VALUE = "HORIZONTAL";
+
+    /**
+     * Identifier for a "VERTICAL" value of "orientation" property.
+     * @see #getDump
+     */
     public static final String VERTICAL_ORIENTATION_DPROP_VALUE = "VERTICAL";
 
     private final static long ONE_SCROLL_CLICK_TIMEOUT = 0;
@@ -106,6 +134,12 @@ public class JScrollBarOperator extends JComponentOperator
 	driver = DriverManager.getScrollDriver(getClass());
     }
 
+    /**
+     * Constructs a JScrollBarOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JScrollBarOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JScrollBar)cont.
              waitSubComponent(new JScrollBarFinder(chooser),
@@ -113,6 +147,11 @@ public class JScrollBarOperator extends JComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JScrollBarOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JScrollBarOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -234,41 +273,20 @@ public class JScrollBarOperator extends JComponentOperator
 	Timeouts.initDefault("JScrollBarOperator.DragAndDropScrollingDelta", DRAG_AND_DROP_SCROLLING_DELTA);
     }
 
-    /**
-     * Sets operator's output.
-     * @param out org.netbeans.jemmy.TestOut instance.
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
-    /**
-     * Sets operator's timeouts.
-     * @param timeouts org.netbeans.jemmy.Timeouts instance.
-     */
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
 	super.setTimeouts(timeouts);
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
@@ -284,22 +302,20 @@ public class JScrollBarOperator extends JComponentOperator
 
     /**
      * Does simple scroll click.
-     * @param increase 
+     * @param increase a scrolling direction.
      * @throws TimeoutExpiredException
-     * deprecated
+     * @deprecated All scrolling is done through a ScrollDriver registered to this operator type.
      */
     public void scroll(boolean increase) {
 	scrollToValue(getValue() + (increase ? 1 : -1));
     }
 
     /**
-     * Scroll scrollbar to the position defined by w parameter.
-     * Do not use this method together with DRAG_AND_DROP acroll model, since that model
-     * can miss the point and this method can not do accurate scrolling in the
-     * back direction
+     * Scrolls scrollbar to the position defined by w parameter.
+     * Uses ScrollDriver registered to this operator type.
      * @param w Scrolling is stopped when w.actionProduced(waiterParam) != null
-     * @param waiterParam
-     * @param increase
+     * @param waiterParam a waiting parameter.
+     * @param increase a scrolling direction.
      * @see #scrollTo(JScrollBarOperator.ScrollChecker)
      * @throws TimeoutExpiredException
      */
@@ -308,7 +324,7 @@ public class JScrollBarOperator extends JComponentOperator
     }
 
     /**
-     * Scroll scrollbar to the position defined by w ScrollChecker implementation.
+     * Scrolls scrollbar to the position defined by a ScrollChecker implementation.
      * @param checker ScrollChecker implementation defining scrolling direction, and so on.
      * @see ScrollChecker
      * @throws TimeoutExpiredException
@@ -317,6 +333,11 @@ public class JScrollBarOperator extends JComponentOperator
 	scrollTo(new CheckerAdjustable(checker, this));
     }
 
+    /**
+     * Scrolls scrollbar to the position defined by a ScrollAdjuster implementation.
+     * @param adj defines scrolling direction, and so on.
+     * @throws TimeoutExpiredException
+     */
     public void scrollTo(final ScrollAdjuster adj) {
 	initOperators();
 	produceTimeRestricted(new Action() {
@@ -397,19 +418,24 @@ public class JScrollBarOperator extends JComponentOperator
 	    }, getTimeouts().getTimeout("JScrollBarOperator.WholeScrollTimeout"));
     }
 
+    /** 
+     * Returns a button responsible for value decreasing.
+     * @return an operator for the decrease button.
+     */
     public JButtonOperator getDecreaseButton() {
 	initOperators();
 	return(minButtOperator);
     }
 
+    /** 
+     * Returns a button responsible for value increasing.
+     * @return an operator for the increase button.
+     */
     public JButtonOperator getIncreaseButton() {
 	initOperators();
 	return(maxButtOperator);
     }
 
-    /**
-     * Returns information about component.
-     */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	result.put(MINIMUM_DPROP, Integer.toString(((JScrollBar)getSource()).getMinimum()));
@@ -664,18 +690,21 @@ public class JScrollBarOperator extends JComponentOperator
      */
     public interface ScrollChecker {
 	/**
-	 * Should return one of the following values:<BR>
-	 * ScrollAdjuster.INCREASE_SCROLL_DIRECTION<BR>
-	 * ScrollAdjuster.DECREASE_SCROLL_DIRECTION<BR>
-	 * ScrollAdjuster.DO_NOT_TOUCH_SCROLL_DIRECTION<BR>
+         * Defines a scrolling direction.
+         * @param oper an operator
 	 * @see org.netbeans.jemmy.drivers.scrolling.ScrollAdjuster#INCREASE_SCROLL_DIRECTION
 	 * @see org.netbeans.jemmy.drivers.scrolling.ScrollAdjuster#DECREASE_SCROLL_DIRECTION
 	 * @see org.netbeans.jemmy.drivers.scrolling.ScrollAdjuster#DO_NOT_TOUCH_SCROLL_DIRECTION
+         * @return one of the following values:<BR>
+	 * ScrollAdjuster.INCREASE_SCROLL_DIRECTION<BR>
+	 * ScrollAdjuster.DECREASE_SCROLL_DIRECTION<BR>
+	 * ScrollAdjuster.DO_NOT_TOUCH_SCROLL_DIRECTION<BR>
 	 */
 	public int getScrollDirection(JScrollBarOperator oper);
 
 	/**
 	 * Scrolling rules decription.
+         * @return a description
 	 */
 	public String getDescription();
     }
@@ -751,10 +780,20 @@ public class JScrollBarOperator extends JComponentOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JScrollBarFinder extends Finder {
+        /**
+         * Constructs JScrollBarFinder.
+         * @param sf other searching criteria.
+         */
 	public JScrollBarFinder(ComponentChooser sf) {
             super(JScrollBar.class, sf);
 	}
+        /**
+         * Constructs JScrollBarFinder.
+         */
 	public JScrollBarFinder() {
             super(JScrollBar.class);
 	}

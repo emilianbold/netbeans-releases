@@ -47,6 +47,7 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
 
     /**
      * Constructor.
+     * @param	w Waitable object defining waiting criteria.
      */
     public Waiter(Waitable w) {
 	super();
@@ -72,9 +73,11 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
 
     /**
      * Defines current timeouts.
-     * @param t A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
+     * 
+     * @param	timeouts A collection of timeout assignments.
+     * @see	org.netbeans.jemmy.Timeoutable
+     * @see	org.netbeans.jemmy.Timeouts
+     * @see #getTimeouts
      */
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
@@ -85,6 +88,7 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
      * @return the collection of current timeout assignments.
      * @see org.netbeans.jemmy.Timeoutable
      * @see org.netbeans.jemmy.Timeouts
+     * @see #setTimeouts
      */
     public Timeouts getTimeouts() {
 	return(timeouts);
@@ -95,6 +99,7 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
      * @param out Identify the streams or writers used for print output.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #getOutput
      */
     public void setOutput(TestOut out) {
 	this.out = out;
@@ -106,6 +111,7 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
      * printing to output and err streams.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #setOutput
      */
     public TestOut getOutput() {
 	return(out);
@@ -113,8 +119,10 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
 
     /**
      * Waits for not null result of actionProduced method of Waitable implementation passed into constructor.
-     * @param waitableObject Object to be passed into actionProduced method.
-     * @throws TimeoutExpiredException
+     * @param	waitableObject Object to be passed into actionProduced method.
+     * @return non null result of action.
+     * @throws	TimeoutExpiredException
+     * @exception	InterruptedException
      */
     public Object waitAction(Object waitableObject)
 	throws InterruptedException {
@@ -137,8 +145,9 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
 	return(result);
     }
 
-    /** 
-     * @see Waitable
+    /**
+     * @see	Waitable
+     * @param	obj
      */
     public Object actionProduced(Object obj) {
 	return(Boolean.TRUE);
@@ -153,6 +162,7 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
 
     /**
      * Returns message to be printed before waiting start.
+     * @return a message.
      */
     protected String getWaitingStartedMessage() {
 	return("Start to wait action \"" + getActualDescription() + "\"");
@@ -160,26 +170,29 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
 
     /**
      * Returns message to be printed when waiting timeout has been expired.
-     * @param spendedTime time from waiting start (milliseconds)
+     * @param timeSpent time from waiting start (milliseconds)
+     * @return a message.
      */
-    protected String getTimeoutExpiredMessage(long spendedTime) {
+    protected String getTimeoutExpiredMessage(long timeSpent) {
 	return("\"" + getActualDescription() + "\" action has not been produced in " +
-	       (new Long(spendedTime)).toString() + " milliseconds");
+	       (new Long(timeSpent)).toString() + " milliseconds");
     }
 
     /**
      * Returns message to be printed when waiting has been successfully finished.
-     * @param spendedTime time from waiting start (milliseconds)
+     * @param timeSpent time from waiting start (milliseconds)
      * @param result result of Waitable.actionproduced method.
+     * @return a message.
      */
-    protected String getActionProducedMessage(long spendedTime, Object result) {
+    protected String getActionProducedMessage(long timeSpent, Object result) {
 	return("\"" + getActualDescription() + "\" action has been produced in " +
-	       (new Long(spendedTime)).toString() + " milliseconds with result " +
+	       (new Long(timeSpent)).toString() + " milliseconds with result " +
 	       "\n    : " + result.toString());
     }
 
     /**
      * Returns message to be printed int golden output before waiting start.
+     * @return a message.
      */
     protected String getGoldenWaitingStartedMessage() {
 	return("Start to wait action \"" + getActualDescription() + "\"");
@@ -187,6 +200,7 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
 
     /**
      * Returns message to be printed int golden output when waiting timeout has been expired.
+     * @return a message.
      */
     protected String getGoldenTimeoutExpiredMessage() {
 	return("\"" + getActualDescription() + "\" action has not been produced");
@@ -194,6 +208,7 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
 
     /**
      * Returns message to be printed int golden output when waiting has been successfully finished.
+     * @return a message.
      */
     protected String getGoldenActionProducedMessage() {
 	return("\"" + getActualDescription() + "\" action has been produced");
@@ -201,6 +216,7 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
 
     /**
      * Returns time from waiting start.
+     * @return Time spent for waiting already.
      */
     protected long timeFromStart() {
 	return(System.currentTimeMillis() - startTime);

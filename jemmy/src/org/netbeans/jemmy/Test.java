@@ -58,8 +58,16 @@ public class Test extends ActionProducer
      */
     public static int TEST_PASSED_STATUS = 0;
 
+    /**
+       Test timeouts.
+     */
     protected Timeouts timeouts;
+
+    /**
+       Test output.
+     */
     protected TestOut output;
+
     private Scenario scenario;
     private static int TEST_FAILED_STATUS = 1;
 
@@ -82,7 +90,7 @@ public class Test extends ActionProducer
      * Creates a subclass of <code>ActionProducer</code> and <code>java.lang.Thread</code>
      * that runs in a separate thread of execution and waits for execution to finish.
      * The current output stream assignments and timeouts are used.
-     * @param scenario
+     * @param scenario a test scenario
      * @see org.netbeans.jemmy.Scenario
      */
     public Test(Scenario scenario) {
@@ -126,6 +134,7 @@ public class Test extends ActionProducer
      * Executes a test.
      * @param argv First element should be a test class name,
      * all others - test args.
+     * @return test status.
      */
     public static int run(String[] argv) {
 	String[] args = argv;
@@ -158,6 +167,7 @@ public class Test extends ActionProducer
      * @param argv First element should be a test class name,
      * all others - test args.
      * @param output Stream to put test output and errput into.
+     * @return test status.
      */
     public static int run(String[] argv, PrintStream output) {
 	JemmyProperties.setCurrentOutput(new TestOut(System.in, output, output));
@@ -170,6 +180,7 @@ public class Test extends ActionProducer
      * all others - test args.
      * @param output Stream to put test output into.
      * @param errput Stream to put test errput into.
+     * @return test status.
      */
     public static int run(String[] argv, PrintStream output, PrintStream errput) {
 	JemmyProperties.setCurrentOutput(new TestOut(System.in, output, errput));
@@ -181,6 +192,7 @@ public class Test extends ActionProducer
      * @param argv First element should be a test class name,
      * all others - test args.
      * @param output Writer to put test output and errput into.
+     * @return test status.
      */
     public static int run(String[] argv, PrintWriter output) {
 	JemmyProperties.setCurrentOutput(new TestOut(System.in, output, output));
@@ -193,6 +205,7 @@ public class Test extends ActionProducer
      * all others - test args.
      * @param output Writer to put test output into.
      * @param errput Writer to put test errput into.
+     * @return test status.
      */
     public static int run(String[] argv, PrintWriter output, PrintWriter errput) {
 	JemmyProperties.setCurrentOutput(new TestOut(System.in, output, errput));
@@ -246,8 +259,10 @@ public class Test extends ActionProducer
 
     /**
      * Set the timeouts used by this <code>Test</code>.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
+     * @param	timeouts A collection of timeout assignments.
+     * @see	org.netbeans.jemmy.Timeoutable
+     * @see	org.netbeans.jemmy.Timeouts
+     * @see #getTimeouts
      */
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
@@ -261,6 +276,7 @@ public class Test extends ActionProducer
      * Get the timeouts used by this <code>Test</code>.
      * @see org.netbeans.jemmy.Timeoutable
      * @see org.netbeans.jemmy.Timeouts
+     * @see #setTimeouts
      */
     public Timeouts getTimeouts() {
 	return(timeouts);
@@ -272,6 +288,7 @@ public class Test extends ActionProducer
      * print streams.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #getOutput
      */
     public void setOutput(TestOut out) {
 	output = out;
@@ -284,6 +301,7 @@ public class Test extends ActionProducer
      * streams.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #setOutput
      */
     public TestOut getOutput() {
 	return(output);
@@ -292,6 +310,7 @@ public class Test extends ActionProducer
     /**
      * Executes test.
      * @param param Object to be passed into this test's launch(Object) method.
+     * @return test status.
      */
     public int startTest(Object param) {
 	if(scenario != null) {
@@ -324,6 +343,7 @@ public class Test extends ActionProducer
      * This might be a <code>java.lang.String[]</code> containing
      * command line arguments.
      * @see org.netbeans.jemmy.Action
+     * @return an Integer containing test status.
      */
     public final Object launch(Object obj) {
 	setTimeouts(timeouts);

@@ -32,7 +32,16 @@ import org.netbeans.jemmy.drivers.TextDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+/**
+ * Superclass for all TextDrivers using keyboard.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public abstract class TextKeyboardDriver extends LightSupportiveDriver implements TextDriver {
+    /**
+     * Constructs a TextKeyboardDriver.
+     * @param supported an array of supported class names
+     */
     public TextKeyboardDriver(String[] supported) {
 	super(supported);
     }
@@ -83,12 +92,56 @@ public abstract class TextKeyboardDriver extends LightSupportiveDriver implement
 	DriverManager.getKeyDriver(oper).pushKey(oper, KeyEvent.VK_ENTER, 0,
 					     new Timeout("", 0));
     }
+
+    /**
+     * Returns operator's text.
+     * @param oper an operator.
+     * @return string representing component text.
+     */
     public abstract String getText(ComponentOperator oper);
+
+    /**
+     * Returns current caret position.
+     * @param oper an operator.
+     * @return int represnting current operator's caret position.
+     */
     public abstract int getCaretPosition(ComponentOperator oper);
+
+    /**
+     * Returns a caret position of selection start.
+     * @param oper an operator.
+     * @return int represnting index of operator's selection start.
+     */
     public abstract int getSelectionStart(ComponentOperator oper);
+
+    /**
+     * Returns a caret position of selection end.
+     * @param oper an operator.
+     * @return int represnting index of operator's selection end.
+     */
     public abstract int getSelectionEnd(ComponentOperator oper);
+
+    /**
+     * Returns an array of navigation keys.
+     * @param oper an operator.
+     * @return an array on NavigationKey instances.
+     */
     public abstract NavigationKey[] getKeys(ComponentOperator oper);
+
+    /**
+     * Returns a timeout to sleep between text typing and caret operations.
+     * @param oper an operator.
+     * @return a Timeout instance.
+     */
     public abstract Timeout getBetweenTimeout(ComponentOperator oper);
+
+    /**
+     * Changes current caret position to specifyed.
+     * @param oper an operator.
+     * @param position new caret position
+     * @param preModifiers a modifiers (combination of <code>InputEvent.*_MASK</code> fields)
+     * pushed before caret moving (like shift during text selection).
+     */
     protected void changeCaretPosition(ComponentOperator oper, final int position, final int preModifiers){
 	NavigationKey[] keys = getKeys(oper);
 	for(int i = keys.length - 1; i >=0; i--) {

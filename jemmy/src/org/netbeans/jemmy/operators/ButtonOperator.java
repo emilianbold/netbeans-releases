@@ -45,7 +45,7 @@ import java.util.Hashtable;
  * <BR><BR>Timeouts used: <BR>
  * ButtonOperator.PushButtonTimeout - time between button pressing and releasing<BR>
  * ComponentOperator.WaitComponentTimeout - time to wait button displayed <BR>
- * ComponentOperator.WaitComponentEnabledTimeout - time to wait button enabled <BR>
+ * ComponentOperator.WaitComponentEnabledTimeout - time to wait button enabled <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -56,11 +56,12 @@ import java.util.Hashtable;
 public class ButtonOperator extends ComponentOperator
     implements Timeoutable, Outputable {
 
+    /**
+     * Identifier for a label property.
+     * @see #getDump
+     */
     public static final String TEXT_DPROP = "Label";
 
-    /**
-     * Default value for ButtonOperator.PushButtonTimeout timeout.
-     */
     private final static long PUSH_BUTTON_TIMEOUT = 0;
 
     private Timeouts timeouts;
@@ -78,6 +79,12 @@ public class ButtonOperator extends ComponentOperator
 	driver = DriverManager.getButtonDriver(getClass());
     }
 
+    /**
+     * Constructs a ButtonOperator object.
+     * @param cont container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public ButtonOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((Button)cont.
              waitSubComponent(new ButtonFinder(chooser),
@@ -85,6 +92,11 @@ public class ButtonOperator extends ComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a ButtonOperator object.
+     * @param cont container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public ButtonOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -267,45 +279,20 @@ public class ButtonOperator extends ComponentOperator
 	Timeouts.initDefault("ButtonOperator.PushButtonTimeout", PUSH_BUTTON_TIMEOUT);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param timeouts A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts timeouts) {
 	super.setTimeouts(timeouts);
 	this.timeouts = timeouts;
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -420,13 +407,25 @@ public class ButtonOperator extends ComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Allows to find component by label.
+     */
     public static class ButtonByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
+        /**
+         * Constructs ButtonByLabelFinder.
+         * @param lb a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public ButtonByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs ButtonByLabelFinder.
+         * @param lb a text pattern
+         */
 	public ButtonByLabelFinder(String lb) {
             this(lb, Operator.getDefaultStringComparator());
 	}
@@ -444,10 +443,20 @@ public class ButtonOperator extends ComponentOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class ButtonFinder extends Finder {
+        /**
+         * Constructs AbstractButtonFinder.
+         * @param sf other searching criteria.
+         */
 	public ButtonFinder(ComponentChooser sf) {
             super(Button.class, sf);
 	}
+        /**
+         * Constructs AbstractButtonFinder.
+         */
 	public ButtonFinder() {
             super(Button.class);
 	}

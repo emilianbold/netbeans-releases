@@ -53,7 +53,7 @@ import javax.swing.plaf.ButtonUI;
  * AbstractButtonOperator.PushButtonTimeout - time between button pressing and releasing<BR>
  * ComponentOperator.WaitComponentTimeout - time to wait button displayed <BR>
  * ComponentOperator.WaitComponentEnabledTimeout - time to wait button enabled <BR>
- * ComponentOperator.WaitStateTimeout - time to wait for text <BR>
+ * ComponentOperator.WaitStateTimeout - time to wait for text <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -64,7 +64,16 @@ import javax.swing.plaf.ButtonUI;
 public class AbstractButtonOperator extends JComponentOperator
     implements Timeoutable, Outputable{
 
+    /**
+     * Identifier for a text property.
+     * @see #getDump
+     */
     public static final String TEXT_DPROP = "Text";
+
+    /**
+     * Identifier for a selected text property.
+     * @see #getDump
+     */
     public static final String IS_SELECTED_DPROP = "Selected";
 
     /**
@@ -87,6 +96,12 @@ public class AbstractButtonOperator extends JComponentOperator
 	driver = DriverManager.getButtonDriver(getClass());
     }
 
+    /**
+     * Constructs an AbstractButtonOperator object.
+     * @param cont container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public AbstractButtonOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((AbstractButton)cont.
              waitSubComponent(new AbstractButtonFinder(chooser),
@@ -94,6 +109,11 @@ public class AbstractButtonOperator extends JComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs an AbstractButtonOperator object.
+     * @param cont container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public AbstractButtonOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -276,45 +296,20 @@ public class AbstractButtonOperator extends JComponentOperator
 	Timeouts.initDefault("AbstractButtonOperator.PushButtonTimeout", PUSH_BUTTON_TIMEOUT);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param timeouts A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts timeouts) {
 	super.setTimeouts(timeouts);
 	this.timeouts = timeouts;
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -325,8 +320,7 @@ public class AbstractButtonOperator extends JComponentOperator
     }
 
     /**
-     * Puchs the button by mouse click.
-     * @throws TimeoutExpiredException
+     * Pushs the button using a ButtonDriver registered for this operator.
      */
     public void push() {
 	output.printLine("Push button\n    :" + getSource().toString());
@@ -354,7 +348,8 @@ public class AbstractButtonOperator extends JComponentOperator
 
     /**
      * Changes selection if necessary.
-     * @throws TimeoutExpiredException
+     * Uses <code>push()</code> method in order to do so.
+     * @param selected a button selection.
      */
     public void changeSelection(boolean selected) {
 	if(isSelected() != selected) {
@@ -366,7 +361,8 @@ public class AbstractButtonOperator extends JComponentOperator
     }
 
     /**
-     * Runs <code>changeSelection(selected)</code> method in a separate thread.
+     * Runs <code>changeSelection(boolean)</code> method in a separate thread.
+     * @param selected a button selection.
      */
     public void changeSelectionNoBlock(boolean selected) {
 	produceNoBlocking(new NoBlockingAction("Button selection changing") {
@@ -410,6 +406,7 @@ public class AbstractButtonOperator extends JComponentOperator
 
     /**
      * Waits for button to be selected.
+     * @param selected a button selection.
      */
     public void waitSelected(final boolean selected) {
 	getOutput().printLine("Wait button to be selected \n    : "+
@@ -833,16 +830,31 @@ public class AbstractButtonOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Allows to find component by text.
+     */
     public static class AbstractButtonByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
+
+        /**
+         * Constructs AbstractButtonByLabelFinder.
+         * @param lb a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public AbstractButtonByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
 	}
+
+        /**
+         * Constructs AbstractButtonByLabelFinder.
+         * @param lb a text pattern
+         */
 	public AbstractButtonByLabelFinder(String lb) {
             this(lb, Operator.getDefaultStringComparator());
 	}
+
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof AbstractButton) {
 		if(((AbstractButton)comp).getText() != null) {
@@ -852,15 +864,26 @@ public class AbstractButtonOperator extends JComponentOperator
 	    }
 	    return(false);
 	}
+
 	public String getDescription() {
 	    return("AbstractButton with text \"" + label + "\"");
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class AbstractButtonFinder extends Finder {
+        /**
+         * Constructs AbstractButtonFinder.
+         * @param sf other searching criteria.
+         */
 	public AbstractButtonFinder(ComponentChooser sf) {
             super(AbstractButton.class, sf);
 	}
+        /**
+         * Constructs AbstractButtonFinder.
+         */
 	public AbstractButtonFinder() {
             super(AbstractButton.class);
 	}

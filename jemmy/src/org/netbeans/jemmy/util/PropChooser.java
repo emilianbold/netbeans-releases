@@ -28,28 +28,54 @@ import java.awt.Component;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * @author Alexandre Iline (alexandre.iline@sun.com)
  * 
  * Implementation of org.netbeans.jemmy.ComponentChooser interface.
- * Class can be used to find component by its field/methods values.
+ * Class can be used to find component by its field/methods values. <br>
  * Example:
- * 	    String[] fields = {"getClientProperty"};
+ * <pre>
+ * 	    String[] methods = {"getClientProperty"};
  * 	    Object[][] params = {{"classname"}};
- * 	    Class[][] classes = {{new Object().getClass()}};
- * 	    Object[] results = {"JCheckBox"};
+ * 	    Class[][] classes = {{Object.class}};
+ * 	    Object[] results = {"javax.swing.JCheckBox"};
  * 
- * 	    JCheckBox box = JCheckBoxOperator.findJCheckBox(frm0, new PropChooser(fields, params, classes, results));
+ * 	    JCheckBox box = JCheckBoxOperator.findJCheckBox(frm0, new PropChooser(methods, params, classes, results));
+ * </pre>
+ * Or:
+ * <pre>
+ * 	    String[] methods = {"getText"};
+ * 	    Object[] results = {"Open"};
+ * 
+ * 	    JButtonOperator box = new JButtonOperator(containerOperator, new PropChooser(fields, results));
+ * </pre>
+ *
+ * @author Alexandre Iline (alexandre.iline@sun.com)
  */
-
 public class PropChooser implements ComponentChooser, Outputable{
 
+    /**
+     * Names of methods to check.
+     */
     protected String[] propNames;
+
+    /**
+     * Methods parameters.
+     */
     protected Object[][] params;
+
+    /**
+     * Classes of parameters.
+     */
     protected Class[][] classes;
+
+    /**
+     * Expected results of methods.
+     */
     protected Object[] results;
+
     private TestOut output;
 
     /**
+     * Constructs a PropChooser object.
      * @param propNames Names of methods/fields
      * @param params Parameters values for methods. <BR>
      * params[0] is an array of parameters for propNames[0] methods. <BR>
@@ -85,6 +111,8 @@ public class PropChooser implements ComponentChooser, Outputable{
     }
 
     /**
+     * Constructs a PropChooser object for checking of methods
+     * with no parameters.
      * @param propNames Names of methods/fields
      * @param results Objects to compare method/field values to.
      */
@@ -93,26 +121,14 @@ public class PropChooser implements ComponentChooser, Outputable{
 	this(propNames, null, null, results);
     }
 
-    /**
-     * @param output Object output
-     * @see org.netbeans.jemmy.Outputable
-     */
     public void setOutput(TestOut output) {
 	this.output = output;
     }
 
-    /**
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
-    /**
-     * @param comp Component to be checked
-     * @see org.netbeans.jemmy.ComponentChooser
-     */
     public boolean checkComponent(Component comp) {
 	try {
 	    String propName = null;
@@ -163,9 +179,6 @@ public class PropChooser implements ComponentChooser, Outputable{
 	}
     }
 
-    /**
-     * @see org.netbeans.jemmy.ComponentChooser
-     */
     public String getDescription() {
 	String result = "";
 	for(int i = 0; i < propNames.length; i++) {
@@ -175,10 +188,11 @@ public class PropChooser implements ComponentChooser, Outputable{
     }
 
     /**
-     * Method to check property.
+     * Method to check one method result with an etalon.
      * Can be overrided by a subclass.
      * @param value Method/field value
      * @param etalon Object to compare to.
+     * @return true if the value matches the etalon.
      */
     protected boolean checkProperty(Object value, Object etalon) {
 	return(value.equals(etalon));

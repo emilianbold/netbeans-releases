@@ -40,6 +40,7 @@ import java.awt.event.TextListener;
 import java.util.Hashtable;
 
 /**
+ * This operator type covers java.awt.TextArea component.
  *
  *
  * @see org.netbeans.jemmy.Timeouts
@@ -47,10 +48,13 @@ import java.util.Hashtable;
  * @author Alexandre Iline (alexandre.iline@sun.com)
  *	
  */
-
 public class TextComponentOperator extends ComponentOperator
     implements Timeoutable, Outputable {
 
+    /**
+     * Identifier for a "text" property.
+     * @see #getDump
+     */
     public static final String TEXT_DPROP = "Text";
 
     private final static long PUSH_KEY_TIMEOUT = 0;
@@ -73,6 +77,12 @@ public class TextComponentOperator extends ComponentOperator
 	driver = DriverManager.getTextDriver(getClass());
     }
 
+    /**
+     * Constructs a TextComponentOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public TextComponentOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((TextComponent)cont.
              waitSubComponent(new TextComponentFinder(chooser),
@@ -80,6 +90,11 @@ public class TextComponentOperator extends ComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a TextComponentOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public TextComponentOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -96,7 +111,6 @@ public class TextComponentOperator extends ComponentOperator
      * @param text TextComponent text. 
      * @param index Ordinal component index. The first component has <code>index</code> 0.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public TextComponentOperator(ContainerOperator cont, String text, int index) {
 	this((TextComponent)waitComponent(cont, 
@@ -117,7 +131,6 @@ public class TextComponentOperator extends ComponentOperator
      * @param cont The operator for a container containing the sought for textComponent.
      * @param text TextComponent text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public TextComponentOperator(ContainerOperator cont, String text) {
 	this(cont, text, 0);
@@ -130,7 +143,6 @@ public class TextComponentOperator extends ComponentOperator
      * @param cont The operator for a container containing the sought for textComponent.
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public TextComponentOperator(ContainerOperator cont, int index) {
 	this((TextComponent)
@@ -146,7 +158,6 @@ public class TextComponentOperator extends ComponentOperator
      * Uses cont's timeout and output for waiting and to init operator.
      * @param cont The operator for a container containing the sought for textComponent.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public TextComponentOperator(ContainerOperator cont) {
 	this(cont, 0);
@@ -212,7 +223,6 @@ public class TextComponentOperator extends ComponentOperator
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @param index Ordinal component index.
      * @return TextComponent instance.
-     * @throws TimeoutExpiredException
      */
     public static TextComponent waitTextComponent(Container cont, ComponentChooser chooser, int index) {
 	return((TextComponent)waitComponent(cont, new TextComponentFinder(chooser), index));
@@ -223,7 +233,6 @@ public class TextComponentOperator extends ComponentOperator
      * @param cont Container to search component in.
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @return TextComponent instance.
-     * @throws TimeoutExpiredException
      */
     public static TextComponent waitTextComponent(Container cont, ComponentChooser chooser){
 	return(waitTextComponent(cont, chooser, 0));
@@ -238,7 +247,6 @@ public class TextComponentOperator extends ComponentOperator
      * @param index Ordinal component index.
      * @return TextComponent instance.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public static TextComponent waitTextComponent(Container cont, String text, boolean ce, boolean ccs, int index) {
 	return(waitTextComponent(cont, new TextComponentByTextFinder(text, new DefaultStringComparator(ce, ccs)), index));
@@ -252,7 +260,6 @@ public class TextComponentOperator extends ComponentOperator
      * @param ccs Compare text case sensitively.
      * @return TextComponent instance.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public static TextComponent waitTextComponent(Container cont, String text, boolean ce, boolean ccs) {
 	return(waitTextComponent(cont, text, ce, ccs, 0));
@@ -265,45 +272,20 @@ public class TextComponentOperator extends ComponentOperator
 	Timeouts.initDefault("TextComponentOperator.TypeTextTimeout", TYPE_TEXT_TIMEOUT);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param timeouts A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts timeouts) {
 	super.setTimeouts(timeouts);
 	this.timeouts = timeouts;
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -317,6 +299,11 @@ public class TextComponentOperator extends ComponentOperator
 		      anotherOperator.getProperties());
     }
 
+    /**
+     * Changes caret position.
+     * @param position Position to move caret to.
+     * 
+     */
     public void changeCaretPosition(final int position) {
 	makeComponentVisible();
 	produceTimeRestricted(new Action() {
@@ -330,6 +317,12 @@ public class TextComponentOperator extends ComponentOperator
 	    }, getTimeouts().getTimeout("TextComponentOperator.ChangeCaretPositionTimeout"));
     }
 
+    /**
+     * Selects a part of text.
+     * @param startPosition Start caret position
+     * @param finalPosition Final caret position
+     * 
+     */
     public void selectText(final int startPosition, final int finalPosition) {
 	makeComponentVisible();
 	produceTimeRestricted(new Action() {
@@ -343,6 +336,12 @@ public class TextComponentOperator extends ComponentOperator
 	    }, getTimeouts().getTimeout("TextComponentOperator.TypeTextTimeout"));
     }
 
+    /**
+     * Finds start text position.
+     * @param text Text to be searched.
+     * @param index Index of text instance (first instance has index 0)
+     * @return Caret position correspondent to text start.
+     */
     public int getPositionByText(String text, int index) {
 	String allText = getText();
 	int position = 0;
@@ -358,10 +357,19 @@ public class TextComponentOperator extends ComponentOperator
 	return(-1);
     }
 
+    /**
+     * Finds start text position.
+     * @param text Text to be searched.
+     * @return Caret position correspondent to text start.
+     */
     public int getPositionByText(String text) {
 	return(getPositionByText(text, 0));
     }
 
+    /**
+     * Clears text.
+     * 
+     */
     public void clearText() {
 	output.printLine("Clearing text in text component\n    : " +
 			 getSource().toString());
@@ -378,6 +386,11 @@ public class TextComponentOperator extends ComponentOperator
 	    }, getTimeouts().getTimeout("TextComponentOperator.TypeTextTimeout"));
     }
 
+    /**
+     * Types text starting from known position.
+     * @param text Text to be typed.
+     * @param caretPosition Position to start type text
+     */
     public void typeText(final String text, final int caretPosition) {
 	output.printLine("Typing text \"" + text + "\" from " +
 			 Integer.toString(caretPosition) + " position " +
@@ -396,9 +409,19 @@ public class TextComponentOperator extends ComponentOperator
 	    }, getTimeouts().getTimeout("TextComponentOperator.TypeTextTimeout"));
     }
 
+    /**
+     * Types text starting from known position.
+     * @param text Text to be typed.
+     */
     public void typeText(String text) {
 	typeText(text, getCaretPosition());
     }
+
+    /**
+     * Requests a focus, clears text, types new one and pushes Enter.
+     * @param text New text value. Shouln't include final '\n'.
+     * 
+     */
     public void enterText(final String text) {
 	makeComponentVisible();
 	produceTimeRestricted(new Action() {
@@ -411,9 +434,7 @@ public class TextComponentOperator extends ComponentOperator
 		}
 	    }, getTimeouts().getTimeout("TextComponentOperator.TypeTextTimeout"));
     }
-    /**
-     * Returns information about component.
-     */
+
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	result.put(TEXT_DPROP, ((TextComponent)getSource()).getText());
@@ -530,17 +551,33 @@ public class TextComponentOperator extends ComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Return a TextDriver  used by this component.
+     * @return a driver got by the operator during creation.
+     */
     protected TextDriver getTextDriver() {
 	return(driver);
     }
 
+    /**
+     * Allows to find component by text.
+     */
     public static class TextComponentByTextFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
+        /**
+         * Constructs TextComponentByTextFinder.
+         * @param lb a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public TextComponentByTextFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs TextComponentByTextFinder.
+         * @param lb a text pattern
+         */
 	public TextComponentByTextFinder(String lb) {
             this(lb, Operator.getDefaultStringComparator());
 	}
@@ -558,10 +595,20 @@ public class TextComponentOperator extends ComponentOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class TextComponentFinder extends Finder {
+        /**
+         * Constructs TextComponentFinder.
+         * @param sf other searching criteria.
+         */
 	public TextComponentFinder(ComponentChooser sf) {
             super(TextComponent.class, sf);
 	}
+        /**
+         * Constructs TextComponentFinder.
+         */
 	public TextComponentFinder() {
             super(TextComponent.class);
 	}

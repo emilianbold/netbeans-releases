@@ -30,7 +30,7 @@ import javax.swing.JRadioButtonMenuItem;
  * <BR><BR>Timeouts used: <BR>
  * JMenuItemOperator.PushMenuTimeout - time between button pressing and releasing<BR>
  * ComponentOperator.WaitComponentTimeout - time to wait button displayed <BR>
- * ComponentOperator.WaitComponentEnabledTimeout - time to wait button enabled <BR>
+ * ComponentOperator.WaitComponentEnabledTimeout - time to wait button enabled <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -41,6 +41,7 @@ import javax.swing.JRadioButtonMenuItem;
 public class JRadioButtonMenuItemOperator extends JMenuItemOperator {
     /**
      * Constructor.
+     * @param item a component
      */
     public JRadioButtonMenuItemOperator(JRadioButtonMenuItem item) {
 	super(item);
@@ -48,6 +49,12 @@ public class JRadioButtonMenuItemOperator extends JMenuItemOperator {
 	setOutput(JemmyProperties.getProperties().getOutput());
     }
 
+    /**
+     * Constructs a JRadioButtonMenuItemOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JRadioButtonMenuItemOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JRadioButtonMenuItem)cont.
              waitSubComponent(new JRadioButtonMenuItemFinder(chooser),
@@ -55,6 +62,11 @@ public class JRadioButtonMenuItemOperator extends JMenuItemOperator {
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JRadioButtonMenuItemOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JRadioButtonMenuItemOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -63,10 +75,10 @@ public class JRadioButtonMenuItemOperator extends JMenuItemOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public JRadioButtonMenuItemOperator(ContainerOperator cont, String text, int index) {
 	this((JRadioButtonMenuItem)waitComponent(cont, 
@@ -81,9 +93,9 @@ public class JRadioButtonMenuItemOperator extends JMenuItemOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public JRadioButtonMenuItemOperator(ContainerOperator cont, String text) {
 	this(cont, text, 0);
@@ -93,8 +105,8 @@ public class JRadioButtonMenuItemOperator extends JMenuItemOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
-     * @throws TimeoutExpiredException
      */
     public JRadioButtonMenuItemOperator(ContainerOperator cont, int index) {
 	this((JRadioButtonMenuItem)
@@ -108,7 +120,7 @@ public class JRadioButtonMenuItemOperator extends JMenuItemOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
-     * @throws TimeoutExpiredException
+     * @param cont a container
      */
     public JRadioButtonMenuItemOperator(ContainerOperator cont) {
 	this(cont, 0);
@@ -119,13 +131,25 @@ public class JRadioButtonMenuItemOperator extends JMenuItemOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Allows to find component by text.
+     */
     public static class JRadioButtonMenuItemByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
+        /**
+         * Constructs JRadioButtonMenuItemByLabelFinder.
+         * @param lb a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public JRadioButtonMenuItemByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs JRadioButtonMenuItemByLabelFinder.
+         * @param lb a text pattern
+         */
 	public JRadioButtonMenuItemByLabelFinder(String lb) {
             this(lb, Operator.getDefaultStringComparator());
 	}
@@ -143,10 +167,20 @@ public class JRadioButtonMenuItemOperator extends JMenuItemOperator {
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JRadioButtonMenuItemFinder extends Finder {
+        /**
+         * Constructs JRadioButtonMenuItemFinder.
+         * @param sf other searching criteria.
+         */
 	public JRadioButtonMenuItemFinder(ComponentChooser sf) {
             super(JRadioButtonMenuItem.class, sf);
 	}
+        /**
+         * Constructs JRadioButtonMenuItemFinder.
+         */
 	public JRadioButtonMenuItemFinder() {
             super(JRadioButtonMenuItem.class);
 	}

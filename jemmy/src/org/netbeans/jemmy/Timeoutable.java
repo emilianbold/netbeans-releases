@@ -31,12 +31,14 @@ public interface Timeoutable {
     /**
      * Defines current timeouts.
      * @param t A collection of timeout assignments.
+     * @see #getTimeouts
      */
     public void setTimeouts(Timeouts t);
 
     /**
      * Return current timeouts.
      * @return the collection of current timeout assignments.
+     * @see #setTimeouts
      */
     public Timeouts getTimeouts();
 }

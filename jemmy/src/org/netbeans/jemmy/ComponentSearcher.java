@@ -75,9 +75,11 @@ public class ComponentSearcher implements Outputable{
 
     /**
      * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.TestOut
-     * @see org.netbeans.jemmy.Outputable
+     * 
+     * @param	output ?out? Identify the streams or writers used for print output.
+     * @see	org.netbeans.jemmy.TestOut
+     * @see	org.netbeans.jemmy.Outputable
+     * @see #getOutput
      */
     public void setOutput(TestOut output) {
 	out = output;
@@ -89,6 +91,7 @@ public class ComponentSearcher implements Outputable{
      * printing to output and err streams.
      * @see org.netbeans.jemmy.TestOut
      * @see org.netbeans.jemmy.Outputable
+     * @see #setOutput
      */
     public TestOut getOutput() {
 	return(out);

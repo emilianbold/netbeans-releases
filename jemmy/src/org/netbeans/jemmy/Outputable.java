@@ -33,6 +33,7 @@ public interface Outputable {
     /**
      * Defines print output streams or writers.
      * @param out Identify the streams or writers used for print output.
+     * @see #getOutput
      */
     public void setOutput(TestOut out);
 
@@ -40,6 +41,7 @@ public interface Outputable {
      * Returns print output streams or writers.
      * @return an object that contains references to objects for
      * printing to output and err streams.
+     * @see #setOutput
      */
     public TestOut getOutput();
 }

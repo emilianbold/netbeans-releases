@@ -73,7 +73,7 @@ import javax.swing.text.JTextComponent;
  * ComponentOperator.WaitStateTimeout - time to wait for cell contents <BR>
  * JTextComponentOperator.ChangeCaretPositionTimeout - maximum time to chenge caret position <BR>
  * JTextComponentOperator.TypeTextTimeout - maximum time to type text <BR>
- * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
+ * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>.
  *
  * @see Timeouts
  *
@@ -84,11 +84,40 @@ import javax.swing.text.JTextComponent;
 public class JTableOperator extends JComponentOperator
 implements Outputable, Timeoutable {
 
+    /**
+     * Identifier for a "cell" property.
+     * @see #getDump
+     */
     public static final String CELL_PREFIX_DPROP = "Cell";
+
+    /**
+     * Identifier for a "column" property.
+     * @see #getDump
+     */
     public static final String COLUMN_PREFIX_DPROP = "Column";
+
+    /**
+     * Identifier for a "selected column" property.
+     * @see #getDump
+     */
     public static final String SELECTED_COLUMN_PREFIX_DPROP = "SelectedColumn";
+
+    /**
+     * Identifier for a "selected row" property.
+     * @see #getDump
+     */
     public static final String SELECTED_ROW_PREFIX_DPROP = "SelectedRow";
+
+    /**
+     * Identifier for a "column count" property.
+     * @see #getDump
+     */
     public static final String COLUMN_COUNT_DPROP = "Column count";
+
+    /**
+     * Identifier for a "row count" property.
+     * @see #getDump
+     */
     public static final String ROW_COUNT_DPROP = "Row count";
 
     private final static long WAIT_EDITING_TIMEOUT = 60000;
@@ -100,12 +129,19 @@ implements Outputable, Timeoutable {
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JTableOperator(JTable b) {
 	super(b);
 	driver = DriverManager.getTableDriver(getClass());
     }
 
+    /**
+     * Constructs a JTableOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JTableOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JTable)cont.
              waitSubComponent(new JTableFinder(chooser),
@@ -113,6 +149,11 @@ implements Outputable, Timeoutable {
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JTableOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JTableOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -121,9 +162,10 @@ implements Outputable, Timeoutable {
      * Constructor.
      * Waits by cell text first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of a cell which is currently selected. 
-     * @param row 
-     * @param column
+     * @param row a cell row to check.
+     * @param column a cell row to check.
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -140,9 +182,10 @@ implements Outputable, Timeoutable {
      * Constructor.
      * Waits by cell text first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of a cell which is currently selected. 
-     * @param row 
-     * @param column
+     * @param row a cell row to check.
+     * @param column a cell row to check.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
      */
@@ -154,6 +197,7 @@ implements Outputable, Timeoutable {
      * Constructor.
      * Waits by text in selected cell first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of a cell which is currently selected. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
@@ -167,6 +211,7 @@ implements Outputable, Timeoutable {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of a cell which is currently selected. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -179,6 +224,7 @@ implements Outputable, Timeoutable {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -194,6 +240,7 @@ implements Outputable, Timeoutable {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @throws TimeoutExpiredException
      */
     public JTableOperator(ContainerOperator cont) {
@@ -321,45 +368,20 @@ implements Outputable, Timeoutable {
     //Environment                                         //
     ////////////////////////////////////////////////////////
 
-    /**
-     * Defines current timeouts.
-     * @param times A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts times) {
 	this.timeouts = times;
 	super.setTimeouts(timeouts);
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output);
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -381,6 +403,9 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell coordinates.
+     * @param text a text pattern
+     * @param comparator a string comparision algorithm
+     * @param index an ordinal cell index
      * @return Point indicating coordinates (x - column, y - row)
      */
     public Point findCell(String text, StringComparator comparator, int index) {
@@ -390,7 +415,12 @@ implements Outputable, Timeoutable {
     }
 
     /**
-     * Searches cell coordinates.
+     * Searches cell coordinates in the specified rows and columns.
+     * @param text a text pattern
+     * @param comparator a string comparision algorithm
+     * @param rows rows to search in
+     * @param columns columns to search in
+     * @param index an ordinal cell index
      * @return Point indicating coordinates (x - column, y - row)
      */
     public Point findCell(String text, StringComparator comparator, int[] rows, int[] columns, int index) {
@@ -399,13 +429,22 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell row index.
+     * @param text a text pattern
+     * @param comparator a string comparision algorithm
+     * @param index an ordinal cell index
+     * @return a row index.
      */
     public int findCellRow(String text, StringComparator comparator, int index) {
 	return(findCell(text, comparator, index).y);
     }
 
     /**
-     * Searches cell row index.
+     * Searches cell row index. Searching is performed between cells in one column.
+     * @param text a text pattern
+     * @param comparator a string comparision algorithm
+     * @param column a column index to search in
+     * @param index an ordinal cell index
+     * @return a row index.
      */
     public int findCellRow(String text, StringComparator comparator, int column, int index) {
 	return(findCell(text, comparator, null, new int[] {column}, index).y);
@@ -413,13 +452,22 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell column visible index.
+     * @param text a text pattern
+     * @param comparator a string comparision algorithm
+     * @param index an ordinal cell index
+     * @return a column index.
      */
     public int findCellColumn(String text, StringComparator comparator, int index) {
 	return(findCell(text, comparator, index).x);
     }
 
     /**
-     * Searches cell column visible index.
+     * Searches cell column index. Searching is performed between cells in one row.
+     * @param text a text pattern
+     * @param comparator a string comparision algorithm
+     * @param row a row index to search in
+     * @param index an ordinal cell index
+     * @return a column index.
      */
     public int findCellColumn(String text, StringComparator comparator, int row, int index) {
 	return(findCell(text, comparator, new int[] {row}, null, index).x);
@@ -433,6 +481,7 @@ implements Outputable, Timeoutable {
      * @param ce Compare exactly.
      * @param ccs Compare case sensitively.
      * @param index Ordinal index in suitable cells.
+     * @return a row index.
      * @see #findCellRow(String, int)
      * @deprecated Use findCellRow(String, int) or findCellRow(String, StringComparator, int)
      */
@@ -446,6 +495,7 @@ implements Outputable, Timeoutable {
      * @param ce Compare exactly.
      * @param ccs Compare case sensitively.
      * @param index Ordinal index in suitable cells.
+     * @return a column index.
      * @see #findCellColumn(String, int)
      * @deprecated Use findCellColumn(String, int) or findCellColumn(String, StringComparator, int)
      */
@@ -458,6 +508,7 @@ implements Outputable, Timeoutable {
      * @param text Text to search by.
      * @param ce Compare exactly.
      * @param ccs Compare case sensitively.
+     * @return a row index.
      * @see #findCellRow(String)
      * @deprecated Use findCellRow(String) or findCellRow(String, StringComparator)
      */
@@ -470,6 +521,7 @@ implements Outputable, Timeoutable {
      * @param text Text to search by.
      * @param ce Compare exactly.
      * @param ccs Compare case sensitively.
+     * @return a column index.
      * @see #findCellColumn(String)
      * @deprecated Use findCellColumn(String) or findCellColumn(String, StringComparator)
      */
@@ -481,6 +533,9 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell row index.
+     * @param text a text pattern
+     * @param comparator a string comparision algorithm
+     * @return a row index.
      */
     public int findCellRow(String text, StringComparator comparator) {
 	return(findCellRow(text, comparator, 0));
@@ -488,6 +543,9 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell column visible index.
+     * @param text a text pattern
+     * @param comparator a string comparision algorithm
+     * @return a column index.
      */
     public int findCellColumn(String text, StringComparator comparator) {
 	return(findCellColumn(text, comparator, 0));
@@ -499,13 +557,18 @@ implements Outputable, Timeoutable {
      * Searches cell row by cell text.
      * @param text Text to search by.
      * @param index Ordinal index in suitable cells.
+     * @return a row index.
      */
     public int findCellRow(String text, int index) {
 	return(findCell(text, index).y);
     }
 
     /**
-     * Searches cell row index.
+     * Searches cell row index. Searching is performed between cells in one column.
+     * @param text a text pattern
+     * @param column a column index to search in
+     * @param index Ordinal index in suitable cells.
+     * @return a row index.
      */
     public int findCellRow(String text, int column, int index) {
 	return(findCell(text, null, new int[] {column}, index).y);
@@ -515,13 +578,18 @@ implements Outputable, Timeoutable {
      * Searches cell column by cell text.
      * @param text Text to search by.
      * @param index Ordinal index in suitable cells.
+     * @return a column index.
      */
     public int findCellColumn(String text, int index) {
 	return(findCell(text, index).x);
     }
 
     /**
-     * Searches cell column visible index.
+     * Searches cell column index. Searching is performed between cells in one row.
+     * @param text a text pattern
+     * @param row a row index to search in
+     * @param index Ordinal index in suitable cells.
+     * @return a column index.
      */
     public int findCellColumn(String text, int row, int index) {
 	return(findCell(text, new int[] {row}, null, index).x);
@@ -529,6 +597,8 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell coordinates.
+     * @param text a text pattern
+     * @param index an ordinal cell index
      * @return Point indicating coordinates (x - column, y - row)
      */
     public Point findCell(String text, int index) {
@@ -536,7 +606,11 @@ implements Outputable, Timeoutable {
     }
 
     /**
-     * Searches cell coordinates.
+     * Searches cell coordinates in the specified rows and columns.
+     * @param text a text pattern
+     * @param rows rows to search in
+     * @param columns columns to search in
+     * @param index an ordinal cell index
      * @return Point indicating coordinates (x - column, y - row)
      */
     public Point findCell(String text, int[] rows, int[] columns, int index) {
@@ -548,6 +622,7 @@ implements Outputable, Timeoutable {
     /**
      * Searches first cell row by cell text.
      * @param text Text to search by.
+     * @return a row index.
      */
     public int findCellRow(String text) {
 	return(findCellRow(text, 0));
@@ -556,6 +631,7 @@ implements Outputable, Timeoutable {
     /**
      * Searches first cell column by cell text.
      * @param text Text to search by.
+     * @return a column index.
      */
     public int findCellColumn(String text) {
 	return(findCellColumn(text, 0));
@@ -567,13 +643,18 @@ implements Outputable, Timeoutable {
      * Searches cell row by rendered component.
      * @param chooser Component verifying object.
      * @param index Ordinal index in suitable cells.
+     * @return a row index.
      */
     public int findCellRow(ComponentChooser chooser, int index) {
 	return(findCell(chooser, index).y);
     }
 
     /**
-     * Searches cell row index.
+     * Searches cell row index. Searching is performed between cells in one column.
+     * @param chooser Component verifying object.
+     * @param column a column index to search in
+     * @param index Ordinal index in suitable cells.
+     * @return a row index.
      */
     public int findCellRow(ComponentChooser chooser, int column, int index) {
 	return(findCell(chooser, null, new int[] {column}, index).y);
@@ -583,13 +664,18 @@ implements Outputable, Timeoutable {
      * Searches cell column by rendered component.
      * @param chooser Component verifying object.
      * @param index Ordinal index in suitable cells.
+     * @return a column index.
      */
     public int findCellColumn(ComponentChooser chooser, int index) {
 	return(findCell(chooser, index).x);
     }
 
     /**
-     * Searches cell column visible index.
+     * Searches cell column index. Searching is performed between cells in one row.
+     * @param chooser Component verifying object.
+     * @param row a row index to search in
+     * @param index Ordinal index in suitable cells.
+     * @return a column index.
      */
     public int findCellColumn(ComponentChooser chooser, int row, int index) {
 	return(findCell(chooser, new int[] {row}, null, index).x);
@@ -597,6 +683,8 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell coordinates.
+     * @param chooser Component verifying object.
+     * @param index an ordinal cell index
      * @return Point indicating coordinates (x - column, y - row)
      */
     public Point findCell(ComponentChooser chooser, int index) {
@@ -605,6 +693,10 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell coordinates.
+     * @param chooser Component verifying object.
+     * @param rows rows to search in
+     * @param columns columns to search in
+     * @param index an ordinal cell index
      * @return Point indicating coordinates (x - column, y - row)
      */
     public Point findCell(ComponentChooser chooser, int[] rows, int[] columns, int index) {
@@ -616,6 +708,7 @@ implements Outputable, Timeoutable {
     /**
      * Searches cell row by rendered component.
      * @param chooser Component verifying object.
+     * @return a row index.
      */
     public int findCellRow(ComponentChooser chooser) {
 	return(findCellRow(chooser, 0));
@@ -624,6 +717,7 @@ implements Outputable, Timeoutable {
     /**
      * Searches cell column by rendered component.
      * @param chooser Component verifying object.
+     * @return a column index.
      */
     public int findCellColumn(ComponentChooser chooser) {
 	return(findCellColumn(chooser, 0));
@@ -631,6 +725,7 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell coordinates.
+     * @param chooser Component verifying object.
      * @return Point indicating coordinates (x - column, y - row)
      */
     public Point findCell(ComponentChooser chooser) {
@@ -641,15 +736,20 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell row by TableCellChooser.
-     * @param chooser Component verifying object.
+     * @param chooser Cell verifying object.
      * @param index Ordinal index in suitable cells.
+     * @return a row index.
      */
     public int findCellRow(TableCellChooser chooser, int index) {
 	return(findCell(chooser, index).y);
     }
 
     /**
-     * Searches cell row index.
+     * Searches cell row index. Searching is performed between cells in one column.
+     * @param chooser Cell verifying object.
+     * @param column a column index to search in
+     * @param index Ordinal index in suitable cells.
+     * @return a row index.
      */
     public int findCellRow(TableCellChooser chooser, int column, int index) {
 	return(findCell(chooser, null, new int[] {column}, index).y);
@@ -657,15 +757,20 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell column by TableCellChooser.
-     * @param chooser Component verifying object.
+     * @param chooser ComponentCell verifying object.
      * @param index Ordinal index in suitable cells.
+     * @return a column index.
      */
     public int findCellColumn(TableCellChooser chooser, int index) {
 	return(findCell(chooser, index).x);
     }
 
     /**
-     * Searches cell column visible index.
+     * Searches cell column index. Searching is performed between cells in one row.
+     * @param chooser Cell verifying object.
+     * @param row a row index to search in
+     * @param index Ordinal index in suitable cells.
+     * @return a column index.
      */
     public int findCellColumn(TableCellChooser chooser, int row, int index) {
 	return(findCell(chooser, new int[] {row}, null, index).x);
@@ -673,6 +778,8 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell coordinates.
+     * @param chooser cell verifying object.
+     * @param index an ordinal cell index
      * @return Point indicating coordinates (x - column, y - row)
      */
     public Point findCell(TableCellChooser chooser, int index) {
@@ -680,7 +787,11 @@ implements Outputable, Timeoutable {
     }
 
     /**
-     * Searches cell coordinates.
+     * Searches cell coordinates in the specified rows and columns.
+     * @param chooser cell verifying object.
+     * @param rows rows to search in
+     * @param columns columns to search in
+     * @param index an ordinal cell index
      * @return Point indicating coordinates (x - column, y - row)
      */
     public Point findCell(TableCellChooser chooser, int[] rows, int[] columns, int index) {
@@ -722,7 +833,8 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell row by TableCellChooser.
-     * @param chooser Component verifying object.
+     * @param chooser Cell verifying object.
+     * @return a row index.
      */
     public int findCellRow(TableCellChooser chooser) {
 	return(findCellRow(chooser, 0));
@@ -730,7 +842,8 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell column by TableCellChooser.
-     * @param chooser Component verifying object.
+     * @param chooser Cell verifying object.
+     * @return a column index.
      */
     public int findCellColumn(TableCellChooser chooser) {
 	return(findCellColumn(chooser, 0));
@@ -738,6 +851,7 @@ implements Outputable, Timeoutable {
 
     /**
      * Searches cell coordinates.
+     * @param chooser cell verifying object.
      * @return Point indicating coordinates (x - column, y - row)
      */
     public Point findCell(TableCellChooser chooser) {
@@ -750,6 +864,11 @@ implements Outputable, Timeoutable {
 
     /**
      * Does mouse click on the cell.
+     * @param row a row index
+     * @param column a column index
+     * @param clickCount a number of clicks
+     * @param button a mouse button (value of InputEvent.BUTTON*_MASK field)
+     * @param modifiers Modifiers (combination of InputEvent.*_MASK values)
      */
     public void clickOnCell(final int row, final int column, final int clickCount, final int button, final int modifiers) {
 	output.printLine("Click on (" + 
@@ -769,14 +888,21 @@ implements Outputable, Timeoutable {
     }
 
     /**
-     * Does mouse click on the cell.
+     * Does mouse click on the cell with no modifiers.
+     * @param row a row index
+     * @param column a column index
+     * @param clickCount a number of clicks
+     * @param button a mouse button (value of InputEvent.BUTTON*_MASK field)
      */
     public void clickOnCell(int row, int column, int clickCount, int button) {
         clickOnCell(row, column, clickCount, button, 0);
     }
 
     /**
-     * Does mouse click on the cell.
+     * Does mouse click on the cell by default mouse button with no modifiers.
+     * @param row a row index
+     * @param column a column index
+     * @param clickCount a number of clicks
      */
     public void clickOnCell(int row, int column, int clickCount) {
         clickOnCell(row, column, clickCount, getDefaultMouseButton());
@@ -784,6 +910,8 @@ implements Outputable, Timeoutable {
 
     /**
      * Does single mouse click on the cell.
+     * @param row a row index
+     * @param column a column index
      */
     public void clickOnCell(int row, int column) {
 	clickOnCell(row, column, 1);
@@ -791,6 +919,8 @@ implements Outputable, Timeoutable {
 
     /**
      * Double clicks on cell to turns it to the editing mode.
+     * @param row a row index
+     * @param column a column index
      * @throws TimeoutExpiredException
      */
     public void clickForEdit(int row, int column) {
@@ -799,9 +929,9 @@ implements Outputable, Timeoutable {
 
     /**
      * Changes text of the cell pointed by row and column indexes.
-     * @param row
-     * @param column
-     * @param newText
+     * @param row a row index
+     * @param column a column index
+     * @param newText a text to enter
      * @deprecated Use changeCellObject(int, int, Object) instead.
      * @see #changeCellObject(int, int, Object)
      * @throws TimeoutExpiredException
@@ -813,9 +943,9 @@ implements Outputable, Timeoutable {
     /**
      * Changes value of the cell pointed by row and column indexes.
      * uses editor defined by setCellEditor method.
-     * @param row
-     * @param column
-     * @param newText
+     * @param row a row index
+     * @param column a column index
+     * @param newValue an object to chenge cell value to.
      * @throws TimeoutExpiredException
      */
     public void changeCellObject(int row, int column, Object newValue)  {
@@ -824,8 +954,8 @@ implements Outputable, Timeoutable {
 
     /**
      * Scrolls to a cell if the table lies on a JScrollPane component.
-     * @param row
-     * @param column
+     * @param row a row index
+     * @param column a column index
      * @throws TimeoutExpiredException
      */
     public void scrollToCell(int row, int column)  {
@@ -853,10 +983,21 @@ implements Outputable, Timeoutable {
 					    (int)rect.getHeight());
     }
 
-    public void selectCell(int row, int cell) {
-	driver.selectCell(this, row, cell);
+    /**
+     * Selects a specified cell.
+     * @param row a row index
+     * @param column a column index
+     */
+    public void selectCell(int row, int column) {
+	driver.selectCell(this, row, column);
     }
 
+    /**
+     * Searches a column by name.
+     * @param name a text pattern
+     * @param comparator a string comparision algorithm
+     * @return a column index
+     */
     public int findColumn(String name, StringComparator comparator) {
         int columnCount = getColumnCount();
         for(int i = 0; i < columnCount; i++) {
@@ -868,10 +1009,21 @@ implements Outputable, Timeoutable {
         return(-1);
     }
 
+    /**
+     * Searches a column by name.
+     * @param name a text pattern
+     * @return a column index
+     */
     public int findColumn(String name) {
         return(findColumn(name, getComparator()));
     }
 
+    /**
+     * Calls popup menu on specified cell.
+     * @param row a row index
+     * @param column a column index
+     * @return the menu
+     */
     public JPopupMenu callPopupOnCell(int row, int column) {
         output.printLine("Call popup on (" + row + ", " + column + ") cell");
         output.printGolden("Call popup on cell");
@@ -894,7 +1046,6 @@ implements Outputable, Timeoutable {
      * @param isSelected True if the specified cell was selected.
      * @param cellHasFocus True if the specified cell has the focus.
      * @return Component to be displayed.
-     * @see #getCellRenderer(int, int)
      */
     public Component getRenderedComponent(int row, int column, boolean isSelected, boolean cellHasFocus) {
 	return(getCellRenderer(row, column).
@@ -921,6 +1072,9 @@ implements Outputable, Timeoutable {
 
     /**
      * Returns a point at the center of the cell rectangle.
+     * @param row a row index
+     * @param column a column index
+     * @return a Point in component's coordinate system.
      */
     public Point getPointToClick(int row, int column) {
 	Rectangle rect = getCellRect(row, column, false);
@@ -928,12 +1082,20 @@ implements Outputable, Timeoutable {
 			 (int)(rect.getY() + rect.getHeight() / 2)));
     }
 
+    /**
+     * Creates an operator for a teble header assigned to this table.
+     * @return an JTableHeaderOperator operator
+     */
     public JTableHeaderOperator getHeaderOperator() {
         return(new JTableHeaderOperator(getTableHeader()));
     }
 
     /**
      * Waits for an editor.
+     * @param chooser a chhoser specifying criteria to distinguish cell editor.
+     * @param row a row index
+     * @param column a column index
+     * @return a component displayed over the cell and fitting the criteria specified by <code>chooser</code>
      */
     public Component waitCellComponent(ComponentChooser chooser, int row, int column) {
 	CellComponentWaiter waiter = new CellComponentWaiter(chooser, row, column);
@@ -952,7 +1114,7 @@ implements Outputable, Timeoutable {
      * Waits for certain cell contents.
      * @param cellText Text comparing to cell text by <code>getComparator()</code> comparator.
      * @param row cell row index. If -1, selected one is checked.
-     * @param row cell column visible index. If -1, selected one is checked.
+     * @param column cell column visible index. If -1, selected one is checked.
      */
     public void waitCell(String cellText, int row, int column) {
 	getOutput().printLine("Wait \"" + cellText + "\" text at (" + 
@@ -1769,11 +1931,13 @@ implements Outputable, Timeoutable {
 	 * @param oper Operator used to search item.
 	 * @param row Row be checked.
 	 * @param column Column be checked.
+         * @return true if cell fits the criteria
 	 */
 	public boolean checkCell(JTableOperator oper, int row, int column);
 
 	/**
 	 * Item description.
+         * @return the description.
 	 */
 	public String getDescription();
     }
@@ -1817,17 +1981,33 @@ implements Outputable, Timeoutable {
 	}
     }
 
+    /**
+     * Allows to find component by cell text.
+     */
     public static class JTableByCellFinder implements ComponentChooser {
 	String label;
 	int row;
 	int column;
 	StringComparator comparator;
+        /**
+         * Constructs JTableByCellFinder.
+         * @param lb a text pattern
+         * @param r a row index to look in. If equal to -1, selected row is checked.
+         * @param c a column index to look in. If equal to -1, selected column is checked.
+         * @param comparator specifies string comparision algorithm.
+         */
 	public JTableByCellFinder(String lb, int r, int c, StringComparator comparator) {
 	    label = lb;
 	    row = r;
 	    column = c;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs JTableByCellFinder.
+         * @param lb a text pattern
+         * @param r a row index to look in. If equal to -1, selected row is checked.
+         * @param c a column index to look in. If equal to -1, selected column is checked.
+         */
 	public JTableByCellFinder(String lb, int r, int c) {
             this(lb, r, c, Operator.getDefaultStringComparator());
 	}
@@ -1868,10 +2048,20 @@ implements Outputable, Timeoutable {
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JTableFinder extends Finder {
+        /**
+         * Constructs JTableFinder.
+         * @param sf other searching criteria.
+         */
 	public JTableFinder(ComponentChooser sf) {
             super(JTable.class, sf);
 	}
+        /**
+         * Constructs JTableFinder.
+         */
 	public JTableFinder() {
             super(JTable.class);
 	}

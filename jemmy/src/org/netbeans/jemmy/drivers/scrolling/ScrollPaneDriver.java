@@ -27,11 +27,20 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.ScrollPaneOperator;
 
+/**
+ * ScrollDriver for java.awt.ScrollPane component type.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class ScrollPaneDriver extends AWTScrollDriver {
     private static final int CLICK_OFFSET = 5;
+    /**
+     * Constructs a ScrollPaneDriver.
+     */
     public ScrollPaneDriver() {
 	super(new String[] {"org.netbeans.jemmy.operators.ScrollPaneOperator"});
     }
+
     public void scrollToMinimum(ComponentOperator oper, final int orientation) {
 	final Adjustable adj = 
 	    (orientation == Scrollbar.HORIZONTAL) ?
@@ -52,6 +61,7 @@ public class ScrollPaneDriver extends AWTScrollDriver {
 		}
 	    });
     }
+
     public void scrollToMaximum(ComponentOperator oper, final int orientation) {
 	final Adjustable adj = 
 	    (orientation == Scrollbar.HORIZONTAL) ?
@@ -72,6 +82,7 @@ public class ScrollPaneDriver extends AWTScrollDriver {
 		}
 	    });
     }
+
     protected Point getClickPoint(ComponentOperator oper, int direction, int orientation) {
 	int x, y;
 	if       (orientation == Scrollbar.HORIZONTAL) {

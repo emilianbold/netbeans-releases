@@ -61,10 +61,12 @@ public interface CommentWindow {
     public void showFinalComment(String stepComment);
 
     /**
+     * Closes the window.
      */
     public void close();
 
     /**
+     * Returns a message for a case when test needs to be interrupted.
      * @return Interrupted message if test should be interrupted.
      */
     public String getInterruptMessage();

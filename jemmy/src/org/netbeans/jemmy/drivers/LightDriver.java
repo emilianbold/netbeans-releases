@@ -18,12 +18,17 @@
 package org.netbeans.jemmy.drivers;
 
 /**
- * Drifines interface for all drivers.
+ * Implements "light" model of driver because does not require to
+ * load classes for all supported operator types.
+ * @see Driver
+ * 
+ * @author Alexandre Iline (alexandre.iline@sun.com)
  */
 public interface LightDriver {
 
     /**
      * Returns array of operator classes which are supported by this driver.
+     * @return an array of supported operator classes' names.
      */
     public String[] getSupported();
 }

@@ -33,7 +33,7 @@ import javax.swing.JButton;
  * <BR><BR>Timeouts used: <BR>
  * AbstractButtonOperator.PushButtonTimeout - time between button pressing and releasing<BR>
  * ComponentOperator.WaitComponentTimeout - time to wait button displayed <BR>
- * ComponentOperator.WaitComponentEnabledTimeout - time to wait button enabled <BR>
+ * ComponentOperator.WaitComponentEnabledTimeout - time to wait button enabled <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *	
@@ -43,15 +43,26 @@ import javax.swing.JButton;
 
 public class JButtonOperator extends AbstractButtonOperator{
 
+    /**
+     * Identifier for a "default button" property.
+     * @see #getDump
+     */
     public static final String IS_DEFAULT_DPROP = "Default button";
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JButtonOperator(JButton b) {
 	super(b);
     }
 
+    /**
+     * Constructs a JButtonOperator object.
+     * @param cont container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JButtonOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JButton)cont.
              waitSubComponent(new JButtonFinder(chooser),
@@ -59,6 +70,11 @@ public class JButtonOperator extends AbstractButtonOperator{
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JButtonOperator object.
+     * @param cont container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JButtonOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -67,6 +83,7 @@ public class JButtonOperator extends AbstractButtonOperator{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont container
      * @param text Button text. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
@@ -86,6 +103,7 @@ public class JButtonOperator extends AbstractButtonOperator{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont container
      * @param text Button text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -98,6 +116,7 @@ public class JButtonOperator extends AbstractButtonOperator{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont container
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -113,6 +132,7 @@ public class JButtonOperator extends AbstractButtonOperator{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont container
      * @throws TimeoutExpiredException
      */
     public JButtonOperator(ContainerOperator cont) {
@@ -264,14 +284,27 @@ public class JButtonOperator extends AbstractButtonOperator{
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Prepares the button to click.
+     */
     protected void prepareToClick() {
 	makeComponentVisible();
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JButtonFinder extends Finder {
+        /**
+         * Constructs JButtonFinder.
+         * @param sf other searching criteria.
+         */
 	public JButtonFinder(ComponentChooser sf) {
             super(JButton.class, sf);
 	}
+        /**
+         * Constructs JButtonFinder.
+         */
 	public JButtonFinder() {
             super(JButton.class);
 	}

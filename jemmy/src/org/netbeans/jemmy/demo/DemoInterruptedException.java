@@ -32,6 +32,10 @@ import java.io.PrintStream;
 
 public class DemoInterruptedException extends TestCompletedException {
 
+    /**
+     * Constructs a DemoInterruptedException object.
+     * @param description an exception descriptio.
+     */
     public DemoInterruptedException(String description) {
 	super(100, description);
     }

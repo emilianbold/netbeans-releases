@@ -47,7 +47,9 @@ public class ClassReference{
      * Contructor.
      * The object created by this constructor can be used
      * to access static methods and fields only.
-     * @param className name of class
+     * 
+     * @param	className name of class
+     * @exception	ClassNotFoundException
      */
     public ClassReference(String className) 
     throws ClassNotFoundException {
@@ -60,6 +62,9 @@ public class ClassReference{
      * Executes class's <code>main(java.lang.String[])</code> method
      * with a zero-length <code>java.lang.String</code> array
      * as a parameter.
+     * 
+     * @exception	NoSuchMethodException
+     * @exception	InvocationTargetException
      */
     public void startApplication()
     throws InvocationTargetException, NoSuchMethodException {
@@ -69,8 +74,11 @@ public class ClassReference{
 
     /**
      * Executes class's <code>main(java.lang.String[])</code> method.
-     * @param params The <code>java.lang.String</code> array to pass
+     * 
+     * @param	params The <code>java.lang.String</code> array to pass
      * to <code>main(java.lang.String[])</code>.
+     * @exception	NoSuchMethodException
+     * @exception	InvocationTargetException
      */
     public void startApplication(String[] params)
     throws InvocationTargetException, NoSuchMethodException {
@@ -93,17 +101,21 @@ public class ClassReference{
 
     /**
      * Locates method by name and parameter types and executes it.
-     * @param method_name Name of method.
-     * @param params Method parameters.
-     * @param params_classes Method parameters types.
-     * @return the return value from an invocation of the Method.<BR>
+     * 
+     * @param	method_name Name of method.
+     * @param	params Method parameters.
+     * @param	params_classes Method parameters types.
+     * @return	the return value from an invocation of the Method.<BR>
      * If <code>method_name</code> method is void, <code>null</code> is returned.<BR>
      * If <code>method_name</code> method returns a primitive type, then
      * return wrapper class instance.
-     * @throws InvocationTargetException when the invoked method throws an exception.
-     * @throws NoSuchMethodException when the method cannot be found.
-     * @throws IllegalAccessException when access to the class or method is lacking.
-     * @throws SecurityException if access to the package or method is denied.
+     * @throws	InvocationTargetException when the invoked method throws an exception.
+     * @throws	NoSuchMethodException when the method cannot be found.
+     * @throws	IllegalAccessException when access to the class or method is lacking.
+     * @throws	SecurityException if access to the package or method is denied.
+     * @exception	IllegalAccessException
+     * @exception	NoSuchMethodException
+     * @exception	InvocationTargetException
      */
     public Object invokeMethod(String method_name, Object[] params, Class[] params_classes) 
     throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
@@ -120,14 +132,19 @@ public class ClassReference{
 
     /**
      * Locates constructor by parameter types and creates an instance.
-     * @param params An array of Method parameters.
-     * @param params_classes An array of Method parameter types.
-     * @return a new class instance.
-     * @throws InvocationTargetException when the invoked constructor throws an exception.
-     * @throws NoSuchMethodException when the constructor cannot be found.
-     * @throws IllegalAccessException when access to the class or constructor is lacking.
-     * @throws InstantiationException when the constructor is for an abstract class.
-     * @throws SecurityException if access to the package or constructor is denied.
+     * 
+     * @param	params An array of Method parameters.
+     * @param	params_classes An array of Method parameter types.
+     * @return	a new class instance.
+     * @throws	InvocationTargetException when the invoked constructor throws an exception.
+     * @throws	NoSuchMethodException when the constructor cannot be found.
+     * @throws	IllegalAccessException when access to the class or constructor is lacking.
+     * @throws	InstantiationException when the constructor is for an abstract class.
+     * @throws	SecurityException if access to the package or constructor is denied.
+     * @exception	IllegalAccessException
+     * @exception	NoSuchMethodException
+     * @exception	InstantiationException
+     * @exception	InvocationTargetException
      */
     public Object newInstance(Object[] params, Class[] params_classes) 
     throws InvocationTargetException, NoSuchMethodException,
@@ -143,11 +160,15 @@ public class ClassReference{
     }
 
     /**
-     * @param field_name The name of the field.
-     * @return the field value
-     * @throws NoSuchFieldException when the field cannot be found.
-     * @throws IllegalAccessException when access to the class or constructor is lacking.
-     * @throws SecurityException if access to the package or field is denied.
+     * Returns the field value.
+     * @param	field_name The name of the field.
+     * @return	the field value
+     * @see #setField
+     * @throws	NoSuchFieldException when the field cannot be found.
+     * @throws	IllegalAccessException when access to the class or constructor is lacking.
+     * @throws	SecurityException if access to the package or field is denied.
+     * @exception	IllegalAccessException
+     * @exception	NoSuchFieldException
      */
     public Object getField(String field_name) 
     throws NoSuchFieldException, IllegalAccessException {
@@ -156,11 +177,15 @@ public class ClassReference{
 
     /**
      * Change a field's value.
-     * @param field_name The name of the field.
-     * @param newValue The fields new value.
-     * @throws NoSuchFieldException when the field cannot be found.
-     * @throws IllegalAccessException when access to the class or constructor is lacking.
-     * @throws SecurityException if access to the package or field is denied.
+     * 
+     * @param	field_name The name of the field.
+     * @param	newValue The fields new value.
+     * @see #getField
+     * @throws	NoSuchFieldException when the field cannot be found.
+     * @throws	IllegalAccessException when access to the class or constructor is lacking.
+     * @throws	SecurityException if access to the package or field is denied.
+     * @exception	IllegalAccessException
+     * @exception	NoSuchFieldException
      */
     public void setField(String field_name, Object newValue) 
     throws NoSuchFieldException, IllegalAccessException {

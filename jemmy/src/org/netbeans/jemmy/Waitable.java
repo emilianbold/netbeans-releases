@@ -29,10 +29,13 @@ public interface Waitable{
 
     /**
      * Checks if wait criteria have been met.
+     * @param obj optional waiting parameter.
+     * @return null is criteria have not been met.
      */
     public Object actionProduced(Object obj);
 
     /**
+     * Returns description.
      * @return a description of the wait criteria.
      */
     public String getDescription();

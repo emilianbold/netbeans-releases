@@ -37,7 +37,7 @@ import javax.swing.JPasswordField;
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
  * ComponentOperator.WaitFocusTimeout - time to wait component focus <BR>
  * JScrollBarOperator.OneScrollClickTimeout - time for one scroll click <BR>
- * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
+ * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -47,15 +47,26 @@ import javax.swing.JPasswordField;
 
 public class JPasswordFieldOperator extends JTextFieldOperator{
 
+    /**
+     * Identifier for a "echo char" property.
+     * @see #getDump
+     */
     public static final String ECHO_CHAR_DPROP = "Echo char";
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JPasswordFieldOperator(JPasswordField b) {
 	super(b);
     }
 
+    /**
+     * Constructs a JPasswordFieldOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JPasswordFieldOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JPasswordField)cont.
              waitSubComponent(new JPasswordFieldFinder(chooser),
@@ -63,6 +74,11 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JPasswordFieldOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JPasswordFieldOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -71,6 +87,7 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
@@ -90,6 +107,7 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -102,6 +120,7 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -117,6 +136,7 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @throws TimeoutExpiredException
      */
     public JPasswordFieldOperator(ContainerOperator cont) {
@@ -126,7 +146,7 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
     /**
      * Searches JPasswordField in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JPasswordField instance or null if component was not found.
      */
@@ -137,7 +157,7 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
     /**
      * Searches JPasswordField in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JPasswordField instance or null if component was not found.
      */
     public static JPasswordField findJPasswordField(Container cont, ComponentChooser chooser) {
@@ -178,7 +198,7 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
     /**
      * Waits JPasswordField in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JPasswordField instance.
      * @throws TimeoutExpiredException
@@ -190,7 +210,7 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
     /**
      * Waits JPasswordField in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JPasswordField instance.
      * @throws TimeoutExpiredException
      */
@@ -231,9 +251,6 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
 	return(waitJPasswordField(cont, text, ce, ccs, 0));
     }
 
-    /**
-     * Returns information about component.
-     */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	result.put(ECHO_CHAR_DPROP, 
@@ -275,10 +292,20 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Checks component type.
+     */
     public static class JPasswordFieldFinder extends Finder {
+        /**
+         * Constructs JPasswordFieldFinder.
+         * @param sf other searching criteria.
+         */
 	public JPasswordFieldFinder(ComponentChooser sf) {
             super(JPasswordField.class, sf);
 	}
+        /**
+         * Constructs JPasswordFieldFinder.
+         */
 	public JPasswordFieldFinder() {
             super(JPasswordField.class);
 	}

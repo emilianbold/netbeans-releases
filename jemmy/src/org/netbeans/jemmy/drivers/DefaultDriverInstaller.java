@@ -17,6 +17,8 @@
 
 package org.netbeans.jemmy.drivers;
 
+import org.netbeans.jemmy.ClassReference;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 
 import org.netbeans.jemmy.drivers.buttons.ButtonMouseDriver;
@@ -35,9 +37,10 @@ import org.netbeans.jemmy.drivers.menus.DefaultJMenuDriver;
 import org.netbeans.jemmy.drivers.menus.QueueJMenuDriver;
 
 import org.netbeans.jemmy.drivers.scrolling.JScrollBarDriver;
+import org.netbeans.jemmy.drivers.scrolling.JSliderDriver;
+import org.netbeans.jemmy.drivers.scrolling.JSplitPaneDriver;
 import org.netbeans.jemmy.drivers.scrolling.ScrollbarDriver;
 import org.netbeans.jemmy.drivers.scrolling.ScrollPaneDriver;
-import org.netbeans.jemmy.drivers.scrolling.JSplitPaneDriver;
 
 import org.netbeans.jemmy.drivers.tables.JTableMouseDriver;
 
@@ -50,7 +53,20 @@ import org.netbeans.jemmy.drivers.windows.DefaultFrameDriver;
 import org.netbeans.jemmy.drivers.windows.DefaultInternalFrameDriver;
 import org.netbeans.jemmy.drivers.windows.DefaultWindowDriver;
 
+/**
+ * Installs all necessary drivers for Jemmy operators except
+ * low-level drivers which are installed by 
+ * <a href="InputDriverInstaller.java">InputDriverInstaller</a>.
+ * 
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
+
 public class DefaultDriverInstaller extends ArrayDriverInstaller {
+
+    /**
+     * Constructs a DefaultDriverInstaller object.
+     * @param shortcutEvents Signals whether shortcut mode is used.
+     */
     public DefaultDriverInstaller(boolean shortcutEvents) {
 	super(new String[] {
 	      DriverManager.LIST_DRIVER_ID,
@@ -58,6 +74,8 @@ public class DefaultDriverInstaller extends ArrayDriverInstaller {
 	      DriverManager.TREE_DRIVER_ID,
 	      DriverManager.TEXT_DRIVER_ID,
 	      DriverManager.TEXT_DRIVER_ID,
+	      DriverManager.SCROLL_DRIVER_ID,
+	      DriverManager.SCROLL_DRIVER_ID,
 	      DriverManager.SCROLL_DRIVER_ID,
 	      DriverManager.SCROLL_DRIVER_ID,
 	      DriverManager.SCROLL_DRIVER_ID,
@@ -90,6 +108,8 @@ public class DefaultDriverInstaller extends ArrayDriverInstaller {
 	      new ScrollPaneDriver(),
 	      new JScrollBarDriver(),
 	      new JSplitPaneDriver(),
+	      new JSliderDriver(),
+	      createSpinnerDriver(),
 	      new ButtonMouseDriver(),
 	      new JTabMouseDriver(),
 	      new ListKeyboardDriver(),
@@ -109,8 +129,31 @@ public class DefaultDriverInstaller extends ArrayDriverInstaller {
               (shortcutEvents ? ((Object)new QueueJMenuDriver()) : ((Object)new DefaultJMenuDriver())),
 	      new JTableHeaderDriver()});
     }
+
+    /**
+     * Constructs a DefaultDriverInstaller object with shortcut mode flag
+     * taken from <code>JemmyProperties</code>.
+     */
     public DefaultDriverInstaller() {
         this((JemmyProperties.getCurrentDispatchingModel() &
               JemmyProperties.SHORTCUT_MODEL_MASK) != 0);
+    }
+
+    private static LightDriver createSpinnerDriver() {
+        if(System.getProperty("java.version").startsWith("1.4")) {
+            try {
+                return((LightDriver)new ClassReference("org.netbeans.jemmy.drivers.scrolling.JSpinnerDriver").
+                       newInstance(null, null));
+            } catch(Exception e) {
+                throw(new JemmyException("Impossible to create JSpinnerDriver although java version is " +
+                                         System.getProperty("java.version"),
+                                         e));
+            }
+        } else {
+            return(new LightDriver() {
+                    public String[] getSupported() {
+                        return(new String[] {Object.class.getName()});
+                    }});
+        }
     }
 }

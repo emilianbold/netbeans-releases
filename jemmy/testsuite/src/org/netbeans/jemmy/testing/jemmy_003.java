@@ -77,25 +77,30 @@ public class jemmy_003 extends JemmyTest {
 		}
 	    }
 	    final JButtonOperator bbo = new JButtonOperator(wino, "0-0");
-	    new Thread(new Runnable() {
-		    public void run() {
-			try {
-			    Thread.sleep(1000);
-                            bbo.getAccessibleContext().
-                                setAccessibleDescription("A button to check different finding approaches");
-			    bbo.setText("New Text");
-			} catch(InterruptedException e) {
-			}
-		    }
-		}).start();
-	    bbo.waitText("New Text");
+            new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            Thread.sleep(1000);
+                            if(!System.getProperty("java.version").startsWith("1.2")) {
+                                bbo.getAccessibleContext().
+                                    setAccessibleDescription("A button to check different finding approaches");
+                            }
+                            bbo.setText("New Text");
+                        } catch(InterruptedException e) {
+                        }
+                    }
+                }).start();
+            bbo.waitText("New Text");
             if(bbo.getSource() != wino.
                findSubComponent(new AbstractButtonOperator.
                                 AbstractButtonByLabelFinder("New Text")) ||
+               !System.getProperty("java.version").startsWith("1.2") &&
                bbo.getSource() != wino.
                findSubComponent(new AccessibleNameChooser("New Text")) ||
+               !System.getProperty("java.version").startsWith("1.2") &&
                bbo.getSource() != wino.
                waitSubComponent(new AccessibleNameChooser("New Text")) ||
+               !System.getProperty("java.version").startsWith("1.2") &&
                bbo.getSource() != 
                new JButtonOperator(wino, 
                                    new AccessibleDescriptionChooser("A button to check different finding approaches")).getSource()) {

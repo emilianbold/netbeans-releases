@@ -29,6 +29,10 @@ import java.awt.Component;
 
 public class ComponentIsNotFocusedException extends JemmyInputException {
     
+    /**
+     * Constructs a ComponentIsNotFocusedException object.
+     * @param	comp a Component.
+     */
     public ComponentIsNotFocusedException(Component comp) {
 	super("Component do not have focus", comp);
     }

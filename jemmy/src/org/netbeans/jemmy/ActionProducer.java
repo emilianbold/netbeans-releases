@@ -114,6 +114,7 @@ public class ActionProducer extends Thread
      * @param ts An object containing timeout information.
      * @see org.netbeans.jemmy.Timeouts
      * @see org.netbeans.jemmy.Timeoutable
+     * @see #getTimeouts
      */
     public void setTimeouts(Timeouts ts) {
 	timeouts = ts;
@@ -124,6 +125,7 @@ public class ActionProducer extends Thread
      * @return an object containing information about timeouts.
      * @see org.netbeans.jemmy.Timeouts
      * @see org.netbeans.jemmy.Timeoutable
+     * @see #setTimeouts
      */
     public Timeouts getTimeouts() {
 	return(timeouts);
@@ -141,6 +143,10 @@ public class ActionProducer extends Thread
 	waiter.setOutput(output);
     }
 
+    /**                            
+     * Returns the exception value.
+     * @return a Throwable object representing the exception value
+     */    
     public Throwable getException() {
         return(exception);
     }
@@ -149,6 +155,8 @@ public class ActionProducer extends Thread
      * Defines action priority in terms of thread priority.
      * Increase (decrease) parameter value to Thread.MIN_PRIORITY(MAX_PRIORITY)
      * in case if it is less(more) then it.
+     * 
+     * @param	newPriority New thread priority.
      */
     public void setActionPriority(int newPriority) {
 	int priority;
@@ -192,6 +200,7 @@ public class ActionProducer extends Thread
      * @param obj An object used to modify execution.  This might be a
      * <code>java.lang.String[]</code> that lists a test's command line
      * arguments.
+     * @return An object - result of the action.
      * @see org.netbeans.jemmy.Action
      */
     public Object launch(Object obj) {
@@ -213,11 +222,13 @@ public class ActionProducer extends Thread
     /**
      * Starts execution.
      * Uses ActionProducer.MaxActionTime timeout.
-     * @param obj Parameter to be passed into action's <code>launch(Object)</code> method.
+     * 
+     * @param	obj Parameter to be passed into action's <code>launch(Object)</code> method.
      * This parameter might be a <code>java.lang.String[]</code> that lists a test's
      * command line arguments.
-     * @return <code>launch(Object)</code> result.
-     * @throws TimeoutExpiredException
+     * @return	<code>launch(Object)</code> result.
+     * @throws	TimeoutExpiredException
+     * @exception	InterruptedException
      */
     public Object produceAction(Object obj) throws InterruptedException{
 	parameter =obj;
@@ -258,7 +269,6 @@ public class ActionProducer extends Thread
 	    result = launchAction(parameter);
 	} catch(Throwable e) {
             exception = e;
-	    output.printStackTrace(e);
 	}
 	synchronized(this) {
 	    finished = true;

@@ -50,7 +50,16 @@ import javax.swing.plaf.ColorChooserUI;
 public class JColorChooserOperator extends JComponentOperator 
     implements Outputable {
 
+    /**
+     * Identifier for a "color" property.
+     * @see #getDump
+     */
     public static final String COLOR_DPROP = "Color";
+
+    /**
+     * Identifier for a "selected page" property.
+     * @see #getDump
+     */
     public static final String SELECTED_PAGE_DPROP = "Selected page";
 
     private static final String RGB_TITLE = "RGB";
@@ -65,6 +74,7 @@ public class JColorChooserOperator extends JComponentOperator
 
     /**
      * Constructor.
+     * @param comp a component
      */
     public JColorChooserOperator(JColorChooser comp) {
 	super(comp);
@@ -73,6 +83,12 @@ public class JColorChooserOperator extends JComponentOperator
 	tabbed = new JTabbedPaneOperator(this);
     }
 
+    /**
+     * Constructs a JColorChooserOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JColorChooserOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JColorChooser)cont.
              waitSubComponent(new JColorChooserFinder(chooser),
@@ -80,6 +96,11 @@ public class JColorChooserOperator extends JComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JColorChooserOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JColorChooserOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -90,7 +111,7 @@ public class JColorChooserOperator extends JComponentOperator
      * Uses cont's timeout and output for waiting and to init operator.
      * @param cont Operator pointing a container to search component in.
      * @param index Ordinal component index.
-     * @throws TimeoutExpiredException
+     * 
      */
     public JColorChooserOperator(ContainerOperator cont, int index) {
 	this((JColorChooser)
@@ -105,7 +126,7 @@ public class JColorChooserOperator extends JComponentOperator
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
      * @param cont Operator pointing a container to search component in.
-     * @throws TimeoutExpiredException
+     * 
      */
     public JColorChooserOperator(ContainerOperator cont) {
 	this(cont, 0);
@@ -157,7 +178,7 @@ public class JColorChooserOperator extends JComponentOperator
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @param index Ordinal component index.
      * @return JColorChooser instance or null if component was not displayed.
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JColorChooser waitJColorChooser(Container cont, ComponentChooser chooser, int index)  {
 	return((JColorChooser)waitComponent(cont, new JColorChooserFinder(chooser), index));
@@ -168,7 +189,7 @@ public class JColorChooserOperator extends JComponentOperator
      * @param cont Container to search component in.
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @return JColorChooser instance or null if component was not displayed.
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JColorChooser waitJColorChooser(Container cont, ComponentChooser chooser) {
 	return(waitJColorChooser(cont, chooser, 0));
@@ -179,7 +200,7 @@ public class JColorChooserOperator extends JComponentOperator
      * @param cont Container to search component in.
      * @param index Ordinal component index.
      * @return JColorChooser instance or null if component was not displayed.
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JColorChooser waitJColorChooser(Container cont, int index)  {
 	return(waitJColorChooser(cont, ComponentSearcher.getTrueChooser(Integer.toString(index) + "'th JColorChooser instance"), index));
@@ -189,30 +210,17 @@ public class JColorChooserOperator extends JComponentOperator
      * Waits 0'th JColorChooser in container.
      * @param cont Container to search component in.
      * @return JColorChooser instance or null if component was not displayed.
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JColorChooser waitJColorChooser(Container cont) {
 	return(waitJColorChooser(cont, 0));
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -233,6 +241,7 @@ public class JColorChooserOperator extends JComponentOperator
     /**
      * Enters red color component value.
      * Switches to "RGB" page first.
+     * @param value red color component
      * @see #switchToRGB()
      * @see #enterColor(int, int, int)
      * @see #enterColor(java.awt.Color)
@@ -246,6 +255,7 @@ public class JColorChooserOperator extends JComponentOperator
     /**
      * Enters green color component value.
      * Switches to "RGB" page first.
+     * @param value green color component
      * @see #switchToRGB()
      * @see #enterColor(int, int, int)
      * @see #enterColor(java.awt.Color)
@@ -259,6 +269,7 @@ public class JColorChooserOperator extends JComponentOperator
     /**
      * Enters blue color component value.
      * Switches to "RGB" page first.
+     * @param value blue color component
      * @see #switchToRGB()
      * @see #enterColor(int, int, int)
      * @see #enterColor(java.awt.Color)
@@ -272,6 +283,9 @@ public class JColorChooserOperator extends JComponentOperator
     /**
      * Enters all color components values.
      * Switches to "RGB" page first.
+     * @param red red color component
+     * @param green green color component
+     * @param blue blue color component
      * @see #switchToRGB()
      * @see #enterColor(java.awt.Color)
      * @see #enterColor(int)
@@ -286,6 +300,7 @@ public class JColorChooserOperator extends JComponentOperator
     /**
      * Enters color.
      * Switches to "RGB" page first.
+     * @param color a color
      * @see #switchToRGB()
      * @see #enterColor(int, int, int)
      * @see #enterColor(int)
@@ -297,6 +312,7 @@ public class JColorChooserOperator extends JComponentOperator
     /**
      * Enters color.
      * Switches to "RGB" page first.
+     * @param color a color
      * @see #switchToRGB()
      * @see #enterColor(int, int, int)
      * @see #enterColor(java.awt.Color)
@@ -420,10 +436,20 @@ public class JColorChooserOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Checks component type.
+     */
     public static class JColorChooserFinder extends Finder {
+        /**
+         * Constructs JColorChooserFinder.
+         * @param sf other searching criteria.
+         */
 	public JColorChooserFinder(ComponentChooser sf) {
             super(JColorChooser.class, sf);
 	}
+        /**
+         * Constructs JColorChooserFinder.
+         */
 	public JColorChooserFinder() {
             super(JColorChooser.class);
 	}

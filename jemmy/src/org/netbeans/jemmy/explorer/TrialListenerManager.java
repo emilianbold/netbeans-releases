@@ -58,25 +58,17 @@ public class TrialListenerManager implements Outputable {
 	output = JemmyProperties.getCurrentOutput();
     }
 
-    /**
-     * Sets output.
-     * @param timeouts org.netbeans.jemmy.TestOut instance.
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut output) {
 	this.output = output;
     }
 
-    /**
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
     /**
      * Removes mouse listener.
+     * @see #addMouseListener
      */
     public void removeMouseListener() {
 	comp.removeMouseListener(mListener);
@@ -84,6 +76,7 @@ public class TrialListenerManager implements Outputable {
     
     /**
      * Adds mouse listener.
+     * @see #removeMouseListener
      */
     public void addMouseListener() {
 	removeMouseListener();
@@ -92,6 +85,7 @@ public class TrialListenerManager implements Outputable {
 
     /**
      * Removes mouse motion listener.
+     * @see #addMouseMotionListener
      */
     public void removeMouseMotionListener() {
 	comp.removeMouseMotionListener(mmListener);
@@ -99,6 +93,7 @@ public class TrialListenerManager implements Outputable {
     
     /**
      * Adds mouse motion listener.
+     * @see #removeMouseMotionListener
      */
     public void addMouseMotionListener() {
 	removeMouseMotionListener();
@@ -107,6 +102,7 @@ public class TrialListenerManager implements Outputable {
 
     /**
      * Removes key listener.
+     * @see #addKeyListener
      */
     public void removeKeyListener() {
 	comp.removeKeyListener(kListener);
@@ -114,6 +110,7 @@ public class TrialListenerManager implements Outputable {
     
     /**
      * Adds key listener.
+     * @see #removeKeyListener
      */
     public void addKeyListener() {
 	removeKeyListener();

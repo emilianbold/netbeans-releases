@@ -37,6 +37,8 @@ public class ImageTool {
 
     /**
      * Gets an image from a rectange on screen.
+     * @param rect a rectangle on screen in absolute screen coordinates.
+     * @return a captured image.
      */
     public static BufferedImage getImage(Rectangle rect) {
         try {
@@ -48,6 +50,8 @@ public class ImageTool {
 
     /**
      * Gets an image from a component.
+     * @param comp a visible component.
+     * @return a captured image.
      */
     public static BufferedImage getImage(Component comp) {
         return(getImage(new Rectangle(comp.getLocationOnScreen(),
@@ -56,6 +60,7 @@ public class ImageTool {
 
     /**
      * Gets the whole screen image.
+     * @return a captured image.
      */
     public static BufferedImage getImage() {
         return(getImage(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize())));
@@ -63,6 +68,9 @@ public class ImageTool {
 
     /**
      * Increases image.
+     * @param image an image to enlarge.
+     * @param zoom A scale.
+     * @return a result image.
      */
     public static BufferedImage enlargeImage(BufferedImage image, int zoom) {
         int wight  = image.getWidth();
@@ -89,6 +97,9 @@ public class ImageTool {
     /**
      * Substracts second image from first one.
      * Could be used to save file difference for future analysis.
+     * @param minuend an image to substract from.
+     * @param deduction an image to substract.
+     * @return a result image.
      */
     public static BufferedImage substractImage(BufferedImage minuend, BufferedImage deduction) {
         return(substractImage(minuend, deduction, 0, 0));
@@ -97,10 +108,11 @@ public class ImageTool {
     /**
      * Substracts subimage from image.
      * Could be used to save file difference for future analysis.
-     * @param minuend - image
-     * @param deduction - subimage
+     * @param minuend an image to substract from.
+     * @param deduction an image to substract.
      * @param relativeX - deduction-in-minuend X coordinate
      * @param relativeY - deduction-in-minuend Y coordinate
+     * @return a result image.
      */
     public static BufferedImage substractImage(BufferedImage minuend, BufferedImage deduction, int relativeX, int relativeY) {
         int mWidth  = minuend.getWidth();

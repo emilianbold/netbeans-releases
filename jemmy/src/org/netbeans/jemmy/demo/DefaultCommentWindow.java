@@ -62,7 +62,8 @@ public class DefaultCommentWindow extends JDialog implements CommentWindow {
     long readCommentTimeout = 1000;
 
     /**
-     * Contructor.
+     * Constructs a DefaultCommentWindow object.
+     * @param modal Display as modal dialog.
      */
     public DefaultCommentWindow(boolean modal) {
 
@@ -132,22 +133,25 @@ public class DefaultCommentWindow extends JDialog implements CommentWindow {
 	setModal(modal);
     }
 
+    /**
+     * Constructs a DefaultCommentWindow object.
+     */
     public DefaultCommentWindow() {
 	this(false);
     }
 
+    /**
+     * Specifies the time to display comment.
+     * @param timeout lond value.
+     */
     public void setCommentTimeout(long timeout) {
 	readCommentTimeout = timeout;
     }
 
-    /**
-     */
     public boolean isStopped() {
 	return(stopped);
     }
 
-    /**
-     */
     public void nextStep(String stepComment) {
 	comments.setText(stepComment);
 	nextStepButton.setEnabled(true);
@@ -162,8 +166,6 @@ public class DefaultCommentWindow extends JDialog implements CommentWindow {
 	showWindow();
     }
 
-    /**
-     */
     public void showFinalComment(String stepComment) {
 	setStopped(true);
 	finished = true;
@@ -175,27 +177,32 @@ public class DefaultCommentWindow extends JDialog implements CommentWindow {
 	showWindow();
     }
 
-    /**
-     */
     public boolean isInterrupted() {
 	return(interrupted);
     }
 
-    /**
-     */
     public String getInterruptMessage() {
 	return("Step comments: \"" + comments.getText() + "\"");
     }
 
-    /**
-     */
     public void close() {
 	setVisible(false);
     }
 
+    /**
+     * Perform a mouse action at the end of test step.
+     * If demo is executed in continual mode 
+     * (i.e. "All Steps" button has been pushed), 
+     * performs "Next" button pushing.
+     * Otherwise simply moves mouse to the "Next" button.
+     */
     public class Mover extends Thread {
 	JButtonOperator bo;
 	boolean toPush = false;
+        /**
+         * Creates a Mover object.
+         * @param button a Button
+         */
 	public Mover(JButton button) {
 	    super();
 	    bo = new JButtonOperator(button);
@@ -204,10 +211,16 @@ public class DefaultCommentWindow extends JDialog implements CommentWindow {
 			     readCommentTimeout);
 	    bo.setTimeouts(times);
 	}
+        /**
+         * Pushes the button.
+         */
 	public void push() {
 	    toPush = true;
 	    start();
 	}
+        /**
+         * Moves mouse pointer to the button.
+         */
 	public void enter() {
 	    toPush = false;
 	    start();

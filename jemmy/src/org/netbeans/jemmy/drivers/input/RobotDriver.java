@@ -33,12 +33,29 @@ import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ScrollPaneOperator;
+/**
+ * Superclass for all drivers using robot.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 
 public class RobotDriver extends LightSupportiveDriver {
 
+    /**
+     * A reference to the robot instance.
+     */
     protected ClassReference robotReference = null;
+
+    /**
+     * A QueueTool instance.
+     */
     protected QueueTool qtool;
 
+    /**
+     * Constructs a RobotDriver object.
+     * @param autoDelay Time for <code>Robot.setAutoDelay(long)</code> method.
+     * @param supported an array of supported class names
+     */
     public RobotDriver(Timeout autoDelay, String[] supported) {
 	super(supported);
 	qtool = new QueueTool();
@@ -66,14 +83,19 @@ public class RobotDriver extends LightSupportiveDriver {
 	}
     }
 
+    /**
+     * Constructs a RobotDriver object.
+     * @param autoDelay Time for <code>Robot.setAutoDelay(long)</code> method.
+     */
     public RobotDriver(Timeout autoDelay) {
 	this(autoDelay, new String[] {"org.netbeans.jemmy.operators.ComponentOperator"});
     }
 
     /**
-     * Press key.
-     * @param keyCode Key code (KeyEvent.VK_* value)
-     * @param modifiers Modifiers (combination of InputEvent.*_MASK fields)
+     * Presses a key.
+     * @param oper Operator to press a key on.
+     * @param keyCode Key code (<code>KeyEventVK_*</code> field.
+     * @param modifiers a combination of <code>InputEvent.*_MASK</code> fields.
      */
     public void pressKey(ComponentOperator oper, int keyCode, int modifiers) {
 	pressModifiers(oper, modifiers);
@@ -83,9 +105,10 @@ public class RobotDriver extends LightSupportiveDriver {
     }
 
     /**
-     * Releases key.
-     * @param keyCode Key code (KeyEvent.VK_* value)
-     * @param modifiers Modifiers (combination of InputEvent.*_MASK fields)
+     * Releases a key.
+     * @param oper Operator to release a key on.
+     * @param keyCode Key code (<code>KeyEventVK_*</code> field.
+     * @param modifiers a combination of <code>InputEvent.*_MASK</code> fields.
      */
     public void releaseKey(ComponentOperator oper, int keyCode, int modifiers) {
 	releaseModifiers(oper, modifiers);
@@ -94,6 +117,12 @@ public class RobotDriver extends LightSupportiveDriver {
 			new Class[] {Integer.TYPE});
     }
 
+    /**
+     * Performs a single operation.
+     * @param method a name of <code>java.awt.Robot</code> method.
+     * @param params method parameters
+     * @param paramClasses method parameters classes
+     */
     protected void makeAnOperation(final String method, final Object[] params, final Class[] paramClasses) {
         try {
             robotReference.invokeMethod(method, params, paramClasses);
@@ -108,6 +137,9 @@ public class RobotDriver extends LightSupportiveDriver {
 	    throw(new JemmyException("Exception during java.awt.Robot accessing", e));
 	}
     }
+    /**
+     * Calls <code>java.awt.Robot.waitForIdle()</code> method.
+     */
     protected void synchronizeRobot() {
         if(!qtool.isDispatchThread()) {
             if ((JemmyProperties.getCurrentDispatchingModel() & JemmyProperties.QUEUE_MODEL_MASK) != 0) {
@@ -119,6 +151,11 @@ public class RobotDriver extends LightSupportiveDriver {
             }
         }
     }
+    /**
+     * Presses modifiers keys by robot.
+     * @param oper an operator for a component to press keys on.
+     * @param modifiers a combination of <code>InputEvent.*_MASK</code> fields.
+     */
     protected void pressModifiers(ComponentOperator oper, int modifiers) {
 	if       ((modifiers & InputEvent.SHIFT_MASK) != 0) {
 	    pressKey(oper, KeyEvent.VK_SHIFT,     modifiers & ~InputEvent.SHIFT_MASK);
@@ -132,6 +169,11 @@ public class RobotDriver extends LightSupportiveDriver {
 	    pressKey(oper, KeyEvent.VK_CONTROL,   modifiers & ~InputEvent.CTRL_MASK);
 	}
     }
+    /**
+     * Releases modifiers keys by robot.
+     * @param oper an operator for a component to release keys on.
+     * @param modifiers a combination of <code>InputEvent.*_MASK</code> fields.
+     */
     protected void releaseModifiers(ComponentOperator oper, int modifiers) {
 	if       ((modifiers & InputEvent.SHIFT_MASK) != 0) {
 	    releaseKey(oper, KeyEvent.VK_SHIFT,     modifiers & ~InputEvent.SHIFT_MASK);

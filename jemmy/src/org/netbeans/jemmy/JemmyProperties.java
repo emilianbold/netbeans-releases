@@ -34,7 +34,7 @@ import org.netbeans.jemmy.drivers.InputDriverInstaller;
 
 /**
  * 
- * Keeps default Jemmy properties
+ * Keeps default Jemmy properties.
  *
  * @author Alexandre Iline (alexandre.iline@sun.com)
  * 
@@ -69,6 +69,7 @@ public class JemmyProperties {
 
     Hashtable properties;
 
+    /***/
     protected JemmyProperties() {
 	super();
 	properties = new Hashtable();
@@ -81,7 +82,8 @@ public class JemmyProperties {
     }
 
     /**
-     * Returns major version (like 1.0)
+     * Returns major version (like 1.0).
+     * @return a String representing the major version value.
      */
     public static String getMajorVersion() {
         return(extractValue(getProperties().getClass().
@@ -90,7 +92,8 @@ public class JemmyProperties {
     }
 
     /**
-     * Returns minor version (like 1)
+     * Returns minor version (like 1).
+     * @return a String representing the minor version value.
      */
     public static String getMinorVersion() {
         return(extractValue(getProperties().getClass().
@@ -99,7 +102,8 @@ public class JemmyProperties {
     }
 
     /**
-     * Returns build (like 20011231 (yyyymmdd))
+     * Returns build (like 20011231 (yyyymmdd)).
+     * @return a String representing the build value.
      */
     public static String getBuild() {
         return(extractValue(getProperties().getClass().
@@ -108,7 +112,8 @@ public class JemmyProperties {
     }
 
     /**
-     * Returns full version string (like 1.0.1-20011231)
+     * Returns full version string (like 1.0.1-20011231).
+     * @return a String representing the full version value.
      */
     public static String getFullVersion() {
 	return(getMajorVersion() + "." +
@@ -117,7 +122,8 @@ public class JemmyProperties {
     }
 
     /**
-     * Returns version string (like 1.0.1)
+     * Returns version string (like 1.0.1).
+     * @return a String representing the short version value.
      */
     public static String getVersion() {
 	return(getMajorVersion() + "." +
@@ -147,119 +153,174 @@ public class JemmyProperties {
     }
 
     /**
-     * Just like getProperties().getProperty(propertyName)
+     * Just like getProperties().getProperty(propertyName).
+     * @param	propertyName a property key
+     * @return a property value
+     * @see #setCurrentProperty
+     * @see #setCurrentTimeout
      */
     public static Object getCurrentProperty(String propertyName) {
 	return(getProperties().getProperty(propertyName));
     }
 
     /**
-     * Just like getProperties().setProperty(propertyName, propertyValue)
+     * Just like getProperties().setProperty(propertyName, propertyValue).
+     * @param	propertyName a property key
+     * @param	propertyValue a property value
+     * @return previous property value
+     * @see #getCurrentProperty
+     * @see #getCurrentTimeout
      */
     public static Object setCurrentProperty(String propertyName, Object propertyValue) {
 	return(getProperties().setProperty(propertyName, propertyValue));
     }
 
+    /**
+     * Removes a property from current properties list.
+     * @param propertyName a property key.
+     * @return previous property value
+     */
     public static Object removeCurrentProperty(String propertyName) {
 	return(getProperties().removeProperty(propertyName));
     }
 
+    /**
+     * Returns the current key values.
+     * @return an array of Strings representing the current key values
+     */
     public static String[] getCurrentKeys() {
 	return(getProperties().getKeys());
     }
 
     /**
-     * Just like getProperties().getTimeouts()
+     * Just like getProperties().getTimeouts().
+     * @return a Timeouts object representing the current timeouts.
+     * @see #setCurrentTimeouts
      */
     public static Timeouts getCurrentTimeouts() {
 	return(getProperties().getTimeouts());
     }
 
     /**
-     * Just like getProperties().setTimeouts(to)
+     * Just like getProperties().setTimeouts(to).
+     * @param	to New timeouts
+     * @return old timeouts.
+     * @see #getCurrentTimeouts
      */
     public static Timeouts setCurrentTimeouts(Timeouts to) {
 	return(getProperties().setTimeouts(to));
     }
 
     /**
-     * Just like getProperties().getTimeouts().setTimeout(name, newValue)
+     * Just like getProperties().getTimeouts().setTimeout(name, newValue).
+     * @param	name a timeout name
+     * @param	newValue a timeout value
+     * @return previous timeout value
+     * @see #getCurrentTimeout
      */
     public static long setCurrentTimeout(String name, long newValue) {
 	return(getProperties().getTimeouts().setTimeout(name, newValue));
     }
 
     /**
-     * Just like getProperties().getTimeouts().getTimeout(name)
+     * Just like getProperties().getTimeouts().getTimeout(name).
+     * @param	name a timeout name
+     * @return a timeout value
+     * @see #setCurrentTimeout
      */
     public static long getCurrentTimeout(String name) {
 	return(getProperties().getTimeouts().getTimeout(name));
     }
 
     /**
-     * Just like getProperties().getTimeouts().initTimeout(name, newValue)
+     * Just like getProperties().getTimeouts().initTimeout(name, newValue).
+     * @param	name a timeout name
+     * @param	newValue a timeout value
+     * @return a timeout value
+     * @see #setCurrentTimeout
      */
     public static long initCurrentTimeout(String name, long newValue) {
 	return(getProperties().getTimeouts().initTimeout(name, newValue));
     }
 
     /**
-     * Just like getProperties().getOutput()
+     * Just like getProperties().getOutput().
+     * @return a TestOut object representing the current output.
+     * @see #setCurrentOutput
      */
     public static TestOut getCurrentOutput() {
 	return(getProperties().getOutput());
     }
 
     /**
-     * Just like getProperties().setOutput(out)
+     * Just like getProperties().setOutput(out).
+     * @param	out new output
+     * @return a TestOut object representing the current output.
+     * @see #getCurrentOutput
      */
     public static TestOut setCurrentOutput(TestOut out) {
 	return(getProperties().setOutput(out));
     }
    
     /**
-     * Just like getProperties().getBundleManager()
+     * Just like getProperties().getBundleManager().
+     * @return a BundleManager object representing the current bundle manager.
+     * @see #setCurrentBundleManager
      */
     public static BundleManager getCurrentBundleManager() {
 	return(getProperties().getBundleManager());
     }
 
     /**
-     * Just like getProperties().setBundleManager(resources)
+     * Just like getProperties().setBundleManager(resources).
+     * @param  resources new BundleManager
+     * @return a BundleManager object representing the current bundle manager.
+     * @see #getCurrentBundleManager
      */
     public static BundleManager setCurrentBundleManager(BundleManager resources) {
 	return(getProperties().setBundleManager(resources));
     }
 
     /**
-     * Just like getProperties().getBundleManager().getResource(key)
+     * Just like getProperties().getBundleManager().getResource(key).
+     * @param	key a resource key.
+     * @return a resource value
      */
     public static String getCurrentResource(String key) {
 	return(getProperties().getBundleManager().getResource(key));
     }
 
     /**
-     * Just like getProperties().getBundleManager().getResource(bundleID, key)
+     * Just like getProperties().getBundleManager().getResource(bundleID, key).
+     * @param	key a resource key.
+     * @param bundleID a bundle ID
+     * @return a resource value
      */
     public static String getCurrentResource(String bundleID, String key) {
 	return(getProperties().getBundleManager().getResource(bundleID, key));
     }
 
     /**
-     * Just like getProperties().getCharBindingMap()
+     * Just like getProperties().getCharBindingMap().
+     * @return a CharBindingMap object representing the current char binding map.
+     * @see #setCurrentCharBindingMap
      */
     public static CharBindingMap getCurrentCharBindingMap() {
 	return(getProperties().getCharBindingMap());
     }
 
     /**
-     * Just like getProperties().setCharBindingMap(map)
+     * Just like getProperties().setCharBindingMap(map).
+     * @param	map new CharBindingMap.
+     * @return old CharBindingMap object.
+     * @see #getCurrentCharBindingMap
      */
     public static CharBindingMap setCurrentCharBindingMap(CharBindingMap map) {
 	return(getProperties().setCharBindingMap(map));
     }
 
     /**
+     * Returns the current dispatching model.
      * @return Event dispatching model.
      * @see #getDispatchingModel()
      * @see #setCurrentDispatchingModel(int)
@@ -302,6 +363,7 @@ public class JemmyProperties {
     }
 
     /**
+     * Returns the current drag and drop step length value.
      * @return Pixel count to move mouse during one drag'n'drop step.
      * @see #getDragAndDropStepLength()
      * @see #setCurrentDragAndDropStepLength(int)
@@ -311,6 +373,7 @@ public class JemmyProperties {
     }
 
     /**
+     * Specifies the current drag and drop step length value.
      * @param model Pixel count to move mouse during one drag'n'drop step.
      * @return Previous value.
      * @see #setDragAndDropStepLength(int)
@@ -322,6 +385,7 @@ public class JemmyProperties {
 
     /**
      * Peeks upper JemmyProperties instance from stack.
+     * @return a JemmyProperties object representing the properties value.
      */
     public static JemmyProperties getProperties() {
 	if(propStack == null) {
@@ -335,6 +399,7 @@ public class JemmyProperties {
 
     /**
      * Prints full version into satndart output.
+     * @param argv Application args.
      */
     public static void main(String[] argv) {
         if(argv.length == 0) {
@@ -350,6 +415,11 @@ public class JemmyProperties {
         System.exit(0);
     }
 
+    /**
+     * Pushes properties stack. 
+     * @param props a JemmyProperties instance to put into the stack head.
+     * @return a JemmyProperties object.
+     */
     protected static JemmyProperties push(JemmyProperties props) {
 	return((JemmyProperties)propStack.push(props));
     }
@@ -492,6 +562,8 @@ public class JemmyProperties {
 
     /**
      * Returns timeouts.
+     * @return the Timeouts value.
+     * @see #setTimeouts
      */
     public Timeouts getTimeouts() {
 	return((Timeouts)getProperty("timeouts"));
@@ -499,6 +571,9 @@ public class JemmyProperties {
 
     /**
      * Changes timeouts.
+     * @param	to new timeouts.
+     * @return  old timeouts.
+     * @see #getTimeouts
      */
     public Timeouts setTimeouts(Timeouts to) {
 	return((Timeouts)setProperty("timeouts", to));
@@ -508,6 +583,8 @@ public class JemmyProperties {
      * Changes a timeouts value.
      * @param name Timeout name
      * @param newValue New timeout value
+     * @return previous timeout value
+     * @see #getTimeout
      */
     public long setTimeout(String name, long newValue) {
 	return(getTimeouts().setTimeout(name, newValue));
@@ -516,6 +593,8 @@ public class JemmyProperties {
     /**
      * Returns a timeouts value.
      * @param name Timeout name
+     * @return a timeout value
+     * @see #setTimeout
      */
     public long getTimeout(String name) {
 	return(getTimeouts().getTimeout(name));
@@ -525,6 +604,7 @@ public class JemmyProperties {
      * Inits a timeouts value.
      * @param name Timeout name
      * @param newValue New timeout value
+     * @return a timeout value
      */
     public long initTimeout(String name, long newValue) {
 	return(getTimeouts().initTimeout(name, newValue));
@@ -532,6 +612,8 @@ public class JemmyProperties {
 
     /**
      * Returns output.
+     * @return a TestOut object representing the output value
+     * @see #setOutput
      */
     public TestOut getOutput() {
 	return((TestOut)getProperty("output"));
@@ -539,6 +621,9 @@ public class JemmyProperties {
 
     /**
      * Changes output.
+     * @param	out new output.
+     * @return old output.
+     * @see #getOutput
      */
     public TestOut setOutput(TestOut out) {
 	return((TestOut)setProperty("output", out));
@@ -546,6 +631,8 @@ public class JemmyProperties {
 
     /**
      * Returns bundle manager.
+     * @return a BundleManager object representing the bundle manager value.
+     * @see #setBundleManager
      */
     public BundleManager getBundleManager() {
 	return((BundleManager)getProperty("resources"));
@@ -553,6 +640,9 @@ public class JemmyProperties {
 
     /**
      * Changes bundle manager.
+     * @param	resources new bundle manager.
+     * @return old bundle manager
+     * @see #getBundleManager
      */
     public BundleManager setBundleManager(BundleManager resources) {
 	return((BundleManager)setProperty("resources", resources));
@@ -561,6 +651,7 @@ public class JemmyProperties {
     /**
      * Returns resource value.
      * @param key Resource key.
+     * @return resource value
      */
     public String getResource(String key) {
 	return(getBundleManager().getResource(key));
@@ -570,6 +661,7 @@ public class JemmyProperties {
      * Returns resource value from the specified bundle.
      * @param bundleID Id of a bundle to get resource from.
      * @param key Resource key.
+     * @return resource value
      */
     public String getResource(String bundleID, String key) {
 	return(getBundleManager().getResource(bundleID, key));
@@ -577,6 +669,8 @@ public class JemmyProperties {
 
     /**
      * Returns char binding map.
+     * @return the char binding map.
+     * @see #setCharBindingMap
      */
     public CharBindingMap getCharBindingMap() {
 	return((CharBindingMap)getProperty("binding.map"));
@@ -584,12 +678,16 @@ public class JemmyProperties {
 
     /**
      * Changes char binding map.
+     * @param	map new char binding map.
+     * @return old char binding map.
+     * @see #getCharBindingMap
      */
     public CharBindingMap setCharBindingMap(CharBindingMap map) {
 	return((CharBindingMap)setProperty("binding.map", map));
     }
 
     /**
+     * Returns the dispatching model.
      * @return Event dispatching model.
      * @see #getCurrentDispatchingModel()
      * @see #setDispatchingModel(int)
@@ -601,6 +699,7 @@ public class JemmyProperties {
     }
 
     /**
+     * Specifies the dispatching model value.
      * @param model New dispatching model value.
      * @return Previous dispatching model value.
      * @see #setCurrentDispatchingModel(int)
@@ -615,6 +714,7 @@ public class JemmyProperties {
     }
 
     /**
+     * Returns the drag and drop step length value.
      * @return Pixel count to move mouse during one drag'n'drop step.
      * @see #getCurrentDragAndDropStepLength()
      * @see #setDragAndDropStepLength(int)
@@ -624,6 +724,7 @@ public class JemmyProperties {
     }
 
     /**
+     * Specifies the drag and drop step length value.
      * @param length Pixel count to move mouse during one drag'n'drop step.
      * @return Previous value.
      * @see #setCurrentDragAndDropStepLength(int)
@@ -664,6 +765,7 @@ public class JemmyProperties {
     }
 
     /**
+     * Returns the property value.
      * @param name Property name. Should by unique.
      * @return Property value stored by setProperty(String, Object) method.
      * @see #getCurrentProperty(String)
@@ -678,6 +780,11 @@ public class JemmyProperties {
 	}
     }
 
+    /**
+     * Removes the property.
+     * @param	name A name of the property to be removed.
+     * @return previous property value
+     */
     public Object removeProperty(String name) {
 	if(contains(name)) {
 	    return(properties.remove(name));
@@ -686,6 +793,10 @@ public class JemmyProperties {
 	}
     }
 
+    /**
+     * Returns the key values.
+     @return an array of Strings representing the key values.
+     */
     public String[] getKeys() {
 	Enumeration keys = properties.keys();
 	String[] result = new String[properties.size()];
@@ -697,6 +808,10 @@ public class JemmyProperties {
 	return(result);
     }
 
+    /**
+     * Copy all properties from this instance into another.
+     * @param	properties a JemmyProperties instance to copy properties into.
+     */
     public void copyTo(JemmyProperties properties) {
 	String[] keys = getKeys();
         for(int i = 0; i < keys.length; i++) {
@@ -707,6 +822,10 @@ public class JemmyProperties {
  	properties.setBundleManager(getBundleManager().cloneThis());
     }
 
+    /**
+     * Creates an exact copy on this instance.
+     * @return new JemmyProperties object.
+     */
     protected JemmyProperties cloneThis() {
 	JemmyProperties result = new JemmyProperties();
         copyTo(result);

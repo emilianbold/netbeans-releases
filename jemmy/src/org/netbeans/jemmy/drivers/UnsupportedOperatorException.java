@@ -21,11 +21,15 @@ import org.netbeans.jemmy.JemmyException;
 
 /**
  * Is thrown as a result of attempt to use driver for unsupported operator type.
+ * 
+ * @author Alexandre Iline (alexandre.iline@sun.com)
  */
 public class UnsupportedOperatorException extends JemmyException {
 
     /**
      * Constructor.
+     * @param driver a driver
+     * @param operator an operator
      */
     public UnsupportedOperatorException(Class driver, Class operator) {
 	super(driver.getName() + " operators are not supported by " +
@@ -48,6 +52,13 @@ public class UnsupportedOperatorException extends JemmyException {
 	throw(new UnsupportedOperatorException(driver, operator));
     }
 
+    /**
+     * Checks if operator class name is in the list of supported classes names.
+     * @param driver Driver class
+     * @param supported Supported classes names.
+     * @param operator Operator class.
+     * @throws UnsupportedOperatorException if class is not supported.
+     */
     public static void checkSupported(Class driver, String[] supported, Class operator) {
         Class opClass = operator;
         do {

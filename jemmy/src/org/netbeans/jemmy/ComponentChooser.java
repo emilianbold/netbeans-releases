@@ -40,6 +40,7 @@ public interface ComponentChooser {
 
     /**
      * Returns searched component description.
+     * @return a String representing the description value
      */
     public String getDescription();
 }

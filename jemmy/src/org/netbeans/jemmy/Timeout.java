@@ -39,6 +39,7 @@ public class Timeout extends Object {
 
     /**
      * Returns timeout name.
+     * @return timeout name.
      */
     public String getName() {
 	return(name);
@@ -46,6 +47,7 @@ public class Timeout extends Object {
 
     /**
      * Returns timeout value.
+     * @return timeout value.
      */
     public long getValue() {
 	return(value);
@@ -76,12 +78,14 @@ public class Timeout extends Object {
 
     /**
      * Checks if timeout has been expired after start() invocation.
+     * @return true if timeout has been expired.
      */
     public boolean expired() {
 	return(System.currentTimeMillis() - startTime > getValue());
     }
 
     /**
+     * Throws a TimeoutExpiredException exception if timeout has been expired.
      * @throws TimeoutExpiredException if timeout has been expired after start() invocation.
      */
     public void check() {

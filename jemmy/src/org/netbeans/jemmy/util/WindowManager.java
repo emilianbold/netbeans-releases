@@ -37,9 +37,10 @@ import java.util.Vector;
 public class WindowManager implements Timeoutable, Outputable {
 
     /**
-     * Default value for WindowManager.TimeDelta timeout
+     * Default value for WindowManager.TimeDelta timeout.
      */
-    public static long TIME_DELTA = 1000;
+    private static long TIME_DELTA = 1000;
+
     private static WindowManager manager;
 
     private Vector jobs;
@@ -55,13 +56,15 @@ public class WindowManager implements Timeoutable, Outputable {
 
     /**
      * Adds job to list.
+     * @param job  a job to perform.
      */
     public static void addJob(WindowJob job) {
 	manager.add(job);
     }
 
     /**
-     * Removes job from list
+     * Removes job from list.
+     * @param job  a job to remove.
      */
     public static void removeJob(WindowJob job) {
 	manager.remove(job);
@@ -72,40 +75,25 @@ public class WindowManager implements Timeoutable, Outputable {
 	manager = new WindowManager();
     }
 
-    /**
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
     }
 
-    /**
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut output) {
 	this.output = output;
     }
 
-    /**
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
     /**
      * Adds job to list.
+     * @param job  a job to perform.
      */
     public void add(WindowJob job) {
 	output.printLine("Starting job \"" + 
@@ -119,7 +107,8 @@ public class WindowManager implements Timeoutable, Outputable {
     }
 
     /**
-     * Removes job from list
+     * Removes job from list.
+     * @param job  a job to remove.
      */
     public void remove(WindowJob job) {
 	output.printLine("Killing job \"" + 

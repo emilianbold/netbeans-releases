@@ -39,7 +39,7 @@ import java.awt.event.TextListener;
 import java.util.Hashtable;
 
 /**
- *
+ * This operator type covers java.awt.textArea component.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -50,6 +50,10 @@ import java.util.Hashtable;
 public class TextAreaOperator extends TextComponentOperator
     implements Timeoutable, Outputable {
 
+    /**
+     * Identifier for a "text" property.
+     * @see #getDump
+     */
     public static final String TEXT_DPROP = "Text";
 
     private final static long PUSH_KEY_TIMEOUT = 0;
@@ -69,6 +73,12 @@ public class TextAreaOperator extends TextComponentOperator
 	super(b);
     }
 
+    /**
+     * Constructs a TextAreaOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public TextAreaOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((TextArea)cont.
              waitSubComponent(new TextAreaFinder(chooser),
@@ -76,6 +86,11 @@ public class TextAreaOperator extends TextComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a TextAreaOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public TextAreaOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -92,7 +107,6 @@ public class TextAreaOperator extends TextComponentOperator
      * @param text TextArea text. 
      * @param index Ordinal component index. The first component has <code>index</code> 0.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public TextAreaOperator(ContainerOperator cont, String text, int index) {
 	this((TextArea)waitComponent(cont, 
@@ -113,7 +127,6 @@ public class TextAreaOperator extends TextComponentOperator
      * @param cont The operator for a container containing the sought for textArea.
      * @param text TextArea text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public TextAreaOperator(ContainerOperator cont, String text) {
 	this(cont, text, 0);
@@ -126,7 +139,6 @@ public class TextAreaOperator extends TextComponentOperator
      * @param cont The operator for a container containing the sought for textArea.
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public TextAreaOperator(ContainerOperator cont, int index) {
 	this((TextArea)
@@ -142,7 +154,6 @@ public class TextAreaOperator extends TextComponentOperator
      * Uses cont's timeout and output for waiting and to init operator.
      * @param cont The operator for a container containing the sought for textArea.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public TextAreaOperator(ContainerOperator cont) {
 	this(cont, 0);
@@ -208,7 +219,6 @@ public class TextAreaOperator extends TextComponentOperator
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @param index Ordinal component index.
      * @return TextArea instance.
-     * @throws TimeoutExpiredException
      */
     public static TextArea waitTextArea(Container cont, ComponentChooser chooser, int index) {
 	return((TextArea)waitComponent(cont, new TextAreaFinder(chooser), index));
@@ -219,7 +229,6 @@ public class TextAreaOperator extends TextComponentOperator
      * @param cont Container to search component in.
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @return TextArea instance.
-     * @throws TimeoutExpiredException
      */
     public static TextArea waitTextArea(Container cont, ComponentChooser chooser){
 	return(waitTextArea(cont, chooser, 0));
@@ -234,7 +243,6 @@ public class TextAreaOperator extends TextComponentOperator
      * @param index Ordinal component index.
      * @return TextArea instance.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public static TextArea waitTextArea(Container cont, String text, boolean ce, boolean ccs, int index) {
 	return(waitTextArea(cont, new TextAreaByTextFinder(text, new DefaultStringComparator(ce, ccs)), index));
@@ -248,7 +256,6 @@ public class TextAreaOperator extends TextComponentOperator
      * @param ccs Compare text case sensitively.
      * @return TextArea instance.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public static TextArea waitTextArea(Container cont, String text, boolean ce, boolean ccs) {
 	return(waitTextArea(cont, text, ce, ccs, 0));
@@ -261,52 +268,24 @@ public class TextAreaOperator extends TextComponentOperator
 	Timeouts.initDefault("TextAreaOperator.TypeTextTimeout", TYPE_TEXT_TIMEOUT);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param timeouts A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts timeouts) {
 	super.setTimeouts(timeouts);
 	this.timeouts = timeouts;
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
-    /**
-     * Returns information about component.
-     */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	result.put(TEXT_DPROP, ((TextArea)getSource()).getText());
@@ -375,13 +354,25 @@ public class TextAreaOperator extends TextComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Allows to find component by text.
+     */
     public static class TextAreaByTextFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
+        /**
+         * Constructs TextAreaByTextFinder.
+         * @param lb a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public TextAreaByTextFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs TextAreaByTextFinder.
+         * @param lb a text pattern
+         */
 	public TextAreaByTextFinder(String lb) {
             this(lb, Operator.getDefaultStringComparator());
 	}
@@ -399,10 +390,20 @@ public class TextAreaOperator extends TextComponentOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class TextAreaFinder extends Finder {
+        /**
+         * Constructs TextAreaFinder.
+         * @param sf other searching criteria.
+         */
 	public TextAreaFinder(ComponentChooser sf) {
             super(TextArea.class, sf);
 	}
+        /**
+         * Constructs TextAreaFinder.
+         */
 	public TextAreaFinder() {
             super(TextArea.class);
 	}

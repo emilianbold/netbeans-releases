@@ -61,9 +61,32 @@ public class MouseVisualizer extends DefaultVisualizer {
 
     private static final long BEFORE_CLICK = 100;
 
+    /**
+     * A constant used to inform that window activating click 
+     * needs to performed on the <b>top</b> side of frame.
+     * @see #MouseVisualizer()
+     */
     public static int TOP = 0;
+
+    /**
+     * A constant used to inform that window activating click 
+     * needs to performed on the <b>botton</b> side of frame.
+     * @see #MouseVisualizer()
+     */
     public static int BOTTOM = 1;
+
+    /**
+     * A constant used to inform that window activating click 
+     * needs to performed on the <b>left</b> side of frame.
+     * @see #MouseVisualizer()
+     */
     public static int LEFT = 2;
+
+    /**
+     * A constant used to inform that window activating click 
+     * needs to performed on the <b>right</b> side of frame.
+     * @see #MouseVisualizer()
+     */
     public static int RIGHT = 3;
 
     private int place = 0;

@@ -53,7 +53,7 @@ import javax.swing.plaf.MenuBarUI;
  * <BR><BR>Timeouts used: <BR>
  * JMenuOperator.WaitBeforePopupTimeout - time to sleep before popup expanding <BR>
  * JMenuOperator.WaitPopupTimeout - time to wait popup displayed <BR>
- * ComponentOperator.WaitComponentTimeout - time to wait button displayed <BR>
+ * ComponentOperator.WaitComponentTimeout - time to wait button displayed <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  * @author Alexandre Iline (alexandre.iline@sun.com)
@@ -63,6 +63,10 @@ import javax.swing.plaf.MenuBarUI;
 public class JMenuBarOperator extends JComponentOperator
     implements Outputable, Timeoutable {
 
+    /**
+     * Identifier for a "submenu" properties.
+     * @see #getDump
+     */
     public static final String SUBMENU_PREFIX_DPROP = "Submenu";
 
     private TestOut output;
@@ -71,12 +75,19 @@ public class JMenuBarOperator extends JComponentOperator
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JMenuBarOperator(JMenuBar b) {
 	super(b);
 	driver = DriverManager.getMenuDriver(getClass());
     }
 
+    /**
+     * Constructs a JMenuBarOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JMenuBarOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JMenuBar)cont.
              waitSubComponent(new JMenuBarFinder(chooser),
@@ -84,6 +95,11 @@ public class JMenuBarOperator extends JComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JMenuBarOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JMenuBarOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -104,6 +120,8 @@ public class JMenuBarOperator extends JComponentOperator
 
     /**
      * Searches JMenuBar in frame.
+     * @param frame a container
+     * @return found JMenuBar
      */    
     public static JMenuBar findJMenuBar(JFrame frame) {
 	return(findJMenuBar((Container)frame));
@@ -111,6 +129,8 @@ public class JMenuBarOperator extends JComponentOperator
 
     /**
      * Searches JMenuBar in dialog.
+     * @param dialog a container
+     * @return found JMenuBar
      */    
     public static JMenuBar findJMenuBar(JDialog dialog) {
 	return(findJMenuBar((Container)dialog));
@@ -118,6 +138,8 @@ public class JMenuBarOperator extends JComponentOperator
 
     /**
      * Searches JMenuBar in container.
+     * @param cont a container
+     * @return found JMenuBar
      * @throws TimeoutExpiredException
      */    
     public static JMenuBar waitJMenuBar(Container cont) {
@@ -126,6 +148,8 @@ public class JMenuBarOperator extends JComponentOperator
 
     /**
      * Waits JMenuBar in frame.
+     * @param frame a container
+     * @return found JMenuBar
      * @throws TimeoutExpiredException
      */    
     public static JMenuBar waitJMenuBar(JFrame frame) {
@@ -134,6 +158,8 @@ public class JMenuBarOperator extends JComponentOperator
 
     /**
      * Waits JMenuBar in dialog.
+     * @param dialog a container
+     * @return found JMenuBar
      * @throws TimeoutExpiredException
      */    
     public static JMenuBar waitJMenuBar(JDialog dialog) {
@@ -142,6 +168,8 @@ public class JMenuBarOperator extends JComponentOperator
 
     /**
      * Waits JMenuBar in container.
+     * @param cont a container
+     * @return found JMenuBar
      */    
     public static JMenuBar findJMenuBar(Container cont) {
 	return((JMenuBar)findComponent(cont, new JMenuBarFinder()));
@@ -152,45 +180,20 @@ public class JMenuBarOperator extends JComponentOperator
         JMenuOperator.class.getName();
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	super.setOutput(out);
 	output = out;
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param times A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts times) {
 	super.setTimeouts(times);
 	timeouts = times;
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
@@ -221,6 +224,7 @@ public class JMenuBarOperator extends JComponentOperator
 
     /**
      * Executes <code>pushMenu(choosers)</code> in a separate thread.
+     * @param choosers Array of choosers to find menuItems to push.
      * @see #pushMenu(ComponentChooser[])
      */
     public void pushMenuNoBlock(final ComponentChooser[] choosers) {
@@ -233,6 +237,13 @@ public class JMenuBarOperator extends JComponentOperator
 	    });
     }
 
+    /**
+     * Pushes menu.
+     * @param names an array of menu texts.
+     * @param comparator a string comparision algorithm
+     * @return Last pushed JMenuItem.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItem pushMenu(String[] names, StringComparator comparator) {
  	return(pushMenu(JMenuItemOperator.createChoosers(names, comparator)));
     }
@@ -251,12 +262,20 @@ public class JMenuBarOperator extends JComponentOperator
 	return(pushMenu(names, new DefaultStringComparator(ce, ccs)));
     }
 
+    /**
+     * Executes <code>pushMenu(names, ce, ccs)</code> in a separate thread.
+     * @param names an array of menu texts.
+     * @param comparator a string comparision algorithm
+     */
     public void pushMenuNoBlock(String[] names, StringComparator comparator) {
  	pushMenuNoBlock(JMenuItemOperator.createChoosers(names, comparator));
     }
  
     /**
      * Executes <code>pushMenu(names, ce, ccs)</code> in a separate thread.
+     * @param names Menu items texts.
+     * @param ce Compare text exactly.
+     * @param ccs Compare text case sensitively.
      * @see #pushMenu(String[], boolean,boolean)
      * @deprecated Use pushMenuNoBlock(String[]) or pushMenuNoBlock(String[], StringComparator)
      */
@@ -276,16 +295,32 @@ public class JMenuBarOperator extends JComponentOperator
 
     /**
      * Executes <code>pushMenu(names)</code> in a separate thread.
+     * @param names Menu items texts.
      * @see #pushMenu(String[])
      */
     public void pushMenuNoBlock(String[] names) {
 	pushMenuNoBlock(names, getComparator());
     }
 
+    /**
+     * Pushes menu.
+     * @param path a menu path.
+     * @param delim a path delimiter.
+     * @param comparator a string comparision algorithm
+     * @return Last pushed JMenuItem.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItem pushMenu(String path, String delim, StringComparator comparator) {
  	return(pushMenu(parseString(path, delim), comparator));
     }
  
+    /**
+     * Pushes menu. Uses PathParser assigned to this operator.
+     * @param path a menu path.
+     * @param comparator a string comparision algorithm
+     * @return Last pushed JMenuItem.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItem pushMenu(String path, StringComparator comparator) {
  	return(pushMenu(parseString(path), comparator));
     }
@@ -305,17 +340,33 @@ public class JMenuBarOperator extends JComponentOperator
 	return(pushMenu(parseString(path, delim), ce, ccs));
     }
 
+    /**
+     * Executes <code>pushMenu(names, delim, comparator)</code> in a separate thread.
+     * @param path a menu path.
+     * @param delim a path delimiter.
+     * @param comparator a string comparision algorithm
+     */
     public void pushMenuNoBlock(String path, String delim, StringComparator comparator) {
  	pushMenuNoBlock(parseString(path, delim), comparator);
     }
  
+    /**
+     * Executes <code>pushMenu(names, comparator)</code> in a separate thread.
+     * Uses PathParser assigned to this operator.
+     * @param path a menu path.
+     * @param comparator a string comparision algorithm
+     */
     public void pushMenuNoBlock(String path, StringComparator comparator) {
  	pushMenuNoBlock(parseString(path), comparator);
     }
  
     /**
      * Executes <code>pushMenu(path, delim, ce, ccs)</code> in a separate thread.
-     * @see #pushMenu(String, String, boolean, boolean)
+     * @param path String menupath representation ("File/New", for example).
+     * @param delim String menupath divider ("/").
+     * @param ce Compare text exactly.
+     * @param ccs Compare text case sensitively.
+     * @see #pushMenu
      * @deprecated Use pushMenuNoBlock(String, String) or pushMenuNoBlock(String, String, StringComparator)
      */
     public void pushMenuNoBlock(String path, String delim, boolean ce, boolean ccs) {
@@ -333,22 +384,40 @@ public class JMenuBarOperator extends JComponentOperator
 	return(pushMenu(parseString(path, delim)));
     }
 
+    /**
+     * Pushes menu. Uses PathParser assigned to this operator.
+     * @param path String menupath representation ("File/New", for example).
+     * @return Last pushed JMenuItem.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItem pushMenu(String path) {
 	return(pushMenu(parseString(path)));
     }
 
     /**
      * Executes <code>pushMenu(path, delim)</code> in a separate thread.
-     * @see #pushMenu(String, String)
+     * @param path String menupath representation ("File/New", for example).
+     * @param delim String menupath divider ("/").
      */
     public void pushMenuNoBlock(String path, String delim) {
 	pushMenuNoBlock(parseString(path, delim));
     }
 
+    /**
+     * Executes <code>pushMenu(path)</code> in a separate thread.
+     * @param path String menupath representation ("File/New", for example).
+     */
     public void pushMenuNoBlock(String path) {
 	pushMenuNoBlock(parseString(path));
     }
 
+    /**
+     * Shows submenu of menu specified by a <code>path</code> parameter.
+     * @param path an array of menu texts.
+     * @param comparator a string comparision algorithm
+     * @return an array of operators created tor items from the submenu.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItemOperator[] showMenuItems(String[] path, StringComparator comparator) {
         if(path == null || path.length == 0) {
             return(JMenuItemOperator.getMenuItems((MenuElement)getSource(), this));
@@ -357,26 +426,72 @@ public class JMenuBarOperator extends JComponentOperator
         }
     }
 
+    /**
+     * Shows submenu of menu specified by a <code>path</code> parameter.
+     * Uses StringComparator assigned to the operator.
+     * @param path an array of menu texts.
+     * @return an array of operators created tor items from the submenu.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItemOperator[] showMenuItems(String[] path) {
         return(showMenuItems(path, getComparator()));
     }
 
+    /**
+     * Shows submenu of menu specified by a <code>path</code> parameter.
+     * @param path a string identifying the menu path.
+     * @param delim a path delimiter.
+     * @param comparator a string comparision algorithm
+     * @return an array of operators created tor items from the submenu.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItemOperator[] showMenuItems(String path, String delim, StringComparator comparator ) {
         return(showMenuItems(parseString(path, delim), comparator));
     }
 
+    /**
+     * Shows submenu of menu specified by a <code>path</code> parameter.
+     * Uses PathParser assigned to this operator.
+     * @param path a string identifying the menu path.
+     * @param comparator a string comparision algorithm
+     * @return an array of operators created tor items from the submenu.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItemOperator[] showMenuItems(String path, StringComparator comparator ) {
         return(showMenuItems(parseString(path), comparator));
     }
 
+    /**
+     * Shows submenu of menu specified by a <code>path</code> parameter.
+     * Uses StringComparator assigned to the operator.
+     * @param path a string identifying the menu path.
+     * @param delim a path delimiter.
+     * @return an array of operators created tor items from the submenu.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItemOperator[] showMenuItems(String path, String delim) {
         return(showMenuItems(path, delim, getComparator()));
     }
 
+    /**
+     * Shows submenu of menu specified by a <code>path</code> parameter.
+     * Uses PathParser assigned to this operator.
+     * Uses StringComparator assigned to the operator.
+     * @param path a string identifying the menu path.
+     * @return an array of operators created tor items from the submenu.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItemOperator[] showMenuItems(String path) {
         return(showMenuItems(path, getComparator()));
     }
 
+    /**
+     * Expends all menus to show menu item specified by a <code>path</code> parameter.
+     * @param path an array of menu texts.
+     * @param comparator a string comparision algorithm
+     * @return an operator for the last menu item in path.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItemOperator showMenuItem(String[] path, StringComparator comparator ) {
         String[] parentPath = getParentPath(path);
         JMenu menu;
@@ -393,26 +508,67 @@ public class JMenuBarOperator extends JComponentOperator
         return(result);
     }
 
+    /**
+     * Expands all menus to show menu item specified by a <code>path</code> parameter.
+     * @param path an array of menu texts.
+     * @return an operator for the last menu item in path.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItemOperator showMenuItem(String[] path) {
         return(showMenuItem(path, getComparator()));
     }
 
+    /**
+     * Expands all menus to show menu item specified by a <code>path</code> parameter.
+     * @param path a string identifying the menu path.
+     * @param delim a path delimiter.
+     * @param comparator a string comparision algorithm
+     * @return an operator for the last menu item in path.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItemOperator showMenuItem(String path, String delim, StringComparator comparator ) {
         return(showMenuItem(parseString(path, delim), comparator));
     }
 
+    /**
+     * Expands all menus to show menu item specified by a <code>path</code> parameter.
+     * Uses PathParser assigned to this operator.
+     * @param path a string identifying the menu path.
+     * @param comparator a string comparision algorithm
+     * @return an operator for the last menu item in path.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItemOperator showMenuItem(String path, StringComparator comparator ) {
         return(showMenuItem(parseString(path), comparator));
     }
 
+    /**
+     * Expands all menus to show menu item specified by a <code>path</code> parameter.
+     * Uses StringComparator assigned to the operator.
+     * @param path a string identifying the menu path.
+     * @param delim a path delimiter.
+     * @return an operator for the last menu item in path.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItemOperator showMenuItem(String path, String delim) {
         return(showMenuItem(path, delim, getComparator()));
     }
 
+    /**
+     * Expands all menus to show menu item specified by a <code>path</code> parameter.
+     * Uses PathParser assigned to this operator.
+     * Uses StringComparator assigned to the operator.
+     * @param path a string identifying the menu path.
+     * @return an array of operators created tor items from the submenu.
+     * @throws TimeoutExpiredException
+     */
     public JMenuItemOperator showMenuItem(String path) {
         return(showMenuItem(path, getComparator()));
     }
 
+    /**
+     * Closes all expanded submenus.
+     */
     public void closeSubmenus() {
         JMenu menu = (JMenu)findSubComponent(new ComponentChooser() {
                 public boolean checkComponent(Component comp) {
@@ -430,9 +586,6 @@ public class JMenuBarOperator extends JComponentOperator
         }
     }
 
-    /**
-     * Returns information about component.
-     */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	String[] items = new String[((JMenuBar)getSource()).getMenuCount()];
@@ -593,10 +746,20 @@ public class JMenuBarOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Checks component type.
+     */
     public static class JMenuBarFinder extends Finder {
+        /**
+         * Constructs JMenuBarFinder.
+         * @param sf other searching criteria.
+         */
 	public JMenuBarFinder(ComponentChooser sf) {
             super(JMenuBar.class, sf);
 	}
+        /**
+         * Constructs JMenuBarFinder.
+         */
 	public JMenuBarFinder() {
             super(JMenuBar.class);
 	}

@@ -44,6 +44,7 @@ public class ObjectBrowser implements Outputable {
      * @param out Identify the streams or writers used for print output.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #getOutput
      */
     public void setOutput(TestOut out) {
 	output = out;
@@ -55,20 +56,25 @@ public class ObjectBrowser implements Outputable {
      * printing to output and err streams.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #setOutput
      */
     public TestOut getOutput() {
 	return(output);
     }
 
     /**
+     * Specifies the object value.
      * @param obj Object to work with.
+     * @see #getObject
      */
     public void setObject(Object obj) {
 	object = obj;
     }
 
     /**
+     * Returns the object value.
      * @return Current object.
+     * @see #setObject
      */
     public Object getObject() {
 	return(object);

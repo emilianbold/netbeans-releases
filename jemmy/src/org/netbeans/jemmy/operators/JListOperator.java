@@ -55,7 +55,7 @@ import javax.swing.plaf.ListUI;
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
  * ComponentOperator.WaitStateTimeout - time to wait for item, and for item to be selected <BR>
  * JScrollBarOperator.OneScrollClickTimeout - time for one scroll click <BR>
- * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
+ * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -66,7 +66,16 @@ import javax.swing.plaf.ListUI;
 public class JListOperator extends JComponentOperator
     implements Outputable {
 
+    /**
+     * Identifier for a "item" properties.
+     * @see #getDump
+     */
     public static final String ITEM_PREFIX_DPROP = "Item";
+
+    /**
+     * Identifier for a "selected item" property.
+     * @see #getDump
+     */
     public static final String SELECTED_ITEM_PREFIX_DPROP = "SelectedItem";
 
     private TestOut output;
@@ -74,12 +83,19 @@ public class JListOperator extends JComponentOperator
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JListOperator(JList b) {
 	super(b);
 	driver = DriverManager.getMultiSelListDriver(getClass());
     }
 
+    /**
+     * Constructs a JListOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JListOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JList)cont.
              waitSubComponent(new JListFinder(chooser),
@@ -87,6 +103,11 @@ public class JListOperator extends JComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JListOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JListOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -95,10 +116,11 @@ public class JListOperator extends JComponentOperator
      * Constructor.
      * Waits item text first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of item which is currently selected. 
      * @param itemIndex Item index.
      * @param index Ordinal component index.
-     * @throws TimeoutExpiredException
+     * 
      */
     public JListOperator(ContainerOperator cont, String text, int itemIndex, int index) {
 	this((JList)waitComponent(cont, 
@@ -112,10 +134,11 @@ public class JListOperator extends JComponentOperator
      * Constructor.
      * Waits component by selected item text first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of item which is currently selected. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      */
     public JListOperator(ContainerOperator cont, String text, int index) {
 	this(cont, text, -1, index);
@@ -125,9 +148,10 @@ public class JListOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of item which is currently selected. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      */
     public JListOperator(ContainerOperator cont, String text) {
 	this(cont, text, 0);
@@ -137,8 +161,9 @@ public class JListOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
-     * @throws TimeoutExpiredException
+     * 
      */
     public JListOperator(ContainerOperator cont, int index) {
 	this((JList)
@@ -152,7 +177,8 @@ public class JListOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
-     * @throws TimeoutExpiredException
+     * @param cont a container
+     * 
      */
     public JListOperator(ContainerOperator cont) {
 	this(cont, 0);
@@ -214,7 +240,7 @@ public class JListOperator extends JComponentOperator
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @param index Ordinal component index.
      * @return JList instance or null if component was not found.
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JList waitJList(Container cont, ComponentChooser chooser, int index) {
 	return((JList)waitComponent(cont, new JListFinder(chooser), index));
@@ -225,7 +251,7 @@ public class JListOperator extends JComponentOperator
      * @param cont Container to search component in.
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @return JList instance or null if component was not found.
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JList waitJList(Container cont, ComponentChooser chooser) {
 	return(waitJList(cont, chooser, 0));
@@ -241,7 +267,7 @@ public class JListOperator extends JComponentOperator
      * @param index Ordinal component index.
      * @return JList instance or null if component was not found.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JList waitJList(Container cont, String text, boolean ce, boolean ccs, int itemIndex, int index) {
 	return(waitJList(cont, new JListByItemFinder(text, itemIndex, new DefaultStringComparator(ce, ccs)), index));
@@ -256,30 +282,17 @@ public class JListOperator extends JComponentOperator
      * @param itemIndex Index of item to compare text. If -1, selected item is checked.
      * @return JList instance or null if component was not found.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      */
     public static JList waitJList(Container cont, String text, boolean ce, boolean ccs, int itemIndex) {
 	return(waitJList(cont, text, ce, ccs, itemIndex, 0));
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param output Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut output) {
 	super.setOutput(output.createErrorOutput());
 	this.output = output;
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -295,6 +308,8 @@ public class JListOperator extends JComponentOperator
 
     /**
      * Gets point to click on itemIndex'th item.
+     * @param itemIndex an index of an item to click.
+     * @return a Point in component's coordinate system.
      */
     public Point getClickPoint(int itemIndex) {
 	Rectangle rect = getCellBounds(itemIndex, itemIndex);
@@ -332,7 +347,7 @@ public class JListOperator extends JComponentOperator
     /**
      * Searches for index'th item good from chooser's point of view.
      * @param chooser Item verifying object.
-     * @param index 
+     * @param index Ordinal item index.
      * @return Item index or -1 if search was insuccessful.
      */
     public int findItemIndex(ListItemChooser chooser, int index) {
@@ -361,15 +376,26 @@ public class JListOperator extends JComponentOperator
 	return(findItemIndex(chooser, 0));
     }
 
+    /**
+     * Searches for an item good from chooser's point of view.
+     * @param item a text pattern
+     * @param comparator a string comparision algorithm
+     * @param index Ordinal item index.
+     * @return Item index or -1 if serch was insuccessful.
+     * @see #findItemIndex(JListOperator.ListItemChooser, int)
+     * @see #findItemIndex(String, boolean, boolean)
+     */
     public int findItemIndex(String item, StringComparator comparator, int index){
 	return(findItemIndex(new BySubStringListItemChooser(item, comparator), index));
     }
 
     /**
      * Searched for index'th item by text.
+     * @param item a text pattern
      * @param ce Compare text exactly.
      * @param cc Compare text case sensitively.
-     * @param index
+     * @param index Ordinal item index.
+     * @return Item index or -1 if serch was insuccessful.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @deprecated Use findItemIndex(String, int) or findItemIndex(String, StringComparator, int)
      */
@@ -380,20 +406,32 @@ public class JListOperator extends JComponentOperator
     /**
      * Searched for index'th item by text.
      * Uses StringComparator assigned to this object.
-     * @param index
+     * @param item a text pattern
+     * @param index Ordinal item index.
+     * @return Item index or -1 if search was insuccessful.
      */
     public int findItemIndex(String item, int index){
 	return(findItemIndex(item, getComparator(), index));
     }
     
+    /**
+     * Searches for an item good from chooser's point of view.
+     * @param item a text pattern
+     * @param comparator a string comparision algorithm
+     * @return Item index or -1 if serch was insuccessful.
+     * @see #findItemIndex(JListOperator.ListItemChooser, int)
+     * @see #findItemIndex(String, boolean, boolean)
+     */
     public int findItemIndex(String item, StringComparator comparator){
 	return(findItemIndex(item, comparator, 0));
     }
 
     /**
      * Searched  item by text.
+     * @param item a text pattern
      * @param ce Compare text exactly.
      * @param cc Compare text case sensitively.
+     * @return Item index or -1 if search was insuccessful.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @deprecated Use findItemIndex(String) or findItemIndex(String, StringComparator)
      */
@@ -404,6 +442,8 @@ public class JListOperator extends JComponentOperator
     /**
      * Searched for first item by text.
      * Uses StringComparator assigned to this object.
+     * @param item a text pattern
+     * @return Item index or -1 if search was insuccessful.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      */
     public int findItemIndex(String item){
@@ -413,7 +453,7 @@ public class JListOperator extends JComponentOperator
     /**
      * Searches for index'th item by rendered component.
      * @param chooser Component verifying object.
-     * @param index 
+     * @param index Ordinal item index.
      * @return Item index or -1 if serch was insuccessful.
      * @see #getRenderedComponent(int, boolean, boolean)
      */
@@ -474,6 +514,14 @@ public class JListOperator extends JComponentOperator
             }));
     }
     
+    /**
+     * Finds item by item text, and do mouse click on it.
+     * @param item Item text.
+     * @param comparator a string comparision algorithm
+     * @param clickCount count click.
+     * @return Click point or null if list does not contains itemIndex'th item.
+     * @throws NoSuchItemException
+     */
     public Object clickOnItem(final String item, final StringComparator comparator, final int clickCount) {
         scrollToItem(findItemIndex(item, comparator, 0));
         return(getQueueTool().invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
@@ -514,6 +562,14 @@ public class JListOperator extends JComponentOperator
 	return(clickOnItem(item, getComparator(), clickCount));
     }
 
+    /**
+     * Finds item by item text, and do simple mouse click on it.
+     * Uses StringComparator assigned to this object.
+     * @param item Item text.
+     * @param comparator a string comparision algorithm
+     * @return Click point or null if list does not contains itemIndex'th item.
+     * @throws NoSuchItemException
+     */
     public Object clickOnItem(String item, StringComparator comparator) {
 	return(clickOnItem(item, comparator, 1));
     }
@@ -544,9 +600,9 @@ public class JListOperator extends JComponentOperator
 
     /**
      * Scrolls to an item if the list is on a JScrollPane component.
-     * @param itemIndex
+     * @param itemIndex an item index.
      * @see #scrollToItem(String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      * @throws NoSuchItemException
      */
     public void scrollToItem(int itemIndex) {
@@ -573,6 +629,13 @@ public class JListOperator extends JComponentOperator
 					    (int)rect.getHeight());
     }
 
+    /**
+     * Scrolls to an item if the list is on a JScrollPane component.
+     * @param item Item text
+     * @param comparator a string comparision algorithm
+     * @see #scrollToItem(String, boolean, boolean)
+     * 
+     */
     public void scrollToItem(String item, StringComparator comparator) {
 	scrollToItem(findItemIndex(item, comparator));
     }
@@ -583,7 +646,7 @@ public class JListOperator extends JComponentOperator
      * @param ce Compare exactly.
      * @param cc Compare case sensitively.
      * @see #scrollToItem(String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      * @deprecated Use scrollToItem(String) or scrollToItem(String, StringComparator)
      */
     public void scrollToItem(String item, boolean ce, boolean cc) {
@@ -591,7 +654,8 @@ public class JListOperator extends JComponentOperator
     }
 
     /**
-     * @throws NoSuchItemException
+     * Selects an item by index.
+     * @param index an item index.
      */
     public void selectItem(int index) {
         checkIndex(index);
@@ -601,6 +665,10 @@ public class JListOperator extends JComponentOperator
         }
     }
 
+    /**
+     * Selects an item by text.
+     * @param item an item text.
+     */
     public void selectItem(final String item) {
         scrollToItem(findItemIndex(item));
         getQueueTool().invokeSmoothly(new QueueTool.QueueAction("Path selecting") {
@@ -611,6 +679,10 @@ public class JListOperator extends JComponentOperator
             });
     }
 
+    /**
+     * Selects items by indices.
+     * @param indices item indices.
+     */
     public void selectItems(int[] indices) {
         checkIndices(indices);
 	driver.selectItems(this, indices);
@@ -619,6 +691,10 @@ public class JListOperator extends JComponentOperator
         }
     }
 
+    /**
+     * Selects items by texts.
+     * @param items item texts.
+     */
     public void selectItem(String[] items) {
 	int[] indices = new int[items.length];
 	for(int i = 0; i < items.length; i++) {
@@ -629,7 +705,7 @@ public class JListOperator extends JComponentOperator
 
     /**
      * Waits for items to be selected.
-     * @param itemIndices
+     * @param itemIndices item indices to be selected
      * @param selected Selected (true) or unselected (false).
      */
     public void waitItemsSelection(final int[] itemIndices, final boolean selected) {
@@ -657,7 +733,7 @@ public class JListOperator extends JComponentOperator
 
     /**
      * Waits for item to be selected.
-     * @param itemIndex
+     * @param itemIndex an item needs to be selected
      * @param selected Selected (true) or unselected (false).
      */
     public void waitItemSelection(final int itemIndex, final boolean selected) {
@@ -666,7 +742,7 @@ public class JListOperator extends JComponentOperator
 
     /**
      * Waits for item. Uses getComparator() comparator.
-     * @param item
+     * @param item an item text
      * @param itemIndex Index of item to check or -1 to check selected item.
      */
     public void waitItem(String item, int itemIndex) {
@@ -1114,11 +1190,13 @@ public class JListOperator extends JComponentOperator
 	 * Should be true if item is good.
 	 * @param oper Operator used to search item.
 	 * @param index Index of an item be checked.
+         * @return true if the item fits the criteria
 	 */
 	public boolean checkItem(JListOperator oper, int index);
 
 	/**
 	 * Item description.
+         * @return a description.
 	 */
 	public String getDescription();
     }
@@ -1130,10 +1208,15 @@ public class JListOperator extends JComponentOperator
     public class NoSuchItemException extends JemmyInputException {
 	/**
 	 * Constructor.
+         * @param item an item's text
 	 */
 	public NoSuchItemException(String item) {
 	    super("No such item as \"" + item + "\"", getSource());
 	}
+	/**
+	 * Constructor.
+         * @param index an item's index
+	 */
 	public NoSuchItemException(int index) {
 	    super("List does not contain " + index + "'th item", getSource());
 	}
@@ -1171,15 +1254,29 @@ public class JListOperator extends JComponentOperator
 	}
     }
 
+    /**
+     * Allows to find component by an item.
+     */
     public static class JListByItemFinder implements ComponentChooser {
 	String label;
 	int itemIndex;
 	StringComparator comparator;
+        /**
+         * Constructs JListByItemFinder.
+         * @param lb a text pattern
+         * @param ii item index to check. If equal to -1, selected item is checked.
+         * @param comparator specifies string comparision algorithm.
+         */
 	public JListByItemFinder(String lb, int ii, StringComparator comparator) {
 	    label = lb;
 	    itemIndex = ii;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs JListByItemFinder.
+         * @param lb a text pattern
+         * @param ii item index to check. If equal to -1, selected item is checked.
+         */
 	public JListByItemFinder(String lb, int ii) {
             this(lb, ii, Operator.getDefaultStringComparator());
 	}
@@ -1208,10 +1305,20 @@ public class JListOperator extends JComponentOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JListFinder extends Finder {
+        /**
+         * Constructs JListFinder.
+         * @param sf other searching criteria.
+         */
 	public JListFinder(ComponentChooser sf) {
             super(JList.class, sf);
 	}
+        /**
+         * Constructs JListFinder.
+         */
 	public JListFinder() {
             super(JList.class);
 	}

@@ -28,12 +28,12 @@ import org.netbeans.jemmy.operators.JTextComponentOperator.TextChooser;
 
 /**
  * Makes easier to implement searching criteria for <code>javax.swing.text.StyledDocument</code>
- * @see org.netbeans.jemmy.operators.JTextComponentOperator#getPositionByText(java.lang.String, 
- * org.netbeans.jemmy.operators.JTextComponentOperator.TextChooser, int)
+ * <code>JTextComponentOperator.getPositionByText(String, JTextComponentOperator.TextChooser, int)</code>.
  *
  * @author Alexandre Iline (alexandre.iline@sun.com)
  */
 public abstract class AbstractTextStyleChooser implements TextChooser {
+
     /**
      * Constructor.
      */
@@ -41,16 +41,13 @@ public abstract class AbstractTextStyleChooser implements TextChooser {
     }
     /**
      * Should return true if position fulfils criteria.
-     * @param doc 
-     * @param Element 
-     * @param offset
+     * @param doc a styled document to be searched.
+     * @param element an element to be checked.
+     * @param offset checked position.
+     * @return true if position fits the criteria.
      */
     public abstract boolean checkElement(StyledDocument doc, Element element, int offset);
     public abstract String getDescription();
-    /**
-     * Simple invokes <code>checkElement(javax.swing.text.StyledDocument, 
-     * javax.swing.text.Element, int)</code>
-     */
     public final boolean checkPosition(Document document, int offset) {
 	return(checkElement(((StyledDocument)document), 
 			    ((StyledDocument)document).getCharacterElement(offset),

@@ -25,19 +25,33 @@ import org.netbeans.jemmy.Timeout;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.TextComponentOperator;
 
+/**
+ * TextDriver for AWT component types.
+ * Uses API calls.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class AWTTextAPIDriver extends TextAPIDriver {
+
+    /**
+     * Constructs a AWTTextAPIDriver.
+     */
     public AWTTextAPIDriver() {
 	super(new String[] {"org.netbeans.jemmy.operators.TextComponentOperator"});
     }
+
     public String getText(ComponentOperator oper) {
 	return(((TextComponentOperator)oper).getText());
     }
+
     public int getCaretPosition(ComponentOperator oper) {
 	return(((TextComponentOperator)oper).getCaretPosition());
     }
+
     public int getSelectionStart(ComponentOperator oper) {
 	return(((TextComponentOperator)oper).getSelectionStart());
     }
+
     public int getSelectionEnd(ComponentOperator oper) {
 	return(((TextComponentOperator)oper).getSelectionEnd());
     }

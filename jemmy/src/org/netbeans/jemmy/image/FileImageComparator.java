@@ -35,6 +35,7 @@ public class FileImageComparator {
     ImageComparator comparator;
 
     /**
+     * Constructs a FileImageComparator object.
      * @param comparator - ImageComparator to be used for image comparision.
      * @param loader - ImageLoader to be used for image loading.
      */
@@ -47,6 +48,9 @@ public class FileImageComparator {
      * Compares an image with one stored in file.
      * Comparision is performed by ImageComparator passed into constructor.
      * Image is loaded by ImageLoader passed into constructor.
+     * @param image an image to compare.
+     * @param fileName a file containing an image to compare.
+     * @return true if images match each other.
      */
     public boolean compare(BufferedImage image, String fileName) {
         try {
@@ -60,6 +64,9 @@ public class FileImageComparator {
      * Compares two image stored in files..
      * Comparision is performed by ImageComparator passed into constructor.
      * Images are loaded by ImageLoader passed into constructor.
+     * @param fileName1 a file containing an image to compare.
+     * @param fileName2 a file containing an image to compare.
+     * @return true if images match each other.
      */
     public boolean compare(String fileName1, String fileName2) {
         try {

@@ -29,14 +29,18 @@ public class RoughImageComparator implements ImageComparator {
 
     /**
      * Creates a comparator with <code>roughness</code> allowed roughness.
+     * @param roughness Allowed comparision roughness.
      */
     public RoughImageComparator(double roughness) {
         this.roughness = roughness;
     }
 
     /**
-     * Compares two images with allowe roughness.
-     * @return True if number of unmatching pixels less or equal to
+     * Compares two images with allowed roughness.
+     * @param image1 an image to compare.
+     * @param image2 an image to compare.
+     * @return true if images have the same sizes and 
+     * number of unmatching pixels less or equal to
      * <code>image1.getWidth() * image1.getHeight() * roughness<code>
      */
     public boolean compare(BufferedImage image1, BufferedImage image2) {

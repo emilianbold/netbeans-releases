@@ -17,7 +17,24 @@
 
 package org.netbeans.jemmy.drivers;
 
+/**
+ * Specifies an interface for objects defining path searching criteria.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public interface PathChooser {
+
+    /**
+     * Checks if <code>depth</code>'th path components fits the requirements.
+     * @param depth A depth of the component.
+     * @param component A path component to be checked.
+     * @return true if the component fits the requirements.
+     */
     public boolean checkPathComponent(int depth, Object component);
+
+    /**
+     * Return requiered depth of the path.
+     * @return depth.
+     */
     public int getDepth();
 }

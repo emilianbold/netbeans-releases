@@ -30,29 +30,54 @@ import org.netbeans.jemmy.drivers.OrderedListDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTableHeaderOperator;
 
+/**
+ * List driver for javax.swing.table.JTableHeader component type.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class JTableHeaderDriver extends LightSupportiveDriver implements OrderedListDriver {
     private QueueTool queueTool;
+
+    /**
+     * Constructs a JTableHeaderDriver.
+     */
     public JTableHeaderDriver() {
 	super(new String[] {"org.netbeans.jemmy.operators.JTableHeaderOperator"});
         queueTool = new QueueTool();
     }
+
     public void selectItem(ComponentOperator oper, int index) {
 	clickOnHeader((JTableHeaderOperator)oper, index);
     }
+
     public void selectItems(ComponentOperator oper, int[] indices) {
 	clickOnHeader((JTableHeaderOperator)oper, indices[0]);
 	for(int i = 1; i < indices.length; i++) {
 	    clickOnHeader((JTableHeaderOperator)oper, indices[i], InputEvent.CTRL_MASK);
 	}
     }
+
     public void moveItem(ComponentOperator oper, int moveColumn, int moveTo) {
         Point start = ((JTableHeaderOperator)oper).getPointToClick(moveColumn);
         Point   end = ((JTableHeaderOperator)oper).getPointToClick(moveTo);
         oper.dragNDrop(start.x, start.y, end.x, end.y);
     }
+
+    /**
+     * Clicks on a column header.
+     * @param oper an operator to click on.
+     * @param index column index.
+     */
     protected void clickOnHeader(JTableHeaderOperator oper, int index) {
 	clickOnHeader(oper, index, 0);
     }
+
+    /**
+     * Clicks on a column header.
+     * @param oper an operator to click on.
+     * @param index column index.
+     * @param modifiers a combination of <code>InputEvent.*_MASK</code> fields.
+     */
     protected void clickOnHeader(final JTableHeaderOperator oper, final int index, final int modifiers) {
         queueTool.invokeSmoothly(new QueueTool.QueueAction("Column selecting") {
                 public Object launch() {

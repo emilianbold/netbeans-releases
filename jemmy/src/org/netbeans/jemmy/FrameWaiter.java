@@ -68,17 +68,14 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
     }
 
     /**
-     * Searches index'th frame between already created and displayed frames.
-     * @param cc
-     * @param index
      * Searches for a Frame.
      * The search proceeds among the currently showing Frames for the
      * <code>index+1</code>'th Frame that meets the criteria defined and
      * applied by the <code>ComonentChooser</code> parameter.
-     * @param cc A component chooser used to define and apply the search criteria.
-     * @param index The ordinal index of the Frame in the set of currently displayed
+     * @param	cc A component chooser used to define and apply the search criteria.
+     * @param	index The ordinal index of the Frame in the set of currently displayed
      * Frames.  The first index is 0.
-     * @return a reference to the <code>index+1</code>'th Frame that is showing
+     * @return	a reference to the <code>index+1</code>'th Frame that is showing
      * and that meets the search criteria.  If there are fewer than
      * <code>index+1</code> Frames, a <code>null</code> reference is returned.
      */
@@ -114,8 +111,9 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
      * Searches for a Frame by title.
      * The search is for the <code>index+1</code>'th Frame among the currently
      * showing Frames that possess a suitable title.
-     * @param title Frame title or subtitle.
-     * @param ce If <code>true</code> and the search is case sensitive, then a
+     * 
+     * @param	title Frame title or subtitle.
+     * @param	ce If <code>true</code> and the search is case sensitive, then a
      * match occurs when the <code>title</code> argument is a substring of a
      * Frame title.  If <code>false</code> and the search is case sensitive,
      * then the <code>title</code> argument and the Frame title must be the same.
@@ -124,9 +122,11 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
      * changing both to upper case.  If <code>false</code> and the search is case
      * insensitive, then a match occurs when the <code>title</code> argument is a
      * substring of the Frame title after changing both to upper case.
-     * @param cc If <code>true</code> the search is case sensitive; otherwise, the
+     * @param	cc If <code>true</code> the search is case sensitive; otherwise, the
      * search is case insensitive. 
-     * @return a reference to the <code>index+1</code>'th Frame that is showing
+     * @param	index The ordinal index of the Frame in the set of currently displayed
+     * Frames.  The first index is 0.
+     * @return	a reference to the <code>index+1</code>'th Frame that is showing
      * and that has a suitable title.  If there are fewer than
      * <code>index+1</code> Frames, a <code>null</code> reference is returned.
      */
@@ -144,6 +144,7 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
      * @param timeouts A collection of timeout assignments.
      * @see org.netbeans.jemmy.Timeoutable
      * @see org.netbeans.jemmy.Timeouts
+     * @see #getTimeouts
      */
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
@@ -160,6 +161,7 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
      * @return the collection of current timeout assignments.
      * @see org.netbeans.jemmy.Timeoutable
      * @see org.netbeans.jemmy.Timeouts
+     * @see #setTimeouts
      */
     public Timeouts getTimeouts() {
 	return(timeouts);
@@ -170,6 +172,7 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
      * @param output Identify the streams or writers used for print output.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #getOutput
      */
     public void setOutput(TestOut output) {
 	this.output = output;
@@ -182,6 +185,7 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
      * printing to output and err streams.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #setOutput
      */
     public TestOut getOutput() {
 	return(output);
@@ -192,15 +196,17 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
      * Wait for the <code>index+1</code>'th Frame that meets the criteria
      * defined and applied by the <code>ComonentChooser</code> parameter to
      * show up.
-     * @param ch A component chooser used to define and apply the search criteria.
-     * @param index The ordinal index of the Frame in the set of currently displayed
+     * 
+     * @param	ch A component chooser used to define and apply the search criteria.
+     * @param	index The ordinal index of the Frame in the set of currently displayed
      * Frames.  The first index is 0.
-     * @return a reference to the <code>index+1</code>'th Frame that shows
+     * @return	a reference to the <code>index+1</code>'th Frame that shows
      * and that meets the search criteria.  If fewer than
      * <code>index+1</code> Frames show up in the allotted time period then
      * a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Frame waitFrame(ComponentChooser ch, int index)
 	throws InterruptedException {
@@ -212,12 +218,14 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
      * Waits for a Frame to show.
      * Wait for a Frame that meets the search criteria applied by the
      * <code>ComponentChooser</code> parameter to show up.
-     * @param ch A component chooser used to define and apply the search criteria.
-     * @return a reference to the first Frame that shows and that
+     * 
+     * @param	ch A component chooser used to define and apply the search criteria.
+     * @return	a reference to the first Frame that shows and that
      * meets the search criteria.  If no such Frame can be found within the
      * time period allotted, a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Frame waitFrame(ComponentChooser ch)
 	throws InterruptedException {
@@ -227,8 +235,9 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
     /**
      * Waits for a Frame to show.
      * Wait for the <code>index+1</code>'th Frame to show with a suitable title.
-     * @param title Frame title or subtitle.
-     * @param compareExactly If <code>true</code> and the search is case sensitive, then a
+     * 
+     * @param	title Frame title or subtitle.
+     * @param	compareExactly If <code>true</code> and the search is case sensitive, then a
      * match occurs when the <code>title</code> argument is a substring of a
      * Frame title.  If <code>false</code> and the search is case sensitive,
      * then the <code>title</code> argument and the Frame title must be the same.
@@ -237,16 +246,17 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
      * changing both to upper case.  If <code>false</code> and the search is case
      * insensitive, then a match occurs when the <code>title</code> argument is a
      * substring of the Frame title after changing both to upper case.
-     * @param compareCaseSensitive If <code>true</code> the search is case sensitive;
+     * @param	compareCaseSensitive If <code>true</code> the search is case sensitive;
      * otherwise, the search is case insensitive.
-     * @param index The ordinal index of the Frame in the set of currently displayed
+     * @param	index The ordinal index of the Frame in the set of currently displayed
      * Frames with the proper window ownership and a suitable title.  The
      * first index is 0.
-     * @return a reference to the <code>index+1</code>'th Frame to show and that has a
+     * @return	a reference to the <code>index+1</code>'th Frame to show and that has a
      * suitable title.  If no such Frame can be found within the time period
      * allotted, a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Frame waitFrame(String title, boolean compareExactly, boolean compareCaseSensitive, int index)
 	throws InterruptedException {
@@ -256,8 +266,9 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
     /**
      * Waits for a Frame to show.
      * Wait for the first Frame to show with a suitable title.
-     * @param title Frame title or subtitle.
-     * @param compareExactly If <code>true</code> and the search is case sensitive, then a
+     * 
+     * @param	title Frame title or subtitle.
+     * @param	compareExactly If <code>true</code> and the search is case sensitive, then a
      * match occurs when the <code>title</code> argument is a substring of a
      * Frame title.  If <code>false</code> and the search is case sensitive,
      * then the <code>title</code> argument and the Frame title must be the same.
@@ -266,13 +277,14 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
      * changing both to upper case.  If <code>false</code> and the search is case
      * insensitive, then a match occurs when the <code>title</code> argument is a
      * substring of the Frame title after changing both to upper case.
-     * @param compareCaseSensitive If <code>true</code> the search is case sensitive;
+     * @param	compareCaseSensitive If <code>true</code> the search is case sensitive;
      * otherwise, the search is case insensitive.
-     * @return a reference to the first Frame to show and that has a
+     * @return	a reference to the first Frame to show and that has a
      * suitable title.  If no such Frame can be found within the time period
      * allotted, a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Frame waitFrame(String title, boolean compareExactly, boolean compareCaseSensitive)
 	throws InterruptedException {
@@ -287,19 +299,28 @@ public class FrameWaiter extends WindowWaiter implements Timeoutable, Outputable
     }
 
     /**
-     * @see Waiter#getTimeoutExpiredMessage(long)
+     * Overrides WindowWaiter.getTimeoutExpiredMessage.
+     * Returns the timeout expired message value.
+     * @param	timeSpent Time spent for waiting
+     * @return a message tring
+     * @see	Waiter#getTimeoutExpiredMessage(long)
      */
-    protected String getTimeoutExpiredMessage(long spendedTime) {
+    protected String getTimeoutExpiredMessage(long timeSpent) {
 	return("Frame \"" + getComponentChooser().getDescription() + "\" has not been opened in " +
-	       (new Long(spendedTime)).toString() + " milliseconds");
+	       (new Long(timeSpent)).toString() + " milliseconds");
     }
 
     /**
-     * @see Waiter#getActionProducedMessage(long, Object)
+     * Overrides WindowWaiter.getActionProducedMessage.
+     * Returns the action produced message value.
+     * @param	timeSpent Time spent for waiting.
+     * @param	result A message string.
+     * @return a message tring
+     * @see	Waiter#getActionProducedMessage(long, Object)
      */
-    protected String getActionProducedMessage(long spendedTime, Object result) {
+    protected String getActionProducedMessage(long timeSpent, Object result) {
 	return("Frame \"" + getComponentChooser().getDescription() + "\" has been opened in " +
-	       (new Long(spendedTime)).toString() + " milliseconds" +
+	       (new Long(timeSpent)).toString() + " milliseconds" +
 	       "\n    " + result.toString());
     }
 

@@ -31,8 +31,8 @@ public interface MouseDriver {
      * @param oper Component operator.
      * @param x Relative x coordinate.
      * @param y Relative y coordinate.
-     * @param mouseButton
-     * @param modifiers
+     * @param mouseButton mouse button (<code>InputEvent.BUTTON*_MASK</code> field)
+     * @param modifiers a combination of <code>InputEvent.*_MASK</code> fields.
      */
     public void pressMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers);
 
@@ -41,8 +41,8 @@ public interface MouseDriver {
      * @param oper Component operator.
      * @param x Relative x coordinate.
      * @param y Relative y coordinate.
-     * @param mouseButton
-     * @param modifiers
+     * @param mouseButton mouse button (<code>InputEvent.BUTTON*_MASK</code> field)
+     * @param modifiers a combination of <code>InputEvent.*_MASK</code> fields.
      */
     public void releaseMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers);
 
@@ -52,8 +52,8 @@ public interface MouseDriver {
      * @param x Relative x coordinate.
      * @param y Relative y coordinate.
      * @param clickCount How many times to click.
-     * @param mouseButton
-     * @param modifiers
+     * @param mouseButton mouse button (<code>InputEvent.BUTTON*_MASK</code> field)
+     * @param modifiers a combination of <code>InputEvent.*_MASK</code> fields.
      * @param mouseClick Time between pressing and releasing mouse.
      */
     public void clickMouse(ComponentOperator oper, int x, int y, int clickCount, int mouseButton, 
@@ -72,8 +72,8 @@ public interface MouseDriver {
      * @param oper Component operator.
      * @param x Relative x coordinate.
      * @param y Relative y coordinate.
-     * @param mouseButton
-     * @param modifiers
+     * @param mouseButton mouse button (<code>InputEvent.BUTTON*_MASK</code> field)
+     * @param modifiers a combination of <code>InputEvent.*_MASK</code> fields.
      */
     public void dragMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers);
 
@@ -84,8 +84,8 @@ public interface MouseDriver {
      * @param start_y Relative y coordinate of start point.
      * @param end_x Relative x coordinate of end point.
      * @param end_y Relative y coordinate of end point.
-     * @param mouseButton
-     * @param modifiers
+     * @param mouseButton mouse button (<code>InputEvent.BUTTON*_MASK</code> field)
+     * @param modifiers a combination of <code>InputEvent.*_MASK</code> fields.
      * @param before Time to sleep after taking (before dragging)
      * @param after Time to sleep before dropping (after dragging)
      */

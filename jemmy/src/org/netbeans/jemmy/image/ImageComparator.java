@@ -28,6 +28,9 @@ public interface ImageComparator {
 
     /**
      * Should return true if images matches, false otherwise.
+     * @param image1 an image to compare.
+     * @param image2 an image to compare.
+     * @return true if images match each other.
      */
     public boolean compare(BufferedImage image1, BufferedImage image2);
 }

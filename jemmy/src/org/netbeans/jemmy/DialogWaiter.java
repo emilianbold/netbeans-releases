@@ -114,8 +114,9 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * Searches for a dialog by title.
      * The search is for the <code>index+1</code>'th dialog among the currently
      * showing dialogs that possess a suitable title.
-     * @param title Dialog title or subtitle.
-     * @param ce If <code>true</code> and the search is case sensitive, then a
+     * 
+     * @param	title Dialog title or subtitle.
+     * @param	ce If <code>true</code> and the search is case sensitive, then a
      * match occurs when the <code>title</code> argument is a substring of a
      * dialog title.  If <code>false</code> and the search is case sensitive,
      * then the <code>title</code> argument and the dialog title must be the same.
@@ -124,9 +125,10 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * changing both to upper case.  If <code>false</code> and the search is case
      * insensitive, then a match occurs when the <code>title</code> argument is a
      * substring of the dialog title after changing both to upper case.
-     * @param cc If <code>true</code> the search is case sensitive; otherwise, the
+     * @param	cc If <code>true</code> the search is case sensitive; otherwise, the
      * search is case insensitive. 
-     * @return a reference to the <code>index+1</code>'th dialog that is showing
+     * @param	index Ordinal index between appropriate dialogs
+     * @return	a reference to the <code>index+1</code>'th dialog that is showing
      * and that has a suitable title.  If there are fewer than
      * <code>index+1</code> dialogs, a <code>null</code> reference is returned.
      */
@@ -158,9 +160,7 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * criteria defined and applied by the <code>ComponentChooser</code> parameter.
      * @param owner The owner window of all the dialogs to be searched.
      * @param cc A component chooser used to define and apply the search criteria.
-     * @param index The ordinal index of the dialog in the set of currently displayed
-     * dialogs with the proper window ownership and a suitable title.  The first
-     * index is 0.
+     * @param index Ordinal index between appropriate dialogs
      * @return a reference to the <code>index+1</code>'th dialog that is showing,
      * has the proper window ownership, and that meets the search criteria.
      * If there are fewer than <code>index+1</code> dialogs, a <code>null</code>
@@ -175,6 +175,7 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * The search proceeds among the currently showing dialogs that are owned
      * by the <code>java.awt.Window</code> <code>owner</code> for the first with
      * a suitable title.
+     * @param owner A window - owner of a dialods to be checked.
      * @param title Dialog title or subtitle.
      * @param ce If <code>true</code> and the search is case sensitive, then a
      * match occurs when the <code>title</code> argument is a substring of a
@@ -200,8 +201,9 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * The search is for the <code>index+1</code>'th dialog among the currently
      * showing dialogs that are owned by the <code>java.awt.Window</code>
      * <code>owner</code> and that have a suitable title.
-     * @param title Dialog title or subtitle.
-     * @param ce If <code>true</code> and the search is case sensitive, then a
+     * 
+     * @param	owner ?title? Dialog title or subtitle.
+     * @param	title ?ce? If <code>true</code> and the search is case sensitive, then a
      * match occurs when the <code>title</code> argument is a substring of a
      * dialog title.  If <code>false</code> and the search is case sensitive,
      * then the <code>title</code> argument and the dialog title must be the same.
@@ -210,12 +212,13 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * changing both to upper case.  If <code>false</code> and the search is case
      * insensitive, then a match occurs when the <code>title</code> argument is a
      * substring of the dialog title after changing both to upper case.
-     * @param cc If <code>true</code> the search is case sensitive; otherwise, the
+     * @param	ce ?cc? If <code>true</code> the search is case sensitive; otherwise, the
      * search is case insensitive.
-     * @param index The ordinal index of the dialog in the set of currently displayed
+     * @param	cc ?index? The ordinal index of the dialog in the set of currently displayed
      * dialogs with the proper window ownership and a suitable title.  The
      * first index is 0.
-     * @return a reference to the <code>index+1</code>'th dialog that is showing, has
+     * @param	index Ordinal index between appropriate dialogs
+     * @return	a reference to the <code>index+1</code>'th dialog that is showing, has
      * the proper window ownership, and a suitable title.  If there are fewer than
      * <code>index+1</code> dialogs, a <code>null</code> reference is returned.
      */
@@ -230,9 +233,11 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
 
     /**
      * Defines current timeouts.
-     * @param t A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeouts
-     * @see org.netbeans.jemmy.Timeoutable
+     * 
+     * @param	timeouts ?t? A collection of timeout assignments.
+     * @see	org.netbeans.jemmy.Timeouts
+     * @see	org.netbeans.jemmy.Timeoutable
+     * @see #getTimeouts
      */
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
@@ -249,6 +254,7 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * @return the collection of current timeout assignments.
      * @see org.netbeans.jemmy.Timeouts
      * @see org.netbeans.jemmy.Timeoutable
+     * @see #setTimeouts
      */
     public Timeouts getTimeouts() {
 	return(timeouts);
@@ -256,9 +262,11 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
 
     /**
      * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.TestOut
-     * @see org.netbeans.jemmy.Outputable
+     * 
+     * @param	output ?out? Identify the streams or writers used for print output.
+     * @see	org.netbeans.jemmy.TestOut
+     * @see	org.netbeans.jemmy.Outputable
+     * @see #getOutput
      */
     public void setOutput(TestOut output) {
 	this.output = output;
@@ -271,6 +279,7 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * printing to output and err streams.
      * @see org.netbeans.jemmy.TestOut
      * @see org.netbeans.jemmy.Outputable
+     * @see #setOutput
      */
     public TestOut getOutput() {
 	return(output);
@@ -281,15 +290,17 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * Wait for the <code>index+1</code>'th dialog that meets the criteria
      * defined and applied by the <code>ComonentChooser</code> parameter to
      * show up.
-     * @param ch A component chooser used to define and apply the search criteria.
-     * @param index The ordinal index of the dialog in the set of currently displayed
+     * 
+     * @param	ch A component chooser used to define and apply the search criteria.
+     * @param	index The ordinal index of the dialog in the set of currently displayed
      * dialogs.  The first index is 0.
-     * @return a reference to the <code>index+1</code>'th dialog that shows
+     * @return	a reference to the <code>index+1</code>'th dialog that shows
      * and that meets the search criteria.  If fewer than
      * <code>index+1</code> dialogs show up in the allotted time period then
      * a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Dialog waitDialog(ComponentChooser ch, int index)
 	throws InterruptedException {
@@ -301,12 +312,14 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * Waits for a dialog to show.
      * Wait for a dialog that meets the search criteria applied by the
      * <code>ComponentChooser</code> parameter to show up.
-     * @param ch A component chooser used to define and apply the search criteria.
-     * @return a reference to the first dialog that shows and that
+     * 
+     * @param	ch A component chooser used to define and apply the search criteria.
+     * @return	a reference to the first dialog that shows and that
      * meets the search criteria.  If no such dialog can be found within the
      * time period allotted, a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Dialog waitDialog(ComponentChooser ch)
 	throws InterruptedException {
@@ -316,8 +329,9 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
     /**
      * Waits for a dialog to show.
      * Wait for the <code>index+1</code>'th dialog to show with a suitable title.
-     * @param title Dialog title or subtitle.
-     * @param compareExactly If <code>true</code> and the search is case sensitive, then a
+     * 
+     * @param	title Dialog title or subtitle.
+     * @param	compareExactly If <code>true</code> and the search is case sensitive, then a
      * match occurs when the <code>title</code> argument is a substring of a
      * dialog title.  If <code>false</code> and the search is case sensitive,
      * then the <code>title</code> argument and the dialog title must be the same.
@@ -326,16 +340,17 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * changing both to upper case.  If <code>false</code> and the search is case
      * insensitive, then a match occurs when the <code>title</code> argument is a
      * substring of the dialog title after changing both to upper case.
-     * @param compareCaseSensitive If <code>true</code> the search is case sensitive;
+     * @param	compareCaseSensitive If <code>true</code> the search is case sensitive;
      * otherwise, the search is case insensitive.
-     * @param index The ordinal index of the dialog in the set of currently displayed
+     * @param	index The ordinal index of the dialog in the set of currently displayed
      * dialogs with the proper window ownership and a suitable title.  The
      * first index is 0.
-     * @return a reference to the <code>index+1</code>'th dialog to show and that has a
+     * @return	a reference to the <code>index+1</code>'th dialog to show and that has a
      * suitable title.  If no such dialog can be found within the time period
      * allotted, a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Dialog waitDialog(String title, boolean compareExactly, boolean compareCaseSensitive, int index)
 	throws InterruptedException {
@@ -345,8 +360,9 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
     /**
      * Waits for a dialog to show.
      * Wait for the first dialog to show with a suitable title.
-     * @param title Dialog title or subtitle.
-     * @param compareExactly If <code>true</code> and the search is case sensitive, then a
+     * 
+     * @param	title Dialog title or subtitle.
+     * @param	compareExactly If <code>true</code> and the search is case sensitive, then a
      * match occurs when the <code>title</code> argument is a substring of a
      * dialog title.  If <code>false</code> and the search is case sensitive,
      * then the <code>title</code> argument and the dialog title must be the same.
@@ -355,13 +371,14 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * changing both to upper case.  If <code>false</code> and the search is case
      * insensitive, then a match occurs when the <code>title</code> argument is a
      * substring of the dialog title after changing both to upper case.
-     * @param compareCaseSensitive If <code>true</code> the search is case sensitive;
+     * @param	compareCaseSensitive If <code>true</code> the search is case sensitive;
      * otherwise, the search is case insensitive.
-     * @return a reference to the first dialog to show and that has a
+     * @return	a reference to the first dialog to show and that has a
      * suitable title.  If no such dialog can be found within the time period
      * allotted, a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Dialog waitDialog(String title, boolean compareExactly, boolean compareCaseSensitive)
 	throws InterruptedException {
@@ -373,17 +390,19 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * Wait for the <code>index+1</code>'th dialog to show that is both owned by the
      * <code>java.awt.Window</code> <code>owner</code> and that meets the
      * criteria defined and applied by the <code>ComponentChooser</code> parameter.
-     * @param owner The owner window of all the dialogs to be searched.
-     * @param ch A component chooser used to define and apply the search criteria.
-     * @param index The ordinal index of the dialog in the set of currently displayed
+     * 
+     * @param	owner The owner window of all the dialogs to be searched.
+     * @param	ch A component chooser used to define and apply the search criteria.
+     * @param	index The ordinal index of the dialog in the set of currently displayed
      * dialogs with the proper window ownership and a suitable title.  The first
      * index is 0.
-     * @return a reference to the <code>index+1</code>'th dialog to show that
+     * @return	a reference to the <code>index+1</code>'th dialog to show that
      * has the proper window ownership, and that meets the search criteria.
      * If there are fewer than <code>index+1</code> dialogs, a <code>null</code>
      * reference is returned.
-     * @throws TimeoutExpiredException
-     * @see org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Dialog waitDialog(Window owner, ComponentChooser ch, int index)
 	throws InterruptedException {
@@ -396,13 +415,15 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * Wait for the first dialog to show that is both owned by the
      * <code>java.awt.Window</code> <code>owner</code> and that meets the
      * criteria defined and applied by the <code>ComponentChooser</code> parameter.
-     * @param owner The owner window of all the dialogs to be searched.
-     * @param ch A component chooser used to define and apply the search criteria.
-     * @return a reference to the first dialog to show that
+     * 
+     * @param	owner The owner window of all the dialogs to be searched.
+     * @param	ch A component chooser used to define and apply the search criteria.
+     * @return	a reference to the first dialog to show that
      * has the proper window ownership, and that meets the search criteria.
      * If there is no such dialog, a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Dialog waitDialog(Window owner, ComponentChooser ch)
 	throws InterruptedException {
@@ -413,9 +434,10 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * Waits for a dialog to show.
      * Wait for the <code>index+1</code>'th dialog to show with the proper owner
      * and a suitable title.
-     * @param owner The owner window of all the dialogs to be searched.
-     * @param title Dialog title or subtitle.
-     * @param compareExactly If <code>true</code> and the search is case sensitive, then a
+     * 
+     * @param	owner The owner window of all the dialogs to be searched.
+     * @param	title Dialog title or subtitle.
+     * @param	compareExactly If <code>true</code> and the search is case sensitive, then a
      * match occurs when the <code>title</code> argument is a substring of a
      * dialog title.  If <code>false</code> and the search is case sensitive,
      * then the <code>title</code> argument and the dialog title must be the same.
@@ -424,13 +446,15 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * changing both to upper case.  If <code>false</code> and the search is case
      * insensitive, then a match occurs when the <code>title</code> argument is a
      * substring of the dialog title after changing both to upper case.
-     * @param compareCaseSensitive If <code>true</code> the search is case sensitive;
+     * @param	compareCaseSensitive If <code>true</code> the search is case sensitive;
      * otherwise, the search is case insensitive.
-     * @return a reference to the <code>index+1</code>'th dialog to show that has
+     * @param index Ordinal index between appropriate dialogs
+     * @return	a reference to the <code>index+1</code>'th dialog to show that has
      * both the proper owner window and a suitable title.  If no such dialog can be found
      * within the time period allotted, a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Dialog waitDialog(Window owner, String title, boolean compareExactly, boolean compareCaseSensitive, int index)
 	throws InterruptedException {
@@ -440,9 +464,11 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
     /**
      * Waits for a dialog to show.
      * Wait for the first dialog to show with the proper owner and a suitable title.
-     * @param owner The owner window of all the dialogs to be searched.
-     * @param title Dialog title or subtitle.
-     * @param compareExactly If <code>true</code> and the search is case sensitive, then a
+     * 
+     * @see	org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @param	owner The owner window of all the dialogs to be searched.
+     * @param	title Dialog title or subtitle.
+     * @param	compareExactly If <code>true</code> and the search is case sensitive, then a
      * match occurs when the <code>title</code> argument is a substring of a
      * dialog title.  If <code>false</code> and the search is case sensitive,
      * then the <code>title</code> argument and the dialog title must be the same.
@@ -451,13 +477,13 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * changing both to upper case.  If <code>false</code> and the search is case
      * insensitive, then a match occurs when the <code>title</code> argument is a
      * substring of the dialog title after changing both to upper case.
-     * @param compareCaseSensitive If <code>true</code> the search is case sensitive;
+     * @param	compareCaseSensitive If <code>true</code> the search is case sensitive;
      * otherwise, the search is case insensitive.
-     * @return a reference to the first dialog to show and that has both the proper
+     * @return	a reference to the first dialog to show and that has both the proper
      * owner and a suitable title.  If no such dialog can be found within the time period
      * allotted, a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see org.netbeans.jemmy.WindowWaiter#actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @exception	InterruptedException
      */
     public Dialog waitDialog(Window owner, String title, boolean compareExactly, boolean compareCaseSensitive)
 	throws InterruptedException {
@@ -472,7 +498,11 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
     }
 
     /**
-     * @see org.netbeans.jemmy.Waiter#getTimeoutExpiredMessage(long)
+     * Overrides WindowWaiter.getTimeoutExpiredMessage.
+     * Returns the timeout expired message value.
+     * @see	org.netbeans.jemmy.Waiter#getTimeoutExpiredMessage(long)
+     * @param	spendedTime Time spent for waiting
+     * @return A message string.
      */
     protected String getTimeoutExpiredMessage(long spendedTime) {
 	return("Dialog \"" + getComponentChooser().getDescription() + "\" has not been opened in " +
@@ -480,7 +510,12 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
     }
 
     /**
-     * @see org.netbeans.jemmy.Waiter#getActionProducedMessage(long, Object)
+     * Overrides WindowWaiter.getActionProducedMessage.
+     * Returns the action produced message value.
+     * @see	org.netbeans.jemmy.Waiter#getActionProducedMessage(long, Object)
+     * @param	spendedTime Time spent for waiting
+     * @param	result A result of the action
+     * @return A message string.
      */
     protected String getActionProducedMessage(long spendedTime, Object result) {
 	return("Dialog \"" + getComponentChooser().getDescription() + "\" has been opened in " +

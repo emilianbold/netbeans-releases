@@ -29,7 +29,10 @@ import java.io.IOException;
 public interface ImageLoader {
 
     /**
-     * Should load an image from file.
+     * Loads an image from file.
+     * @param fileName a file to load image from.
+     * @return a loaded image.
+     * @throws IOException
      */
     public BufferedImage load(String fileName) throws IOException;
 }

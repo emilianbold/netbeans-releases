@@ -57,7 +57,16 @@ import java.util.Vector;
 public abstract class Operator extends Object 
     implements Timeoutable, Outputable {
 
+    /**
+     * Identifier for a "class" property.
+     * @see #getDump
+     */
     public static final String CLASS_DPROP = "Class";
+
+    /**
+     * Identifier for a "toString" property.
+     * @see #getDump
+     */
     public static final String TO_STRING_DPROP = "toString";
 
 
@@ -84,7 +93,7 @@ public abstract class Operator extends Object
     }
 
     /**
-     * Defines object to be used by default to prepare component.
+     * Specifies an object to be used by default to prepare component.
      * Each new operator created after the method using will have
      * defined visualizer.
      * Default implementation is org.netbeans.jemmy.util.DefaultVisualizer class.
@@ -100,6 +109,7 @@ public abstract class Operator extends Object
     }
 
     /**
+     * Returns an object to be used by default to prepare component.
      * @return Object is used by default to prepare component
      * @see #getVisualizer()
      * @see #setDefaultComponentVisualizer(Operator.ComponentVisualizer)
@@ -111,6 +121,8 @@ public abstract class Operator extends Object
 
     /**
      * Defines string comparator to be assigned in constructor.
+     * @param comparator the comparator to be used by default.
+     * @return previous value.
      * @see #getDefaultStringComparator()
      * @see Operator.StringComparator
      */
@@ -121,6 +133,7 @@ public abstract class Operator extends Object
 
     /**
      * Returns string comparator used to init operators.
+     * @return the comparator used by default.
      * @see #setDefaultStringComparator(Operator.StringComparator)
      * @see Operator.StringComparator
      */
@@ -129,11 +142,24 @@ public abstract class Operator extends Object
 	       getCurrentProperty("ComponentOperator.StringComparator"));
     }
 
-    public static PathParser setDefaultPathParser(PathParser comparator) {
+    /**
+     * Specifies an object used for parsing of path-like strings.
+     * @param parser the parser.
+     * @return a previous value.
+     * @see Operator.PathParser
+     * @see #getDefaultPathParser
+     */
+    public static PathParser setDefaultPathParser(PathParser parser) {
 	return((PathParser)JemmyProperties.
-	       setCurrentProperty("ComponentOperator.PathParser", comparator));
+	       setCurrentProperty("ComponentOperator.PathParser", parser));
     }
 
+    /**
+     * Returns an object used for parsing of path-like strings.
+     * @return a parser used by default.
+     * @see Operator.PathParser
+     * @see #setDefaultPathParser
+     */
     public static PathParser getDefaultPathParser() {
 	return((PathParser)JemmyProperties.
 	       getCurrentProperty("ComponentOperator.PathParser"));
@@ -141,6 +167,8 @@ public abstract class Operator extends Object
 
     /**
      * Defines weither newly created operators should perform operation verifications by default.
+     * @param verification a verification mode to be used by default.
+     * @return a prevoius value.
      * @see #getDefaultVerification()
      * @see #setVerification(boolean)
      */
@@ -153,6 +181,7 @@ public abstract class Operator extends Object
 
     /**
      * Says weither newly created operators perform operations verifications by default.
+     * @return a verification mode used by default.
      * @see #setDefaultVerification(boolean)
      * @see #getVerification()
      */
@@ -168,8 +197,9 @@ public abstract class Operator extends Object
      * @param ce Compare exactly. If true, text can be a substring of caption.
      * @param ccs Compare case sensitively. If true, both text and caption are 
      * converted to upper case before comparison.
-     * @see #isCaptionEqual(String, String, Operator.StringComparator)
-     * @see #isCaptionEqual(String, String)
+     * @return true is the captions matched the match.
+     * @see #isCaptionEqual
+     * @deprecated use another methods with the same name.
      */
     public static boolean isCaptionEqual(String caption, String match, boolean ce, boolean ccs) {
 	return(new DefaultStringComparator(ce, ccs).equals(caption, match));
@@ -180,15 +210,16 @@ public abstract class Operator extends Object
      * @param caption String to be compared with match
      * @param match Sample to compare with
      * @param comparator StringComparator instance.
-     * @see #isCaptionEqual(String, String, boolean, boolean)
-     * @see #isCaptionEqual(String, String)
+     * @return true is the captions matched the match.
+     * @see #isCaptionEqual
      */
     public static boolean isCaptionEqual(String caption, String match, StringComparator comparator) {
 	return(comparator.equals(caption, match));
     }
 
     /**
-     * Returns default mouse button mask. (InputEvent.BUTTON1_MASK)
+     * Returns default mouse button mask. 
+     * @return <code>InputEvent.BUTTON*_MASK</code> field value
      */
     public static int getDefaultMouseButton() {
 	return(InputEvent.BUTTON1_MASK);
@@ -196,6 +227,7 @@ public abstract class Operator extends Object
 
     /**
      * Returns mask of mouse button which used to popup expanding. (InputEvent.BUTTON3_MASK)
+     * @return <code>InputEvent.BUTTON*_MASK</code> field value
      */
     public static int getPopupMouseButton() {
 	return(InputEvent.BUTTON3_MASK);
@@ -203,10 +235,11 @@ public abstract class Operator extends Object
 
     /**
      * Creates operator for component.
-     * Tries to find class with "<operator package>.<class name>Operator" name,
-     * where <operator package> is a package from operator packages list,
-     * and <class name> is the name of class or one of its superclasses.
+     * Tries to find class with "operator package"."class name"Operator name,
+     * where "operator package" is a package from operator packages list,
+     * and "class name" is the name of class or one of its superclasses.
      * @param comp Component to create operator for.
+     * @return a new operator with default environment.
      * @see #addOperatorPackage(String)
      */
     public static ComponentOperator createOperator(Component comp) {
@@ -238,6 +271,8 @@ public abstract class Operator extends Object
 
     /**
      * Returns an operator containing default environment.
+     * @return an empty operator (not having any component source)
+     * having default environment.
      */
     public static Operator getEnvironmentOperator() {
 	return(new NullOperator());
@@ -265,6 +300,8 @@ public abstract class Operator extends Object
 
     /**
      * Returns object operator is used for.
+     * @return an instance of java.awt.Component subclass
+     * which this operator was created for.
      */
     public abstract Component getSource();
 
@@ -274,6 +311,7 @@ public abstract class Operator extends Object
 
     /**
      * Returns QueueTool is used to work with queue.
+     * @return a QueueTool.
      */
     public QueueTool getQueueTool() {
 	return(queueTool);
@@ -282,6 +320,7 @@ public abstract class Operator extends Object
     /**
      * Copies all environment (output, timeouts,
      * visualizer) from another operator.
+     * @param anotherOperator an operator to copy the environment to.
      */
     public void copyEnvironment(Operator anotherOperator) {
 	setTimeouts(anotherOperator.getTimeouts());
@@ -293,23 +332,11 @@ public abstract class Operator extends Object
 	setProperties(anotherOperator.getProperties());
     }
 
-    /**
-     * Defines current timeouts.
-     * @param timeouts A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
 	queueTool.setTimeouts(timeouts);
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
@@ -317,6 +344,7 @@ public abstract class Operator extends Object
     /**
      * Returns component visualizer.
      * Visualizer is used from from makeComponentVisible() method.
+     * @return a visualizer assigned to this operator.
      * @see #getDefaultComponentVisualizer()
      * @see #setVisualizer(Operator.ComponentVisualizer)
      */
@@ -327,6 +355,7 @@ public abstract class Operator extends Object
     /**
      * Changes component visualizer.
      * Visualizer is used from from makeComponentVisible() method.
+     * @param vo a visualizer to assign to this operator.
      * @see #setDefaultComponentVisualizer(Operator.ComponentVisualizer)
      * @see #getVisualizer()
      */
@@ -334,10 +363,22 @@ public abstract class Operator extends Object
  	visualizer = vo;
     }
 
+    /**
+     * Returns a JemmyProperty object assigned to this operator.
+     * @return a JemmyProperty object got from the top of property stack 
+     * or from another operator by copyuing environment.
+     * @see #setProperties
+     */
     public JemmyProperties getProperties() {
 	return(properties);
     }
 
+    /**
+     * Assigns a JemmyProperty object to this operator.
+     * @param properties a properties to assign to this operator.
+     * @return previously assigned properties.
+     * @see #getProperties
+     */
     public JemmyProperties setProperties(JemmyProperties properties) {
 	JemmyProperties oldProperties = getProperties();
 	this.properties = properties;
@@ -346,67 +387,77 @@ public abstract class Operator extends Object
 
     /**
      * Defines CharBindingMap.
+     * @param map a CharBindingMap to use for keyboard operations.
      * @see org.netbeans.jemmy.CharBindingMap
      * @see org.netbeans.jemmy.JemmyProperties#setCurrentCharBindingMap(CharBindingMap)
+     * @see #getCharBindingMap
      */
     public void setCharBindingMap(CharBindingMap map) {
 	this.map = map;
     }
 
+    /**
+     * Returns CharBindingMap used for keyboard operations.
+     * @return a map assigned to this object.
+     * @see #setCharBindingMap
+     */
     public CharBindingMap getCharBindingMap() {
 	return(map);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	queueTool.setOutput(output.createErrorOutput());
     }
     
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
     /**
      * Returns object which is used for string comparison.
+     * @return a comparator assigned to this operator.
      * @see org.netbeans.jemmy.operators.Operator.StringComparator
      * @see org.netbeans.jemmy.operators.Operator.DefaultStringComparator
+     * @see #setComparator
      */
     public StringComparator getComparator() {
 	return(comparator);
     }
 
     /**
-     * Returns object which is used for string comparison. 
+     * Defines object which is used for string comparison. 
+     * @param comparator a comparator to use for string comparision.
      * @see org.netbeans.jemmy.operators.Operator.StringComparator
      * @see org.netbeans.jemmy.operators.Operator.DefaultStringComparator
+     * @see #getComparator
      */
     public void setComparator(StringComparator comparator) {
 	this.comparator = comparator;
     }
 
+    /**
+     * Returns object which is used for parsing of path-like strings.
+     * @return a comparator assigned to this operator.
+     * @see #setPathParser
+     */
     public PathParser getPathParser() {
 	return(parser);
     }
 
+    /**
+     * Specifies object which is used for parsing of path-like strings.
+     * @param parser a parser to use for path parsing.
+     * @see #getPathParser
+     */
     public void setPathParser(PathParser parser) {
 	this.parser = parser;
     }
 
     /**
      * Defines weither operator should perform operation verifications.
+     * @param verification new value.
+     * @return old value
      * @see #setDefaultVerification(boolean)
      * @see #getDefaultVerification()
      * @see #getVerification()
@@ -419,6 +470,7 @@ public abstract class Operator extends Object
 
     /**
      * Says weither operator performs operation verifications.
+     * @return old value
      * @see #setDefaultVerification(boolean)
      * @see #getDefaultVerification()
      * @see #setVerification(boolean)
@@ -431,6 +483,12 @@ public abstract class Operator extends Object
     //Util                                                //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Creates new array which has all elements from 
+     * first array, except last element.
+     * @param path an original array
+     * @return new array
+     */
     public String[] getParentPath(String path[]) {
         if(path.length > 1) {
             String[] ppath = new String[path.length - 1];
@@ -443,20 +501,30 @@ public abstract class Operator extends Object
         }
     }
 
+    /**
+     * Parses a string to a string array
+     * using a PathParser assigned to this operator.
+     * @param path an original string
+     * @return created String array.
+     */
     public String[] parseString(String path) {
         return(getPathParser().parse(path));
     }
 
     /**
-     * Parses strings like "1|2|3" into arrays {"1", "2", "3"}
+     * Parses strings like "1|2|3" into arrays {"1", "2", "3"}.
+     * @param path an original string
+     * @param delim a delimiter string
+     * @return created String array.
      */
     public String[] parseString(String path, String delim) {
         return(new DefaultPathParser(delim).parse(path));
     }
 
     /**
-     * Returns key code to by pressed for character typing.
+     * Returns key code to be pressed for character typing.
      * @param c Character to be typed.
+     * @return a value of one of the <code>KeyEvent.VK_*</code> fields.
      * @see org.netbeans.jemmy.CharBindingMap
      */
     public int getCharKey(char c) {
@@ -466,6 +534,7 @@ public abstract class Operator extends Object
     /**
      * Returns modifiers mask for character typing.
      * @param c Character to be typed.
+     * @return a combination of <code>InputEvent.*_MASK</code> fields.
      * @see org.netbeans.jemmy.CharBindingMap
      */
     public int getCharModifiers(char c) {
@@ -475,6 +544,7 @@ public abstract class Operator extends Object
     /**
      * Returns key codes to by pressed for characters typing.
      * @param c Characters to be typed.
+     * @return an array of <code>KeyEvent.VK_*</code> values.
      * @see org.netbeans.jemmy.CharBindingMap
      */
     public int[] getCharsKeys(char[] c) {
@@ -488,6 +558,7 @@ public abstract class Operator extends Object
     /**
      * Returns modifiers masks for characters typing.
      * @param c Characters to be typed.
+     * @return an array of a combination of <code>InputEvent.*_MASK</code> fields.
      * @see org.netbeans.jemmy.CharBindingMap
      */
     public int[] getCharsModifiers(char[] c) {
@@ -501,6 +572,7 @@ public abstract class Operator extends Object
     /**
      * Returns key codes to by pressed for the string typing.
      * @param s String to be typed.
+     * @return an array of <code>KeyEvent.VK_*</code> values.
      * @see org.netbeans.jemmy.CharBindingMap
      */
     public int[] getCharsKeys(String s) {
@@ -510,6 +582,7 @@ public abstract class Operator extends Object
     /**
      * Returns modifiers masks for the string typing.
      * @param s String to be typed.
+     * @return an array of a combination of <code>InputEvent.*_MASK</code> fields.
      * @see org.netbeans.jemmy.CharBindingMap
      */
     public int[] getCharsModifiers(String s) {
@@ -518,8 +591,10 @@ public abstract class Operator extends Object
 
     /**
      * Compares string using getComparator StringComparator.
-     * @see #isCaptionEqual(String, String, Operator.StringComparator)
-     * @see #isCaptionEqual(String, String, boolean, boolean)
+     * @param caption a caption
+     * @param match a pattern
+     * @return true if <code>caption</code> and <code>match</code> match
+     * @see #isCaptionEqual
      */
     public boolean isCaptionEqual(String caption, String match) {
 	return(comparator.equals(caption, match));
@@ -540,6 +615,10 @@ public abstract class Operator extends Object
 
     /**
      * Returns information about component.
+     * All records marked by simbolic constants defined in
+     * public static final <code>*_DPROP</code> fields for
+     * each operator type.
+     * @return a Hashtable containing name-value pairs.
      */
     public Hashtable getDump() {
 	Hashtable result = new Hashtable();
@@ -548,6 +627,12 @@ public abstract class Operator extends Object
 	return(result);
     }
 
+    /**
+     * Waits a state specified by a ComponentChooser instance.
+     * @param state a ComponentChooser defining the state criteria.
+     * @throws TimeoutExpiredException if the state has not
+     * achieved in a value defined by <code>"ComponentOperator.WaitStateTimeout"</code>
+     */
     public void waitState(final ComponentChooser state) {
 	Waiter stateWaiter = new Waiter(new Waitable() {
 		public Object actionProduced(Object obj) {
@@ -577,6 +662,13 @@ public abstract class Operator extends Object
     //Mapping                                             //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Performs an operation with time control.
+     * @param action an action to execute.
+     * @param param an action parameters.
+     * @param wholeTime a time for the action to be finished.
+     * @return an action result.
+     */
     protected Object produceTimeRestricted(Action action, final Object param, 
 					   long wholeTime) {
 	ActionProducer producer = new ActionProducer(action);
@@ -600,12 +692,20 @@ public abstract class Operator extends Object
 	}
     }
 
+    /**
+     * Performs an operation with time control.
+     * @param action an action to execute.
+     * @param wholeTime a time for the action to be finished.
+     * @return an action result.
+     */
     protected Object produceTimeRestricted(Action action, long wholeTime) {
 	return(produceTimeRestricted(action, null, wholeTime));
     }
 
     /**
-     * Makes easier noblocking operations.
+     * Performs an operation without time control.
+     * @param action an action to execute.
+     * @param param an action parameters.
      */
     protected void produceNoBlocking(NoBlockingAction action, Object param) {
 	try {
@@ -627,21 +727,22 @@ public abstract class Operator extends Object
     }
 
     /**
-     * Makes easier noblocking operations.
+     * Performs an operation without time control.
+     * @param action an action to execute.
      */
     protected void produceNoBlocking(NoBlockingAction action) {
 	produceNoBlocking(action, null);
     }
 
     /**
-     * Equivalent to getQueue().lock();
+     * Equivalent to <code>getQueue().lock();</code>.
      */
     protected void lockQueue() {
 	queueTool.lock();
     }
 
     /**
-     * Equivalent to getQueue().unlock();
+     * Equivalent to <code>getQueue().unlock();</code>.
      */
     protected void unlockQueue() {
 	queueTool.unlock();
@@ -649,6 +750,7 @@ public abstract class Operator extends Object
 
     /**
      * Unlocks Queue and then throw exception.
+     * @param e an exception to be thrown.
      */
     protected void unlockAndThrow(Exception e) {
 	unlockQueue();
@@ -657,6 +759,8 @@ public abstract class Operator extends Object
 
     /**
      * To map nonprimitive type component's method.
+     * @param action a mapping action.
+     * @return an action result.
      * @see Operator.MapAction
      */
     protected Object runMapping(MapAction action) {
@@ -665,6 +769,8 @@ public abstract class Operator extends Object
 
     /**
      * To map char component's method.
+     * @param action a mapping action.
+     * @return an action result.
      * @see #runMapping(Operator.MapAction)
      * @see Operator.MapCharacterAction
      */
@@ -674,6 +780,8 @@ public abstract class Operator extends Object
 
     /**
      * To map byte component's method.
+     * @param action a mapping action.
+     * @return an action result.
      * @see #runMapping(Operator.MapAction)
      * @see Operator.MapByteAction
      */
@@ -683,6 +791,8 @@ public abstract class Operator extends Object
 
     /**
      * To map int component's method.
+     * @param action a mapping action.
+     * @return an action result.
      * @see #runMapping(Operator.MapAction)
      * @see Operator.MapIntegerAction
      */
@@ -692,6 +802,8 @@ public abstract class Operator extends Object
 
     /**
      * To map long component's method.
+     * @param action a mapping action.
+     * @return an action result.
      * @see #runMapping(Operator.MapAction)
      * @see Operator.MapLongAction
      */
@@ -701,6 +813,8 @@ public abstract class Operator extends Object
 
     /**
      * To map float component's method.
+     * @param action a mapping action.
+     * @return an action result.
      * @see #runMapping(Operator.MapAction)
      * @see Operator.MapFloatAction
      */
@@ -710,6 +824,8 @@ public abstract class Operator extends Object
 
     /**
      * To map double component's method.
+     * @param action a mapping action.
+     * @return an action result.
      * @see #runMapping(Operator.MapAction)
      * @see Operator.MapDoubleAction
      */
@@ -719,6 +835,8 @@ public abstract class Operator extends Object
 
     /**
      * To map boolean component's method.
+     * @param action a mapping action.
+     * @return an action result.
      * @see #runMapping(Operator.MapAction)
      * @see Operator.MapBooleanAction
      */
@@ -728,6 +846,7 @@ public abstract class Operator extends Object
 
     /**
      * To map void component's method.
+     * @param action a mapping action.
      * @see #runMapping(Operator.MapAction)
      * @see Operator.MapVoidAction
      */
@@ -738,6 +857,12 @@ public abstract class Operator extends Object
     /**
      * Adds array of objects to dump hashtable.
      * Is used for multiple properties such as list items and tree nodes.
+     * @param table a table to add properties to.
+     * @param title property names prefix. Property names are constructed by
+     * adding a number to the prefix: 
+     * <code>title + "_" + Iteger.toString("ordinal index")</code>
+     * @param items an array of property values.
+     * @return an array of property names (with added numbers).
      */
     protected String[] addToDump(Hashtable table, String title, Object[] items) {
 	String[] names = createNames(title + "_", items.length);
@@ -750,6 +875,12 @@ public abstract class Operator extends Object
     /**
      * Adds two dimentional array of objects to dump hashtable.
      * Is used for multiple properties such as table cells.
+     * @param table a table to add properties to.
+     * @param title property names prefix. Property names are constructed by
+     * adding two numbers to the prefix: 
+     * <code>title + "_" + Iteger.toString("row index") + "_" + Iteger.toString("column index")</code>
+     * @param items an array of property values.
+     * @return an array of property names (with added numbers).
      */
     protected String[] addToDump(Hashtable table, String title, Object[][] items) {
 	String[] names = createNames(title + "_", items.length);
@@ -843,7 +974,7 @@ public abstract class Operator extends Object
      */
     public interface ComponentVisualizer {
 	/**
-	 * Should prepare component.
+	 * Prepares component for a user input.
 	 * @param compOper Operator asking for necessary actions.
 	 */
 	public void makeVisible(ComponentOperator compOper);
@@ -856,7 +987,10 @@ public abstract class Operator extends Object
      */
     public interface StringComparator {
 	/**
-	 * Imlementation mast return true if strings are equal.
+	 * Imlementation must return true if strings are equal.
+         * @param caption a text to compare with pattern.
+         * @param match a pattern
+         * @return true if text and pattern matches.
 	 */
 	public boolean equals(String caption, String match);
     }
@@ -869,6 +1003,7 @@ public abstract class Operator extends Object
 	boolean ccs;
 
 	/**
+         * Constructs a DefaultStringComparator object.
 	 * @param ce Compare exactly. If true, text can be a substring of caption.
 	 * @param ccs Compare case sensitively. If true, both text and caption are 
 	 */
@@ -878,8 +1013,10 @@ public abstract class Operator extends Object
 	}
 
 	/**	
+         * Compares a caption with a match using switched passed into constructor.
 	 * @param caption String to be compared with match. Method returns false, if parameter is null.
 	 * @param match Sample to compare with. Method returns true, if parameter is null.
+         * @return true if text and pattern matches.
 	 */
 	public boolean equals(String caption, String match) {
 	    if(match == null) {
@@ -904,16 +1041,32 @@ public abstract class Operator extends Object
 	}
     }
 
+    /**
+     * Used for parsing of path-like strings.
+     */
     public interface PathParser {
+        /**
+         * Parses a string to a String array.
+         * @param path a String to parse.
+         * @return a parsed array.
+         */
 	public String[] parse(String path);
     }
 
+    /**
+     * Used for parsing of path-like strings where path components are
+     * separated by a string-separator: "drive|directory|subdirectory|file".
+     */
     public static class DefaultPathParser implements PathParser {
         String separator;
+        /**
+         * Constructs a DefaultPathParser object.
+         * @param separator a string used as separator.
+         */
         public DefaultPathParser(String separator) {
             this.separator = separator;
         }
-	public String[] parse(String path) {
+ 	public String[] parse(String path) {
             if(path.length() > 0) {
                 Vector parsed = new Vector();
                 int position = 0;
@@ -934,13 +1087,25 @@ public abstract class Operator extends Object
         }
     }
 
+    /**
+     * Allows to bind a compponent by a component type.
+     */
     public static class Finder implements ComponentChooser {
         Class clz;
         ComponentChooser subchooser;
+        /**
+         * Constructs Finder.
+         * @param clz a component class.
+         * @param subchooser other searching criteria.
+         */
         public Finder(Class clz, ComponentChooser subchooser) {
             this.clz = clz;
             this.subchooser = subchooser;
         }
+        /**
+         * Constructs Finder.
+         * @param clz a component class.
+         */
         public Finder(Class clz) {
             this(clz, ComponentSearcher.getTrueChooser("Any " + clz.getName()));
         }
@@ -969,7 +1134,11 @@ public abstract class Operator extends Object
 	String description;
 	Exception exception;
 	boolean finished;
-	public NoBlockingAction(String description) {
+        /**
+         * Constructs a NoBlockingAction object.
+         * @param description an action description.
+         */
+        public NoBlockingAction(String description) {
 	    this.description = description;
 	    exception = null;
 	    finished = false;
@@ -984,13 +1153,28 @@ public abstract class Operator extends Object
 	    finished = true;
 	    return(result);
 	}
+        /**
+         * Performs a mapping action.
+         * @param param an action parameter.
+         * @return an action result.
+         */
 	public abstract Object doAction(Object param);
 	public String getDescription() {
 	    return(description);
 	}
+        /**
+         * Specifies the exception.
+         * @param e an exception.
+         * @see #getException
+         */
 	protected void setException(Exception e) {
 	    exception = e;
 	}
+        /**
+         * Returns an exception occured diring the action execution.
+         * @return an exception.
+         * @see #setException
+         */
 	public Exception getException() {
 	    return(exception);
 	}
@@ -1009,12 +1193,21 @@ public abstract class Operator extends Object
      * @see #runMapping(Operator.MapAction)
      */
     protected abstract class MapAction extends QueueTool.QueueAction {
+        /**
+         * Constructs a MapAction object.
+         * @param description an action description.
+         */
 	public MapAction(String description) {
 	    super(description);
 	}
 	public final Object launch() throws Exception {
 	    return(map());
 	}
+        /**
+         * Executes a map action.
+         * @return an action result.
+         * @throws Exception 
+         */
 	public abstract Object map() throws Exception;
     }
 
@@ -1023,12 +1216,21 @@ public abstract class Operator extends Object
      * @see #runMapping(Operator.MapCharacterAction)
      */
     protected abstract class MapCharacterAction extends QueueTool.QueueAction {
+        /**
+         * Constructs a MapCharacterAction object.
+         * @param description an action description.
+         */
 	public MapCharacterAction(String description) {
 	    super(description);
 	}
 	public final Object launch() throws Exception {
 	    return(new Character(map()));
 	}
+        /**
+         * Executes a map action.
+         * @return an action result.
+         * @throws Exception 
+         */
 	public abstract char map() throws Exception;
     }
 
@@ -1037,12 +1239,21 @@ public abstract class Operator extends Object
      * @see #runMapping(Operator.MapByteAction)
      */
     protected abstract class MapByteAction extends QueueTool.QueueAction {
+        /**
+         * Constructs a MapByteAction object.
+         * @param description an action description.
+         */
 	public MapByteAction(String description) {
 	    super(description);
 	}
 	public final Object launch() throws Exception {
 	    return(new Byte(map()));
 	}
+        /**
+         * Executes a map action.
+         * @return an action result.
+         * @throws Exception 
+         */
 	public abstract byte map() throws Exception;
     }
 
@@ -1051,12 +1262,21 @@ public abstract class Operator extends Object
      * @see #runMapping(Operator.MapIntegerAction)
      */
     protected abstract class MapIntegerAction extends QueueTool.QueueAction {
+        /**
+         * Constructs a MapIntegerAction object.
+         * @param description an action description.
+         */
 	public MapIntegerAction(String description) {
 	    super(description);
 	}
 	public final Object launch() throws Exception {
 	    return(new Integer(map()));
 	}
+        /**
+         * Executes a map action.
+         * @return an action result.
+         * @throws Exception 
+         */
 	public abstract int map() throws Exception;
     }
 
@@ -1065,12 +1285,21 @@ public abstract class Operator extends Object
      * @see #runMapping(Operator.MapLongAction)
      */
     protected abstract class MapLongAction extends QueueTool.QueueAction {
+        /**
+         * Constructs a MapLongAction object.
+         * @param description an action description.
+         */
 	public MapLongAction(String description) {
 	    super(description);
 	}
 	public final Object launch() throws Exception {
 	    return(new Long(map()));
 	}
+        /**
+         * Executes a map action.
+         * @return an action result.
+         * @throws Exception 
+         */
 	public abstract long map() throws Exception;
     }
 
@@ -1079,12 +1308,21 @@ public abstract class Operator extends Object
      * @see #runMapping(Operator.MapFloatAction)
      */
     protected abstract class MapFloatAction extends QueueTool.QueueAction {
+        /**
+         * Constructs a MapFloatAction object.
+         * @param description an action description.
+         */
 	public MapFloatAction(String description) {
 	    super(description);
 	}
 	public final Object launch() throws Exception {
 	    return(new Float(map()));
 	}
+        /**
+         * Executes a map action.
+         * @return an action result.
+         * @throws Exception 
+         */
 	public abstract float map() throws Exception;
     }
 
@@ -1093,12 +1331,21 @@ public abstract class Operator extends Object
      * @see #runMapping(Operator.MapDoubleAction)
      */
     protected abstract class MapDoubleAction extends QueueTool.QueueAction {
+        /**
+         * Constructs a MapDoubleAction object.
+         * @param description an action description.
+         */
 	public MapDoubleAction(String description) {
 	    super(description);
 	}
 	public final Object launch() throws Exception {
 	    return(new Double(map()));
 	}
+        /**
+         * Executes a map action.
+         * @return an action result.
+         * @throws Exception 
+         */
 	public abstract double map() throws Exception;
     }
 
@@ -1107,12 +1354,21 @@ public abstract class Operator extends Object
      * @see #runMapping(Operator.MapBooleanAction)
      */
     protected abstract class MapBooleanAction extends QueueTool.QueueAction {
+        /**
+         * Constructs a MapBooleanAction object.
+         * @param description an action description.
+         */
 	public MapBooleanAction(String description) {
 	    super(description);
 	}
 	public final Object launch() throws Exception {
 	    return(map() ? Boolean.TRUE : Boolean.FALSE);
 	}
+        /**
+         * Executes a map action.
+         * @return an action result.
+         * @throws Exception 
+         */
 	public abstract boolean map() throws Exception;
     }
 
@@ -1121,6 +1377,10 @@ public abstract class Operator extends Object
      * @see #runMapping(Operator.MapVoidAction)
      */
     protected abstract class MapVoidAction extends QueueTool.QueueAction {
+        /**
+         * Constructs a MapVoidAction object.
+         * @param description an action description.
+         */
 	public MapVoidAction(String description) {
 	    super(description);
 	}
@@ -1128,6 +1388,10 @@ public abstract class Operator extends Object
 	    map();
 	    return(null);
 	}
+        /**
+         * Executes a map action.
+         * @throws Exception 
+         */
 	public abstract void map() throws Exception;
     }
 

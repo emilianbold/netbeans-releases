@@ -29,6 +29,10 @@ import java.awt.Component;
 
 public class ComponentIsNotVisibleException extends JemmyInputException {
     
+    /**
+     * Constructs a ComponentIsNotVisibleException object.
+     * @param	comp a Component.
+     */
     public ComponentIsNotVisibleException(Component comp) {
 	super("Component is not visible", comp);
     }

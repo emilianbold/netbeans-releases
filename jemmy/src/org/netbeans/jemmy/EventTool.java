@@ -142,6 +142,7 @@ public class EventTool implements Timeoutable, Outputable {
      * Returns event mask last time used by <code>addListeners(long)</code> method.
      * In case if <code>addListeners()</code> method was used last, 
      * <code>getTheWholeEventMask() </code> result is returned.
+     * @return a long representing the current event mask value
      * @see #getTheWholeEventMask()
      */
     public static long getCurrentEventMask() {
@@ -149,6 +150,7 @@ public class EventTool implements Timeoutable, Outputable {
     }
 
     /**
+     * Returns a combination of all <code>AWTEvent.*_EVENT_MASK</code> fields..
      * @return a combination of all <code>AWTEvent.*_EVENT_MASK</code> fields.
      */
     public static long getTheWholeEventMask() {
@@ -168,9 +170,11 @@ public class EventTool implements Timeoutable, Outputable {
 
     /**
      * Defines current timeouts.
-     * @param t A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeouts
-     * @see org.netbeans.jemmy.Timeoutable
+     * 
+     * @param	ts ?t? A collection of timeout assignments.
+     * @see	org.netbeans.jemmy.Timeouts
+     * @see	org.netbeans.jemmy.Timeoutable
+     * @see #getTimeouts
      */
     public void setTimeouts(Timeouts ts) {
 	timeouts = ts;
@@ -181,6 +185,7 @@ public class EventTool implements Timeoutable, Outputable {
      * @return the collection of current timeout assignments.
      * @see org.netbeans.jemmy.Timeouts
      * @see org.netbeans.jemmy.Timeoutable
+     * @see #setTimeouts
      */
     public Timeouts getTimeouts() {
 	return(timeouts);
@@ -191,6 +196,7 @@ public class EventTool implements Timeoutable, Outputable {
      * @param out Identify the streams or writers used for print output.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #getOutput
      */
     public void setOutput(TestOut out) {
 	output = out;
@@ -202,6 +208,7 @@ public class EventTool implements Timeoutable, Outputable {
      * printing to output and err streams.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #setOutput
      */
     public TestOut getOutput() {
 	return(output);
@@ -212,6 +219,7 @@ public class EventTool implements Timeoutable, Outputable {
      * Waits during <code>EventTool.WaitEventTimeout</code> milliseconds.
      * @param eventMask Mask to wait events under. 
      * <code>AWTEvent.*_EVENT_MASK</code> fields combination.
+     * @return an AWTEvent object
      * @see #waitEvent()
      * @throws TimeoutExpiredException
      */
@@ -224,6 +232,7 @@ public class EventTool implements Timeoutable, Outputable {
     /**
      * Waits for the first event.
      * Waits during <code>EventTool.WaitEventTimeout</code> milliseconds.
+     * @return an AWTEvent object
      * @see #waitEvent(long)
      * @see #getTheWholeEventMask()
      * @throws TimeoutExpiredException
@@ -238,6 +247,7 @@ public class EventTool implements Timeoutable, Outputable {
      * @param eventMask Mask to wait events under. 
      * <code>AWTEvent.*_EVENT_MASK</code> fields combination.
      * @param waitTime Quiet time (millisecons).
+     * @return true if no event ahs found.
      * @see #checkNoEvent(long)
      */
     public boolean checkNoEvent(long eventMask, long waitTime) {
@@ -247,6 +257,7 @@ public class EventTool implements Timeoutable, Outputable {
     /**
      * Check that no event will be dispatched during time specified.
      * @param waitTime Quiet time (millisecons).
+     * @return true if no event ahs found.
      * @see #checkNoEvent(long, long)
      * @see #getTheWholeEventMask()
      */
@@ -257,9 +268,12 @@ public class EventTool implements Timeoutable, Outputable {
     /**
      * During <code>EventTool.WaitNoEventTimeout</code> time waits for
      * true result of checkNoEvent(long, long) method.
-     * @see #checkNoEvent(long, long)
-     * @see #waitNoEvent(long)
-     * @throws TimeoutExpiredException
+     * @param eventMask Mask to wait events under. 
+     * <code>AWTEvent.*_EVENT_MASK</code> fields combination.
+     * @param waitTime Quiet time (millisecons).
+     * @see	#checkNoEvent(long, long)
+     * @see	#waitNoEvent(long)
+     * @throws	TimeoutExpiredException
      */
     public void waitNoEvent(long eventMask, long waitTime) {
 	NoEventWaiter waiter = new NoEventWaiter(eventMask, waitTime);
@@ -280,9 +294,10 @@ public class EventTool implements Timeoutable, Outputable {
     /**
      * During <code>EventTool.WaitNoEventTimeout</code> time waits for
      * true result of <code>checkNoEvent(long)</code> method.
-     * @see #checkNoEvent(long)
-     * @see #waitNoEvent(long, long)
-     * @throws TimeoutExpiredException
+     * @param waitTime Quiet time (millisecons).
+     * @see	#checkNoEvent(long)
+     * @see	#waitNoEvent(long, long)
+     * @throws	TimeoutExpiredException
      */
     public void waitNoEvent(long waitTime) {
 	waitNoEvent(listenerSet.getTheWholeMask(), waitTime);

@@ -26,32 +26,36 @@ import org.netbeans.jemmy.drivers.KeyDriver;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+/**
+ * KeyDriver using robot operations.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class KeyRobotDriver extends RobotDriver implements KeyDriver {
 
+    /**
+     * Constructs a KeyRobotDriver object.
+     * @param autoDelay Time for <code>Robot.setAutoDelay(long)</code> method.
+     */
     public KeyRobotDriver(Timeout autoDelay) {
 	super(autoDelay);
     }
+
+    /**
+     * Constructs a KeyRobotDriver object.
+     * @param autoDelay Time for <code>Robot.setAutoDelay(long)</code> method.
+     * @param supported an array of supported class names
+     */
     public KeyRobotDriver(Timeout autoDelay, String[] supported) {
 	super(autoDelay, supported);
     }
 
-    /**
-     * Pushs key.
-     * @param keyCode Key code (KeyEvent.VK_* value)
-     * @param modifiers Modifiers (combination of InputEvent.*_MASK fields)
-     */
     public void pushKey(ComponentOperator oper, int keyCode, int modifiers, Timeout pushTime) {
 	pressKey(oper, keyCode, modifiers);
 	pushTime.sleep();
 	releaseKey(oper, keyCode, modifiers);
     }
 
-    /**
-     * Types one char.
-     * @param keyCode Key code (KeyEvent.VK_* value)
-     * @param keyChar Char to be typed.
-     * @param modifiers Modifiers (combination of InputEvent.*_MASK fields)
-     */
     public void typeKey(ComponentOperator oper, int keyCode, char keyChar, int modifiers, Timeout pushTime) {
 	pushKey(oper, keyCode, modifiers, pushTime);
     }

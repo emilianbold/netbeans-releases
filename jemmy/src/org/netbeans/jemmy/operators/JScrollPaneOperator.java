@@ -47,7 +47,7 @@ import javax.swing.plaf.ScrollPaneUI;
  * <BR><BR>Timeouts used: <BR>
  * JScrollBarOperator.OneScrollClickTimeout - time for one scroll click <BR>
  * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
- * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
+ * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -74,6 +74,12 @@ public class JScrollPaneOperator extends JComponentOperator
 	super(b);
     }
 
+    /**
+     * Constructs a JScrollPaneOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JScrollPaneOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JScrollPane)cont.
              waitSubComponent(new JScrollPaneFinder(chooser),
@@ -81,6 +87,11 @@ public class JScrollPaneOperator extends JComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JScrollPaneOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JScrollPaneOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -213,48 +224,32 @@ public class JScrollPaneOperator extends JComponentOperator
     public static JScrollPane waitJScrollPane(Container cont) {
 	return(waitJScrollPane(cont, 0));
     }
-    
+
+    /**
+     * Sets values for both JScrollBars.
+     * @param hValue a value for the horizontal scrollbar.
+     * @param vValue a value for the vertical scrollbar.
+     */
     public void setValues(int hValue, int vValue) {
 	initOperators();
 	hScrollBarOper.setValue(hValue);
 	vScrollBarOper.setValue(vValue);
     }
 
-    /**
-     * Sets operator's timeouts.
-     * @param timeouts org.netbeans.jemmy.Timeouts instance.
-     */
     public void setTimeouts(Timeouts timeouts) {
 	super.setTimeouts(timeouts);
 	this.timeouts = timeouts;
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Sets operator's output.
-     * @param out org.netbeans.jemmy.TestOut instance.
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -277,7 +272,7 @@ public class JScrollPaneOperator extends JComponentOperator
 
     /**
      * Scrolls horizontal scroll bar.
-     * @param value Proportional value to scroll horizontal scroll bar to.
+     * @param proportionalValue Proportional value to scroll horizontal scroll bar to.
      * @throws TimeoutExpiredException
      */
     public void scrollToHorizontalValue(double proportionalValue) {
@@ -309,7 +304,7 @@ public class JScrollPaneOperator extends JComponentOperator
 
     /**
      * Scrolls vertical scroll bar.
-     * @param value Value to scroll vertical scroll bar to.
+     * @param proportionalValue Value to scroll vertical scroll bar to.
      * @throws TimeoutExpiredException
      */
     public void scrollToVerticalValue(double proportionalValue) {
@@ -406,7 +401,12 @@ public class JScrollPaneOperator extends JComponentOperator
     }
 
     /**
-     * Scrolls pane to rectangle..
+     * Scrolls pane to rectangle of a component.
+     * @param comp a subcomponent defining coordinate system.
+     * @param x coordinate
+     * @param y coordinate
+     * @param width rectangle width
+     * @param height rectangle height
      * @throws TimeoutExpiredException
      */
     public void scrollToComponentRectangle(Component comp, int x, int y, int width, int height) {
@@ -422,6 +422,9 @@ public class JScrollPaneOperator extends JComponentOperator
 
     /**
      * Scrolls pane to point.
+     * @param comp a subcomponent defining coordinate system.
+     * @param x coordinate
+     * @param y coordinate
      * @throws TimeoutExpiredException
      */
     public void scrollToComponentPoint(Component comp, int x, int y) {
@@ -448,6 +451,7 @@ public class JScrollPaneOperator extends JComponentOperator
 
     /**
      * Returns operator used for horizontal scrollbar.
+     * @return an operator for the horizontal scrollbar.
      */
     public JScrollBarOperator getHScrollBarOperator() {
 	initOperators();
@@ -456,6 +460,7 @@ public class JScrollPaneOperator extends JComponentOperator
 
     /**
      * Returns operator used for vertical scrollbar.
+     * @return an operator for the vertical scrollbar.
      */
     public JScrollBarOperator getVScrollBarOperator() {
 	initOperators();
@@ -464,11 +469,12 @@ public class JScrollPaneOperator extends JComponentOperator
 
     /**
      * Checks if component's rectangle is inside view port (no scrolling necessary).
-     * @param component 
-     * @param x
-     * @param y
-     * @param width
-     * @param height
+     * @param comp a subcomponent defining coordinate system.
+     * @param x coordinate
+     * @param y coordinate
+     * @param width rectangle width
+     * @param height rectangle height
+     * @return true if pointed subcomponent rectangle is inside the scrolling area.
      */
     public boolean checkInside(Component comp, int x, int y, int width, int height) {
 	Component view = getViewport().getView();
@@ -502,7 +508,8 @@ public class JScrollPaneOperator extends JComponentOperator
     
     /**
      * Checks if component is inside view port (no scrolling necessary).
-     * @param component 
+     * @param comp a subcomponent
+     * @return true if pointed subcomponent is inside the scrolling area.
      */
     public boolean checkInside(Component comp) {
 	return(checkInside(comp, 0, 0, comp.getWidth(), comp.getHeight()));
@@ -745,10 +752,20 @@ public class JScrollPaneOperator extends JComponentOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JScrollPaneFinder extends Finder {
+        /**
+         * Constructs JScrollPaneFinder.
+         * @param sf other searching criteria.
+         */
 	public JScrollPaneFinder(ComponentChooser sf) {
             super(JScrollPane.class, sf);
 	}
+        /**
+         * Constructs JScrollPaneFinder.
+         */
 	public JScrollPaneFinder() {
             super(JScrollPane.class);
 	}

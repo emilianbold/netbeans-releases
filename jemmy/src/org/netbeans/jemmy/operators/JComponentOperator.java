@@ -59,7 +59,7 @@ import javax.swing.event.AncestorListener;
  * <BR><BR>Timeouts used: <BR>
  * JComponentOperator.WaitToolTipTimeout - time to wait tool tip displayed <BR>
  * JComponentOperator.ShowToolTipTimeout - time to show tool tip <BR>
- * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
+ * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -70,16 +70,13 @@ import javax.swing.event.AncestorListener;
 public class JComponentOperator extends ContainerOperator
     implements Timeoutable, Outputable{
 
+    /**
+     * Identifier for a "tooltip text" property.
+     * @see #getDump
+     */
     public static final String TOOLTIP_TEXT_DPROP = "Tooltip text";
 
-    /**
-     * Default value for JComponentOperator.WaitToolTipTimeout timeout.
-     */
     private final static long WAIT_TOOL_TIP_TIMEOUT = 10000;
-
-    /**
-     * Default value for JComponentOperator.ShowToolTipTimeout timeout.
-     */
     private final static long SHOW_TOOL_TIP_TIMEOUT = 0;
 
     private Timeouts timeouts;
@@ -87,11 +84,18 @@ public class JComponentOperator extends ContainerOperator
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JComponentOperator(JComponent b) {
 	super(b);
     }
 
+    /**
+     * Constructs a JComponentOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JComponentOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JComponent)cont.
              waitSubComponent(new JComponentFinder(chooser),
@@ -99,6 +103,11 @@ public class JComponentOperator extends ContainerOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JComponentOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JComponentOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -153,7 +162,7 @@ public class JComponentOperator extends ContainerOperator
     /**
      * Searches JComponent by tooltip text.
      * @param cont Container to search component in.
-     * @param text Tooltip text. If null, contents is not checked.
+     * @param toolTipText Tooltip text. If null, contents is not checked.
      * @param ce Compare text exactly.
      * @param ccs Compare text case sensitively.
      * @param index Ordinal component index.
@@ -167,7 +176,7 @@ public class JComponentOperator extends ContainerOperator
     /**
      * Searches JComponent by tooltip text.
      * @param cont Container to search component in.
-     * @param text Tooltip text. If null, contents is not checked.
+     * @param toolTipText Tooltip text. If null, contents is not checked.
      * @param ce Compare text exactly.
      * @param ccs Compare text case sensitively.
      * @return JComponent instance or null if component was not found.
@@ -203,7 +212,7 @@ public class JComponentOperator extends ContainerOperator
     /**
      * Waits JComponent by tooltip text.
      * @param cont Container to search component in.
-     * @param text Tooltip text. If null, contents is not checked.
+     * @param toolTipText Tooltip text. If null, contents is not checked.
      * @param ce Compare text exactly.
      * @param ccs Compare text case sensitively.
      * @param index Ordinal component index.
@@ -218,7 +227,7 @@ public class JComponentOperator extends ContainerOperator
     /**
      * Waits JComponent by tooltip text.
      * @param cont Container to search component in.
-     * @param text Tooltip text. If null, contents is not checked.
+     * @param toolTipText Tooltip text. If null, contents is not checked.
      * @param ce Compare text exactly.
      * @param ccs Compare text case sensitively.
      * @return JComponent instance or null if component was not found.
@@ -234,63 +243,30 @@ public class JComponentOperator extends ContainerOperator
 	Timeouts.initDefault("JComponentOperator.ShowToolTipTimeout", SHOW_TOOL_TIP_TIMEOUT);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param timeouts A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts timeouts) {
 	super.setTimeouts(timeouts);
 	this.timeouts = timeouts;
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
-    /**
-     * Return the x coordinate which should be used
-     * for mouse operations by default.
-     */
     public int getCenterXForClick() {
 	Rectangle rect = getVisibleRect();
 	return((int)rect.getX() +
 	       (int)rect.getWidth() / 2);
     }
 
-    /**
-     * Return the y coordinate which should be used
-     * for mouse operations by default.
-     */
     public int getCenterYForClick() {
 	Rectangle rect = getVisibleRect();
 	return((int)rect.getY() +
@@ -306,37 +282,25 @@ public class JComponentOperator extends ContainerOperator
 	enterMouse();
 	moveMouse(getCenterXForClick(),
 		  getCenterYForClick());
-	Waiter tipWaiter = new Waiter(new Waitable() {
-	    public Object actionProduced(Object obj) {
-		ComponentSearcher tipSearcher = new ComponentSearcher(getWindow());
-		tipSearcher.setOutput(output.createErrorOutput());
-		return(tipSearcher.findComponent(new ComponentChooser() {
-		    public boolean checkComponent(Component comp) {
-			return(comp instanceof JToolTip);
-		    }
-		    public String getDescription() {
-			return("JToolTip instance");
-		    }
-		}));
-	    }
-	    public String getDescription() {
-		return("Wait tool tip opened");
-	    }
-	});
-	tipWaiter.setOutput(output.createErrorOutput());
-	tipWaiter.setTimeouts(timeouts.cloneThis());
-	tipWaiter.getTimeouts().setTimeout("Waiter.WaitingTime",
-					   timeouts.getTimeout("JComponentOperator.WaitToolTipTimeout"));
-	try {
-	    JToolTip tt = (JToolTip)tipWaiter.waitAction(null);
-	    timeouts.sleep("JComponentOperator.ShowToolTipTimeout");
-	    return(tt);
-	} catch(InterruptedException e) {
-	    output.printStackTrace(e);
-	    return(null);
-	}
+        return(waitToolTip());
     }
 
+    public JToolTip waitToolTip() {
+        return((JToolTip)waitComponent(WindowOperator.
+                                       waitWindow(new JToolTipWindowFinder(),
+                                                  0,
+                                                  getTimeouts(),
+                                                  getOutput()),
+                                       new JToolTipFinder(),
+                                       0,
+                                       getTimeouts(),
+                                       getOutput()));
+    }
+
+    /**
+     * Looks for a first window-like container.
+     * @return either WindowOperator of JInternalFrameOperator
+     */
     public ContainerOperator getWindowContainerOperator() {
         Component resultComp;
         if(getSource() instanceof Window) {
@@ -817,15 +781,27 @@ public class JComponentOperator extends ContainerOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Allows to find component by tooltip.
+     */
     public static class JComponentByTipFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	boolean compareExactly;
 	boolean compareCaseSensitive;
+        /**
+         * Constructs JComponentByTipFinder.
+         * @param lb a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public JComponentByTipFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs JComponentByTipFinder.
+         * @param lb a text pattern
+         */
 	public JComponentByTipFinder(String lb) {
             this(lb, Operator.getDefaultStringComparator());
 	}
@@ -843,12 +819,59 @@ public class JComponentOperator extends ContainerOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JComponentFinder extends Finder {
+        /**
+         * Constructs JComponentFinder.
+         * @param sf other searching criteria.
+         */
 	public JComponentFinder(ComponentChooser sf) {
             super(JComponent.class, sf);
 	}
+        /**
+         * Constructs JComponentFinder.
+         */
 	public JComponentFinder() {
             super(JComponent.class);
+	}
+    }
+
+    class JToolTipWindowFinder implements ComponentChooser {
+        ComponentChooser ppFinder;
+	public JToolTipWindowFinder() {
+            ppFinder = new ComponentChooser() {
+                    public boolean checkComponent(Component comp) {
+                        return(comp.isShowing() &&
+                               comp.isVisible() &&
+                               comp instanceof JToolTip);
+                    }
+                    public String getDescription() {
+                        return("A tool tip");
+                    }
+                };
+	}
+	public boolean checkComponent(Component comp) {
+	    if(comp.isShowing() && comp instanceof Window) {
+		ComponentSearcher cs = new ComponentSearcher((Container)comp);
+		cs.setOutput(JemmyProperties.getCurrentOutput().createErrorOutput());
+		return(cs.findComponent(ppFinder)
+		       != null);
+	    }
+	    return(false);
+	}
+	public String getDescription() {
+            return("A tool tip window");
+	}
+    }
+
+    class JToolTipFinder extends Finder {
+	public JToolTipFinder(ComponentChooser sf) {
+            super(JToolTip.class, sf);
+	}
+	public JToolTipFinder() {
+            super(JToolTip.class);
 	}
     }
 }

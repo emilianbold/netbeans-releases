@@ -101,7 +101,7 @@ import java.util.Locale;
  * ComponentOperator.AfterDragTimeout - time to sleep after grag'n'drop operations <BR>
  * ComponentOperator.WaitFocusTimeout - time to wait component focus <BR>
  * ComponentOperator.WaitStateTimeout- time to wait component to be in some state. 
- * Typically used from methods like <code>Operator.wait<something happened>(*)</code><br>
+ * Typically used from methods like <code>Operator.wait"something happened"(*)</code><br>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -111,11 +111,40 @@ import java.util.Locale;
 public class ComponentOperator extends Operator
     implements Timeoutable, Outputable {
 
+    /**
+     * Identifier for a visible property.
+     * @see #getDump
+     */
     public static final String IS_VISIBLE_DPROP = "Visible";
+
+    /**
+     * Identifier for a showing property.
+     * @see #getDump
+     */
     public static final String IS_SHOWING_DPROP = "Showing";
+
+    /**
+     * Identifier for a x coordinate property.
+     * @see #getDump
+     */
     public static final String X_DPROP = "X";
+
+    /**
+     * Identifier for a y coordinate property.
+     * @see #getDump
+     */
     public static final String Y_DPROP = "Y";
+
+    /**
+     * Identifier for a width property.
+     * @see #getDump
+     */
     public static final String WIDTH_DPROP = "Width";
+
+    /**
+     * Identifier for a height property.
+     * @see #getDump
+     */
     public static final String HEIGHT_DPROP = "Height";
 
     private final static long PUSH_KEY_TIMEOUT = 0;
@@ -137,6 +166,7 @@ public class ComponentOperator extends Operator
 
     /**
      * Constructor.
+     * @param comp a component
      */
     public ComponentOperator(Component comp) {
 	super();
@@ -147,6 +177,12 @@ public class ComponentOperator extends Operator
 	setEventDispatcher(new EventDispatcher(comp));
     }
 
+    /**
+     * Constructs a ComponentOperator object.
+     * @param cont container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public ComponentOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this(waitComponent((Container)cont.getSource(), 
 			   chooser,
@@ -154,6 +190,11 @@ public class ComponentOperator extends Operator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a ComponentOperator object.
+     * @param cont container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public ComponentOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -166,6 +207,7 @@ public class ComponentOperator extends Operator
      * containment hierarchy.
      * Uses cont's timeout and output for waiting and to init operator.
      * @param cont Operator for a java.awt.Container.
+     * @param index an index between appropriate ones.
      * @throws TimeoutExpiredException
      */
     public ComponentOperator(ContainerOperator cont, int index) {
@@ -232,6 +274,15 @@ public class ComponentOperator extends Operator
 	return(waitComponent(cont, chooser, 0));
     }
 
+    /**
+     * A method to be used from subclasses.
+     * Uses <code>contOper</code>'s timeouts and output during the waiting.
+     * @param contOper Container to search component in.
+     * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
+     * @param index Ordinal component index.
+     * @return Component instance or null if component was not found.
+     * @throws TimeoutExpiredException
+     */
     protected static Component waitComponent(ContainerOperator contOper, 
 					     ComponentChooser chooser, int index) {
 	return(waitComponent((Container)contOper.getSource(),
@@ -240,6 +291,17 @@ public class ComponentOperator extends Operator
 			     contOper.getOutput()));
     }
 
+    /**
+     * A method to be used from subclasses.
+     * Uses timeouts and output passed as parameters during the waiting.
+     * @param cont Container to search component in.
+     * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
+     * @param index Ordinal component index.
+     * @param timeouts timeouts to be used during the waiting.
+     * @param output an output to be used during the waiting.
+     * @return Component instance or null if component was not found.
+     * @throws TimeoutExpiredException
+     */
     protected static Component waitComponent(final Container cont, 
 					     final ComponentChooser chooser, 
 					     final int index,
@@ -295,6 +357,7 @@ public class ComponentOperator extends Operator
     /**
      * Returnes org.netbeans.jemmy.EventDispatcher instance which is
      * used to dispatch events.
+     * @return the dispatcher.
      * @see org.netbeans.jemmy.EventDispatcher
      */
     public EventDispatcher getEventDispatcher() {
@@ -305,12 +368,6 @@ public class ComponentOperator extends Operator
     //Environment                                         //
     ////////////////////////////////////////////////////////
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	super.setOutput(out);
 	this.output = out;
@@ -319,23 +376,10 @@ public class ComponentOperator extends Operator
 	}
     }
     
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param t A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts timeouts) {
 	super.setTimeouts(timeouts);
 	this.timeouts = timeouts;
@@ -344,12 +388,6 @@ public class ComponentOperator extends Operator
 	}
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
@@ -379,7 +417,7 @@ public class ComponentOperator extends Operator
      * @param clickCount Click count
      * @param mouseButton Mouse button (InputEvent.BUTTON1/2/3_MASK value)
      * @param modifiers Modifiers (combination of InputEvent.*_MASK values)
-     * @param forPopup
+     * @param forPopup signals that click is intended to call popup.
      */
     public void clickMouse(final int x, final int y, final int clickCount, final int mouseButton, 
                            final int modifiers, final boolean forPopup) {
@@ -431,6 +469,8 @@ public class ComponentOperator extends Operator
 
     /**
      * Press mouse.
+     * @param x Horizontal click coordinate
+     * @param y Vertical click coordinate
      */
     public void pressMouse(int x, int y) {
 	mDriver.pressMouse(this, x, y, getDefaultMouseButton(), 0);
@@ -438,6 +478,8 @@ public class ComponentOperator extends Operator
 
     /**
      * Releases mouse.
+     * @param x Horizontal click coordinate
+     * @param y Vertical click coordinate
      */
     public void releaseMouse(int x, int y) {
 	mDriver.releaseMouse(this, x, y, getDefaultMouseButton(), 0);
@@ -633,7 +675,6 @@ public class ComponentOperator extends Operator
 
     /** 
      * Clicks for popup by popup mouse button at the component center.
-     * @param mouseButton Mouse button.
      * @see #clickForPopup(int)
      * @see #getPopupMouseButton()
      */
@@ -724,7 +765,6 @@ public class ComponentOperator extends Operator
      * Uses map defined by setCharBindingMap(CharBindingMap) method 
      * to find a key and modifiers should be pressed.
      * @param keyChar Char to be typed.
-     * @param modifiers Modifiers (combination of InputEvent.*_MASK fields)
      * @see #setCharBindingMap(CharBindingMap)
      * @see #typeKey(char, int)
      */
@@ -737,6 +777,7 @@ public class ComponentOperator extends Operator
     ////////////////////////////////////////////////////////
 
     /**
+     * Activates component's window.
      * @deprecated Use makeComponentVisible() instead.
      * @see #makeComponentVisible()
      */
@@ -752,12 +793,16 @@ public class ComponentOperator extends Operator
 	getVisualizer().makeVisible((ComponentOperator)this);
     }
 
+    /**
+     * Gives inout focud to the component.
+     */
     public void getFocus() {
 	fDriver.giveFocus(this);
     }
 
     /**
      * Return the center x coordinate.
+     * @return the center x coordinate.
      */
     public int getCenterX() {
 	return(getWidth() / 2);
@@ -765,6 +810,7 @@ public class ComponentOperator extends Operator
 
     /**
      * Return the center y coordinate.
+     * @return the center y coordinate.
      */
     public int getCenterY() {
 	return(getHeight() / 2);
@@ -773,6 +819,7 @@ public class ComponentOperator extends Operator
     /**
      * Return the x coordinate which should be used
      * for mouse operations by default.
+     * @return the center x coordinate of the visible component part.
      */
     public int getCenterXForClick() {
 	return(getCenterX());
@@ -781,6 +828,7 @@ public class ComponentOperator extends Operator
     /**
      * Return the y coordinate which should be used
      * for mouse operations by default.
+     * @return the center y coordinate of the visible component part.
      */
     public int getCenterYForClick() {
 	return(getCenterY());
@@ -789,6 +837,7 @@ public class ComponentOperator extends Operator
     /**
      * Waits for component enabled.
      * @throws TimeoutExpiredException
+     * @throws InterruptedException
      */
     public void waitComponentEnabled() throws InterruptedException{
 	Waiter waiter = new Waiter(new Waitable() {
@@ -814,6 +863,7 @@ public class ComponentOperator extends Operator
 
     /**
      * Returns an array of containers for this component.
+     * @return an array of containers
      */
     public Container[] getContainers() {
 	int counter = 0;
@@ -836,6 +886,8 @@ public class ComponentOperator extends Operator
 
     /**
      * Searches a container.
+     * @param chooser a chooser specifying the searching criteria.
+     * @return a containers specified by searching criteria.
      */
     public Container getContainer(ComponentChooser chooser) {
 	int counter = 0;
@@ -854,6 +906,7 @@ public class ComponentOperator extends Operator
 
     /**
      * Searches the window under component.
+     * @return the component window.
      */
     public Window getWindow() {
         if(getSource() instanceof Window) {
@@ -899,6 +952,11 @@ public class ComponentOperator extends Operator
 	}
     }
 
+    /**
+     * Waits for the component to be visible or unvisible.
+     * @param visibility required visiblity.
+     * @throws TimeoutExpiredException
+     */
     public void waitComponentVisible(final boolean visibility) {
 	waitState(new ComponentChooser() {
                 public boolean checkComponent(Component comp) {

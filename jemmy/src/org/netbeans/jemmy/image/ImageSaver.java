@@ -30,6 +30,9 @@ public interface ImageSaver {
 
     /**
      * Should save image into file.
+     * @param image an image to be saved.
+     * @param fileName a file to load image from.
+     * @throws IOException
      */
     public void save(BufferedImage image, String fileName) throws IOException;
 }

@@ -46,7 +46,7 @@ import javax.swing.SwingUtilities;
 /**
  * <BR><BR>Timeouts used: <BR>
  * ScrollbarOperator.WholeScrollTimeout - time for one scroll click <BR>
- * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
+ * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -65,11 +65,22 @@ public class ScrollPaneOperator extends ContainerOperator
     
     private ScrollDriver driver;
 
+    /**
+     * Constructor.
+     * @param b The <code>java.awt.ScrollPane</code> managed by
+     * this instance.
+     */
     public ScrollPaneOperator(ScrollPane b) {
 	super(b);
 	driver = DriverManager.getScrollDriver(getClass());
     }
 
+    /**
+     * Constructs a ScrollPaneOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public ScrollPaneOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((ScrollPane)cont.
              waitSubComponent(new ScrollPaneFinder(chooser),
@@ -77,6 +88,11 @@ public class ScrollPaneOperator extends ContainerOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a ScrollPaneOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public ScrollPaneOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -218,41 +234,20 @@ public class ScrollPaneOperator extends ContainerOperator
 	}
     }
     
-    /**
-     * Sets operator's timeouts.
-     * @param timeouts org.netbeans.jemmy.Timeouts instance.
-     */
     public void setTimeouts(Timeouts timeouts) {
 	super.setTimeouts(timeouts);
 	this.timeouts = timeouts;
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Sets operator's output.
-     * @param out org.netbeans.jemmy.TestOut instance.
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -266,11 +261,20 @@ public class ScrollPaneOperator extends ContainerOperator
 		      anotherOperator.getProperties());
     }
 
+    /**
+     * Sets both values.
+     * @param x a horizontal value.
+     * @param y a vertical value.
+     */
     public void setValues(int x, int y) {
 	getHAdjustable().setValue(x);
 	getVAdjustable().setValue(y);
     }
 
+    /**
+     * Scrools to the position defined by a ScrollAdjuster instance.
+     * @param adj specifies the position.
+     */
     public void scrollTo(final ScrollAdjuster adj) {
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
@@ -300,7 +304,7 @@ public class ScrollPaneOperator extends ContainerOperator
 
     /**
      * Scrolls horizontal scroll bar.
-     * @param value Proportional value to scroll horizontal scroll bar to.
+     * @param proportionalValue Proportional value to scroll horizontal scroll bar to.
      * @throws TimeoutExpiredException
      */
     public void scrollToHorizontalValue(double proportionalValue) {
@@ -332,7 +336,7 @@ public class ScrollPaneOperator extends ContainerOperator
 
     /**
      * Scrolls vertical scroll bar.
-     * @param value Value to scroll vertical scroll bar to.
+     * @param proportionalValue Value to scroll vertical scroll bar to.
      * @throws TimeoutExpiredException
      */
     public void scrollToVerticalValue(double proportionalValue) {
@@ -448,6 +452,11 @@ public class ScrollPaneOperator extends ContainerOperator
 
     /**
      * Scrolls pane to rectangle..
+     * @param comp a subcomponent defining coordinate system.
+     * @param x coordinate
+     * @param y coordinate
+     * @param width rectangle width
+     * @param height rectangle height
      * @throws TimeoutExpiredException
      */
     public void scrollToComponentRectangle(Component comp, int x, int y, int width, int height) {
@@ -457,6 +466,9 @@ public class ScrollPaneOperator extends ContainerOperator
 
     /**
      * Scrolls pane to point.
+     * @param comp a subcomponent defining coordinate system.
+     * @param x coordinate
+     * @param y coordinate
      * @throws TimeoutExpiredException
      */
     public void scrollToComponentPoint(Component comp, int x, int y) {
@@ -483,11 +495,12 @@ public class ScrollPaneOperator extends ContainerOperator
 
     /**
      * Checks if component's rectangle is inside view port (no scrolling necessary).
-     * @param component 
-     * @param x
-     * @param y
-     * @param width
-     * @param height
+     * @param comp a subcomponent defining coordinate system.
+     * @param x coordinate
+     * @param y coordinate
+     * @param width rectangle width
+     * @param height rectangle height
+     * @return true if pointed subcomponent rectangle is inside the scrolling area.
      */
     public boolean checkInside(Component comp, int x, int y, int width, int height) {
 	Point toPoint = SwingUtilities.
@@ -523,12 +536,18 @@ public class ScrollPaneOperator extends ContainerOperator
     
     /**
      * Checks if component is inside view port (no scrolling necessary).
-     * @param component 
+     * @param comp a subcomponent defining coordinate system.
+     * @return true if pointed subcomponent is inside the scrolling area.
      */
     public boolean checkInside(Component comp) {
 	return(checkInside(comp, 0, 0, comp.getWidth(), comp.getHeight()));
     }
 
+    /**
+     * Tells if a scrollbar is visible.
+     * @param orientation <code>Adjustable.HORIZONTAL</code> or <code>Adjustable.VERTICAL</code>
+     * @return trus if the bar is visible.
+     */
     public boolean isScrollbarVisible(int orientation) {
 	if       (orientation == Adjustable.HORIZONTAL) {
 	    return(getViewportSize().getHeight() < getHeight() - getHScrollbarHeight());
@@ -690,10 +709,20 @@ public class ScrollPaneOperator extends ContainerOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class ScrollPaneFinder extends Finder {
+        /**
+         * Constructs ScrollPaneFinder.
+         * @param sf other searching criteria.
+         */
 	public ScrollPaneFinder(ComponentChooser sf) {
             super(ScrollPane.class, sf);
 	}
+        /**
+         * Constructs ScrollPaneFinder.
+         */
 	public ScrollPaneFinder() {
             super(ScrollPane.class);
 	}

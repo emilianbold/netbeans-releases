@@ -44,25 +44,25 @@ import java.util.zip.Inflater;
  * @version 1.0 */
 public class PNGEncoder extends Object {
 
-    /** black and white image mode */    
+    /** black and white image mode. */    
     public static final byte BW_MODE = 0;
-    /** grey scale image mode */    
+    /** grey scale image mode. */    
     public static final byte GREYSCALE_MODE = 1;
-    /** full color image mode */    
+    /** full color image mode. */    
     public static final byte COLOR_MODE = 2;
     
     OutputStream out;
     CRC32 crc;
     byte mode;
 
-    /** public constructor of PNGEncoder class with greyscale mode by default
+    /** public constructor of PNGEncoder class with greyscale mode by default.
      * @param out output stream for PNG image format to write into
      */    
     public PNGEncoder(OutputStream out) {
         this(out, GREYSCALE_MODE);
     }
 
-    /** public constructor of PNGEncoder class
+    /** public constructor of PNGEncoder class.
      * @param out output stream for PNG image format to write into
      * @param mode BW_MODE, GREYSCALE_MODE or COLOR_MODE
      */    
@@ -84,7 +84,7 @@ public class PNGEncoder extends Object {
         crc.update(b);
     }
     
-    /** main encoding method (stays blocked till encoding is finished)
+    /** main encoding method (stays blocked till encoding is finished).
      * @param image BufferedImage to encode
      * @throws IOException IOException
      */    
@@ -182,14 +182,14 @@ public class PNGEncoder extends Object {
         out.close();
     }
 
-    /** Static method performing screen capture into PNG image format file with given fileName
+    /** Static method performing screen capture into PNG image format file with given fileName.
      * @param rect Rectangle of screen to be captured
      * @param fileName file name for screen capture PNG image file */    
     public static void captureScreen(Rectangle rect, String fileName) {
         captureScreen(rect, fileName, GREYSCALE_MODE);
     }
 
-    /** Static method performing screen capture into PNG image format file with given fileName
+    /** Static method performing screen capture into PNG image format file with given fileName.
      * @param rect Rectangle of screen to be captured
      * @param mode image color mode
      * @param fileName file name for screen capture PNG image file */    
@@ -206,14 +206,14 @@ public class PNGEncoder extends Object {
         }
     }
 
-     /** Static method performing one component screen capture into PNG image format file with given fileName
+     /** Static method performing one component screen capture into PNG image format file with given fileName.
       * @param comp Component to be captured
       * @param fileName String image target filename */    
     public static void captureScreen(Component comp, String fileName) {
         captureScreen(comp, fileName, GREYSCALE_MODE);
     }
     
-    /** Static method performing one component screen capture into PNG image format file with given fileName
+    /** Static method performing one component screen capture into PNG image format file with given fileName.
      * @param comp Component to be captured
      * @param fileName String image target filename
      * @param mode image color mode */    
@@ -224,13 +224,13 @@ public class PNGEncoder extends Object {
     }
 
     
-    /** Static method performing whole screen capture into PNG image format file with given fileName
+    /** Static method performing whole screen capture into PNG image format file with given fileName.
      * @param fileName String image target filename */    
     public static void captureScreen(String fileName) {
         captureScreen(fileName, GREYSCALE_MODE);
     }
     
-    /** Static method performing whole screen capture into PNG image format file with given fileName
+    /** Static method performing whole screen capture into PNG image format file with given fileName.
      * @param fileName String image target filename
      * @param mode image color mode */    
     public static void captureScreen(String fileName, byte mode) {

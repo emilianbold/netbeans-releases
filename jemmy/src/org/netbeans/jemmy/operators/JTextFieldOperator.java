@@ -39,23 +39,29 @@ import javax.swing.JTextField;
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
  * ComponentOperator.WaitFocusTimeout - time to wait component focus <BR>
  * JScrollBarOperator.OneScrollClickTimeout - time for one scroll click <BR>
- * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
+ * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
  * @author Alexandre Iline (alexandre.iline@sun.com)
  *	
  */
-
 public class JTextFieldOperator extends JTextComponentOperator{
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JTextFieldOperator(JTextField b) {
 	super(b);
     }
 
+    /**
+     * Constructs a JTextFieldOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JTextFieldOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JTextField)cont.
              waitSubComponent(new JTextFieldFinder(chooser),
@@ -63,6 +69,11 @@ public class JTextFieldOperator extends JTextComponentOperator{
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JTextFieldOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JTextFieldOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -71,6 +82,7 @@ public class JTextFieldOperator extends JTextComponentOperator{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
@@ -90,6 +102,7 @@ public class JTextFieldOperator extends JTextComponentOperator{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -102,6 +115,7 @@ public class JTextFieldOperator extends JTextComponentOperator{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -117,6 +131,7 @@ public class JTextFieldOperator extends JTextComponentOperator{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @throws TimeoutExpiredException
      */
     public JTextFieldOperator(ContainerOperator cont) {
@@ -126,7 +141,7 @@ public class JTextFieldOperator extends JTextComponentOperator{
     /**
      * Searches JTextField in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JTextField instance or null if component was not found.
      */
@@ -137,7 +152,7 @@ public class JTextFieldOperator extends JTextComponentOperator{
     /**
      * Searches JTextField in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JTextField instance or null if component was not found.
      */
     public static JTextField findJTextField(Container cont, ComponentChooser chooser) {
@@ -178,7 +193,7 @@ public class JTextFieldOperator extends JTextComponentOperator{
     /**
      * Waits JTextField in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JTextField instance.
      * @throws TimeoutExpiredException
@@ -190,7 +205,7 @@ public class JTextFieldOperator extends JTextComponentOperator{
     /**
      * Waits JTextField in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JTextField instance.
      * @throws TimeoutExpiredException
      */
@@ -231,10 +246,19 @@ public class JTextFieldOperator extends JTextComponentOperator{
 	return(waitJTextField(cont, text, ce, ccs, 0));
     }
 
+    /**
+     * Wait some text to be displayed starting from certain position.
+     * @param text a text to wait.
+     * @param position start position.
+     */
     public void waitText(String text, int position) {
 	super.waitText(removeNewLines(text), position);
     }
 
+    /**
+     * Wait some text to be displayed.
+     * @param text a text to wait.
+     */
     public void waitText(String text) {
 	super.waitText(removeNewLines(text));
     }
@@ -335,10 +359,20 @@ public class JTextFieldOperator extends JTextComponentOperator{
 	return(buff.toString());
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JTextFieldFinder extends Finder {
+        /**
+         * Constructs JTextFieldFinder.
+         * @param sf other searching criteria.
+         */
 	public JTextFieldFinder(ComponentChooser sf) {
             super(JTextField.class, sf);
 	}
+        /**
+         * Constructs JTextFieldFinder.
+         */
 	public JTextFieldFinder() {
             super(JTextField.class);
 	}

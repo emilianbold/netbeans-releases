@@ -50,7 +50,9 @@ public class RoughImageFinder implements ImageFinder {
 
     /**
      * Performs "rough" search.
-     * @return Poing where number of unmatching pixels less or equal to
+     * @param image an image to search.
+     * @param index an ordinal image location index.
+     * @return Point where number of unmatching pixels less or equal to
      * <code>image1.getWidth() * image1.getHeight() * roughness<code>
      */
     public Point findImage(BufferedImage image, int index) {

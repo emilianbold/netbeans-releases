@@ -53,20 +53,31 @@ public class jemmy_029 extends JemmyTest {
 	    JDialog d = JDialogOperator.waitJDialog("Modal dialog", true, true);
             JDialog d1 = (JDialog)wino.findSubWindow(new DialogOperator.
                                                      DialogByTitleFinder("Modal dialog"));
-            JDialog d2 = (JDialog)wino.waitSubWindow(new AccessibleNameChooser("Modal dialog"));
+            JDialog d2 = d1;
+            if(!System.getProperty("java.version").startsWith("1.2")) {
+                d2 = (JDialog)wino.waitSubWindow(new AccessibleNameChooser("Modal dialog"));
+            }
 	    JDialogOperator do1 = new JDialogOperator("Modal dialog");
 	    JDialogOperator do2 = new JDialogOperator(wino, "Modal dialog");
-            JDialogOperator do3 = new JDialogOperator(new AccessibleNameChooser("Modal dialog"));
+            JDialogOperator do3 = do2;
+            if(!System.getProperty("java.version").startsWith("1.2")) {
+                do3 = new JDialogOperator(new AccessibleNameChooser("Modal dialog"));
+            }
 	    getOutput().printLine("By find    : " +               d.toString());
 	    getOutput().printLine("By subfind : " +              d1.toString());
-	    getOutput().printLine("By subwait : " +              d2.toString());
+            if(!System.getProperty("java.version").startsWith("1.2")) {
+                getOutput().printLine("By subwait : " +              d2.toString());
+            }
 	    getOutput().printLine("As single  : " + do1.getSource().toString());
 	    getOutput().printLine("As child   : " + do2.getSource().toString());
-	    getOutput().printLine("by a11y    : " + do2.getSource().toString());
+            if(!System.getProperty("java.version").startsWith("1.2")) {
+                getOutput().printLine("by a11y    : " + do2.getSource().toString());
+            }
 	    if(d != d1 ||
                d != d2 ||
                d != do1.getSource() ||
-               d != do2.getSource()) {
+               d != do2.getSource() ||
+               d != do3.getSource()) {
 		getOutput().printErrLine("Should be the same!");
 		finalize();
 		return(1);

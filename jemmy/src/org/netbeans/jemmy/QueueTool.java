@@ -77,13 +77,15 @@ public class QueueTool implements Outputable, Timeoutable {
 
     /**
      * Returns system EventQueue.
+     * @return system EventQueue.
      */
     public static EventQueue getQueue() {
         return(Toolkit.getDefaultToolkit().getSystemEventQueue());
     }
 
     /**
-     * Map to <code>EventQueue.isDispatchThread()</code>
+     * Map to <code>EventQueue.isDispatchThread()</code>.
+     * @return true if this thread is the AWT dispatching thread.
      */
     public static boolean isDispatchThread() {
 	return(getQueue().isDispatchThread());
@@ -91,6 +93,7 @@ public class QueueTool implements Outputable, Timeoutable {
 
     /**
      * Checks if system event queue is empty.
+     * @return true if EventQueue is empty.
      */
     public static boolean checkEmpty() {
 	return(getQueue().peekEvent() == null);
@@ -123,12 +126,18 @@ public class QueueTool implements Outputable, Timeoutable {
 
     /**
      * Dispatches event ahead of all events staying in the event queue.
+     * @param event an event to be shortcut.
      */
     public static void shortcutEvent(AWTEvent event) {
         installQueue();
         jemmyQueue.shortcutEvent(event);
     }
 
+    /**
+     * Installs own Jemmy EventQueue implementation. 
+     * The method is executed in dispatchmode only.
+     * @see #uninstallQueue
+     */
     public static void installQueue() {
         if(jemmyQueue == null) {
             jemmyQueue = new JemmyQueue();
@@ -136,6 +145,10 @@ public class QueueTool implements Outputable, Timeoutable {
         jemmyQueue.install();
     }
 
+    /**
+     * Uninstalls own Jemmy EventQueue implementation. 
+     * @see #installQueue
+     */
     public static void uninstallQueue() {
         if(jemmyQueue != null) {
             jemmyQueue.uninstall();
@@ -152,9 +165,11 @@ public class QueueTool implements Outputable, Timeoutable {
 
     /**
      * Defines current timeouts.
-     * @param t A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeouts
-     * @see org.netbeans.jemmy.Timeoutable
+     * 
+     * @param	ts ?t? A collection of timeout assignments.
+     * @see	org.netbeans.jemmy.Timeouts
+     * @see	org.netbeans.jemmy.Timeoutable
+     * @see #getTimeouts
      */
     public void setTimeouts(Timeouts ts) {
 	timeouts = ts;
@@ -166,6 +181,7 @@ public class QueueTool implements Outputable, Timeoutable {
      * @return the collection of current timeout assignments.
      * @see org.netbeans.jemmy.Timeouts
      * @see org.netbeans.jemmy.Timeoutable
+     * @see #setTimeouts
      */
     public Timeouts getTimeouts() {
 	return(timeouts);
@@ -176,6 +192,7 @@ public class QueueTool implements Outputable, Timeoutable {
      * @param out Identify the streams or writers used for print output.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #getOutput
      */
     public void setOutput(TestOut out) {
 	output = out;
@@ -188,6 +205,7 @@ public class QueueTool implements Outputable, Timeoutable {
      * printing to output and err streams.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #setOutput
      */
     public TestOut getOutput() {
 	return(output);
@@ -227,9 +245,11 @@ public class QueueTool implements Outputable, Timeoutable {
     }
 
     /**
-     * Waits for system event queue be empty for emptyTime milliseconds.
+     * Waits for system event queue be empty for <code>emptyTime</code> milliseconds.
      * Uses "QueueTool.WaitQueueEmptyTimeout" milliseconds to wait.
-     * @throws TimeoutExpiredException
+     * 
+     * @throws	TimeoutExpiredException
+     * @param	emptyTime time for the queue to stay empty.
      */
     public void waitEmpty(long emptyTime) {
 
@@ -253,7 +273,7 @@ public class QueueTool implements Outputable, Timeoutable {
     /**
      * Invokes action through EventQueue.
      * Does not wait for it execution.
-     * @param action
+     * @param action an action to be invoked.
      */
     public void invoke(QueueAction action) {
 	output.printTrace("Invoking \"" + action.getDescription() + "\" action through event queue");
@@ -263,9 +283,9 @@ public class QueueTool implements Outputable, Timeoutable {
     /**
      * Invokes runnable through EventQueue.
      * Does not wait for it execution.
-     * @param runable
-     * @return QueueAction instance which can be use for execution monitoring.
-     * @see QueueTool.QueueAction
+     * @param	runnable a runnable to be invoked.
+     * @return	QueueAction instance which can be use for execution monitoring.
+     * @see	QueueTool.QueueAction
      */
     public QueueAction invoke(Runnable runnable) {
 	QueueAction result = new RunnableRunnable(runnable);
@@ -276,7 +296,7 @@ public class QueueTool implements Outputable, Timeoutable {
     /**
      * Invokes action through EventQueue.
      * Does not wait for it execution.
-     * @param action
+     * @param action an action to be invoked.
      * @param param <code>action.launch(Object)</code> method parameter.
      * @return QueueAction instance which can be use for execution monitoring.
      * @see QueueTool.QueueAction
@@ -287,6 +307,14 @@ public class QueueTool implements Outputable, Timeoutable {
 	return(result);
     }
 
+    /**
+     * Being executed outside of AWT dispatching thread, 
+     * invokes an action through the event queue.
+     * Otherwise executes <code>action.launch()</code> method
+     * directly.
+     * @param action anaction to be executed.
+     * @return Action result.
+     */
     public Object invokeSmoothly(QueueAction action) {
         if(!getQueue().isDispatchThread()) {
             return(invokeAndWait(action));
@@ -299,6 +327,13 @@ public class QueueTool implements Outputable, Timeoutable {
         }
     }
 
+    /**
+     * Being executed outside of AWT dispatching thread, 
+     * invokes a runnable through the event queue.
+     * Otherwise executes <code>runnable.run()</code> method
+     * directly.
+     * @param runnable a runnable to be executed.
+     */
     public void invokeSmoothly(Runnable runnable) {
         if(!getQueue().isDispatchThread()) {
             invokeAndWait(runnable);
@@ -307,6 +342,15 @@ public class QueueTool implements Outputable, Timeoutable {
         }
     }
 
+    /**
+     * Being executed outside of AWT dispatching thread, 
+     * invokes an action through the event queue.
+     * Otherwise executes <code>action.launch(Object)</code> method
+     * directly.
+     * @param action anaction to be executed.
+     * @param param an action parameter
+     * @return Action result.
+     */
     public Object invokeSmoothly(Action action, Object param) {
         if(!getQueue().isDispatchThread()) {
             return(invokeAndWait(action, param));
@@ -318,7 +362,8 @@ public class QueueTool implements Outputable, Timeoutable {
     /**
      * Invokes action through EventQueue.
      * Waits for it execution.
-     * @param action
+     * @param action an action to be invoked.
+     * @return a result of action
      * @throws TimeoutExpiredException if action
      * was not executed in "QueueTool.InvocationTimeout" milliseconds.
      */
@@ -355,10 +400,9 @@ public class QueueTool implements Outputable, Timeoutable {
     /**
      * Invokes runnable through EventQueue.
      * Waits for it execution.
-     * @param runable
-     * @throws TimeoutExpiredException if runnable
+     * @param runnable a runnable to be invoked.
+     * @throws	TimeoutExpiredException if runnable
      * was not executed in "QueueTool.InvocationTimeout" milliseconds.
-
      */
     public void invokeAndWait(Runnable runnable) {
 	invokeAndWait(new RunnableRunnable(runnable));
@@ -369,9 +413,10 @@ public class QueueTool implements Outputable, Timeoutable {
      * Waits for it execution.
      * May throw TimeoutExpiredException if action
      * was not executed in "QueueTool.InvocationTimeout" milliseconds.
-     * @param runable
-     * @param param action.launch(Object method parameter.
-     * @throws TimeoutExpiredException if action
+     * @param action an action to be invoked.
+     * @param	param action.launch(Object method parameter.
+     * @return a result of action
+     * @throws	TimeoutExpiredException if action
      * was not executed in "QueueTool.InvocationTimeout" milliseconds.
      */
     public Object invokeAndWait(Action action, Object param) {
@@ -417,6 +462,7 @@ public class QueueTool implements Outputable, Timeoutable {
     /**
      * Locks event queue for "time" milliseconds.
      * Returns immediately after locking.
+     * @param	time a time to lock the queue for.
      */
     public void lock(long time) {
 	output.printTrace("Locking queue for " + Long.toString(time) + " milliseconds");
@@ -426,6 +472,7 @@ public class QueueTool implements Outputable, Timeoutable {
 
     /**
      * Sais if last locking was expired.
+     * @return true if last locking had beed expired.
      */
     public boolean wasLockingExpired() {
 	return(locker.expired);
@@ -444,6 +491,7 @@ public class QueueTool implements Outputable, Timeoutable {
 	private String description;
 	/**
 	 * Constructor.
+         * @param description a description.
 	 */
 	public QueueAction(String description) {
 	    this.description = description;
@@ -453,6 +501,8 @@ public class QueueTool implements Outputable, Timeoutable {
         }
 	/**
 	 * Method to implement action functionality.
+         * @return an Object - action result
+         * @throws Exception
 	 */
 	public abstract Object launch() 
 	    throws Exception;
@@ -472,6 +522,7 @@ public class QueueTool implements Outputable, Timeoutable {
 	}
 	/**
 	 * Action description.
+         * @return the description.
 	 */
 	public String getDescription() {
 	    return(description);
@@ -479,18 +530,21 @@ public class QueueTool implements Outputable, Timeoutable {
 	/**
 	 * Returns action result if action has already been finished,
 	 * null otherwise.
+         * @return an action result.
 	 */
 	public Object getResult() {
 	    return(result);
 	}
 	/**
 	 * Returns exception occured during action execution (if any).
+         * @return the Exception happened inside <code>launch()</code> method.
 	 */
 	public Exception getException() {
 	    return(exception);
 	}
 	/**
 	 * Informs whether action has been finished or not.
+         * @return true if this action have been finished
 	 */
 	public boolean getFinished() {
 	    return(finished);

@@ -27,12 +27,13 @@ org.netbeans.jemmy.testing.jemmy_032
 org.netbeans.jemmy.testing.jemmy_033
 org.netbeans.jemmy.testing.jemmy_034
 org.netbeans.jemmy.testing.jemmy_035
-org.netbeans.jemmy.testing.jemmy_036
-org.netbeans.jemmy.testing.jemmy_037
+org.netbeans.jemmy.testing.jemmy_036 !1.2 
+org.netbeans.jemmy.testing.jemmy_037 !1.2 
 org.netbeans.jemmy.testing.jemmy_038
 org.netbeans.jemmy.testing.jemmy_039
 org.netbeans.jemmy.testing.jemmy_041
 org.netbeans.jemmy.testing.jemmy_040
 org.netbeans.jemmy.testing.jemmy_042
-org.netbeans.jemmy.testing.jemmy_043
-org.netbeans.jemmy.testing.jemmy_044
+org.netbeans.jemmy.testing.jemmy_043 !1.2
+org.netbeans.jemmy.testing.jemmy_044 !1.2
+org.netbeans.jemmy.testing.jemmy_047 !1.2 !1.3

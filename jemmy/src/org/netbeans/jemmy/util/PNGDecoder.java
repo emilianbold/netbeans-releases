@@ -39,7 +39,8 @@ public class PNGDecoder extends Object {
     InputStream in;
 
     /** 
-     * @param out output stream to read PNG image from.
+     * Constructs a PNGDecoder object.
+     * @param in input stream to read PNG image from.
      */    
     public PNGDecoder(InputStream in) {
         this.in = in;
@@ -86,6 +87,8 @@ public class PNGDecoder extends Object {
 
     /**
      * Decodes image from an input stream passed into constructor.
+     * @return a BufferedImage object
+     * @throws IOException
      */
     public BufferedImage decode() throws IOException {
 
@@ -203,6 +206,8 @@ public class PNGDecoder extends Object {
 
     /**
      * Decodes image from file.
+     * @param fileName a file to read image from
+     * @return a BufferedImage instance.
      */
     public static BufferedImage decode(String fileName) {
         try {

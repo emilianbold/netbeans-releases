@@ -31,7 +31,6 @@ import java.util.Hashtable;
  * 
  * Default implementation of CharBindingMap interface.
  * Provides a mapping for the following symbols:<BR>
- * " !"#$%&'()*,-./0123456789:;\<\>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~".
  * @see org.netbeans.jemmy.CharBindingMap
  * 
  * @author Alexandre Iline (alexandre.iline@sun.com)
@@ -78,6 +77,9 @@ public class DefaultCharBindingMap implements CharBindingMap {
 
     /**
      * Returns key + modifiers pair.
+     * @param c Symbol code.
+     * @return an array of two elements: key code and modifiers mask - 
+     * a combination of InputEvent MASK fields.
      */
     public int[] getKeyAndModifiers(char c) {
         CharKey key = (CharKey)chars.get(new Character(c));
@@ -90,6 +92,7 @@ public class DefaultCharBindingMap implements CharBindingMap {
 
     /**
      * Returns an array of all supported chars.
+     * @return an array of chars representing the supported chars values.
      */
     public char[] getSupportedChars() {
         char[] charArray = new char[chars.size()];
@@ -103,6 +106,7 @@ public class DefaultCharBindingMap implements CharBindingMap {
 
     /**
      * Removes a char from supported.
+     * @param c Symbol code.
      */
     public void removeChar(char c) {
         chars.remove(new Character(c));
@@ -110,6 +114,9 @@ public class DefaultCharBindingMap implements CharBindingMap {
 
     /**
      * Adds a char to supported.
+     * @param c Symbol code.
+     * @param key key code.
+     * @param modifiers a combination of InputEvent MASK fields.
      */
     public void addChar(char c, int key, int modifiers) {
         chars.put(new Character(c), new CharKey(key, modifiers));

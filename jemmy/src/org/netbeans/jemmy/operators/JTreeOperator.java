@@ -79,7 +79,7 @@ import javax.swing.tree.TreeSelectionModel;
  * ComponentOperator.WaitStateTimeout - time to wait for path to be expanded, collapsed, selected,
  * time to wait for a text in a row <BR>
  * WindowWaiter.WaitWindowTimeout - time to wait popup window displayed <BR>
- * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
+ * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -90,9 +90,28 @@ import javax.swing.tree.TreeSelectionModel;
 public class JTreeOperator extends JComponentOperator
     implements Timeoutable, Outputable{
 
+    /**
+     * Identifier for a "root" property.
+     * @see #getDump
+     */
     public static final String ROOT_DPROP = "Root";
+
+    /**
+     * Identifier for a "node" properties.
+     * @see #getDump
+     */
     public static final String NODE_PREFIX_DPROP = "Node";
+
+    /**
+     * Identifier for a "first selected" property.
+     * @see #getDump
+     */
     public static final String SELECTION_FIRST_DPROP = "First selected";
+
+    /**
+     * Identifier for a "last selected" property.
+     * @see #getDump
+     */
     public static final String SELECTION_LAST_DPROP = "Last selected";
 
     private final static long WAIT_NODE_EXPANDED_TIMEOUT = 60000;
@@ -109,12 +128,19 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JTreeOperator(JTree b) {
 	super(b);
 	driver = DriverManager.getTreeDriver(getClass());
     }
 
+    /**
+     * Constructs a JTreeOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JTreeOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JTree)cont.
              waitSubComponent(new JTreeFinder(chooser),
@@ -122,6 +148,11 @@ public class JTreeOperator extends JComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JTreeOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JTreeOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -130,7 +161,9 @@ public class JTreeOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of a row which is currently selected. 
+     * @param row a row index to check text in. If equals to -1, selected row is checked.
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -147,6 +180,7 @@ public class JTreeOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of a row which is currently selected. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
@@ -160,6 +194,7 @@ public class JTreeOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Text of a row which is currently selected. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -172,6 +207,7 @@ public class JTreeOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -187,6 +223,7 @@ public class JTreeOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @throws TimeoutExpiredException
      */
     public JTreeOperator(ContainerOperator cont) {
@@ -307,45 +344,20 @@ public class JTreeOperator extends JComponentOperator
 	Timeouts.initDefault("JTreeOperator.WaitEditingTimeout", WAIT_EDITING_TIMEOUT);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param times A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts times) {
 	this.timeouts = times;
 	super.setTimeouts(timeouts);
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -361,6 +373,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Expands path.
+     * @param path a path to be expanded.
      * @throws TimeoutExpiredException
      */
     public void doExpandPath(TreePath path) {
@@ -374,6 +387,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Expands path on row.
+     * @param row a row index to be expanded.
      * @throws TimeoutExpiredException
      */
     public void doExpandRow(int row) {
@@ -387,6 +401,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Ensures that the node identified by path is currently viewable.
+     * @param path a path to be made visible.
      * @throws TimeoutExpiredException
      */
     public void doMakeVisible(TreePath path)  {
@@ -398,6 +413,8 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Returns number of child.
+     * @param node a node to count children of.
+     * @return a number of children.
      */
     public int getChildCount(Object node) {
 	int result = 0;
@@ -413,6 +430,8 @@ public class JTreeOperator extends JComponentOperator
     
     /**
      * Returns node children.
+     * @param node a node to get children of.
+     * @return an array of node children.
      */
     public Object[] getChildren(Object node) {
 	Object[] result = null;
@@ -432,6 +451,9 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Returns node child.
+     * @param node a node to get a child of.
+     * @param index a child index.
+     * @return a node child.
      */
     public Object getChild(Object node, int index) {
 	Object result = null;
@@ -447,6 +469,8 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Returns number of child.
+     * @param path a path indicating a node to count children of.
+     * @return a number of children.
      */
     public int getChildCount(TreePath path) {
 	return(getChildCount(path.
@@ -454,7 +478,10 @@ public class JTreeOperator extends JComponentOperator
     }
 
     /**
-     * Returns node child path.
+     * Constructs new path from a path and index's subnode of it last node.
+     * @param path a path indicating a node to get a child of.
+     * @param index a child node index.
+     * @return a number of children.
      */
     public TreePath getChildPath(TreePath path, int index) {
 	return(path.
@@ -463,7 +490,9 @@ public class JTreeOperator extends JComponentOperator
     }
 
     /**
-     * Returns node children pathes.
+     * Constructs new paths from a path and all subnodes of it last node.
+     * @param path a path indicating a node to get children of.
+     * @return a number of children.
      */
     public TreePath[] getChildPaths(TreePath path) {
 	Object[] children = getChildren(path.
@@ -478,6 +507,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Returns the root of the tree.
+     * @return tree root.
      * @throws TimeoutExpiredException
      */
     public Object getRoot() {
@@ -509,11 +539,9 @@ public class JTreeOperator extends JComponentOperator
     /**
      * Searches path in tree.
      * @param chooser TreePathChooser implementation.
+     * @return a path fitting the criteria.
      * @see TreePathChooser
-     * @see #findPath(String[], int[], boolean, boolean)
-     * @see #findPath(String[], boolean, boolean)
-     * @see #findPath(String, String, String, boolean, boolean)
-     * @see #findPath(String, String, boolean, boolean)
+     * @see #findPath
      * @throws TimeoutExpiredException
      */
     public TreePath findPath(TreePathChooser chooser) {
@@ -559,11 +587,11 @@ public class JTreeOperator extends JComponentOperator
 	loadedWaiter.setOutput(output.createErrorOutput());
 	return(findPathPrimitive(rootPath, chooser, loadedWaiter));
     }
-
+   
     /**
      * Searches index'th row by row chooser.
-     * @param chooser
-     * @param index
+     * @param chooser a path searching criteria.
+     * @param index a child index.
      * @return Row index or -1 if search was insuccessful.
      * @see JTreeOperator.TreeRowChooser
      */
@@ -584,7 +612,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Searches a row by row chooser.
-     * @param chooser
+     * @param chooser a path searching criteria.
      * @return Row index or -1 if search was insuccessful.
      * @see JTreeOperator.TreeRowChooser
      */
@@ -592,6 +620,13 @@ public class JTreeOperator extends JComponentOperator
 	return(findRow(chooser, 0));
     }
 
+    /**
+     * Searches index'th row by substring.
+     * @param item Substring.
+     * @param comparator a string comparision algorithm
+     * @param index an ordinal row index between ones matching the criteria
+     * @return Row index or -1 if search was insuccessful.
+     */
     public int findRow(String item, StringComparator comparator, int index){
 	return(findRow(new BySubStringTreeRowChooser(item, comparator), index));
     }
@@ -599,9 +634,9 @@ public class JTreeOperator extends JComponentOperator
     /**
      * Searches index'th row by substring.
      * @param item Substring.
-     * @param boolean ce Compare exactly
-     * @param boolean ccs Compare case sensitivelly.
-     * @param index
+     * @param ce Compare exactly
+     * @param cc Compare case sensitivelly.
+     * @param index an ordinal row index between ones matching the criteria
      * @return Row index or -1 if search was insuccessful.
      * @deprecated Use findRow(String, int) or findRow(String, StringComparator, int)
      */
@@ -615,7 +650,7 @@ public class JTreeOperator extends JComponentOperator
      * Searches index'th row by substring.
      * Uses StringComparator assigned to this object.
      * @param item Substring.
-     * @param index
+     * @param index an ordinal row index between ones matching the criteria
      * @return Row index or -1 if search was insuccessful.
      */
     public int findRow(String item, int index){
@@ -624,6 +659,12 @@ public class JTreeOperator extends JComponentOperator
 		       index));
     }
 
+    /**
+     * Searches a row by substring.
+     * @param item Substring.
+     * @param comparator a string comparision algorithm
+     * @return Row index or -1 if search was insuccessful.
+     */
     public int findRow(String item, StringComparator comparator){
 	return(findRow(item, comparator, 0));
     }
@@ -631,8 +672,8 @@ public class JTreeOperator extends JComponentOperator
     /**
      * Searches a row by substring.
      * @param item Substring.
-     * @param boolean ce Compare exactly
-     * @param boolean ccs Compare case sensitivelly.
+     * @param ce Compare exactly
+     * @param cc Compare case sensitivelly.
      * @return Row index or -1 if search was insuccessful.
      * @deprecated Use findRow(String) or findRow(String, StringComparator)
      */
@@ -655,7 +696,7 @@ public class JTreeOperator extends JComponentOperator
     /**
      * Searches index'th row by rendered component.
      * @param chooser Component checking object.
-     * @param index
+     * @param index an ordinal row index between ones matching the criteria
      * @return Row index or -1 if search was insuccessful.
      */
     public int findRow(ComponentChooser chooser, int index) {
@@ -671,6 +712,31 @@ public class JTreeOperator extends JComponentOperator
 	return(findRow(chooser, 0));
     }
 
+    /**
+     * Searches path in tree.
+     * Can be used to find one of the nodes with the same text.
+     * Example:<BR>
+     * <pre>
+     * root
+     * +-+node
+     * | +--subnode
+     * +-+node
+     * | +--subnode
+     * | +--subnode
+     * ...
+     * String[] names = {"node", "subnode"};<BR>
+     * int[] indexes = {1, 0};<BR>
+     * </pre>
+     * TreePath path = findPath(names, indexes, true, true);<BR>
+     * "path" will points to the second (from the top) "subnode" node.
+     * @param names Node texts array.
+     * @param indexes Nodes indexes.
+     * @param comparator a string comparision algorithm
+     * @return a tree path matching the criteria
+     * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     * @see #findPath
+     * @throws TimeoutExpiredException
+     */
     public TreePath findPath(String[] names, int[] indexes, StringComparator comparator) {
 	return(findPath(new StringArrayPathChooser(names, indexes, comparator)));
     }
@@ -679,26 +745,26 @@ public class JTreeOperator extends JComponentOperator
      * Searches path in tree.
      * Can be used to find one of the nodes with the same text.
      * Example:<BR>
-     * root<BR>
-     * +-+node<BR>
-     * | +--subnode<BR>
-     * +-+node<BR>
-     * | +--subnode<BR>
-     * | +--subnode<BR>
-     * ...<BR>
+     * <pre>
+     * root
+     * +-+node
+     * | +--subnode
+     * +-+node
+     * | +--subnode
+     * | +--subnode
+     * ...
      * String[] names = {"node", "subnode"};<BR>
      * int[] indexes = {1, 0};<BR>
+     * </pre>
      * TreePath path = findPath(names, indexes, true, true);<BR>
      * "path" will points to the second (from the top) "subnode" node.
      * @param names Node texts array.
      * @param indexes Nodes indexes.
      * @param ce Compare exactly.
      * @param ccs Compare case sensitively.
+     * @return a tree path matching the criteria
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @see #findPath(JTreeOperator.TreePathChooser)
-     * @see #findPath(String[], boolean, boolean)
-     * @see #findPath(String, String, String, boolean, boolean)
-     * @see #findPath(String, String, boolean, boolean)
+     * @see #findPath
      * @throws TimeoutExpiredException
      * @deprecated Use findPath(String[], int[]) or findCellRow(String[], int[], StringComparator)
      */
@@ -711,16 +777,23 @@ public class JTreeOperator extends JComponentOperator
      * Uses StringComparator assigned to this object.
      * @param names Node texts array.
      * @param indexes Nodes indexes.
-     * @see #findPath(JTreeOperator.TreePathChooser)
-     * @see #findPath(String[], boolean, boolean)
-     * @see #findPath(String, String, String, boolean, boolean)
-     * @see #findPath(String, String, boolean, boolean)
+     * @return a tree path matching the criteria
+     * @see #findPath
      * @throws TimeoutExpiredException
      */
     public TreePath findPath(String[] names, int[] indexes) {
 	return(findPath(names, indexes, getComparator()));
     }
 
+    /**
+     * Searches path in tree.
+     * @param names Node texts array.
+     * @param comparator a string comparision algorithm
+     * @return a tree path matching the criteria
+     * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     * @see #findPath
+     * @throws TimeoutExpiredException
+     */
     public TreePath findPath(String[] names, StringComparator comparator) {
 	int[] indexes = new int[0];
 	return(findPath(names, indexes, comparator));
@@ -731,11 +804,9 @@ public class JTreeOperator extends JComponentOperator
      * @param names Node texts array.
      * @param ce Compare exactly.
      * @param ccs Compare case sensitively.
+     * @return a tree path matching the criteria
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @see #findPath(JTreeOperator.TreePathChooser)
-     * @see #findPath(String[], int[], boolean, boolean)
-     * @see #findPath(String, String, String, boolean, boolean)
-     * @see #findPath(String, String, boolean, boolean)
+     * @see #findPath
      * @throws TimeoutExpiredException
      * @deprecated Use findPath(String[]) or findCellRow(String[], StringComparator)
      */
@@ -748,11 +819,9 @@ public class JTreeOperator extends JComponentOperator
      * Searches path in tree.
      * Uses StringComparator assigned to this object.
      * @param names Node texts array.
+     * @return a tree path matching the criteria
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @see #findPath(JTreeOperator.TreePathChooser)
-     * @see #findPath(String[], int[], boolean, boolean)
-     * @see #findPath(String, String, String, boolean, boolean)
-     * @see #findPath(String, String, boolean, boolean)
+     * @see #findPath
      * @throws TimeoutExpiredException
      */
     public TreePath findPath(String[] names) {
@@ -760,6 +829,19 @@ public class JTreeOperator extends JComponentOperator
 	return(findPath(names, indexes, getComparator()));
     }
 
+    /**
+     * Searches path in tree.
+     * @param path String representing tree path.
+     * Path components should be devided by "delim" parameter.
+     * @param indexes String representing indexes to search path components.
+     * Indexes should be devided by "delim" parameter.
+     * @param delim Path components delimiter.
+     * @param comparator a string comparision algorithm
+     * @return a tree path matching the criteria
+     * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     * @see #findPath
+     * @throws TimeoutExpiredException
+     */
     public TreePath findPath(String path, String indexes, String delim, StringComparator comparator) {
 	String[] indexStrings = parseString(indexes, delim);
 	int[] indInts = new int[indexStrings.length];
@@ -778,11 +860,9 @@ public class JTreeOperator extends JComponentOperator
      * @param delim Path components delimiter.
      * @param ce Compare exactly.
      * @param ccs Compare case sensitively.
+     * @return a tree path matching the criteria
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @see #findPath(JTreeOperator.TreePathChooser)
-     * @see #findPath(String[], boolean, boolean)
-     * @see #findPath(String[], int[], boolean, boolean)
-     * @see #findPath(String, String, boolean, boolean)
+     * @see #findPath
      * @throws TimeoutExpiredException
      * @deprecated Use findPath(String, String, String) or findCellRow(String, String, String, StringComparator)
      */
@@ -798,20 +878,38 @@ public class JTreeOperator extends JComponentOperator
      * @param indexes String representing indexes to search path components.
      * Indexes should be devided by "delim" parameter.
      * @param delim Path components delimiter.
-     * @see #findPath(JTreeOperator.TreePathChooser)
-     * @see #findPath(String[], boolean, boolean)
-     * @see #findPath(String[], int[], boolean, boolean)
-     * @see #findPath(String, String, boolean, boolean)
+     * @return a tree path matching the criteria
+     * @see #findPath
      * @throws TimeoutExpiredException
      */
     public TreePath findPath(String path, String indexes, String delim) {
 	return(findPath(path, indexes, delim, getComparator()));
     }
 
+    /**
+     * Searches path in tree.
+     * @param path String representing tree path.
+     * Path components should be devided by "delim" parameter.
+     * @param delim Path components delimiter.
+     * @param comparator a string comparision algorithm
+     * @return a tree path matching the criteria
+     * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     * @see #findPath
+     * @throws TimeoutExpiredException
+     */
     public TreePath findPath(String path, String delim, StringComparator comparator) {
 	return(findPath(parseString(path, delim), comparator));
     }
 
+    /**
+     * Searches path in tree.
+     * @param path String representing tree path.
+     * @param comparator a string comparision algorithm
+     * @return a tree path matching the criteria
+     * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     * @see #findPath
+     * @throws TimeoutExpiredException
+     */
     public TreePath findPath(String path, StringComparator comparator) {
 	return(findPath(parseString(path), comparator));
     }
@@ -823,10 +921,9 @@ public class JTreeOperator extends JComponentOperator
      * @param delim Path components delimiter.
      * @param ce Compare exactly.
      * @param ccs Compare case sensitively.
+     * @return a tree path matching the criteria
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @see #findPath(String[], boolean, boolean)
-     * @see #findPath(String[], int[], boolean, boolean)
-     * @see #findPath(String, String, String, boolean, boolean)
+     * @see #findPath
      * @throws TimeoutExpiredException
      * @deprecated Use findPath(String, String) or findCellRow(String, String, StringComparator)
      */
@@ -840,21 +937,30 @@ public class JTreeOperator extends JComponentOperator
      * @param path String representing tree path.
      * Path components should be devided by "delim" parameter.
      * @param delim Path components delimiter.
-     * @see #findPath(String[], boolean, boolean)
-     * @see #findPath(String[], int[], boolean, boolean)
-     * @see #findPath(String, String, String, boolean, boolean)
+     * @return a tree path matching the criteria
+     * @see #findPath
      * @throws TimeoutExpiredException
      */
     public TreePath findPath(String path, String delim) {
 	return(findPath(parseString(path, delim)));
     }
 
+    /**
+     * Searches path in tree.
+     * Uses StringComparator assigned to this object.
+     * Uses PathParser assigned to this object.
+     * @param path String representing tree path.
+     * @return a tree path matching the criteria
+     * @see #findPath
+     * @throws TimeoutExpiredException
+     */
     public TreePath findPath(String path) {
 	return(findPath(parseString(path)));
     }
 
     /**
      * Ensures that the node identified by the specified path is collapsed and viewable.
+     * @param path a path to collapse.
      * @throws TimeoutExpiredException
      */
     public void doCollapsePath(TreePath path) {
@@ -868,6 +974,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Ensures that the node in the specified row is collapsed.
+     * @param row a row index to collapse.
      * @throws TimeoutExpiredException
      */
     public void doCollapseRow(int row) {
@@ -881,6 +988,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Selects the path.
+     * @param path a path to select.
      */
     public void selectPath(final TreePath path) {
 	output.printLine("Selecting \"" + path.toString() + "\" path");
@@ -899,6 +1007,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Selects the node in the specified row.
+     * @param row an index of row to select.
      */
     public void selectRow(int row) {
 	output.printLine("Collapsing \"" + Integer.toString(row) + "\" row");
@@ -912,6 +1021,7 @@ public class JTreeOperator extends JComponentOperator
     /**
      * Selects some pathes.
      * If verification mode is on, checks that right paths have been selected.
+     * @param paths a paths to select.
      */
     public void selectPaths(TreePath[] paths) {
 	output.printLine("Selecting paths:");
@@ -929,6 +1039,8 @@ public class JTreeOperator extends JComponentOperator
 
     /** 
      * Retuns points which can be used to click on path.
+     * @param path a tree path to click on.
+     * @return a Point in component's coordinate system.
      */
     public Point getPointToClick(TreePath path) {
 	Rectangle rect = getPathBounds(path);
@@ -940,6 +1052,11 @@ public class JTreeOperator extends JComponentOperator
         }
     }
 
+    /** 
+     * Retuns points which can be used to click on path.
+     * @param row a row index to click on.
+     * @return a Point in component's coordinate system.
+     */
     public Point getPointToClick(int row) {
 	Rectangle rect = getRowBounds(row);
 	return(new Point((int)(rect.getX() + rect.getWidth() / 2),
@@ -948,6 +1065,8 @@ public class JTreeOperator extends JComponentOperator
 
     /** 
      * Clicks on the node.
+     * @param path a path to click on.
+     * @param clickCount a number of clicks
      * @throws TimeoutExpiredException
      */
     public void clickOnPath(TreePath path, int clickCount) {
@@ -966,6 +1085,7 @@ public class JTreeOperator extends JComponentOperator
 
     /** 
      * Clicks on the node.
+     * @param path a path to click on.
      * @throws TimeoutExpiredException
      */
     public void clickOnPath(TreePath path) {
@@ -974,6 +1094,9 @@ public class JTreeOperator extends JComponentOperator
 
     /** 
      * Calls popup on the specified pathes.
+     * @param paths an array of paths to select before invoking popup on one of them
+     * @param mouseButton a mouse button tused to call popup.
+     * @return an opened popup menu.
      * @throws TimeoutExpiredException
      */
     public JPopupMenu callPopupOnPaths(TreePath[] paths, int mouseButton) {
@@ -1005,6 +1128,8 @@ public class JTreeOperator extends JComponentOperator
 
     /** 
      * Calls popup on the specified pathes.
+     * @param paths an array of paths to select before invoking popup on one of them
+     * @return an opened popup menu.
      * @throws TimeoutExpiredException
      */
     public JPopupMenu callPopupOnPaths(TreePath[] paths) {
@@ -1013,6 +1138,9 @@ public class JTreeOperator extends JComponentOperator
 
     /** 
      * Calls popup on the specified path.
+     * @param path a path to invoking popup on.
+     * @param mouseButton a mouse button tused to call popup.
+     * @return an opened popup menu.
      * @throws TimeoutExpiredException
      */
     public JPopupMenu callPopupOnPath(TreePath path, int mouseButton) {
@@ -1022,6 +1150,8 @@ public class JTreeOperator extends JComponentOperator
 
     /** 
      * Calls popup on the specified path.
+     * @param path a path to invoking popup on.
+     * @return an opened popup menu.
      * @throws TimeoutExpiredException
      */
     public JPopupMenu callPopupOnPath(TreePath path) {
@@ -1030,7 +1160,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Scrolls to a path if the tree is on a JScrollPane component.
-     * @param path
+     * @param path a tree path to scroll to.
      */
     public void scrollToPath(TreePath path) {
 	output.printTrace("Scroll JTree to path \"" + path.toString() + "\"\n    : " +
@@ -1059,13 +1189,17 @@ public class JTreeOperator extends JComponentOperator
         }
     }
 
+    /**
+     * Scrolls to a row if the tree is on a JScrollPane component.
+     * @param row a row index to scroll to.
+     */
     public void scrollToRow(int row) {
 	scrollToPath(getPathForRow(row));
     }
 
     /**
      * Turns path to the editing mode.
-     * @param path
+     * @param path a tree path to click on.
      * @throws TimeoutExpiredException
      */
     public void clickForEdit(TreePath path) {
@@ -1075,12 +1209,11 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Ask renderer for component to be displayed.
-     * @param path
+     * @param path a path indicating the rendered node.
      * @param isSelected True if the specified cell is selected.
      * @param isExpanded True if the specified cell is expanded.
      * @param cellHasFocus True if the specified cell has the focus.
      * @return Component to be displayed.
-     * @see #getCellRenderer()
      */
     public Component getRenderedComponent(TreePath path, boolean isSelected, boolean isExpanded, boolean cellHasFocus) {
 	return(getCellRenderer().
@@ -1097,10 +1230,8 @@ public class JTreeOperator extends JComponentOperator
      * Ask renderer for component to be displayed.
      * Uses isPathSelected(TreePath) to determine whether path is selected.
      * Uses isExpanded(TreePath) to  determine whether path is expanded.
-     * @param path
+     * @param path a path indicating the rendered node.
      * @return Component to be displayed.
-     * @see #getCellRenderer()
-     * @see #isPathSelected(TreePath)
      */
     public Component getRenderedComponent(TreePath path) {
 	return(getRenderedComponent(path, 
@@ -1111,8 +1242,8 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Changes text of last path component.
-     * @param path
-     * @param newNodeText
+     * @param path a path indicating the node to change value for.
+     * @param newNodeText a new node value
      * @deprecated Use changePathObject(TreePath, Object) instead.
      * @see #changePathObject(TreePath, Object)
      * @throws TimeoutExpiredException
@@ -1123,9 +1254,8 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Changes last path component using getCellEditor() editor.
-     * @param path
-     * @param newNodeText
-     * @see #getCellEditor()
+     * @param path a path indicating the node to change value for.
+     * @param newValue a new node value
      * @throws TimeoutExpiredException
      */
     public void changePathObject(TreePath path, Object newValue){
@@ -1136,7 +1266,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Waits path to be expanded.
-     * @param path
+     * @param path a path to wait expanded.
      */
     public void waitExpanded(final TreePath path) {
 	getOutput().printLine("Wait \"" + path.toString() + "\" path to be expanded in component \n    : "+
@@ -1154,7 +1284,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Waits row to be expanded.
-     * @param row
+     * @param row a row index to wait expanded.
      */
     public void waitExpanded(final int row) {
 	getOutput().printLine("Wait " + Integer.toString(row) + "'th row to be expanded in component \n    : "+
@@ -1172,7 +1302,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Waits path to be collapsed.
-     * @param path
+     * @param path a path to wait collapsed.
      */
     public void waitCollapsed(final TreePath path) {
 	getOutput().printLine("Wait \"" + path.toString() + "\" path to be collapsed in component \n    : "+
@@ -1190,7 +1320,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Waits row to be collapsed.
-     * @param row
+     * @param row a row index to wait collapsed.
      */
     public void waitCollapsed(final int row) {
 	getOutput().printLine("Wait " + Integer.toString(row) + "'th row to be collapsed in component \n    : "+
@@ -1208,7 +1338,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Waits path to be visible.
-     * @param path
+     * @param path a path to wait visible.
      */
     public void waitVisible(final TreePath path) {
 	getOutput().printLine("Wait \"" + path.toString() + "\" path to be visible in component \n    : "+
@@ -1226,7 +1356,7 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Waits some paths to be selected.
-     * @param paths
+     * @param paths an array of paths to be selected.
      */
     public void waitSelected(final TreePath[] paths) {
 	getOutput().printLine("Wait right selection in component \n    : "+
@@ -1254,18 +1384,27 @@ public class JTreeOperator extends JComponentOperator
 
     /**
      * Waits path to be selected.
-     * @param path
+     * @param path a tree path to be selected.
      */
     public void waitSelected(final TreePath path) {
 	waitSelected(new TreePath[] {path});
     }
 
+    /**
+     * Waits rows to be selected.
+     * @param rows an indices of rows to be selected.
+     */
     public void waitSelected(int[] rows) {
  	TreePath[] paths = new TreePath[rows.length];
  	for(int i = 0; i < rows.length; i++) {
  	    paths[i] = getPathForRow(rows[i]);
  	}
     }
+
+    /**
+     * Waits row to be selected.
+     * @param row an index of a row to be selected.
+     */
     public void waitSelected(int row) {
  	waitSelected(new int[] {row});
     }
@@ -2023,17 +2162,19 @@ public class JTreeOperator extends JComponentOperator
     ////////////////////////////////////////////////////////
 
     /**
-     * Iterface to choose tree row.
+     * Iterface to choose tree row. Defines criteria to distinguish row.
      */
     public interface TreeRowChooser {
 	/**
 	 * Should be true if row is good.
 	 * @param oper Operator used to search item.
 	 * @param row Row be checked.
+         * @return true if the row fits the criteria
 	 */
 	public boolean checkRow(JTreeOperator oper, int row);
 	/**
 	 * Row description.
+         * @return a criteria description.
 	 */
 	public String getDescription();
     }
@@ -2097,39 +2238,66 @@ public class JTreeOperator extends JComponentOperator
     public class NoSuchPathException extends JemmyInputException {
 	/**
 	 * Constructor.
+         * @param path a nonexistent path.
 	 */
 	public NoSuchPathException(String[] path) {
 	    super("No such path as \"" + pathToString(path) + "\"", getSource());
 	}
+	/**
+	 * Constructor.
+         * @param index a nonexistent line index.
+	 */
 	public NoSuchPathException(int index) {
 	    super("Tree does not contain " + index + "'th line", getSource());
 	}
+	/**
+	 * Constructor.
+         * @param path a nonexistent path.
+	 */
 	public NoSuchPathException(TreePath path) {
 	    super("No such path as \"" + path.toString() + "\"", getSource());
 	}
     }
 
     /**
-     * Interface is intended to be used to find TreePath in the tree.
+     * Specifies criteria for path searching.
      */
     public interface TreePathChooser {
 	/**
+         * Checks if the path fits the criteria.
 	 * @param path TreePath to check.
 	 * @param indexInParent Index of the "path" in path's parent.
+         * @return true if the path fits the criteria
 	 */
 	public boolean checkPath(TreePath path, int indexInParent);
 	/**
+         * Checks if the path has another path as a parent.
 	 * @param path TreePath to check.
 	 * @param indexInParent Index of the "path" in path's parent.
+         * @return true if path looked for is a child/grandchild of a path passed as a parameter.
 	 */
 	public boolean hasAsParent(TreePath path, int indexInParent);
+        /**
+         * Returns the description.
+         * @return a description.
+         */
 	public String getDescription();
     }
  
+    /**
+     * Specifies searching criteria basing on nodes' text.
+     */
     class StringArrayPathChooser implements TreePathChooser {
 	String[] arr;
 	int[] indices;
 	StringComparator comparator;
+        /** 
+         * Constructs StringArrayPathChooser.
+         * @param arr a node text array. First element defines a text of a first node
+         * under a tree root, second element - a children of the first node, ...
+         * @param indices indexes of nodes in nodes' parents.
+         * @param comparator String comparision criteria.
+         */
 	StringArrayPathChooser(String[] arr, int[] indices, StringComparator comparator) {
 	    this.arr = arr;
 	    this.comparator = comparator;
@@ -2192,24 +2360,48 @@ public class JTreeOperator extends JComponentOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JTreeFinder extends Finder {
+        /**
+         * Constructs JTreeFinder.
+         * @param sf other searching criteria.
+         */
 	public JTreeFinder(ComponentChooser sf) {
             super(JTree.class, sf);
 	}
+        /**
+         * Constructs JTreeFinder.
+         */
 	public JTreeFinder() {
             super(JTree.class);
 	}
     }
 
+    /**
+     * Allows to find component by node text.
+     */
     public static class JTreeByItemFinder implements ComponentChooser {
 	String label;
 	int rowIndex;
 	StringComparator comparator;
+        /**
+         * Constructs JTreeByItemFinder.
+         * @param lb a text pattern
+         * @param ii row index to check. If equal to -1, selected row is checked.
+         * @param comparator specifies string comparision algorithm.
+         */
 	public JTreeByItemFinder(String lb, int ii, StringComparator comparator) {
 	    label = lb;
 	    rowIndex = ii;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs JTreeByItemFinder.
+         * @param lb a text pattern
+         * @param ii row index to check. If equal to -1, selected row is checked.
+         */
 	public JTreeByItemFinder(String lb, int ii) {
             this(lb, ii, Operator.getDefaultStringComparator());
 	}

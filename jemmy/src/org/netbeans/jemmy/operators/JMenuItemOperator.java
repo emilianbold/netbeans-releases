@@ -53,7 +53,7 @@ import javax.swing.plaf.MenuItemUI;
  * <BR><BR>Timeouts used: <BR>
  * JMenuItemOperator.PushMenuTimeout - time between button pressing and releasing<BR>
  * ComponentOperator.WaitComponentTimeout - time to wait button displayed <BR>
- * ComponentOperator.WaitComponentEnabledTimeout - time to wait button enabled <BR>
+ * ComponentOperator.WaitComponentEnabledTimeout - time to wait button enabled <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -71,6 +71,7 @@ implements Timeoutable, Outputable{
 
     /**
      * Constructor.
+     * @param item a component
      */
     public JMenuItemOperator(JMenuItem item) {
 	super(item);
@@ -78,6 +79,12 @@ implements Timeoutable, Outputable{
 	setOutput(JemmyProperties.getProperties().getOutput());
     }
 
+    /**
+     * Constructs a JMenuItemOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JMenuItemOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JMenuItem)cont.
              waitSubComponent(new JMenuItemFinder(chooser),
@@ -85,6 +92,11 @@ implements Timeoutable, Outputable{
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JMenuItemOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JMenuItemOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -93,6 +105,7 @@ implements Timeoutable, Outputable{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
@@ -111,6 +124,7 @@ implements Timeoutable, Outputable{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -123,6 +137,7 @@ implements Timeoutable, Outputable{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -138,6 +153,7 @@ implements Timeoutable, Outputable{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @throws TimeoutExpiredException
      */
     public JMenuItemOperator(ContainerOperator cont) {
@@ -146,7 +162,7 @@ implements Timeoutable, Outputable{
 
     /**
      * Searches JMenuItem in container.
-     * @param cont Container to search component in.
+     * @param menu Container to search component in.
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @param index Ordinal component index.
      * @return JMenuItem instance or null if component was not found.
@@ -157,7 +173,7 @@ implements Timeoutable, Outputable{
 
     /**
      * Searches 0'th JMenuItem in container.
-     * @param cont Container to search component in.
+     * @param menu Container to search component in.
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @return JMenuItem instance or null if component was not found.
      */
@@ -167,7 +183,7 @@ implements Timeoutable, Outputable{
 
     /**
      * Searches JMenuItem by text.
-     * @param cont Container to search component in.
+     * @param menu Container to search component in.
      * @param text Button text. If null, contents is not checked.
      * @param ce Compare text exactly.
      * @param ccs Compare text case sensitively.
@@ -185,7 +201,7 @@ implements Timeoutable, Outputable{
 
     /**
      * Searches JMenuItem by text.
-     * @param cont Container to search component in.
+     * @param menu Container to search component in.
      * @param text Button text. If null, contents is not checked.
      * @param ce Compare text exactly.
      * @param ccs Compare text case sensitively.
@@ -198,7 +214,7 @@ implements Timeoutable, Outputable{
 
     /**
      * Waits JMenuItem in container.
-     * @param cont Container to search component in.
+     * @param menu Container to search component in.
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @param index Ordinal component index.
      * @return JMenuItem instance.
@@ -210,7 +226,7 @@ implements Timeoutable, Outputable{
 
     /**
      * Waits 0'th JMenuItem in container.
-     * @param cont Container to search component in.
+     * @param menu Container to search component in.
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @return JMenuItem instance.
      * @throws TimeoutExpiredException
@@ -221,7 +237,7 @@ implements Timeoutable, Outputable{
 
     /**
      * Waits JMenuItem by text.
-     * @param cont Container to search component in.
+     * @param menu Container to search component in.
      * @param text Button text. If null, contents is not checked.
      * @param ce Compare text exactly.
      * @param ccs Compare text case sensitively.
@@ -239,7 +255,7 @@ implements Timeoutable, Outputable{
 
     /**
      * Waits JMenuItem by text.
-     * @param cont Container to search component in.
+     * @param menu Container to search component in.
      * @param text Button text. If null, contents is not checked.
      * @param ce Compare text exactly.
      * @param ccs Compare text case sensitively.
@@ -255,52 +271,24 @@ implements Timeoutable, Outputable{
 	Timeouts.initDefault("JMenuItemOperator.PushMenuTimeout", PUSH_MENU_TIMEOUT);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param timeouts A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts timeouts) {
 	super.setTimeouts(timeouts);
 	this.timeouts = timeouts;
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	super.setOutput(out);
 	output = out;
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
-    /**
-     * Returns information about component.
-     */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	result.remove(AbstractButtonOperator.IS_SELECTED_DPROP);
@@ -425,6 +413,9 @@ implements Timeoutable, Outputable{
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Prepares the button to click.
+     */
     protected void prepareToClick() {
 	output.printLine("Push menu item\n    :" + getSource().toString());
 	output.printGolden("Push menu item");
@@ -470,13 +461,25 @@ implements Timeoutable, Outputable{
 	return(choosers);
     }
 
+    /**
+     * Allows to find component by text.
+     */
     public static class JMenuItemByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
+        /**
+         * Constructs JMenuItemByLabelFinder.
+         * @param lb a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public JMenuItemByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs JMenuItemByLabelFinder.
+         * @param lb a text pattern
+         */
 	public JMenuItemByLabelFinder(String lb) {
             this(lb, Operator.getDefaultStringComparator());
 	}
@@ -494,10 +497,20 @@ implements Timeoutable, Outputable{
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JMenuItemFinder extends Finder {
+        /**
+         * Constructs JMenuItemFinder.
+         * @param sf other searching criteria.
+         */
 	public JMenuItemFinder(ComponentChooser sf) {
             super(JMenuItem.class, sf);
 	}
+        /**
+         * Constructs JMenuItemFinder.
+         */
 	public JMenuItemFinder() {
             super(JMenuItem.class);
 	}

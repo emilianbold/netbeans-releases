@@ -130,9 +130,10 @@ public class WindowWaiter extends Waiter implements Timeoutable {
 
     /**
      * Defines current timeouts.
-     * @param t A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
+     * @param	timeouts A collection of timeout assignments.
+     * @see	org.netbeans.jemmy.Timeoutable
+     * @see	org.netbeans.jemmy.Timeouts
+     * @see #getTimeouts
      */
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
@@ -149,6 +150,7 @@ public class WindowWaiter extends Waiter implements Timeoutable {
      * @return the collection of current timeout assignments.
      * @see org.netbeans.jemmy.Timeoutable
      * @see org.netbeans.jemmy.Timeouts
+     * @see #setTimeouts
      */
     public Timeouts getTimeouts() {
 	return(timeouts);
@@ -173,15 +175,17 @@ public class WindowWaiter extends Waiter implements Timeoutable {
      * Wait for the <code>index+1</code>'th window that meets the criteria
      * defined and applied by the <code>ComonentChooser</code> parameter to
      * show up.
-     * @param ch A component chooser used to define and apply the search criteria.
-     * @param index The ordinal index of the window in the set of currently displayed
+     * 
+     * @param	ch A component chooser used to define and apply the search criteria.
+     * @param	index The ordinal index of the window in the set of currently displayed
      * windows.  The first index is 0.
-     * @return a reference to the <code>index+1</code>'th window that shows
+     * @return	a reference to the <code>index+1</code>'th window that shows
      * and that meets the search criteria.  If fewer than
      * <code>index+1</code> windows show up in the allotted time period then
      * a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see #actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Window waitWindow(ComponentChooser ch, int index)
 	throws InterruptedException {
@@ -195,12 +199,14 @@ public class WindowWaiter extends Waiter implements Timeoutable {
      * Waits for a window to show.
      * Wait for a window that meets the search criteria applied by the
      * <code>ComponentChooser</code> parameter to show up.
-     * @param ch A component chooser used to define and apply the search criteria.
-     * @return a reference to the first window that shows and that
+     * 
+     * @param	ch A component chooser used to define and apply the search criteria.
+     * @return	a reference to the first window that shows and that
      * meets the search criteria.  If no such window can be found within the
      * time period allotted, a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see #actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Window waitWindow(ComponentChooser ch)
 	throws InterruptedException {
@@ -212,17 +218,19 @@ public class WindowWaiter extends Waiter implements Timeoutable {
      * Wait for the <code>index+1</code>'th window to show that is both owned by the
      * <code>java.awt.Window</code> <code>o</code> and that meets the
      * criteria defined and applied by the <code>ComponentChooser</code> parameter.
-     * @param o The owner window of all the windows to be searched.
-     * @param ch A component chooser used to define and apply the search criteria.
-     * @param index The ordinal index of the window in the set of currently displayed
+     * 
+     * @param	o The owner window of all the windows to be searched.
+     * @param	ch A component chooser used to define and apply the search criteria.
+     * @param	index The ordinal index of the window in the set of currently displayed
      * windows with the proper window ownership and a suitable title.  The first
      * index is 0.
-     * @return a reference to the <code>index+1</code>'th window to show that
+     * @return	a reference to the <code>index+1</code>'th window to show that
      * has the proper window ownership, and that meets the search criteria.
      * If there are fewer than <code>index+1</code> windows, a <code>null</code>
      * reference is returned.
-     * @throws TimeoutExpiredException
-     * @see #actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Window waitWindow(Window o, ComponentChooser ch, int index)
 	throws InterruptedException {
@@ -237,13 +245,15 @@ public class WindowWaiter extends Waiter implements Timeoutable {
      * Wait for the first window to show that is both owned by the
      * <code>java.awt.Window</code> <code>o</code> and that meets the
      * criteria defined and applied by the <code>ComponentChooser</code> parameter.
-     * @param o The owner window of all the windows to be searched.
-     * @param ch A component chooser used to define and apply the search criteria.
-     * @return a reference to the first window to show that
+     * 
+     * @param	o The owner window of all the windows to be searched.
+     * @param	ch A component chooser used to define and apply the search criteria.
+     * @return	a reference to the first window to show that
      * has the proper window ownership, and that meets the search criteria.
      * If there is no such window, a <code>null</code> reference is returned.
-     * @throws TimeoutExpiredException
-     * @see #actionProduced(Object)
+     * @throws	TimeoutExpiredException
+     * @see	#actionProduced(Object)
+     * @exception	InterruptedException
      */
     public Window waitWindow(Window o, ComponentChooser ch)
 	throws InterruptedException {
@@ -252,6 +262,8 @@ public class WindowWaiter extends Waiter implements Timeoutable {
 
     /**
      * Method can be used by a subclass to define chooser.
+     * @param	ch a chooser specifying searching criteria.
+     * @see #getComponentChooser
      */
     protected void setComponentChooser(ComponentChooser ch) {
 	chooser = ch;
@@ -259,6 +271,8 @@ public class WindowWaiter extends Waiter implements Timeoutable {
 
     /**
      * Method can be used by a subclass to define chooser.
+     * @return a chooser specifying searching criteria.
+     * @see #setComponentChooser
      */
     protected ComponentChooser getComponentChooser() {
 	return(chooser);
@@ -266,6 +280,8 @@ public class WindowWaiter extends Waiter implements Timeoutable {
 
     /**
      * Method can be used by a subclass to define window owner.
+     * @param	owner Window-owner of the set of windows.
+     * @see #getOwner
      */
     protected void setOwner(Window owner) {
 	this.owner = owner;
@@ -273,6 +289,8 @@ public class WindowWaiter extends Waiter implements Timeoutable {
 
     /**
      * Method can be used by a subclass to define window owner.
+     * @return Window-owner of the set of windows.
+     * @see #setOwner
      */
     protected Window getOwner() {
 	return(owner);
@@ -286,23 +304,31 @@ public class WindowWaiter extends Waiter implements Timeoutable {
     }
 
     /**
-     * @see org.netbeans.jemmy.Waiter#getTimeoutExpiredMessage(long)
+     * Overrides Waiter.getTimeoutExpiredMessage.
+     * @see	org.netbeans.jemmy.Waiter#getTimeoutExpiredMessage(long)
+     * @param timeSpent time from waiting start (milliseconds)
+     * @return a message.
      */
-    protected String getTimeoutExpiredMessage(long spendedTime) {
+    protected String getTimeoutExpiredMessage(long timeSpent) {
 	return("Window \"" + chooser.getDescription() + "\" has not been opened in " +
-	       (new Long(spendedTime)).toString() + " milliseconds");
+	       (new Long(timeSpent)).toString() + " milliseconds");
     }
 
     /**
-     * @see org.netbeans.jemmy.Waiter#getActionProducedMessage(long, Object)
+     * Overrides Waiter.getActionProducedMessage.
+     * @see	org.netbeans.jemmy.Waiter#getActionProducedMessage(long, Object)
+     * @param timeSpent time from waiting start (milliseconds)
+     * @param result result of Waitable.actionproduced method.
+     * @return a message.
      */
-    protected String getActionProducedMessage(long spendedTime, Object result) {
+    protected String getActionProducedMessage(long timeSpent, Object result) {
 	return("Window \"" + chooser.getDescription() + "\" has been opened in " +
-	       (new Long(spendedTime)).toString() + " milliseconds" +
+	       (new Long(timeSpent)).toString() + " milliseconds" +
 	       "\n    " + result.toString());
     }
 
     /**
+     * @return a message.
      * @see org.netbeans.jemmy.Waiter#getGoldenWaitingStartedMessage()
      */
     protected String getGoldenWaitingStartedMessage() {
@@ -310,6 +336,7 @@ public class WindowWaiter extends Waiter implements Timeoutable {
     }
 
     /**
+     * @return a message.
      * @see org.netbeans.jemmy.Waiter#getGoldenTimeoutExpiredMessage()
      */
     protected String getGoldenTimeoutExpiredMessage() {
@@ -317,6 +344,7 @@ public class WindowWaiter extends Waiter implements Timeoutable {
     }
 
     /**
+     * @return a message.
      * @see org.netbeans.jemmy.Waiter#getGoldenActionProducedMessage()
      */
     protected String getGoldenActionProducedMessage() {

@@ -74,6 +74,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Constructor.
+     * @param comp a component
      */
     public JFileChooserOperator(JFileChooser comp) {
 	super(comp);
@@ -87,9 +88,7 @@ public class JFileChooserOperator extends JComponentOperator
      * Waits component first.
      * Constructor can be used in complicated cases when
      * output or timeouts should differ from default.
-     * @param timeouts
-     * @param output
-     * @throws TimeoutExpiredException
+     * @param env an operator to get environment from.
      */
     public JFileChooserOperator(Operator env) {
 	this((JFileChooser)
@@ -108,7 +107,6 @@ public class JFileChooserOperator extends JComponentOperator
     /**
      * Constructor.
      * Waits component first.
-     * @throws TimeoutExpiredException
      */
     public JFileChooserOperator() {
 	this(getEnvironmentOperator());
@@ -116,6 +114,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Searches currently opened JDilog with  JFileChooser inside.
+     * @return a component instance
      */
     public static JDialog findJFileChooserDialog() {
 	return(JDialogOperator.
@@ -125,7 +124,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Waits currently opened JDilog with  JFileChooser inside.
-     * @throws TimeoutExpiredException
+     * @return a component instance
      */
     public static JDialog waitJFileChooserDialog() {
 	return(JDialogOperator.
@@ -135,6 +134,8 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Searches JFileChooser in container.
+     * @param cont a container
+     * @return a component instance
      */
     public static JFileChooser findJFileChooser(Container cont) {
 	return((JFileChooser)findComponent(cont, new JFileChooserFinder()));
@@ -142,7 +143,8 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Searches JFileChooser in container.
-     * @throws TimeoutExpiredException
+     * @param cont a container
+     * @return a component instance
      */
     public static JFileChooser waitJFileChooser(Container cont) {
 	return((JFileChooser)waitComponent(cont, new JFileChooserFinder()));
@@ -150,6 +152,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Searches currently opened JFileChooser.
+     * @return a component instance
      */
     public static JFileChooser findJFileChooser() {
 	return(findJFileChooser(findJFileChooserDialog()));
@@ -157,7 +160,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Waits currently opened JFileChooser.
-     * @throws TimeoutExpiredException
+     * @return a component instance
      */
     public static JFileChooser waitJFileChooser() {
 	return(waitJFileChooser(waitJFileChooserDialog()));
@@ -167,33 +170,15 @@ public class JFileChooserOperator extends JComponentOperator
 	Timeouts.initDefault("JFileChooserOperator.WaitListPaintedTimeout", WAIT_LIST_PAINTED_TIMEOUT);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param timeouts A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts timeouts) {
 	super.setTimeouts(timeouts);
 	this.timeouts = timeouts;
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
@@ -202,19 +187,13 @@ public class JFileChooserOperator extends JComponentOperator
 	}
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
     /**
      * Returns combo box containing path (upper).
+     * @return JComboBox being used to show directories.
      */
     public JComboBox getPathCombo() {
 	return(getCombo(0));
@@ -222,6 +201,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Returns combo box containing file types (lower).
+     * @return JComboBox being used to show file types.
      */
     public JComboBox getFileTypesCombo() {
 	return(getCombo(1));
@@ -229,14 +209,22 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Returns approve button.
+     * @return an approve button.
      */
     public JButton getApproveButton() {
-	return((JButton)innerSearcher.
-	       findComponent(new ButtonFinder(getApproveButtonText())));
+        String aText = getApproveButtonText();
+        if(aText != null) {
+            return((JButton)innerSearcher.
+                   findComponent(new ButtonFinder(aText)));
+        } else {
+            throw(new JemmyException("JFileChooser.getApproveButtonText() " +
+                                     "returns null"));
+        }
     }
 
     /**
      * Returns cancel button.
+     * @return a cancel button.
      */
     public JButton getCancelButton() {
 	return((JButton)innerSearcher.
@@ -257,6 +245,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Returns "Home" button.
+     * @return a "home" button.
      */
     public JButton getHomeButton() {
 	return(getNoTextButton(1));
@@ -264,18 +253,23 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Returns "Up One Level" button.
+     * @return a "Up One Level" button.
      */
     public JButton getUpLevelButton() {
 	return(getNoTextButton(0));
     }
 
     /**
+     * Returns a toggle button being used to switch to list view.
+     * @return a "list mode" button.
      */
     public JToggleButton getListToggleButton() {
 	return(getToggleButton(0));
     }
 
     /**
+     * Returns a toggle button being used to switch to detals view.
+     * @return a "list mode" button.
      */
     public JToggleButton getDetailsToggleButton() {
 	return(getToggleButton(1));
@@ -283,6 +277,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Returns field which can be used to type path.
+     * @return a text field being used for path typing.
      */
     public JTextField getPathField() {
 	return((JTextField)innerSearcher.
@@ -299,6 +294,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Returns file list.
+     * @return a list being used to display directory content.
      */
     public JList getFileList() {
 	return((JList)innerSearcher.
@@ -315,7 +311,6 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Pushes approve button.
-     * @throws TimeoutExpiredException
      */
     public void approve() {
         getQueueTool().waitEmpty();
@@ -329,7 +324,6 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Pushes cancel button.
-     * @throws TimeoutExpiredException
      */
     public void cancel() {
 	output.printTrace("Push cancel button in JFileChooser\n    : " +
@@ -342,7 +336,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Types file name into text field and pushes approve button.
-     * @throws TimeoutExpiredException
+     * @param fileName a file to choose.
      */
     public void chooseFile(String fileName) {
         getQueueTool().waitEmpty();
@@ -361,7 +355,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Pushes "Up One Level" button.
-     * @throws TimeoutExpiredException
+     * @return new current directory
      */
     public File goUpLevel() {
         getQueueTool().waitEmpty();
@@ -379,7 +373,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Pushes "Home" button.
-     * @throws TimeoutExpiredException
+     * @return new current directory
      */
     public File goHome() {
         getQueueTool().waitEmpty();
@@ -396,9 +390,7 @@ public class JFileChooserOperator extends JComponentOperator
     /**
      * Clicks on file in the list.
      * @param index Ordinal file index.
-     * @param clickCount
-     * @see #clickOnFile(String, boolean, boolean, int)
-     * @see #clickOnFile(String, boolean, boolean)
+     * @param clickCount click count
      */
     public void clickOnFile(int index, int clickCount) {
         getQueueTool().waitEmpty();
@@ -413,6 +405,12 @@ public class JFileChooserOperator extends JComponentOperator
 	listOper.clickOnItem(index, clickCount);
     }
 
+    /**
+     * Clicks on file in the list.
+     * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
+     * @param comparator a comparator defining string comparision criteria
+     * @param clickCount click count
+     */
     public void clickOnFile(String file, StringComparator comparator, int clickCount) {
 	output.printTrace("Click " + Integer.toString(clickCount) + 
 			  "times on \"" + file + 
@@ -424,8 +422,9 @@ public class JFileChooserOperator extends JComponentOperator
     /**
      * Clicks on file in the list.
      * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
-     * @see #clickOnFile(int, int)
-     * @see #clickOnFile(String, boolean, boolean)
+     * @param ce Compare exactly. If true, text can be a substring of caption.
+     * @param cc Compare case sensitively. If true, both text and caption are 
+     * @param clickCount click count
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @deprecated Use clickOnFile(String, int) or clickOnFile(String, StringComparator, int)
      */
@@ -433,10 +432,22 @@ public class JFileChooserOperator extends JComponentOperator
 	clickOnFile(file, new DefaultStringComparator(ce, cc), clickCount);
     }
 
+    /**
+     * Clicks on file in the list.
+     * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
+     * @param clickCount click count
+     * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     */
     public void clickOnFile(String file, int clickCount) {
 	clickOnFile(file, getComparator(), clickCount);
     }
 
+    /**
+     * Clicks on file in the list.
+     * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
+     * @param comparator a comparator defining string comparision criteria
+     * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     */
     public void clickOnFile(String file, StringComparator comparator) {
 	clickOnFile(file, comparator, 1);
     }
@@ -444,8 +455,9 @@ public class JFileChooserOperator extends JComponentOperator
     /**
      * Clicks 1 time on file in the list.
      * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
-     * @see #clickOnFile(int, int)
-     * @see #clickOnFile(String, boolean, boolean, int)
+     * @param ce Compare exactly. If true, text can be a substring of caption.
+     * @param cc Compare case sensitively. If true, both text and caption are 
+     * @see #clickOnFile
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @deprecated Use clickOnFile(String) or clickOnFile(String, StringComparator)
      */
@@ -453,10 +465,22 @@ public class JFileChooserOperator extends JComponentOperator
 	clickOnFile(file, ce, cc, 1);
     }
 
+    /**
+     * Clicks 1 time on file in the list.
+     * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
+     * @see #clickOnFile
+     * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     */
     public void clickOnFile(String file) {
 	clickOnFile(file, 1);
     }
 
+    /**
+     * Enters into subdirectory.
+     * @param dir A directory to enter into.
+     * @param comparator a comparator defining string comparision criteria
+     * @return new current directory
+     */
     public File enterSubDir(String dir, StringComparator comparator) {
         getQueueTool().waitEmpty();
         selectFile(dir, comparator);
@@ -469,19 +493,32 @@ public class JFileChooserOperator extends JComponentOperator
     /**
      * Enters into subdir curently displayed in the list.
      * @param dir Directory name (tmp1). Do not use full path (/tmp/tmp1) here.
-     * @see #clickOnFile(int, int)
-     * @see #clickOnFile(String, boolean, boolean)
-     * @see #clickOnFile(String, boolean, boolean, int)
+     * @param ce Compare exactly. If true, text can be a substring of caption.
+     * @param cc Compare case sensitively. If true, both text and caption are 
+     * @return new current directory
+     * @see #clickOnFile
      * @deprecated Use enterSubDir(String) or enterSubDir(String, StringComparator)
      */
     public File enterSubDir(String dir, boolean ce, boolean cc) {
 	return(enterSubDir(dir, new DefaultStringComparator(ce, cc)));
     }
 
+    /**
+     * Enters into subdir curently displayed in the list.
+     * @param dir Directory name (tmp1). Do not use full path (/tmp/tmp1) here.
+     * @return new current directory
+     * @see #clickOnFile
+     */
     public File enterSubDir(String dir) {
 	return(enterSubDir(dir, getComparator()));
     }
 
+    /**
+     * Selects a file curently in the list.
+     * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
+     * @param comparator a comparator defining string comparision criteria
+     * @see #clickOnFile
+     */
     public void selectFile(String file, StringComparator comparator) {
         getQueueTool().waitEmpty();
         int index = findFileIndex(file, comparator);
@@ -495,19 +532,29 @@ public class JFileChooserOperator extends JComponentOperator
     /**
      * Selects a file curently in the list.
      * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
-     * @see #clickOnFile(int, int)
-     * @see #clickOnFile(String, boolean, boolean)
-     * @see #clickOnFile(String, boolean, boolean, int)
+     * @param ce Compare exactly. If true, text can be a substring of caption.
+     * @param cc Compare case sensitively. If true, both text and caption are 
+     * @see #clickOnFile
      * @deprecated Use selectFile(String) or selectFile(String, StringComparator)
      */
     public void selectFile(String file, boolean ce, boolean cc) {
 	clickOnFile(file, ce, cc);
     }
 
+    /**
+     * Selects a file curently in the list.
+     * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
+     * @see #clickOnFile
+     */
     public void selectFile(String file) {
 	clickOnFile(file);
     }
 
+    /**
+     * Selects directory from the combo box above.
+     * @param dir Directory name (tmp1). Do not use full path (/tmp/tmp1) here.
+     * @param comparator a comparator defining string comparision criteria
+     */
     public void selectPathDirectory(String dir, StringComparator comparator) {
         getQueueTool().waitEmpty();
 	output.printTrace("Select \"" + dir + "\" directory in JFileChooser\n    : " +
@@ -524,7 +571,8 @@ public class JFileChooserOperator extends JComponentOperator
     /**
      * Selects directory from the combo box above.
      * @param dir Directory name (tmp1). Do not use full path (/tmp/tmp1) here.
-     * @throws TimeoutExpiredException
+     * @param ce Compare exactly. If true, text can be a substring of caption.
+     * @param cc Compare case sensitively. If true, both text and caption are 
      * @deprecated Use selectPathDirectory(String) or selectPathDirectory(String, StringComparator)
      */
     public void selectPathDirectory(String dir, boolean ce, boolean cc) {
@@ -534,12 +582,16 @@ public class JFileChooserOperator extends JComponentOperator
     /**
      * Selects directory from the combo box above.
      * @param dir Directory name (tmp1). Do not use full path (/tmp/tmp1) here.
-     * @throws TimeoutExpiredException
      */
     public void selectPathDirectory(String dir) {
 	selectPathDirectory(dir, getComparator());
     }
 
+    /**
+     * Selects file type from the combo box below.
+     * @param filter a pattern for choosing a file type.
+     * @param comparator a comparator defining string comparision criteria
+     */
     public void selectFileType(String filter, StringComparator comparator) {
         getQueueTool().waitEmpty();
 	output.printTrace("Select \"" + filter + "\" file type in JFileChooser\n    : " +
@@ -555,7 +607,9 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Selects file type from the combo box below.
-     * @throws TimeoutExpiredException
+     * @param filter a pattern for choosing a file type.
+     * @param ce Compare exactly. If true, text can be a substring of caption.
+     * @param cc Compare case sensitively. If true, both text and caption are 
      * @deprecated Use selectFileType(String) or selectFileType(String, StringComparator)
      */
     public void selectFileType(String filter, boolean ce, boolean cc) {
@@ -564,12 +618,18 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Selects file type from the combo box below.
-     * @throws TimeoutExpiredException
+     * @param filter a pattern for choosing a file type.
      */
     public void selectFileType(String filter) {
 	selectFileType(filter, getComparator());
     }
 
+    /**
+     * Checks if file is currently displayed in the list.
+     * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
+     * @param comparator a comparator defining string comparision criteria
+     * @return true if file is displayed.
+     */
     public boolean checkFileDisplayed(String file, StringComparator comparator) {
 	waitPainted(-1);
 	return(findFileIndex(file, comparator) != -1);
@@ -578,6 +638,9 @@ public class JFileChooserOperator extends JComponentOperator
     /**
      * Checks if file is currently displayed in the list.
      * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
+     * @param ce Compare exactly. If true, text can be a substring of caption.
+     * @param cc Compare case sensitively. If true, both text and caption are 
+     * @return true if file is displayed.
      * @deprecated Use checkFileDisplayed(String) or checkFileDisplayed(String, StringComparator)
      */
     public boolean checkFileDisplayed(String file, boolean ce, boolean cc) {
@@ -587,6 +650,7 @@ public class JFileChooserOperator extends JComponentOperator
     /**
      * Checks if file is currently displayed in the list.
      * @param file File name (foo.c). Do not use full path (/tmp/foo.c) here.
+     * @return true if file is displayed.
      */
     public boolean checkFileDisplayed(String file) {
 	return(checkFileDisplayed(file, getComparator()));
@@ -594,6 +658,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Return count of files currently displayed.
+     * @return a number of items in the file list.
      */
     public int getFileCount() {
 	waitPainted(-1);
@@ -602,6 +667,7 @@ public class JFileChooserOperator extends JComponentOperator
 
     /**
      * Return files currently displayed.
+     * @return an array of items from the file list.
      */
     public File[] getFiles() {
 	waitPainted(-1);
@@ -613,6 +679,10 @@ public class JFileChooserOperator extends JComponentOperator
 	return(result);
     }
 
+    /**
+     * Waits for the file list to have required number of items.
+     * @param count Number of files to wait.
+     */
     public void waitFileCount(final int count) {
 	waitState(new ComponentChooser() {
 		public boolean checkComponent(Component comp) {
@@ -625,6 +695,10 @@ public class JFileChooserOperator extends JComponentOperator
 	    });
     }
 
+    /**
+     * Waits for a file to be displayed in the file list.
+     * @param fileName a file to wait.
+     */
     public void waitFileDisplayed(final String fileName) {
 	waitState(new ComponentChooser() {
 		public boolean checkComponent(Component comp) {
@@ -1153,9 +1227,16 @@ public class JFileChooserOperator extends JComponentOperator
 	return(-1);
     }
 
+    /**
+     * Allows to find a dialog containing JFileChooser.
+     */
     public static class JFileChooserJDialogFinder implements ComponentChooser {
 	TestOut output;
 	ComponentChooser subChooser;
+        /**
+         * Constructs JFileChooserJDialogFinder.
+         * @param output an output to put searching message into.
+         */
 	public JFileChooserJDialogFinder(TestOut output) {
 	    this.output = output;
 	    subChooser = new JFileChooserFinder();
@@ -1177,10 +1258,20 @@ public class JFileChooserOperator extends JComponentOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JFileChooserFinder extends Finder {
+        /**
+         * Constructs JFileChooserFinder.
+         * @param sf other searching criteria.
+         */
 	public JFileChooserFinder(ComponentChooser sf) {
             super(JFileChooser.class, sf);
 	}
+        /**
+         * Constructs JFileChooserFinder.
+         */
 	public JFileChooserFinder() {
             super(JFileChooser.class);
 	}

@@ -124,7 +124,7 @@ public class EventDispatcher implements Outputable, Timeoutable {
      * @param emptyTime The time that the event queue has to stay empty to avoid
      * a TimeoutExpiredException.
      * @param output Output to print exception into
-     * @param timeouts
+     * @param timeouts A collection of timeout assignments.
      * @throws TimeoutExpiredException
      * @see org.netbeans.jemmy.QueueTool
      */
@@ -253,6 +253,7 @@ public class EventDispatcher implements Outputable, Timeoutable {
      * @param out Identify the streams or writers used for print output.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #getOutput
      */
     public void setOutput(TestOut out) {
 	output = out;
@@ -265,6 +266,7 @@ public class EventDispatcher implements Outputable, Timeoutable {
      * printing to output and err streams.
      * @see org.netbeans.jemmy.Outputable
      * @see org.netbeans.jemmy.TestOut
+     * @see #setOutput
      */
     public TestOut getOutput() {
 	return(output);
@@ -275,6 +277,7 @@ public class EventDispatcher implements Outputable, Timeoutable {
      * @param timeouts A collection of timeout assignments.
      * @see org.netbeans.jemmy.Timeoutable
      * @see org.netbeans.jemmy.Timeouts
+     * @see #getTimeouts
      */
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
@@ -305,6 +308,7 @@ public class EventDispatcher implements Outputable, Timeoutable {
      * @return the collection of current timeout assignments.
      * @see org.netbeans.jemmy.Timeoutable
      * @see org.netbeans.jemmy.Timeouts
+     * @see #setTimeouts
      */
     public Timeouts getTimeouts() {
 	return(timeouts);
@@ -377,7 +381,7 @@ public class EventDispatcher implements Outputable, Timeoutable {
      * @see #dispatchEvent(AWTEvent)
      * @param id <code>MouseEvent.MOUSE_*</code> value
      * @param mods <code>InputEvent.MOUSE1/2/3_BUTTON</code> | (modiviers value)
-     * @param clickCount
+     * @param clickCount Click count
      * @param x Horizontal click point coordinate.
      * @param y vertical click point coordinate.
      * @param popup Difines if mouse event is popup event.
@@ -394,7 +398,7 @@ public class EventDispatcher implements Outputable, Timeoutable {
      * @see #dispatchEvent(AWTEvent)
      * @param id <code>MouseEvent.MOUSE_*</code> value
      * @param mods <code>InputEvent.MOUSE1/2/3_BUTTON</code> | (modiviers value)
-     * @param clickCount
+     * @param clickCount Click count
      * @param popup Difines if mouse event is popup event.
      */
     public void dispatchMouseEvent(int id, int mods, int clickCount, 
@@ -591,11 +595,17 @@ public class EventDispatcher implements Outputable, Timeoutable {
     } 
 
     /**
-     * Invokes component method through <code>SwingUtilities.invokeAndWait(Runnable)</code>
-     * @param method_name Name of a method to be invoked
-     * @param params Method params
-     * @param params_classes Method params' classes
-     * @see org.netbeans.jemmy.ClassReference
+     * Invokes component method through <code>SwingUtilities.invokeAndWait(Runnable)</code>.
+     * 
+     * @param	method_name Name of a method to be invoked
+     * @param	params Method params
+     * @param	params_classes Method params' classes
+     * @return an Object - methods result.
+     * @see	org.netbeans.jemmy.ClassReference
+     * @exception	IllegalAccessException
+     * @exception	NoSuchMethodException
+     * @exception	IllegalStateException
+     * @exception	InvocationTargetException
      */
     public Object invokeMethod(String method_name, Object[] params, Class[] params_classes)
 	throws InvocationTargetException, IllegalStateException, NoSuchMethodException, IllegalAccessException {
@@ -619,10 +629,16 @@ public class EventDispatcher implements Outputable, Timeoutable {
     }
 
     /**
-     * Gets component field value through <code>SwingUtilities.invokeAndWait(Runnable)</code>
-     * @param field_name Name of a field
-     * @see #setField(String, Object)
-     * @see org.netbeans.jemmy.ClassReference
+     * Gets component field value through <code>SwingUtilities.invokeAndWait(Runnable)</code>.
+     * 
+     * @param	field_name Name of a field
+     * @see	#setField(String, Object)
+     * @see	org.netbeans.jemmy.ClassReference
+     * @return an Object - field value
+     * @exception	IllegalAccessException
+     * @exception	IllegalStateException
+     * @exception	InvocationTargetException
+     * @exception	NoSuchFieldException
      */
     public Object getField(String field_name)
 	throws InvocationTargetException, IllegalStateException, NoSuchFieldException, IllegalAccessException {
@@ -646,11 +662,16 @@ public class EventDispatcher implements Outputable, Timeoutable {
     }
 
     /**
-     * Sets component field value through <code>SwingUtilities.invokeAndWait(Runnable)</code>
-     * @param field_name Name of a field
-     * @param newValue New field value
-     * @see #getField(String)
-     * @see org.netbeans.jemmy.ClassReference
+     * Sets component field value through <code>SwingUtilities.invokeAndWait(Runnable)</code>.
+     * 
+     * @param	field_name Name of a field
+     * @param	newValue New field value
+     * @see	#getField(String)
+     * @see	org.netbeans.jemmy.ClassReference
+     * @exception	IllegalAccessException
+     * @exception	IllegalStateException
+     * @exception	InvocationTargetException
+     * @exception	NoSuchFieldException
      */
     public void setField(String field_name, Object newValue)
 	throws InvocationTargetException, IllegalStateException, NoSuchFieldException, IllegalAccessException {
@@ -674,12 +695,13 @@ public class EventDispatcher implements Outputable, Timeoutable {
     }
 
     /**
-     * Invokes component method through <code>SwingUtilities.invokeAndWait(Runnable)</code>
+     * Invokes component method through <code>SwingUtilities.invokeAndWait(Runnable)</code>.
      * and catch all exceptions.
      * @param method_name Name of a method to be invoked
      * @param params Method params
      * @param params_classes Method params' classes
      * @param out TestOut instance to print exceptions stack trace to.
+     * @return an Object - method result
      * @see #invokeMethod(String, Object[], Class[])
      * @see org.netbeans.jemmy.ClassReference
      */
@@ -700,10 +722,11 @@ public class EventDispatcher implements Outputable, Timeoutable {
     }
 
     /**
-     * Gets component field value through <code>SwingUtilities.invokeAndWait(Runnable)</code>
+     * Gets component field value through <code>SwingUtilities.invokeAndWait(Runnable)</code>.
      * and catch all exceptions.
      * @param field_name Name of a field
      * @param out TestOut instance to print exceptions stack trace to.
+     * @return an Object - fields value
      * @see #getField(String)
      * @see #setExistingField(String, Object, TestOut)
      * @see org.netbeans.jemmy.ClassReference
@@ -725,7 +748,7 @@ public class EventDispatcher implements Outputable, Timeoutable {
     }
 
     /**
-     * Sets component field value through <code>SwingUtilities.invokeAndWait(Runnable)</code>
+     * Sets component field value through <code>SwingUtilities.invokeAndWait(Runnable)</code>.
      * and catch all exceptions.
      * @param field_name Name of a field
      * @param newValue New field value
@@ -750,13 +773,14 @@ public class EventDispatcher implements Outputable, Timeoutable {
     }
 
     /**
-     * Invokes component method through <code>SwingUtilities.invokeAndWait(Runnable)</code>
+     * Invokes component method through <code>SwingUtilities.invokeAndWait(Runnable)</code>.
      * and catch all exceptions.
      * Exceptions are printed into TestOut object defined 
      * by setOutput(TestOut) method.
      * @param method_name Name of a method to be invoked
      * @param params Method params
      * @param params_classes Method params' classes
+     * @return an Object - method result
      * @see #invokeExistingMethod(String, Object[], Class[], TestOut)
      * @see org.netbeans.jemmy.ClassReference
      */
@@ -765,11 +789,12 @@ public class EventDispatcher implements Outputable, Timeoutable {
     }
 
     /**
-     * Gets component field value through <code>SwingUtilities.invokeAndWait(Runnable)</code>
+     * Gets component field value through <code>SwingUtilities.invokeAndWait(Runnable)</code>.
      * and catch all exceptions.
      * Exceptions are printed into TestOut object defined 
      * by setOutput(TestOut) method.
      * @param field_name Name of a field
+     * @return an Object - fields value
      * @see #getExistingField(String, TestOut)
      * @see #setExistingField(String, Object)
      * @see org.netbeans.jemmy.ClassReference
@@ -779,7 +804,7 @@ public class EventDispatcher implements Outputable, Timeoutable {
     }
 
     /**
-     * Sets component field value through <code>SwingUtilities.invokeAndWait(Runnable)</code>
+     * Sets component field value through <code>SwingUtilities.invokeAndWait(Runnable)</code>.
      * and catch all exceptions.
      * Exceptions are printed into TestOut object defined 
      * by setOutput(TestOut) method.

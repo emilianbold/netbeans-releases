@@ -45,7 +45,7 @@ public class ColorImageComparator extends StrictImageComparator {
      * Creates a comparator with <code>map</code> color mapping.
      * Actual comparision perfomed by <code>comparator</code> parameter.
      * @param map Map applied to both left and right images during comparision.
-     * @param subComparator
+     * @param subComparator comporator to perform a comparision of to images with mapped colors.
      */
     public ColorImageComparator(ColorMap map, ImageComparator subComparator) {
         this(map);
@@ -70,7 +70,7 @@ public class ColorImageComparator extends StrictImageComparator {
      * Actual comparision perfomed by <code>comparator</code> parameter.
      * @param leftMap Map applied to the left image during comparision.
      * @param rightMap Map applied to the right image during comparision.
-     * @param subComparator
+     * @param subComparator comporator to perform a comparision of to images with mapped colors.
      */
     public ColorImageComparator(ColorMap leftMap, ColorMap rightMap, ImageComparator subComparator) {
         this(leftMap, rightMap);
@@ -106,6 +106,11 @@ public class ColorImageComparator extends StrictImageComparator {
      * Interface to map colors during the comparision.
      */
     public static interface ColorMap {
+        /**
+         * Maps one color into another.
+         * @param rgb an original color.
+         * @return a converted color.
+         */
         public int mapColor(int rgb);
     }
 
@@ -114,6 +119,10 @@ public class ColorImageComparator extends StrictImageComparator {
      */
     public static class ForegroundColorMap implements ColorMap {
         int foreground;
+        /**
+         * Constructs a ColorImageComparator$ForegroundColorMap object.
+         * @param foreground Foreground color.
+         */
         public ForegroundColorMap(int foreground) {
             this.foreground = foreground;
         }
@@ -127,6 +136,10 @@ public class ColorImageComparator extends StrictImageComparator {
      */
     public static class BackgroundColorMap implements ColorMap {
         int background;
+        /**
+         * Constructs a ColorImageComparator$BackgroundColorMap object.
+         * @param background Background color.
+         */
         public BackgroundColorMap(int background) {
             this.background = background;
         }

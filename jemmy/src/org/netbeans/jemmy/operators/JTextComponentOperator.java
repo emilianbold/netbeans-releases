@@ -79,7 +79,7 @@ import javax.swing.text.Keymap;
  * ComponentOperator.WaitFocusTimeout - time to wait component focus <BR>
  * ComponentOperator.WaitStateTimeout - time to wait for text <BR>
  * JScrollBarOperator.OneScrollClickTimeout - time for one scroll click <BR>
- * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
+ * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -89,8 +89,22 @@ import javax.swing.text.Keymap;
 public class JTextComponentOperator extends JComponentOperator
     implements Timeoutable, Outputable{
 
+    /**
+     * Identifier for a "text" property.
+     * @see #getDump
+     */
     public static final String TEXT_DPROP = "Text";
+
+    /**
+     * Identifier for a "selected text" property.
+     * @see #getDump
+     */
     public static final String SELECTED_TEXT_DPROP = "Selected text";
+
+    /**
+     * Identifier for a "editable" property.
+     * @see #getDump
+     */
     public static final String IS_EDITABLE_DPROP = "Editable";
 
     private final static long PUSH_KEY_TIMEOUT = 0;
@@ -100,6 +114,11 @@ public class JTextComponentOperator extends JComponentOperator
 
     private Timeouts timeouts;
     private TestOut output;
+
+    /**
+     * Notifies what modifiers are pressed.
+     * @deprecated All text operations are performed by TextDriver regitered for this operator type.
+     */
     protected int modifiersPressed = 0;
 
     private TextDriver driver;
@@ -113,6 +132,12 @@ public class JTextComponentOperator extends JComponentOperator
 	driver = DriverManager.getTextDriver(getClass());
     }
 
+    /**
+     * Constructs a JTextComponentOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JTextComponentOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JTextComponent)cont.
              waitSubComponent(new JTextComponentFinder(chooser),
@@ -120,6 +145,11 @@ public class JTextComponentOperator extends JComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JTextComponentOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JTextComponentOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -128,6 +158,7 @@ public class JTextComponentOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
@@ -145,6 +176,7 @@ public class JTextComponentOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -157,6 +189,7 @@ public class JTextComponentOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -172,6 +205,7 @@ public class JTextComponentOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @throws TimeoutExpiredException
      */
     public JTextComponentOperator(ContainerOperator cont) {
@@ -188,7 +222,7 @@ public class JTextComponentOperator extends JComponentOperator
     /**
      * Searches JTextComponent in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JTextComponent instance or null if component was not found.
      */
@@ -199,7 +233,7 @@ public class JTextComponentOperator extends JComponentOperator
     /**
      * Searches JTextComponent in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JTextComponent instance or null if component was not found.
      */
     public static JTextComponent findJTextComponent(Container cont, ComponentChooser chooser) {
@@ -236,7 +270,7 @@ public class JTextComponentOperator extends JComponentOperator
     /**
      * Waits JTextComponent in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JTextComponent instance.
      * @throws TimeoutExpiredException
@@ -248,7 +282,7 @@ public class JTextComponentOperator extends JComponentOperator
     /**
      * Waits JTextComponent in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JTextComponent instance.
      * @throws TimeoutExpiredException
      */
@@ -285,12 +319,6 @@ public class JTextComponentOperator extends JComponentOperator
 	return(waitJTextComponent(cont, text, ce, ccs, 0));
     }
 
-    /**
-     * Defines current timeouts.
-     * @param times A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts times) {
 	timeouts = times;
 	timeouts.setTimeout("ComponentOperator.PushKeyTimeout", 
@@ -298,34 +326,15 @@ public class JTextComponentOperator extends JComponentOperator
 	super.setTimeouts(timeouts);
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -425,10 +434,7 @@ public class JTextComponentOperator extends JComponentOperator
     }
 
     /**
-     * Changes caret position by left and right arrow keys pushing.
-     * If component has not focus, does
-     * mouse click on component center before.
-     * If verification mode is on, checks that caret has been moved to right position.
+     * Changes caret position.
      * @param position Position to move caret to.
      * @see #changeCaretPosition(String, int, boolean)
      * @throws TimeoutExpiredException
@@ -452,8 +458,6 @@ public class JTextComponentOperator extends JComponentOperator
 
     /**
      * Puts caret before or after text.
-     * If component has not focus, does
-     * mouse click on component center before.
      * @param text Text to be searched.
      * @param index Index of text instance (first instance has index 0)
      * @param before If true put caret before text, otherwise after.
@@ -478,8 +482,6 @@ public class JTextComponentOperator extends JComponentOperator
 
     /**
      * Puts caret before or after text.
-     * If component has not focus, does
-     * mouse click on component center before.
      * @param text Text to be searched.
      * @param before If true put caret before text, otherwise after.
      * @see #changeCaretPosition(int)
@@ -495,8 +497,6 @@ public class JTextComponentOperator extends JComponentOperator
      * Types text starting from known position.
      * If verification mode is on, checks that right text has been typed
      * and caret has been moved to right position.
-     * If component has not focus, does
-     * mouse click on component center before.
      * @param text Text to be typed.
      * @param caretPosition Position to start type text
      * @see #typeText(String)
@@ -535,7 +535,7 @@ public class JTextComponentOperator extends JComponentOperator
     }
 
     /**
-     * Selects a part of text using Shift+<arrow> keys.
+     * Selects a part of text.
      * @param startPosition Start caret position
      * @param finalPosition Final caret position
      * @see #selectText(String, int)
@@ -561,7 +561,7 @@ public class JTextComponentOperator extends JComponentOperator
     }
 
     /**
-     * Selects a part of text using Shift+<arrow> keys.
+     * Selects a part of text.
      * @param text Text to be selected
      * @param index Index of text instance (first instance has index 0)
      * @see #selectText(int, int)
@@ -584,7 +584,7 @@ public class JTextComponentOperator extends JComponentOperator
     }
 
     /**
-     * Selects a part of text using Shift+<arrow> keys.
+     * Selects a part of text.
      * @param text Text to be selected
      * @see #selectText(String, int)
      * @see #selectText(int, int)
@@ -596,7 +596,7 @@ public class JTextComponentOperator extends JComponentOperator
     }
 
     /**
-     * Clears text using clearing mode.
+     * Clears text.
      * @throws TimeoutExpiredException
      */
     public void clearText() {
@@ -616,8 +616,8 @@ public class JTextComponentOperator extends JComponentOperator
     }
 
     /**
-     * Scrolls to a text poistion
-     * @param position
+     * Scrolls to a text poistion.
+     * @param position a position to scroll.
      * @throws TimeoutExpiredException
      */
     public void scrollToPosition(int position) {
@@ -647,6 +647,7 @@ public class JTextComponentOperator extends JComponentOperator
      * Returns text which is really displayed.
      * Results returned by <code>getText()</code> and <code>getDisplayedText()</code>
      * are different if text component is used to display <code>javax.swing.text.StyledDocument</code>
+     * @return the text which is displayed.
      */
     public String getDisplayedText() {
 	try {
@@ -660,8 +661,8 @@ public class JTextComponentOperator extends JComponentOperator
 
     /**
      * Wait for text to be displayed starting from certain position.
-     * @param text
-     * @param position
+     * @param text text to wait.
+     * @param position starting text position.
      */
     public void waitText(final String text, final int position) {
 	getOutput().printLine("Wait \"" + text + "\" text starting from " +
@@ -703,7 +704,7 @@ public class JTextComponentOperator extends JComponentOperator
 
     /**
      * Wait for caret to be moved to certain position.
-     * @param position
+     * @param position a position which caret supposed to be moved to.
      */
     public void waitCaretPosition(final int position) {
 	getOutput().printLine("Wait caret to be at \"" + Integer.toString(position) + 
@@ -721,9 +722,6 @@ public class JTextComponentOperator extends JComponentOperator
 	    });
     }
 
-    /**
-     * Returns information about component.
-     */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	result.put(TEXT_DPROP, ((JTextComponent)getSource()).getText());
@@ -1119,6 +1117,7 @@ public class JTextComponentOperator extends JComponentOperator
     public class NoSuchTextException extends JemmyInputException {
 	/**
 	 * Constructor.
+         * @param text a nonexistent text.
 	 */
 	public NoSuchTextException(String text) {
 	    super("No such text as \"" + text + "\"", getSource());
@@ -1130,17 +1129,39 @@ public class JTextComponentOperator extends JComponentOperator
      * @see #getPositionByText(java.lang.String, JTextComponentOperator.TextChooser)
      */
     public interface TextChooser {
+        /**
+         * Checkes if position fits the criteria.
+         * @param document a document to be checked.
+         * @param offset a checked position
+         * @return true if the position fits the criteria.
+         */
 	public boolean checkPosition(Document document, int offset);
+        /**
+         * Returns a printable description of the criteria.
+         * @return a description of this chooser.
+         */
 	public String getDescription();
     }
 
+    /**
+     * Allows to find component by text.
+     */
     public static class JTextComponentByTextFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
+        /**
+         * Constructs JTextComponentByTextFinder.
+         * @param lb a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public JTextComponentByTextFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs JTextComponentByTextFinder.
+         * @param lb a text pattern
+         */
 	public JTextComponentByTextFinder(String lb) {
             this(lb, Operator.getDefaultStringComparator());
 	}
@@ -1158,10 +1179,20 @@ public class JTextComponentOperator extends JComponentOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JTextComponentFinder extends Finder {
+        /**
+         * Constructs JTextComponentFinder.
+         * @param sf other searching criteria.
+         */
 	public JTextComponentFinder(ComponentChooser sf) {
             super(JTextComponent.class, sf);
 	}
+        /**
+         * Constructs JTextComponentFinder.
+         */
 	public JTextComponentFinder() {
             super(JTextComponent.class);
 	}

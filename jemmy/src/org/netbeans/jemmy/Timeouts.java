@@ -115,9 +115,11 @@ public class Timeouts extends Object{
 
     /**
      * Loads default timeouts values.
-     * @param stream Stream to load timeouts from.
-     * @see org.netbeans.jemmy.Timeouts#loadDefaults(String)
-     * @see org.netbeans.jemmy.Timeouts#loadDefaults()
+     * 
+     * @param	stream Stream to load timeouts from.
+     * @see	org.netbeans.jemmy.Timeouts#loadDefaults(String)
+     * @see	org.netbeans.jemmy.Timeouts#loadDefaults()
+     * @exception	IOException
      */
     public void loadDefaults(InputStream stream) 
 	throws IOException{
@@ -126,9 +128,12 @@ public class Timeouts extends Object{
 
     /**
      * Loads default timeouts values from file.
-     * @param fileName File to load timeouts from.
-     * @see org.netbeans.jemmy.Timeouts#loadDefaults(InputStream)
-     * @see org.netbeans.jemmy.Timeouts#loadDefaults(String)
+     * 
+     * @param	fileName File to load timeouts from.
+     * @see	org.netbeans.jemmy.Timeouts#loadDefaults(InputStream)
+     * @see	org.netbeans.jemmy.Timeouts#loadDefaults(String)
+     * @exception	IOException
+     * @exception	FileNotFoundException
      */
     public void loadDefaults(String fileName) 
 	throws FileNotFoundException, IOException {
@@ -138,8 +143,11 @@ public class Timeouts extends Object{
     /**
      * Loads default timeouts values.
      * Uses jemmy.timeouts system property to get timeouts file.
-     * @see org.netbeans.jemmy.Timeouts#loadDefaults(InputStream)
-     * @see org.netbeans.jemmy.Timeouts#loadDefaults(String)
+     * 
+     * @see	org.netbeans.jemmy.Timeouts#loadDefaults(InputStream)
+     * @see	org.netbeans.jemmy.Timeouts#loadDefaults(String)
+     * @exception	IOException
+     * @exception	FileNotFoundException
      */
     public void loadDefaults() 
 	throws FileNotFoundException, IOException {
@@ -148,6 +156,8 @@ public class Timeouts extends Object{
 
     /**
      * Creates Timeout new object by name and getTimeout(name) value.
+     * @param	name Timeout name.
+     * @return a Timeout instance.
      */
     public Timeout create(String name) {
 	return(new Timeout(name, getTimeout(name)));
@@ -155,6 +165,7 @@ public class Timeouts extends Object{
 
     /**
      * Create timeout for "Timeouts.DeltaTimeout" name.
+     * @return a Timeout instance.
      */
     public Timeout createDelta() {
 	return(create("Timeouts.DeltaTimeout"));
@@ -174,6 +185,8 @@ public class Timeouts extends Object{
      * Sets new timeout value.
      * @param name Timeout name.
      * @param newValue Timeout value.
+     * @return old timeout value
+     * @see #getTimeout
      */
     public long setTimeout(String name, long newValue) {
 	long oldValue = -1;
@@ -192,6 +205,7 @@ public class Timeouts extends Object{
      * @param name Timeout name.
      * @return Timeout value.
      * @see #getDefault(String)
+     * @see #setTimeout
      */
     public long getTimeout(String name) {
 	if(contains(name)) {
@@ -218,6 +232,7 @@ public class Timeouts extends Object{
      * Sets timeout value if it was not set before.
      * @param name Timeout name.
      * @param newValue Timeout value.
+     * @return old timeout value
      */
     public long initTimeout(String name, long newValue) {
 	long result = getTimeout(name);
@@ -246,7 +261,9 @@ public class Timeouts extends Object{
     /**
      * Sleeps for the "name" timeout value.
      * Can throw InterruptedException if current thread was interrupted.
-     * @param name Timeout name.
+     * 
+     * @param	name Timeout name.
+     * @exception	InterruptedException
      */
     public void eSleep(String name) throws InterruptedException{
 	if(contains(name) ||
@@ -297,9 +314,11 @@ public class Timeouts extends Object{
 
     /**
      * Loads timeouts values.
-     * @param stream Stream to load timeouts from.
-     * @see org.netbeans.jemmy.Timeouts#load(String)
-     * @see org.netbeans.jemmy.Timeouts#load()
+     * 
+     * @param	stream Stream to load timeouts from.
+     * @see	org.netbeans.jemmy.Timeouts#load(String)
+     * @see	org.netbeans.jemmy.Timeouts#load()
+     * @exception	IOException
      */
     public void load(InputStream stream) 
 	throws IOException{
@@ -318,9 +337,12 @@ public class Timeouts extends Object{
 
     /**
      * Loads timeouts values from file.
-     * @param fileName File to load timeouts from.
-     * @see org.netbeans.jemmy.Timeouts#load(InputStream)
-     * @see org.netbeans.jemmy.Timeouts#load(String)
+     * 
+     * @param	fileName File to load timeouts from.
+     * @see	org.netbeans.jemmy.Timeouts#load(InputStream)
+     * @see	org.netbeans.jemmy.Timeouts#load(String)
+     * @exception	IOException
+     * @exception	FileNotFoundException
      */
     public void load(String fileName) 
 	throws FileNotFoundException, IOException {
@@ -330,8 +352,11 @@ public class Timeouts extends Object{
     /**
      * Loads timeouts values.
      * Uses jemmy.timeouts system property to get timeouts file.
-     * @see org.netbeans.jemmy.Timeouts#load(InputStream)
-     * @see org.netbeans.jemmy.Timeouts#load(String)
+     * 
+     * @see	org.netbeans.jemmy.Timeouts#load(InputStream)
+     * @see	org.netbeans.jemmy.Timeouts#load(String)
+     * @exception	IOException
+     * @exception	FileNotFoundException
      */
     public void load() 
 	throws FileNotFoundException, IOException {
@@ -343,6 +368,8 @@ public class Timeouts extends Object{
 
     /**
      * Loads debug timeouts values.
+     * 
+     * @exception	IOException
      */
     public void loadDebugTimeouts() throws IOException {
         load(getClass().getClassLoader().getResourceAsStream("org/netbeans/jemmy/debug.timeouts"));

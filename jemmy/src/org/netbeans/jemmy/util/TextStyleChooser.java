@@ -28,8 +28,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator.TextChooser;
 
 /**
  * Defines searching criteria for <code>javax.swing.text.StyledDocument</code>
- * @see org.netbeans.jemmy.operators.JTextComponentOperator#getPositionByText(java.lang.String, 
- * org.netbeans.jemmy.operators.JTextComponentOperator.TextChooser, int)
+ * <a href="JTextComponentOperator.java">JTextComponentOperator.getPositionByText(String, JTextComponentOperator.TextChooser, int)</a>.
  *
  * @author Alexandre Iline (alexandre.iline@sun.com)
  */
@@ -51,6 +50,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
     }
     /**
      * Adds boldness checking to the criteria.
+     * @param bold Specifies if font needs to be bold.
      */
     public void setBold(boolean bold) {
 	this.bold = bold ? Boolean.TRUE : Boolean.FALSE;
@@ -63,6 +63,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
     }
     /**
      * Adds italic style checking to the criteria.
+     * @param italic Specifies if font needs to be italic.
      */
     public void setItalic(boolean italic) {
 	this.italic = italic ? Boolean.TRUE : Boolean.FALSE;
@@ -75,6 +76,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
     }
     /**
      * Adds strikeness checking to the criteria.
+     * @param strike Specifies if font needs to be striked.
      */
     public void setStrike(boolean strike) {
 	this.strike = strike ? Boolean.TRUE : Boolean.FALSE;
@@ -87,6 +89,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
     }
     /**
      * Adds understrikeness checking to the criteria.
+     * @param understrike Specifies if font needs to be understriked.
      */
     public void setUnderstrike(boolean understrike) {
 	this.understrike = understrike ? Boolean.TRUE : Boolean.FALSE;
@@ -99,6 +102,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
     }
     /**
      * Adds font size checking to the criteria.
+     * @param fontSize Specifies a font size.
      */
     public void setFontSize(int fontSize) {
 	this.fontSize = new Integer(fontSize);
@@ -111,6 +115,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
     }
     /**
      * Adds alignment checking to the criteria.
+     * @param alignment Specifies a text alignment.
      */
     public void setAlignment(int alignment) {
 	this.alignment = new Integer(alignment);
@@ -123,6 +128,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
     }
     /**
      * Adds font family checking to the criteria.
+     * @param fontFamily Specifies a font family.
      */
     public void setFontFamily(String fontFamily) {
 	this.fontFamily = fontFamily;
@@ -135,6 +141,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
     }
     /**
      * Adds backgroung color checking to the criteria.
+     * @param background Specifies a background color.
      */
     public void setBackground(Color background) {
 	this.background = background;
@@ -147,6 +154,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
     }
     /**
      * Adds foregroung color checking to the criteria.
+     * @param foreground Specifies a foreground color.
      */
     public void setForeground(Color foreground) {
 	this.foreground = foreground;
@@ -155,12 +163,9 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
      * Removes foregroung color checking from the criteria.
      */
     public void unsetForeground() {
-	this.foreground = null;
+ 	this.foreground = null;
     }
-    /**
-     * @see org.netbeans.jemmy.util.AbstractTextStyleChooser#checkElement(javax.swing.text.StyledDocument, 
-     * javax.swing.text.Element, int)
-     */
+
     public boolean checkElement(StyledDocument doc, Element element, int offset) {
 	if(bold != null) {
 	    if(StyleConstants.isBold(element.getAttributes()) != bold.booleanValue()) {
@@ -209,6 +214,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
 	}
 	return(true);
     }
+
     public String getDescription() {
 	String result = "";
 	if(bold != null) {

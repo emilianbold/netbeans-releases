@@ -24,6 +24,8 @@ import org.netbeans.jemmy.drivers.scrolling.ScrollAdjuster;
 /**
  * Defines how to work with scrollable components such as
  * <code>javax.swing.JScrollBar</code>, <code>javax.swing.JScrollPane</code>, <code>javax.swing.JSlider</code>, ...
+ * 
+ * @author Alexandre Iline (alexandre.iline@sun.com)
  */
 public interface ScrollDriver {
 
@@ -44,7 +46,7 @@ public interface ScrollDriver {
     /**
      * Changes value.
      * @param oper Scroller operator.
-     * @param ScrollAdjuster Object defines scroll position.
+     * @param adj Object defines scroll position.
      */
     public void scroll(ComponentOperator oper, ScrollAdjuster adj);
 }

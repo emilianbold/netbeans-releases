@@ -30,7 +30,7 @@ import javax.swing.JCheckBoxMenuItem;
  * <BR><BR>Timeouts used: <BR>
  * JMenuItemOperator.PushMenuTimeout - time between button pressing and releasing<BR>
  * ComponentOperator.WaitComponentTimeout - time to wait button displayed <BR>
- * ComponentOperator.WaitComponentEnabledTimeout - time to wait button enabled <BR>
+ * ComponentOperator.WaitComponentEnabledTimeout - time to wait button enabled <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -41,6 +41,7 @@ import javax.swing.JCheckBoxMenuItem;
 public class JCheckBoxMenuItemOperator extends JMenuItemOperator {
     /**
      * Constructor.
+     * @param item a component.
      */
     public JCheckBoxMenuItemOperator(JCheckBoxMenuItem item) {
 	super(item);
@@ -48,6 +49,12 @@ public class JCheckBoxMenuItemOperator extends JMenuItemOperator {
 	setOutput(JemmyProperties.getProperties().getOutput());
     }
 
+    /**
+     * Constructs a JCheckBoxMenuItemOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JCheckBoxMenuItemOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JCheckBoxMenuItem)cont.
              waitSubComponent(new JCheckBoxMenuItemFinder(chooser),
@@ -55,6 +62,11 @@ public class JCheckBoxMenuItemOperator extends JMenuItemOperator {
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JCheckBoxMenuItemOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JCheckBoxMenuItemOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -63,10 +75,10 @@ public class JCheckBoxMenuItemOperator extends JMenuItemOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public JCheckBoxMenuItemOperator(ContainerOperator cont, String text, int index) {
 	this((JCheckBoxMenuItem)waitComponent(cont, 
@@ -81,9 +93,9 @@ public class JCheckBoxMenuItemOperator extends JMenuItemOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public JCheckBoxMenuItemOperator(ContainerOperator cont, String text) {
 	this(cont, text, 0);
@@ -93,8 +105,8 @@ public class JCheckBoxMenuItemOperator extends JMenuItemOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
-     * @throws TimeoutExpiredException
      */
     public JCheckBoxMenuItemOperator(ContainerOperator cont, int index) {
 	this((JCheckBoxMenuItem)
@@ -108,7 +120,7 @@ public class JCheckBoxMenuItemOperator extends JMenuItemOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
-     * @throws TimeoutExpiredException
+     * @param cont a container
      */
     public JCheckBoxMenuItemOperator(ContainerOperator cont) {
 	this(cont, 0);
@@ -134,13 +146,25 @@ public class JCheckBoxMenuItemOperator extends JMenuItemOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Allows to find component by text.
+     */
     public static class JCheckBoxMenuItemByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
+        /**
+         * Constructs JCheckBoxMenuItemByLabelFinder.
+         * @param lb a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public JCheckBoxMenuItemByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs JCheckBoxMenuItemByLabelFinder.
+         * @param lb a text pattern
+         */
 	public JCheckBoxMenuItemByLabelFinder(String lb) {
             this(lb, Operator.getDefaultStringComparator());
 	}
@@ -158,10 +182,20 @@ public class JCheckBoxMenuItemOperator extends JMenuItemOperator {
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JCheckBoxMenuItemFinder extends Finder {
+        /**
+         * Constructs JCheckBoxMenuItemFinder.
+         * @param sf other searching criteria.
+         */
 	public JCheckBoxMenuItemFinder(ComponentChooser sf) {
             super(JCheckBoxMenuItem.class, sf);
 	}
+        /**
+         * Constructs JCheckBoxMenuItemFinder.
+         */
 	public JCheckBoxMenuItemFinder() {
             super(JCheckBoxMenuItem.class);
 	}

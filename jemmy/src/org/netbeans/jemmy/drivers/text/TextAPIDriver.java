@@ -29,10 +29,21 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.TextComponentOperator;
 
+/**
+ * Superclass for all TextDrivers using API calls.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public abstract class TextAPIDriver extends LightSupportiveDriver implements TextDriver {
+
+    /**
+     * Constructs a ChoiceDriver.
+     * @param supported an array of supported class names
+     */
     public TextAPIDriver(String[] supported) {
 	super(supported);
     }
+
     public void changeCaretPosition(ComponentOperator oper, int position) {
 	checkSupported(oper);
 	if(oper instanceof TextComponentOperator) {
@@ -41,6 +52,7 @@ public abstract class TextAPIDriver extends LightSupportiveDriver implements Tex
 	    ((JTextComponentOperator)oper).setCaretPosition(position);
 	}
     }
+
     public void selectText(ComponentOperator oper, int startPosition, int finalPosition) {
 	checkSupported(oper);
 	int start = (startPosition < finalPosition) ? startPosition : finalPosition;
@@ -55,6 +67,7 @@ public abstract class TextAPIDriver extends LightSupportiveDriver implements Tex
 	    toper.setSelectionEnd(end);
 	}
     }
+
     public void clearText(ComponentOperator oper) {
 	if(oper instanceof TextComponentOperator) {
 	    ((TextComponentOperator)oper).setText("");
@@ -62,6 +75,7 @@ public abstract class TextAPIDriver extends LightSupportiveDriver implements Tex
 	    ((JTextComponentOperator)oper).setText("");
 	}
     }
+
     public void typeText(ComponentOperator oper, String text, int caretPosition) {
 	checkSupported(oper);
 	String curtext = getText(oper);
@@ -79,6 +93,7 @@ public abstract class TextAPIDriver extends LightSupportiveDriver implements Tex
 		   curtext.substring(0, realPos) + text + 
 		   curtext.substring(realPos));
     }
+
     public void changeText(ComponentOperator oper, String text) {
 	checkSupported(oper);
 	if(oper instanceof TextComponentOperator) {
@@ -93,8 +108,32 @@ public abstract class TextAPIDriver extends LightSupportiveDriver implements Tex
 	    pushKey(oper, KeyEvent.VK_ENTER, 0,
 		    new Timeout("", 0));
     }
+
+    /**
+     * Returns operator's text.
+     * @param oper an operator.
+     * @return string representing component text.
+     */
     public abstract String getText(ComponentOperator oper);
+
+    /**
+     * Returns current caret position.
+     * @param oper an operator.
+     * @return int represnting current operator's caret position.
+     */
     public abstract int getCaretPosition(ComponentOperator oper);
+
+    /**
+     * Returns a caret position of selection start.
+     * @param oper an operator.
+     * @return int represnting index of operator's selection start.
+     */
     public abstract int getSelectionStart(ComponentOperator oper);
+
+    /**
+     * Returns a caret position of selection end.
+     * @param oper an operator.
+     * @return int represnting index of operator's selection end.
+     */
     public abstract int getSelectionEnd(ComponentOperator oper);
 }

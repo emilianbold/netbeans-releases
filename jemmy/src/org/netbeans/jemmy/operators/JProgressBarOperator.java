@@ -48,7 +48,7 @@ import javax.swing.plaf.ProgressBarUI;
  * javax.swing.JProgressBar class.
  *
  * <BR><BR>Timeouts used: <BR>
- * JProgressBarOperator.WaitValueTimeout - used from waitValue() method <BR>
+ * JProgressBarOperator.WaitValueTimeout - used from waitValue() method <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -58,8 +58,22 @@ import javax.swing.plaf.ProgressBarUI;
 public class JProgressBarOperator extends JComponentOperator
     implements Timeoutable, Outputable {
 
+    /**
+     * Identifier for a "minimum" property.
+     * @see #getDump
+     */
     public static final String MINIMUM_DPROP = "Minimum";
+
+    /**
+     * Identifier for a "maximum" property.
+     * @see #getDump
+     */
     public static final String MAXIMUM_DPROP = "Maximum";
+
+    /**
+     * Identifier for a "value" property.
+     * @see #getDump
+     */
     public static final String VALUE_DPROP = "Value";
 
     private static long WAIT_VALUE_TIMEOUT = 60000;
@@ -75,6 +89,12 @@ public class JProgressBarOperator extends JComponentOperator
 	super(b);
     }
 
+    /**
+     * Constructs a JProgressBarOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JProgressBarOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JProgressBar)cont.
              waitSubComponent(new JProgressBarFinder(chooser),
@@ -82,6 +102,11 @@ public class JProgressBarOperator extends JComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JProgressBarOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JProgressBarOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -200,49 +225,27 @@ public class JProgressBarOperator extends JComponentOperator
 	Timeouts.initDefault("JProgressBarOperator.WaitValueTimeout", WAIT_VALUE_TIMEOUT);
     }
 
-    /**
-     * Sets operator's timeouts.
-     * @param timeouts org.netbeans.jemmy.Timeouts instance.
-     */
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
 	super.setTimeouts(timeouts);
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
     /**
      * Waits for criteria defined by <code>chooser</code> to be reached.
+     * @param chooser an object specifying waiting criteria.
      * @see #waitValue(int)
      */
     public void waitValue(final ValueChooser chooser) {
@@ -274,6 +277,7 @@ public class JProgressBarOperator extends JComponentOperator
     /**
      * Waits progress bar value to be less or equal to <code>value</code> parameter.
      * Can be used for typical progress bar (when value is increasing).
+     * @param value a value to reach.
      * @see #waitValue(JProgressBarOperator.ValueChooser)
      */
     public void waitValue(final int value) {
@@ -287,9 +291,6 @@ public class JProgressBarOperator extends JComponentOperator
 	    });
     }
 
-    /**
-     * Returns information about component.
-     */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	result.put(MINIMUM_DPROP, Integer.toString(((JProgressBar)getSource()).getMinimum()));
@@ -457,14 +458,33 @@ public class JProgressBarOperator extends JComponentOperator
      * @see #waitValue(int)
      */
     public interface ValueChooser {
+        /**
+         * Check if criteria jave been reached.
+         * @param value current value.
+         * @return true if criteria reached.
+         */
 	public boolean checkValue(int value);
+        /**
+         * A description.
+         * @return a description.
+         */
 	public String getDescription();
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JProgressBarFinder extends Finder {
+        /**
+         * Constructs JProgressBarFinder.
+         * @param sf other searching criteria.
+         */
 	public JProgressBarFinder(ComponentChooser sf) {
             super(JProgressBar.class, sf);
 	}
+        /**
+         * Constructs JProgressBarFinder.
+         */
 	public JProgressBarFinder() {
             super(JProgressBar.class);
 	}

@@ -37,7 +37,7 @@ import javax.swing.JRootPane;
 /**
  * <BR><BR>Timeouts used: <BR>
  * FrameWaiter.WaitFrameTimeout - time to wait frame displayed <BR>
- * FrameWaiter.AfterFrameTimeout - time to sleep after frame has been dispayed <BR>
+ * FrameWaiter.AfterFrameTimeout - time to sleep after frame has been dispayed <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  * 
@@ -49,11 +49,18 @@ public class JFrameOperator extends FrameOperator {
 
     /**
      * Constructor.
+     * @param w window
      */
     public JFrameOperator(JFrame w) {
 	super(w);
     }
 
+    /**
+     * Constructs a JFrameOperator object.
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     * @param env an operator to copy environment from.
+     */
     public JFrameOperator(ComponentChooser chooser, int index, Operator env) {
 	this((JFrame)waitFrame(new JFrameFinder(chooser),
                                index, 
@@ -62,10 +69,19 @@ public class JFrameOperator extends FrameOperator {
 	copyEnvironment(env);
     }
 
+    /**
+     * Constructs a JFrameOperator object.
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JFrameOperator(ComponentChooser chooser, int index) {
 	this(chooser, index, Operator.getEnvironmentOperator());
     }
 
+    /**
+     * Constructs a JFrameOperator object.
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JFrameOperator(ComponentChooser chooser) {
 	this(chooser, 0);
     }
@@ -75,12 +91,11 @@ public class JFrameOperator extends FrameOperator {
      * Waits for the frame with "title" subtitle.
      * Constructor can be used in complicated cases when
      * output or timeouts should differ from default.
-     * @param title
-     * @param index
-     * @param timeouts 
-     * @param output
+     * @param title a window title
+     * @param index Ordinal component index.
+     * @param env an operator to copy environment from.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
+     * 
      */
     public JFrameOperator(String title, int index, Operator env) {
 	this(new JFrameFinder(new FrameByTitleFinder(title, 
@@ -92,12 +107,12 @@ public class JFrameOperator extends FrameOperator {
      * Constructor.
      * Waits for the frame with "title" subtitle.
      * Uses current timeouts and output values.
-     * @param title
-     * @param index
+     * @param title a window title
+     * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @see JemmyProperties#getCurrentTimeouts()
      * @see JemmyProperties#getCurrentOutput()
-     * @throws TimeoutExpiredException
+     * 
      */
     public JFrameOperator(String title, int index) {
 	this(title, index,
@@ -108,11 +123,11 @@ public class JFrameOperator extends FrameOperator {
      * Constructor.
      * Waits for the frame with "title" subtitle.
      * Uses current timeouts and output values.
-     * @param title
+     * @param title a window title
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @see JemmyProperties#getCurrentTimeouts()
      * @see JemmyProperties#getCurrentOutput()
-     * @throws TimeoutExpiredException
+     * 
      */
     public JFrameOperator(String title) {
 	this(title, 0);
@@ -123,7 +138,7 @@ public class JFrameOperator extends FrameOperator {
      * Waits for the index'th frame.
      * Uses current timeout and output for waiting and to init operator.
      * @param index Ordinal component index.
-     * @throws TimeoutExpiredException
+     * 
      */
     public JFrameOperator(int index) {
 	this((JFrame)
@@ -138,7 +153,7 @@ public class JFrameOperator extends FrameOperator {
      * Constructor.
      * Waits for the first frame.
      * Uses current timeout and output for waiting and to init operator.
-     * @throws TimeoutExpiredException
+     * 
      */
     public JFrameOperator() {
 	this(0);
@@ -146,6 +161,9 @@ public class JFrameOperator extends FrameOperator {
 
     /**
      * Searches an index'th frame.
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     * @return JFrame instance or null if component was not found.
      */
     public static JFrame findJFrame(ComponentChooser chooser, int index) {
 	return((JFrame)FrameWaiter.getFrame(new JFrameFinder(chooser), index));
@@ -153,6 +171,8 @@ public class JFrameOperator extends FrameOperator {
 
     /**
      * Searches a frame.
+     * @param chooser a component chooser specifying searching criteria.
+     * @return JFrame instance or null if component was not found.
      */
     public static JFrame findJFrame(ComponentChooser chooser) {
 	return(findJFrame(chooser, 0));
@@ -161,6 +181,10 @@ public class JFrameOperator extends FrameOperator {
     /**
      * Searches an index'th frame by title.
      * @param title Frame title
+     * @param ce Compare exactly. If true, text can be a substring of caption.
+     * @param cc Compare case sensitively. If true, both text and caption are 
+     * @param index an index between appropriate ones.
+     * @return JFrame instance or null if component was not found.
      */
     public static JFrame findJFrame(String title, boolean ce, boolean cc, int index) {
 	return((JFrame)FrameWaiter.
@@ -172,6 +196,9 @@ public class JFrameOperator extends FrameOperator {
     /**
      * Searches a frame by title.
      * @param title Frame title
+     * @param ce Compare exactly. If true, text can be a substring of caption.
+     * @param cc Compare case sensitively. If true, both text and caption are 
+     * @return JFrame instance or null if component was not found.
      */
     public static JFrame findJFrame(String title, boolean ce, boolean cc) {
 	return(findJFrame(title, ce, cc, 0));
@@ -179,7 +206,10 @@ public class JFrameOperator extends FrameOperator {
 
     /**
      * Waits an index'th frame.
-     * @throws TimeoutExpiredException
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     * @return JFrame instance or null if component was not found.
+     * 
      */
     public static JFrame waitJFrame(ComponentChooser chooser, int index) {
 	return((JFrame)waitFrame(new JFrameFinder(chooser), index,
@@ -189,7 +219,9 @@ public class JFrameOperator extends FrameOperator {
 
     /**
      * Waits a frame.
-     * @throws TimeoutExpiredException
+     * @param chooser a component chooser specifying searching criteria.
+     * @return JFrame instance or null if component was not found.
+     * 
      */
     public static JFrame waitJFrame(ComponentChooser chooser) {
 	return(waitJFrame(chooser, 0));
@@ -198,7 +230,11 @@ public class JFrameOperator extends FrameOperator {
     /**
      * Waits an index'th frame by title.
      * @param title Frame title
-     * @throws TimeoutExpiredException
+     * @param ce Compare exactly. If true, text can be a substring of caption.
+     * @param cc Compare case sensitively. If true, both text and caption are 
+     * @param index an index between appropriate ones.
+     * @return JFrame instance or null if component was not found.
+     * 
      */
     public static JFrame waitJFrame(String title, boolean ce, boolean cc, int index) {
 	try {
@@ -216,7 +252,10 @@ public class JFrameOperator extends FrameOperator {
     /**
      * Waits a frame by title.
      * @param title Frame title
-     * @throws TimeoutExpiredException
+     * @param ce Compare exactly. If true, text can be a substring of caption.
+     * @param cc Compare case sensitively. If true, both text and caption are 
+     * @return JFrame instance or null if component was not found.
+     * 
      */
     public static JFrame waitJFrame(String title, boolean ce, boolean cc) {
 	return(waitJFrame(title, ce, cc, 0));
@@ -312,10 +351,20 @@ public class JFrameOperator extends FrameOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Checks component type.
+     */
     public static class JFrameFinder extends Finder {
+        /**
+         * Constructs JFrameFinder.
+         * @param sf other searching criteria.
+         */
 	public JFrameFinder(ComponentChooser sf) {
             super(JFrame.class, sf);
 	}
+        /**
+         * Constructs JFrameFinder.
+         */
 	public JFrameFinder() {
             super(JFrame.class);
 	}

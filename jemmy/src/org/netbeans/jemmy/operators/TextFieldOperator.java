@@ -40,16 +40,20 @@ import java.util.Hashtable;
 
 /**
  *
+ * This operator type covers java.awt.TextField component.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
  * @author Alexandre Iline (alexandre.iline@sun.com)
  *	
  */
-
 public class TextFieldOperator extends TextComponentOperator
     implements Timeoutable, Outputable {
 
+    /**
+     * Identifier for a "text" property.
+     * @see #getDump
+     */
     public static final String TEXT_DPROP = "Text";
 
     private final static long PUSH_KEY_TIMEOUT = 0;
@@ -69,6 +73,12 @@ public class TextFieldOperator extends TextComponentOperator
 	super(b);
     }
 
+    /**
+     * Constructs a TextFieldOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public TextFieldOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((TextField)cont.
              waitSubComponent(new TextFieldFinder(chooser),
@@ -76,6 +86,11 @@ public class TextFieldOperator extends TextComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a TextFieldOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public TextFieldOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -92,7 +107,6 @@ public class TextFieldOperator extends TextComponentOperator
      * @param text TextField text. 
      * @param index Ordinal component index. The first component has <code>index</code> 0.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public TextFieldOperator(ContainerOperator cont, String text, int index) {
 	this((TextField)waitComponent(cont, 
@@ -113,7 +127,6 @@ public class TextFieldOperator extends TextComponentOperator
      * @param cont The operator for a container containing the sought for textField.
      * @param text TextField text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public TextFieldOperator(ContainerOperator cont, String text) {
 	this(cont, text, 0);
@@ -126,7 +139,6 @@ public class TextFieldOperator extends TextComponentOperator
      * @param cont The operator for a container containing the sought for textField.
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public TextFieldOperator(ContainerOperator cont, int index) {
 	this((TextField)
@@ -142,7 +154,6 @@ public class TextFieldOperator extends TextComponentOperator
      * Uses cont's timeout and output for waiting and to init operator.
      * @param cont The operator for a container containing the sought for textField.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public TextFieldOperator(ContainerOperator cont) {
 	this(cont, 0);
@@ -208,7 +219,6 @@ public class TextFieldOperator extends TextComponentOperator
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @param index Ordinal component index.
      * @return TextField instance.
-     * @throws TimeoutExpiredException
      */
     public static TextField waitTextField(Container cont, ComponentChooser chooser, int index) {
 	return((TextField)waitComponent(cont, new TextFieldFinder(chooser), index));
@@ -219,7 +229,6 @@ public class TextFieldOperator extends TextComponentOperator
      * @param cont Container to search component in.
      * @param chooser org.netbeans.jemmy.ComponentChooser implementation.
      * @return TextField instance.
-     * @throws TimeoutExpiredException
      */
     public static TextField waitTextField(Container cont, ComponentChooser chooser){
 	return(waitTextField(cont, chooser, 0));
@@ -234,7 +243,6 @@ public class TextFieldOperator extends TextComponentOperator
      * @param index Ordinal component index.
      * @return TextField instance.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public static TextField waitTextField(Container cont, String text, boolean ce, boolean ccs, int index) {
 	return(waitTextField(cont, new TextFieldByTextFinder(text, new DefaultStringComparator(ce, ccs)), index));
@@ -248,7 +256,6 @@ public class TextFieldOperator extends TextComponentOperator
      * @param ccs Compare text case sensitively.
      * @return TextField instance.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public static TextField waitTextField(Container cont, String text, boolean ce, boolean ccs) {
 	return(waitTextField(cont, text, ce, ccs, 0));
@@ -261,52 +268,24 @@ public class TextFieldOperator extends TextComponentOperator
 	Timeouts.initDefault("TextFieldOperator.TypeTextTimeout", TYPE_TEXT_TIMEOUT);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param timeouts A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts timeouts) {
 	super.setTimeouts(timeouts);
 	this.timeouts = timeouts;
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
-    /**
-     * Returns information about component.
-     */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	result.put(TEXT_DPROP, ((TextField)getSource()).getText());
@@ -375,13 +354,25 @@ public class TextFieldOperator extends TextComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Allows to find component by text.
+     */
     public static class TextFieldByTextFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
+        /**
+         * Constructs TextFieldByTextFinder.
+         * @param lb a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public TextFieldByTextFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs TextFieldByTextFinder.
+         * @param lb a text pattern
+         */
 	public TextFieldByTextFinder(String lb) {
             this(lb, Operator.getDefaultStringComparator());
 	}
@@ -399,10 +390,20 @@ public class TextFieldOperator extends TextComponentOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class TextFieldFinder extends Finder {
+        /**
+         * Constructs TextFieldFinder.
+         * @param sf other searching criteria.
+         */
 	public TextFieldFinder(ComponentChooser sf) {
             super(TextField.class, sf);
 	}
+        /**
+         * Constructs TextFieldFinder.
+         */
 	public TextFieldFinder() {
             super(TextField.class);
 	}

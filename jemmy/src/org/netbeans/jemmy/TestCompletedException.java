@@ -62,6 +62,7 @@ public class TestCompletedException extends JemmyException {
 
     /**
      * Returns status.
+     * @return test status
      */
     public int getStatus() {
 	return(status);

@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="jar" value="jemmy.jar"/>
   <property name="zip" value="jemmy.zip"/>
   <property name="util" value="util"/>
-  <property name="excludes" value="util/1.4.excludes"/>
+  <property name="excludes" value="util/${ant.java.version}.excludes"/>
 
   <property name="testlist" value="testsuite/testlist"/>
   <property name="testdatalocation" value="testsuite/src/org/netbeans/jemmy/testing"/>
@@ -42,13 +42,17 @@ Microsystems, Inc. All Rights Reserved.
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="${nbext}/standard-nbm-license.txt"/>
 
+  <target name="java">
+    <echo message="Using ${java.vm.version} java"/>
+  </target>
+
   <target name="timestamp" unless="buildnumber">
     <tstamp>
         <format property="buildnumber" pattern="yyyyMMdd"/>
     </tstamp>
   </target>
 
-  <target name="compile" depends="timestamp">
+  <target name="compile" depends="java,timestamp">
     <filter token="BUILD_NUMBER" value="${buildnumber}"/>
     <mkdir dir="${build}"/>
     <javac srcdir="${src}" destdir="${build}" excludesfile="${excludes}"/>
@@ -148,7 +152,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="compiletest" depends="compile">
     <mkdir dir="${testbuild}"/>
-    <javac srcdir="${testsources}" destdir="${testbuild}">
+    <javac srcdir="${testsources}" destdir="${testbuild}" excludesfile="${excludes}">
       <classpath>
         <pathelement location="${build}"/>
         <pathelement path="${java.class.path}"/>

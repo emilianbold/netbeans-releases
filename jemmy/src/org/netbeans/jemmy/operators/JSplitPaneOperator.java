@@ -50,7 +50,7 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider;
  * JSplitPaneOperator.ScrollClickTimeout - time for simple scroll click <BR>
  * JSplitPaneOperator.BetweenClickTimeout - time to sleep between scroll clicks <BR>
  * JSplitPaneOperator.WholeScrollTimeout - time for the whole scrolling <BR>
- * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
+ * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -63,12 +63,46 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider;
 public class JSplitPaneOperator extends JComponentOperator
     implements Timeoutable, Outputable{
 
+    /**
+     * Identifier for a "minimum" property.
+     * @see #getDump
+     */
     public static final String MINIMUM_DPROP = "Minimum";
+
+    /**
+     * Identifier for a "maximum" property.
+     * @see #getDump
+     */
     public static final String MAXIMUM_DPROP = "Maximum";
+
+    /**
+     * Identifier for a "value" property.
+     * @see #getDump
+     */
     public static final String VALUE_DPROP = "Value";
+
+    /**
+     * Identifier for a "orientation" property.
+     * @see #getDump
+     */
     public static final String ORIENTATION_DPROP = "Orientation";
+
+    /**
+     * Identifier for a "HORIZONTAL" value of "orientation" property.
+     * @see #getDump
+     */
     public static final String HORIZONTAL_ORIENTATION_DPROP_VALUE = "HORIZONTAL";
+
+    /**
+     * Identifier for a "VERTICAL" value of "orientation" property.
+     * @see #getDump
+     */
     public static final String VERTICAL_ORIENTATION_DPROP_VALUE = "VERTICAL";
+
+    /**
+     * Identifier for a "one touch expendable" property.
+     * @see #getDump
+     */
     public static final String IS_ONE_TOUCH_EXPANDABLE_DPROP = "One touch expandable";
 
     private final static long SCROLL_CLICK_TIMEOUT = 0;
@@ -89,6 +123,12 @@ public class JSplitPaneOperator extends JComponentOperator
 	driver = DriverManager.getScrollDriver(getClass());
     }
 
+    /**
+     * Constructs a JSplitPaneOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JSplitPaneOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JSplitPane)cont.
              waitSubComponent(new JSplitPaneFinder(chooser),
@@ -96,6 +136,11 @@ public class JSplitPaneOperator extends JComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JSplitPaneOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JSplitPaneOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -235,10 +280,6 @@ public class JSplitPaneOperator extends JComponentOperator
 	Timeouts.initDefault("JSplitPaneOperator.WholeScrollTimeout", WHOLE_SCROLL_TIMEOUT);
     }
 
-    /**
-     * Sets operator's timeouts.
-     * @param timeouts org.netbeans.jemmy.Timeouts instance.
-     */
     public void setTimeouts(Timeouts timeouts) {
 	this.timeouts = timeouts;
 	Timeouts times = timeouts;
@@ -249,32 +290,15 @@ public class JSplitPaneOperator extends JComponentOperator
 	super.setTimeouts(times);
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Sets operator's output.
-     * @param out org.netbeans.jemmy.TestOut instance.
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -290,6 +314,7 @@ public class JSplitPaneOperator extends JComponentOperator
 
     /**
      * Searches divider inside split pane.
+     * @return an operator for the divider.
      */
     public BasicSplitPaneDivider findDivider() {
 	return((BasicSplitPaneDivider)waitSubComponent(new ComponentChooser() {
@@ -304,6 +329,7 @@ public class JSplitPaneOperator extends JComponentOperator
 
     /**
      * Searches divider inside split pane.
+     * @return an operator for the divider.
      */
     public ContainerOperator getDivider() {
 	if(divider == null) {
@@ -314,6 +340,11 @@ public class JSplitPaneOperator extends JComponentOperator
 	return(divider);
     }
 
+    /**
+     * Scrolls to the position defined by a ScrollAdjuster implementation.
+     * @param adj defines scrolling direction, and so on.
+     * @throws TimeoutExpiredException
+     */
     public void scrollTo(final ScrollAdjuster adj) {
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
@@ -329,8 +360,6 @@ public class JSplitPaneOperator extends JComponentOperator
     /**
      * Changes divider location.
      * @param dividerLocation location to move divider to.
-     * @see org.netbeans.jemmy.operators.JSplitPaneOperator#getMaximumDividerLocation()
-     * @see org.netbeans.jemmy.operators.JSplitPaneOperator#getMinimumDividerLocation()
      */
     public void moveDivider(int dividerLocation) {
 	output.printTrace("Move JSplitPane divider to " + Integer.toString(dividerLocation) +
@@ -355,6 +384,9 @@ public class JSplitPaneOperator extends JComponentOperator
 					       (getMaximumDividerLocation() - getMinimumDividerLocation()))));
     }
 
+    /**
+     * Moves the divider all the way to the left/top.
+     */
     public void moveToMinimum() {
 	output.printTrace("Scroll JSplitPane to minimum. JSplitPane :    \n" + getSource().toString());
 	output.printGolden("Scroll JSplitPane to minimum.");
@@ -369,6 +401,9 @@ public class JSplitPaneOperator extends JComponentOperator
 	    }, getTimeouts().getTimeout("JSplitPaneOperator.WholeScrollTimeout"));
     }
 
+    /**
+     * Moves the divider all the way to the right/bottom.
+     */
     public void moveToMaximum() {
 	output.printTrace("Scroll JSplitPane to maximum. JSplitPane :    \n" + getSource().toString());
 	output.printGolden("Scroll JSplitPane to maximum.");
@@ -416,9 +451,6 @@ public class JSplitPaneOperator extends JComponentOperator
 	expandTo(1);
     }
 
-    /**
-     * Returns information about component.
-     */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	result.put(MINIMUM_DPROP, Integer.toString(((JSplitPane)getSource()).getMinimumDividerLocation()));
@@ -632,10 +664,20 @@ public class JSplitPaneOperator extends JComponentOperator
 	bo.push();
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JSplitPaneFinder extends Finder {
+        /**
+         * Constructs JSplitPaneFinder.
+         * @param sf other searching criteria.
+         */
 	public JSplitPaneFinder(ComponentChooser sf) {
             super(JSplitPane.class, sf);
 	}
+        /**
+         * Constructs JSplitPaneFinder.
+         */
 	public JSplitPaneFinder() {
             super(JSplitPane.class);
 	}

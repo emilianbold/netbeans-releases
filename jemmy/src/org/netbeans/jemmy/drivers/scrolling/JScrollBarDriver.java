@@ -35,6 +35,11 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JScrollBarOperator;
 import org.netbeans.jemmy.operators.Operator;
 
+/**
+ * ScrollDriver for javax.swing.JScrollBar component type.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class JScrollBarDriver extends AbstractScrollDriver {
     private final static int SMALL_INCREMENT = 1;
     private final static int MINIMAL_DRAGGER_SIZE = 5;
@@ -42,10 +47,14 @@ public class JScrollBarDriver extends AbstractScrollDriver {
 
     private QueueTool queueTool;
 
+    /**
+     * Constructs a JScrollBarDriver.
+     */
     public JScrollBarDriver() {
 	super(new String[] {"org.netbeans.jemmy.operators.JScrollBarOperator"});
         queueTool = new QueueTool();
     }
+
     public void scrollToMinimum(ComponentOperator oper, int orientation) {
 	startDragging(oper);
 	Point pnt = new Point(0, 0);
@@ -57,6 +66,7 @@ public class JScrollBarDriver extends AbstractScrollDriver {
 	}
 	drop(oper, pnt);
     }
+
     public void scrollToMaximum(ComponentOperator oper, int orientation) {
 	startDragging(oper);
 	Point pnt = new Point(oper.getWidth() - 1, oper.getHeight() - 1);
@@ -69,10 +79,12 @@ public class JScrollBarDriver extends AbstractScrollDriver {
 	}
 	drop(oper, pnt);
     }
+
     protected void step(ComponentOperator oper, ScrollAdjuster adj) {
 	JButtonOperator boper = findAButton(oper, adj.getScrollDirection());
 	DriverManager.getButtonDriver(boper).push(boper);
     }
+
     protected void jump(final ComponentOperator oper, final ScrollAdjuster adj) {
         final JButtonOperator lessButton = findAButton(oper, adj.DECREASE_SCROLL_DIRECTION);
         final JButtonOperator moreButton = findAButton(oper, adj.INCREASE_SCROLL_DIRECTION);
@@ -108,14 +120,17 @@ public class JScrollBarDriver extends AbstractScrollDriver {
                 }
             });
     }
+
     protected void startPushAndWait(ComponentOperator oper, int direction, int orientation) {
 	JButtonOperator boper = findAButton(oper, direction);
 	DriverManager.getButtonDriver(boper).press(boper);
     }
+
     protected void stopPushAndWait(ComponentOperator oper, int direction, int orientation) {
 	JButtonOperator boper = findAButton(oper, direction);
 	DriverManager.getButtonDriver(boper).release(boper);
     }
+
     protected Point startDragging(ComponentOperator oper) {
 	JButtonOperator lessButton = findAButton(oper, ScrollAdjuster.DECREASE_SCROLL_DIRECTION);
 	JButtonOperator moreButton = findAButton(oper, ScrollAdjuster.INCREASE_SCROLL_DIRECTION);
@@ -125,18 +140,22 @@ public class JScrollBarDriver extends AbstractScrollDriver {
 	mdriver.pressMouse(oper, pnt.x, pnt.y, oper.getDefaultMouseButton(), 0);
 	return(pnt);
     }
+
     protected void drop(ComponentOperator oper, Point pnt) {
 	DriverManager.getMouseDriver(oper).
 	    releaseMouse(oper, pnt.x, pnt.y, oper.getDefaultMouseButton(), 0);
     }
+
     protected void drag(ComponentOperator oper, Point pnt) {
 	DriverManager.getMouseDriver(oper).
 	    dragMouse(oper, pnt.x, pnt.y, oper.getDefaultMouseButton(), 0);
     }
+
     protected Timeout getScrollDeltaTimeout(ComponentOperator oper) {
 	return(oper.getTimeouts().
 	       create("ScrollbarOperator.DragAndDropScrollingDelta"));
     }
+
     protected boolean canDragAndDrop(ComponentOperator oper) {
 	if(!isSmallIncrement((JScrollBarOperator)oper)) {
 	    return(false);
@@ -152,12 +171,15 @@ public class JScrollBarDriver extends AbstractScrollDriver {
 	mdriver.releaseMouse(oper, pnt.x, pnt.y, oper.getDefaultMouseButton(), 0);
 	return(result && isSmallIncrement((JScrollBarOperator)oper));
     }
+
     protected boolean canJump(ComponentOperator oper) {
 	return(isSmallIncrement((JScrollBarOperator)oper));
     }
+
     protected boolean canPushAndWait(ComponentOperator oper) {
 	return(isSmallIncrement((JScrollBarOperator)oper));
     }
+
     protected int getDragAndDropStepLength(ComponentOperator oper) {
 	JButtonOperator less = findAButton(oper, ScrollAdjuster.DECREASE_SCROLL_DIRECTION);
 	JButtonOperator more = findAButton(oper, ScrollAdjuster.INCREASE_SCROLL_DIRECTION);
@@ -170,10 +192,12 @@ public class JScrollBarDriver extends AbstractScrollDriver {
 	    return(1);
 	}
     }
+
     private boolean isSmallIncrement(JScrollBarOperator oper) {
 	return(oper.getUnitIncrement(-1) <= SMALL_INCREMENT && 
 	       oper.getUnitIncrement( 1) <= SMALL_INCREMENT);
     }
+
     private Point getClickPoint(JScrollBarOperator oper, JButtonOperator lessButton, JButtonOperator moreButton, int value) {
 	int lenght = (oper.getOrientation() == JScrollBar.HORIZONTAL) ?
 	    oper.getWidth()  - lessButton.getWidth()  - moreButton.getWidth() :
@@ -189,6 +213,7 @@ public class JScrollBarDriver extends AbstractScrollDriver {
 	       new Point(subpos, oper.getHeight() / 2) :
 	       new Point(oper.getWidth() / 2, subpos));
     }
+
     private JButtonOperator findAButton(ComponentOperator oper, int direction) {
 	return((direction == ScrollAdjuster.DECREASE_SCROLL_DIRECTION) ?
 	       ((JScrollBarOperator)oper).getDecreaseButton() : 

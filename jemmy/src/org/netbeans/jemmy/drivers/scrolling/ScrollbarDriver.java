@@ -27,11 +27,21 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.ScrollbarOperator;
 
+/**
+ * ScrollDriver for java.awt.Scrollbar component type.
+ *
+ * @author Alexandre Iline(alexandre.iline@sun.com)
+ */
 public class ScrollbarDriver extends AWTScrollDriver {
     private static final int CLICK_OFFSET = 5;
+
+    /**
+     * Constructs a ScrollbarDriver.
+     */
     public ScrollbarDriver() {
 	super(new String[] {"org.netbeans.jemmy.operators.ScrollbarOperator"});
     }
+
     public void scrollToMinimum(final ComponentOperator oper, final int orientation) {
 	scroll(oper, 
 	       new ScrollAdjuster() {
@@ -49,6 +59,7 @@ public class ScrollbarDriver extends AWTScrollDriver {
 		}
 	    });
     }
+
     public void scrollToMaximum(final ComponentOperator oper, final int orientation) {
 	scroll(oper, 
 	       new ScrollAdjuster() {
@@ -67,6 +78,7 @@ public class ScrollbarDriver extends AWTScrollDriver {
 		}
 	    });
     }
+
     protected Point getClickPoint(ComponentOperator oper, int direction, int orientation) {
 	int x, y;
 	if       (orientation == Scrollbar.HORIZONTAL) {

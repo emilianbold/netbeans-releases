@@ -44,7 +44,7 @@ import java.util.Hashtable;
  * <BR><BR>Timeouts used: <BR>
  * ButtonOperator.PushButtonTimeout - time between choice pressing and releasing<BR>
  * ComponentOperator.WaitComponentTimeout - time to wait choice displayed <BR>
- * ComponentOperator.WaitComponentEnabledTimeout - time to wait choice enabled <BR>
+ * ComponentOperator.WaitComponentEnabledTimeout - time to wait choice enabled <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *	
@@ -54,7 +54,16 @@ import java.util.Hashtable;
 
 public class ChoiceOperator extends ComponentOperator implements Outputable{
 
+    /**
+     * Identifier for a selected item property.
+     * @see #getDump
+     */
     public static final String SELECTED_ITEM_DPROP = "Selected item";
+
+    /**
+     * Identifier for a items properties.
+     * @see #getDump
+     */
     public static final String ITEM_PREFIX_DPROP = "Item";
 
     private TestOut output;
@@ -62,12 +71,19 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
 
     /**
      * Constructor.
+     * @param b a component
      */
     public ChoiceOperator(Choice b) {
 	super(b);
 	driver = DriverManager.getListDriver(getClass());
     }
 
+    /**
+     * Constructs a ChoiceOperator object.
+     * @param cont container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public ChoiceOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((Choice)cont.
              waitSubComponent(new ChoiceFinder(chooser),
@@ -75,6 +91,11 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a ChoiceOperator object.
+     * @param cont container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public ChoiceOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -83,6 +104,7 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont container
      * @param text Choice text. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
@@ -101,6 +123,7 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont container
      * @param text Choice text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -113,6 +136,7 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont container
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -128,6 +152,7 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont container
      * @throws TimeoutExpiredException
      */
     public ChoiceOperator(ContainerOperator cont) {
@@ -240,24 +265,11 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
 	return(waitChoice(cont, text, ce, ccs, 0));
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -271,40 +283,46 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
 		      anotherOperator.getProperties());
     }
 
-    private int findItemIndex(String item, StringComparator comparator, int index){
-	int count = 0;
-	for(int i = 0; i < getItemCount(); i++) {
-	    if(comparator.equals(getItem(i), item)) {
-		if(count == index) {
-		    return(i);
-		} else {
-		    count++;
-		}
-	    }
-	}
-	return(-1);
-    }
-
+    /**
+     * Finds an item between choice items.
+     * @param item a text pattern.
+     * @param index an ordinal index between appropriate items.
+     * @return an item index.
+     */
     public int findItemIndex(String item, int index){
 	return(findItemIndex(item, getComparator(), index));
     }
     
+    /**
+     * Finds an item between choice items.
+     * @param item a text pattern.
+     * @return an item index.
+     */
     public int findItemIndex(String item){
 	return(findItemIndex(item, 0));
     }
 
-    private void selectItem(String item, StringComparator comparator, int index) {
-	selectItem(findItemIndex(item, comparator, index));
-    }
-
+    /**
+     * Selects an item by text.
+     * @param item a text pattern.
+     * @param index an ordinal index between appropriate items.
+     */
     public void selectItem(String item, int index) {
 	selectItem(item, getComparator(), index);
     }
 
+    /**
+     * Selects an item by text.
+     * @param item a text pattern.
+     */
     public void selectItem(String item) {
 	selectItem(item, 0);
     }
 
+    /**
+     * Selects an item by index.
+     * @param index an item index.
+     */
     public void selectItem(int index) {
 	output.printLine("Select " + Integer.toString(index) + "`th item in combobox\n    : " +
 			 getSource().toString());
@@ -461,13 +479,43 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    private int findItemIndex(String item, StringComparator comparator, int index){
+	int count = 0;
+	for(int i = 0; i < getItemCount(); i++) {
+	    if(comparator.equals(getItem(i), item)) {
+		if(count == index) {
+		    return(i);
+		} else {
+		    count++;
+		}
+	    }
+	}
+	return(-1);
+    }
+
+    private void selectItem(String item, StringComparator comparator, int index) {
+	selectItem(findItemIndex(item, comparator, index));
+    }
+
+    /**
+     * Allows to find component by label.
+     */
     public static class ChoiceBySelectedItemFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
+        /**
+         * Constructs ChoiceBySelectedItemFinder.
+         * @param lb a text pattern
+         * @param comparator specifies string comparision algorithm.
+         */
 	public ChoiceBySelectedItemFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs ChoiceBySelectedItemFinder.
+         * @param lb a text pattern
+         */
 	public ChoiceBySelectedItemFinder(String lb) {
             this(lb, Operator.getDefaultStringComparator());
 	}
@@ -485,10 +533,20 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class ChoiceFinder extends Finder {
+        /**
+         * Constructs ChoiceFinder.
+         * @param sf other searching criteria.
+         */
 	public ChoiceFinder(ComponentChooser sf) {
             super(Choice.class, sf);
 	}
+        /**
+         * Constructs ChoiceFinder.
+         */
 	public ChoiceFinder() {
             super(Choice.class);
 	}

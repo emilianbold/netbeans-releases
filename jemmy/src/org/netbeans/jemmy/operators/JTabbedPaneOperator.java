@@ -44,7 +44,7 @@ import javax.swing.plaf.TabbedPaneUI;
 
 /**
  * <BR><BR>Timeouts used: <BR>
- * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
+ * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -55,7 +55,16 @@ import javax.swing.plaf.TabbedPaneUI;
 public class JTabbedPaneOperator extends JComponentOperator
     implements Outputable {
 
+    /**
+     * Identifier for a "selected page" property.
+     * @see #getDump
+     */
     public static final String SELECTED_PAGE_DPROP = "Selected";
+
+    /**
+     * Identifier for a "page" properties.
+     * @see #getDump
+     */
     public static final String PAGE_PREFIX_DPROP = "Page";
 
     private TestOut output;
@@ -63,12 +72,19 @@ public class JTabbedPaneOperator extends JComponentOperator
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JTabbedPaneOperator(JTabbedPane b) {
 	super(b);
 	driver = DriverManager.getListDriver(getClass());
     }
 
+    /**
+     * Constructs a JTabbedPaneOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JTabbedPaneOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JTabbedPane)cont.
              waitSubComponent(new JTabbedPaneFinder(chooser),
@@ -76,6 +92,11 @@ public class JTabbedPaneOperator extends JComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JTabbedPaneOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JTabbedPaneOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -84,8 +105,9 @@ public class JTabbedPaneOperator extends JComponentOperator
      * Constructor.
      * Waits component by tab title first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Tab title. 
-     * @param tabIndex
+     * @param tabIndex a page index to check. if equal to -1, selected page is checked.
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -102,6 +124,7 @@ public class JTabbedPaneOperator extends JComponentOperator
      * Constructor.
      * Waits component by activetab title first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Title of tab which is currently selected. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
@@ -115,6 +138,7 @@ public class JTabbedPaneOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Title of tab which is currently selected. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -127,6 +151,7 @@ public class JTabbedPaneOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -142,6 +167,7 @@ public class JTabbedPaneOperator extends JComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @throws TimeoutExpiredException
      */
     public JTabbedPaneOperator(ContainerOperator cont) {
@@ -271,24 +297,11 @@ public class JTabbedPaneOperator extends JComponentOperator
 	return(waitJTabbedPane(cont, text, ce, ccs, itemIndex, 0));
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param output Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut output) {
 	super.setOutput(output.createErrorOutput());
 	this.output = output;
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -302,6 +315,13 @@ public class JTabbedPaneOperator extends JComponentOperator
 		      anotherOperator.getProperties());
     }
 
+    /**
+     * Searches tab index by tab title.
+     * @param chooser page searching criteria
+     * @return a page index.
+     * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     * @deprecated Use findPage(String) or findPage(String, StringComparator)
+     */
     public int findPage(TabPageChooser chooser) {
 	for(int i = 0; i < getTabCount(); i++) {
 	    if(chooser.checkPage(this, i)) {
@@ -311,6 +331,14 @@ public class JTabbedPaneOperator extends JComponentOperator
 	return(-1);
     }
 
+    /**
+     * Searches tab index by tab title.
+     * @param title a page title.
+     * @param comparator a string comparision algorithm
+     * @return a page index.
+     * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
+     * @deprecated Use findPage(String) or findPage(String, StringComparator)
+     */
     public int findPage(String title, StringComparator comparator) {
         return(findPage(new BySubStringTabPageChooser(title, comparator)));
     }
@@ -319,6 +347,10 @@ public class JTabbedPaneOperator extends JComponentOperator
      * Searches tab index by tab title.
      * isCaptionEqual method is used to compare page title with
      * match.
+     * @param title a page title.
+     * @param ce Compare text exactly.
+     * @param ccs Compare text case sensitively.
+     * @return a page index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @deprecated Use findPage(String) or findPage(String, StringComparator)
      */
@@ -331,6 +363,8 @@ public class JTabbedPaneOperator extends JComponentOperator
      * isCaptionEqual method is used to compare page title with
      * match.
      * Uses StringComparator assigned to this object.
+     * @param title a page title.
+     * @return a page index.
      */
     public int findPage(String title) {
 	return(findPage(title, getComparator()));
@@ -338,6 +372,8 @@ public class JTabbedPaneOperator extends JComponentOperator
 
     /**
      * Selects tab.
+     * @param index a page ordinal index.
+     * @return a root corresponding to the page.
      */
     public Component selectPage(int index) {
 	output.printLine("Selecting " + index + "'th page in tabbed pane\n    :" + getSource().toString());
@@ -349,20 +385,35 @@ public class JTabbedPaneOperator extends JComponentOperator
 	return(getComponentAt(index));
     }
 
+    /**
+     * Selects tab.
+     * @param chooser page searching criteria
+     * @return a root corresponding to the page.
+     */
     public Component selectPage(TabPageChooser chooser) {
 	output.printLine("Selecting \"" + chooser.getDescription() + 
                          "\" page in tabbed pane\n    :" + getSource().toString());
  	return(selectPage(waitPage(chooser)));
     }
 
+    /**
+     * Selects tab.
+     * @param title a page title.
+     * @param comparator a string comparision algorithm
+     * @return a root corresponding to the page.
+     */
     public Component selectPage(String title, StringComparator comparator) {
         return(selectPage(new BySubStringTabPageChooser(title, comparator)));
     }
 
     /**
      * Selects tab by tab title.
+     * @param title a page title.
+     * @param ce Compare text exactly.
+     * @param ccs Compare text case sensitively.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @deprecated Use selectPage(String) or selectPage(String, StringComparator)
+     * @return a root corresponding to the page.
      */
     public Component selectPage(String title, boolean ce, boolean ccs) {
 	return(selectPage(title, new DefaultStringComparator(ce, ccs)));
@@ -371,6 +422,8 @@ public class JTabbedPaneOperator extends JComponentOperator
     /**
      * Selects tab by tab title.
      * Uses StringComparator assigned to this object.
+     * @param title a page title.
+     * @return a root corresponding to the page.
      */
     public Component selectPage(String title) {
         return(selectPage(title, getComparator()));
@@ -378,6 +431,8 @@ public class JTabbedPaneOperator extends JComponentOperator
 
     /**
      * Wait for a page to exist.
+     * @param chooser page searching criteria
+     * @return a page index.
      */
     public int waitPage(final TabPageChooser chooser) {
 	waitState(new ComponentChooser() {
@@ -391,17 +446,28 @@ public class JTabbedPaneOperator extends JComponentOperator
         return(findPage(chooser));
     }
 
+    /**
+     * Wait for a page to exist.
+     * @param title a page title.
+     * @param comparator a string comparision algorithm
+     * @return a page index.
+     */
     public int waitPage(String title, StringComparator comparator) {
         return(waitPage(new BySubStringTabPageChooser(title, comparator)));
     }
 
+    /**
+     * Wait for a page to exist.
+     * @param title a page title.
+     * @return a page index.
+     */
     public int waitPage(String title) {
         return(waitPage(title, getComparator()));
     }
 
     /**
      * Waits for a page to be selected.
-     * @param pageIndex
+     * @param pageIndex an index of a page to be selected.
      */
     public void waitSelected(final int pageIndex) {
 	getOutput().printLine("Wait " + Integer.toString(pageIndex) + "'th page to be " +
@@ -421,15 +487,12 @@ public class JTabbedPaneOperator extends JComponentOperator
 
     /**
      * Waits for a page to be selected.
-     * @param pageTitle
+     * @param pageTitle a title of a page to be selected.
      */
     public void waitSelected(final String pageTitle) {
 	waitSelected(findPage(pageTitle));
     }
 
-    /**
-     * Returns information about component.
-     */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	if(((JTabbedPane)getSource()).getSelectedIndex() != -1) {
@@ -709,39 +772,61 @@ public class JTabbedPaneOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Specifies criteria for a tab page searching.
+     */
     public interface TabPageChooser {
 	/**
 	 * Should be true if a page is good.
 	 * @param oper Operator used to search item.
 	 * @param index Index of a page be checked.
+         * @return true if a page fits the criteria.
 	 */
 	public boolean checkPage(JTabbedPaneOperator oper, int index);
 
 	/**
 	 * Page description.
+         * @return a description.
 	 */
 	public String getDescription();
     }
 
-
+    /**
+     * Exception is thrown if a nonexistent page is trying to be selected.
+     */
     public class NoSuchPageException extends JemmyInputException {
 	/**
 	 * Constructor.
+         * @param item nonexistent page title.
 	 */
 	public NoSuchPageException(String item) {
 	    super("No such page as \"" + item + "\"", getSource());
 	}
     }
 
+    /**
+     * Allows to find component by page title.
+     */
     public static class JTabbedPaneByItemFinder implements ComponentChooser {
 	String title;
 	int itemIndex;
 	StringComparator comparator;
+        /**
+         * Constructs JTabbedPaneByItemFinder.
+         * @param lb a text pattern
+         * @param ii page index to check. If equal to -1, selected page is checked.
+         * @param comparator specifies string comparision algorithm.
+         */
 	public JTabbedPaneByItemFinder(String lb, int ii, StringComparator comparator) {
 	    title = lb;
 	    itemIndex = ii;
 	    this.comparator = comparator;
 	}
+        /**
+         * Constructs JTabbedPaneByItemFinder.
+         * @param lb a text pattern
+         * @param ii page index to check. If equal to -1, selected page is checked.
+         */
 	public JTabbedPaneByItemFinder(String lb, int ii) {
             this(lb, ii, Operator.getDefaultStringComparator());
 	}
@@ -771,10 +856,20 @@ public class JTabbedPaneOperator extends JComponentOperator
 	}
     }
 
+    /**
+     * Checks component type.
+     */
     public static class JTabbedPaneFinder extends Finder {
+        /**
+         * Constructs JTabbedPaneFinder.
+         * @param sf other searching criteria.
+         */
 	public JTabbedPaneFinder(ComponentChooser sf) {
             super(JTabbedPane.class, sf);
 	}
+        /**
+         * Constructs JTabbedPaneFinder.
+         */
 	public JTabbedPaneFinder() {
             super(JTabbedPane.class);
 	}

@@ -54,7 +54,7 @@ import javax.swing.text.BadLocationException;
  * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
  * ComponentOperator.WaitFocusTimeout - time to wait component focus <BR>
  * JScrollBarOperator.OneScrollClickTimeout - time for one scroll click <BR>
- * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>
+ * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -64,7 +64,16 @@ import javax.swing.text.BadLocationException;
 public class JTextAreaOperator extends JTextComponentOperator
     implements Timeoutable, Outputable {
 
+    /**
+     * Identifier for a "column count" property.
+     * @see #getDump
+     */
     public static final String COLUMN_COUNT_DPROP = "Column count";
+
+    /**
+     * Identifier for a "row count" property.
+     * @see #getDump
+     */
     public static final String ROW_COUNT_DPROP = "Row count";
 
     private Timeouts timeouts;
@@ -73,11 +82,18 @@ public class JTextAreaOperator extends JTextComponentOperator
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JTextAreaOperator(JTextArea b) {
 	super(b);
     }
 
+    /**
+     * Constructs a JTextAreaOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JTextAreaOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JTextArea)cont.
              waitSubComponent(new JTextAreaFinder(chooser),
@@ -85,6 +101,11 @@ public class JTextAreaOperator extends JTextComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JTextAreaOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JTextAreaOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -93,6 +114,7 @@ public class JTextAreaOperator extends JTextComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
@@ -112,6 +134,7 @@ public class JTextAreaOperator extends JTextComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
      * @throws TimeoutExpiredException
@@ -124,6 +147,7 @@ public class JTextAreaOperator extends JTextComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
      * @throws TimeoutExpiredException
      */
@@ -139,6 +163,7 @@ public class JTextAreaOperator extends JTextComponentOperator
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @throws TimeoutExpiredException
      */
     public JTextAreaOperator(ContainerOperator cont) {
@@ -148,7 +173,7 @@ public class JTextAreaOperator extends JTextComponentOperator
     /**
      * Searches JTextArea in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JTextArea instance or null if component was not found.
      */
@@ -159,7 +184,7 @@ public class JTextAreaOperator extends JTextComponentOperator
     /**
      * Searches JTextArea in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JTextArea instance or null if component was not found.
      */
     public static JTextArea findJTextArea(Container cont, ComponentChooser chooser) {
@@ -200,7 +225,7 @@ public class JTextAreaOperator extends JTextComponentOperator
     /**
      * Waits JTextArea in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JTextArea instance.
      * @throws TimeoutExpiredException
@@ -212,7 +237,7 @@ public class JTextAreaOperator extends JTextComponentOperator
     /**
      * Waits JTextArea in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JTextArea instance.
      * @throws TimeoutExpiredException
      */
@@ -253,45 +278,20 @@ public class JTextAreaOperator extends JTextComponentOperator
 	return(waitJTextArea(cont, text, ce, ccs, 0));
     }
 
-    /**
-     * Defines current timeouts.
-     * @param times A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts times) {
 	timeouts = times;
 	super.setTimeouts(timeouts);
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
@@ -300,6 +300,8 @@ public class JTextAreaOperator extends JTextComponentOperator
      * Notifies whether "PageUp" and "PageDown" should be used
      * to change caret position. If can be useful if text takes 
      * some pages.
+     * @param yesOrNo if page navigation keys need to be used.
+     * @deprecated All text operations are performed by TextDriver regitered for this operator type.
      */
     public void usePageNavigationKeys(boolean yesOrNo) {
 	pageNavigation = yesOrNo;
@@ -338,6 +340,7 @@ public class JTextAreaOperator extends JTextComponentOperator
 
     /**
      * Types text.
+     * @param text Text to be typed.
      * @param row Line to type text in.
      * @param column Column to type text from.
      * @see JTextComponentOperator#typeText(String, int)
@@ -384,8 +387,8 @@ public class JTextAreaOperator extends JTextComponentOperator
 
     /**
      * Select some text lines.
-     * @param startLine
-     * @param endLine
+     * @param startLine start selection
+     * @param endLine end selection
      * @see JTextComponentOperator#selectText(int, int)
      * @see #selectText(int, int, int, int)
      * @throws TimeoutExpiredException
@@ -532,10 +535,20 @@ public class JTextAreaOperator extends JTextComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Checks component type.
+     */
     public static class JTextAreaFinder extends Finder {
+        /**
+         * Constructs JTextAreaFinder.
+         * @param sf other searching criteria.
+         */
 	public JTextAreaFinder(ComponentChooser sf) {
             super(JTextArea.class, sf);
 	}
+        /**
+         * Constructs JTextAreaFinder.
+         */
 	public JTextAreaFinder() {
             super(JTextArea.class);
 	}

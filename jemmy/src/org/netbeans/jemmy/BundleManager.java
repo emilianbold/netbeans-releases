@@ -42,7 +42,7 @@ public class BundleManager extends Object {
     private Hashtable bundles;
 
     /**
-     * Bundle manager constructor
+     * Bundle manager constructor.
      */
     public BundleManager() {
 	bundles = new Hashtable();
@@ -95,10 +95,13 @@ public class BundleManager extends Object {
      * Load resources from a text file to a new Bundle object.  The new
      * Bundle is added to the collection of objects managed by this
      * <code>BundleManager</code>.
-     * @param fileName Name of a file to load resources from.
-     * @param ID Symbolic bundle ID used to identify the new bundle used
+     * 
+     * @param	fileName Name of a file to load resources from.
+     * @param	ID Symbolic bundle ID used to identify the new bundle used
      * to manage the resources from the file.
-     * @return a newly created bundle.
+     * @return	a newly created bundle.
+     * @exception	IOException
+     * @exception	FileNotFoundException
      */
     public Bundle loadBundleFromFile(String fileName, String ID) 
 	throws IOException, FileNotFoundException {
@@ -114,7 +117,10 @@ public class BundleManager extends Object {
      * Loads resources from simple text file pointed by jemmy.resources system property.
      * The resources are loaded into the Bundle with ID "".
      * Does not do anything if jemmy.resources has not been set or is empty.
-     * @return a newly created bundle.
+     * 
+     * @return	a newly created bundle.
+     * @exception	IOException
+     * @exception	FileNotFoundException
      */
     public Bundle load() 
 	throws IOException, FileNotFoundException {
@@ -127,10 +133,13 @@ public class BundleManager extends Object {
 
     /**
      * Loads resources from file in jar archive into new Bundle object and adds it.
-     * @param fileName Name of jar file.
-     * @param enryName Name of file to load resources from.
-     * @param ID Symbolic bundle id
-     * @return a newly created bundle.
+     * 
+     * @param	fileName Name of jar file.
+     * @param	entryName ?enryName? Name of file to load resources from.
+     * @param	ID Symbolic bundle id
+     * @return	a newly created bundle.
+     * @exception	IOException
+     * @exception	FileNotFoundException
      */
     public Bundle loadBundleFromJar(String fileName, String entryName, String ID) 
 	throws IOException, FileNotFoundException {
@@ -144,10 +153,14 @@ public class BundleManager extends Object {
 
     /**
      * Loads resources from file in zip archive into new Bundle object and adds it.
-     * @param fileName Name of jar file.
-     * @param enryName Name of file to load resources from.
-     * @param ID Symbolic bundle id
-     * @return a newly created bundle.
+     * 
+     * @param	fileName Name of jar file.
+     * @param	entryName ?enryName? Name of file to load resources from.
+     * @param	ID Symbolic bundle id
+     * @return	a newly created bundle.
+     * @exception	ZipException
+     * @exception	IOException
+     * @exception	FileNotFoundException
      */
     public Bundle loadBundleFromZip(String fileName, String entryName, String ID)
 	throws IOException, FileNotFoundException, ZipException {
@@ -201,9 +214,8 @@ public class BundleManager extends Object {
 
     /**
      * Searches for a resource in all the managed Bundles.
-     * @param bundleID Bundle ID.
-     * @param key Resource key.
-     * @return first resource value found that is indexed by the given key.
+     * @param	key Resource key.
+     * @return	first resource value found that is indexed by the given key.
      * If no resource is found, return a null reference.
      */
     public String getResource(String key) {

@@ -39,7 +39,7 @@ import java.awt.Point;
 
 /**
  * <BR><BR>Timeouts used: <BR>
- * ComponentOperator.WaitComponentTimeout - time to wait container displayed <BR>
+ * ComponentOperator.WaitComponentTimeout - time to wait container displayed <BR>.
  *
  * @see org.netbeans.jemmy.Timeouts
  *
@@ -67,6 +67,12 @@ public class ContainerOperator extends ComponentOperator
 	searcher.setOutput(TestOut.getNullOutput());
     }
 
+    /**
+     * Constructs a ContainerOperator object.
+     * @param cont container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public ContainerOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((Container)cont.
              waitSubComponent(new ContainerFinder(chooser),
@@ -74,6 +80,11 @@ public class ContainerOperator extends ComponentOperator
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a ContainerOperator object.
+     * @param cont container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public ContainerOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -147,7 +158,7 @@ public class ContainerOperator extends ComponentOperator
     /**
      * Searches Container object which component lies on.
      * @param comp Component to find Container under.
-     * @param chooser 
+     * @param chooser a chooser specifying searching criteria.
      * @return Container instance or null if component was not found.
      */
     public static Container findContainerUnder(Component comp, ComponentChooser chooser) {
@@ -212,59 +223,51 @@ public class ContainerOperator extends ComponentOperator
 	Timeouts.initDefault("ComponentOperator.WaitComponentTimeout", WAIT_SUBCOMPONENT_TIMEOUT);
     }
 
-    /**
-     * Defines current timeouts.
-     * @param timeouts A collection of timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public void setTimeouts(Timeouts timeouts) {
 	super.setTimeouts(timeouts);
 	this.timeouts = timeouts;
     }
 
-    /**
-     * Return current timeouts.
-     * @return the collection of current timeout assignments.
-     * @see org.netbeans.jemmy.Timeoutable
-     * @see org.netbeans.jemmy.Timeouts
-     */
     public Timeouts getTimeouts() {
 	return(timeouts);
     }
 
-    /**
-     * Defines print output streams or writers.
-     * @param out Identify the streams or writers used for print output.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public void setOutput(TestOut out) {
 	output = out;
 	super.setOutput(output.createErrorOutput());
     }
 
-    /**
-     * Returns print output streams or writers.
-     * @return an object that contains references to objects for
-     * printing to output and err streams.
-     * @see org.netbeans.jemmy.Outputable
-     * @see org.netbeans.jemmy.TestOut
-     */
     public TestOut getOutput() {
 	return(output);
     }
 
+    /** 
+     * Searches for a subcomponent.
+     * @param chooser a chooser specifying searching criteria.
+     * @param index Ordinal component index.
+     * @return Component instance.
+     */
     public Component findSubComponent(ComponentChooser chooser, int index) {
         getOutput().printLine("Looking for \"" + chooser.getDescription() +
                               "\" subcomponent");
         return(searcher.findComponent(chooser, index));
     }
 
+    /** 
+     * Searches for a subcomponent.
+     * @param chooser a chooser specifying searching criteria.
+     * @return Component instance.
+     */
     public Component findSubComponent(ComponentChooser chooser) {
         return(findSubComponent(chooser, 0));
     }
 
+    /** 
+     * Waits for a subcomponent.
+     * @param chooser a chooser specifying searching criteria.
+     * @param index Ordinal component index.
+     * @return Component instance.
+     */
     public Component waitSubComponent(final ComponentChooser chooser, final int index) {
         getOutput().printLine("Waiting for \"" + chooser.getDescription() +
                               "\" subcomponent");
@@ -292,14 +295,30 @@ public class ContainerOperator extends ComponentOperator
 	}
     }
 
+    /** 
+     * Waits for a subcomponent.
+     * @param chooser a chooser specifying searching criteria.
+     * @return Component instance.
+     */
     public Component waitSubComponent(ComponentChooser chooser) {
 	return(waitSubComponent(chooser, 0));
     }
 
+    /** 
+     * Waits for a subcomponent and creates an operator.
+     * @param chooser a chooser specifying searching criteria.
+     * @param index Ordinal component index.
+     * @return Component instance.
+     */
     public ComponentOperator createSubOperator(ComponentChooser chooser, int index) {
 	return(createOperator(waitSubComponent(chooser, index)));
     }
 
+    /** 
+     * Waits for a subcomponent and creates an operator.
+     * @param chooser a chooser specifying searching criteria.
+     * @return Component instance.
+     */
     public ComponentOperator createSubOperator(ComponentChooser chooser) {
 	return(createSubOperator(chooser, 0));
     }
@@ -457,10 +476,20 @@ public class ContainerOperator extends ComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Checks component type.
+     */
     public static class ContainerFinder extends Finder {
+        /**
+         * Constructs ContainerFinder.
+         * @param sf other searching criteria.
+         */
 	public ContainerFinder(ComponentChooser sf) {
             super(Container.class, sf);
 	}
+        /**
+         * Constructs ContainerFinder.
+         */
 	public ContainerFinder() {
             super(Container.class);
 	}

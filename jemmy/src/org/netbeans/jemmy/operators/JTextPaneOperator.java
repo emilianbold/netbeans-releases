@@ -34,15 +34,38 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 
+/**
+ * <BR><BR>Timeouts used: <BR>
+ * JTextComponentOperator.PushKeyTimeout - time between key pressing and releasing during text typing <BR>
+ * JTextComponentOperator.BetweenKeysTimeout - time to sleep between two chars typing <BR>
+ * JTextComponentOperator.ChangeCaretPositionTimeout - maximum time to chenge caret position <BR>
+ * JTextComponentOperator.TypeTextTimeout - maximum time to type text <BR>
+ * ComponentOperator.WaitComponentTimeout - time to wait component displayed <BR>
+ * ComponentOperator.WaitFocusTimeout - time to wait component focus <BR>
+ * JScrollBarOperator.OneScrollClickTimeout - time for one scroll click <BR>
+ * JScrollBarOperator.WholeScrollTimeout - time for the whole scrolling <BR>.
+ *
+ * @see org.netbeans.jemmy.Timeouts
+ *
+ * @author Alexandre Iline (alexandre.iline@sun.com)
+ *	
+ */
 public class JTextPaneOperator extends JEditorPaneOperator {
 
     /**
      * Constructor.
+     * @param b a component
      */
     public JTextPaneOperator(JTextPane b) {
 	super(b);
     }
 
+    /**
+     * Constructs a JTextPaneOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     * @param index an index between appropriate ones.
+     */
     public JTextPaneOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
 	this((JTextPane)cont.
              waitSubComponent(new JTextPaneFinder(chooser),
@@ -50,6 +73,11 @@ public class JTextPaneOperator extends JEditorPaneOperator {
 	copyEnvironment(cont);
     }
 
+    /**
+     * Constructs a JTextPaneOperator object.
+     * @param cont a container
+     * @param chooser a component chooser specifying searching criteria.
+     */
     public JTextPaneOperator(ContainerOperator cont, ComponentChooser chooser) {
 	this(cont, chooser, 0);
     }
@@ -58,10 +86,10 @@ public class JTextPaneOperator extends JEditorPaneOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @param index Ordinal component index.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public JTextPaneOperator(ContainerOperator cont, String text, int index) {
 	this((JTextPane)
@@ -77,9 +105,9 @@ public class JTextPaneOperator extends JEditorPaneOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param text Button text. 
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public JTextPaneOperator(ContainerOperator cont, String text) {
 	this(cont, text, 0);
@@ -89,8 +117,8 @@ public class JTextPaneOperator extends JEditorPaneOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
+     * @param cont a container
      * @param index Ordinal component index.
-     * @throws TimeoutExpiredException
      */
     public JTextPaneOperator(ContainerOperator cont, int index) {
 	this((JTextPane)
@@ -104,7 +132,7 @@ public class JTextPaneOperator extends JEditorPaneOperator {
      * Constructor.
      * Waits component in container first.
      * Uses cont's timeout and output for waiting and to init operator.
-     * @throws TimeoutExpiredException
+     * @param cont a container
      */
     public JTextPaneOperator(ContainerOperator cont) {
 	this(cont, 0);
@@ -113,7 +141,7 @@ public class JTextPaneOperator extends JEditorPaneOperator {
     /**
      * Searches JTextPane in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JTextPane instance or null if component was not found.
      */
@@ -124,7 +152,7 @@ public class JTextPaneOperator extends JEditorPaneOperator {
     /**
      * Searches JTextPane in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JTextPane instance or null if component was not found.
      */
     public static JTextPane findJTextPane(Container cont, ComponentChooser chooser) {
@@ -165,10 +193,9 @@ public class JTextPaneOperator extends JEditorPaneOperator {
     /**
      * Waits JTextPane in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @param index Ordinal component index.
      * @return JTextPane instance.
-     * @throws TimeoutExpiredException
      */
     public static JTextPane waitJTextPane(Container cont, ComponentChooser chooser, int index) {
 	return((JTextPane)waitJTextComponent(cont, new JTextPaneFinder(chooser), index));
@@ -177,9 +204,8 @@ public class JTextPaneOperator extends JEditorPaneOperator {
     /**
      * Waits JTextPane in container.
      * @param cont Container to search component in.
-     * @param chooser 
+     * @param chooser a component chooser specifying searching criteria.
      * @return JTextPane instance.
-     * @throws TimeoutExpiredException
      */
     public static JTextPane waitJTextPane(Container cont, ComponentChooser chooser) {
 	return(waitJTextPane(cont, chooser, 0));
@@ -194,7 +220,6 @@ public class JTextPaneOperator extends JEditorPaneOperator {
      * @param index Ordinal component index.
      * @return JTextPane instance.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public static JTextPane waitJTextPane(Container cont, String text, boolean ce, boolean ccs, int index) {
 	return(waitJTextPane(cont,  
@@ -212,7 +237,6 @@ public class JTextPaneOperator extends JEditorPaneOperator {
      * @param ccs Compare text case sensitively.
      * @return JTextPane instance.
      * @see ComponentOperator#isCaptionEqual(String, String, boolean, boolean)
-     * @throws TimeoutExpiredException
      */
     public static JTextPane waitJTextPane(Container cont, String text, boolean ce, boolean ccs) {
 	return(waitJTextPane(cont, text, ce, ccs, 0));
@@ -322,10 +346,20 @@ public class JTextPaneOperator extends JEditorPaneOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
+    /**
+     * Checks component type.
+     */
     public static class JTextPaneFinder extends Finder {
+        /**
+         * Constructs JTextPaneFinder.
+         * @param sf other searching criteria.
+         */
 	public JTextPaneFinder(ComponentChooser sf) {
             super(JTextPane.class, sf);
 	}
+        /**
+         * Constructs JTextPaneFinder.
+         */
 	public JTextPaneFinder() {
             super(JTextPane.class);
 	}
