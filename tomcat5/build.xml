@@ -30,14 +30,14 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
         <pathelement location="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar"/>
         <pathelement location="${j2eeserver.dir}/${nb.modules/autoload.dir}/j2eeserver.jar"/>
-        <pathelement location="${nb_all}/j2eeserver/external/ejb20.jar"/>
-        <pathelement location="${nb_all}/j2eeserver/external/jmxri.jar"/>
-        <pathelement location="${nb_all}/j2eeserver/external/javax77.jar"/>
-        <pathelement location="${nb_all}/j2eeserver/external/jsr88javax.jar"/>
+        <pathelement location="${j2eeserver/j2eeapis.dir}/${nb.modules/autoload.dir}/ext/ejb20.jar"/>
+        <pathelement location="${j2eeserver/j2eeapis.dir}/${nb.modules/autoload.dir}/ext/jmxri.jar"/>
+        <pathelement location="${j2eeserver/j2eeapis.dir}/${nb.modules/autoload.dir}/ext/javax77.jar"/>
+        <pathelement location="${j2eeserver/j2eeapis.dir}/${nb.modules/autoload.dir}/ext/jsr88javax.jar"/>
         <pathelement location="${web/ddapi.dir}/${nb.modules.dir}/org-netbeans-api-web-dd.jar"/>
         <pathelement location="${debuggercore/api.dir}/${nb.modules.dir}/org-netbeans-api-debugger.jar"/>
         <pathelement location="${debuggerjpda/api.dir}/${nb.modules.dir}/org-netbeans-api-debugger-jpda.jar"/>
-        <pathelement location="${nb_all}/libs/external/xerces-2.6.0.jar"/>
+        <pathelement location="${libs/xerces.dir}/${nb.modules/autoload.dir}/ext/xerces-2.6.0.jar"/>
         <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>	
     </path>
   </target>
