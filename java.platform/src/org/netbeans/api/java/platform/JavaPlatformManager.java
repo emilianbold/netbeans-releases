@@ -36,11 +36,11 @@ public final class JavaPlatformManager {
     
     private static JavaPlatformManager instance = null;
 
-    private Lookup.Result providers;
-    private Collection lastProviders = Collections.EMPTY_SET;
+    private Lookup.Result/*<JavaPlatformProvider>*/ providers;
+    private Collection/*<JavaPlatformProvider>*/ lastProviders = Collections.EMPTY_SET;
     private boolean providersValid = false;
     private PropertyChangeListener pListener;
-    private Collection cachedPlatforms;
+    private Collection/*<JavaPlatform>*/ cachedPlatforms;
 
     /** Creates a new instance of JavaPlatformManager */
     public JavaPlatformManager() {
@@ -62,7 +62,7 @@ public final class JavaPlatformManager {
      * not be found (e.g. the J2SEPlatform module is not installed).
      */
     public JavaPlatform getDefaultPlatform() {
-        Collection instances = this.getProviders ();
+        Collection/*<JavaPlatformProvider>*/ instances = this.getProviders ();
         for (Iterator it = instances.iterator(); it.hasNext();) {
             JavaPlatformProvider provider = (JavaPlatformProvider) it.next();
             JavaPlatform defaultPlatform = provider.getDefaultPlatform ();
@@ -78,7 +78,7 @@ public final class JavaPlatformManager {
      */
     public synchronized JavaPlatform[] getInstalledPlatforms() {
         if (cachedPlatforms == null) {            
-            Collection instances = this.getProviders();
+            Collection/*<JavaPlatformProvider>*/ instances = this.getProviders();
             cachedPlatforms = new HashSet ();
             for (Iterator it = instances.iterator(); it.hasNext(); ) {
                 JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
@@ -104,7 +104,7 @@ public final class JavaPlatformManager {
      */
     public JavaPlatform[] getPlatforms (String platformDisplayName, Specification platformSpec) {
         JavaPlatform[] platforms = getInstalledPlatforms();
-        Collection result = new ArrayList ();
+        Collection/*<JavaPlatform>*/ result = new ArrayList ();
         for (int i = 0; i < platforms.length; i++) {
             String name = platforms[i].getDisplayName();
             Specification spec = platforms[i].getSpecification();
@@ -133,7 +133,7 @@ public final class JavaPlatformManager {
             return false;
         }
         else {
-            Collection covered = new HashSet ();
+            Collection/*<Profile>*/ covered = new HashSet ();
             for (int i=0; i<query.length; i++) {
                 Profile pattern = query[i];
                 boolean found = false;
@@ -158,14 +158,15 @@ public final class JavaPlatformManager {
                (version == null || version.equals (platformProfile.getVersion())));
     }
     
-    private synchronized Collection getProviders () {
+    private synchronized Collection/*<JavaPlatformProvider>*/ getProviders () {
         if (!this.providersValid) {            
             if (this.providers == null) {
                 this.providers = Lookup.getDefault().lookup(new Lookup.Template(JavaPlatformProvider.class));
                 this.providers.addLookupListener (new LookupListener () {
                     public void resultChanged(LookupEvent ev) {
                         resetCache (true);
-                    }});
+                    }
+                });
             }
             if (this.pListener == null ) {
                 this.pListener = new PropertyChangeListener() {
@@ -174,10 +175,10 @@ public final class JavaPlatformManager {
                     }
                 };
             }
-            Collection instances = this.providers.allInstances();
-            Collection toAdd = new HashSet (instances);
+            Collection/*<JavaPlatformProvider>*/ instances = this.providers.allInstances();
+            Collection/*<JavaPlatformProvider>*/ toAdd = new HashSet(instances);
             toAdd.removeAll (this.lastProviders);
-            Collection toRemove = new HashSet (this.lastProviders);
+            Collection/*<JavaPlatformProvider>*/ toRemove = new HashSet(this.lastProviders);
             toRemove.removeAll (instances);
             for (Iterator it = toRemove.iterator(); it.hasNext();) {
                 JavaPlatformProvider provider = (JavaPlatformProvider) it.next ();
