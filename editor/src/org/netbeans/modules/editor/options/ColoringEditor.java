@@ -292,17 +292,22 @@ public class ColoringEditor extends PropertyEditorSupport {
   int getFontFromValue() {
     Font xfont = value.getFont();
     int ret = FONT_PLAIN;
-    if (xfont.isBold()) {
-      ret = FONT_BOLD;
-    }
-    if (xfont.isItalic()) {
-      ret +=  FONT_ITALIC;
+    if (xfont != null) {
+      if (xfont.isBold()) {
+        ret = FONT_BOLD;
+      }
+      if (xfont.isItalic()) {
+        ret +=  FONT_ITALIC;
+      }
     }
     return ret;
   }
 
   void setFontFromInt(int i) {
     Font xfont = value.getFont();
+    if (xfont == null) {
+      return;
+    }
     int mask = 0;
     
     if (i == FONT_PLAIN) {
@@ -321,6 +326,7 @@ public class ColoringEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  4    Gandalf   1.3         7/9/99   Ales Novak      NullPointerException
  *  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.
  *  2    Gandalf   1.1         7/3/99   Ian Formanek    Changed package 
  *       statement to make it compilable
