@@ -280,7 +280,8 @@ Microsystems, Inc. All Rights Reserved.
       <module name="openide" testtypes="unit" attributes="commit"/>
       <module name="projects/projectapi" testtypes="unit" attributes="commit"/>
       <module name="projects/queries" testtypes="unit" attributes="commit"/>
-      <module name="ant/project" testtypes="unit" attributes="commit"/>
+<!--  Should not use ATest.class.getResource() because src folder is not in classpath  
+        <module name="ant/project" testtypes="unit" attributes="commit"/> -->
 <!--      <module name="ant/grammar" testtypes="unit" attributes="commit"/> -->
       <module name="java/api" testtypes="unit" attributes="commit"/>
       <module name="java/j2seplatform" testtypes="unit" attributes="commit"/>
