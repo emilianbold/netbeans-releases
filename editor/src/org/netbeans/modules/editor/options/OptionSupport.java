@@ -112,7 +112,7 @@ public class OptionSupport extends SystemOption {
   }
 
   /** @return localized string */
-  static String getString(String s) {
+  protected String getString(String s) {
     if (bundle == null) {
       bundle = NbBundle.getBundle(OptionSupport.class);
     }
@@ -134,6 +134,7 @@ public class OptionSupport extends SystemOption {
 
 /*
  * Log
+ *  6    Gandalf   1.5         9/15/99  Miloslav Metelka 
  *  5    Gandalf   1.4         8/27/99  Miloslav Metelka 
  *  4    Gandalf   1.3         8/17/99  Miloslav Metelka 
  *  3    Gandalf   1.2         7/21/99  Miloslav Metelka 

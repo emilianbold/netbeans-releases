@@ -28,7 +28,6 @@ import com.netbeans.editor.Syntax;
 import com.netbeans.editor.MultiKeyBinding;
 
 import org.openide.options.SystemOption;
-import org.openide.util.NbBundle;
 
 /**
 * Options for the base editor kit
@@ -395,6 +394,7 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  9    Gandalf   1.8         9/15/99  Miloslav Metelka 
  *  8    Gandalf   1.7         8/27/99  Miloslav Metelka 
  *  7    Gandalf   1.6         8/17/99  Miloslav Metelka 
  *  6    Gandalf   1.5         8/9/99   Ian Formanek    Generated Serial Version

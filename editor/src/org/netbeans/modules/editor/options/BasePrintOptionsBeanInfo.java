@@ -25,6 +25,8 @@ import org.openide.util.NbBundle;
 */
 public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
 
+  private ResourceBundle bundle;
+
   /** Prefix of the icon location. */
   private String iconPrefix;
 
@@ -49,7 +51,6 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
   */
   public PropertyDescriptor[] getPropertyDescriptors () {
     if (descriptors == null) {
-      ResourceBundle bundle = NbBundle.getBundle(BaseOptionsBeanInfo.class);
       String[] propNames = getPropNames();
       try {
         descriptors = new PropertyDescriptor[propNames.length];
@@ -57,8 +58,8 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
         for (int i = 0; i < propNames.length; i++) {
           descriptors[i] = new PropertyDescriptor(propNames[i], getBeanClass());
 //          System.out.println("BasePrintOptionsBeanInfo.java:62 propNames[" + i + "]=" + propNames[i]);
-          descriptors[i].setDisplayName(bundle.getString("PROP_" + propNames[i]));
-          descriptors[i].setShortDescription(bundle.getString("HINT_" + propNames[i]));
+          descriptors[i].setDisplayName(getString("PROP_" + propNames[i]));
+          descriptors[i].setShortDescription(getString("HINT_" + propNames[i]));
         }
 
         getPD(BasePrintOptions.PRINT_COLORING_ARRAY_PROP).setPropertyEditorClass(ColoringArrayEditor.class);
@@ -68,6 +69,13 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
       }
     }
     return descriptors;
+  }
+
+  protected String getString(String s) {
+    if (bundle == null) {
+      bundle = NbBundle.getBundle(BasePrintOptionsBeanInfo.class);
+    }
+    return bundle.getString(s);
   }
 
   protected Class getBeanClass() {
@@ -107,6 +115,7 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  6    Gandalf   1.5         9/15/99  Miloslav Metelka 
 *  5    Gandalf   1.4         8/27/99  Miloslav Metelka 
 *  4    Gandalf   1.3         8/17/99  Miloslav Metelka 
 *  3    Gandalf   1.2         7/29/99  Miloslav Metelka 

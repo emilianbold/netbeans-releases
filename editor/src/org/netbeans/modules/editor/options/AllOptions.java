@@ -42,7 +42,7 @@ public class AllOptions extends ContextSystemOption {
   }
 
   public String displayName() {
-    return NbBundle.getBundle(PlainOptions.class).getString("OPTIONS_all");
+    return NbBundle.getBundle(AllOptions.class).getString("OPTIONS_all");
   }
 
   public List getKeyBindingList() {
@@ -57,6 +57,7 @@ public class AllOptions extends ContextSystemOption {
 
 /*
  * Log
+ *  7    Gandalf   1.6         9/15/99  Miloslav Metelka 
  *  6    Gandalf   1.5         8/27/99  Miloslav Metelka 
  *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version
  *       UID
