@@ -48,6 +48,7 @@ class FormToolBar extends JToolBar {
 
     private Listener listener;
 
+    // ctor
     public FormToolBar(FormDesigner designer) {
         formDesigner = designer;
 
@@ -65,6 +66,7 @@ class FormToolBar extends JToolBar {
                           "/org/netbeans/modules/form/resources/selectionMode.gif")), // NOI18N
             false);
         selectionButton.addActionListener(listener);
+        selectionButton.addMouseListener(listener);
         selectionButton.setToolTipText(
             FormUtils.getBundleString("CTL_SelectionButtonHint")); // NOI18N
         HelpCtx.setHelpIDString(selectionButton, "gui.components.palette"); // NOI18N
@@ -76,6 +78,7 @@ class FormToolBar extends JToolBar {
                           "/org/netbeans/modules/form/resources/connectionMode.gif")), // NOI18N
             false);
         connectionButton.addActionListener(listener);
+        connectionButton.addMouseListener(listener);
         connectionButton.setToolTipText(
             FormUtils.getBundleString("CTL_ConnectionButtonHint")); // NOI18N
         HelpCtx.setHelpIDString(connectionButton, "gui.connecting.intro"); // NOI18N
@@ -86,12 +89,16 @@ class FormToolBar extends JToolBar {
                           "/org/netbeans/modules/form/resources/beansButton.gif")), // NOI18N
             false);
         paletteButton.addActionListener(listener);
+        paletteButton.addMouseListener(listener);
         paletteButton.setToolTipText(
             FormUtils.getBundleString("CTL_BeansButtonHint")); // NOI18N
         HelpCtx.setHelpIDString(paletteButton, "gui.components.adding"); // NOI18N
 
         // status label
         addLabel = new JLabel();
+
+        // popup menu
+        addMouseListener(listener);
 
         // a11y
         connectionButton.getAccessibleContext().setAccessibleName(connectionButton.getToolTipText());
@@ -107,6 +114,7 @@ class FormToolBar extends JToolBar {
 
         TestAction testAction = (TestAction) SystemAction.get(TestAction.class);
         JButton testButton = (JButton) testAction.getToolbarPresenter();
+        testButton.addMouseListener(listener);
 
         add(selectionButton);
         add(connectionButton);
@@ -123,6 +131,8 @@ class FormToolBar extends JToolBar {
             paletteButton.setVisible(false);
         }
     }
+
+    // --------
 
     void updateDesignerMode(int mode) {
         selectionButton.setSelected(mode == FormDesigner.MODE_SELECT);
@@ -159,9 +169,28 @@ class FormToolBar extends JToolBar {
         paletteMenuView.getPopupMenu().show(this, p.x, p.y);
     }
 
+    private void showVisibilityPopupMenu(Point p) {
+        JPopupMenu menu = new JPopupMenu();
+        final JMenuItem item = new JCheckBoxMenuItem(
+                FormUtils.getBundleString("CTL_PaletteButton_MenuItem")); // NOI18N
+        item.setSelected(FormLoaderSettings.getInstance().isPaletteInToolBar());
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                FormLoaderSettings.getInstance().setPaletteInToolBar(
+                                                         item.isSelected());
+            }
+        });
+        menu.add(item);
+        menu.show(this, p.x, p.y);
+    }
+
     // -------
 
-    private class Listener implements ActionListener, NodeAcceptor, PopupMenuListener {
+    private class Listener extends MouseAdapter
+                           implements ActionListener, NodeAcceptor,
+                                      PopupMenuListener
+    {
+        /** Action to switch to selection, connection or add mode. */
         public void actionPerformed(ActionEvent ev) {
             if (ev.getSource() == selectionButton)
                 formDesigner.toggleSelectionMode();
@@ -191,6 +220,13 @@ class FormToolBar extends JToolBar {
         public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
         }
         public void popupMenuCanceled(PopupMenuEvent e) {
+        }
+
+        /** Reacts on right mouse button up - showing toolbar's popup menu. */
+        public void mouseReleased(MouseEvent e) {
+            if (SwingUtilities.isRightMouseButton(e)
+                  && formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT)
+                showVisibilityPopupMenu(e.getPoint());
         }
     }
 }
