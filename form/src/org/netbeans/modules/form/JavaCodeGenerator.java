@@ -37,8 +37,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Map;
-import java.util.Iterator;
+import java.util.*;
 
 /* TODO
    - Exception handling in guarded blocks - from FormSettings???, or as a property of formModel
@@ -107,6 +106,8 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private JavaEditor.SimpleSection initComponentsSection;
     private JavaEditor.SimpleSection variablesSection;
+
+    private Map containerDependentProperties;
 
     /** Creates new JavaCodeGenerator */
 
@@ -466,6 +467,8 @@ class JavaCodeGenerator extends CodeGenerator {
                 formModel.getFormEditorSupport().getDocument(),
                 initComponentsSection.getBegin().getOffset(), initCodeBuffer);
 
+            containerDependentProperties = null;
+
             initCodeWriter.write(INIT_COMPONENTS_HEADER);
             RADComponent top = formModel.getTopRADComponent();
             RADComponent[] nonVisualComponents = formModel.getNonVisualComponents();
@@ -552,6 +555,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
             initCodeWriter.write(INIT_COMPONENTS_FOOTER);
             initCodeWriter.close();
+
+            containerDependentProperties = null;
+
             // set the text into the guarded block
             synchronized(GEN_LOCK) {
                 String originalText = initComponentsSection.getText();
@@ -679,6 +685,20 @@ class JavaCodeGenerator extends CodeGenerator {
                     initCodeBuffer.setIndentLevel(level, oneIndent);
                 }
             }
+
+            // hack for properties that can't be set until all children 
+            // are added to the container
+            List postProps;
+            if (containerDependentProperties != null
+                && (postProps = (List) containerDependentProperties
+                                       .get(comp)) != null)
+            {
+                for (Iterator it = postProps.iterator(); it.hasNext(); ) {
+                    RADProperty prop = (RADProperty) it.next();
+                    generatePropertySetter(comp, prop, initCodeWriter);
+                }
+                initCodeWriter.write("\n");
+            }
         }
     }
 
@@ -797,13 +817,32 @@ class JavaCodeGenerator extends CodeGenerator {
             // not serialized
             RADProperty[] props = comp.getAllBeanProperties();
             for (int i = 0; i < props.length; i++) {
-                if (props[i].isChanged()
-                      || props[i].getPreCode() != null || props[i].getPostCode() != null) {
-                    /*      if (desc instanceof IndexedPropertyDescriptor) { // [PENDING]
-                            generateIndexedPropertySetter(comp, rprop, initCodeWriter);
-                            } else { */
-                    generatePropertySetter(comp, props[i], initCodeWriter);
-                    //      }
+                RADProperty prop = props[i];
+                if (prop.isChanged()
+                        || prop.getPreCode() != null
+                        || prop.getPostCode() != null)
+                {
+                    if (!FormUtils.isContainerContentDependentProperty(
+                                    comp.getBeanClass(), prop.getName()))
+                        generatePropertySetter(comp, prop, initCodeWriter);
+                    else {
+                        // hack for properties that can't be set until all
+                        // children are added to the container
+                        List propList;
+                        if (containerDependentProperties != null) {
+                            propList = (List) containerDependentProperties.get(comp);
+                        }
+                        else {
+                            containerDependentProperties = new HashMap();
+                            propList = null;
+                        }
+                        if (propList == null) {
+                            propList = new LinkedList();
+                            containerDependentProperties.put(comp, propList);
+                        }
+
+                        propList.add(prop);
+                    }
                 }
             }
         }

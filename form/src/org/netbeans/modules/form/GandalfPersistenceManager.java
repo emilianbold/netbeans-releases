@@ -85,6 +85,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private org.w3c.dom.Document topDocument =
         org.openide.xml.XMLUtil.createDocument("topDocument",null,null,null); // NOI18N
 
+    private Map containerDependentProperties;
+
     /** A method which allows the persistence manager to provide infotrmation
      * on whether is is capable to store info about advanced features provided
      * from Developer 3.0
@@ -276,8 +278,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
             throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLFormat"));
         }
 
+        containerDependentProperties = null;
+
         loadNonVisuals(mainElement, formModel);
         loadContainer(mainElement, formModel, topComp, null);
+
+        containerDependentProperties = null;
 
         formModel.fireFormLoaded();
         return formModel;
@@ -554,6 +560,27 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 ((RADVisualContainer)comp).initLayoutSupport();
             }
         }
+
+        // hack for properties that can't be set until all children 
+        // are added to the container
+        List postProps;
+        if (containerDependentProperties != null
+            && (postProps = (List) containerDependentProperties
+                                   .get(comp)) != null)
+        {
+            for (Iterator it = postProps.iterator(); it.hasNext(); ) {
+                RADProperty prop = (RADProperty) it.next();
+                Object propValue = it.next();
+                try {
+                    prop.setValue(propValue);
+                }
+                catch (Exception e) { // ignore
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        e.printStackTrace();
+                }
+            }
+        }
+
         return true;
     }
 
@@ -593,13 +620,38 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         // ignore
                     }
                 }
+
+                // hack for properties that can't be set until all children 
+                // are added to the container
+                if (FormUtils.isContainerContentDependentProperty(
+                                    comp.getBeanClass(), prop.getName())) {
+                    List propList;
+                    if (containerDependentProperties != null) {
+                        propList = (List) containerDependentProperties.get(comp);
+                    }
+                    else {
+                        containerDependentProperties = new HashMap();
+                        propList = null;
+                    }
+                    if (propList == null) {
+                        propList = new LinkedList();
+                        containerDependentProperties.put(comp, propList);
+                    }
+
+                    propList.add(prop);
+                    propList.add(propValue);
+                    continue;
+                }
+
                 try {
                     prop.setValue(propValue);
                 } catch (java.lang.reflect.InvocationTargetException e) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        e.printStackTrace();
                     // ignore this property // [PENDING]
                 } catch (IllegalAccessException e) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        e.printStackTrace();
                     // ignore this property // [PENDING]
                 } catch (Exception e) {
                     // unexpected exception - always printed

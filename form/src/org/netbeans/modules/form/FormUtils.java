@@ -27,7 +27,6 @@ import java.text.MessageFormat;
 
 import org.openide.util.Utilities;
 import org.openide.nodes.Node;
-//import org.openide.util.io.*;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.netbeans.modules.form.util.*;
 import org.openide.util.NbBundle;
@@ -66,6 +65,7 @@ public class FormUtils
                 "debugGraphicsOptions", PROP_EXPERT,
                 "preferredSize", PROP_NORMAL },
         { javax.swing.text.JTextComponent.class, CLASS_AND_SUBCLASSES,
+                "document", PROP_PREFERRED,
                 "text", PROP_PREFERRED,
                 "editable", PROP_PREFERRED,
                 "disabledTextColor", PROP_NORMAL,
@@ -507,6 +507,12 @@ public class FormUtils
         if (pd.isPreferred() || Boolean.TRUE.equals(pd.getValue("preferred"))) // NOI18N
             return PROP_PREFERRED;
         return PROP_NORMAL;
+    }
+
+    static boolean isContainerContentDependentProperty(Class beanClass,
+                                                       String propName) {
+        return "selectedIndex".equals(propName) // NOI18N
+               && javax.swing.JTabbedPane.class.isAssignableFrom(beanClass);
     }
 
     /** @return a default name for event handling method - it is a concatenation of

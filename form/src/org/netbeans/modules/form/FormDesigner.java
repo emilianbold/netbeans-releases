@@ -736,8 +736,8 @@ public class FormDesigner extends TopComponent
                 LayoutManager lm = laySup.cloneLayoutInstance(cont);
                 if (lm != null) cont.setLayout(lm);
 
-                if (cont instanceof JTabbedPane)
-                    ((JTabbedPane)cont).setSelectedIndex(-1);
+//                if (cont instanceof JTabbedPane)
+//                    ((JTabbedPane)cont).setSelectedIndex(-1);
             }
         }
     }
@@ -770,7 +770,8 @@ public class FormDesigner extends TopComponent
                         comp);
                 }
                 catch (Exception ex) {
-                    ex.printStackTrace();
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        ex.printStackTrace();
                 }
             }
         }
