@@ -91,7 +91,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   public void initialize() {
     myEntry = (PropertiesFileEntry)entry;
     super.setModificationListening(false);
-    setMIMEType ("text/x-properties");
+    setMIMEType (PropertiesDataObject.MIME_PROPERTIES);
     initTimer();
 
     // listen to myself so I can add a listener for changes when the document is loaded
@@ -163,7 +163,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
           editor.open ();
           editor.requestFocus();
         }
-      }
+      }  
     } finally {
       TopManager.getDefault ().setStatusText (NbBundle.getBundle(PropertiesEditorSupport.class).
         getString ("CTL_PropertiesOpened"));
