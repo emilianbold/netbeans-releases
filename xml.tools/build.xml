@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init" depends="default.init">
         <patternset id="xml/tools.files">
           <include name="${nb.modules.dir}/xml-tools.jar"/>
-          <include name="${nb.docs.dir}/xml-apis.zip"/>
+          <!--include name="${nb.docs.dir}/xml-apis.zip"/-->
         </patternset>
         <path id="cp">
           <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
@@ -60,13 +60,7 @@ Microsystems, Inc. All Rights Reserved.
         </jar>    
     </target>
 
-    <target name="release">
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}" includeEmptyDirs="false">
-            <fileset dir="release/docs" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
-        </copy>
-    </target>
-
-    <target name="netbeans" depends="jars,release">
+    <target name="netbeans" depends="jars">
        <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/xml-tools.jar">
           <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
              <patternset refID="xml/tools.files"/>
