@@ -13,6 +13,16 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<!-- 
+  These classes are excluded by default (defined in build.xml):
+    "**/*Suite.class"
+    "**/*$$*.class"
+    "**/data/**"
+    "**/hidden/**"
+    "**/*Hidden.*"
+    "**/*Hid.*"
+-->
+
 <mconfig name="MyModule unit test config">
     
     <!-- testbag with all MyModule tests -->
