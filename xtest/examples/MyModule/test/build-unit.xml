@@ -8,26 +8,45 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="MyModule/test-unit" basedir="." default="all">
 
-    <!-- Imports default default-compiler and run-unit-test executor. -->
-    <import file="../../../../nbbuild/templates/xtest-unit.xml"/>
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+    
+    <target name="default-compiler">
+        <buildTests srcdir="unit/src" compileexcludes="**/data/**">
+            <classpath>
+                <!-- Add classpath elements needed to compile tests -->
+                <pathelement location="../mymodule.jar"/>
+            </classpath>
+        </buildTests>
+    </target>
     
     <!-- ========= -->
     <!-- Executors -->
     <!-- ========= -->
     
+    <target name="run-unit-test">
+        <executeTests pluginname="jvm">
+            <classpath>
+                <!-- Add classpath elements needed to run tests -->
+                <pathelement location="../mymodule.jar"/>
+            </classpath>
+        </executeTests>
+    </target>
+
     <!-- This target is executed by XTest  -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
     <target name="runidetest">
         <executeTests  pluginName="ide" classpath="../mymodule.jar" testMode="testbag"/>
     </target>
-
+    
 </project>
 
 

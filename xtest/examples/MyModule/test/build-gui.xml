@@ -8,30 +8,57 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="MyModule/test-gui" basedir="." default="all">
+    
+    <path id="jemmy.and.jelly.path">
+        <pathelement location="../../../../jemmy/builds/jemmy.jar"/>
+        <pathelement location="../../../../jellytools/builds/jelly2-nb.jar"/>
+    </path>
 
-    <!-- Imports default qa-functional-compiler and runidetest executor.
-        jemmy and jellytools jars are on classpath for both. -->
-    <import file="../../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <!-- Optional properties -->
     
     <!-- Creates an empty Java project in IDE -->
     <!-- <property name="xtest.ide.create.project" value="true"/> -->
     <!-- Opens project at specified location -->
     <!-- <property name="xtest.ide.open.project" location="${xtest.data}/myproject"/> -->
-
+    
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
-    
-    <target name="gui-compiler" depends="init,init-cp">
-        <buildTests srcdir="gui/src">
-            <classpath refid="jemmy.and.jelly.path"/>
+
+    <!-- You can override default qa-functional-compiler if you need something special -->
+    <target name="gui-compiler">
+        <buildTests srcDir="gui/src" compileExcludes="**/data/**">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>  
+            </classpath>
         </buildTests>
     </target>
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <target name="runidetest">        
+        <executeTests  pluginName="ide">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>  
+            </classpath>
+        </executeTests>
+    </target>
 
+    <!-- Reuse previous IDE userdir -->
+    <target name="runidetest-reuse">
+        <property name="xtest.ide.reuse.userdir" value="true"/>
+        <executeTests  pluginName="ide">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>  
+            </classpath>
+        </executeTests>
+    </target>
 </project>
 

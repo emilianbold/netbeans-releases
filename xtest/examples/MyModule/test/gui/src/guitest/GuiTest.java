@@ -7,12 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package guitest;
 
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.junit.NbTestSuite;
 
 import org.netbeans.jellytools.JellyTestCase;
@@ -81,6 +82,8 @@ public class GuiTest extends JellyTestCase {
      */
     public void testPart3() {
         log("It should fail. It is only for demo purposes.");
+        // change timeout not to wait so long
+        JemmyProperties.setCurrentTimeout("JMenuOperator.PushMenuTimeout", 5000);
         new Action("Help|Non existing", null).perform();
     }
 }
