@@ -586,7 +586,8 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="Actions">
                     <file name="NewTemplateAction.instance_hidden" />
                     <file name="NewProjectFile.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.Actions$SystemNewFile" />
+                        <!-- attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.Actions$SystemNewFile" / -->
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile"/>
                     </file>
                     <attr boolvalue="true" name="NewProjectFile.instance/FileSystemAction.instance" />
                 </folder>
