@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.loaders.form;
 
 import java.io.*;
+import java.util.Iterator;
 
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
@@ -38,7 +39,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   private RADComponentNode formRootNode;
 
   private FormManager2 formManager;
-  
+
+  private PersistenceManager saveManager;
+
   /** lock for opening form */
   private static final Object OPEN_FORM_LOCK = new Object ();
 
@@ -124,6 +127,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     return formLoaded;
   }
 
+  boolean supportsAdvancedFeatures () {
+    return saveManager.supportsAdvancedFeatures ();
+  }
+
   /** @return true if the form is opened, false otherwise */
   public boolean isOpened () {
     return formLoaded;
@@ -133,29 +140,55 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   * @return true if the form was correcly loaded, false if any error occured 
   */
   protected boolean loadForm () {
-    TuborgPersistenceManager perMan = new TuborgPersistenceManager ();
-    FileObject formFile = formObject.getFormEntry ().getFile ();
-    try {
-      if (perMan.canLoadForm (formObject)) {
-        formManager  = perMan.loadForm (formObject);
-        if (formManager == null) {
-          return false;
-          // [PENDING] - solve the failure
+    for (Iterator it = PersistenceManager.getManagers (); it.hasNext (); ) {
+      PersistenceManager man = (PersistenceManager)it.next ();
+      try {
+        if (man.canLoadForm (formObject)) {
+          saveManager = man;
+          break;
         }
-        formManager.initialize ();
-        
-        // create form hierarchy node and add it to SourceChildren
-        SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
-        formRootNode = new RADComponentNode (formManager.getRADForm ().getTopLevelComponent ());
-        enforceNodesCreation (formRootNode);
-        sc.add (new RADComponentNode [] { formRootNode });
-        
-      } else return false;
-      formLoaded = true;
-    } catch (IOException e) {
-      e.printStackTrace ();
+      } catch (IOException e) {
+        // ignore error and thy the next manager
+      }
+    }
+
+    if (saveManager == null) {
+      // [PENDING - notify user]
       return false;
     }
+
+    FileObject formFile = formObject.getFormEntry ().getFile ();
+    try {
+      formManager = saveManager.loadForm (formObject);
+      if (formManager == null) {
+        return false;
+        // [PENDING] - solve the failure
+      }
+      formManager.initialize ();
+      
+      // create form hierarchy node and add it to SourceChildren
+      SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
+      formRootNode = new RADComponentNode (formManager.getRADForm ().getTopLevelComponent ());
+      enforceNodesCreation (formRootNode);
+      sc.add (new RADComponentNode [] { formRootNode });
+        
+      formLoaded = true;
+    } catch (IOException e) {
+      e.printStackTrace (); // [PENDING - notify user]
+      return false;
+    }
+
+    if (!saveManager.supportsAdvancedFeatures ()) {
+      Object result = TopManager.getDefault().notify(
+        new NotifyDescriptor.Confirmation("The form is saved in an older format. Do you want to convert the form to the new XML persistence format?\nNote: If you answer No, some new features of the form editor will not be available",
+                                          NotifyDescriptor.YES_NO_OPTION,
+                                          NotifyDescriptor.WARNING_MESSAGE)
+        );
+      if (NotifyDescriptor.YES_OPTION.equals(result)) {
+        saveManager = new GandalfPersistenceManager ();
+      }
+    }
+
     return true;
   }
 
@@ -192,11 +225,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   private void saveForm () {
     if (formLoaded) {
       formManager.fireFormToBeSaved ();
-      TuborgPersistenceManager perMan = new TuborgPersistenceManager ();
-//      GandalfPersistenceManager perMan = new GandalfPersistenceManager ();
       FileObject formFile = formObject.getFormEntry ().getFile ();
       try {
-        perMan.saveForm (formObject, formManager);
+        saveManager.saveForm (formObject, formManager);
       } catch (IOException e) {
         e.printStackTrace ();
       }
@@ -230,6 +261,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  21   Gandalf   1.20        7/11/99  Ian Formanek    Better work with 
+ *       persistence managers, supportsAdvancedFeatures added
  *  20   Gandalf   1.19        7/3/99   Ian Formanek    Fires formToBeSaved 
  *       before saving...
  *  19   Gandalf   1.18        6/10/99  Ian Formanek    Fixed bug which caused 
