@@ -80,7 +80,6 @@
 <mapID target="beans.beaninfo.nodes" url="beans/nodes.html" />
 <mapID target="beans.getset" url="beans/getset.html" />
 <mapID target="beans.icon" url="beans/beanicon.html" />
-<mapID target="beans.container" url="beans/container.html" />
 <mapID target="beans.adding" url="beans/adding.html" />
 <mapID target="beans.glossary_serialized" url="beans/glossary_serialized.html" />
 <mapID target="beans.csh.serialize" url="pending.html" />
