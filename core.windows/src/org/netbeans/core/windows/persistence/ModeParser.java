@@ -51,6 +51,8 @@ class ModeParser {
         = "-//NetBeans//DTD Mode Properties 1.2//EN"; // NOI18N
     private static final String INSTANCE_DTD_ID_2_0
         = "-//NetBeans//DTD Mode Properties 2.0//EN"; // NOI18N
+    private static final String INSTANCE_DTD_ID_2_1
+        = "-//NetBeans//DTD Mode Properties 2.1//EN"; // NOI18N
     
     /** Name of extended attribute for order of children */
     private static final String EA_ORDER = "WinSys-TCRef-Order"; // NOI18N
@@ -1643,7 +1645,8 @@ class ModeParser {
             if (INSTANCE_DTD_ID_1_0.equals(publicId)
              || INSTANCE_DTD_ID_1_1.equals(publicId)
              || INSTANCE_DTD_ID_1_2.equals(publicId)
-             || INSTANCE_DTD_ID_2_0.equals(publicId)) {
+             || INSTANCE_DTD_ID_2_0.equals(publicId)
+             || INSTANCE_DTD_ID_2_1.equals(publicId)) {
                 InputStream is = new ByteArrayInputStream(new byte[0]);
                 //getClass().getResourceAsStream(INSTANCE_DTD_LOCAL);
 //                if (is == null) {
