@@ -146,7 +146,8 @@ public class DTDGrammar implements GrammarQuery {
             if (el == null) return EmptyEnumeration.EMPTY;;
 
             // lazilly parse content model
-            Object model = contentModels.get(el.getTagName());
+//            Object model = contentModels.get(el.getTagName());
+            Object model = null; //#30095 rollback
             if (model instanceof String) {
                 model = ContentModel.parseContentModel((String)model);
                 contentModels.put(el.getTagName(), model);
