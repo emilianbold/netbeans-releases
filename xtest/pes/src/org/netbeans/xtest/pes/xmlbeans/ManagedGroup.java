@@ -369,14 +369,14 @@ public class ManagedGroup extends PESProjectGroup {
        
        ManagedReport[] reports = this.filterBy(project,null,department,type,null);
        String[] uniqueBuilds = (String[])ManagedGroup.getUniqueBuilds(reports).toArray(new String[0]);              
-       //PESLogger.logger.finest("uniqueBuilds.length="+uniqueBuilds.length+" reports.length="+reports.length);
+       PESLogger.logger.finest("uniqueBuilds.length="+uniqueBuilds.length+" reports.length="+reports.length);
        if (uniqueBuilds.length > age) {
            Arrays.sort(uniqueBuilds);           
            String lastBuild = null;
            if (age > 0) {
                lastBuild = uniqueBuilds[uniqueBuilds.length-age];
            }
-           //PESLogger.logger.finest("last build ="+lastBuild);
+           PESLogger.logger.finest("last build ="+lastBuild);
            for (int i=0; i<reports.length; i++) {
                // find all builds older than lastBuilds
                
@@ -449,7 +449,9 @@ public class ManagedGroup extends PESProjectGroup {
            if (report != null) {
                if (report.isToBeDeleted()) {
                    try {
-                       File reportRoot = new File(pesWeb.getWebRoot(),report.getPathToResultsRoot());
+                       
+                       File reportRoot = new File( pesWeb.getWebRoot(), report.getPathToProject() + File.separator + report.getBuild());
+                       
                        if (reportRoot.isDirectory()) {
                            try {
                                // delete full report
@@ -460,6 +462,11 @@ public class ManagedGroup extends PESProjectGroup {
                            } catch (IOException ioe) {
                                PESLogger.logger.log(Level.WARNING, "IOExcepting caught when deleting report at "+reportRoot,ioe);
                            }
+                       }
+                       else {
+                        if ( !reportRoot.exists() ) {
+                            //nothing
+                        }
                        }
                    } catch (IOException ioe) {
                        PESLogger.logger.log(Level.WARNING, "IOExcepting caught when determining report root "+report.getPathToResultsRoot(),ioe);

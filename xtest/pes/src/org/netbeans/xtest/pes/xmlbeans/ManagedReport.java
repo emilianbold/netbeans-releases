@@ -157,6 +157,16 @@ public class ManagedReport extends XTestResultsReport  {
        
     }
     
+    public String getPathToProject() {
+        int idx = xmlat_webLink.indexOf(File.separatorChar);
+        if (idx != -1) {
+            return xmlat_webLink.substring(0,idx);
+        }
+        else {
+            return xmlat_webLink;
+        }
+    }
+    
     
     // delete all ide.zip files, all working directories, etc ...
     public void deleteDetailedData(File reportRoot, boolean leaveIDELog, boolean leaveAntLogs) throws IOException {
@@ -197,7 +207,7 @@ public class ManagedReport extends XTestResultsReport  {
             throw new IllegalArgumentException("reportRoot is not a valid directory - cannot delete");            
         }
         // delete full report
-        if (!FileUtils.delete(reportRoot)) {
+        if (!FileUtils.delete( reportRoot )) {
             throw new IOException("Cannot delete directory "+reportRoot);
         }
     }
