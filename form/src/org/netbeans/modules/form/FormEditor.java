@@ -389,7 +389,11 @@ final public class FormEditor extends Object {
     }
 
     public void focusForm (FormManager formManager) {
-      getExplorerManager ().setRootContext (formManager.getFormEditorSupport ().getFormRootNode ());
+      if (formManager == null) {
+        getExplorerManager ().setRootContext (emptyInspectorNode);
+      } else {
+        getExplorerManager ().setRootContext (formManager.getFormEditorSupport ().getFormRootNode ());
+      }
     }
 
     /** Called when the explored context changes.
@@ -522,6 +526,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  7    Gandalf   1.6         5/12/99  Ian Formanek    
  *  6    Gandalf   1.5         5/4/99   Ian Formanek    Package change
  *  5    Gandalf   1.4         5/2/99   Ian Formanek    
  *  4    Gandalf   1.3         4/7/99   Ian Formanek    Backward-compatible 

@@ -64,6 +64,14 @@ public class RADComponent {
   private FormManager formManager;
   private EventsList eventsList;
 
+  // FINALIZE DEBUG METHOD
+  public void finalize () throws Throwable {
+    super.finalize ();
+    if (System.getProperty ("netbeans.debug.form.finalize") != null) {
+      System.out.println("finalized: "+this.getClass ().getName ()+", instance: "+this);
+    }
+  } // FINALIZE DEBUG METHOD
+  
 // -----------------------------------------------------------------------------
 // Constructors
 
@@ -624,6 +632,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  8    Gandalf   1.7         5/12/99  Ian Formanek    
  *  7    Gandalf   1.6         5/11/99  Ian Formanek    Build 318 version
  *  6    Gandalf   1.5         5/10/99  Ian Formanek    
  *  5    Gandalf   1.4         5/5/99   Ian Formanek    

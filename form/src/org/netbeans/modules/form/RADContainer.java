@@ -35,6 +35,7 @@ public class RADContainer extends RADComponent implements ComponentContainer {
 
 /*
  * Log
+ *  6    Gandalf   1.5         5/12/99  Ian Formanek    
  *  5    Gandalf   1.4         5/11/99  Ian Formanek    Build 318 version
  *  4    Gandalf   1.3         5/10/99  Ian Formanek    
  *  3    Gandalf   1.2         5/4/99   Ian Formanek    Package change

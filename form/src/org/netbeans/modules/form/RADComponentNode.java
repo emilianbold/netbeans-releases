@@ -29,11 +29,24 @@ public class RADComponentNode extends AbstractNode {
   
   private RADComponent component;
   
+  // FINALIZE DEBUG METHOD
+  public void finalize () throws Throwable {
+    super.finalize ();
+    if (System.getProperty ("netbeans.debug.form.finalize") != null) {
+      System.out.println("finalized: "+this.getClass ().getName ()+", instance: "+this);
+    }
+  } // FINALIZE DEBUG METHOD
+  
   public RADComponentNode (RADComponent component) {
     super ((component instanceof ComponentContainer) ? new RADChildren ((ComponentContainer)component) : Children.LEAF);
     this.component = component;
     String className = component.getComponentClass ().getName ();
-    setName (nameFormat.format (new Object[] {component.getName (), className, className.substring (className.lastIndexOf (".") + 1) } ));
+    if (component instanceof RADVisualFormContainer) {
+      // [PENDING - handle this better and also for non-visual forms]
+      setName (component.getName () + " [form]");
+    } else {
+      setName (nameFormat.format (new Object[] {component.getName (), className, className.substring (className.lastIndexOf (".") + 1) } ));
+    }
   }
 
   public Image getIcon (int iconType) {
@@ -53,6 +66,7 @@ public class RADComponentNode extends AbstractNode {
 
 /*
  * Log
+ *  4    Gandalf   1.3         5/12/99  Ian Formanek    
  *  3    Gandalf   1.2         5/4/99   Ian Formanek    Package change
  *  2    Gandalf   1.1         4/29/99  Ian Formanek    
  *  1    Gandalf   1.0         4/29/99  Ian Formanek    

@@ -38,7 +38,7 @@ public abstract class CodeGenerator {
 
   /** Generates the specified event handler, if it does not exist yet.
   * @param handlerName The name of the event handler
-  * @param paramList the list of event handler parameter types
+  * @param paramTypes the list of event handler parameter types
   * @param bodyText the body text of the event handler or null for default (empty) one
   * @return true if the event handler have not existed yet and was creaated, false otherwise
   */
@@ -46,7 +46,7 @@ public abstract class CodeGenerator {
 
   /** Changes the text of the specified event handler, if it already exists.
   * @param handlerName The name of the event handler
-  * @param paramList the list of event handler parameter types
+  * @param paramTypes the list of event handler parameter types
   * @param bodyText the new body text of the event handler or null for default (empty) one
   * @return true if the event handler existed and was modified, false otherwise
   */
@@ -60,8 +60,9 @@ public abstract class CodeGenerator {
   /** Renames the specified event handler to the given new name.
   * @param oldHandlerName The old name of the event handler
   * @param newHandlerName The new name of the event handler
+  * @param paramTypes the list of event handler parameter types
   */
-  public abstract boolean renameEventHandler (String oldHandlerName, String newHandlerName);
+  public abstract boolean renameEventHandler (String oldHandlerName, String newHandlerName, String[] paramTypes);
 
   /** Focuses the specified event handler in the editor. */
   public abstract void gotoEventHandler (String handlerName);
@@ -69,6 +70,7 @@ public abstract class CodeGenerator {
 
 /*
  * Log
+ *  5    Gandalf   1.4         5/12/99  Ian Formanek    
  *  4    Gandalf   1.3         5/10/99  Ian Formanek    
  *  3    Gandalf   1.2         5/4/99   Ian Formanek    Package change
  *  2    Gandalf   1.1         4/29/99  Ian Formanek    

@@ -23,7 +23,6 @@ import com.netbeans.ide.src.nodes.SourceChildren;
 import com.netbeans.ide.util.NbBundle;
 
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
-import com.netbeans.developer.modules.loaders.form.forminfo.*;
 
 /** 
 *
@@ -108,6 +107,17 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 // -----------------------------------------------------------------------------
 // Form Loading
+
+  protected void notifyClose () {
+    super.notifyClose ();
+    getFormTopComponent ().close ();
+    FormEditor.getComponentInspector().focusForm (null);
+    SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
+    sc.remove (new RADComponentNode [] { formRootNode });
+    formRootNode = null;
+    formManager = null;
+    formLoaded = false;
+  }
   
   /** @return true if the form is already loaded, false otherwise */
   boolean isLoaded () {
@@ -177,6 +187,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  13   Gandalf   1.12        5/12/99  Ian Formanek    
  *  12   Gandalf   1.11        5/11/99  Ian Formanek    Build 318 version
  *  11   Gandalf   1.10        5/10/99  Ian Formanek    
  *  10   Gandalf   1.9         5/4/99   Ian Formanek    package change 

@@ -49,25 +49,33 @@ public class JavaCodeGenerator extends CodeGenerator {
   protected static final String SECTION_VARIABLES = "variables";
   protected static final String SECTION_EVENT_PREFIX = "event_";
     
-  private static final String AUX_VARIABLE_NAME = "JavaCodeGenerator::VariableName";
-
   private FormManager formManager;
 
   private JCGFormListener listener;
+
+  private boolean errorInitializing = false;
 
   private JavaEditor.SimpleSection initComponentsSection;
   private JavaEditor.SimpleSection variablesSection;
 
   private static final String INIT_COMPONENTS_HEADER = "  private void initComponents () {\n";
   private static final String INIT_COMPONENTS_FOOTER = "  }\n";
-  private static final String VARIABLES_HEADER = "  // Variables declaration - do not modify\n";
-  private static final String VARIABLES_FOOTER = "  // End of variables declaration\n";
+  private static final String VARIABLES_HEADER = FormEditor.getFormBundle ().getString ("MSG_VariablesBegin");
+  private static final String VARIABLES_FOOTER = FormEditor.getFormBundle ().getString ("MSG_VariablesEnd");
 
   private static final String oneIndent = "  "; // [PENDING - indentation engine]
 
   /** The prefix for event handler sections */
   private static final String EVT_SECTION_PREFIX = "event_";
 
+  // FINALIZE DEBUG METHOD
+  public void finalize () throws Throwable {
+    super.finalize ();
+    if (System.getProperty ("netbeans.debug.form.finalize") != null) {
+      System.out.println("finalized: "+this.getClass ().getName ()+", instance: "+this);
+    }
+  } // FINALIZE DEBUG METHOD
+  
   /** Creates new JavaCodeGenerator */
   public JavaCodeGenerator () {
   }
@@ -80,6 +88,11 @@ public class JavaCodeGenerator extends CodeGenerator {
     
     initComponentsSection = s.findSimpleSection (SECTION_INIT_COMPONENTS); // [PENDING]
     variablesSection = s.findSimpleSection (SECTION_VARIABLES); // [PENDING]
+
+    if ((initComponentsSection == null) || (variablesSection == null)) {
+      System.out.println("ERROR: Cannot initialize guarded sections... code generation will not work.");
+      errorInitializing = true;
+    }
 
     // regenerate on init
     regenerateInitializer ();
@@ -111,6 +124,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
 
   private void regenerateInitializer () {
+    if (errorInitializing) return;
     StringBuffer text = new StringBuffer (); 
     text.append (INIT_COMPONENTS_HEADER);
     RADForm form = formManager.getRADForm ();
@@ -120,24 +134,21 @@ public class JavaCodeGenerator extends CodeGenerator {
     synchronized (GEN_LOCK) {
       initComponentsSection.setText (text.toString ());
     }
-    System.out.println("-----------regenerateInitializer:--------------");
-    System.out.println(text.toString ());
-    System.out.println("-----------------------------------------------");
   }
 
   private void regenerateVariables () {
+    if (errorInitializing) return;
     StringBuffer text = new StringBuffer (); 
     text.append (VARIABLES_HEADER);
+    text.append ("\n");
     RADForm form = formManager.getRADForm ();
     ComponentContainer top = (ComponentContainer)form.getTopLevelComponent (); // [PENDING - illegal cast]
     addVariables (top, text);
     text.append (VARIABLES_FOOTER);
+    text.append ("\n");
     synchronized (GEN_LOCK) {
       variablesSection.setText (text.toString ());
     }
-    System.out.println("-----------regenerateVariables:--------------");
-    System.out.println(text.toString ());
-    System.out.println("---------------------------------------------");
   }
 
   private void addInitCode (RADComponent comp, StringBuffer text, String indent) {
@@ -199,15 +210,10 @@ public class JavaCodeGenerator extends CodeGenerator {
   private void generateComponentAddCode (RADComponent comp, RADVisualContainer container, StringBuffer text, String indent) {
     DesignLayout dl = container.getDesignLayout ();
     text.append (dl.generateComponentCode (indent, container, (RADVisualComponent)comp)); // [PENDING incorrect cast]
-/*    text.append (indent);
-    text.append (getVariableGenString (container, true));
-    text.append ("add (");
-    text.append (comp.getName ());
-    text.append (", null);\n"); */
   }
   
   private void generateIndexedPropertySetter (RADComponent comp, PropertyDescriptor desc, Object value, StringBuffer text, String indent) {
-    System.out.println("generateIndexedPropertySetter: NotImplemented..."); // [PENDING]
+    System.out.println("generateIndexedPropertySetter: NotImplemented... (Property: "+desc.getName ()+", Value: "+value+")"); // [PENDING]
   }
 
   
@@ -248,10 +254,10 @@ public class JavaCodeGenerator extends CodeGenerator {
       text.append (" ");
       String excName = "e"+varCount;
       varCount++;
-//        while (getFormManager ().getVariablesPool ().isReserved (excName)) {
-//          excName = "e"+varCount;
-//          varCount++;
-//        }
+      while (formManager.getVariablesPool ().isReserved (excName)) {
+        excName = "e"+varCount;
+        varCount++;
+      }
       text.append (excName);
       text.append (") {\n");
       text.append (indent);
@@ -447,6 +453,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   * @return true if the event handler have not existed yet and was creaated, false otherwise
   */
   public boolean generateEventHandler (String handlerName, String[] paramTypes, String bodyText) {
+    if (errorInitializing) return false;
     if (getEventHandlerSection (handlerName) != null)
       return false;
 
@@ -454,13 +461,13 @@ public class JavaCodeGenerator extends CodeGenerator {
       FormEditorSupport s = formManager.getFormEditorSupport ();
     
       try {
-        JavaEditor.SimpleSection sec = s.createSimpleSectionAfter (initComponentsSection, getEventSectionName (handlerName));
-        sec.setText (getEventHandlerText (handlerName, paramTypes, bodyText));
+        JavaEditor.InteriorSection sec = s.createInteriorSectionAfter (initComponentsSection, getEventSectionName (handlerName));
+        sec.setHeader (getEventHandlerHeader (handlerName, paramTypes));
+        sec.setBody (getDefaultEventBody ());
+        sec.setBottom (getEventHandlerFooter (handlerName, paramTypes));
       } catch (javax.swing.text.BadLocationException e) {
         e.printStackTrace (); // [PENDING]
       }
-
-//      sec.setEditableInterior (true);
 //      clearUndo ();
     }
 
@@ -474,24 +481,20 @@ public class JavaCodeGenerator extends CodeGenerator {
   * @return true if the event handler existed and was modified, false otherwise
   */
   public boolean changeEventHandler (final String handlerName, final String[] paramTypes, final String bodyText) {
-/*    final DocumentRef.Section sec = getEventHandlerSection (handlerName);
+    JavaEditor.InteriorSection sec = getEventHandlerSection (handlerName);
     if (sec == null)
       return false;
 
-    requests++;
-    com.netbeans.developer.util.RequestProcessor.postRequest (
-      lastInitializerRequest = new Runnable () {
-        public void run () {
-          synchronized (GEN_LOCK) {
-            sec.setText (getEventHandlerText (handlerName, paramTypes, bodyText));
-            sec.setEditableInterior (true);
-            clearUndo ();
-            requests--;
-          }
-        }
+    synchronized (GEN_LOCK) {
+      System.out.println("Change event handler: "+handlerName);
+      sec.setHeader (getEventHandlerHeader (handlerName, paramTypes));
+      if (bodyText == null) {
+        sec.setBody (getDefaultEventBody ());
+      } else {
+        sec.setBody (bodyText);
       }
-    );
-*/
+      sec.setBottom (getEventHandlerFooter (handlerName, paramTypes));
+    }
     return true;
   }
 
@@ -499,17 +502,17 @@ public class JavaCodeGenerator extends CodeGenerator {
   * @param handlerName The name of the event handler
   */
   public boolean deleteEventHandler (String handlerName) {
-/*    synchronized (GEN_LOCK) {
-      DocumentRef.Section section = getEventHandlerSection (handlerName);
+    synchronized (GEN_LOCK) {
+      JavaEditor.InteriorSection section = getEventHandlerSection (handlerName);
       if (section == null)
         return false;    
-      section.remove ();
+      section.deleteSection ();
     }
-*/    
+    
     return true;
   }
 
-  private String getEventHandlerText (String handlerName, String[] paramTypes, String bodyText) {
+  private String getEventHandlerHeader (String handlerName, String[] paramTypes) {
     String oneIndent = "  ";
     StringBuffer buf = new StringBuffer ();
     buf.append (oneIndent);
@@ -531,34 +534,24 @@ public class JavaCodeGenerator extends CodeGenerator {
       if (i != paramTypes.length - 1)
         buf.append (", ");
       else
-        buf.append (") ");
-    }
-    if (bodyText == null) {
-      buf.append (getDefaultEventBody ());
-    } else {
-      bodyText = Utilities.replaceString (bodyText, "\n", "\n"+oneIndent+oneIndent);
-      bodyText = Utilities.replaceString (bodyText, "\t", oneIndent);
-      buf.append ("{\n");
-      buf.append (oneIndent);
-      buf.append (oneIndent);
-      buf.append (bodyText);
-      buf.append ("\n");
-      buf.append (oneIndent);
-      buf.append ("}\n");
+        buf.append (") {\n");
     }
     return buf.toString ();
   }
 
+  private String getEventHandlerFooter (String handlerName, String[] paramTypes) {
+    return "  }\n"; // [PENDING]
+  }
+  
   private String getDefaultEventBody () {
-    String oneIndent = "  ";
+    String oneIndent = "  "; // [PENDING]
     StringBuffer evtCode = new StringBuffer();
-    evtCode.append ("{\n");
     evtCode.append (oneIndent);
     evtCode.append (oneIndent);
     evtCode.append (FormEditor.getFormBundle ().getString ("MSG_EventHandlerBody"));
     evtCode.append ("\n");
     evtCode.append (oneIndent);
-    evtCode.append ("}\n");
+    evtCode.append ("\n");
     return evtCode.toString();
   }
 
@@ -566,23 +559,16 @@ public class JavaCodeGenerator extends CodeGenerator {
   * @param oldHandlerName The old name of the event handler
   * @param newHandlerName The new name of the event handler
   */
-  public boolean renameEventHandler (String oldHandlerName, String newHandlerName) {
+  public boolean renameEventHandler (String oldHandlerName, String newHandlerName, String[] paramTypes) {
+    JavaEditor.InteriorSection sec = getEventHandlerSection (oldHandlerName);
+    if (sec == null) {
+      return false;
+    }
+
     synchronized (GEN_LOCK) {
-      JavaEditor.InteriorSection sec = getEventHandlerSection (oldHandlerName);
-      if (sec == null) {
-        return false;
-      }
-/*      String text = sec.getText ();
-      int index = text.indexOf (oldHandlerName);
-      if (index == -1) {
-        return false;
-      }
-
-      StringBuffer newText = new StringBuffer (text.substring (0, index));
-      newText.append (newHandlerName);
-      newText.append (text.substring (index + oldHandlerName.length ()));
-
-      sec.setText (newText.toString ()); */
+      System.out.println("Rename event handler: "+newHandlerName);
+      sec.setHeader (getEventHandlerHeader (newHandlerName, paramTypes));
+      sec.setBottom (getEventHandlerFooter (newHandlerName, paramTypes));
       try {
         sec.setName(getEventSectionName(newHandlerName));
 //        clearUndo ();
@@ -689,6 +675,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  8    Gandalf   1.7         5/12/99  Ian Formanek    
  *  7    Gandalf   1.6         5/11/99  Ian Formanek    Build 318 version
  *  6    Gandalf   1.5         5/10/99  Ian Formanek    
  *  5    Gandalf   1.4         5/6/99   Ian Formanek    Generates code into 
