@@ -65,6 +65,9 @@ class ProgressIndicator implements Runnable {
                     progressPanel.hideMe();
                 }
             });
+
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText("");
+
     }
 
     synchronized public void run() {
