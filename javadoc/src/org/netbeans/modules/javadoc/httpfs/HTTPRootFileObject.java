@@ -209,7 +209,6 @@ class HTTPRootFileObject
      */
     synchronized void refreshRootContents( ) {
         initHTTPProxyHack();
-        Thread.dumpStack();
         // File object for /package-list
         HTTPFileObject	packageFile;
         // File object for /index-files/ directory
@@ -225,9 +224,6 @@ class HTTPRootFileObject
         // Tell the file system that it is being refreshed
         parentFileSystem.setState( HTTPFileSystem.STATE_READING );
         
-        System.err.println("proxyhost = " + System.getProperty("http.proxyHost"));
-        System.err.println("proxyport = " + System.getProperty("http.proxyPort"));
-
         // Remove all existing children from the root file object
         removeAllChildren( );
 
