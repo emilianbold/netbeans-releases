@@ -20,27 +20,17 @@ Microsystems, Inc. All Rights Reserved.
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.core</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>4.37</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.openide.loaders</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>	
             </module-dependencies>
             <public-packages/>
         </data>

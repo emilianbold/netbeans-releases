@@ -4,6 +4,3 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/core/ide/resources/Bundle.propert
 OpenIDE-Module-Specification-Version: 1.4
 OpenIDE-Module-Layer: org/netbeans/core/ide/resources/layer.xml
 
-Name: org/netbeans/core/ide/JarDataLoader.class
-OpenIDE-Module-Class: Loader
-
