@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,6 +17,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Vector;
 import java.text.MessageFormat;
+
+import org.openide.util.Utilities;
 
 import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
@@ -43,15 +45,23 @@ public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperat
     protected void initChildren(Vector children) throws DatabaseException {
         dm.addPropertyChangeListener(connectionListener);
         JDBCDriver[] drvs = dm.getDrivers();
+        boolean win = Utilities.isWindows();
+        String file;
         for (int i = 0; i < drvs.length; i++) {
-            DatabaseDriver drv = new DatabaseDriver(drvs[i].getName(), drvs[i].getClassName(), drvs[i].getURLs()[0].toString());
+            StringBuffer sb = new StringBuffer();
+            for (int j = 0; j < drvs[i].getURLs().length; j++) {
+                if (j != 0)
+                    sb.append(", "); //NOI18N
+                file = drvs[i].getURLs()[j].getFile();
+                if (win)
+                    file = file.substring(1);
+                sb.append(file);
+            }
+            DatabaseDriver drv = new DatabaseDriver(drvs[i].getName(), drvs[i].getClassName(), sb.toString());
             DriverNodeInfo chinfo = (DriverNodeInfo) DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.DRIVER);
             if (chinfo != null && drv != null) {
                 chinfo.setDatabaseDriver(drv);
                 children.add(chinfo);
-            } else {
-//                String message = MessageFormat.format(bundle.getString("EXC_Driver"), new String[] {drv.toString()}); // NOI18N
-//                throw new Exception(message);
             }
         }
     }

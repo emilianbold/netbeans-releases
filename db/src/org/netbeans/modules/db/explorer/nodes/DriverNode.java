@@ -44,7 +44,6 @@ public class DriverNode extends LeafNode implements PropertyChangeListener {
         if (pname.equals(DatabaseNodeInfo.NAME)) drv.setName((String)newval);
         if (pname.equals(DatabaseNodeInfo.URL)) drv.setURL((String)newval);
         if (pname.equals(DatabaseNodeInfo.PREFIX)) drv.setDatabasePrefix((String)newval);
-        if (pname.equals(DatabaseNodeInfo.ADAPTOR_CLASSNAME)) drv.setDatabaseAdaptor((String)newval);
     }
     
     public String getShortDescription() {
