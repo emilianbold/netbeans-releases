@@ -56,6 +56,7 @@ Microsystems, Inc. All Rights Reserved.
         <path id="test.cp">
             <path refid="cp"/>
             <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+            <!-- XXX check if these files exist, and if not, run xtest/build.xml -->
             <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
             <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
             <pathelement path="${test.cp.extra}"/>
@@ -132,7 +133,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="reload" depends="init,jar">
         <fail unless="netbeans.home">Reloading modules works only inside the NetBeans IDE</fail>
-        <nbinstaller module="${netbeans.dest.dir}/${cluster.dir}/${module.jar.dir}/${module.jar.basename}" action="reinstall"/>
+        <nbinstaller module="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" action="reinstall"/>
     </target>
 
     <target name="netbeans" depends="init,jar">
