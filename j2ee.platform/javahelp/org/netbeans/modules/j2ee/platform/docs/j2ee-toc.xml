@@ -227,7 +227,6 @@
 <tocitem text="Developing Web Services">
          <tocitem text="About Web Services" >
 		<tocitem text="About Web Services" target="about_ws" />
-		<tocitem text="About the Web Service Architecture" target="about_ws_architecture" />
 		<tocitem text="Working with Web Services" target="ws_process" />
 		<tocitem text="Web Service Tasks: Quick Reference" target="ws_quickref" />
 	        <tocitem text="Preparing to Develop Web Services and Clients" target="set_ws_server" />

@@ -19,9 +19,9 @@ Use is subject to license terms.  *-->
 <table cellpadding="3" cellspacing="0" border="0">
 <tr valign="top"> 
 <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
-<td>Later, you will not be able to <a href="../build/about_build_ws.html">build</a> the web service
-	unless the SJS Application Server is the target
-	 server for the project.</td>
+<td>Be sure to select the SJS Application Server as the target server for the project, otherwise you will not be able to build
+	 the web service. 
+	See <a href="../create/set_ws_server.html">Preparing the Develop Web Services and Clients</a> for more information.</td>
 </tr>
 </table>
 </li>
@@ -45,17 +45,8 @@ In the IDE, the interface is identified by the suffix "SEI". For example, if you
 web service <tt>CalculatorWS</tt>, its interface is named <tt>CalculatorWSSEI</tt>.
 The IDE automatically populates the interface with a declaration for each web service operation
  added by means of the <a href="add_ws_operation.html">Add Operation dialog box</a>.</li>
-<li>The class for the implementation of the interface. The IDE creates a skeleton
- operation to the implementation class when you use the Add Operation dialog box. For example,
-if you are creating a web service that adds two integers, the skeleton operation that the IDE creates
- in the implementation class
-is as follows:
-<pre>
-<tt>    public int add(int a, int b) throws java.rmi.RemoteException {
-       
-    }
-</tt></pre>
-<p>In the IDE, an implementation class is identified by the suffix "Impl" (for web applications)
+<li>The class for the implementation of the interface. 
+ In the IDE, an implementation class is identified by the suffix "Impl" (for web applications)
  or "Bean" (for EJB modules). For example, if your 
  web service is named <tt>CalculatorWS</tt>, its implementation class is named <tt>CalculatorWSImpl</tt>
  or <tt>CalculatorWSBean</tt>.</li></ul>
@@ -64,21 +55,13 @@ and you can access it in the Source Packages node (in the Projects window).
 </ul>
 </li>
 <li>Use the <a href="nbdocs:/org/netbeans/modules/usersguide/editing/editing_about.html">Source Editor</a> to develop the
-       web service. When you right-click in the Source Editor, you can use the IDE to generate skeleton code for
-       one or more of the following:
-       <ul>
-	       <li><a href="add_ws_operation.html">Add a web service operation</a></li>
-	       <li><a href="add_ws_soap_message.html">Add a SOAP message handler</a></li>
-	       <li><a href="../../ejb/editing/call_ejb.html">Call an EJB</a></li>
-	       <li><a href="../../tbd.html">Use a database</a></li>
-               <li><a href="../../tbd.html">Send a JMS message</a></li>
-       </ul>
+       web service. 
 
 <table cellpadding="3" cellspacing="0" border="0">
 <tr valign="top"> 
 <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
 <td>For help on designing and developing your web services,
-go to Help <img src="../../images/arrow.gif" alt="and choose" >&nbsp;BluePrints Solutions Catalog.
+go to Help <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Java BluePrints Solutions Catalog.
 Select topics under the "Service Oriented Architectures with Web Services" item.</td>
 </tr>
 </table>

@@ -16,6 +16,30 @@ Use is subject to license terms.  *-->
   of software and hardware platforms. The proliferation of distributed environments 
   has created a need for an enterprise to be able to expose all or part of the 
   functionality of an application to other applications over an open network.</p>
+<P>The promise of web services architecture is to allow you to
+connect applications that were developed on different platforms and
+in different programming languages. This can only work if vendors can
+agree on common standards. The web service architecture is based on
+the following three specifications:</P>
+<UL>
+	<LI><P><B>SOAP (Simple Object Access Protocol).</B> Defines the
+	mechanism by which a web service is called and how data is returned.
+	For detailed information, refer to the SOAP 1.1 Specification at 
+	</P>
+	<LI><P><B>WSDL (Web Service Definition Language).</B> Describes the
+	external interface of a web service. For detailed information, refer
+	to the WSDL 1.1 Specification at 
+	</P>
+	<LI><P><B>UDDI (Universal Discovery, Description, and Integration)</B>
+	Registries contain information about web services, including the
+	location of WSDL files and the location of the running services. The
+	IDE does not let you publish web services to or
+	browse from a UDDI registry, although the WSDL files that you
+	use can come from a variety of sources, including a UDDI registry.
+	For detailed information, refer to the UDDI Version 3.0
+	Specification at 
+	</P>
+</UL>
 <p>Web services come in two styles, document-style and RPC-style:	
 <ul><li><b>Document-style.</b> The client interacts with the web service using 
   documents that are meant to be processed as complete entities. These documents 
@@ -32,7 +56,8 @@ probably create a document-style web service:</p>
 are not expected.</li>
 <li>The web service is data-oriented, not process-oriented.
 </ul></li>
-  <li><b>RPC-style.</b> The web service is viewed by the client as a single logical 
+<li><b>RPC-style.</b> The client interacts with the web service using 
+    operations exposed by the web service. The web service is viewed by the client as a single logical 
     application or component with encapsulated data, where the WSDL described 
     by the publicly-published interface and the XML in the SOAP messages exchanged 
     is formatted to map to the discrete operations published by that application. 
@@ -51,27 +76,32 @@ probably create a RPC-style web service:</p>
 <li>The web service is process-oriented, not data-oriented.</li>
 </ul></li></ul>
 <h3>Web Services in the IDE</h3>
-<p>In the IDE, you can create a web service by <a href="../create/create_ws_from_scratch.html">implementing it from scratch</a>
- or by <a href="../create/create_ws_from_wsdl.html">implementing an existing WSDL file</a>.
-The IDE generates deployment information in the deployment descriptors, the Java code that describes
-the web service (the implementation class and the Service End Point Interface), and a compilation target in
+<p>In the IDE, you can <a href="../create/create_ws_from_scratch.html">create a web service from scratch</a>
+or by <a href="../create/create_ws_from_wsdl.html">implementing an existing WSDL file</a>:
+<ul><li><b>From scratch.</b> The IDE generates deployment information in the deployment descriptors, the WSDL file that describes
+	the web service, and a compilation target in
 the Ant build script. After you finish development,
-you can finetune your web service using settings for building a 
-<a href="../build/compile_doc.html">document-style web service</a>, or a <a href="../build/compile_rpc.html">RPC-style web service</a>.
+you can finetune your source files to  
+<a href="../build/compile_doc.html">build a document-style web service</a>, or to <a href="../build/compile_rpc.html">build a RPC-style web service</a>.
 Then, when you
   build the web service, the <a href="../build/about_wscompile.html"><tt>wscompile</tt> tool</a> 
-  is called to generate the web service artifacts required for deployment. 
-  To finetune a web service that is created from a WSDL file, you must <a href="../build/compile_wsdl_regenerate.html">regenerate the web service
+  is called to generate the web service artifacts required for deployment.</li> 
+  <li><b>From a WSDL file.</b> 
+ The IDE generates deployment information in the deployment descriptors, the Java code that describes
+the web service (the implementation class and the Service End Point Interface), and a compilation target in
+the Ant build script. To finetune a web service that implements a WSDL file,
+you can set options to 
+<a href="../build/compile_wsdl.html">build the WSDL-based web service</a>, but before you build
+ you must <a href="../build/compile_wsdl_regenerate.html">regenerate the web service
    artifacts</a> 
   by explicitly calling the compilation target in
-the Ant build script. </p>
+  the Ant build script. </p>
 <table cellpadding="3" cellspacing="0" border="0">
 <tr valign="top"> 
 <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
-<td>For tips on designing web services,
-go to Help <img src="../../images/arrow.gif" alt="and choose" >&nbsp;BluePrints Solutions Catalog
-and select from the Service Oriented Architectures with Web Services section of the drop down.
-</td>
+    <td>For tips on designing web services, go to Help <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Java 
+      BluePrints Solutions Catalog and select from the Service Oriented Architectures 
+      with Web Services section of the drop down. </td>
 </tr>
 </table>
 <table>

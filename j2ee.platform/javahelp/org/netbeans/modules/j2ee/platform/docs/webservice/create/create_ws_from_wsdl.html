@@ -24,9 +24,9 @@ you can use the IDE to implement it. The WSDL file is an agreement on the data a
 <table cellpadding="3" cellspacing="0" border="0">
 <tr valign="top"> 
 <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
-<td>Later, you will not be able to <a href="../build/about_build_ws.html">build</a> the web service
-	unless the SJS Application Server is the target
-	 server for the project.</td>
+<td>Be sure to select the SJS Application Server as the target server for the project, otherwise you will not be able to build
+	 the web service. 
+	See <a href="../create/set_ws_server.html">Preparing the Develop Web Services and Clients</a> for more information.</td>
 </tr>
 </table>
 </li>
@@ -42,8 +42,9 @@ and choose New <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Web Ser
 <p>The IDE does the following:
 <ul>
 	
-<li>A new WSDL file is created. The abstract portion is copied from the original file, 
-while the concrete portion is "normalized" from the original.
+<li>A new WSDL file is created. The abstract portion is copied as is from the original file, 
+while the concrete portion is "normalized" from the original. 
+See <a href="../build/about_wsdl.html">About the WSDL File</a> for abstract and concrete definitions in the WSDL file.
 For example, a <a href="../build/about_wsdl.html#binding">SOAP binding element</a> is created if it did
 not exist in the WSDL file. Also, the <a href="../build/about_wsdl.html#abstract">service element</a> is created to be compatible with
 binding, and receives the web service name that you specified in the wizard, replacing the service element 
@@ -64,9 +65,7 @@ and you can access it in the Source Packages node (in the Projects window).
 <table cellpadding="3" cellspacing="0" border="0">
 <tr valign="top"> 
 <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
-<td>Since the WSDL file governs the interface to the web service,
-	you may <i>not</i> add new operations to web services that are created from a WSDL file, 
-	because these operations will not be reflected back in the WSDL file.</td>
+<td>The IDE allows you to add new operations, but note that those operations do not get added to the WSDL file.</td>
 </tr>
 </table>
 </li>
