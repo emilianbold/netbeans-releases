@@ -964,8 +964,12 @@ public final class NbMainExplorer extends CloneableTopComponent
         */
         protected TreeView initGui () {
             TreeView view = new BeanTreeView();
+            view.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NbMainExplorer.class).getString("ACSN_ExplorerBeanTree"));
+            view.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(NbMainExplorer.class).getString("ACSD_ExplorerBeanTree"));
             SplittedPanel split = new SplittedPanel();
             PropertySheetView propertyView = new PropertySheetView();
+            propertyView.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NbMainExplorer.class).getString("ACSN_ExplorerPropertySheetView"));
+            propertyView.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(NbMainExplorer.class).getString("ACSD_ExplorerPropertySheetView"));
             split.add(view, SplittedPanel.ADD_LEFT);
             split.add(propertyView, SplittedPanel.ADD_RIGHT);
             // add to the panel
