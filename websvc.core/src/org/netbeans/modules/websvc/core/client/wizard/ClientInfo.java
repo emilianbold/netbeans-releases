@@ -19,11 +19,15 @@ import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.JFileChooser;
+import javax.swing.JRadioButton;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.DefaultComboBoxModel;
 
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 
@@ -41,20 +45,38 @@ import org.netbeans.modules.websvc.core.Utilities;
  *
  * @author Peter Williams
  */
-public final class ClientInfo extends JPanel implements DocumentListener {
-	
+public final class ClientInfo extends JPanel {
+
+    private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage";
+    
+    private static final int WSDL_FROM_FILE = 1;
+    private static final int WSDL_FROM_SERVICE = 2;
+    
 	private static final FileFilter WSDL_FILE_FILTER = new WsdlFileFilter();
 	private static String previousDirectory = "";
-	
+
 	private WebServiceClientWizardDescriptor descriptorPanel;
-	
+
+    private boolean settingFields;
+    private int wsdlSource;
+    private File wsdlTmpFile;
+    
+    // properties for 'get from server'
+    private WsdlRetriever retriever;
+    private String downloadMsg;
+    
 	public ClientInfo(WebServiceClientWizardDescriptor panel) {
 		descriptorPanel = panel;
-		
+
+        this.settingFields = false;
+        this.wsdlSource = WSDL_FROM_SERVICE;
+        this.wsdlTmpFile = null;
+        this.retriever = null;
+
 		initComponents();
 		initUserComponents();
 	}
-	
+
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is
@@ -65,12 +87,15 @@ public final class ClientInfo extends JPanel implements DocumentListener {
         
         btnGrpWsdlSource = new javax.swing.ButtonGroup();
         jLblChooseSource = new javax.swing.JLabel();
+        jRbnServiceURL = new javax.swing.JRadioButton();
+        jTxtWsdlURL = new javax.swing.JTextField();
+        jBtnGetWsdl = new javax.swing.JButton();
+        jLblLocalFilename = new javax.swing.JLabel();
+        jTxtLocalFilename = new javax.swing.JTextField();
+        jBtnProxy = new javax.swing.JButton();
         jRbnFilesystem = new javax.swing.JRadioButton();
         jTxtWsdlFile = new javax.swing.JTextField();
         jBtnBrowse = new javax.swing.JButton();
-        jRbnServiceURL = new javax.swing.JRadioButton();
-        jTxtWsdlURL = new javax.swing.JTextField();
-        jBtnProxy = new javax.swing.JButton();
         jLblProject = new javax.swing.JLabel();
         jTxtProject = new javax.swing.JTextField();
         jLblPackageName = new javax.swing.JLabel();
@@ -81,25 +106,91 @@ public final class ClientInfo extends JPanel implements DocumentListener {
         
         setLayout(new java.awt.GridBagLayout());
         
-        jLblChooseSource.setText("Select source of WSDL file for the web service to be added to this module :");
+        jLblChooseSource.setText("Select source of WSDL file for the web service to be added to this module:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(jLblChooseSource, gridBagConstraints);
         
-        jRbnFilesystem.setSelected(true);
-        jRbnFilesystem.setText("From local filesystem :");
+        btnGrpWsdlSource.add(jRbnServiceURL);
+        jRbnServiceURL.setFocusable(false);
+        jRbnServiceURL.setLabel("From URL of running service");
+        jRbnServiceURL.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRbnServiceURLActionPerformed(evt);
+            }
+        });
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(jRbnServiceURL, gridBagConstraints);
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
+        add(jTxtWsdlURL, gridBagConstraints);
+        
+        jBtnGetWsdl.setText("Retrieve WSDL");
+        jBtnGetWsdl.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnGetWsdlActionPerformed(evt);
+            }
+        });
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
+        add(jBtnGetWsdl, gridBagConstraints);
+        
+        jLblLocalFilename.setText("Local Filename:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 21, 4, 4);
+        add(jLblLocalFilename, gridBagConstraints);
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
+        gridBagConstraints.weightx = 1.0;
+        add(jTxtLocalFilename, gridBagConstraints);
+        
+        jBtnProxy.setText("Proxy Settings...");
+        jBtnProxy.setFocusable(false);
+        jBtnProxy.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnProxyActionPerformed(evt);
+            }
+        });
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        add(jBtnProxy, gridBagConstraints);
+        
+        btnGrpWsdlSource.add(jRbnFilesystem);
+        jRbnFilesystem.setLabel("From local filesystem");
+        jRbnFilesystem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRbnFilesystemActionPerformed(evt);
+            }
+        });
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jRbnFilesystem, gridBagConstraints);
         
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
+        gridBagConstraints.weightx = 1.0;
         add(jTxtWsdlFile, gridBagConstraints);
         
         jBtnBrowse.setText("Browse...");
@@ -115,37 +206,7 @@ public final class ClientInfo extends JPanel implements DocumentListener {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(jBtnBrowse, gridBagConstraints);
         
-        jRbnServiceURL.setText("From URL of running service :");
-        jRbnServiceURL.setFocusable(false);
-        jRbnServiceURL.setEnabled(false);
-        jRbnServiceURL.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRbnServiceURLActionPerformed(evt);
-            }
-        });
-        
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        add(jRbnServiceURL, gridBagConstraints);
-        
-        jTxtWsdlURL.setFocusable(false);
-        jTxtWsdlURL.setEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        add(jTxtWsdlURL, gridBagConstraints);
-        
-        jBtnProxy.setText("Proxy Settings...");
-        jBtnProxy.setFocusable(false);
-        jBtnProxy.setEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        add(jBtnProxy, gridBagConstraints);
-        
-        jLblProject.setText("Project :");
+        jLblProject.setText("Project:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -159,7 +220,7 @@ public final class ClientInfo extends JPanel implements DocumentListener {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(jTxtProject, gridBagConstraints);
         
-        jLblPackageName.setText("Package name for generated interfaces :");
+        jLblPackageName.setText("Package name for generated interfaces:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -169,33 +230,42 @@ public final class ClientInfo extends JPanel implements DocumentListener {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
+        gridBagConstraints.weightx = 1.0;
         add(jTxtPackageName, gridBagConstraints);
         
-        jLblClientType.setText("Web service client type :");
+        jLblClientType.setText("Web service client type:");
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipady = 4;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(jLblClientType, gridBagConstraints);
         
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(jCbxClientType, gridBagConstraints);
         
     }//GEN-END:initComponents
 
-	private void jRbnServiceURLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnServiceURLActionPerformed
-		// TODO add your handling code here:
-	}//GEN-LAST:event_jRbnServiceURLActionPerformed
+    private void jBtnProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnProxyActionPerformed
+        ProxySettingsDlg.showProxyDlg();
+    }//GEN-LAST:event_jBtnProxyActionPerformed
+
+    private void jBtnGetWsdlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnGetWsdlActionPerformed
+//        System.out.println("get WSDL from server...");
+        jTxtWsdlURL.setEditable(false);
+        retriever = new WsdlRetriever(this, jTxtWsdlURL.getText());
+        new Thread(retriever).start();
+    }//GEN-LAST:event_jBtnGetWsdlActionPerformed
 
 	private void jBtnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBrowseActionPerformed
-		JFileChooser chooser = new JFileChooser(previousDirectory);
+// 		System.out.println("browse for wsdl file...");
+        JFileChooser chooser = new JFileChooser(previousDirectory);
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setAcceptAllFileFilterUsed(false);
 		chooser.addChoosableFileFilter(WSDL_FILE_FILTER);
@@ -208,17 +278,47 @@ public final class ClientInfo extends JPanel implements DocumentListener {
 		}
 	}//GEN-LAST:event_jBtnBrowseActionPerformed
 
+    private void jRbnFilesystemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnFilesystemActionPerformed
+//        System.out.println("get from filesystem selected.");
+        wsdlSource = WSDL_FROM_FILE;
+        enableWsdlSourceFields(false, true);
+        descriptorPanel.fireChangeEvent();
+    }//GEN-LAST:event_jRbnFilesystemActionPerformed
+
+	private void jRbnServiceURLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnServiceURLActionPerformed
+//        System.out.println("get from url selected.");
+        wsdlSource = WSDL_FROM_SERVICE;
+        enableWsdlSourceFields(true, false);
+        descriptorPanel.fireChangeEvent();
+	}//GEN-LAST:event_jRbnServiceURLActionPerformed
+
+    private void enableWsdlSourceFields(boolean fromService, boolean fromFile) {
+        // file related fields
+        jTxtWsdlFile.setEnabled(fromFile);
+        jBtnBrowse.setEnabled(fromFile);
+        
+        // service related fields
+        jTxtWsdlURL.setEnabled(fromService);
+        jBtnGetWsdl.setEnabled(fromService);
+        jBtnProxy.setEnabled(fromService);
+        jLblLocalFilename.setEnabled(fromService);
+        jTxtLocalFilename.setEnabled(fromService);
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup btnGrpWsdlSource;
     private javax.swing.JButton jBtnBrowse;
+    private javax.swing.JButton jBtnGetWsdl;
     private javax.swing.JButton jBtnProxy;
     private javax.swing.JComboBox jCbxClientType;
     private javax.swing.JLabel jLblChooseSource;
     private javax.swing.JLabel jLblClientType;
+    private javax.swing.JLabel jLblLocalFilename;
     private javax.swing.JLabel jLblPackageName;
     private javax.swing.JLabel jLblProject;
     private javax.swing.JRadioButton jRbnFilesystem;
     private javax.swing.JRadioButton jRbnServiceURL;
+    private javax.swing.JTextField jTxtLocalFilename;
     private javax.swing.JTextField jTxtPackageName;
     private javax.swing.JTextField jTxtProject;
     private javax.swing.JTextField jTxtWsdlFile;
@@ -226,142 +326,269 @@ public final class ClientInfo extends JPanel implements DocumentListener {
     // End of variables declaration//GEN-END:variables
 
 	private void initUserComponents() {
+//        System.out.println("wizard panel created");
 		setName("Specify Web Service Client Information");
 
 		// Register listener on the textFields to make the automatic updates
-        jTxtWsdlFile.getDocument().addDocumentListener(this);
-        jTxtPackageName.getDocument().addDocumentListener(this);
+        jTxtWsdlURL.getDocument().addDocumentListener(new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
+                    retriever = null;
+                    updateTexts(e);
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    retriever = null;
+                    updateTexts(e);
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    retriever = null;
+                    updateTexts(e);
+                }
+            });
+        jTxtLocalFilename.getDocument().addDocumentListener(new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
+                    updateTexts(e);
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    updateTexts(e);
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    updateTexts(e);
+                }
+            });
+        jTxtWsdlFile.getDocument().addDocumentListener(new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
+                    updateTexts(e);
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    updateTexts(e);
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    updateTexts(e);
+                }
+            });
+        jTxtPackageName.getDocument().addDocumentListener(new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
+                    updateTexts(e);
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    updateTexts(e);
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    updateTexts(e);
+                }
+            });
 	}
-
+    
     void store(WizardDescriptor d) {
-        d.putProperty(WizardProperties.WSDL_FILE_PATH, jTxtWsdlFile.getText().trim());
+//        System.out.println("storing wizard properties");
+
+        if(wsdlSource == WSDL_FROM_SERVICE) {
+            d.putProperty(WizardProperties.WSDL_DOWNLOAD_URL, jTxtWsdlURL.getText().trim());
+            d.putProperty(WizardProperties.WSDL_DOWNLOAD_FILE, getDownloadWsdl());
+            d.putProperty(WizardProperties.WSDL_FILE_PATH, jTxtLocalFilename.getText().trim());
+        } else if(wsdlSource == WSDL_FROM_FILE) {
+            d.putProperty(WizardProperties.WSDL_DOWNLOAD_URL, null);
+            d.putProperty(WizardProperties.WSDL_DOWNLOAD_FILE, null);
+            d.putProperty(WizardProperties.WSDL_FILE_PATH, jTxtWsdlFile.getText().trim());
+        }
         d.putProperty(WizardProperties.WSDL_PACKAGE_NAME, jTxtPackageName.getText().trim());
         d.putProperty(WizardProperties.CLIENT_STUB_TYPE, jCbxClientType.getSelectedItem());
 	}
-
+    
     void read(WizardDescriptor d) {
-        Project p = Templates.getProject(d);
-        
-		jTxtProject.setText(ProjectUtils.getInformation(p).getDisplayName());
-		jTxtWsdlFile.setText((String) d.getProperty(WizardProperties.WSDL_FILE_PATH));
-		jTxtPackageName.setText((String) d.getProperty(WizardProperties.WSDL_PACKAGE_NAME));
-        
-        // Retrieve stub list from current project (have to be careful with caching
-        // because the user might go back and change the project.)
-        // Then set the stub list and current selected stub only if there was one 
-        // saved *and* it's in the list that the current project supports.
-        WebServicesClientSupport clientSupport = 
-            WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
-
-        Object selectedStub = d.getProperty(WizardProperties.CLIENT_STUB_TYPE);
-        DefaultComboBoxModel stubModel = new DefaultComboBoxModel();
-        if(clientSupport != null) {
-            List clientStubs = clientSupport.getStubDescriptors();
-            for(Iterator iter = clientStubs.iterator(); iter.hasNext(); ) {
-                stubModel.addElement(iter.next());
-            }
+//        System.out.println("reading wizard properties");
+        try {
+            settingFields = true;
             
-            if(!clientStubs.contains(selectedStub)) {
+            Project p = Templates.getProject(d);
+
+            jTxtProject.setText(ProjectUtils.getInformation(p).getDisplayName());
+            jTxtWsdlURL.setText((String) d.getProperty(WizardProperties.WSDL_DOWNLOAD_URL));
+            jTxtLocalFilename.setText(retriever != null ? retriever.getWsdlFileName() : "");
+            jTxtWsdlFile.setText((String) d.getProperty(WizardProperties.WSDL_FILE_PATH));
+            jTxtPackageName.setText((String) d.getProperty(WizardProperties.WSDL_PACKAGE_NAME));
+
+            // Normalize selection, in case it's unspecified.
+            Integer source = (Integer) d.getProperty(WizardProperties.WSDL_SOURCE);
+            if(source == null || source.intValue() < WSDL_FROM_SERVICE || source.intValue() > WSDL_FROM_FILE) {
+                source = new Integer(WSDL_FROM_SERVICE);
+            }
+
+            this.wsdlSource = source.intValue();
+            this.wsdlTmpFile = null;
+            this.retriever = null;
+            this.downloadMsg = null;
+
+            enableWsdlSourceFields(wsdlSource == WSDL_FROM_SERVICE, wsdlSource == WSDL_FROM_FILE);
+            btnGrpWsdlSource.setSelected(getSelectedRadioButton(wsdlSource).getModel(), true);
+
+            // Retrieve stub list from current project (have to be careful with caching
+            // because the user might go back and change the project.)
+            // Then set the stub list and current selected stub only if there was one
+            // saved *and* it's in the list that the current project supports.
+            WebServicesClientSupport clientSupport =
+                WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
+
+            Object selectedStub = d.getProperty(WizardProperties.CLIENT_STUB_TYPE);
+            DefaultComboBoxModel stubModel = new DefaultComboBoxModel();
+            if(clientSupport != null) {
+                List clientStubs = clientSupport.getStubDescriptors();
+                for(Iterator iter = clientStubs.iterator(); iter.hasNext(); ) {
+                    stubModel.addElement(iter.next());
+                }
+
+                if(!clientStubs.contains(selectedStub)) {
+                    selectedStub = null;
+                }
+            } else {
                 selectedStub = null;
             }
-        } else {
-            selectedStub = null;
-        }
-        
-        jCbxClientType.setModel(stubModel);
-        
-        if(selectedStub != null) {
-            jCbxClientType.setSelectedItem(selectedStub);
+
+            jCbxClientType.setModel(stubModel);
+
+            if(selectedStub != null) {
+                jCbxClientType.setSelectedItem(selectedStub);
+            }
+        } finally {
+            settingFields = false;
         }
 	}
-	
+
+	private JRadioButton getSelectedRadioButton(int selected) {
+        JRadioButton result = jRbnServiceURL;
+        
+        switch(selected) {
+        case WSDL_FROM_FILE:
+            result = jRbnFilesystem;
+            break;
+        case WSDL_FROM_SERVICE:
+            result = jRbnServiceURL;
+            break;
+        }
+        
+        return result;
+    }
+
+    private String getDownloadWsdl() {
+        String result = null;
+        if(retriever != null && retriever.getState() == WsdlRetriever.STATUS_COMPLETE) {
+            result = retriever.getWsdl();
+        }
+        return result;
+    }
+
 	boolean valid(WizardDescriptor wizardDescriptor) {
+//        System.out.println("validating wizard properties");
 		// !PW 50047 - for EA1 (JSR-109 only) wizard is only valid if the project
 		// supports Servlet 2.4 (and thus J2EE 1.4).
 		Project p = Templates.getProject(wizardDescriptor);
 		// !PW FIXME this lookup call will need to be updated for freeform projects in EA2.
 		WebModuleImplementation wm = (WebModuleImplementation) p.getLookup().lookup(WebModuleImplementation.class);
 		if(WebModule.J2EE_13_LEVEL.equals(wm.getJ2eePlatformVersion())) {
-			final String message = "JSR-109 web service clients are not supported in Servlet 2.3 (J2EE 1.3) web applications.";
-			wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "JSR-109 web service clients are not supported in Servlet 2.3 (J2EE 1.3) web applications.");
 			return false; // servlet 2.3/j2ee 1.3 webapp project
 		}
 
         // Project selected must support at least one stub type.
-        WebServicesClientSupport clientSupport = 
+        WebServicesClientSupport clientSupport =
             WebServicesClientSupport.getWebServicesClientSupport(p.getProjectDirectory());
         List clientStubs = (clientSupport != null) ? clientSupport.getStubDescriptors() : null;
         if(clientStubs == null || clientStubs.size() == 0) {
-			final String message = "The current project does not define any web service client stub types.";
-			wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "The current project does not define any web service client stub types.");
 			return false; // project with web service client support, but no stub types defined.
         }
 
-		String wsdlFilePath = jTxtWsdlFile.getText().trim();
-		
-		if(wsdlFilePath == null || wsdlFilePath.length() == 0) {
-			final String message = "Enter the name of the WSDL file representing the service you wish to use.";
-			wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
-			return false; // unspecified WSDL file
-		}
-		
-		File f = new File(wsdlFilePath);
-		String wsdlFileText = f.getAbsolutePath();
-		f = Utilities.getCanonicalFile(f);
-		if(f == null) {
-			final String message = "WSDL file is invalid.";
-			wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
-			return false; // invalid WSDL file
-		}
-		
-		if(!f.exists()) {
-			final String message = "WSDL file is does not exist.";
-			wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
-			return false; // invalid WSDL file
-		}
-		
-		// !PW FIXME should also detect if WSDL file has previously been added to
-		// this project.  Note that not doing so and overwriting the existing entry
-		// is the equivalent of doing an update on it.  Nothing bad will happen
-		// unless it turns out the user didn't want to update the service in the
-		// first place.
-		
+        if(wsdlSource == WSDL_FROM_SERVICE) {
+            String wsdlUrl = jTxtWsdlURL.getText().trim();
+            if(wsdlUrl == null || wsdlUrl.length() == 0) {
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Enter the URL of the service you wish to use.");
+                return false;
+            }
+            
+            if(retriever == null) {
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Click <Retrieve WSDL> to download the WSDL file for this service.");
+                return false;
+            }
+            
+            if(retriever.getState() < WsdlRetriever.STATUS_COMPLETE) {
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Download in progress.  Status: " + ((downloadMsg != null) ? downloadMsg : "unknown"));
+                return false;
+            }
+            
+            if(retriever.getState() > WsdlRetriever.STATUS_COMPLETE) {
+                if(downloadMsg != null) {
+                    wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Download failed.  " + downloadMsg);
+                } else {
+                    wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Download failed for unknown reason.");
+                }
+                return false;
+            }
+            
+            // url is ok, and file is downloaded if we get here.  Now check generated local filename
+            // !PW FIXME what do we want to check it for?  Existence in temp directory?
+            
+            // Now drop down to do package validation.
+        } else if(wsdlSource == WSDL_FROM_FILE) {
+            String wsdlFilePath = jTxtWsdlFile.getText().trim();
+
+            if(wsdlFilePath == null || wsdlFilePath.length() == 0) {
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Enter the name of the WSDL file representing the service you wish to use.");
+                return false; // unspecified WSDL file
+            }
+
+            File f = new File(wsdlFilePath);
+            String wsdlFileText = f.getAbsolutePath();
+            if(f == null) {
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "WSDL file is invalid.");
+                return false; // invalid WSDL file
+            }
+
+            if(!f.exists()) {
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "WSDL file is does not exist.");
+                return false; // invalid WSDL file
+            }
+
+            // !PW FIXME should also detect if WSDL file has previously been added to
+            // this project.  Note that not doing so and overwriting the existing entry
+            // is the equivalent of doing an update on it.  Nothing bad will happen
+            // unless it turns out the user didn't want to update the service in the
+            // first place.
+        }
+
 		String packageName = jTxtPackageName.getText().trim();
-		
+
 		if(packageName == null || packageName.length() == 0) {
-			final String message = "Enter the java package where the service interfaces should be generated.";
-			wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Enter the java package where the service interfaces should be generated.");
 			return false; // unspecified WSDL file
 		}
-		
+
 		if(!Utilities.isJavaPackage(packageName)) {
-			final String message = "Package name is invalid.";
-			wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "Package name is invalid.");
 			return false; // invalid package name
 		}
-		
-		wizardDescriptor.putProperty("WizardPanel_errorMessage", "");
+
+		wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "");
 		return true;
 	}
-	
-    // Implementation of DocumentListener --------------------------------------
-	public void changedUpdate(DocumentEvent e) {
-		updateTexts(e);
-	}
-	
-	public void insertUpdate(DocumentEvent e) {
-		updateTexts(e);
-	}
-	
-	public void removeUpdate(DocumentEvent e) {
-		updateTexts(e);
-	}
-	
+    
     private void updateTexts(DocumentEvent e) {
-        descriptorPanel.fireChangeEvent(); // Notify that the panel changed
+        if(!settingFields) {
+            descriptorPanel.fireChangeEvent(); // Notify that the panel changed
+        }
     }
-    // End of Implementation of DocumentListener --------------------------------------
-	
+    
+    public void setWsdlDownloadMessage(String m) {
+        downloadMsg = m;
+        
+        // reenable edit control.
+        if(retriever.getState() >= WsdlRetriever.STATUS_COMPLETE) {
+            jTxtWsdlURL.setEditable(true);
+            jTxtLocalFilename.setText(retriever.getWsdlFileName());
+        }
+        
+        descriptorPanel.fireChangeEvent();
+    }
+
 	private static class WsdlFileFilter extends FileFilter {
 		public boolean accept(File f) {
 			boolean result;
@@ -376,5 +603,5 @@ public final class ClientInfo extends JPanel implements DocumentListener {
 		public String getDescription() {
 			return "Web Service Descriptor Files (*.wsdl)";
 		}
-	}	
+	}
 }

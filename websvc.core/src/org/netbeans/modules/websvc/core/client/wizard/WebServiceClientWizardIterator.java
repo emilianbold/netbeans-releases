@@ -15,6 +15,7 @@ package org.netbeans.modules.websvc.core.client.wizard;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.HashSet;
@@ -26,8 +27,10 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileAlreadyLockedException;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -92,9 +95,12 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
     }
 
     public void uninitialize(WizardDescriptor wizard) {
+        wiz.putProperty(WizardProperties.WSDL_DOWNLOAD_URL, null);
+        wiz.putProperty(WizardProperties.WSDL_DOWNLOAD_FILE, null);
         wiz.putProperty(WizardProperties.WSDL_FILE_PATH,null);
         wiz.putProperty(WizardProperties.WSDL_PACKAGE_NAME,null);
         wiz.putProperty(WizardProperties.CLIENT_STUB_TYPE, null);
+
         wiz = null;
         panels = null;
     }
@@ -130,22 +136,78 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
             return result;
         }
 
+        String sourceWsdlDownload = (String) wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_FILE);
         String wsdlFilePath = (String) wiz.getProperty(WizardProperties.WSDL_FILE_PATH);
         String packageName = (String) wiz.getProperty(WizardProperties.WSDL_PACKAGE_NAME);
         StubDescriptor stubDescriptor = (StubDescriptor) wiz.getProperty(WizardProperties.CLIENT_STUB_TYPE);
 
-        File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(wsdlFilePath));
-        FileObject sourceWsdlFile = FileUtil.toFileObject(normalizedWsdlFilePath);
-        if(sourceWsdlFile == null) {
-            String mes = "Cannot get FileObject for wsdl file: '" + normalizedWsdlFilePath + "'";
-            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(desc);
-            return result;
-        }
+        FileObject sourceWsdlFile = null;
+        
+        if(sourceWsdlDownload == null) {
+            // Verify the existence of the source WSDL file and that we can get a file object for it.
+            File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(wsdlFilePath));
+            sourceWsdlFile = FileUtil.toFileObject(normalizedWsdlFilePath);
+            if(sourceWsdlFile == null) {
+                String mes = "Cannot get FileObject for wsdl file: '" + normalizedWsdlFilePath + "'";
+                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(desc);
+                return result;
+            }
+        } else {
+            // 
+            File wsdlFile = new File(System.getProperty("java.io.tmpdir"), wsdlFilePath);
+            if(!wsdlFile.exists()) {
+                try {
+                    wsdlFile.createNewFile();
+                } catch(IOException ex) {
+                    String mes = "Unable to create temporary WSDL file '" + wsdlFile.getPath() + "' for client";
+                    NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(desc);
+                    return result;
+                }
+            }
+            
+            sourceWsdlFile = FileUtil.toFileObject(wsdlFile);
+            if(sourceWsdlFile != null) {
+                FileLock wsdlLock = sourceWsdlFile.lock();
 
+                try {
+                    PrintWriter wsdlWriter = new PrintWriter(sourceWsdlFile.getOutputStream(wsdlLock));
+                    try {
+                        wsdlWriter.write(sourceWsdlDownload);
+                    } finally {
+                        wsdlWriter.close();
+                    }
+                } finally {
+                    wsdlLock.releaseLock();
+                }
+            } else {
+                String mes = "Unable to create temporary WSDL file '" + wsdlFile.getPath() + "' for client";
+                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(desc);
+                return result;
+            }
+        }
+        
         // 2. add the service to the project.
         ClientBuilder builder = new ClientBuilder(project, clientSupport, sourceWsdlFile, packageName, stubDescriptor);
         result = builder.generate();
+        
+        if(sourceWsdlDownload != null) {
+            // we used a temp file, delete it now.
+            try {
+                sourceWsdlFile.delete();
+                sourceWsdlFile = null;
+            } catch(FileAlreadyLockedException ex) {
+                String mes = "Temporary WSDL file " + sourceWsdlFile.getNameExt() + " is locked and cannot be deleted.";
+                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(desc);
+            } catch(IOException ex) {
+                String mes = "Temporary WSDL file " + sourceWsdlFile.getNameExt() + " cannot be deleted.  " + ex.getMessage();
+                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(desc);
+            }
+        }
 
         return result;
     }
