@@ -98,9 +98,9 @@ public class Hacks {
                             pname = ProjectUtils.getInformation((Project)projects.iterator().next()).getDisplayName();
                             assert pname != null;
                         } else if (projects.isEmpty()) {
-                            pname = "No Project"; // XXX I18N
+                            pname = NbBUndle.getMessage (Hacks.class, "LBL_NoProject"); // NOI18N
                         } else {
-                            pname = "Multiple Projects"; // XXX I18N
+                            pname = NbBUndle.getMessage (Hacks.class, "LBL_MultipleProjects"); // NOI18N
                         }
                         try {
                             setProjectName.invoke(windowSystemImpl, new Object[] {pname});
