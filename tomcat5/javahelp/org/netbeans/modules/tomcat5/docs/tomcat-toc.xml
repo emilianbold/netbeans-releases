@@ -24,7 +24,7 @@
 	<tocitem text="Viewing the Tomcat Web Server in the IDE" target="tomcat_top_node" />
 	<tocitem text="Customizing the Tomcat Web Server" target="tomcat_internal_props"/>
         </tocitem>
-        <tocitem text="Administrating the Tomcat Web Server">
+        <tocitem text="Using the Tomcat Web Server Administration Tool">
 	<tocitem text="Accessing the Tomcat Web Server Administration Tool" target="tomcat_admin_access" />
 	<tocitem text="Configuring the server.xml File" target="tomcat_edit_config" />
 	<tocitem text="Setting Up a Connection Pool on the Tomcat Web Server" target="tomcat_setup_tdcp" />
