@@ -822,9 +822,16 @@ public class FormEditorSupport extends JavaEditor
         formLoaded = false;
 
         // remove nodes hierarchy
-        if (formDataObject.isValid())
-            formDataObject.getNodeDelegate().getChildren()
-                                        .remove(new Node[] { formRootNode });
+        if (formDataObject.isValid()) {
+            // Avoiding deadlock (issue 51796)
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    formDataObject.getNodeDelegate().getChildren()
+                        .remove(new Node[] { formRootNode });
+                    formRootNode = null;
+                }
+            });
+        }
 
         // remove listeners
         detachFormListener();
@@ -856,7 +863,6 @@ public class FormEditorSupport extends JavaEditor
         // reset references
         formDesigner = null;
         multiviewTC = null;
-        formRootNode = null;
         persistenceManager = null;
         persistenceErrors = null;
         formModel = null;
