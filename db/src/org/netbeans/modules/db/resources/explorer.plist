@@ -105,6 +105,11 @@
 				prefix = "jdbc:ids://<HOST>:<PORT>/conn?dsn='<ODBC_DSN_NAME>'";
 			},
 			{
+				name = "Informix Dynamic Server";
+				driver = "com.informix.jdbc.IfxDriver";
+				prefix = "jdbc:informix-sqli://<HOST>:<PORT>/<DB>:INFORMIXSERVER=<SERVER_NAME>";
+			},
+			{
 				name = "InstantDB";
 				driver = "jdbc.idbDriver";
 				prefix = "jdbc:idb:<DB>";
@@ -135,7 +140,7 @@
 				prefix = "jdbc:mysql://<HOST>:<PORT>/<DB>";
 			},
 			{
-				name = "ODBC Bridge";
+				name = "JDBC-ODBC Bridge";
 				driver = "sun.jdbc.odbc.JdbcOdbcDriver";
 				prefix = "jdbc:odbc:<DB>";
 			},

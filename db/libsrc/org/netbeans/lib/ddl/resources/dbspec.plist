@@ -989,4 +989,36 @@
     
   };
   
+//  ********************************************************************************
+//
+//  Informix
+//
+//  ********************************************************************************/
+
+  "Informix Dynamic Server" = {
+    DatabaseProductName = "Informix Dynamic Server";
+    DatabaseProductVersion = 9.20;
+    TypeMap = {
+      java.sql.Types.BIT = BOOLEAN;
+      java.sql.Types.BLOB = BLOB;
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.CLOB = CLOB;
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DOUBLE = "DOUBLE PRECISION";
+      java.sql.Types.FLOAT = FLOAT;
+      java.sql.Types.INTEGER = INTEGER;
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.REAL = REAL;
+      java.sql.Types.SMALLINT = SMALLINT;
+      java.sql.Types.TIME = TIME;
+      java.sql.Types.TIMESTAMP = TIMESTAMP;
+      java.sql.Types.VARCHAR = VARCHAR;
+    };
+    SizelessTypes = (BOOLEAN,BLOB,CLOB,DATE,"DOUBLE PRECISION",FLOAT,INTEGER,REAL,SMALLINT,TIME,TIMESTAMP);
+    DecimalTypes = (DECIMAL,NUMERIC);
+    CharacterTypes = (CHAR,VARCHAR);
+    
+  };
+  
 }
