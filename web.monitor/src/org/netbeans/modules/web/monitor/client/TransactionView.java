@@ -29,6 +29,7 @@ import javax.swing.*;     // widgets
 import javax.swing.border.*;     // widgets
 import javax.swing.event.*;
 import java.awt.Font;
+import java.awt.FontMetrics;
 
 import java.net.*;        // url
 import java.awt.*;          // layouts, dialog, etc.
@@ -37,7 +38,6 @@ import java.io.*;           // I/O
 import java.text.*;         // I/O
 import java.util.*;         // local GUI
 
-import org.openide.awt.SplittedPanel;
 import org.openide.awt.ToolbarButton;
 import org.openide.awt.ToolbarToggleButton;
 import org.openide.explorer.ExplorerPanel;
@@ -69,7 +69,6 @@ public class TransactionView extends ExplorerPanel implements
     private static Controller controller = null;
     
     // Misc
-    private transient Frame parentFrame = null;
     private transient JLabel transactionTitle = null;
     private transient ToolbarToggleButton timeAButton, 	timeDButton,
 	alphaButton, browserCookieButton, savedCookieButton; 
@@ -84,6 +83,10 @@ public class TransactionView extends ExplorerPanel implements
 
     // Display stuff 
     private transient static ExplorerManager mgr = null;
+    private transient JPanel logPanel = null; 
+    private transient JPanel dataPanel = null; 
+    private transient JSplitPane splitPanel = null; 
+    private transient double dividerPosition = .35;
     private transient BeanTreeView tree = null;
     private transient AbstractNode selected = null;
 
@@ -190,20 +193,18 @@ public class TransactionView extends ExplorerPanel implements
 	tree.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_treeName"));
 	tree.getAccessibleContext().setAccessibleName(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_treeDesc"));
 
-	SplittedPanel splitPanel = new SplittedPanel();
-	splitPanel.setSplitPosition(35);
-	splitPanel.setSplitterComponent(new SplittedPanel.EmptySplitter(5));
-	splitPanel.setSwapPanesEnabled(false);
-	splitPanel.setKeepFirstSame(true);
-
-	splitPanel.add(createLogPanel(), SplittedPanel.ADD_LEFT);
-	splitPanel.add(createDataPanel(), SplittedPanel.ADD_RIGHT);
-
+	createLogPanel(); 
+	createDataPanel(); 
+	splitPanel = 
+	    new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, logPanel, dataPanel); 
+	splitPanel.setDividerLocation(dividerPosition);
+	splitPanel.setResizeWeight(dividerPosition);
+	splitPanel.setDividerSize(1); 
+	splitPanel.setOneTouchExpandable(true); 
 	this.add(splitPanel);
-
 	setName(NbBundle.getBundle(TransactionView.class).getString("MON_Title"));
     }
-
+    
     /**
      * Open the transaction nodes (i.e. first level children of the root).
      */
@@ -297,6 +298,41 @@ public class TransactionView extends ExplorerPanel implements
 	    openedOnceAlready = true;
 	    controller.getTransactions();
 	    openTransactionNodes();
+
+	    FontMetrics fm = this.getGraphics().getFontMetrics(); 
+	    double logWidth = fm.stringWidth(NbBundle.getBundle(TransactionView.class).getString("MON_Transactions_27")) * 1.1; 
+
+	    if(logWidth > logD.getWidth()) { 
+		double factor = logWidth/logD.getWidth(); 
+		logD.setSize(logWidth, factor * logD.getHeight());
+		logPanel.setPreferredSize(logD);
+		//logPanel.setMinimumSize(logD);
+		//logPanel.setSize(logD); 
+
+		dataD.setSize(factor * dataD.getWidth(), 
+			      factor * dataD.getHeight()); 
+		dataPanel.setPreferredSize(dataD);
+		//dataPanel.setMinimumSize(dataD);
+		//dataPanel.setSize(dataD); 
+
+		splitPanel.resetToPreferredSizes(); 
+
+		try { 
+		    Container o = (Container)this.getParent(); 
+		    while(true) { 
+			if(o instanceof JFrame) { 
+			    JFrame parent = (JFrame)o; 
+			    parent.pack(); 
+			    break; 
+			} 
+			o = o.getParent(); 
+		    } 
+		}
+		catch(Throwable t) {
+		    // Do nothing, we can't resize the component
+		    // invalidate on this component does not work. 
+		}
+	    }
 	}
 	controller.checkServer(false);
         requestFocus();
@@ -324,9 +360,8 @@ public class TransactionView extends ExplorerPanel implements
     /**
      * Invoked at startup, creates the display GUI.
      */
-    private JPanel createLogPanel() {
+    private void createLogPanel() {
 
-	JPanel logPanel = null;
 	JLabel title =
 	    new JLabel(NbBundle.getBundle(TransactionView.class).getString("MON_Transactions_27"), SwingConstants.CENTER);
 	title.setBorder (new EtchedBorder (EtchedBorder.LOWERED));
@@ -468,12 +503,6 @@ public class TransactionView extends ExplorerPanel implements
 
 	logPanel = new JPanel();
 	logPanel.setLayout(new BorderLayout());
-        //logPanel.setBorder(new CompoundBorder
-	//(new LineBorder (getBackground ()),
-	//new BevelBorder(EtchedBorder.LOWERED)));
-
-	logPanel.setPreferredSize(logD);
-	logPanel.setMinimumSize(logD);
 
 	logPanel.add(title, "North"); // NOI18N
 
@@ -482,18 +511,14 @@ public class TransactionView extends ExplorerPanel implements
 	p.add(BorderLayout.NORTH, buttonPanel);
 	p.add(BorderLayout.CENTER, tree);
 	logPanel.add(BorderLayout.CENTER, p);
-
-	return logPanel;
-
+	logPanel.setPreferredSize(logD);		  
     }
 
 
     /**
      * Invoked at startup, creates the display GUI.
      */
-    private JPanel createDataPanel() {
-
-	JPanel dataPanel = null;
+    private void createDataPanel() {
 
 	transactionTitle =
 	    new JLabel(NbBundle.getBundle(TransactionView.class).getString("MON_Transaction_data_26"), SwingConstants.CENTER);
@@ -539,12 +564,9 @@ public class TransactionView extends ExplorerPanel implements
 
 	dataPanel = new JPanel();
 	dataPanel.setLayout(new BorderLayout());
-	dataPanel.setPreferredSize(dataD);
-	dataPanel.setMinimumSize(dataD);
-
 	dataPanel.add(transactionTitle, "North"); //NOI18N
 	dataPanel.add(BorderLayout.CENTER, jtp);
-	return dataPanel;
+	dataPanel.setPreferredSize(dataD);
     }
 
 
