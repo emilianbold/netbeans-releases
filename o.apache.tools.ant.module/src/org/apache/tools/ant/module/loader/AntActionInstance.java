@@ -36,6 +36,8 @@ import javax.swing.event.ChangeListener;
 
 import org.w3c.dom.Element;
 
+import org.openide.awt.Actions;
+import org.openide.awt.Mnemonics;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
@@ -122,13 +124,7 @@ public class AntActionInstance implements
             Element el = proj.getProjectElement ();
             if (el != null) {
                 String pname = el.getAttribute ("name"); // NOI18N
-                // Trim ampersands (and use them as mnemonics).
-                int idx = pname.indexOf ('&'); // NOI18N
-                if (idx == -1) {
-                    return pname;
-                } else {
-                    return pname.substring (0, idx) + pname.substring (idx + 1);
-                }
+                return Actions.cutAmpersand(pname);
             }
         } else if (Action.SMALL_ICON.equals (key)) {
             return new ImageIcon (NbBundle.getLocalizedFile
@@ -138,8 +134,9 @@ public class AntActionInstance implements
             Element el = proj.getProjectElement ();
             if (el != null) {
                 String pname = el.getAttribute ("name"); // NOI18N
-                int idx = pname.indexOf ('&'); // NOI18N
-                if (idx != -1 && idx + 1 < pname.length ()) {
+                int idx = Mnemonics.findMnemonicAmpersand(pname);
+                if (idx != -1) {
+                    // XXX this is wrong, should use some method in Mnemonics...
                     return new Integer (pname.charAt (idx + 1));
                 }
             }
