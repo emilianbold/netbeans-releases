@@ -1,19 +1,19 @@
 <!--
-   -                 Sun Public License Notice
-   - 
-   - The contents of this file are subject to the Sun Public License
-   - Version 1.0 (the "License"). You may not use this file except in
-   - compliance with the License. A copy of the License is available at
-   - http://www.sun.com/
-   - 
-   - The Original Code is NetBeans. The Initial Developer of the Original
-   - Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
-   - Microsystems, Inc. All Rights Reserved.
-  -->
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 
 <html><head>
 <title>Datasystems API</title>
-<link rel="Stylesheet" href="../../../../prose.css" type="text/css" title="NetBeans Open APIs Style">
+<link rel="stylesheet" href="../../../../prose.css" type="text/css">
 </head><body>
 
 <p class="overviewlink"><a href="../../../../overview-summary.html">Overview</a></p>
@@ -555,11 +555,11 @@ and there is no way to alter the set of cookies provided in this way.
 <a href="../DataObject.html#getCookie(java.lang.Class)"><code>DataObject.getCookie(...)</code></a>.
 
 Assuming that you are subclassing <code>MultiDataObject</code>, you
-need not override this method yourself, but rather should call
+need not override this method yourself, but rather should use
 
-<a href="../MultiDataObject.html#setCookieSet(org.openide.nodes.CookieSet)"><code>MultiDataObject.setCookieSet(...)</code></a>
+<a href="../MultiDataObject.html#getCookieSet()"><code>MultiDataObject.getCookieSet()</code></a>
 
-in the constructor, creating a new cookie set with the cookies you
+in the constructor and add the cookies you
 want to provide by default. Then it is possible to extend this set
 later, and to more easily examine its contents.
 
@@ -586,7 +586,7 @@ their positioning.
 <p>Or, you may wish to selectively attach actions to certain data
 objects' nodes and not others. If you need to do this, please override
 
-<a href="../DataNode.html#getActions()"><code>DataNode.getActions()</code></a>
+<a href="../DataNode.html#getActions(boolean)"><code>DataNode.getActions(boolean)</code></a>
 
 when creating your node delegate; you probably want to call the super
 method and append any additional actions this particular node should
