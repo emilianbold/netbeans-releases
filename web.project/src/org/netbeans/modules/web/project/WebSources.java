@@ -36,7 +36,7 @@ import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
-public class WebSources implements Sources, PropertyChangeListener  {
+public class WebSources implements Sources, PropertyChangeListener, ChangeListener {
 
     private static final String BUILD_DIR_PROP = "${" + WebProjectProperties.BUILD_DIR + "}";    //NOI18N
     private static final String DIST_DIR_PROP = "${" + WebProjectProperties.DIST_DIR + "}";    //NOI18N
@@ -62,10 +62,15 @@ public class WebSources implements Sources, PropertyChangeListener  {
     public SourceGroup[] getSourceGroups(final String type) {
         return (SourceGroup[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
-                if (delegate == null) {
-                    delegate = initSources();
+                Sources _delegate;
+                synchronized (WebSources.this) {
+                    if (delegate == null) {
+                        delegate = initSources();
+                        delegate.addChangeListener(WebSources.this);
+                    }
+                    _delegate = delegate;
                 }
-                return delegate.getSourceGroups(type);
+                return _delegate.getSourceGroups(type);
             }
         });
     }
@@ -188,6 +193,10 @@ public class WebSources implements Sources, PropertyChangeListener  {
         String propName = evt.getPropertyName();
         if (SourceRoots.PROP_ROOT_PROPERTIES.equals(propName) || WebProjectProperties.BUILD_DIR.equals(propName) || WebProjectProperties.DIST_DIR.equals(propName))
             this.fireChange();
+    }
+
+    public void stateChanged (ChangeEvent event) {
+        this.fireChange();
     }
 
 }

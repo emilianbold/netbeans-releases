@@ -33,7 +33,7 @@ import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
-public class EjbJarSources implements Sources, PropertyChangeListener, ChangeListener  {
+public class EjbJarSources implements Sources, PropertyChangeListener, ChangeListener {
 
     private static final String BUILD_DIR_PROP = "${" + EjbJarProjectProperties.BUILD_DIR + "}";    //NOI18N
     private static final String DIST_DIR_PROP = "${" + EjbJarProjectProperties.DIST_DIR + "}";    //NOI18N
@@ -61,11 +61,15 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
     public SourceGroup[] getSourceGroups(final String type) {
         return (SourceGroup[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
-                if (delegate == null) {
-                    delegate = initSources();
-                    delegate.addChangeListener(EjbJarSources.this);
+                Sources _delegate;
+                synchronized (EjbJarSources.this) {
+                    if (delegate == null) {
+                        delegate = initSources();
+                        delegate.addChangeListener(EjbJarSources.this);
+                    }
+                    _delegate = delegate;
                 }
-                return delegate.getSourceGroups(type);
+                return _delegate.getSourceGroups(type);
             }
         });
     }
