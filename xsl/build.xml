@@ -43,6 +43,7 @@ Microsystems, Inc. All Rights Reserved.
         <filter  token="XSL_SPEC_VERS_SUBST" value="${xml.xsl.specification.version}"/>
         <filter token="CORE_SPEC_VERS_SUBST" value="${xml.core.specification.version}"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+        <ant dir="${nbroot}/xml/external" target="unscramble"/>
     </target>
 
     <target name="compile">
