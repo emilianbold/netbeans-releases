@@ -138,7 +138,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
                            Point posInCont,
                            Component component,
                            Point posInComp) {
-        return container.getComponentCount();
+        return -1;
     }
 
     public boolean paintDragFeedback(Container container,
@@ -153,12 +153,12 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
         return constraintsDesc;
     }
 
-    public int getResizableDirections(Component comp, Container cont) {
+    public int getResizableDirections(Component component) {
         return 0;
     }
 
-    public ConstraintsDesc getResizedConstraints(Component comp, Container cont,
-                                                 int dx, int dy) {
+    public ConstraintsDesc getResizedConstraints(Component component,
+                                                 Insets sizeChanges) {
         return null;
     }
 

@@ -95,11 +95,11 @@ public class FormLoaderSettings extends SystemOption {
      * as selected. */
     private static int selectionBorderSize = 3;
     /** The color of the border boxes on selection border */
-    private static java.awt.Color selectionBorderColor = new java.awt.Color(96,96,96);
+    private static java.awt.Color selectionBorderColor = new java.awt.Color(0, 0, 192);
     /** The color of the border boxes on connection border */
-    private static java.awt.Color connectionBorderColor = java.awt.Color.blue;
+    private static java.awt.Color connectionBorderColor = java.awt.Color.red;
     /** The color of the drag border on selection border */
-    private static java.awt.Color dragBorderColor = java.awt.Color.darkGray;
+    private static java.awt.Color dragBorderColor = java.awt.Color.gray;
     /** True if grid should be used, false otherwise. */
     private static boolean showGrid = true;
     /** The grid size(in pixels) in x axis. */

@@ -205,6 +205,9 @@ public class RADVisualComponent extends RADComponent {
     void resetConstraintsProperties() {
         constraintsProperties = null;
         beanPropertySets = null;
+
+        RADComponentNode node = getNodeReference();
+        if (node != null) node.fireComponentPropertySetsChange();
     }
 
     private PropertyChangeListener getConstraintsListener() {

@@ -34,16 +34,26 @@ class ComponentDragger
     private RADVisualComponent[] selectedComponents;
     private Point hotspot;
     private Point mousePosition;
-    
+    private int resizeType;
+
+    private RADVisualContainer targetMetaContainer;
+    private Container targetContainer;
+
+    /** The FormLoaderSettings instance */
+    private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
+
+
     ComponentDragger(FormDesigner formDesigner,
                      HandleLayer handleLayer,
                      RADVisualComponent[] selectedComponents,
-                     Point hotspot) {
+                     Point hotspot,
+                     int resizeType) {
         this.formDesigner = formDesigner;
         this.handleLayer = handleLayer;
         this.selectedComponents = selectedComponents;
         this.hotspot = hotspot;
         this.mousePosition = hotspot;
+        this.resizeType = resizeType;
     }
 
     void mouseDragged(Point p) {
@@ -52,205 +62,253 @@ class ComponentDragger
     }
 
     void dropComponents(Point point) {
-        RADVisualContainer metacont = handleLayer.getMetaContainerAt(point);
-        if (metacont == null)
+        List constraints = new ArrayList(selectedComponents.length);
+        List indices = new ArrayList(selectedComponents.length);
+
+        if (!computeConstraints(point, constraints, indices))
             return;
-        
-        LayoutSupport layoutSupport = metacont.getLayoutSupport();
-        if (layoutSupport == null)
-            return;
-        
-        Component comp = (Component) formDesigner.getComponent(metacont);
-        if (comp == null)
-            return;
-        Container cont = metacont.getContainerDelegate(comp);
 
-        FormModel model = formDesigner.getModel();
-        int indices[] = new int[selectedComponents.length];
+        RADVisualComponent[] currentComponents = targetMetaContainer.getSubComponents();
 
-        Point posInCont = SwingUtilities.convertPoint(handleLayer, point, cont);
+        // first create list of components and constraints for target container
+        int n = selectedComponents.length + currentComponents.length;
+        List newComponents = new ArrayList(n);
+        List newConstraints = new ArrayList(n);
 
-        for (int i = 0; i < selectedComponents.length; i++) {
-            RADVisualComponent metacomp = selectedComponents[i];
-
-            if (metacomp == metacont
-                || (metacomp instanceof RADVisualContainer
-                    && ((RADVisualContainer)metacomp).isAncestorOf(metacont))
-                ) {
-                selectedComponents[i] = null;
-                continue;
-            }
-                
-            Component component = (Component) formDesigner.getComponent(metacomp);
-            Point posInComp = SwingUtilities.convertPoint(handleLayer,
-                                                          hotspot,
-                                                          component);
-            indices[i] = layoutSupport.getNewIndex(
-                cont, posInCont, component, posInComp);
+        // fill enough empty space
+        for (int i=0; i < n; i++) {
+            newComponents.add(null);
+            newConstraints.add(null);
         }
 
-        for (int i = 0; i < selectedComponents.length; i++) {
-            RADVisualComponent metacomp = selectedComponents[i];
-            if (metacomp == null)
-                continue;
-            
-            Component component = (Component) formDesigner.getComponent(metacomp);
-            if (component == null || component.getParent() != cont)
-                continue;
-
-            Point posInComp = SwingUtilities.convertPoint(handleLayer,
-                                                          hotspot,
-                                                          component);
-            
-            LayoutSupport.ConstraintsDesc constr =
-                layoutSupport.getNewConstraints(cont, posInCont, component, posInComp);
-            
-            if (indices[i] < 0 && constr== null) {
-                selectedComponents[i] = null;
-            }
-        }
-
-        Component[] components = cont.getComponents();
-        LinkedList newComponents = new LinkedList();
-        LinkedList constraints = new LinkedList();
-        
-        for (int i = 0; i < components.length; i++) {
-            RADComponent metacomp = formDesigner.getMetaComponent(components[i]);
-            if (metacomp instanceof RADVisualComponent) {
-                newComponents.add(metacomp);
-                constraints.add(((RADVisualComponent)metacomp).getConstraintsDesc(
-                                    layoutSupport.getClass()));
-            }
-        }
-        
-        for (int i = 0; i < selectedComponents.length; i++) {
-            RADVisualComponent metacomp = selectedComponents[i];
-            if (metacomp == null)
-                continue;
-            
-            int newindex = indices[i];
-            int oldindex = newComponents.indexOf(metacomp);
-            if (oldindex >= 0) {
-                newComponents.remove(metacomp);
-                if (oldindex < newindex) {
-                    newindex--;
+        // set components requiring exact position (index)
+        for (int i=0; i < selectedComponents.length; i++) {
+            int index = ((Integer)indices.get(i)).intValue();
+            if (index >= 0 && index < n) {
+                while (newComponents.get(index) != null) {
+                    if (++index == n) index = 0; // should not happen
                 }
-            }
-            if ( newindex < 0 || newindex >= components.length) {
-                newComponents.add(metacomp);
-            }
-            else {
-                if (newindex >= newComponents.size())
-                    newComponents.add(metacomp);
-                else
-                    newComponents.add(newindex, metacomp);
-            }
-            Component component = (Component) formDesigner.getComponent(metacomp);
-            Point posInComp = SwingUtilities.convertPoint(handleLayer,
-                                                          hotspot,
-                                                          component);
-
-            LayoutSupport.ConstraintsDesc constr =
-                layoutSupport.getNewConstraints(cont, posInCont, component, posInComp);
-            constraints.add(constr);
-        }
-        
-        int start = 0;
-        for (int i = 0; i < newComponents.size() && i < components.length; i++) {
-            if (newComponents.get(i) != components[i]) {
-                start = i;
-                break;
+                newComponents.set(index, selectedComponents[i]);
+                newConstraints.set(index, constraints.get(i));
             }
         }
 
-        List oldSelectedComponents = formDesigner.getSelectedComponents();
-        
-        for (int i = start; i < newComponents.size(); i++) {
-            RADComponent metacomp = (RADComponent) newComponents.get(i);
-            model.removeComponent(metacomp);
+        int newI = 0;
+
+        // copy current components (already in target container)
+        for (int i=0; i < currentComponents.length; i++) {
+            RADVisualComponent metacomp = currentComponents[i];
+            int ii = newComponents.indexOf(metacomp);
+            if (ii < 0) {
+                while (newComponents.get(newI) != null)
+                    newI++;
+
+                newComponents.set(newI, metacomp);
+            }
         }
-            
-        for (int i = start; i < newComponents.size(); i++) {
+
+        // add dragged components
+        for (int i=0; i < selectedComponents.length; i++) {
+            RADVisualComponent metacomp = selectedComponents[i];
+            int ii = newComponents.indexOf(metacomp);
+            if (ii >= 0) { // component dragged within target container
+                newConstraints.set(ii, constraints.get(i));
+            }
+            else if (checkTarget(metacomp)) {
+                // component is dragged from another container
+                while (newComponents.get(newI) != null)
+                    newI++;
+
+                newComponents.set(newI, metacomp);
+                newConstraints.set(newI, constraints.get(i));
+            }
+        }
+        // now we have lists of components and constraints in right order 
+
+        LayoutSupport layoutSupport = targetMetaContainer.getLayoutSupport();
+
+        // remove components from source container(s)
+        for (int i=0; i < n; i++) {
             RADVisualComponent metacomp = (RADVisualComponent) newComponents.get(i);
-            LayoutSupport.ConstraintsDesc constr =
-                (LayoutSupport.ConstraintsDesc) constraints.get(i);
-            if (constr != null) {
-                constr = layoutSupport.fixConstraints(constr);
+            if (metacomp != null) {
+                RADVisualContainer parentCont = metacomp.getParentContainer();
+                if (metacomp.getParentContainer() == targetMetaContainer)
+                    layoutSupport.removeComponent(metacomp);
+                else
+                    parentCont.remove(metacomp);
+
+                metacomp.resetConstraintsProperties();
             }
-            model.addVisualComponent(metacomp, metacont, constr);
+            else { // remove empty space
+                newComponents.remove(i);
+                newConstraints.remove(i);
+                i--;
+                n--;
+            }
         }
 
-        formDesigner.clearSelection();
-        Iterator iter = oldSelectedComponents.iterator();
-        while (iter.hasNext()) {
-            formDesigner.addComponentToSelection(
-                (RADComponent) iter.next());
+        if (n == 0) return; // dragging not allowed
+
+        // and finally - add all new components to target container
+        RADVisualComponent[] newCompsArray = new RADVisualComponent[n];
+        newComponents.toArray(newCompsArray);
+        targetMetaContainer.initSubComponents(newCompsArray);
+
+        for (int i=0; i < n; i++) {
+            RADVisualComponent metacomp = newCompsArray[i];
+
+            LayoutSupport.ConstraintsDesc constr = 
+                (LayoutSupport.ConstraintsDesc) newConstraints.get(i);
+            if (constr == null)
+                constr = layoutSupport.getConstraints(metacomp);
+
+            layoutSupport.addComponent(metacomp, constr);
+        }
+
+        targetMetaContainer.getNodeReference().updateChildren();
+        formDesigner.getModel().fireFormChanged();
+
+        if (formDesigner.getSelectedComponents().size() == 0) {
+            for (int i=0; i < selectedComponents.length; i++)
+                formDesigner.addComponentToSelection(selectedComponents[i]);
         }
     }
 
-    void paintDragFeekback(Graphics2D g) {
+    void paintDragFeedback(Graphics2D g) {
         Stroke oldStroke = g.getStroke();
         Stroke stroke = new BasicStroke((float) 2.0,
                                             BasicStroke.CAP_SQUARE,
                                             BasicStroke.JOIN_MITER,
                                             (float) 10.0,
-                                            new float[] { (float) 2.0, (float) 6.0 },
+                                            new float[] { (float) 1.0, (float) 4.0 },
                                             0 );
         g.setStroke(stroke);
 
         Color oldColor = g.getColor();
-        g.setColor(Color.blue);
-        
-        RADVisualContainer metacont = handleLayer.getMetaContainerAt(mousePosition);
-        LayoutSupport layoutSupport =
-            (metacont == null) ? null : metacont.getLayoutSupport();
-        Component comp =
-            (metacont == null) ? null : (Component) formDesigner.getComponent(metacont);
-        Container cont = (comp == null) ? null : metacont.getContainerDelegate(comp);
+        g.setColor(formSettings.getSelectionBorderColor());
 
-        Point posInCont;
-        if (cont != null) {
-            posInCont = SwingUtilities.convertPoint(handleLayer,
-                                                    mousePosition,
-                                                    cont);
-            paintTargetContainerFeedback(g, cont);
+        List constraints = new ArrayList(selectedComponents.length);
+        List indices = new ArrayList(selectedComponents.length);
+
+        boolean constraintsOK = computeConstraints(mousePosition,
+                                                   constraints, indices);
+
+        Point contPos = null;
+        LayoutSupport layoutSupport = null;
+        if (constraintsOK) {
+            contPos = SwingUtilities.convertPoint(targetContainer, 0, 0, handleLayer);
+            layoutSupport = targetMetaContainer.getLayoutSupport();
+            if (resizeType == 0)
+                paintTargetContainerFeedback(g, targetContainer);
         }
-        else
-            posInCont = null;
 
-        Point contPos = SwingUtilities.convertPoint(cont, new Point(0, 0), handleLayer);
-        
         for (int i = 0; i < selectedComponents.length; i++) {
             RADVisualComponent metacomp = selectedComponents[i];
-            if (!(formDesigner.getComponent(metacomp) instanceof Component))
-                continue;
-            
-            if (metacomp != metacont && layoutSupport != null) {
-                Component component = (Component) formDesigner.getComponent(metacomp);
-                Point posInComp = SwingUtilities.convertPoint(handleLayer,
-                                                              hotspot,
-                                                              component);
-                
-                int newIndex = layoutSupport.getNewIndex(
-                    cont, posInCont, component, posInComp);
-                LayoutSupport.ConstraintsDesc newConstraints =
-                    layoutSupport.getNewConstraints(
-                        cont, posInCont, component, posInComp);
-                
-                if (newIndex >= 0 || newConstraints != null) {
+            boolean drawn = false;
+
+            if (constraintsOK) {
+                Component comp = (Component) formDesigner.getComponent(metacomp);
+                LayoutSupport.ConstraintsDesc constr =
+                    (LayoutSupport.ConstraintsDesc) constraints.get(i);
+                int index = ((Integer)indices.get(i)).intValue();
+
+                if (constr != null || index >= 0) {
                     g.translate(contPos.x, contPos.y);
-                    boolean drawn = layoutSupport.paintDragFeedback(
-                        cont, component, newConstraints, newIndex, g);
+                    drawn = layoutSupport.paintDragFeedback(
+                        targetContainer, comp, constr, index, g);
                     g.translate(- contPos.x, - contPos.y);
-                    if (drawn)
-                        continue;
                 }
+//                else continue;
             }
-            paintDragFeedback(g, metacomp);
+
+            if (!drawn)
+                paintDragFeedback(g, metacomp);
         }
-        
+
         g.setColor(oldColor);
         g.setStroke(oldStroke);
+    }
+
+    private boolean computeConstraints(Point p, List constraints, List indices) {
+        if (selectedComponents == null || selectedComponents.length == 0)
+            return false;
+
+        targetMetaContainer = resizeType == 0 ?
+                                handleLayer.getMetaContainerAt(p) :
+                                selectedComponents[0].getParentContainer();
+        if (targetMetaContainer == null)
+            return false; // unknown meta-container
+
+        LayoutSupport layoutSupport = targetMetaContainer.getLayoutSupport();
+        if (layoutSupport == null)
+            return false; // no LayoutSupport (should not happen)
+
+        Component contComp = (Component) formDesigner.getComponent(targetMetaContainer);
+        if (contComp == null)
+            return false; // container not in designer (should not happen)
+
+        targetContainer = targetMetaContainer.getContainerDelegate(contComp);
+        if (targetContainer == null)
+            return false; // no container delegate (should not happen)
+
+        Point posInCont = SwingUtilities.convertPoint(handleLayer, p, targetContainer);
+
+        for (int i = 0; i < selectedComponents.length; i++) {
+            LayoutSupport.ConstraintsDesc constr = null;
+            int index = -1;
+
+            RADVisualComponent metacomp = selectedComponents[i];
+            Component comp = (Component) formDesigner.getComponent(metacomp);
+
+            if (comp != null && checkTarget(metacomp)) {
+                if (resizeType == 0) { // dragging
+                    Point posInComp = SwingUtilities.convertPoint(
+                                          handleLayer, hotspot, comp);
+                    index = layoutSupport.getNewIndex(
+                                targetContainer, posInCont, comp, posInComp);
+                    constr = layoutSupport.getNewConstraints(
+                                 targetContainer, posInCont, comp, posInComp);
+                }
+                else { // resizing
+                    int up = 0, down = 0, left = 0, right = 0;
+
+                    if ((resizeType & LayoutSupport.RESIZE_DOWN) != 0)
+                        down = p.y - hotspot.y;
+                    else if ((resizeType & LayoutSupport.RESIZE_UP) != 0)
+                        up = hotspot.y - p.y;
+                    if ((resizeType & LayoutSupport.RESIZE_RIGHT) != 0)
+                        right = p.x - hotspot.x;
+                    else if ((resizeType & LayoutSupport.RESIZE_LEFT) != 0)
+                        left = hotspot.x - p.x;
+
+                    Insets sizeChanges = new Insets(up, left, down, right);
+                    constr = layoutSupport.getResizedConstraints(comp, sizeChanges);
+                }
+            }
+
+            constraints.add(constr);
+            indices.add(new Integer(index));
+        }
+
+        return true;
+    }
+
+    /** Checks whether metacomp is not a parent of target container (or the
+     * target container itself). Used to avoid dragging to a sub-tree.
+     * @return true if metacomp is OK
+     */
+    private boolean checkTarget(RADVisualComponent metacomp) {
+        if (!(metacomp instanceof RADVisualContainer))
+            return true;
+
+        RADVisualContainer targetCont = targetMetaContainer;
+        while (targetCont != null) {
+            if (targetCont == metacomp)
+                return false;
+            targetCont = targetCont.getParentContainer();
+        }
+
+        return true;
     }
 
     private void paintDragFeedback(Graphics2D g, RADVisualComponent metacomp) {
@@ -285,12 +343,12 @@ class ComponentDragger
                                             BasicStroke.CAP_SQUARE,
                                             BasicStroke.JOIN_MITER,
                                             (float) 10.0,
-                                            new float[] { (float) 2.0, (float) 6.0 },
+                                            new float[] { (float) 2.0, (float) 8.0 },
                                             0 );
         g.setStroke(stroke);
 
         Color oldColor = g.getColor();
-        g.setColor(Color.red);
+        g.setColor(formSettings.getDragBorderColor());
         
         Rectangle rect = new Rectangle(new Point(0,0), cont.getSize());
         rect = SwingUtilities.convertRectangle(cont,

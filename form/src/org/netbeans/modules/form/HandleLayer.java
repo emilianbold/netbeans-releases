@@ -50,9 +50,12 @@ class HandleLayer extends JPanel
     
     private FormDesigner formDesigner;
     private boolean viewOnly;
+
     private ComponentDragger componentDragger;
     private Point lastLeftButtonPressedPoint;
     private boolean draggingCanceled = false;
+
+    private int resizeType;
 
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
@@ -95,7 +98,7 @@ class HandleLayer extends JPanel
         }
 
         if (componentDragger != null)
-            componentDragger.paintDragFeekback(g2);
+            componentDragger.paintDragFeedback(g2);
     }
 
     private void paintSelection(Graphics2D g, RADComponent metacomp) {
@@ -247,6 +250,264 @@ class HandleLayer extends JPanel
         return null;
     }
 
+    /** Selects component at the position e.getPoint() on component layer.
+     * What component is selected further depends on whether CTRL or ALT
+     * keys are hold. */
+    private void selectComponent(MouseEvent e) {
+        boolean ctrl = e.isControlDown() && !e.isAltDown();
+        boolean alt = e.isAltDown() && !e.isControlDown();
+
+        int selMode = ctrl ? COMP_UNDER_SELECTED :
+                             (alt ? COMP_ABOVE_SELECTED : COMP_DEEPEST);
+
+        RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(), selMode);
+
+        if (e.isShiftDown()) {
+            if (formDesigner.isComponentSelected(hitMetaComp))
+                formDesigner.removeComponentFromSelection(hitMetaComp);
+            else
+                formDesigner.addComponentToSelection(hitMetaComp);
+        }
+        else {
+            if (hitMetaComp != null) {
+                if (formDesigner.isComponentSelected(hitMetaComp)) {
+                    if (e.getID() == MouseEvent.MOUSE_RELEASED) {
+                        formDesigner.setSelectedComponent(hitMetaComp);
+                    }
+                }
+                else {
+                    formDesigner.setSelectedComponent(hitMetaComp);
+                }
+            }
+            else
+                formDesigner.clearSelection();
+        }
+        repaint();
+    }
+
+    private void processMouseClickInLayoutSupport(RADComponent metacomp,
+                                                  MouseEvent e) {
+        if (!(metacomp instanceof RADVisualComponent)) return;
+
+        RADVisualContainer metacont = metacomp instanceof RADVisualContainer ?
+                (RADVisualContainer)metacomp :
+                ((RADVisualComponent)metacomp).getParentContainer();
+
+        LayoutSupport laysup = metacont.getLayoutSupport();
+        if (laysup instanceof LayoutSupportArranging) {
+            Container cont = (Container) formDesigner.getComponent(metacont);
+            Point p = SwingUtilities.convertPoint(HandleLayer.this, e.getPoint(), cont);
+            ((LayoutSupportArranging)laysup).processMouseClick(p, cont);
+        }
+    }
+
+    private void invokeDefaultAction(RADComponent metacomp) {
+        Node node = metacomp.getNodeReference();
+        if (node != null) {
+            SystemAction action = node.getDefaultAction();
+            if (action != null && action.isEnabled()) {
+                action.actionPerformed(new ActionEvent(
+                        node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+            }
+        }
+    }
+
+    private void setComponentBorder(RADComponent metacomp, PaletteItem item) {
+        if (!(metacomp instanceof RADVisualComponent) || !item.isBorder())
+            return;
+
+        if (!(JComponent.class.isAssignableFrom(metacomp.getBeanClass()))) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                FormEditor.getFormBundle().getString("MSG_BorderNotApplicable"),
+                                                     NotifyDescriptor.INFORMATION_MESSAGE));
+            return;
+        }
+
+        RADProperty prop = metacomp.getPropertyByName("border");
+        if (prop == null) return;
+
+        try {
+            Object border = item.createInstance();
+            prop.setValue(border);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        formDesigner.setSelectedComponent(metacomp);
+    }
+
+    private void setContainerLayout(RADComponent metacomp, PaletteItem item) {
+        if (!(metacomp instanceof RADVisualComponent)
+                || !item.isLayout())
+            return;
+
+        LayoutSupport layoutSupport = null;
+        try {
+            layoutSupport = item.createLayoutSupportInstance();
+        }
+        catch (Exception e) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                e.printStackTrace();
+
+            TopManager.getDefault().notify(
+                new NotifyDescriptor.Message(
+                    MessageFormat.format(
+                        FormEditor.getFormBundle().getString("FMT_ERR_LayoutInit"),
+                        new Object[] { item.getItemClass().getName(),
+                                        e.getClass().getName() }),
+                    NotifyDescriptor.ERROR_MESSAGE));
+            return;
+        }
+
+        if (layoutSupport == null) {
+            TopManager.getDefault().notify(
+                new NotifyDescriptor.Message(
+                    MessageFormat.format(
+                        FormEditor.getFormBundle().getString("FMT_ERR_LayoutNotFound"),
+                        new Object[] { item.getItemClass().getName() }),
+                    NotifyDescriptor.ERROR_MESSAGE));
+            return;
+        }
+
+        // get container on which the layout will be set
+        RADVisualContainer metaCont = metacomp instanceof RADVisualContainer ?
+            (RADVisualContainer) metacomp :
+            ((RADVisualComponent)metacomp).getParentContainer();
+
+        metaCont.getFormModel().setContainerLayout(metaCont, layoutSupport);
+    }
+
+    private void addVisualBean(RADComponent metacomp, PaletteItem item,
+                               MouseEvent e) {
+        if (!(metacomp instanceof RADVisualComponent)
+                || !item.isVisual())
+            return;
+
+        // get parent container into which new component will be added
+        RADVisualContainer parentCont = metacomp instanceof RADVisualContainer ?
+            (RADVisualContainer) metacomp :
+            ((RADVisualComponent)metacomp).getParentContainer();
+
+        RADVisualComponent newMetacomp = null;
+        RADVisualContainer newMetacont = item.isContainer() ?
+            new RADVisualContainer() : null;
+
+        while (newMetacomp == null) {
+            // initialize meta-component and its bean instance
+            newMetacomp = newMetacont == null ?
+                new RADVisualComponent() : newMetacont;
+
+            newMetacomp.initialize(formDesigner.getModel());
+
+            try {
+                newMetacomp.initInstance(item.getInstanceCookie());
+            }
+            catch (Throwable th) {
+                if (th instanceof ThreadDeath)
+                    throw (ThreadDeath)th;
+                else {
+                    showInstErrorMessage(th);
+                    return;
+                }
+            }
+
+            if (newMetacont != null) { // the new component is a container
+                // initialize LayoutSupport
+                newMetacont.initLayoutSupport();
+                if (newMetacont.getLayoutSupport() == null) {
+                    // no LayoutSupport found for the container,
+                    // create RADVisualComponent only
+                    newMetacont = null;
+                    newMetacomp = null;
+                }
+            }
+        }
+
+        Container cont = (Container) formDesigner.getComponent(parentCont);
+        Point p = SwingUtilities.convertPoint(HandleLayer.this,
+                                              e.getPoint(), cont);
+        LayoutSupport.ConstraintsDesc constraints =
+            parentCont.getLayoutSupport().getNewConstraints(cont, p, null, null);
+
+        formDesigner.getModel().addVisualComponent(newMetacomp, parentCont,
+                                                   constraints);
+
+        // for some components, we initialize their properties with some
+        // non-default values e.g. a label on buttons, checkboxes
+        FormEditor.defaultComponentInit(newMetacomp);
+
+        formDesigner.setSelectedComponent(newMetacomp);
+        //formWindow.validate();
+        //fireCodeChange();
+    }
+
+    private void addNonVisualBean(PaletteItem item) {
+        RADComponent newMetacomp = new RADComponent();
+        newMetacomp.initialize(formDesigner.getModel());
+
+        try {
+            newMetacomp.initInstance(item.getInstanceCookie());
+//                newComp = item.createInstance();
+//                newMetacomp.setInstance(newComp);
+        }
+        catch (Throwable th) {
+            if (th instanceof ThreadDeath)
+                throw (ThreadDeath)th;
+            else {
+                showInstErrorMessage(th);
+                return;
+            }
+        }
+
+        formDesigner.getModel().addNonVisualComponent(newMetacomp, null);
+        formDesigner.setSelectedComponent(newMetacomp);
+        //formWindow.validate();
+        //fireCodeChange();
+    }
+
+    private void addMenu(PaletteItem item) {
+        FormModel formModel = formDesigner.getModel();
+
+        RADMenuComponent newMenuComp = new RADMenuComponent();
+        newMenuComp.initialize(formModel);
+        newMenuComp.setComponent(item.getItemClass());
+        newMenuComp.initSubComponents(new RADComponent[0]);
+        formModel.addNonVisualComponent(newMenuComp, null);
+
+        // for some components, we initialize their properties with some
+        // non-default values e.g. a label on buttons, checkboxes
+        FormEditor.defaultMenuInit(newMenuComp);
+
+        NewType[] newTypes = newMenuComp.getNewTypes();
+        if (newTypes.length != 0) {
+            try {
+                newTypes[0].create();
+            } catch (java.io.IOException e) {
+            }
+        }
+
+        FormInfo formInfo = formModel.getFormInfo();
+
+        if ((formInfo instanceof JMenuBarContainer
+             && JMenuBar.class.isAssignableFrom(item.getItemClass()))
+            || (formInfo instanceof MenuBarContainer
+                && MenuBar.class.isAssignableFrom(item.getItemClass()))) {
+            if (((RADVisualFormContainer)formModel.getTopRADComponent()).getFormMenu() == null) {
+                ((RADVisualFormContainer)formModel.getTopRADComponent()).setFormMenu(newMenuComp.getName());
+            }
+        }
+
+        formDesigner.setSelectedComponent(newMenuComp);
+    }
+
+    private void showContextMenu(Point popupPos) {
+        Node[] selectedNodes = ComponentInspector.getInstance().getSelectedNodes();
+        JPopupMenu popup = NodeOp.findContextMenu(selectedNodes);
+        if (popup != null) {
+            popup.show(HandleLayer.this, popupPos.x, popupPos.y);
+        }
+    }
+
     static private void showInstErrorMessage(Throwable ex) {
 //        if (System.getProperty("netbeans.debug.exceptions") != null)
             ex.printStackTrace();
@@ -258,6 +519,249 @@ class HandleLayer extends JPanel
             message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
+    // --------
+
+    private ComponentDragger createComponentDragger(Point hotspot) {
+        List selectedComponents = formDesigner.getSelectedComponents();
+        if (selectedComponents.size() == 0)
+            return null;
+        
+        List selComps = new ArrayList(selectedComponents.size());
+        Iterator iter = selectedComponents.iterator();
+        while (iter.hasNext()) {
+            RADComponent metacomp = (RADComponent) iter.next();
+            if (metacomp instanceof RADVisualComponent)
+                selComps.add(metacomp);
+        }
+
+        Set children = new HashSet();
+        iter = selComps.iterator();
+        while (iter.hasNext()) {
+            RADVisualComponent metacomp = (RADVisualComponent) iter.next();
+            
+            Iterator iter2 = selComps.iterator();
+            while (iter2.hasNext()) {
+                RADVisualComponent metacomp2 = (RADVisualComponent) iter2.next();
+                if (metacomp2 != metacomp
+                        && metacomp2 instanceof RADVisualContainer) {
+                    RADVisualContainer metacont = metacomp.getParentContainer();
+                    while (metacont != null) {
+                        if (metacont == metacomp2) {
+                            children.add(metacomp);
+                            break;
+                        }
+                        metacont = metacont.getParentContainer();
+                    }
+                }
+            }
+        }
+        selComps.removeAll(children);
+        if (selComps.isEmpty())
+            return null;
+
+        draggingCanceled = false;
+        
+        return new ComponentDragger(
+            formDesigner,
+            HandleLayer.this,
+            (RADVisualComponent[]) selComps.toArray(
+                new RADVisualComponent[selComps.size()]),
+            hotspot,
+            resizeType);
+    }
+
+    private boolean cancelDragging() {
+        if (componentDragger != null) {
+            componentDragger = null;
+            repaint();
+            draggingCanceled = true;
+            return true;
+        }
+        return false;
+    }
+
+    private void checkResizing(Point p) {
+        RADComponent comp = getMetaComponentAt(p, COMP_SELECTED);
+        if (!(comp instanceof RADVisualComponent))
+            return;
+
+        RADVisualComponent metacomp = (RADVisualComponent) comp;
+        int resizing = 0;
+
+        if (!formDesigner.isComponentSelected(metacomp)) {
+            RADVisualContainer metacont;
+            if (metacomp instanceof RADVisualContainer)
+                metacont = (RADVisualContainer) metacomp;
+            else
+                metacont = metacomp.getParentContainer();
+
+            RADVisualComponent[] metacomps = metacont.getSubComponents();
+            for (int i=0; i < metacomps.length; i++) {
+                metacomp = metacomps[i];
+                resizing = getComponentResizable(p, metacomp);
+                if (resizing != 0) break;
+            }
+        }
+        else resizing = getComponentResizable(p, metacomp);
+
+        if (resizing != 0) {
+            setResizingCursor(resizing);
+//            resizedComponent = metacomp;
+        }
+        else {
+            Cursor cursor = getCursor();
+            if (cursor != null && cursor.getType() != Cursor.DEFAULT_CURSOR)
+                setCursor(Cursor.getDefaultCursor());
+//            resizedComponent = null;
+        }
+        resizeType = resizing;
+    }
+
+    private int getComponentResizable(Point p, RADVisualComponent metacomp) {
+        if (!formDesigner.isComponentSelected(metacomp))
+            return 0;
+
+        RADVisualContainer metacont = metacomp.getParentContainer();
+        if (metacont == null || metacomp == formDesigner.getTopDesignContainer())
+            return 0;
+
+        LayoutSupport laySup = metacont.getLayoutSupport();
+        if (laySup == null)
+            return 0;
+
+        Component comp = (Component) formDesigner.getComponent(metacomp);
+
+        int resizable = laySup.getResizableDirections(comp);
+        if (resizable != 0)
+            resizable &= getSelectionResizable(p, comp);
+
+        return resizable;
+    }
+
+    private int getSelectionResizable(Point p, Component comp) {
+        Rectangle bounds = comp.getBounds();
+        bounds.x = 0;
+        bounds.y = 0;
+        bounds = SwingUtilities.convertRectangle(comp, bounds, this);
+
+        Rectangle r1 = new Rectangle(bounds);
+        Rectangle r2 = new Rectangle(bounds);
+
+        r1.grow(2, 2);
+        r2.grow(-3, -3);
+        if (r2.width < 0) r2.width = 0;
+        if (r2.height < 0) r2.height = 0;
+
+        int resizable = 0;
+        if (r1.contains(p)) {
+            if (p.y >= r2.y + r2.height)
+                resizable |= LayoutSupport.RESIZE_DOWN;
+            else if (p.y < r2.y)
+                resizable |= LayoutSupport.RESIZE_UP;
+            if (p.x >= r2.x + r2.width)
+                resizable |= LayoutSupport.RESIZE_RIGHT;
+            else if (p.x < r2.x)
+                resizable |= LayoutSupport.RESIZE_LEFT;
+        }
+
+        return resizable;
+    }
+
+    private void setResizingCursor(int resizeType) {
+        Cursor cursor = null;
+        if ((resizeType & LayoutSupport.RESIZE_UP) != 0) {
+            if ((resizeType & LayoutSupport.RESIZE_LEFT) != 0)
+                cursor = Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR);
+            else if ((resizeType & LayoutSupport.RESIZE_RIGHT) != 0)
+                cursor = Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR);
+            else
+                cursor = Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR);
+        }
+        else if ((resizeType & LayoutSupport.RESIZE_DOWN) != 0) {
+            if ((resizeType & LayoutSupport.RESIZE_LEFT) != 0)
+                cursor = Cursor.getPredefinedCursor(Cursor.SW_RESIZE_CURSOR);
+            else if ((resizeType & LayoutSupport.RESIZE_RIGHT) != 0)
+                cursor = Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR);
+            else
+                cursor = Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR);
+        }
+        else if ((resizeType & LayoutSupport.RESIZE_LEFT) != 0)
+            cursor = Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
+        else if ((resizeType & LayoutSupport.RESIZE_RIGHT) != 0)
+            cursor = Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR);
+
+        if (cursor == null)
+            cursor = Cursor.getDefaultCursor();
+
+        setCursor(cursor);
+    }
+
+    private void displayHint(RADComponent metacomp, Point p, PaletteItem item) {
+        if (metacomp == null) {
+            TopManager.getDefault().setStatusText(""); // NOI18N
+            return;
+        }
+
+        RADVisualContainer metacont;
+
+        if (metacomp instanceof RADVisualContainer)
+            metacont = (RADVisualContainer) metacomp;
+        else
+            metacont = ((RADVisualComponent)metacomp).getParentContainer();
+
+        if (item.isLayout()) {
+            LayoutSupport layoutSupp = metacont.getLayoutSupport();
+            if (layoutSupp != null
+                && !(layoutSupp instanceof LayoutSupport))
+            {
+                setStatusText("FMT_MSG_CannotSetLayout",
+                              new Object[] { metacont.getName() });
+            } else {
+                setStatusText("FMT_MSG_SetLayout",
+                              new Object[] { metacont.getName() });
+            }
+        }
+        else if (item.isBorder()) {
+            if (JComponent.class.isAssignableFrom(metacomp.getBeanClass())) {
+                setStatusText("FMT_MSG_SetBorder",
+                              new Object[] { metacomp.getName() });
+            }
+            else {
+                setStatusText("FMT_MSG_CannotSetBorder",
+                              new Object[] { metacomp.getName() });
+            }
+        } else if (!item.isVisual() || item.isMenu()) {
+            setStatusText("FMT_MSG_AddNonVisualComponent",
+                          new Object[] { item.getItemClass().getName() });
+        } else {
+            LayoutSupport layoutSupp = metacont.getLayoutSupport();
+            if (layoutSupp != null) {
+                Container cont = metacont.getContainerDelegate(
+                        formDesigner.getComponent(metacont));
+                Point point = SwingUtilities.convertPoint(
+                        HandleLayer.this, p, cont);
+                LayoutSupport.ConstraintsDesc cd =
+                        layoutSupp.getNewConstraints(cont, p, null, null);
+                if (cd != null) {
+                    setStatusText("FMT_MSG_AddComponent",
+                                  new Object[] {
+                                      cd.getJavaInitializationString(),
+                                      metacont.getName(),
+                                      item.getItemClass().getName()
+                                  });
+                }
+            }
+        }
+    }
+
+    private static void setStatusText(String formatId, Object[] args) {
+        TopManager.getDefault().setStatusText(
+            MessageFormat.format(
+                FormEditor.getFormBundle().getString(formatId),
+                args));
+    }
+
+    // ---------
 
     private class HandleLayerMouseListener implements MouseListener
     {
@@ -280,27 +784,25 @@ class HandleLayer extends JPanel
                     componentDragger = null;
                     repaint();
                 }
-                else {
-                    if (draggingCanceled) {
-                        draggingCanceled = false;
-                    }
-                    else {
-                        ComponentPalette palette = ComponentPalette.getDefault();
-                        if (palette.getMode() == PaletteAction.MODE_SELECTION) {
-                            boolean ctrl = e.isControlDown() && !e.isAltDown();
-                            boolean alt = e.isAltDown() && !e.isControlDown();
+                else if (draggingCanceled) {
+                    draggingCanceled = false;
+                }
+/*                    else {
+                    ComponentPalette palette = ComponentPalette.getDefault();
+                    if (palette.getMode() == PaletteAction.MODE_SELECTION) {
+                        boolean ctrl = e.isControlDown() && !e.isAltDown();
+                        boolean alt = e.isAltDown() && !e.isControlDown();
 
-                            int selMode = ctrl ? COMP_UNDER_SELECTED :
-                                (alt ? COMP_ABOVE_SELECTED : COMP_DEEPEST);
-                    
-                            RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(), selMode);
-                    
-                            if (!e.isShiftDown() && hitMetaComp != null) {
-                                formDesigner.setSelectedComponent(hitMetaComp);
-                            }
+                        int selMode = ctrl ? COMP_UNDER_SELECTED :
+                            (alt ? COMP_ABOVE_SELECTED : COMP_DEEPEST);
+
+                        RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(), selMode);
+
+                        if (!e.isShiftDown() && hitMetaComp != null) {
+                            formDesigner.setSelectedComponent(hitMetaComp);
                         }
                     }
-                }
+                } */
                 e.consume();
             }
         }
@@ -326,14 +828,20 @@ class HandleLayer extends JPanel
                 e.consume();
             }
             else if (MouseUtils.isLeftMouseButton(e)) {
-                lastLeftButtonPressedPoint = e.getPoint();
+                boolean modifier = e.isControlDown() || e.isAltDown() || e.isShiftDown();
+                if (!modifier)
+                    lastLeftButtonPressedPoint = e.getPoint();
 
                 ComponentPalette palette = ComponentPalette.getDefault();
 
                 if (palette.getMode() == PaletteAction.MODE_SELECTION) {
-                    selectComponent(e);
+                    if (!modifier)
+                        checkResizing(e.getPoint());
 
-                    if (!e.isControlDown() && !e.isAltDown() && !e.isShiftDown()) {
+                    if (modifier || resizeType == 0)
+                        selectComponent(e);
+
+                    if (!modifier && resizeType == 0) {
                         RADComponent hitMetaComp = getMetaComponentAt(
                                                    e.getPoint(), COMP_DEEPEST);
                         if (e.getClickCount() == 2)
@@ -382,332 +890,26 @@ class HandleLayer extends JPanel
                 e.consume();
             }
         }
-
-        /** Selects component at the position e.getPoint() on component layer.
-         * What component is selected further depends on whether CTRL or ALT
-         * keys are hold. */
-        private void selectComponent(MouseEvent e) {
-            boolean ctrl = e.isControlDown() && !e.isAltDown();
-            boolean alt = e.isAltDown() && !e.isControlDown();
-
-            int selMode = ctrl ? COMP_UNDER_SELECTED :
-                                 (alt ? COMP_ABOVE_SELECTED : COMP_DEEPEST);
-
-            RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(), selMode);
-
-            if (e.isShiftDown()) {
-                if (formDesigner.isComponentSelected(hitMetaComp))
-                    formDesigner.removeComponentFromSelection(hitMetaComp);
-                else
-                    formDesigner.addComponentToSelection(hitMetaComp);
-            }
-            else {
-                if (hitMetaComp != null) {
-                    if (formDesigner.isComponentSelected(hitMetaComp)) {
-                        if (e.getID() == MouseEvent.MOUSE_RELEASED) {
-                            formDesigner.setSelectedComponent(hitMetaComp);
-                        }
-                    }
-                    else {
-                        formDesigner.setSelectedComponent(hitMetaComp);
-                    }
-                }
-                else
-                    formDesigner.clearSelection();
-            }
-            repaint();
-        }
-
-        private void processMouseClickInLayoutSupport(RADComponent metacomp,
-                                                      MouseEvent e) {
-            if (!(metacomp instanceof RADVisualComponent)) return;
-
-            RADVisualContainer metacont = metacomp instanceof RADVisualContainer ?
-                    (RADVisualContainer)metacomp :
-                    ((RADVisualComponent)metacomp).getParentContainer();
-
-            LayoutSupport laysup = metacont.getLayoutSupport();
-            if (laysup instanceof LayoutSupportArranging) {
-                Container cont = (Container) formDesigner.getComponent(metacont);
-                Point p = SwingUtilities.convertPoint(HandleLayer.this, e.getPoint(), cont);
-                ((LayoutSupportArranging)laysup).processMouseClick(p, cont);
-            }
-        }
-
-        private void invokeDefaultAction(RADComponent metacomp) {
-            Node node = metacomp.getNodeReference();
-            if (node != null) {
-                SystemAction action = node.getDefaultAction();
-                if (action != null && action.isEnabled()) {
-                    action.actionPerformed(new ActionEvent(
-                            node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                }
-            }
-        }
-
-        private void setComponentBorder(RADComponent metacomp, PaletteItem item) {
-            if (!(metacomp instanceof RADVisualComponent) || !item.isBorder())
-                return;
-            
-            if (!(JComponent.class.isAssignableFrom(metacomp.getBeanClass()))) {
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                    FormEditor.getFormBundle().getString("MSG_BorderNotApplicable"),
-                                                         NotifyDescriptor.INFORMATION_MESSAGE));
-                return;
-            }
-
-            RADProperty prop = metacomp.getPropertyByName("border");
-            if (prop == null) return;
-
-            try {
-                Object border = item.createInstance();
-                prop.setValue(border);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-            formDesigner.setSelectedComponent(metacomp);
-        }
-
-        private void setContainerLayout(RADComponent metacomp, PaletteItem item) {
-            if (!(metacomp instanceof RADVisualComponent)
-                    || !item.isLayout())
-                return;
-
-            LayoutSupport layoutSupport = null;
-            try {
-                layoutSupport = item.createLayoutSupportInstance();
-            }
-            catch (Exception e) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    e.printStackTrace();
-
-                TopManager.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                        MessageFormat.format(
-                            FormEditor.getFormBundle().getString("FMT_ERR_LayoutInit"),
-                            new Object[] { item.getItemClass().getName(),
-                                            e.getClass().getName() }),
-                        NotifyDescriptor.ERROR_MESSAGE));
-                return;
-            }
-
-            if (layoutSupport == null) {
-                TopManager.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                        MessageFormat.format(
-                            FormEditor.getFormBundle().getString("FMT_ERR_LayoutNotFound"),
-                            new Object[] { item.getItemClass().getName() }),
-                        NotifyDescriptor.ERROR_MESSAGE));
-                return;
-            }
-
-            // get container on which the layout will be set
-            RADVisualContainer metaCont = metacomp instanceof RADVisualContainer ?
-                (RADVisualContainer) metacomp :
-                ((RADVisualComponent)metacomp).getParentContainer();
-
-            metaCont.getFormModel().setContainerLayout(metaCont, layoutSupport);
-        }
-
-        private void addVisualBean(RADComponent metacomp, PaletteItem item,
-                                   MouseEvent e) {
-            if (!(metacomp instanceof RADVisualComponent)
-                    || !item.isVisual())
-                return;
-
-            // get parent container into which new component will be added
-            RADVisualContainer parentCont = metacomp instanceof RADVisualContainer ?
-                (RADVisualContainer) metacomp :
-                ((RADVisualComponent)metacomp).getParentContainer();
-
-            RADVisualComponent newMetacomp = null;
-            RADVisualContainer newMetacont = item.isContainer() ?
-                new RADVisualContainer() : null;
-
-            while (newMetacomp == null) {
-                // initialize meta-component and its bean instance
-                newMetacomp = newMetacont == null ?
-                    new RADVisualComponent() : newMetacont;
-
-                newMetacomp.initialize(formDesigner.getModel());
-
-                try {
-                    newMetacomp.initInstance(item.getInstanceCookie());
-                }
-                catch (Throwable th) {
-                    if (th instanceof ThreadDeath)
-                        throw (ThreadDeath)th;
-                    else {
-                        showInstErrorMessage(th);
-                        return;
-                    }
-                }
-
-                if (newMetacont != null) { // the new component is a container
-                    // initialize LayoutSupport
-                    newMetacont.initLayoutSupport();
-                    if (newMetacont.getLayoutSupport() == null) {
-                        // no LayoutSupport found for the container,
-                        // create RADVisualComponent only
-                        newMetacont = null;
-                        newMetacomp = null;
-                    }
-                }
-            }
-
-            Container cont = (Container) formDesigner.getComponent(parentCont);
-            Point p = SwingUtilities.convertPoint(HandleLayer.this,
-                                                  e.getPoint(), cont);
-            LayoutSupport.ConstraintsDesc constraints =
-                parentCont.getLayoutSupport().getNewConstraints(cont, p, null, null);
-
-            formDesigner.getModel().addVisualComponent(newMetacomp, parentCont,
-                                                       constraints);
-
-            // for some components, we initialize their properties with some
-            // non-default values e.g. a label on buttons, checkboxes
-            FormEditor.defaultComponentInit(newMetacomp);
-            
-            formDesigner.setSelectedComponent(newMetacomp);
-            //formWindow.validate();
-            //fireCodeChange();
-        }
-
-        private void addNonVisualBean(PaletteItem item) {
-            RADComponent newMetacomp = new RADComponent();
-            newMetacomp.initialize(formDesigner.getModel());
-
-            try {
-                newMetacomp.initInstance(item.getInstanceCookie());
-//                newComp = item.createInstance();
-//                newMetacomp.setInstance(newComp);
-            }
-            catch (Throwable th) {
-                if (th instanceof ThreadDeath)
-                    throw (ThreadDeath)th;
-                else {
-                    showInstErrorMessage(th);
-                    return;
-                }
-            }
-
-            formDesigner.getModel().addNonVisualComponent(newMetacomp, null);
-            formDesigner.setSelectedComponent(newMetacomp);
-            //formWindow.validate();
-            //fireCodeChange();
-        }
-
-        private void addMenu(PaletteItem item) {
-            FormModel formModel = formDesigner.getModel();
-            
-            RADMenuComponent newMenuComp = new RADMenuComponent();
-            newMenuComp.initialize(formModel);
-            newMenuComp.setComponent(item.getItemClass());
-            newMenuComp.initSubComponents(new RADComponent[0]);
-            formModel.addNonVisualComponent(newMenuComp, null);
-            
-            // for some components, we initialize their properties with some
-            // non-default values e.g. a label on buttons, checkboxes
-            FormEditor.defaultMenuInit(newMenuComp);
-            
-            NewType[] newTypes = newMenuComp.getNewTypes();
-            if (newTypes.length != 0) {
-                try {
-                    newTypes[0].create();
-                } catch (java.io.IOException e) {
-                }
-            }
-
-            FormInfo formInfo = formModel.getFormInfo();
-            
-            if ((formInfo instanceof JMenuBarContainer
-                 && JMenuBar.class.isAssignableFrom(item.getItemClass()))
-                || (formInfo instanceof MenuBarContainer
-                    && MenuBar.class.isAssignableFrom(item.getItemClass()))) {
-                if (((RADVisualFormContainer)formModel.getTopRADComponent()).getFormMenu() == null) {
-                    ((RADVisualFormContainer)formModel.getTopRADComponent()).setFormMenu(newMenuComp.getName());
-                }
-            }
-            
-            formDesigner.setSelectedComponent(newMenuComp);
-        }
-
-        private void showContextMenu(Point popupPos) {
-            Node[] selectedNodes = ComponentInspector.getInstance().getSelectedNodes();
-            JPopupMenu popup = NodeOp.findContextMenu(selectedNodes);
-            if (popup != null) {
-                popup.show(HandleLayer.this, popupPos.x, popupPos.y);
-            }
-        }
     }
 
-    private ComponentDragger createComponentDragger(Point hotspot) {
-        List selectedComponents = formDesigner.getSelectedComponents();
-        if (selectedComponents.size() == 0)
-                return null;
-        
-        List selComps = new ArrayList(selectedComponents.size());
-        Iterator iter = selectedComponents.iterator();
-        while (iter.hasNext()) {
-            RADComponent metacomp = (RADComponent) iter.next();
-            if (metacomp instanceof RADVisualComponent)
-                selComps.add(metacomp);
-        }
+    // ---------
 
-        Set children = new HashSet();
-        iter = selComps.iterator();
-        while (iter.hasNext()) {
-            RADComponent metacomp = (RADComponent) iter.next();
-            
-            Iterator iter2 = selComps.iterator();
-            while (iter2.hasNext()) {
-                RADComponent metacomp2 = (RADComponent) iter2.next();
-                if (metacomp2 != metacomp
-                    && metacomp2 instanceof RADVisualContainer
-                    && ((RADVisualContainer)metacomp2).isAncestorOf(metacomp)
-                    ) {
-                    children.add(metacomp);
-                }
-            }
-        }
-        selComps.removeAll(children);
-        if (selComps.isEmpty())
-            return null;
-
-        draggingCanceled = false;
-        
-        return new ComponentDragger(
-            formDesigner,
-            HandleLayer.this,
-            (RADVisualComponent[]) selComps.toArray(
-                new RADVisualComponent[selComps.size()]),
-            hotspot);
-    }
-
-    private boolean cancelDragging() {
-        if (componentDragger != null) {
-            componentDragger = null;
-            repaint();
-            draggingCanceled = true;
-            return true;
-        }
-        return false;
-    }
-    
     private class HandleLayerMouseMotionListener implements MouseMotionListener
     {
         public void mouseDragged(MouseEvent e) {
+            Point p = e.getPoint();
+
             if (componentDragger == null
                 && lastLeftButtonPressedPoint != null
-                && lastLeftButtonPressedPoint.distance(e.getPoint()) > 5)
-            {
+                && (resizeType !=0 || lastLeftButtonPressedPoint.distance(p) > 5))
+            { // start dragging
                 componentDragger = createComponentDragger(lastLeftButtonPressedPoint);
                 lastLeftButtonPressedPoint = null;
             }
-            if (componentDragger != null) {
-                componentDragger.mouseDragged(e.getPoint());
-            }
+
+            if (componentDragger != null)
+                componentDragger.mouseDragged(p);
+
             e.consume();
         }
 
@@ -717,71 +919,9 @@ class HandleLayer extends JPanel
                 RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(), COMP_DEEPEST);
                 displayHint(hitMetaComp, e.getPoint(), palette.getSelectedItem());
             }
-        }
-        
-        private void displayHint(RADComponent metacomp, Point p, PaletteItem item) {
-            if (metacomp == null) {
-                TopManager.getDefault().setStatusText(""); // NOI18N
-                return;
-            }
-            
-            RADVisualContainer metacont;
-        
-            if (metacomp instanceof RADVisualContainer)
-                metacont = (RADVisualContainer) metacomp;
-            else
-                metacont = ((RADVisualComponent)metacomp).getParentContainer();
-        
-            if (item.isLayout()) {
-                LayoutSupport layoutSupp = metacont.getLayoutSupport();
-                if (layoutSupp != null
-                    && !(layoutSupp instanceof LayoutSupport))
-                {
-                    setStatusText("FMT_MSG_CannotSetLayout",
-                                  new Object[] { metacont.getName() });
-                } else {
-                    setStatusText("FMT_MSG_SetLayout",
-                                  new Object[] { metacont.getName() });
-                }
-            }
-            else if (item.isBorder()) {
-                if (JComponent.class.isAssignableFrom(metacomp.getBeanClass())) {
-                    setStatusText("FMT_MSG_SetBorder",
-                                  new Object[] { metacomp.getName() });
-                }
-                else {
-                    setStatusText("FMT_MSG_CannotSetBorder",
-                                  new Object[] { metacomp.getName() });
-                }
-            } else if (!item.isVisual() || item.isMenu()) {
-                setStatusText("FMT_MSG_AddNonVisualComponent",
-                              new Object[] { item.getItemClass().getName() });
-            } else {
-                LayoutSupport layoutSupp = metacont.getLayoutSupport();
-                if (layoutSupp != null) {
-                    Container cont = metacont.getContainerDelegate(
-                            formDesigner.getComponent(metacont));
-                    Point point = SwingUtilities.convertPoint(
-                            HandleLayer.this, p, cont);
-                    LayoutSupport.ConstraintsDesc cd =
-                            layoutSupp.getNewConstraints(cont, p, null, null);
-                    if (cd != null) {
-                        setStatusText("FMT_MSG_AddComponent",
-                                      new Object[] {
-                                          cd.getJavaInitializationString(),
-                                          metacont.getName(),
-                                          item.getItemClass().getName()
-                                      });
-                    }
-                }
+            else if (palette.getMode() == PaletteAction.MODE_SELECTION) {
+                checkResizing(e.getPoint());
             }
         }
-    }
-
-    private static void setStatusText(String formatId, Object[] args) {
-        TopManager.getDefault().setStatusText(
-            MessageFormat.format(
-                FormEditor.getFormBundle().getString(formatId),
-                args));
     }
 }

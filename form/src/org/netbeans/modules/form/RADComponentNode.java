@@ -87,6 +87,10 @@ public class RADComponentNode extends AbstractNode
         }
     }
 
+    void updateChildren() {
+        ((RADChildren)getChildren()).updateKeys();
+    }
+
     public void fireComponentPropertiesChange() {
         firePropertyChange(null, null, null);
     }

@@ -268,7 +268,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     /////
 
-    public boolean isAncestorOf(RADComponent comp) {
+/*    public boolean isAncestorOf(RADVisualComponent comp) {
         int index = getIndexOf(comp);
         if (index >= 0)
             return true;
@@ -281,5 +281,5 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
                 return true;
         }
         return false;
-    }
+    } */
 }
