@@ -10,70 +10,11 @@ Use is subject to license terms.  *-->
 <body bgcolor="#FFFFFF">
 <h2>About Implementing Web Services</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>Web services are distributed application components that conform to
-standards that make them externally available. They solve the problem of
-integrating diverse computer applications that have been developed independently
-and run on a variety of software and hardware platforms. The proliferation of
-distributed environments has created a need for an enterprise to be able to publish all
-or part of the functionality of an application to other applications over an open
-network.</p>
+
 <p>Web services can be implemented in two forms, as a stateless session bean or as a Java class
  in a web application:	
-<ul><li><b>Stateless session bean.</b> The client interacts with the web service using 
-  documents that are meant to be processed as complete entities. These documents 
-  typically take the form of XML, which is defined by a commonly agreed upon schema 
-  between the service provider and its client. It is also possible that the document 
-  exchanged in such an interaction could be in a format other than XML (such as 
-  encrypted files); however, the value of agreeing on a XML schema is to facilitate 
-  interoperability. In other words, the document represents a complete unit of 
-  information and may be completely self-describing.
-  <p>If the following statements are true for your application, you should
-probably create a document-style web service:</p>
-<ul>
-<li>The client interacts asynchronously with the web service, so that immediate responses
-are not expected.</li>
-<li>The web service is data-oriented, not process-oriented.
-</ul></li>
-  <li><b>Java class.</b> The web service is viewed by the client as a single logical 
-    application or component with encapsulated data, where the WSDL described 
-    by the publicly-published interface and the XML in the SOAP messages exchanged 
-    is formatted to map to the discrete operations published by that application. 
-    In fact, the messages directly map onto input and output parameters of the 
-    procedure calls or operations. Typically, such invocations occur over a synchronous 
-    transport protocol like HTTP, where the SOAP request and response is piggybacked 
-    on the protocol-level request-and-response, respectively, to form synchronous 
-    request-response interaction patterns.</p> 
-    <p>For example, a RPC-style web service can implement a payment service that accepts 
-  payments and returns a status, or a stock quote service that accepts a ticker 
-  symbol and returns the current quote in the HTTP response.</p>
-  <p>If the following statements are true for your application, you should
-probably create a RPC-style web service:</p>
-<ul>
-<li>The web service client requires an immediate response. For example, the 
-client and the web service work in a back-and-forth, conversational style.</li>
-<li>The web service is process-oriented, not data-oriented.</li>
-</ul></li></ul>
-<h3>Web Services in the IDE</h3>
-<p>In the IDE, you can create a web service by <a href="../create/create_ws_from_wsdl.html">implementing an existing WSDL file</a>,
-<a href="../create/create_ws_from_code.html">exposing existing code</a>, or <a href="../create/create_ws_from_scratch.html">creating from scratch</a>.
-The IDE generates deployment information in the deployment descriptors, the Java code that describes
-the web service (the implementation class and the Service End Point Interface), and a compilation target in
-the Ant build script. After you finish developing the web service,
-you can use the Web Services panel in the Project 
-Properties dialog box to specify advanced options for building a <a href="../build/compile_wsdl.html">web service from a WSDL file</a>,
-a <a href="../build/compile_doc.html">document-style web service</a>, or a <a href="../build/compile_rpc.html">RPC-style web service</a>.
-  Then, when you
-  build the web service, the <a href="../build/about_wscompile.html"><tt>wscompile</tt> tool</a> is called
-  to compile it.</p>
-<table cellpadding="3" cellspacing="0" border="0">
-<tr valign="top"> 
-<td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
-<td>For tips on designing web services,
-go to Help <img src="../../images/arrow.gif" alt="and choose" >&nbsp;BluePrints Solutions Catalog
-and select from the Service Oriented Architectures with Web Services section of the drop down.
-</td>
-</tr>
-</table>
+ <ul><li><b>Stateless session bean.</b></li> 
+	 <li><b>Java class.</b> </li></ul>
 <table>
 <tr>
 <th colspan=2 align=left><a name="seealso">See Also</a></th>
