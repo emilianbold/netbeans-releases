@@ -137,7 +137,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
     */
 	public boolean canDestroy()
 	{
-		return delflag;
+		return writable && delflag;
 	}
 
 	public void destroy() throws IOException
@@ -154,13 +154,15 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 
 	protected SystemAction[] createActions() 
 	{
+		SystemAction[] retacts, sysacts = NodeOp.getDefaultActions();
 		Vector actions = info.getActions();
-		SystemAction[] myacts = (SystemAction[])actions.toArray(new SystemAction[actions.size()]);
-		SystemAction[] sysacts = NodeOp.getDefaultActions();
-		SystemAction[] retacts = new SystemAction[sysacts.length+myacts.length];
-		System.arraycopy((Object)myacts,0,(Object)retacts,0,myacts.length);
-		System.arraycopy((Object)sysacts,0,(Object)retacts,myacts.length,sysacts.length);
-
+		if (actions.size() > 0) {
+			SystemAction[] myacts = (SystemAction[])actions.toArray(new SystemAction[actions.size()]);
+			retacts = new SystemAction[sysacts.length+myacts.length];
+			System.arraycopy((Object)myacts,0,(Object)retacts,0,myacts.length);
+			System.arraycopy((Object)sysacts,0,(Object)retacts,myacts.length,sysacts.length);
+		} else retacts = sysacts;
+		
 		return retacts;
   	}
 
@@ -197,8 +199,9 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 					if (propmap != null) info.put(key, propmap);
 				} 
 
-				if (key.equals("name")) psitem = new PropertySupport.Name(this);
-				else {
+				if (key.equals("name")) {
+					if (!info.isReadOnly()) psitem = new PropertySupport.Name(this);
+				} else {
 					Class pc = null;
 					pname = (String)propmap.get(DatabaseNodeInfo.NAME);
 					if (info.canAdd(propmap, pname)) {
