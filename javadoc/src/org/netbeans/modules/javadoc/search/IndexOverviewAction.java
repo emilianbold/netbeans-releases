@@ -7,28 +7,28 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.javadoc.search;
 
-import java.awt.Toolkit;
 import javax.swing.JPopupMenu;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.util.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -145,16 +145,34 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
      */
     private final class IndexMenuItem extends JMenuItem implements ActionListener, HelpCtx.Provider {
         
-        private final URL u;
+        /** cached url */
+        private URL u;
+        /** a reference to org.openide.filesystems.FileSystem */
+        private final Reference fsRef;
+        /** path to index file */
+        private String foPath;
         
         public IndexMenuItem(String display, FileObject index) throws FileStateInvalidException {
             super(display);
-            u = JavadocURLMapper.findURL(index);
+            fsRef = new WeakReference(index.getFileSystem());
+            foPath = index.getPath();
             addActionListener(this);
         }
         
         public void actionPerformed(ActionEvent ev) {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(u);
+            URL loc = getURL();
+            HtmlBrowser.URLDisplayer.getDefault().showURL(loc);
+        }
+        
+        private URL getURL() {
+            if (u == null) {
+                FileSystem fs = (FileSystem) fsRef.get();
+                assert fs != null;
+                FileObject index = fs.findResource(foPath);
+                assert index != null: foPath;
+                u = JavadocURLMapper.findURL(index);
+            }
+            return u;
         }
         
         public HelpCtx getHelpCtx() {
