@@ -51,12 +51,10 @@ public class LoggingRepaintManager extends RepaintManager {
     
     private long lastPaint = 0L;
     
-    private boolean onlyExplorer = false;
-    private boolean onlyEditor = false;
-    
     /** Creates a new instance of LoggingRepaintManager */
     public LoggingRepaintManager(ActionTracker tr) {
         this.tr = tr;
+        lastPaint = System.currentTimeMillis();
     }
     
     /**
@@ -102,7 +100,11 @@ public class LoggingRepaintManager extends RepaintManager {
      * @param ignore true - measure only explorer, false - measure everything
      */
     public void setOnlyExplorer (boolean ignore) {
-        onlyExplorer = ignore;
+        if (ignore) {
+            setRegionFilter(EXPLORER_FILTER);
+        } else {
+            setRegionFilter(null);
+        }
     }
     
     /**
@@ -110,12 +112,16 @@ public class LoggingRepaintManager extends RepaintManager {
      * @param ignore true - measure only editor, false - measure everything
      */
     public void setOnlyEditor (boolean ignore) {
-        onlyEditor = ignore;
+        if (ignore) {
+            setRegionFilter(EXPLORER_FILTER);
+        } else {
+            setRegionFilter(null);
+        }
     }
     
     private boolean hasValidateMatches = false;
     private boolean hasDirtyMatches = false;
-    
+    private RegionFilter regionFilter;
     
     /**
      * Log the action when region is add to dirty regions.
@@ -130,29 +136,48 @@ public class LoggingRepaintManager extends RepaintManager {
         String log = "addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h;
         
         if (w > 10 && h > 18) { // painted region isn't cursor (or painted region is greater than cursor)
-            if (onlyExplorer) {  // if you want measure only explorer
-                Class clz = null;
-                for (clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {  // some components as ProjectsView uses own class for View so we are looking for those have superclass explorer.view
-                    if (clz.getPackage().getName().equals("org.openide.explorer.view")) { // if it's explorer.view log this paint event
-                        tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, log);
-                        hasDirtyMatches = true;
-                        break;
-                    }
-                }
-                if (clz == null) // if you are here, you were looking for superclass of your view , but it isn't explorer.view so we ignore this paint event
-                    tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, "ignored " + log);
-            } else if (onlyEditor) { // if you want measure only editor
-                if (c.getClass().getName().equals("org.openide.text.QuietEditorPane")) { // repainted class has to be QuietEditorPane
-                    tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, log);
+            if (regionFilter != null) {
+                if (regionFilter.accept(c)) {
+                    tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, log);
                     hasDirtyMatches = true;
-                } else // ignore paints which are not from QuietEditorPane
-                    tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, "ignored " + log);
-            } else if(!onlyEditor && !onlyExplorer) { // if you don't want measure only editor neither only explorer, log this paint
-                tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, log);
+                } else {
+                    tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "ignored " + log);
+                }
+            } else { // no filter =>  measure everything
+                tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, log);
                 hasDirtyMatches = true;
             }
         }
-        super.addDirtyRegion (c, x, y, w, h);
+        super.addDirtyRegion(c, x, y, w, h);
+    }
+    
+    public interface RegionFilter {
+        public boolean accept(JComponent c);
+    }
+    
+    private static final RegionFilter EXPLORER_FILTER =
+        new RegionFilter() {
+            public boolean accept(JComponent c) {
+                Class clz = null;
+                for (clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {  // some components as ProjectsView uses own class for View so we are looking for those have superclass explorer.view
+                    if (clz.getPackage().getName().equals("org.openide.explorer.view")) { // if it's explorer.view log this paint event
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+        
+    private static final RegionFilter EDITOR_FILTER =
+        new RegionFilter() {
+            public boolean accept(JComponent c) {
+                Class clz = null;
+                return c.getClass().getName().equals("org.openide.text.QuietEditorPane");
+            }
+        };
+    
+    public void  setRegionFilter(RegionFilter filter) {
+        regionFilter = filter;
     }
     
     /**
@@ -160,8 +185,8 @@ public class LoggingRepaintManager extends RepaintManager {
      */
     public void paintDirtyRegions() {
         super.paintDirtyRegions();
+        lastPaint = System.currentTimeMillis();
         if (tr != null && hasDirtyMatches) {
-            lastPaint = System.currentTimeMillis();
             tr.add(tr.TRACK_PAINT, "Done painting");
             hasDirtyMatches = false;
         }

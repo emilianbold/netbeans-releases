@@ -14,6 +14,8 @@
 package org.netbeans.performance.test.utilities;
 
 import java.awt.Component;
+import java.awt.Robot;
+
 import java.util.HashMap;
 import java.util.ListIterator;
 
@@ -257,7 +259,8 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     
                     // Uncomment if you want to run with analyzer tool
                     // com.sun.forte.st.collector.CollectorAPI.resume ();
-                    
+                    Robot robo = new Robot();
+                    robo.waitForIdle();
                     tr.add(tr.TRACK_START, "before open");
                     testedComponentOperator = open();
                     
@@ -278,7 +281,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     measuredTime[i] = getMeasuredTime();
                     tr.add(tr.TRACK_APPLICATION_MESSAGE, "measured time "+measuredTime[i]);
                     
-                    wait_after_open_heuristic = (long)(measuredTime[i]*1.25);
+                    wait_after_open_heuristic = waitAfterOpenHeuristic(measuredTime[i],  WAIT_AFTER_OPEN);
                     
                     log("Measured Time ["+performanceDataName+" | "+i+"] = " +measuredTime[i]);
                     
@@ -322,6 +325,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             shutdown();
             closeAllDialogs();
             tr.add(tr.TRACK_APPLICATION_MESSAGE, "shutdown hooks finished");
+            repaintManager().setRegionFilter(null);
         }catch (Exception e) { // catch for initialize(), shutdown(), closeAllDialogs()
             log("----------------------- Exception rises while shuting down / initializing:"+e.getMessage());
             e.printStackTrace(getLog());
@@ -338,6 +342,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         
         compare(measuredTime);
         
+    }
+    
+    private long waitAfterOpenHeuristic(long last, long def) {
+        return (long) (last * 1.25);
     }
     
     /**
@@ -609,11 +617,11 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         // the difference is the result
         
         EventList lst = tr.getCurrentEvents();
-        ListIterator/*ActionTracker.Tuple*/ it = lst.listIterator();
+        ActionTracker.Tuple[] events = (ActionTracker.Tuple[]) lst.toArray(new ActionTracker.Tuple[0]);
         long start = 0L;
         long end = 0L;
-        while (it.hasNext()) {
-            ActionTracker.Tuple t = (ActionTracker.Tuple)it.next();
+        for (int i = 0; i < events.length; i++) {
+            ActionTracker.Tuple t = events[i];
             int code = t.getCode();
             if (code == ActionTracker.TRACK_START 
             || code == ActionTracker.TRACK_MOUSE_PRESS
