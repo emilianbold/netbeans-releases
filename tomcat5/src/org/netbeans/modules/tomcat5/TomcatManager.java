@@ -77,7 +77,6 @@ public class TomcatManager implements DeploymentManager {
         
         int uriOffset = uri.indexOf ("http:");  // NOI18N
         if (uriOffset > 0) {
-            System.out.println("pasing home & base");
             // parse home and base attrs
             final String home = "home=";
             final String base = ":base=";
@@ -85,9 +84,7 @@ public class TomcatManager implements DeploymentManager {
             int homeOffset = uri.indexOf (home) + home.length ();
             int baseOffset = uri.indexOf (base, homeOffset);
             if (homeOffset >= home.length ()) {
-                System.out.println("have home");
                 if (baseOffset > 0) {
-            System.out.println("have base");
                     catalinaHome = uri.substring (homeOffset, baseOffset);
                     catalinaBase = uri.substring (baseOffset + base.length (),uriOffset-1);
                 }
