@@ -19,6 +19,8 @@ import java.lang.reflect.*;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
+import org.netbeans.modules.form.fakepeer.FakePeerSupport;
+
 /**
  * Implementation of properties for (meta)components (class RADComponent).
  * RADComponent is used to get the component instance and
@@ -62,7 +64,7 @@ public class RADProperty extends FormProperty {
                                           InvocationTargetException {
         Method readMethod = desc.getReadMethod();
         if (readMethod == null) {
-            throw new IllegalAccessException("Not a readable property: "+desc.getName());
+            throw new IllegalAccessException("Not a readable property: "+desc.getName()); // NOI18N
         }
         return readMethod.invoke(component.getBeanInstance(), new Object[0]);
     }
@@ -72,9 +74,28 @@ public class RADProperty extends FormProperty {
                                                  InvocationTargetException {
         Method writeMethod = desc.getWriteMethod();
         if (writeMethod == null) {
-            throw new IllegalAccessException("Not a writeable property: "+desc.getName());
+            throw new IllegalAccessException("Not a writeable property: "+desc.getName()); // NOI18N
         }
+
+        Object beanInstance = component.getBeanInstance();
+
+        // Ugly hack for Scrollbar - Scrollbar.setOrientation(...) method tries
+        // to re-create the (native) peer, which is not possible. So we detach
+        // the peer first before calling the method. This is the only place
+        // where we can do it. It could be probably done for all AWT
+        // components, but don't know about any other which would need it.
+        java.awt.peer.ComponentPeer scrollbarPeerHack =
+            "setOrientation".equals(writeMethod.getName()) // NOI18N
+                    && beanInstance instanceof java.awt.Scrollbar ?
+            FakePeerSupport.detachFakePeer((java.awt.Component)beanInstance)
+            : null;
+
+        // invoke the setter method
         writeMethod.invoke(component.getBeanInstance(), new Object[] { value });
+
+        if (scrollbarPeerHack != null) // restore the Scrollbar's fake peer
+            FakePeerSupport.attachFakePeer((java.awt.Component)beanInstance,
+                                           scrollbarPeerHack);
     }
 
     public void setValue(Object value) throws IllegalAccessException,
