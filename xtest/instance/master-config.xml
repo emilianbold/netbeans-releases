@@ -20,6 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <config name="config-1">
       <module name="core" testtypes="unit" attributes="stable"/>
+      <module name="java" testtypes="unit" attributes="stable"/>
       <module name="openide" testtypes="unit" attributes="stable"/>
       <module name="openidex" testtypes="unit" attributes="stable"/>
   </config>
