@@ -30,9 +30,7 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
     
     private static final String namePattern = NbBundle.getMessage( CustomizeProject.class, "LBL_CustomizeProjectAction_Name" ); // NOI18N
     private static final String namePatternPopup = NbBundle.getMessage( CustomizeProject.class, "LBL_CustomizeProjectAction_Popup_Name" ); // NOI18N
-    
-    private JMenuItem popupPresenter;
-    
+        
     public CustomizeProject() {
         this( null );
     }
@@ -40,9 +38,6 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
     public CustomizeProject( Lookup context ) {
         super( (String)null, namePattern, null, context );
         refresh( getLookup() );
-        popupPresenter = new JMenuItem( this );
-        popupPresenter.setText( namePatternPopup );
-        popupPresenter.setIcon( null );
     }
             
     protected void refresh( Lookup context ) {
@@ -81,6 +76,10 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
     // Implementation of Presenter.Popup ---------------------------------------
     
     public JMenuItem getPopupPresenter() {
+        JMenuItem popupPresenter = new JMenuItem( this );
+        popupPresenter.setText( namePatternPopup );
+        popupPresenter.setIcon( null );;
+
         return popupPresenter;
     }
     

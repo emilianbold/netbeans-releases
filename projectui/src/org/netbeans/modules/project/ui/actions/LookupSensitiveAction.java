@@ -23,6 +23,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /** Action sensitive to current project
  * 
@@ -32,9 +33,10 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     
     private Lookup lookup;    
     private Class[] watch;
-    private Lookup.Result[] results;
+    private LookupListener[] resultListeners;
     private static boolean refreshing = false;
-                
+    
+    
     /** Formats the name with following 
      */    
     /*
@@ -55,12 +57,13 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
         }
         this.lookup = lookup;
         this.watch = watch;
-        this.results = new Lookup.Result[watch.length];
+        this.resultListeners = new LookupListener[watch.length];
         // Needs to listen on changes in results
         for ( int i = 0; i < watch.length; i++ ) {
-            results[i] = lookup.lookup( new Lookup.Template( watch[i] ) );
-            results[i].allItems();
-            results[i].addLookupListener( this ); 
+            Lookup.Result result = lookup.lookup( new Lookup.Template( watch[i] ) );
+            result.allItems();
+            resultListeners[i] = (LookupListener)WeakListeners.create( LookupListener.class, this, result );
+            result.addLookupListener( resultListeners[i] ); 
         }
         
     }

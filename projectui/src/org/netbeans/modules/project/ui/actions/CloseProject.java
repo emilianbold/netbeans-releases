@@ -25,6 +25,7 @@ import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
 /** Action for removing project from the open projects tab
@@ -34,8 +35,10 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
     private static final String namePattern = NbBundle.getMessage( CloseProject.class, "LBL_CloseProjectAction_Name" ); // NOI18N
     private static final String namePatternPopup = NbBundle.getMessage( CloseProject.class, "LBL_CloseProjectAction_Popup_Name" ); // NOI18N
     
-    private JMenuItem popupPresenter;
+    private String popupName;
     
+    private PropertyChangeListener wpcl;
+   
     /** Creates a new instance of BrowserAction */
     public CloseProject() {
         this( null );        
@@ -43,9 +46,8 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
     
     public CloseProject( Lookup context ) {
         super( (String)null, namePattern, null, context );        
-        OpenProjectList.getDefault().addPropertyChangeListener( this );        
-        popupPresenter = new JMenuItem( this );
-        popupPresenter.setIcon( null );
+        wpcl = WeakListeners.propertyChange( this, OpenProjectList.getDefault() );
+        OpenProjectList.getDefault().addPropertyChangeListener( wpcl );
         refresh( getLookup() );
     }
         
@@ -65,18 +67,12 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
         if ( projects.length == 0 || !OpenProjectList.getDefault().isOpen( projects[0] ) ) {
             setEnabled( false );
             setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, new Project[0] ) );
-            if ( popupPresenter != null ) {
-                popupPresenter.setText( ActionsUtil.formatProjectSensitiveName( namePatternPopup, new Project[0] ) );
-            }
-
+            popupName = ActionsUtil.formatProjectSensitiveName( namePatternPopup, new Project[0] );
         }
         else {
             setEnabled( true );
             setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, projects ) );
-            if ( popupPresenter != null ) {
-                popupPresenter.setText( ActionsUtil.formatProjectSensitiveName( namePatternPopup, projects ) );
-            }
-
+            popupName = ActionsUtil.formatProjectSensitiveName( namePatternPopup, projects );
         }        
     }
     
@@ -91,6 +87,11 @@ public class CloseProject extends ProjectAction implements PropertyChangeListene
     // Implementation of Presenter.Popup ---------------------------------------
     
     public JMenuItem getPopupPresenter() {
+        JMenuItem popupPresenter = new JMenuItem( this );
+
+        popupPresenter.setIcon( null );
+        popupPresenter.setText( popupName );
+        
         return popupPresenter;
     }
     
