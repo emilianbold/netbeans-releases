@@ -7,17 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.jellytools.properties.editors;
-
-/*
- * StringArrayCustomEditorOperator.java
- *
- * Created on 6/12/02 4:12 PM
- */
 
 import java.util.ResourceBundle;
 import javax.swing.JDialog;
@@ -51,7 +45,7 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
     private JButtonOperator _btDown;
     private JListOperator _lstItemList;
     private JTextFieldOperator _txtItemText;
-    private static final ResourceBundle _bundle = Bundle.getBundle("org.openide.explorer.propertysheet.editors.Bundle");
+    private static final ResourceBundle _bundle = Bundle.getBundle("org.netbeans.beaninfo.editors.Bundle");
 
     //******************************
     // Subcomponents definition part
@@ -63,7 +57,7 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btEdit() {
         if (_btEdit==null) {
-            _btEdit = new JButtonOperator( this, _bundle.getString("CTL_Change_StringArrayCustomEditor"), 0 );
+            _btEdit = new JButtonOperator(this, _bundle.getString("CTL_Change_StringArrayCustomEditor"));
         }
         return _btEdit;
     }
@@ -74,7 +68,7 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btDown() {
         if (_btDown==null) {
-            _btDown = new JButtonOperator( this, _bundle.getString("CTL_MoveDown"), 0 );
+            _btDown = new JButtonOperator(this, _bundle.getString("CTL_MoveDown"));
         }
         return _btDown;
     }
@@ -85,7 +79,7 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btUp() {
         if (_btUp==null) {
-            _btUp = new JButtonOperator( this, _bundle.getString("CTL_MoveUp"), 0 );
+            _btUp = new JButtonOperator(this, _bundle.getString("CTL_MoveUp"));
         }
         return _btUp;
     }
@@ -96,7 +90,7 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btAdd() {
         if (_btAdd==null) {
-            _btAdd = new JButtonOperator( this, _bundle.getString("CTL_Add_StringArrayCustomEditor"), 0 );
+            _btAdd = new JButtonOperator(this, _bundle.getString("CTL_Add_StringArrayCustomEditor"));
         }
         return _btAdd;
     }
@@ -107,7 +101,7 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
      */
     public JListOperator lstItemList() {
         if (_lstItemList==null) {
-            _lstItemList = new JListOperator( this, 0 );
+            _lstItemList = new JListOperator(this);
         }
         return _lstItemList;
     }
@@ -118,7 +112,7 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btRemove() {
         if (_btRemove==null) {
-            _btRemove = new JButtonOperator( this, _bundle.getString("CTL_Remove"), 0 );
+            _btRemove = new JButtonOperator(this, _bundle.getString("CTL_Remove"));
         }
         return _btRemove;
     }
@@ -129,7 +123,7 @@ public class StringArrayCustomEditorOperator extends NbDialogOperator {
      */
     public JTextFieldOperator txtItemText() {
         if (_txtItemText==null) {
-            _txtItemText = new JTextFieldOperator( this );
+            _txtItemText = new JTextFieldOperator(this);
         }
         return _txtItemText;
     }
