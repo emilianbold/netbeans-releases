@@ -48,11 +48,17 @@ if [ ! -z "$netbeans_jdkhome" ] ; then
     jdkhomeswitch="--jdkhome \"$netbeans_jdkhome\""
 fi
 
+osxappnameswitch=
+case "`uname`" in
+    Darwin*) osxappnameswitch="-J-Dcom.apple.mrj.application.apple.menu.about.name=NetBeans" ;;
+esac
+
 eval "$progdir"/../platform4/launcher/nbexec \
     $jdkhomeswitch \
     --branding nb \
     --clusters "$netbeans_clusters" \
     --userdir "${netbeans_default_userdir}" \
+    $osxappnameswitch \
     -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
     ${netbeans_default_options} \
     "$@"
