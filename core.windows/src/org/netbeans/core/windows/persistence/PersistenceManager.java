@@ -34,7 +34,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
-import org.netbeans.core.NbSheet;
 
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -63,7 +62,6 @@ import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.RegistryImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.persistence.convert.ImportManager;
-import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
 
 
@@ -1193,7 +1191,6 @@ public final class PersistenceManager implements PropertyChangeListener {
             java.lang.reflect.Method method = clazz.getDeclaredMethod ("discardDefault", null); //NOI18N
             method.setAccessible(true);
             method.invoke (null, null);
-            NbSheet.discardDefault();
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
