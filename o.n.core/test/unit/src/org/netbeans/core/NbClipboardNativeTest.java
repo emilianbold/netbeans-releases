@@ -7,28 +7,37 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import java.awt.datatransfer.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import java.util.*;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.InstanceDataObject;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
-import org.openide.util.datatransfer.*;
+import org.openide.util.datatransfer.ClipboardEvent;
+import org.openide.util.datatransfer.ClipboardListener;
+import org.openide.util.datatransfer.ExClipboard;
+import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.datatransfer.TransferListener;
 
 /** Test NbClipboard, in "native" mode (e.g. Windows).
  * @author Jesse Glick
  * @see "#30923"
  */
-public class NbClipboardNativeTest extends NbTestCase implements org.openide.util.datatransfer.ClipboardListener {
+public class NbClipboardNativeTest extends NbTestCase implements ClipboardListener {
     private NbClipboard ec;
     private int listenerCalls;
     
@@ -36,15 +45,7 @@ public class NbClipboardNativeTest extends NbTestCase implements org.openide.uti
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(NbClipboardNativeTest.class));
-    }
-    
     protected void setUp() throws Exception {
-        // Use MemoryFileSystem:
-        Properties p = System.getProperties();
-        p.remove("system.dir");
-        System.setProperties(p);
         super.setUp();
         //System.setProperty("org.netbeans.core.NbClipboard", "-5");
         System.setProperty("netbeans.slow.system.clipboard.hack", String.valueOf(slowClipboardHack()));
