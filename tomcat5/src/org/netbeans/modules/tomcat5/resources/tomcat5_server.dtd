@@ -126,6 +126,7 @@ The Host element represents a virtual host, which is an association of a network
 <!ATTLIST Host className CDATA #IMPLIED>
 <!ATTLIST Host unpackWARs CDATA #IMPLIED>
 <!ATTLIST Host debug CDATA #IMPLIED>
+<!ATTLIST Host autoDeploy CDATA #IMPLIED>
 
 <!--
 The DefaultContext element represents a subset of the configuration settings for a Context, and can be nested inside an Engine or Host element to represent default configuration properties for Contexts that are automatically created.

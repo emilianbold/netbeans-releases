@@ -52,10 +52,13 @@ public class TomcatInstallUtil {
     private static final Integer BUNDLED_DEFAULT_ADMIN_PORT = new Integer(8025);
     /** default value of bundled tomcat' http connector uri encoding */
     private static final String BUNDLED_DEFAULT_URI_ENCODING = "utf-8"; // NOI18N
+    /** default value of bundled tomcat's host autoDeploy attribute */
+    private static final Boolean BUNDLED_DEFAULT_AUTO_DEPLOY = Boolean.FALSE;
     
     private static final String ATTR_URI_ENCODING = "URIEncoding"; // NOI18N
     private static final String ATTR_PORT = "port"; // NOI18N
     private static final String ATTR_PROTOCOL = "protocol"; // NOI18N
+    private static final String ATTR_AUTO_DEPLOY = "autoDeploy"; // NOI18N
     
     private static final String PROP_CONNECTOR = "Connector"; // NOI18N
 
@@ -316,6 +319,22 @@ public class TomcatInstallUtil {
         }
     }
     
+    private static void setHostAttributeValue(Server server, String attribute, String value) {
+        Service service[] = server.getService();
+        if (service != null) {
+            for(int i = 0; i < service.length; i++) {
+                Engine engine = service[i].getEngine();
+                if (engine != null) {
+                    Host host[] = engine.getHost();
+                    if (host != null && host.length > 0) {
+                        host[0].setAttributeValue(attribute, value);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    
     /**
      * Make some Bundled Tomcat specific changes in server.xml.
      */
@@ -325,6 +344,7 @@ public class TomcatInstallUtil {
             setServerAttributeValue(server, ATTR_PORT, BUNDLED_DEFAULT_ADMIN_PORT.toString());
             setHttpConnectorAttributeValue(server, ATTR_PORT, BUNDLED_DEFAULT_SERVER_PORT.toString());
             setHttpConnectorAttributeValue(server, ATTR_URI_ENCODING, BUNDLED_DEFAULT_URI_ENCODING);
+            setHostAttributeValue(server, ATTR_AUTO_DEPLOY, BUNDLED_DEFAULT_AUTO_DEPLOY.toString());
             server.write(serverXml);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
