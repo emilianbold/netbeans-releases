@@ -78,6 +78,17 @@ public class JspBreakpointAnnotationListener extends DebuggerManagerAdapter {
         }
     }
 
+    public JspLineBreakpoint findBreakpoint (String url, int lineNumber) {
+        Iterator i = breakpointToAnnotation.keySet ().iterator ();
+        while (i.hasNext ()) {
+            JspLineBreakpoint lb = (JspLineBreakpoint) i.next ();
+            if (!lb.getURL ().equals (url)) continue;
+            Object annotation = breakpointToAnnotation.get (lb);
+            int ln = Context.getLineNumber (annotation, null);
+            if (ln == lineNumber) return lb;
+        }
+        return null;
+    }
     
     // helper methods ..........................................................
     

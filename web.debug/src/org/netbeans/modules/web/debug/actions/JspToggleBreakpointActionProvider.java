@@ -20,9 +20,8 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.spi.debugger.*;
 
-import org.openide.util.*;
-
 import org.netbeans.modules.web.debug.Context;
+import org.netbeans.modules.web.debug.JspBreakpointAnnotationListener;
 import org.netbeans.modules.web.debug.util.Utils;
 import org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint;
 
@@ -73,21 +72,23 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
         int ln = Context.getCurrentLineNumber ();
         String url = Context.getCurrentURL ();
         if (url == null) return;
-        
+                
         // 2) find and remove existing line breakpoint
-        Breakpoint[] bs = d.getBreakpoints ();
-        int i, k = bs.length;
-        for (i = 0; i < k; i++) {
-            if (!(bs [i] instanceof JspLineBreakpoint)) continue;
-            JspLineBreakpoint lb = (JspLineBreakpoint) bs [i];
-            if (ln != lb.getLineNumber ()) continue;
-            if (!url.equals (lb.getURL ())) continue;
-            d.removeBreakpoint (lb);
+        JspLineBreakpoint lb = getJspBreakpointAnnotationListener().findBreakpoint(url, ln);        
+        if (lb != null) {
+            d.removeBreakpoint(lb);
             return;
         }
-        Breakpoint b = JspLineBreakpoint.create(url, ln);
-        if (b != null) {
-            d.addBreakpoint(b);
-        }
-    }    
+        lb = JspLineBreakpoint.create(url, ln);
+        d.addBreakpoint(lb);
+    }
+
+    private JspBreakpointAnnotationListener jspBreakpointAnnotationListener;
+    private JspBreakpointAnnotationListener getJspBreakpointAnnotationListener () {
+        if (jspBreakpointAnnotationListener == null)
+            jspBreakpointAnnotationListener = (JspBreakpointAnnotationListener) 
+                DebuggerManager.getDebuggerManager ().lookupFirst 
+                (null, JspBreakpointAnnotationListener.class);
+        return jspBreakpointAnnotationListener;
+    }
 }
