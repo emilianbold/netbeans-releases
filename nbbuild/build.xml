@@ -458,7 +458,7 @@ ToDo:
     <echo message="Building module web/taglibed..."/>
     <ant dir="../web/taglibed" target="netbeans"/>
   </target>
-  <target name="all-web/advanced" depends="all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-xml/text-edit,all-xml/catalog,all-j2eeserver,all-schema2beans,all-classclosure,all-html,all-openidex">
+  <target name="all-web/advanced" depends="all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-xml/text-edit,all-xml/catalog,all-j2eeserver,all-schema2beans,all-html,all-openidex">
     <echo message="Building module web/advanced..."/>
     <ant dir="../web/advanced" target="netbeans"/>
   </target>
