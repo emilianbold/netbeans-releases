@@ -194,6 +194,12 @@
 	<!-- End of "Consume" section -->
 	
 <!-- End of "Developing Web Services" help -->
+
+<!-- Start of J2EE Server help -->
+  
+	<mapID target="about_server" url="server/about_server.html" />
+
+<!-- End of J2EE Server help -->
 	
 <!-- Start of Enterprise Application help -->
 

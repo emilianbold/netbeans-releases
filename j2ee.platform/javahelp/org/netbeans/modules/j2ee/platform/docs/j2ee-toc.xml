@@ -247,6 +247,12 @@
 		 <tocitem text="Building a Web Service Client" target="wsc_build" />
 		 <tocitem text="Deploying a Web Service Client" target="tbd" />
 	 </tocitem>
-	
-      </tocitem> <!-- Working With Web Service Clients -->
+ </tocitem> 
+<tocitem text="Servers and Databases">
+
+    <tocitem text="Servers">
+      <tocitem text="About Servers" target="about_server"/>
+    </tocitem>
+
+</tocitem>
 </toc>
