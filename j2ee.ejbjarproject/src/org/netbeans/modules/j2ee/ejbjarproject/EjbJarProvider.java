@@ -20,6 +20,7 @@ import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.*;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -77,7 +78,8 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     public FileObject getMetaInf() {
         FileObject metaInf = getFileObject(EjbJarProjectProperties.META_INF);
         if (metaInf == null) {
-            String path = helper.resolvePath(helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.META_INF));
+            String relativePath = helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.META_INF);
+            String path = (relativePath != null ? helper.resolvePath(relativePath) : ""); // NOI18N
             showErrorMessage(NbBundle.getMessage(EjbJarProject.class,"MSG_MetaInfCorrupted", project.getName(), path));
             return null;
         }
@@ -281,22 +283,35 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     public FileObject[] getSourceRoots() {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject[] roots = new FileObject[groups.length+1];
-        roots[0] = getMetaInf();
-        for (int i=0; i < groups.length; i++) {
-            roots[i+1] = groups[i].getRootFolder();
+        List roots = new LinkedList();
+        for (int i = 0; i < groups.length; i++) {
+            roots.add(groups[i].getRootFolder());
         }
+        FileObject metaInf = getMetaInf();
+        if (metaInf != null)
+            roots.add(metaInf);
         
-        return roots; 
+        FileObject[] rootArray = new FileObject[roots.size()];
+        return (FileObject[])roots.toArray(rootArray);        
     }
     
     private void showErrorMessage(String message) {
-        if(new Date().getTime() > notificationTimeout) {
+        // only display the messages if the project is opened
+        if(new Date().getTime() > notificationTimeout && isProjectOpened()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
             // set timeout to suppress the same messages during next 20 seconds (feel free to adjust the timeout
             // using more suitable value)
             notificationTimeout = new Date().getTime() + 20000;
         }
+    }
+    
+    private boolean isProjectOpened() {
+        Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < projects.length; i++) {
+            if (projects[i].equals(project)) 
+                return true;
+        }
+        return false;
     }
     
     private static class IT implements Iterator {
