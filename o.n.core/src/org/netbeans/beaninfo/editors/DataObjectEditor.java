@@ -105,7 +105,6 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
      * the environment to the property editor.
      */
     public void attachEnv(PropertyEnv env) {
-        this.env = env;
         Object newObj = env.getFeatureDescriptor().getValue(PROPERTY_CURRENT_FOLDER);
         if (newObj instanceof DataObject) {
             currentFolder = (DataObject)newObj;
@@ -162,6 +161,15 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         if ( env.getFeatureDescriptor().getValue( "canEditAsText" ) == null ) {    // NOI18N
             env.getFeatureDescriptor().setValue( "canEditAsText", Boolean.FALSE ); // NOI18N
         }
+        if (env.getClass().equals(PropertyEnv.class)) {
+            if ((customEditor != null && customEditor.isVisible()) || 
+                customEditor==null) {
+                //allow reuse of the custom editor - it is probably being
+                //redisplayed, so we need to change the PropertyEnv that
+                //may be controlling the dialog.
+                this.env = env;
+            }
+        }
     }
     
     /**
@@ -177,16 +185,27 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
      * Passes all parameters gathered in method attachEnv.
      */
     private DataObjectPanel getDataObjectPanel() {
-        if (guiType != null) {
-            if ("TreeView".equals(guiType)) {
-                customEditor = new DataObjectTreeView(this,env);
-            } else if ("ListView".equals(guiType)) {
-                customEditor = new DataObjectListView(this,env);
+        //XXX we must cache the custom editor because the PropertyPanel usage
+        //will actually re-fetch it if something calls setState() on the env.
+        //The alternative is an endless loop during PropertyPanel initialization,
+        //as the initial OK button state is set, causing the PropertyPanel to
+        //rebuild itself, causing the OK button to be set again...
+        if (customEditor == null) {
+            if (guiType != null) {
+                if ("TreeView".equals(guiType)) {
+                    customEditor = new DataObjectTreeView(this,env);
+                } else if ("ListView".equals(guiType)) {
+                    customEditor = new DataObjectListView(this,env);
+                } else {
+                    customEditor = new DataObjectListView(this,env);
+                }
             } else {
                 customEditor = new DataObjectListView(this,env);
             }
         } else {
-            customEditor = new DataObjectListView(this,env);
+            //Check explicitly for the env class - issue 36100
+            //env is changed before dialog invocation
+            customEditor.setEnv(env);
         }
         if (cookies != null) {
             customEditor.setDataFilter(new CookieFilter(cookies, dataFilter));

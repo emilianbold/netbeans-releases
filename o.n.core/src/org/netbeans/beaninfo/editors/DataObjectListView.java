@@ -64,8 +64,16 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         super.addNotify();
     }
     
+    private boolean initialized=false;
+    
     /** Called from addNotify. */
     private void completeInitialization() {
+        if (initialized) {
+            //Do not re-initialize if the dialog has already been used,
+            //otherwise we will end up listening to the wrong thing and
+            //the OK button will never be enabled
+            return;
+        }
         if (insets != null) {
             setBorder(new EmptyBorder(insets));
         } else {
@@ -180,6 +188,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                 setOkButtonEnabled(getDataObject() != null);
             }
         }
+        initialized=true;
     }
     
     private static String findPathTo(Node rootNode, DataObject dobj) {

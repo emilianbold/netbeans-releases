@@ -64,6 +64,12 @@ public class DataObjectPanel extends JPanel {
         this.env = env;
         myEditor = my;
     }
+
+    /** Allows the panel to be redisplayed in a new dialog controlled
+     * by a new PropertyEnv. */
+    public void setEnv(PropertyEnv env) {
+        this.env = env;
+    }
     
     /**
      * Set the data filter used to filter the nodes displayed.
