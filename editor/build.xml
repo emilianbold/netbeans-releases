@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src">
       <classpath>
        <!-- XXX illegal dependency on core! -->
-       <pathelement location="../core/netbeans/lib/developer.jar"/>
+       <pathelement location="../core/netbeans/lib/core.jar"/>
        <pathelement location="libsrc"/>
        <pathelement location="../openide/netbeans/lib/openide.jar"/>
        <pathelement location="../openidex/netbeans/lib/ext/openidex.jar"/>
@@ -43,8 +43,8 @@ Microsystems, Inc. All Rights Reserved.
          basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
-    <mkdir dir="netbeans/lib/ext"/>
-    <jar jarfile="netbeans/lib/ext/nb-editor.jar"
+    <mkdir dir="netbeans/modules/ext"/>
+    <jar jarfile="netbeans/modules/ext/nb-editor.jar"
          basedir="libsrc"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>

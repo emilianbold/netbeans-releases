@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../editor/netbeans/lib/ext/nb-editor.jar"/>
+        <pathelement location="../editor/netbeans/modules/ext/nb-editor.jar"/>
         <pathelement location="../editor/netbeans/modules/editor.jar"/>
       </classpath>
     </javac>

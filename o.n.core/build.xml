@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="src/org/netbeans/core/Versioning.properties"
           tofile="versioning-tmp/org/netbeans/core/Versioning.properties"
 	  filtering="on"/>
-    <jar jarfile="netbeans/lib/developer.jar"
+    <jar jarfile="netbeans/lib/core.jar"
 	 compress="false">
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt">
         <exclude name="org/netbeans/core/Versioning.properties"/>
@@ -63,6 +63,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   <target name="netbeans" depends="jars,release">
     <mkdir dir="netbeans/lib/patches"/>
+    <mkdir dir="netbeans/modules/patches"/>
   </target>
   <target name="clean">
     <delete>
