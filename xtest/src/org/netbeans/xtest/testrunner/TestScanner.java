@@ -20,6 +20,7 @@
 package org.netbeans.xtest.testrunner;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Vector;
@@ -193,7 +194,16 @@ public class TestScanner {
     }
     
     protected void scandir(File dir, String vpath, boolean fast) throws IOException {
-        String[] newfiles = dir.list();
+        String[] newfiles = dir.list(new FilenameFilter() {
+             public boolean accept(File dir, String name) {
+                    if (name.endsWith(".class"))
+                        return true;
+                    if (new File(dir, name).isDirectory())
+                        return true;
+                    else
+                        return false;
+             }
+         });
 
         if (newfiles == null) {
             /*
