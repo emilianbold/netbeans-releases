@@ -19,13 +19,11 @@ import java.net.URI;
 import java.util.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-
 import org.netbeans.modules.web.api.webmodule.WebModule;
+
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.*;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /** Data related to compilation attached to one JSP page.
  *  Basically a copy of the data retrieved from the compilation plugin.
@@ -61,8 +59,18 @@ public class CompileData {
     }
     
     public FileObject getServletJavaRoot() {
-        return WebModule.getWebModule (jspPage.getPrimaryFile ()).getJavaSourcesFolder ();
+        if ((servletJavaRoot != null) && servletJavaRoot.exists()) {
+            return FileUtil.toFileObject(servletJavaRoot);
+        }
+        else {
+            return null;
+        }
     }
+    
+/*    public FileObject getServletJavaRoot() {
+        // PENDING - this is incorrect!!!
+        return WebModule.getWebModule (jspPage.getPrimaryFile ()).getJavaSourcesFolder ();
+    }*/
     
     public String getServletResourceName() {
         return servletResourceName;
@@ -86,7 +94,21 @@ public class CompileData {
         if ((servlet == null) || !servlet.exists()) {
             return null;
         }
-        FileObject fo[] = FileUtil.fromFile(servlet);
+        
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(servlet));
+        if (fo != null) {
+            return fo;
+        }
+        try {
+            FileSystem rootFs = root.getFileSystem();
+            root.getFileSystem().refresh(false);
+            return root.getFileObject(getServletResourceName());
+        }
+        catch (FileStateInvalidException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        
+        /*FileObject fo[] = FileUtil.fromFile(servlet);
         // get a fileobject from the same FS as the root
         try {
             FileSystem rootFs = root.getFileSystem();
@@ -97,112 +119,16 @@ public class CompileData {
             }
             // not found, needs refresh
             root.getFileSystem().refresh(false);
-            return JspCompileUtil.findRelativeResource(root, getServletResourceName());
+            return root.getFileObject(getServletResourceName());
+              //JspCompileUtil.findRelativeResource(root, getServletResourceName());
         }
         catch (FileStateInvalidException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
+         */
         return null;
     }
     
-    /** Returns the Java resource root from the server.
-     * For now just hardcoded for Tomcat 5, but needs 
-     * to be changed to talk to the plugin through the server integration API.
-     */
-/*    private File getServletJavaRootFromServer() {
-        // PENDING - Tomcat specific
-        File catalinaBase = getCatalinaBase();
-        if (catalinaBase == null) {
-            return null;
-        }
-        File hostBase = new File(catalinaBase, "work/Tomcat-Internal/localhost".replace('/', File.separatorChar));
-        File workDir = new File(hostBase, getContextRootString());
-        //System.out.println("returning servlet root " + workDir);
-        return workDir;
-    }*/
-    
-    /** PENDING - remove this, as this is Tomcat-specific.
-     */
-/*    private File getCatalinaBase() {
-        Class siClass = serverInstance.getClass();
-        if (siClass.getName().equals("org.netbeans.modules.tomcat.tomcat40.Tomcat40Instance")) {
-            try {
-                // this is Tomcat
-                java.lang.reflect.Method getInst = siClass.getMethod("getInstallation", new Class[0]);
-                Object inst = getInst.invoke(serverInstance, new Object[0]);
-                Class instClass = inst.getClass();
-                java.lang.reflect.Method baseMethod = instClass.getMethod("getBaseDirectory", new Class[0]);
-                File baseDirFile = (File)baseMethod.invoke(inst, new Object[0]);
-                if (baseDirFile != null) {
-                    return baseDirFile;
-                }
-                java.lang.reflect.Method homeMethod = instClass.getMethod("getHomeDirectory", new Class[0]);
-                baseDirFile = (File)homeMethod.invoke(inst, new Object[0]);
-                return baseDirFile;
-            }
-            catch (NoSuchMethodException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-            catch (IllegalAccessException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-            catch (java.lang.reflect.InvocationTargetException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-        }
-        return null;
-    }*/
-        
-    /** Finds the context path used by this JSP during deployment.
-     */
-    private String getContextPath() {
-        WebModule wm = WebModule.getWebModule (jspPage.getPrimaryFile());
-        if (wm != null) {
-            return wm.getContextPath ();
-        }
-        // an ugly fallback
-        return "";
-    }
-    
-    /** PENDING - remove this, as this is Tomcat-specific.
-     */
-    private String getContextRootString() {
-        String contextRootPath = getContextPath();
-        if (contextRootPath.startsWith("/")) {
-            contextRootPath = contextRootPath.substring(1);
-        }
-        if (contextRootPath.equals("")) {
-            return "_";
-        }
-        else {
-            return contextRootPath;
-        }
-    }
-    
-    /** Returns the resource name of the servlet relative to the base Java root from the server.
-     * For now just hardcoded for Tomcat 5, but needs
-     * to be changed to talk to the plugin through the server integration API.
-     */
-/*    private String getServletResourceNameFromServer() {
-        // PENDING - Tomcat specific
-        String jspPath = JspCompileUtil.findRelativePath(docRoot, jspPage.getPrimaryFile());
-        int lastDot = jspPath.lastIndexOf('.');
-        return jspPath.substring(0, lastDot) + "$jsp.java";
-    }*/
-
-    /** Returns the encoding of the servlet from the server.
-     * For now just hardcoded for Tomcat 5, but needs
-     * to be changed to talk to the plugin through the server integration API.
-     */
-/*    private String getServletEncodingFromServer() {
-        // PENDING - Tomcat specific
-        return "UTF8"; // NOI18N
-    }*/
-    
-    /** Returns server instance for which this CompileData was created. */
-/*    public ServerInstance getServerInstance() {
-        return serverInstance;
-    }*/
     
     /** Returns encoding for the servlet generated from the JSP. */
     public String getServletEncoding() {
