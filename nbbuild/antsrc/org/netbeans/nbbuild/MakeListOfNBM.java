@@ -59,6 +59,7 @@ public class MakeListOfNBM extends Task {
                 FileSet fs = null;
                 try {
                     fs = (FileSet)nbms[i].getClass().getMethod("getFileSet",null).invoke(nbms[i],null);
+                    fs.createExclude().setName( "Info/info.xml" );
                 } catch (Exception ex) {
                     throw new BuildException( "Can't get fileset of NBM", ex, location );
                 }
