@@ -221,7 +221,19 @@ public class AllOptionsFolder{
         if (contentType == null) return;
         FileObject optionFO = TopManager.getDefault().getRepository().getDefaultFileSystem().
         findResource(FOLDER+"/"+contentType+"/"+OPTION_FILE_NAME); //NOI18N
-        if (optionFO == null) return;
+        if (optionFO == null) {
+            // old type of BaseOptions.
+            // Options weren't transfered to XML form for this kitClass yet.
+            // We have to find them via BaseOptions.getOptions and process initializers.
+            BaseOptions oldBO = BaseOptions.getOptions(kitClass);
+            if (oldBO != null){
+                if (!installedOptions.containsKey(kitClass)){
+                    installedOptions.put(kitClass, oldBO);
+                    processInitializers(oldBO, false);
+                }
+            }
+            return;
+        }
         
         try{
             DataObject optionDO = DataObject.find(optionFO);
