@@ -63,9 +63,7 @@ Microsystems, Inc. All Rights Reserved.
     </path>
     <javac srcdir="src" destdir="src"
            deprecation="${build.compiler.deprecation}"
-           debug="${build.compiler.debug}">      
-      <exclude name="org/netbeans/xtest/pe/server/**"/>
-      <exclude name="org/netbeans/xtest/util/NetUtils.java"/>      
+           debug="${build.compiler.debug}">       
       <classpath refid="basecp"/>
     </javac>
 
@@ -181,53 +179,31 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.home" value="./"/>
         </ant>
   </target>  
-  
-  <!-- PES targets -->
-  <target name="compile-pes" depends="init">
-  	<javac srcdir="src" destdir="src"
-           deprecation="${build.compiler.deprecation}"
-           debug="${build.compiler.debug}">
-      <include name="org/netbeans/xtest/pe/**"/>      
-      <include name="org/netbeans/xtest/util/**"/>
-      <include name="org/netbeans/xtest/xmlserializer/**"/>
-      <classpath>		
-        <pathelement location="src"/>
-        <fileset dir="external">
-          <include name="ant-1.*.jar"/>
-        </fileset>
-      </classpath>
-    </javac>
-  </target>
-  
-  <target name="jar-pes" depends="compile-pes">
-    <mkdir dir="lib"/>    
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="lib/xtest-pes.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-            excludesfile="../nbbuild/standard-jar-excludes.txt"
-            compress="false"
-            includes="org/netbeans/xtest/pe/**,org/netbeans/xtest/util/**,org/netbeans/xtest/xmlserializer/**,org/netbeans/xtest/NestedException.class"/>            
-  </target>
-  
-  <target name="makedist-pes" depends="jar-pes">
-    <zip zipfile="xtest-pes-distribution.zip">
-     	<zipfileset dir="lib" prefix="lib" includes="**/*.jar,**/*.xsl"/>
-     	<zipfileset dir="bin" prefix="bin" includes="xtest-pes.sh"/>
-     	<zipfileset  dir="external/" prefix="lib" includes="ant-1.4.1.jar"/>
-     </zip>  
-  </target>
+ 
   
   <target name="all-xtest">
      <ant dir="../nbbuild" antfile="build.xml" target="all-xtest"/>
-  </target>
+  </target>  
 
   <target name="timestamp" unless="buildnumber">
     <tstamp>
         <format property="buildnumber" pattern="yyyyMMddhhmm"/>
     </tstamp>
   </target>
+  
+  
+  
+  <!-- XTest PES proxy targets -->
+  <target name="makedist-pes">
+    <ant dir="pes" target="makedist"/>
+  </target>
+  
+  <target name="clean-pes">
+    <ant dir="pes" target="clean"/>
+  </target>
+  
+  
+  <!-- XTest module - currently not maintained !!!! -->
   
   <target name="nbjunit-module">
     <ant dir="nbjunit" antfile="build.xml" target="netbeans"/>
