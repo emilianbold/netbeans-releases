@@ -47,13 +47,17 @@ public class BrokenReferencesSupport {
      * @param properties array of property names which values hold
      *    references which may be broken. For example for J2SE project
      *    the property names will be: "javac.classpath", "run.classpath", etc.
-     * @param platform name of the platform used by the project or 
-     *    "default_platform" if default platform is used
+     * @param platformProperties array of property names which values hold
+     *    name of the platform(s) used by the project. These platforms will be
+     *    checked for existence. For example for J2SE project the property
+     *    name is one and it is "platform.active". The name of the default
+     *    platform is expected to be "default_platform" and this platform
+     *    always exists.
      * @return true if some problem was found and it is necessary to give
      *    user a chance to fix them
      */
-    public static boolean isBroken(PropertyEvaluator evaluator, String[] properties, String platform) {
-        return BrokenReferencesModel.isBroken(evaluator, properties, platform);
+    public static boolean isBroken(PropertyEvaluator evaluator, String[] properties, String[] platformProperties) {
+        return BrokenReferencesModel.isBroken(evaluator, properties, platformProperties);
     }
     
     /**
@@ -63,12 +67,16 @@ public class BrokenReferencesSupport {
      * @param properties array of property names which values hold
      *    references which may be broken. For example for J2SE project
      *    the property names will be: "javac.classpath", "run.classpath", etc.
-     * @param platform name of the platform used by the project or 
-     *    "default_platform" if default platform is used
+     * @param platformProperties array of property names which values hold
+     *    name of the platform(s) used by the project. These platforms will be
+     *    checked for existence. For example for J2SE project the property
+     *    name is one and it is "platform.active". The name of the default
+     *    platform is expected to be "default_platform" and this platform
+     *    always exists.
      */
     public static void showCustomizer(AntProjectHelper projectHelper, 
-            ReferenceHelper referenceHelper, String[] properties, String platform) {
-        BrokenReferencesModel model = new BrokenReferencesModel(projectHelper, referenceHelper, properties, platform);
+            ReferenceHelper referenceHelper, String[] properties, String[] platformProperties) {
+        BrokenReferencesModel model = new BrokenReferencesModel(projectHelper, referenceHelper, properties, platformProperties);
         BrokenReferencesCustomizer customizer = new BrokenReferencesCustomizer(model);
         Object close = NbBundle.getMessage(BrokenReferencesCustomizer.class,"LBL_BrokenLinksCustomizer_Close");
         DialogDescriptor dd = new DialogDescriptor(customizer, 

@@ -38,16 +38,16 @@ import org.openide.util.NbBundle;
 public class BrokenReferencesModel extends AbstractListModel {
 
     private String[] props;
+    private String[] platformsProps;
     private String[] brokenReferences;
-    private String platform;
-    private boolean isPlatformBroken;
+    private String[] brokenPlatforms;
     private AntProjectHelper helper;
     private ReferenceHelper resolver;
 
     public BrokenReferencesModel(AntProjectHelper helper, 
-            ReferenceHelper resolver, String[] props, String platform) {
+            ReferenceHelper resolver, String[] props, String[] platformsProps) {
         this.props = props;
-        this.platform = platform;
+        this.platformsProps = platformsProps;
         this.resolver = resolver;
         this.helper = helper;
         refresh();
@@ -55,7 +55,7 @@ public class BrokenReferencesModel extends AbstractListModel {
     
     public void refresh() {
         brokenReferences = getReferences(helper.getStandardPropertyEvaluator(), props, false);
-        isPlatformBroken = platform != null ? !existPlatform(platform) : false;
+        brokenPlatforms = getPlatforms(helper.getStandardPropertyEvaluator(), platformsProps, false);
         this.fireContentsChanged(this, 0, getSize());
     }
 
@@ -71,8 +71,7 @@ public class BrokenReferencesModel extends AbstractListModel {
                 }
             }
         } else {
-            assert index == getSize()-1;
-            return NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_BrokenPlatform", platform);
+            return NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_BrokenPlatform", brokenPlatforms[index-brokenReferences.length]);
         }
     }
 
@@ -90,8 +89,7 @@ public class BrokenReferencesModel extends AbstractListModel {
                 }
             }
         } else {
-            assert index == getSize()-1;
-            return NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_BrokenPlatformDesc", platform);
+            return NbBundle.getMessage(BrokenReferencesCustomizer.class, "LBL_BrokenLinksCustomizer_BrokenPlatformDesc", brokenPlatforms[index-brokenReferences.length]);
         }
     }
 
@@ -105,7 +103,7 @@ public class BrokenReferencesModel extends AbstractListModel {
     }
 
     boolean isPlatform(int index) {
-        return isPlatformBroken && index == getSize()-1;
+        return index >= brokenReferences.length && index - brokenReferences.length < brokenPlatforms.length;
     }
 
     boolean isProjectReference(int index) {
@@ -123,15 +121,16 @@ public class BrokenReferencesModel extends AbstractListModel {
     }
 
     public int getSize() {
-        return brokenReferences.length + (isPlatformBroken ? 1 : 0);
+        return brokenReferences.length + brokenPlatforms.length;
     }
 
-    public static boolean isBroken(PropertyEvaluator evaluator, String[] props, String platform) {
+    public static boolean isBroken(PropertyEvaluator evaluator, String[] props, String[] platformsProps) {
         String[] broken = getReferences(evaluator, props, true);
         if (broken.length > 0) {
             return true;
         }
-        return !existPlatform(platform);
+        broken = getPlatforms(evaluator, platformsProps, true);
+        return broken.length > 0;
     }
 
     private static String[] getReferences(PropertyEvaluator evaluator, String[] ps, boolean abortAfterFirstProblem) {
@@ -168,6 +167,28 @@ public class BrokenReferencesModel extends AbstractListModel {
                 if (abortAfterFirstProblem) {
                     break;
                 }
+            }
+            if (set.size() > 0 && abortAfterFirstProblem) {
+                break;
+            }
+        }
+        return (String[])set.toArray(new String[set.size()]);
+    }
+
+    private static String[] getPlatforms(PropertyEvaluator evaluator, String[] platformsProps, boolean abortAfterFirstProblem) {
+        Set set = new LinkedHashSet();
+        for (int i=0; i<platformsProps.length; i++) {
+            String prop = evaluator.getProperty(platformsProps[i]);
+            if (!existPlatform(prop)) {
+                
+                // XXX: the J2ME stores in project.properties also platform 
+                // display name and so show this display name instead of just
+                // prop ID if available.
+                if (evaluator.getProperty(platformsProps[i]+".description") != null) {
+                    prop = evaluator.getProperty(platformsProps[i]+".description");
+                }
+                
+                set.add(prop);
             }
             if (set.size() > 0 && abortAfterFirstProblem) {
                 break;
