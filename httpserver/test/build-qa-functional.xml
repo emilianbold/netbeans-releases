@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
           -->
     
         <!-- List of directories where jars will be searched. -->
-        <property name="xtest.extra.jars.path" location="${nb_all.dir}/jemmy/;${nb_all.dir}/jellytools/"/>
+        <property name="xtest.extra.jars.path" location="${nb_all.dir}/jemmy/builds;${nb_all.dir}/jellytools/builds"/>
 
 <!--        <property name="scratchpad" location="work/user/scratchpad"/> -->
 <!--        <property name="scratchpad" location="work/user"/> -->
