@@ -68,7 +68,8 @@ public class AbbrevsMIMEOptionFile extends MIMEOptionFile{
         }
         
         // gets current abbreviations map
-        Map mapa = new HashMap((Map) Settings.getValue(base.getKitClass(), SettingsNames.ABBREV_MAP));
+        Map abbrevsMap = (Map)Settings.getValue(base.getKitClass(), SettingsNames.ABBREV_MAP);
+        Map mapa = (abbrevsMap==null) ? new HashMap() : new HashMap(abbrevsMap);
         properties.clear();
         
         NodeList abbr = rootElement.getElementsByTagName(TAG_ABBREV);
