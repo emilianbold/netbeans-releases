@@ -178,7 +178,7 @@ sub checkline {
             && ! m,err\. ?print,
             && ! m,getProperty,
             && ! m,getBoolean,
-            && ! m,NbBundle\. ?getMessage,
+            && ! m,NbBundle\. ?get(Message|LocalizedFile),
             && m,".*", 
            ); 
 }
