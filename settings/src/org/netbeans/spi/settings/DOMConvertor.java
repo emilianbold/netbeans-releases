@@ -50,9 +50,9 @@ public abstract class DOMConvertor extends Convertor {
 
     private final static String ELM_DELEGATE = "domconvertor"; // NOI18N
     
-    private final static java.util.Map refsCache = new java.util.WeakHashMap();
+    private final static java.util.Map refsCache = new java.util.HashMap();
     /** cache of contexts <Document, Lookup>*/
-    private final static java.util.Map ctxCache = new java.util.WeakHashMap();
+    private final static java.util.Map ctxCache = new java.util.HashMap();
     
     private String publicID;
     private String systemID;
@@ -81,10 +81,10 @@ public abstract class DOMConvertor extends Convertor {
      * @since 1.1
      */
     public final Object read(java.io.Reader r) throws java.io.IOException, ClassNotFoundException {
+        Document doc = null;
         try {
-            org.xml.sax.XMLReader xr = XMLUtil.createXMLReader(false, false);
             InputSource is = new InputSource(r);
-            Document doc = XMLUtil.parse(is, false, false, null, org.openide.xml.EntityCatalog.getDefault());
+            doc = XMLUtil.parse(is, false, false, null, org.openide.xml.EntityCatalog.getDefault());
             setDocumentContext(doc, findContext(r));
             return readElement(doc.getDocumentElement());
         } catch (SAXException ex) {
@@ -95,6 +95,10 @@ public abstract class DOMConvertor extends Convertor {
                 emgr.annotate (ioe, ex.getException());
             }
             throw ioe;
+        } finally {
+            if (doc != null) {
+                clearCashesForDocument(doc);
+            }
         }
     }
     
@@ -105,8 +109,9 @@ public abstract class DOMConvertor extends Convertor {
      * @since 1.1
      */
     public final void write(java.io.Writer w, Object inst) throws java.io.IOException {
+        Document doc = null;
         try {
-            Document doc = XMLUtil.createDocument(rootElement, null, publicID, systemID);
+            doc = XMLUtil.createDocument(rootElement, null, publicID, systemID);
             setDocumentContext(doc, findContext(w));
             writeElement(doc, doc.getDocumentElement(), inst);
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream(1024);
@@ -115,6 +120,10 @@ public abstract class DOMConvertor extends Convertor {
         } catch (org.w3c.dom.DOMException ex) {
             throw (IOException) ErrorManager.getDefault().annotate(
                 new IOException(ex.getLocalizedMessage()), ex);
+        } finally {
+            if (doc != null) {
+                clearCashesForDocument(doc);
+            }
         }
     }
     
@@ -131,7 +140,6 @@ public abstract class DOMConvertor extends Convertor {
      * @param doc a DOM document allowing to create elements describing passed object
      * @param element represents a written object in a DOM document
      * @param obj an object to convert
-     * @return a DOM element representation
      * @exception IOException if the object cannot be written
      * @exception org.w3c.dom.DOMException if an element construction failed
      * @since 1.1
@@ -365,6 +373,16 @@ public abstract class DOMConvertor extends Convertor {
             
             CacheRec cr = (CacheRec) refs.get(idref);
             return cr.value;
+        }
+    }
+    
+    /** clears cashes per DOM document. Use when an object is converted. */
+    private static void clearCashesForDocument(Document doc) {
+        synchronized(refsCache) {
+            refsCache.remove(doc);
+        }
+        synchronized(ctxCache) {
+            ctxCache.remove(doc);
         }
     }
     
