@@ -116,7 +116,11 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
   </target>
 
-  <target name="clean-ddgen-src">
+  <target name="clean-ddgen-check">
+    <available property="have-config" file="${tomcat5_dir}/config"/>
+  </target>
+
+  <target name="clean-ddgen-src" if="have-config" depends="clean-ddgen-check">
         <delete>
             <fileset dir="${tomcat5_dir}/config">
                 <include name="*.java"/>
