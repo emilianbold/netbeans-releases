@@ -34,12 +34,11 @@ workspaceswitcher
   <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc"/>
   <taskdef name="createfile" classname="org.netbeans.nbbuild.CreateFile"/>
 
-  <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
-  <property name="moduleconfig" value="stable"/>
-
-  <!-- You can also explicitly set a particular list of modules if you prefer: -->
-  <!-- -Dmodules=foo,bar,... (do not include core or openide or openidex) -->
   <target name="init">
+    <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
+    <property name="moduleconfig" value="stable"/>
+    <!-- You can also explicitly set a particular list of modules if you prefer: -->
+    <!-- -Dmodules=foo,bar,... (do not include core or openide or openidex) -->
     <configmods property="modules" selectedconfig="${moduleconfig}">
       <config name="superslim" modules="clazz,editor,html,icebrowser,image,java,projects,text,utilities"/>
       <config name="slim" modules="autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,icebrowser,image,java,objectbrowser,projects,text,utilities"/>
@@ -315,7 +314,7 @@ workspaceswitcher
     <exec os="Solaris" dir="firststart/bin" command="sh runide.sh ${tryme.args}" failonerror="yes"/>
   </target>
 
-  <target name="update-info" depends="all-openide,all-core">
+  <target name="update-info" depends="init,all-openide,all-core">
     <!-- Note: partially sorted in dependency order -->
     <!-- (this could also be done with separate targets). -->
     <echo message="Making NBM for module ant..."/>
@@ -450,10 +449,16 @@ workspaceswitcher
   <target name="localclean">
     <deltree dir="virgin"/>
     <deltree dir="firststart"/>
+<!--
+    <delete>
+      <fileset dir="virgin"/>
+      <fileset dir="firststart"/>
+    </delete>
+-->
     <echo message="Manually delete unwanted builds as needed."/>
   </target>
 
-  <target name="clean" depends="localclean">
+  <target name="clean" depends="init,localclean">
     <cleanall topdir=".." modules="openide,openidex,core,${modules}" targetname="clean"/>
   </target>
 
