@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,12 +24,13 @@ import org.xml.sax.SAXParseException;
 
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /** This is the implementation of the famous exception manager.
 *
 * @author Jaroslav Tulach, Jesse Glick
 */
-public final class NbErrorManager extends ErrorManager {
+public final class NbErrorManager extends ErrorManager implements Runnable {
 
     public NbErrorManager() {
         this(null, defaultSeverity(), null);
@@ -78,6 +79,18 @@ public final class NbErrorManager extends ErrorManager {
 
     /** The writer to the log file*/
     private PrintWriter logWriter;
+    
+    /** task to flush the log file, or null */
+    private RequestProcessor.Task logFlushTask;
+    
+    /** processor in which to flush them */
+    private static final RequestProcessor RP = new RequestProcessor("Flush ErrorManager logs"); // NOI18N
+    
+    /** a lock for flushing */
+    private static final Object FLUSH_LOCK = new String("org.netbeans.core.NbErrorManager.FLUSH_LOCK"); // NOI18N
+    
+    /** delay for flushing */
+    private static final int FLUSH_DELAY = Integer.getInteger("ErrorManager.flush.delay", 15000).intValue(); // NOI18N
     
    /** assciates each thread with the lastly notified throwable
     * (Thread, Reference (Throwable))
@@ -249,7 +262,35 @@ public final class NbErrorManager extends ErrorManager {
                 }
             }
             log.println(s);
-            log.flush();
+            flushLog();
+        }
+    }
+    
+    /**
+     * Flush the log file asynch.
+     * Waits for 5 seconds after the first write.
+     * Note that this is only a delay to force a flush; if there is a lot
+     * of content, the buffer will fill up and it may have been written out
+     * long before. This just catches any trailing content.
+     * @see "BT #4820983"
+     */
+    private void flushLog() {
+        synchronized (FLUSH_LOCK) {
+            if (logFlushTask == null) {
+                logFlushTask = RP.create(this);
+                logFlushTask.schedule(FLUSH_DELAY);
+            }
+        }
+    }
+    
+    /**
+     * Flush log messages periodically.
+     * Exceptions are always flushed immediately.
+     */
+    public void run() {
+        synchronized (FLUSH_LOCK) {
+            getLogWriter().flush();
+            logFlushTask = null;
         }
     }
     
