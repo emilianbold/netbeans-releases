@@ -409,7 +409,7 @@ Microsystems, Inc. All Rights Reserved.
     <file name="C-S[org-openide-actions-SaveAction].instance" />
     <file name="C-C[org-openide-actions-CopyAction].instance" />
     <file name="C-3[org-netbeans-core-actions-EditorViewAction].instance" />
-    <file name="CS-F10[org-openide-actions-BuildProjectAction].instance" />
+    <file name="CS-F11[org-openide-actions-BuildProjectAction].instance" />
     <file name="C-H[org-openide-actions-ReplaceAction].instance" />
     <file name="CA-F10[org-netbeans-core-actions-PreviousOutJumpAction].instance" />
     <file name="C-2[org-netbeans-core-actions-ExplorerViewAction].instance" />
