@@ -38,12 +38,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <pathelement location="${nb_root}/editor/netbeans/modules/ext/nb-editor.jar"/>
         <pathelement location="${nb_root}/editor/netbeans/modules/ext/editor-lib.jar"/>
-        <pathelement location="${nb_root}/java/completion/netbeans/modules/ext/java-completion-lib.jar"/>
-        <pathelement location="${nb_root}/java/editor/netbeans/modules/ext/java-editor-lib.jar"/>
-        <pathelement location="${nb_root}/java/editor/netbeans/modules/java-editor.jar"/>
-        <pathelement location="${nb_root}/html/editor/netbeans/modules/ext/html-editor-lib.jar"/>
-        <pathelement location="${nb_root}/text/editor/netbeans/modules/ext/text-editor-lib.jar"/>
-        <pathelement location="${nb_root}/html/editor/netbeans/modules/html-editor.jar"/>
         <pathelement location="${nb_root}/editor/netbeans/modules/editor.jar"/>
         <pathelement location="${nb_root}/xml/text-edit/netbeans/modules/xml-text-edit.jar"/>
         <pathelement location="../external/servlet-api-2.4.jar"/>
