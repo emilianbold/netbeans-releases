@@ -1,0 +1,6 @@
+<!--From XML specification point of view two collons in QName are valid -->
+
+
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl::strip-space elements="..."/>
+</xsl:stylesheet>

@@ -1,0 +1,11 @@
+<?xml encoding="UTF-8" ?>
+
+<!ENTITY % edef-1 "<!ELEMENT element-2 ANY>">
+<![INCLUDE[
+%edef-1;
+]]>
+
+<![INCLUDE[
+<!ENTITY % edef-2 "<!ELEMENT element-1 ANY>">
+%edef-2;
+]]>

@@ -1,0 +1,20 @@
+<?xml encoding="UTF-8" ?>
+
+<!-- Created by pk97937 on June 21, 2001, 2:24 PM -->
+
+<!ENTITY % ref-model "ref-model CDATA #IMPLIED">
+<!ENTITY % model "CDATA #IMPLIED">
+<!ENTITY % ref-name "ref-name">
+<!ENTITY % a-name "a-name">
+<!ENTITY % wholeref-name "whole%ref-name; %ref-model;">
+
+<!ATTLIST %wholeref-name;>
+<!ATTLIST lit-name lit-model CDATA #IMPLIED>
+<!ATTLIST %ref-name; %ref-model;>
+<!ATTLIST lit-name %ref-model;>
+<!ATTLIST %ref-name; lit-model CDATA #IMPLIED>
+
+<!ATTLIST %ref-name; model %model;>
+<!ATTLIST %ref-name; %a-name; %model;>
+
+<!ELEMENT root ANY>

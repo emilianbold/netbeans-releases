@@ -1,0 +1,7 @@
+<?xml encoding="UTF-8" ?>
+
+<!-- Created by ms113234 on December 10, 2001, 7:23 PM -->
+<!ENTITY % a "!unexist!"> <!-- invalid file reference -->
+<!ENTITY % b "b">
+<!ENTITY % c "%b;%a;c">
+<!ENTITY % d "%b:d"> <!-- after %b should be ; instead of : -->
