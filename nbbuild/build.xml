@@ -317,7 +317,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../apisupport/ant" target="netbeans"/>
   </target>
   <!-- Deps include modules for which we build APIs: -->
-  <target name="all-apisupport/apidocs" depends="build-platform,makeparserdb-modules,all-openide/registry,all-openide/looks,all-core/registry,all-openide/convertor,all-java/api">
+  <target name="all-apisupport/apidocs" depends="build-platform,all-openide/registry,all-openide/looks,all-core/registry,all-openide/convertor,all-java/api">
     <echo message="Building module apisupport/apidocs..."/>
     <ant dir="../apisupport/apidocs" target="netbeans"/>
   </target>
@@ -492,7 +492,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module jellytools..."/>
     <ant dir="../jellytools" target="netbeans"/>
   </target>
-  <target name="all-jemmy" depends="build-platform,makeparserdb-modules">
+  <target name="all-jemmy" depends="build-platform">
     <echo message="Building module jemmy..."/>
     <ant dir="../jemmy" target="netbeans"/>
   </target>
@@ -1109,10 +1109,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <property name="platform-is-built" value="true"/>
   </target>
-  
-  <!-- #27098: MakeParserDB requires several modules to have been successfully built. -->
-  <!-- Target all/mmm should depend on makeparserdb-modules if mmm/build.xml uses <makeparserdb>. -->
-  <target name="makeparserdb-modules" depends="all-openide,all-openide/loaders,all-openide/execution,all-openide/io,all-core,all-classfile,all-java/api,all-java/srcmodel,all-java,all-editor,all-debuggercore/oldapi,all-core/execution,all-core/output2"/>
   
   <!-- build NBMs for selected modules -->
   <target name="build-nbms" depends="init">

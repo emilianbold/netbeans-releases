@@ -65,7 +65,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/nbbuild/JHIndexer.java"/>
                 <include name="org/netbeans/nbbuild/MakeListOfNBM.java"/>
                 <include name="org/netbeans/nbbuild/MakeNBM.java"/>
-                <include name="org/netbeans/nbbuild/MakeParserDB.java"/>
                 <include name="org/netbeans/nbbuild/MakeUpdateDesc.java"/>
                 <include name="org/netbeans/nbbuild/UpdateTracking.java"/>
                 <include name="org/netbeans/nbbuild/ModuleTracking.java"/>

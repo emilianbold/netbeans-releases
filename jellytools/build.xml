@@ -25,7 +25,9 @@ Microsystems, Inc. All Rights Reserved.
         <!-- All files created for NBM -->
         <include name="${nb.system.dir}/Modules/org-netbeans-modules-jellytools.xml"/>
         <include name="${nb.modules.dir}/org-netbeans-modules-jellytools.jar"/>
+        <!--
         <include name="${nb.system.dir}/ParserDB/Jelly*"/>
+        -->
         <include name="${nb.docs.dir}/jelly2-nb-javadoc.zip"/>
         <include name="${nb.modules.dir}/ext/jelly2-nb.jar"/>
       </patternset>
@@ -159,9 +161,11 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="parser-db">
+      <!--
       <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../nbbuild/nbantext.jar"/>
       <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB"/>
       <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/Jelly" sources="src" nbroot=".."/>
+      -->
   </target>
 
   <target name="release" depends="jars,javadoc,parser-db">

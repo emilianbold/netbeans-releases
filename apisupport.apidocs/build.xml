@@ -29,17 +29,6 @@ Microsystems, Inc. All Rights Reserved.
             <include name="${nb.docs.dir}/OpenAPIs.zip"/>
             <include name="${nb.docs.dir}/RegistryAPI.zip"/>
             <include name="${nb.docs.dir}/RegistryOverFSAPI.zip"/>
-            <include name="${nb.system.dir}/ParserDB/ConvertorAPI.jc*"/>
-            <include name="${nb.system.dir}/ParserDB/ExecutionAPI.jc*"/>
-            <include name="${nb.system.dir}/ParserDB/InputOutputAPI.jc*"/>
-            <include name="${nb.system.dir}/ParserDB/JavaHelpAPI.jc*"/>
-            <include name="${nb.system.dir}/ParserDB/JavaHierarchyAPI.jc*"/>
-            <include name="${nb.system.dir}/ParserDB/JavaSupportAPIs.jc*"/>
-            <include name="${nb.system.dir}/ParserDB/LoadersAPI.jc*"/>
-            <include name="${nb.system.dir}/ParserDB/LooksAPI.jc*"/>
-            <include name="${nb.system.dir}/ParserDB/OpenAPIs.jc*"/>
-            <include name="${nb.system.dir}/ParserDB/RegistryAPI.jc*"/>
-            <include name="${nb.system.dir}/ParserDB/RegistryOverFSAPI.jc*"/>
         </patternset>
     </target>
 
@@ -53,22 +42,6 @@ Microsystems, Inc. All Rights Reserved.
              compress="false">
             <fileset dir="src"/>
         </jar>
-    </target>
-
-    <target name="parser-db" depends="init">
-        <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB"/>
-        <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/ConvertorAPI" sources="${nb_all}/openide/convertor/src" nbroot="${nb_all}"/>
-        <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/ExecutionAPI" sources="${nb_all}/openide/execution/src" nbroot="${nb_all}"/>
-        <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/InputOutputAPI" sources="${nb_all}/openide/io/src" nbroot="${nb_all}"/>
-        <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/JavaHelpAPI" sources="${nb_all}/core/javahelp/src" nbroot="${nb_all}"/>
-        <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/JavaHierarchyAPI" sources="${nb_all}/java/srcmodel/src" nbroot="${nb_all}"/>
-        <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/JavaSupportAPIs" sources="${nb_all}/java/api/src" nbroot="${nb_all}"/>
-        <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/LoadersAPI" sources="${nb_all}/openide/loaders/src" nbroot="${nb_all}"/>
-        <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/LooksAPI" sources="${nb_all}/openide/looks/src" nbroot="${nb_all}"/>
-        <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/OpenAPIs" sources="${nb_all}/openide/src" nbroot="${nb_all}"/>
-        <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/RegistryAPI" sources="${nb_all}/openide/registry/src" nbroot="${nb_all}"/>
-        <makeparserdb db="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB/RegistryOverFSAPI" sources="${nb_all}/core/registry/src" nbroot="${nb_all}"/>
     </target>
 
     <target name="collect-javadoc" depends="init">
@@ -101,7 +74,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${nb_all}/openide/looks/javadoc/LooksAPI.zip" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/LooksAPI.zip"/>
     </target>
 
-    <target name="netbeans" depends="init,jars,parser-db,collect-javadoc" description="Build complete module.">
+    <target name="netbeans" depends="init,jars,collect-javadoc" description="Build complete module.">
         <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/apisupport-apidocs.jar">
             <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
                 <patternset refid="apisupport/apidocs.files"/>

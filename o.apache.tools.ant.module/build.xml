@@ -150,13 +150,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="ant*.jar"/>
             </fileset>
         </zip>
-<!-- TBD
-        <property name="ParserDB" location="docs/release/system/ParserDB"/>
-        <echo>5.  Creating parser database...</echo>
-        <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../nbbuild/nbantext.jar"/>
-        <mkdir dir="${ParserDB}"/>
-        <makeparserdb db="${ParserDB}/ant-${release.version}" sources="${release.sourcepath}" nbroot=".."/>
--->
         <echo>Now some (currently) manual steps for you:
 6.  Ensure these files in ${here} match the actual contents of ${online.manual}:
     - docs/javahelp/org/apache/tools/ant/module/docs/TOC.toc
