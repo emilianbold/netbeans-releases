@@ -168,6 +168,10 @@ public final class StartTomcat extends StartServer implements ProgressObject
         if (!isDebugModeUri.containsKey(tm.getUri())) {
             return false;
         }
+        if (!isRunning()) {
+            isDebugModeUri.remove(tm.getUri());
+            return false;
+        }
         return true;
     }
 
