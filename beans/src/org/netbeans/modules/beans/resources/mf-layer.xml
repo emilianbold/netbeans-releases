@@ -71,23 +71,14 @@ Microsystems, Inc. All Rights Reserved.
   </folder>
 
   <folder name="Services">
-    <file name="org-netbeans-modules-beans-beans.settings" url="beans.settings">
-        <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/beansSetting.gif"/>
-    </file>
+    <folder name="Editing">
+        <file name="org-netbeans-modules-beans-beans.settings" url="beans.settings">
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/beansSetting.gif"/>
+        </file>
+    </folder>
   </folder>
 
-  <folder name="UI">
-    <folder name="Services">
-      <folder name="Editing">
-        <file name="org-netbeans-modules-beans-beans.shadow">
-<![CDATA[Services/org-netbeans-modules-beans-beans.settings
-SystemFileSystem
-]]>
-        </file>
-      </folder> <!-- Editing -->
-    </folder> <!-- Services -->
-  </folder> <!-- UI -->
 
 </filesystem>
