@@ -8,41 +8,42 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="ant/docs" default="netbeans" basedir=".">
+  <import file="../../nbbuild/default.xml"/> 
 
-    <property name="homepage.base" value="netbeans.org"/>
-    <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-    <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
+  <target name="init" depends="default.init">
+    <ant dir="../external" target="unscramble"/>
+    <patternset id="ant/docs.files">
+      <include name="${nb.modules.dir}/ant-docs.jar"/>
+      <include name="${nb.modules/docs.dir}/ant-manual.zip"/>
+      <include name="system/ParserDB/ant-1.6.1.jcb"/>
+      <include name="system/ParserDB/ant-1.6.1.jcs"/>
+    </patternset>
 
-    <property name="nbm_alias" value="nb_ide"/>
+    <path id="cp">
+    </path>
+  </target>
 
-    <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../../nbbuild/nbantext.jar"/>
-    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
-    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
-    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
+    <target name="compile" depends="init"/>
 
-    <target name="init">
-        <ant dir="../external" target="unscramble"/>
-    </target>
-
-    <target name="jars">
-        <mkdir dir="netbeans/modules"/>
+    <target name="jars" depends="compile">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/modules/ant-docs.jar"
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ant-docs.jar"
                 manifest="manifest-subst.mf"
                 basedir="src"
                 excludesfile="../../nbbuild/standard-jar-excludes.txt"
                 compress="false">
-            <locale name="ja"/>
-        </locjar>
+        </jar>
     </target>
 
     <target name="release">
-        <copy todir="netbeans" includeEmptyDirs="false">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}"/>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}">
             <fileset dir="release" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
         </copy>
     </target>
@@ -63,13 +64,13 @@ Microsystems, Inc. All Rights Reserved.
             <exclude name="credits.html"/>
             <exclude name="ant-docs/LICENSE"/>
         </jhindexer>
-        <mkdir dir="netbeans/modules/docs"/>
-        <zip zipfile="netbeans/modules/docs/ant-manual.zip"
-             basedir="javahelp"
-             excludesfile="../../nbbuild/standard-jar-excludes.txt"
-             compress="true"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/ant-manual.zip"
+             compress="true">
+            <fileset dir="javahelp" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+        </jar>
     </target>
-
+  
     <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
         <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
             <classpath>
@@ -87,14 +88,18 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars,release,javahelp" description="Build module.">
-        <genlist targetname="nbm" outputfiledir="netbeans"/>
+      <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/ant-docs.jar">
+        <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+          <patternset refID="ant/docs.files"/>
+        </fileset>
+      </genlist>
     </target>
 
     <target name="nbm" depends="netbeans" description="Build module NBM file.">
         <makenbm file="ant-docs.nbm"
-                 topdir="."
-                 module="netbeans/modules/ant-docs.jar"
-                 homepage="http://ant.${homepage.base}/"
+                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 module="${nb.modules.dir}/ant-docs.jar"
+                 homepage="http://ant.netbeans.org/"
                  needsrestart="false"
                  distribution="http://${dist.base}/ant-docs.nbm">
             <license name="ant-docs-license.txt">
@@ -107,11 +112,14 @@ Microsystems, Inc. All Rights Reserved.
         </makenbm>
     </target>
 
-    <target name="clean" description="Clean out build products.">
+    <target name="clean" description="Clean out build products." depends="init">
+        <delete>
+            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+                <patternset refID="ant/docs.files"/>
+            </fileset>
+        </delete>
         <delete file="manifest-subst.mf"/>
         <delete file="ant-docs.nbm"/>
-        <delete dir="netbeans"/>
-        <delete dir="Info"/>
         <delete dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch"/>
         <delete dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
     </target>
