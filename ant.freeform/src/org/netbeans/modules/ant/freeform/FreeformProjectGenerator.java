@@ -1218,6 +1218,14 @@ public class FreeformProjectGenerator {
             TargetMapping tm = (TargetMapping)it.next();
             if (tm.name.equals("build")) { // NOI18N
                 if (tm.targets.size() == 1) {
+                    if (tm.script != null) {
+                        String script = evaluator.evaluate(tm.script);
+                        if (script.indexOf('/') != -1 || script.indexOf('\\') != -1) { // NOI18N
+                            // #50092 - no exports will be generated when build
+                            // script lies outside of project directory
+                            return new ArrayList();
+                        }
+                    }
                     targetName = (String)tm.targets.get(0);
                     scriptName = tm.script;
                 } else {

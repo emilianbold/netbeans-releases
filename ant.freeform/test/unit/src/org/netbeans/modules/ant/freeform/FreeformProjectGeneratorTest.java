@@ -19,7 +19,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import javax.swing.event.ChangeEvent;
@@ -1204,7 +1206,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
     public void testGuessExports() throws Exception {
         FreeformProjectGenerator.TargetMapping tm = new FreeformProjectGenerator.TargetMapping();
         tm.name = "build";
-        tm.script = "antScript";
+        tm.script = "${ant}";
         tm.targets = new ArrayList();
         tm.targets.add("target-1");
         ArrayList targets = new ArrayList();
@@ -1216,16 +1218,21 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         ArrayList units = new ArrayList();
         units.add(cu);
         
+        Map m = new HashMap();
+        m.put("outputfile", "out.jar");
+        m.put("ant", "etc/antScript");
         PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
-            PropertyUtils.fixedPropertyProvider(
-            Collections.singletonMap("outputfile", "out.jar"))});
+            PropertyUtils.fixedPropertyProvider(m)});
         
         List exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
+        assertEquals("no one export was created because build script is not in project folder", 0, exports.size());
+        tm.script = null;
+        exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
         assertEquals("one export was created", 1, exports.size());
         FreeformProjectGenerator.Export e = (FreeformProjectGenerator.Export)exports.get(0);
         assertEquals("export is properly configured", "jar", e.type);
         assertEquals("export is properly configured", "${outputfile}", e.location);
-        assertEquals("export is properly configured", "antScript", e.script);
+        assertEquals("export is properly configured", null, e.script);
         assertEquals("export is properly configured", "target-1", e.buildTarget);
         
         tm.targets.add("target-2");
@@ -1253,6 +1260,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         
         cu2.output.add("dist/proj.jar");
         cu2.output.add("dist/proj2.jar");
+        tm.script = "antScript";
         exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
         assertEquals("two exports were created", 3, exports.size());
         e = (FreeformProjectGenerator.Export)exports.get(0);
