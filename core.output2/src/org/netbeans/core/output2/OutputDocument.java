@@ -392,8 +392,12 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         }
     }
  */
-    
+    private boolean updatingTimerState = false;
     private synchronized void updateTimerState() {
+        if (updatingTimerState) {
+            return;
+        }
+        updatingTimerState = true;
         long newTime = System.currentTimeMillis();
         if (timer == null && !writer.isClosed()) {
             if (Controller.log) Controller.log("Starting timer");
@@ -425,6 +429,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             if (Controller.log) Controller.log ("Decreased timer interval to " + timer.getDelay());
         }
         lastFireTime = newTime;
+        updatingTimerState = false;
     }
     
     public void run() {
