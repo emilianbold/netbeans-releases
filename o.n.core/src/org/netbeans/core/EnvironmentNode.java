@@ -23,6 +23,9 @@ import org.openide.util.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.modules.ManifestSection.NodeSection;
+
+
 import org.netbeans.core.actions.*;
 
 /** This object represents environment settings in the Corona system.
@@ -104,7 +107,7 @@ final class EnvironmentNode extends AbstractNode {
             String f = filter;
             if (f == null) {
                 // use the original node
-                f = "Environment"; // NOI18N
+                f = NodeSection.TYPE_ENVIRONMENT;
             }
             
             return find (f);
