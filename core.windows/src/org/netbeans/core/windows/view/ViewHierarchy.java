@@ -571,70 +571,105 @@ final class ViewHierarchy {
 
     // PENDING Revise, updating desktop and editor area, bounds... separate this method.
     public void updateDesktop(WindowSystemAccessor wsa) {
-        if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
-            if(maximizedModeView != null) {
-                setMainWindowDesktop(getDesktopComponent());
-                setMaximizedViewIntoDesktop(maximizedModeView);
-                return;
-            }
-        }
-
-        int editorAreaState = wsa.getEditorAreaState();
-        if(editorAreaState == Constants.EDITOR_AREA_JOINED) {
-            if(editorAreaFrame != null) {
-                editorAreaFrame.setVisible(false);
-                editorAreaFrame = null;
-            }
-            setMainWindowDesktop(getDesktopComponent());
-            setSplitRootIntoDesktop(getSplitRootElement());
-            
+        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        List focusOwnerAWTHierarchyChain; // To find out whether there was a change in AWT hierarchy according to focusOwner.
+        if(focusOwner != null) {
+            focusOwnerAWTHierarchyChain = getComponentAWTHierarchyChain(focusOwner);
         } else {
-            boolean showEditorFrame = hasEditorAreaVisibleView();
-            
-            if(editorAreaFrame == null && showEditorFrame) {
-                editorAreaFrame = createEditorAreaFrame();
-                Rectangle editorAreaBounds = wsa.getEditorAreaBounds();
-                if(editorAreaBounds != null) {
-                    editorAreaFrame.setBounds(editorAreaBounds);
+            focusOwnerAWTHierarchyChain = Collections.EMPTY_LIST;
+        }
+        
+        try {
+            if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
+                if(maximizedModeView != null) {
+                    setMainWindowDesktop(getDesktopComponent());
+                    setMaximizedViewIntoDesktop(maximizedModeView);
+                    return;
                 }
-            } else if(editorAreaFrame != null && !showEditorFrame) { // XXX
-                editorAreaFrame.setVisible(false);
-                editorAreaFrame = null;
             }
             
-            setMainWindowDesktop(null);
-            if(showEditorFrame) {
+            int editorAreaState = wsa.getEditorAreaState();
+            if(editorAreaState == Constants.EDITOR_AREA_JOINED) {
+                if(editorAreaFrame != null) {
+                    editorAreaFrame.setVisible(false);
+                    editorAreaFrame = null;
+                }
+                setMainWindowDesktop(getDesktopComponent());
                 setSplitRootIntoDesktop(getSplitRootElement());
-                setEditorAreaDesktop(getDesktopComponent());
-                // #39755 restore the framestate of the previously closed editorArea.
-                updateEditorAreaFrameState(wsa.getEditorAreaFrameState());
+                
+            } else {
+                boolean showEditorFrame = hasEditorAreaVisibleView();
+                
+                if(editorAreaFrame == null && showEditorFrame) {
+                    editorAreaFrame = createEditorAreaFrame();
+                    Rectangle editorAreaBounds = wsa.getEditorAreaBounds();
+                    if(editorAreaBounds != null) {
+                        editorAreaFrame.setBounds(editorAreaBounds);
+                    }
+                } else if(editorAreaFrame != null && !showEditorFrame) { // XXX
+                    editorAreaFrame.setVisible(false);
+                    editorAreaFrame = null;
+                }
+                
+                setMainWindowDesktop(null);
+                if(showEditorFrame) {
+                    setSplitRootIntoDesktop(getSplitRootElement());
+                    setEditorAreaDesktop(getDesktopComponent());
+                    // #39755 restore the framestate of the previously closed editorArea.
+                    updateEditorAreaFrameState(wsa.getEditorAreaFrameState());
+                }
+            }
+        } finally {
+            // XXX #37239, #37632 Preserve focus in case the focusOwner component
+            // was 'shifted' in AWT hierarchy. I.e. when removed/added it loses focus,
+            // but we need to keep it, e.g. for case when its parent split is removing.
+            if(focusOwner != null
+            && !focusOwnerAWTHierarchyChain.equals(getComponentAWTHierarchyChain(focusOwner))) {
+                focusOwner.requestFocus();
             }
         }
     }
     
     public void updateDesktop() {
-//        System.out.println("updatedesktop()");
-        if(mainWindow.hasDesktop()) {
-            setMainWindowDesktop(getDesktopComponent());
-            if(maximizedModeView != null) {
-//                System.out.println("viewhierarchy: have maximized=" + maximizedModeView.getClass());
-                setMaximizedViewIntoDesktop(maximizedModeView);
-//                setMainWindowDesktop();
-            } else {
-//                System.out.println("viewhierarchy: no maximized");
-                setSplitRootIntoDesktop(getSplitRootElement());
-//                setMainWindowDesktop(getDesktopComponent());
-            }
+        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        List focusOwnerAWTHierarchyChain; // To find out whether there was a change in AWT hierarchy according to focusOwner.
+        if(focusOwner != null) {
+            focusOwnerAWTHierarchyChain = getComponentAWTHierarchyChain(focusOwner);
         } else {
-            boolean showEditorFrame = hasEditorAreaVisibleView();
-            
-            if(editorAreaFrame != null) {
-                if(showEditorFrame) {
-                    editorAreaFrame.setDesktop(getDesktopComponent());
-                } else { // XXX
-                    editorAreaFrame.setVisible(false);
-                    editorAreaFrame = null;
+            focusOwnerAWTHierarchyChain = Collections.EMPTY_LIST;
+        }
+        try {
+            //        System.out.println("updatedesktop()");
+            if(mainWindow.hasDesktop()) {
+                setMainWindowDesktop(getDesktopComponent());
+                if(maximizedModeView != null) {
+                    //                System.out.println("viewhierarchy: have maximized=" + maximizedModeView.getClass());
+                    setMaximizedViewIntoDesktop(maximizedModeView);
+                    //                setMainWindowDesktop();
+                } else {
+                    //                System.out.println("viewhierarchy: no maximized");
+                    setSplitRootIntoDesktop(getSplitRootElement());
+                    //                setMainWindowDesktop(getDesktopComponent());
                 }
+            } else {
+                boolean showEditorFrame = hasEditorAreaVisibleView();
+                
+                if(editorAreaFrame != null) {
+                    if(showEditorFrame) {
+                        editorAreaFrame.setDesktop(getDesktopComponent());
+                    } else { // XXX
+                        editorAreaFrame.setVisible(false);
+                        editorAreaFrame = null;
+                    }
+                }
+            }
+        } finally {
+            // XXX #37239, #37632 Preserve focus in case the focusOwner component
+            // was 'shifted' in AWT hierarchy. I.e. when removed/added it loses focus,
+            // but we need to keep it, e.g. for case when its parent split is removing.
+            if(focusOwner != null
+                && !focusOwnerAWTHierarchyChain.equals(getComponentAWTHierarchyChain(focusOwner))) {
+                focusOwner.requestFocus();
             }
         }
     }
@@ -664,13 +699,6 @@ final class ViewHierarchy {
     }
     
     private void setDesktop(Component component, boolean toMainWindow) {
-        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-        List focusOwnerAWTHierarchyChain; // To find out whether there was a change in AWT hierarchy according to focusOwner.
-        if(focusOwner != null) {
-            focusOwnerAWTHierarchyChain = getComponentAWTHierarchyChain(focusOwner);
-        } else {
-            focusOwnerAWTHierarchyChain = Collections.EMPTY_LIST;
-        }
         
         if(toMainWindow) {
             mainWindow.setDesktop(component);
@@ -678,13 +706,6 @@ final class ViewHierarchy {
             editorAreaFrame.setDesktop(component);
         }
 
-        // XXX #37239, #37632 Preserve focus in case the focusOwner component
-        // was 'shifted' in AWT hierarchy. I.e. when removed/added it loses focus,
-        // but we need to keep it, e.g. for case when its parent split is removing.
-        if(focusOwner != null
-        && !focusOwnerAWTHierarchyChain.equals(getComponentAWTHierarchyChain(focusOwner))) {
-            focusOwner.requestFocus();
-        }
     }
     
     
