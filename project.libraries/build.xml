@@ -39,6 +39,9 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${nb_all}/projects/filesets/netbeans/modules/autoload/filesets.jar"/>
                 <pathelement location="${nb_all}/projects/core/netbeans/modules/autoload/projects-core.jar"/>
                 <pathelement location="${nb_all}/projects/ide/netbeans/modules/projects-ide.jar"/>
+
+                <!-- //!!! this dependency is plain wrong and need to be removed once separated-->
+                <pathelement location="${nb_all}/java/api/netbeans/modules/autoload/java-api.jar"/>
             </classpath>
         </javac>
     </target>
