@@ -91,53 +91,6 @@ public class NbEditorUI extends ExtEditorUI {
     }
     
     
-    public void stateChanged(final ChangeEvent evt) {
-        super.stateChanged(evt);
-        SwingUtilities.invokeLater(
-        new Runnable() {            
-            private void setEnabledGuardedAction(Action a){
-                JTextComponent component = getComponent();
-                if (component == null)  return;
-                BaseDocument bdoc = getDocument();
-                if (bdoc instanceof GuardedDocument){
-                    GuardedDocument gdoc = (GuardedDocument)bdoc;
-                    boolean inGuardedBlock = (gdoc.isPosGuarded(component.getCaretPosition()) ||
-                        gdoc.isPosGuarded(component.getSelectionStart()) ||
-                        gdoc.isPosGuarded(component.getSelectionEnd()));
-                    a.setEnabled(!inGuardedBlock);
-                }
-            }
-            
-            public void run() {
-                boolean selectionVisible = ((Caret)evt.getSource()).isSelectionVisible();
-                JTextComponent component = getComponent();
-                if (component == null) return;
-                BaseKit kit = Utilities.getKit(component);
-                if (kit == null) return;
-
-                Action a = kit.getActionByName(BaseKit.pasteAction);
-                if (a != null) {
-                    setEnabledGuardedAction(a);
-                }
-                
-                a = kit.getActionByName(BaseKit.removeSelectionAction);
-                if (a != null) {
-                    setEnabledGuardedAction(a);
-                }
-
-                a = kit.getActionByName(BaseKit.cutAction);
-                if (a != null) {
-                    if (selectionVisible){
-                        setEnabledGuardedAction(a);
-                    }
-                }
-                
-            }
-            
-        }
-        );
-    }
-
     protected void installUI(JTextComponent c) {
         super.installUI(c);
 
