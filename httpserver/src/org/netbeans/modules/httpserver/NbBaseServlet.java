@@ -102,7 +102,7 @@ public abstract class NbBaseServlet extends HttpServlet {
 
         String pathI = request.getPathInfo();
         if (pathI == null)
-            pathI = "";
+            pathI = "";      // NOI18N
         // ask user
         try {
             String address = request.getRemoteAddr().trim();

@@ -227,33 +227,17 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     }
 
     /** Returns a relative directory URL with a leading and a trailing slash */
-    /*  private String getCanonicalRelativeURL(String url) {
-        String newURL;
-        if (url.length() == 0)
-          newURL = ""; // NOI18N
-        else {
-          if (url.charAt(0) != '/')
-            newURL = "/" + url; // NOI18N
-          else
-            newURL = url;
-          if (newURL.charAt(newURL.length() - 1) == '/')
-            newURL = newURL.substring(0, newURL.length() - 1);
-        }      
-        return newURL;                               
-      }*/
-
-    /** Returns a relative directory URL with a leading and a trailing slash */
     private String getCanonicalRelativeURL(String url) {
         String newURL;
         if (url.length() == 0)
-            newURL = "/";
+            newURL = "/";   // NOI18N
         else {
             if (url.charAt(0) != '/')
-                newURL = "/" + url;
+                newURL = "/" + url; // NOI18N
             else
                 newURL = url;
             if (newURL.charAt(newURL.length() - 1) != '/')
-                newURL = newURL + "/";
+                newURL = newURL + "/";  // NOI18N
         }
         return newURL;
     }
@@ -354,7 +338,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         try {
             setRunning(true);
             return new URL("http", getLocalHost(), getPort(), // NOI18N
-                           getJavadocBaseURL() + mangle (fo.getFileSystem ().getDisplayName ()) + "/" + 
+                           getJavadocBaseURL() + mangle (fo.getFileSystem ().getDisplayName ()) + "/" + // NOI18N
                            fo.getPackageNameExt('/','.')); // NOI18N
         }
         catch (org.openide.filesystems.FileStateInvalidException ex) {
@@ -484,9 +468,9 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     public URL getResourceURL(String resourcePath) throws MalformedURLException, UnknownHostException {
         setRunning(true);
         return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + // NOI18N
-                       (resourcePath.startsWith("/") ? 
+                       (resourcePath.startsWith("/") ?                            // NOI18N 
                         resourcePath.substring(1) : 
-                        resourcePath)); // NOI18N
+                        resourcePath));
     }
 
     /** Maps a resource root to a URL. Should ensure that all resources under the root are accessible under an URL
@@ -636,12 +620,11 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
             else {
                 String code = Integer.toHexString ((int)name.charAt (i)).toUpperCase ();
                 if (code.length ()<2)
-                    code = (code.length () == 0)? "00": "0"+code;
-                sb.append ("%").
+                    code = (code.length () == 0)? "00": "0"+code;   // NOI18N
+                sb.append ("%").                                    // NOI18N
                 append ((code.length () == 2)? code: code.substring (code.length ()-2));
             }
         }
-// System.out.println("mangling "+name+" to "+sb.toString ()+".");
         return sb.toString ();
     }
     
@@ -663,9 +646,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         }
         catch (NumberFormatException ex) {
             ex.printStackTrace ();
-            return "";
+            return "";  // NOI18N
         }
-// System.out.println("demangling "+name+" to "+sb.toString ()+".");
         return sb.toString ();
     }
     

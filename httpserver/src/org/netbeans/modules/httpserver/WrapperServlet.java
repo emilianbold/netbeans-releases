@@ -101,7 +101,6 @@ public class WrapperServlet extends NbBaseServlet {
             else
                 internalUrl = java.net.URLDecoder.decode (path);
             URL innerURL = new URL (internalUrl);
-// System.out.println("demangled to "+innerURL.toString ());
             URLConnection conn = innerURL.openConnection ();
             
             response.setContentType(conn.getContentType ());   // NOI18N

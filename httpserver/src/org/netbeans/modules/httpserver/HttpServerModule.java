@@ -195,7 +195,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     
     private static ContextManager getContextManager(EmbededTomcat tc) {
         try {
-            java.lang.reflect.Field fm = EmbededTomcat.class.getDeclaredField("contextM");
+            java.lang.reflect.Field fm = EmbededTomcat.class.getDeclaredField("contextM");   // NOI18N
             fm.setAccessible(true);
             return (ContextManager)fm.get(tc);
         }
@@ -212,7 +212,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         HttpServerSettings op = httpserverSettings ();
 
         NbLogger logger = new NbLogger();
-        logger.setName("tc_log");
+        logger.setName("tc_log");    // NOI18N
 
         EmbededTomcat tc=new EmbededTomcat();
         
@@ -233,7 +233,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 	tc.addContextInterceptor( nbI );
         
         ServletContext sctx;
-        sctx=tc.addContext("", wd.toURL());
+        sctx=tc.addContext("", wd.toURL());  // NOI18N
         tc.initContext( sctx );
         //ctxt.getServletLoader().setParentLoader(TopManager.getDefault().systemClassLoader());
         
@@ -247,9 +247,9 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
             Object o = e.nextElement ();
             if (o instanceof PoolTcpConnector) {
                 org.apache.tomcat.core.ServerConnector conn = (PoolTcpConnector)o;
-                conn.setAttribute (PoolTcpConnector.MIN_SPARE_THREADS, "0");
-                conn.setAttribute (PoolTcpConnector.MAX_SPARE_THREADS, "1");
-                conn.setAttribute (PoolTcpConnector.MAX_THREADS, "3");
+                conn.setAttribute (PoolTcpConnector.MIN_SPARE_THREADS, "0");     // NOI18N
+                conn.setAttribute (PoolTcpConnector.MAX_SPARE_THREADS, "1");     // NOI18N
+                conn.setAttribute (PoolTcpConnector.MAX_THREADS, "3");           // NOI18N
             }
         }
         

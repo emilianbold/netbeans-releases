@@ -46,8 +46,6 @@ public class NbServletsInterceptor extends BaseInterceptor {
     private void addNbServlets( Context ctx ) throws TomcatException {
         HttpServerSettings op = (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class, true);
         ServletWrapper sw;
-	//sw=addServlet( ctx, "NotFoundServlet", "org.netbeans.modules.httpserver.NotFoundServlet");
-	//ctx.addServletMapping("/*", "NotFoundServlet");
         
 	sw=addServlet( ctx, "RepositoryServlet", "org.netbeans.modules.httpserver.RepositoryServlet");  // NOI18N
 	ctx.addServletMapping(op.getRepositoryBaseURL() + "*", "RepositoryServlet");                    // NOI18N
