@@ -30,7 +30,7 @@ class NBImageIcon extends ImageIcon implements Replaceable {
   ImageDataObject obj;
 
   /** Constructs new ImageIcon for the dataobject */
-  public NBImageIcon(ImageDataObject obj) throws IOException {
+  public NBImageIcon(ImageDataObject obj) {
     super(obj.getImageURL());
     this.obj = obj;
   }
@@ -46,7 +46,7 @@ class NBImageIcon extends ImageIcon implements Replaceable {
     static final long serialVersionUID = -1120520132882774882L;
     /** DataObject for this image */
     ImageDataObject obj;
- 
+
     ResolvableHelper(ImageDataObject obj) {
       this.obj = obj;
     }
@@ -56,18 +56,14 @@ class NBImageIcon extends ImageIcon implements Replaceable {
     * The object will be used in the graph in place of the original.
     */
     public Object readResolve() {
-      try {
-        return new NBImageIcon(obj);
-      }
-      catch (IOException e) {
-        return new ImageIcon();
-      }
+      return new NBImageIcon(obj);
     }
   }
 }
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/7/99   Jaroslav Tulach Uses OpenSupport
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  */

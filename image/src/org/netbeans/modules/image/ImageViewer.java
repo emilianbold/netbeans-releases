@@ -29,7 +29,7 @@ public class ImageViewer extends CloneableTopComponent {
   /** Creates new image viewer.
   * @exception IOException if the file cannot be loaded.
   */
-  public ImageViewer(ImageDataObject obj) throws java.io.IOException {
+  public ImageViewer(ImageDataObject obj) {
     super(obj);
     storedObject = obj;
     javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(new javax.swing.JLabel(new NBImageIcon(obj)));
@@ -47,18 +47,14 @@ public class ImageViewer extends CloneableTopComponent {
   * @return the copy of this object
   */
   protected CloneableTopComponent createClonedObject () {
-    try {
-      return new ImageViewer(storedObject);
-    }
-    catch (java.io.IOException e) {
-      throw new InternalError ();
-    }
-  } 
-  
+    return new ImageViewer(storedObject);
+  }
+
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/7/99   Jaroslav Tulach Uses OpenSupport
  *  3    Gandalf   1.2         1/7/99   Ian Formanek    
  *  2    Gandalf   1.1         1/7/99   Ian Formanek    
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
