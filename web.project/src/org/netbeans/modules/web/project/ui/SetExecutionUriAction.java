@@ -116,7 +116,7 @@ public final class SetExecutionUriAction extends NodeAction {
         if (webDir==null) return null;
         FileObject fo = webDir.getFileObject("WEB-INF/web.xml"); //NOI18N
         if (fo==null) return null;
-        ClassPath classPath = ClassPath.getClassPath (webModule.getDocumentBase (), ClassPath.SOURCE);
+        ClassPath classPath = ClassPath.getClassPath (javaClass, ClassPath.SOURCE);
         String className = classPath.getResourceName(javaClass,'.',false);
         try {
             WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
