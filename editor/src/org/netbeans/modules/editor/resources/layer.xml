@@ -112,7 +112,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Services">
-        <file name="AnnotationtTypes.instance">
+        <file name="AnnotationTypes.instance">
             <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.options.AnnotationTypesNode" />
             <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
         </file>
