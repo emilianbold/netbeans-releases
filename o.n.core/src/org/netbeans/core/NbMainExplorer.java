@@ -1008,8 +1008,12 @@ public final class NbMainExplorer extends CloneableTopComponent
         * @param obj the object to look for
         */
         private static Node findDataObject (Node node, DataObject obj) {
-            Node n = node.getChildren ().findChild (obj.getNodeDelegate ().getName ());
-            if (n != null) return n;
+            
+            // bugfix #32781, check if the data object is valid before call getNodeDelegate()
+            if (obj.isValid ()) {
+                Node n = node.getChildren ().findChild (obj.getNodeDelegate ().getName ());
+                if (n != null) return n;
+            }
 
             Node[] arr = node.getChildren ().getNodes ();
             for (int i = 0; i < arr.length; i++) {
