@@ -47,7 +47,6 @@ public class HttpServerModule implements ModuleInstall {
   public void restored() {            
     com.netbeans.ide.util.HttpServer.registerServer(HttpServerSettings.OPTIONS);
     com.mortbay.Base.Log.instance()._out = new NullWriter();
-//    System.setProperty("LOG_FILE", new FileOutputStream("c:\\serverout.txt"));
   }
 
   /** Module was uninstalled. */
@@ -103,6 +102,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  5    Gandalf   1.4         5/17/99  Petr Jiricka    
  *  4    Gandalf   1.3         5/17/99  Petr Jiricka    
  *  3    Gandalf   1.2         5/11/99  Petr Jiricka    
  *  2    Gandalf   1.1         5/10/99  Petr Jiricka    
