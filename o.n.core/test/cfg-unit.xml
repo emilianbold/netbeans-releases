@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="org/netbeans/core/modules/ModuleManagerTest.class"/>
                 <include name="org/netbeans/core/modules/ModuleListTest.class"/>
+                <include name="org/netbeans/core/PlainTest.class"/>
             </patternset>
         </testset>
     </testbag>
