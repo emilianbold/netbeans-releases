@@ -18,8 +18,6 @@ import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.explorer.ExplorerManager;
 
-//import org.netbeans.modules.java.JavaDataObject;
-//import org.netbeans.modules.java.JavaNode;
 import org.openide.explorer.ExplorerManager.Provider;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
@@ -31,6 +29,9 @@ import org.openide.nodes.Children.*;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
+import org.openide.cookies.SourceCookie;
+import org.openide.src.ClassElement;
+import org.openide.src.SourceElement;
 
 /** Browse and allow to chooser a project's main class.
  *
@@ -78,45 +79,31 @@ public class MainClassChooser extends JPanel {
         
         Node[] nodes = ((ClassesViewPanel)classesView).getExplorerManager ().getSelectedNodes ();
 
-//        // pending: check if this java object has main class
-//        if (nodes.length == 1) {
-//            // check if it's main class
-//            if (nodes[0] instanceof JavaNode) {
-//                JavaNode n = (JavaNode) nodes[0];
-//                JavaDataObject obj = (JavaDataObject) n.getDataObject ();
-//                //boolean success = obj.getSource ().getClasses ().hasMainMethod;
-//                // check the runnable and javabean
-//                ClassElement[] classes = source.getClasses();
-//                boolean hasMain = false;
-//                for (int i = 0; i < classes.length; i++) {
-//                  if (classes[i].getName().getName().equals(name)) {
-//                    if (classes[i].hasMainMethod()) {
-//                        hasMain = true;
-//                        break;
-//                    }
-//                  }
-//                }
-//                if (hasMain) {
-//                    return name;
-//                }
-//            }
-//        }
-//      
+        // check if this java object has main class
         if (nodes.length == 1) {
-            // check noClassesNode
-            if (nodes[0].equals (NO_CLASSES_NODE)) {
-                return null;
+            // check if it's main class
+            SourceCookie cookie = (SourceCookie)nodes[0].getCookie (SourceCookie.class);
+            if (cookie != null) {
+                // check the main class
+                String name = nodes[0].getName ();
+                SourceElement source = cookie.getSource ();
+                ClassElement[] classes = source.getClasses();
+                boolean hasMain = false;
+                for (int i = 0; i < classes.length; i++) {
+                  if (classes[i].getName().getName().equals (name)) {
+                    if (classes[i].hasMainMethod()) {
+                        hasMain = true;
+                        break;
+                    }
+                  }
+                }
+                if (hasMain) {
+                    return name;
+                }
             }
-            
-            // temporary check only java classes
-            if (nodes[0].getDisplayName ().endsWith (".java")) { // NOI18N
-                return nodes[0].getName ();
-            } else {
-                return null;
-            }
-        } else {
-            return null;
         }
+        
+        return null;
     }
 
     /** This method is called from within the constructor to
