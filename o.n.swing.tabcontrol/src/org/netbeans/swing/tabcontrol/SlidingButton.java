@@ -17,6 +17,7 @@ import java.awt.Component;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.JComponent;
 import javax.swing.Timer;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
@@ -52,6 +53,16 @@ public final class SlidingButton extends JToggleButton {
      */
     public SlidingButton(TabData buttonData, int orientation) {
         super(buttonData.getText(), buttonData.getIcon(), false);
+
+        // grab the text from client property 
+        // XXX please rewrite when API is invented - see issue #55955
+        Component comp = buttonData.getComponent();
+        if (comp instanceof JComponent) {
+            Object slidingName = ((JComponent)comp).getClientProperty("SlidingName");
+            if (slidingName instanceof String) {
+                setText((String)slidingName);
+            }
+        }
         
         this.orientation = orientation;
         data = buttonData;
