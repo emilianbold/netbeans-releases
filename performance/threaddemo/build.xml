@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="openide.jar" location="${openide}/netbeans/lib/openide.jar"/>
     <property name="looks" location="${openide}/looks"/>
     <property name="looks.jar" location="${looks}/netbeans/modules/autoload/openide-looks.jar"/>
-    <property name="Spin.jar" location="/usr/java/tools/spin/Spin.jar"/>
+    <property name="Spin.jar" location="???/spin-1.1/Spin.jar"/>
     <!-- only needed for optit target: -->
     <property name="optit" location="???/optit"/>
     <property name="junit.jar" location="${nbroot}/junit/external/junit-3.8.1.jar"/>
@@ -85,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
         <java classname="threaddemo.Main" fork="true" failonerror="true">
             <classpath refid="run.cp"/>
             <arg file="${testdir}"/>
-            <jvmarg value="-Xmx64m"/>
+            <jvmarg value="-Xmx256m"/>
             <jvmarg value="-ea"/>
             <sysproperty key="java.util.logging.config.file" file="logging.properties"/>
         </java>
