@@ -402,11 +402,8 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
             }
             
             public boolean isEnabled() {
-                String extension = ((BaseJspEditorSupport)cloneableEditorSupport()).getDataObject().getPrimaryFile().getExt();
-                if (JspLoader.JSP_EXTENSION.equalsIgnoreCase(extension)) {
-                    return true;
-                }
-                if (JspLoader.JSPX_EXTENSION.equalsIgnoreCase(extension)) {
+                String mimet = ((BaseJspEditorSupport)cloneableEditorSupport()).getDataObject().getPrimaryFile().getMIMEType();
+                if (JspLoader.JSP_MIME_TYPE.equalsIgnoreCase(mimet)) {
                     return true;
                 }
                 return false;
