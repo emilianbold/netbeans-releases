@@ -463,8 +463,7 @@ public class RADComponentNode extends FormNode
             if (transComp == null)
                 return;
 
-            if (component instanceof RADMenuComponent
-                    && transComp instanceof RADMenuItemComponent) {
+            if (transComp instanceof RADMenuItemComponent) {
                 // pasting menu component, check if it is possible
                 if (!canPasteMenuComponent((RADMenuItemComponent)transComp, cut))
                     return;
