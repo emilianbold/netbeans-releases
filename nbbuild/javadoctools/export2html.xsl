@@ -209,11 +209,11 @@ Microsystems, Inc. All Rights Reserved.
     </xsl:template>
 
     <xsl:template name="api">
+        <xsl:param name="arch.target" />
         <xsl:variable name="name" select="@name" />
         <xsl:variable name="type" select="@type" />
         <xsl:variable name="category" select="@category" />
         <xsl:variable name="url" select="@url" />
-        <xsl:param name="arch.target" />
 
         <tr class="tabler">
             <td>
