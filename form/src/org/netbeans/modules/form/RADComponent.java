@@ -150,8 +150,6 @@ public class RADComponent {
         Object currentValue = prop.getValue ();
         Object defaultValue = defaultPropertyValues.get (props[i].getName ());
         if (!Utilities.compareObjects (currentValue, defaultValue)) {
-          System.out.println("Property is changed: "+prop.getName ());
-          // add the property to the list of changed properties
           prop.setChanged (true);
         }
       } catch (Exception e) {
@@ -1490,6 +1488,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  79   Gandalf-post-FCS1.76.1.1    4/4/00   Tran Duc Trung  don't print debugging 
+ *       output when setting beans property values
  *  78   Gandalf-post-FCS1.76.1.0    3/30/00  Tran Duc Trung  FIX #6100: double-click 
  *       on component does not create a default event handler
  *  77   Gandalf   1.76        3/7/00   Tran Duc Trung  fix #5791: cannot add 
