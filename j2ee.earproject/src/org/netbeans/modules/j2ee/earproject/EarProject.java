@@ -28,7 +28,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 //import org.netbeans.api.java.platform.JavaPlatform;
 //import org.netbeans.api.java.platform.JavaPlatformManager;
 //import org.netbeans.api.java.project.JavaProjectConstants;
-//import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
@@ -61,7 +61,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-//import org.netbeans.spi.project.support.ant.SourcesHelper;
+import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 //import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
@@ -155,7 +155,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
 //        }, new String[] {
 //            "${build.classes.dir}/*.class" // NOI18N
 //        });
-//        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
+        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
 //        String webModuleLabel = org.openide.util.NbBundle.getMessage(EjbJarCustomizerProvider.class, "LBL_Node_WebModule"); //NOI18N
 //        String webPagesLabel = org.openide.util.NbBundle.getMessage(EjbJarCustomizerProvider.class, "LBL_Node_DocBase"); //NOI18N
 //        String srcJavaLabel = org.openide.util.NbBundle.getMessage(EjbJarCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
@@ -167,11 +167,14 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
 //        sourcesHelper.addTypedSourceRoot("${"+EjbJarProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
 //        //sourcesHelper.addTypedSourceRoot("${"+EjbJarProjectProperties.WEB_DOCBASE_DIR+"}", EjbProjectConstants.TYPE_DOC_ROOT, webPagesLabel, /*XXX*/null, null);
 //        sourcesHelper.addTypedSourceRoot("${"+EjbJarProjectProperties.WEB_DOCBASE_DIR+"}/META-INF", EjbProjectConstants.TYPE_META_INF, /*XXX I18N*/ "META-INF", /*XXX*/null, null);
-//        ProjectManager.mutex().postWriteRequest(new Runnable() {
-//            public void run() {
-//                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-//            }
-//        });
+        String configFilesLabel = org.openide.util.NbBundle.getMessage(EarProject.class, "LBL_Node_ConfigBase"); //NOI18N
+        
+        sourcesHelper.addPrincipalSourceRoot("${"+EarProjectProperties.META_INF+"}", configFilesLabel, /*XXX*/null, null);
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            public void run() {
+                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+            }
+        });
         return Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -190,6 +193,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
             new ProjectOpenedHookImpl(),
 //            new SourceLevelQueryImpl(helper, evaluator()),
 //            fileBuilt,
+                new EarSources (helper, evaluator()),
             new RecommendedTemplatesImpl(),
             helper.createSharabilityQuery(evaluator(),
                     new String[] {"${"+EarProjectProperties.SOURCE_ROOT+"}"},
