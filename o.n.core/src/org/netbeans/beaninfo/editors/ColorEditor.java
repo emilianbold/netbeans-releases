@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -506,8 +506,6 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     private static class NbColorChooser extends JPanel implements ChangeListener {
         /** Color property editor */
         private final ColorEditor editor;
-        /** Color chooser instance */
-        private final JColorChooser chooser;
         /** Reference to model which holds the color selected in the color chooser */
         private final ColorSelectionModel selectionModel;
 
@@ -518,7 +516,6 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         public NbColorChooser (final ColorEditor editor,
                                final JColorChooser chooser) {
             this.editor = editor;
-            this.chooser = chooser;
             selectionModel = chooser.getSelectionModel();
             setLayout (new BorderLayout ());
             add (chooser, BorderLayout.CENTER);

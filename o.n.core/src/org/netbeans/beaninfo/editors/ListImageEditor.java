@@ -39,7 +39,6 @@ public class ListImageEditor extends PropertyEditorSupport implements ExProperty
     public static final String PROP_DESCRIPTIONS = "descriptions"; //NOI18N
     
     private boolean canWrite = true;
-    private boolean canRead = true;
 
     private Image [] images = null;
     private Integer [] values = null;
@@ -54,7 +53,6 @@ public class ListImageEditor extends PropertyEditorSupport implements ExProperty
         FeatureDescriptor d = env.getFeatureDescriptor ();
         if (d instanceof Node.Property) {
             canWrite = ((Node.Property)d).canWrite ();
-            canRead = ((Node.Property)d).canRead ();
         }
         
         Object o;

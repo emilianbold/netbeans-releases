@@ -216,8 +216,8 @@ public class IntEditor extends ExPropertyEditorSupport {
         } else {
             throw new IllegalArgumentException (
                 "Argument to IntEditor.setValue() must be Integer, but was " + //NOI18N
-                (value == null ? "null" : value.getClass().getName() + "(=" +  //NOI18N
-                value.toString() + ")")); //NOI18N
+                value.getClass().getName() + "(=" +  //NOI18N
+                value.toString() + ")"); //NOI18N
         }
     }
     
