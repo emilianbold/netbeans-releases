@@ -64,7 +64,7 @@ public class PropertiesEditor extends PropertyEditorSupport {
         try {
             Properties prop = new Properties();
             InputStream is = new ByteArrayInputStream(
-                text.replace(';', '\n').getBytes("8859_1") // NOI18N
+                text.replace(';', '\n').getBytes("ISO8859_1") // NOI18N
             );
             prop.load(is);
             setValue(prop);
