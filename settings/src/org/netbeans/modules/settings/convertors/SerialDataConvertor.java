@@ -28,6 +28,7 @@ import org.openide.loaders.Environment;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
+import org.openide.util.WeakListener;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.AbstractLookup;
 
@@ -59,6 +60,7 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
     private SerialDataConvertor.SettingsInstance instance;
     private SaveSupport saver;
     private ErrorManager err;
+    private PropertyChangeListener moduleInfoListener;
     
     /** Creates a new instance of SDConvertor */
     public SerialDataConvertor(DataObject dobj, FileObject provider) {
@@ -190,7 +192,7 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
         else if (name == SaveSupport.PROP_FILE_CHANGED) {
             miUnInitialized = true;
             if (mi != null) {
-                mi.removePropertyChangeListener(this);
+                mi.removePropertyChangeListener(moduleInfoListener);
             }
             instanceCookieChanged(null);
         } else if(ModuleInfo.PROP_ENABLED.equals(evt.getPropertyName())) {
@@ -227,7 +229,8 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
             miUnInitialized = false;
             if (mi != null) {
                 wasModuleEnabled = mi.isEnabled();
-                mi.addPropertyChangeListener(this);
+                moduleInfoListener = WeakListener.propertyChange(this, mi);
+                mi.addPropertyChangeListener(moduleInfoListener);
             }
         }
         return mi == null || mi.isEnabled();
@@ -418,6 +421,10 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
         private final java.lang.ref.WeakReference instance;
         /** remember whether the DataObject is a template or not; calling isTemplate() is slow  */
         private Boolean knownToBeTemplate = null;
+        /** the setting object is serialized, if true ignore prop. change
+         * notifications
+         */
+        private boolean isWriting = false;
         /** convertor for possible format upgrade */
         private Convertor convertor;
         
@@ -544,13 +551,21 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
                     new Class[] {PropertyChangeListener.class});
                 method.invoke(inst, new Object[] {this});
             } catch (NoSuchMethodException ex) {
-                err.log(ErrorManager.INFORMATIONAL,
-                "NoSuchMethodException: " + // NOI18N
-                inst.getClass().getName() + ".addPropertyChangeListener"); // NOI18N
+                // just changes done through gui will be saved
+                ErrorManager err = ErrorManager.getDefault();
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log(ErrorManager.INFORMATIONAL,
+                    "NoSuchMethodException: " + // NOI18N
+                    inst.getClass().getName() + ".addPropertyChangeListener"); // NOI18N
+                }
             } catch (IllegalAccessException ex) {
-                ErrorManager.getDefault().notify(ex);
+                // just changes done through gui will be saved
+                ErrorManager err = ErrorManager.getDefault();
+                err.annotate(ex, "Instance: " + inst); // NOI18N
+                err.notify(ex);
             } catch (java.lang.reflect.InvocationTargetException ex) {
-                ErrorManager.getDefault().notify(ex);
+                // just changes done through gui will be saved
+                ErrorManager.getDefault().notify(ex.getTargetException());
             }
         }
         
@@ -563,16 +578,19 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
                     new Class[] {PropertyChangeListener.class});
                 method.invoke(inst, new Object[] {this});
             } catch (NoSuchMethodException ex) {
-                err.log(ErrorManager.INFORMATIONAL,
-                "NoSuchMethodException: " + // NOI18N
-                inst.getClass().getName() + ".removePropertyChangeListener"); // NOI18N
                 // just changes done through gui will be saved
+                ErrorManager err = ErrorManager.getDefault();
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log(ErrorManager.INFORMATIONAL,
+                    "NoSuchMethodException: " + // NOI18N
+                    inst.getClass().getName() + ".removePropertyChangeListener"); // NOI18N
+                }
             } catch (IllegalAccessException ex) {
-                ErrorManager.getDefault().notify(ex);
-                // just changes done through gui will be saved
+                ErrorManager err = ErrorManager.getDefault();
+                err.annotate(ex, "Instance: " + inst); // NOI18N
+                err.notify(ex);
             } catch (java.lang.reflect.InvocationTargetException ex) {
-                ErrorManager.getDefault().notify(ex);
-                // just changes done through gui will be saved
+                ErrorManager.getDefault().notify(ex.getTargetException());
             }
         }
         
@@ -603,7 +621,7 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
 
         /** process events coming from a setting object */
         public final void propertyChange(java.beans.PropertyChangeEvent pce) {
-            if (isChanged) {
+            if (isChanged || isWriting) {
                 return;
             }
             if (ignoreChange(pce)) return ;
@@ -673,8 +691,8 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
             
             java.io.ByteArrayOutputStream b = new java.io.ByteArrayOutputStream(1024);
             java.io.Writer w = new java.io.OutputStreamWriter(b, "UTF-8"); // NOI18N
-            isChanged = false;
             try {
+                isWriting = true;
                 Convertor conv = getConvertor();
                 if (conv != null) {
                     conv.write(w, inst);
@@ -683,7 +701,9 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
                 }
             } finally {
                 w.close();
+                isWriting = false;
             }
+            isChanged = false;
 
             buf = b;
             file.getFileSystem().runAtomicAction(this);

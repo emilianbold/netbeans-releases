@@ -292,12 +292,15 @@ public class SerialDataConvertorTest extends NbTestCase {
         
     } */
     
-    private static final class Ser extends Object implements Externalizable {
+    public static final class Ser extends Object implements Externalizable {
         static final long serialVersionUID = -123456;
-        
         public int deserialized;
         public int serialized;
         private String name;
+        
+        private int property;
+        
+        private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
         
         public Ser (String name) {
             this.name = name;
@@ -313,6 +316,24 @@ public class SerialDataConvertorTest extends NbTestCase {
         throws java.io.IOException {
 //            System.err.println(name + " serialized");
             serialized++;
+        }
+        
+        public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+            propertyChangeSupport.addPropertyChangeListener(l);
+        }
+        
+        public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+            propertyChangeSupport.removePropertyChangeListener(l);
+        }
+        
+        public int getProperty() {
+            return this.property;
+        }
+        
+        public void setProperty(int property) {
+            int oldProperty = this.property;
+            this.property = property;
+            propertyChangeSupport.firePropertyChange("property", new Integer(oldProperty), new Integer(property));
         }
         
     }
@@ -361,5 +382,35 @@ public class SerialDataConvertorTest extends NbTestCase {
             assertTrue("InstanceDataObject.create(..., true) must create new file: "
                 + ido2.getPrimaryFile(), ido.getPrimaryFile() != ido2.getPrimaryFile());
         }
+    }
+    
+    public void testDeleteSettings() throws Exception {
+        FileObject root = lfs.getRoot();
+        DataFolder folder = DataFolder.findFolder(root);
+        
+        String filename = "testDeleteSettings";
+        javax.swing.JButton obj = new javax.swing.JButton();
+        InstanceDataObject ido = InstanceDataObject.create(folder, filename, obj, null, false);
+        assertNotNull("InstanceDataObject.create cannot return null!", ido);
+        
+        // test if file object does not remain locked when ido is deleted and
+        // the storing is not rescheduled in consequence of the serialization 
+        obj.setForeground(java.awt.Color.black);
+        Thread.sleep(500);
+        ido.delete();
+        assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
+        Thread.sleep(3000);
+        assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
+        
+        filename = "testDeleteSettings2";
+        Ser ser = new Ser("bla");
+        ido = InstanceDataObject.create(folder, filename, ser, null, false);
+        assertNotNull("InstanceDataObject.create cannot return null!", ido);
+        
+        ser.setProperty(10);
+        ido.delete();
+        assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
+        Thread.sleep(3000);
+        assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
     }
 }

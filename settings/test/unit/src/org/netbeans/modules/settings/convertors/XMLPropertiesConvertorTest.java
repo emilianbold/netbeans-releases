@@ -239,7 +239,6 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
     
     public void testUpgradeSettingWithUnknownClass() throws Exception {
         String res = "Settings/org-netbeans-modules-settings-convertors-FooSettingSerialDataUnknownClass.settings";
-        sfs.findResource("Settings").createData("testUpgradeSettingWithUnknownClass.br");
         FileObject fo = sfs.findResource(res);
         assertNotNull(res, fo);
         long last = fo.lastModified().getTime();
@@ -268,7 +267,24 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         
     }
     
-   final class SaverImpl implements Saver {
+    public void testDeleteSettings() throws Exception {
+        FileObject root = sfs.getRoot();
+        DataFolder folder = DataFolder.findFolder(root);
+        
+        String filename = "testDeleteSettings";
+        FooSetting obj = new FooSetting();
+        InstanceDataObject ido = InstanceDataObject.create(folder, filename, obj, null, false);
+        assertNotNull("InstanceDataObject.create cannot return null!", ido);
+        
+        obj.setProperty1("testDeleteSettings");
+        Thread.sleep(500);
+        ido.delete();
+        assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
+        Thread.sleep(3000);
+        assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
+    }
+    
+    final class SaverImpl implements Saver {
         static final int NOT_CHANGED = 0;
         static final int DIRTY = 1;
         static final int SAVE = 2;
