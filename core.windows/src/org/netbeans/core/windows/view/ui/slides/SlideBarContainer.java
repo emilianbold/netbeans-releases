@@ -134,11 +134,13 @@ public final class SlideBarContainer extends AbstractModeContainer {
         
         public boolean supportsKind(int kind, TopComponent transfer) {
             if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
-            || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
-                return true;
+                  || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+                 return true;
             }
+            boolean isNonEditor = kind == Constants.MODE_KIND_VIEW || kind == Constants.MODE_KIND_SLIDING;
+            boolean thisIsNonEditor = getKind() == Constants.MODE_KIND_VIEW || getKind() == Constants.MODE_KIND_SLIDING;
 
-            return kind == getKind();
+            return (isNonEditor == thisIsNonEditor);
         }
         // TopComponentDroppable<<
         

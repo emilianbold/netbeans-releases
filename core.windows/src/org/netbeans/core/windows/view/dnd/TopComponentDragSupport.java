@@ -225,27 +225,33 @@ implements AWTEventListener, DragSourceListener {
         boolean ctrlDown  = me.isControlDown();
         
         TopComponent tc = null;
+        Tabbed tabbed;
 
-        if (tc == null) {
-            Tabbed tabbed;
-            if(srcComp instanceof Tabbed) {
-                tabbed = (Tabbed)srcComp;
+        if(srcComp instanceof Tabbed) {
+            tabbed = (Tabbed)srcComp;
+        } else {
+            tabbed = (Tabbed)SwingUtilities.getAncestorOfClass(Tabbed.class, srcComp);
+        }
+        if (tabbed == null) {
+            if(srcComp instanceof Tabbed.Accessor) {
+                tabbed = ((Tabbed.Accessor)srcComp).getTabbed();
             } else {
-                tabbed = (Tabbed)SwingUtilities.getAncestorOfClass(Tabbed.class, srcComp);
+                Tabbed.Accessor acc = (Tabbed.Accessor)SwingUtilities.getAncestorOfClass(Tabbed.Accessor.class, srcComp);
+                tabbed = acc != null ? acc.getTabbed() : null;
             }
-            if(tabbed == null) {
-                return;
-            }
-
-            Point pp = new Point(point);
-            Point p = SwingUtilities.convertPoint(srcComp, pp, (Component)tabbed);
-
-            // #38362 Don't start DnD when closing tab.
-            String cmd = tabbed.getCommandAtPoint(p);
-
-            if (TabbedAdapter.COMMAND_SELECT.equals(cmd)) {
-                tc = tabbed.getTopComponentAt(tabbed.tabForCoordinate(p));
-            }
+        }
+        if(tabbed == null) {
+            return;
+        }
+        
+        Point ppp = new Point(point);
+        Point p = SwingUtilities.convertPoint(srcComp, ppp, tabbed.getComponent());
+        
+        // #38362 Don't start DnD when closing tab.
+        String cmd = tabbed.getCommandAtPoint(p);
+        
+        if (TabbedAdapter.COMMAND_SELECT.equals(cmd)) {
+            tc = tabbed.getTopComponentAt(tabbed.tabForCoordinate(p));
         }
 
         if (tc == null) {
@@ -268,6 +274,10 @@ implements AWTEventListener, DragSourceListener {
         TopComponentDroppable startDroppable = (TopComponentDroppable)SwingUtilities
                             .getAncestorOfClass(TopComponentDroppable.class, tc);
         Point startPoint;
+        if (startDroppable == null) {
+            startDroppable = (TopComponentDroppable)SwingUtilities
+                                .getAncestorOfClass(TopComponentDroppable.class, tabbed.getComponent());
+        }
         if(startDroppable != null) {
             startPoint = point;
             Point pp = new Point(point);
@@ -278,6 +288,7 @@ implements AWTEventListener, DragSourceListener {
         //dragSource.startDrag(event, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR) ,image , new Point(-offX, -offY),text, this);
 
         doStartDrag(
+            srcComp,
             tc, 
             new DragGestureEvent(
                 new FakeDragGestureRecognizer(windowDnDManager, me),
@@ -291,7 +302,7 @@ implements AWTEventListener, DragSourceListener {
     }
     
     /** Actually starts the drag operation. */
-    private void doStartDrag(Object transfer, DragGestureEvent evt,
+    private void doStartDrag(Component startingComp, Object transfer, DragGestureEvent evt,
     TopComponentDroppable startingDroppable, Point startingPoint) {
         if(DEBUG) {
             debugLog(""); // NOI18N
@@ -327,7 +338,7 @@ implements AWTEventListener, DragSourceListener {
 
         
         Container con = SwingUtilities.getAncestorOfClass(
-                ModeComponent.class, firstTC);
+                ModeComponent.class, startingComp);
                         
         if(con == null) {
             // TopComponent not in mode container. Can not start drag!
@@ -340,7 +351,12 @@ implements AWTEventListener, DragSourceListener {
         hackESC = false;
         
         Tabbed tabbed = (Tabbed) SwingUtilities.getAncestorOfClass (Tabbed.class,
-            firstTC);
+            startingComp);
+        if (tabbed == null) {
+            Tabbed.Accessor acc = (Tabbed.Accessor) SwingUtilities.getAncestorOfClass (Tabbed.Accessor.class,
+                                                                                       firstTC);
+            tabbed = acc != null ? acc.getTabbed() : null;
+        }
         
         Image img = null;
         if (tabbed != null && Constants.SWITCH_USE_DRAG_IMAGES) {

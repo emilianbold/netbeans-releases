@@ -189,14 +189,16 @@ public abstract class AbstractModeContainer implements ModeContainer {
     
     protected boolean canDrop(TopComponent transfer) {
         if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
-        || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
+          || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(transfer)) {
             return true;
         }
         
         ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(transfer);
         int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
-
-        return this.kind == kind;
+        
+        boolean isNonEditor = kind == Constants.MODE_KIND_VIEW || kind == Constants.MODE_KIND_SLIDING;
+        boolean thisIsNonEditor = this.kind == Constants.MODE_KIND_VIEW || this.kind == Constants.MODE_KIND_SLIDING;
+        return isNonEditor == thisIsNonEditor;
     }
     // Support for TopComponentDroppable
     ////////////////////////

@@ -38,6 +38,7 @@ import org.netbeans.core.windows.view.ui.Tabbed;
 import org.netbeans.swing.tabcontrol.SlideBarDataModel;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
+import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.openide.windows.TopComponent;
 
 /*
@@ -259,8 +260,17 @@ public final class TabbedSlideAdapter implements Tabbed {
     }
     
     public Shape getIndicationForLocation(Point location, TopComponent startingTransfer, Point startingPoint, boolean attachingPossible) {
-        // XXX - TBD
-        return null;
+        Rectangle rect = slideBar.getBounds();
+        rect.setLocation(0, 0);
+        
+        int tab = tabForCoordinate(location);
+        // first process the tabs when mouse is inside the tabs area..
+        // need to process before the side resolution.
+        if (tab != -1) {
+            return getTabBounds(tab);
+        }
+        
+        return new Rectangle(0, 0, rect.width, rect.height);
     }
     
     public Image createImageOfTab(int tabIndex) {
@@ -270,6 +280,10 @@ public final class TabbedSlideAdapter implements Tabbed {
     
     public String getCommandAtPoint(Point p) {
         // XXX - TBD
+        int tab = tabForCoordinate(p);
+        if (tab != -1) {
+            return TabbedContainer.COMMAND_SELECT;
+        }
         return null;
     }
     
