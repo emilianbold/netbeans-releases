@@ -72,9 +72,20 @@ public class Utils {
                         FileObject ch = (FileObject)e.nextElement();
                         getEM().log("ch: " + ch);
                         if (!ch.isFolder() && !ch.isRoot() && !ch.isVirtual() && ch.isValid() && JspLoader.JSP_MIME_TYPE.equals(ch.getMIMEType())) {
-                            if (!jsps.contains(ch.getPath())) {
-                                jsps.add(ch.getPath());
-//                                sorted.put(ch.getPath(), ch.getPath());
+                            String ctx = "";                                    
+                            FileObject root = ch.getFileSystem().getRoot();
+                            DataObject data = null;
+                            try {
+                                data = DataObject.find(root);
+                            } catch (Exception excep) {
+                                // don't care
+                            }
+                            if ((data instanceof WebContextObject) && (data!=null)) {
+                                ctx = ((WebContextObject)data).getContextPath();
+                                String idStr = ctx + " : " + ch.getPath();
+                                if (!jsps.contains(idStr)) {
+                                    jsps.add(idStr);
+                                }
                             }
                         }
                     }
