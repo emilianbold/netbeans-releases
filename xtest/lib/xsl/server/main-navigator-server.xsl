@@ -87,9 +87,9 @@
 		</UL>
 		<UL>			
 			<LI><A HREF="../index.html" TARGET="_top">Back to report home</A></LI>				
-			<LI><A HREF="../../../../../../matrix-{/XTestResultsReport/@testingGroup}-{/XTestResultsReport/@testedType}-{/XTestResultsReport/@host}.html" TARGET="_top">Builds history matrix</A></LI>
-			<LI><A HREF="../../../../../../{/XTestResultsReport/@testingGroup}-{/XTestResultsReport/@testedType}.html" TARGET="_top">Back to builds overview</A></LI>
-			<LI><A HREF="../../../../../../../index.html" TARGET="_top">Back to overall results</A></LI>
+			<LI><A HREF="../../../../../matrix-{/XTestResultsReport/@testingGroup}-{/XTestResultsReport/@testedType}-{/XTestResultsReport/@host}.html" TARGET="_top">Builds history matrix</A></LI>
+			<LI><A HREF="../../../../../{/XTestResultsReport/@testingGroup}-{/XTestResultsReport/@testedType}.html" TARGET="_top">Back to builds overview</A></LI>
+			<LI><A HREF="../../../../../../index.html" TARGET="_top">Back to overall results</A></LI>
 		</UL>
 	</H4>	
 </xsl:template>
