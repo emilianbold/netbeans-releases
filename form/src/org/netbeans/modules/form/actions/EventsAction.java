@@ -24,14 +24,13 @@ import javax.swing.plaf.*;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
-//import org.openide.nodes.Cookies;
 import org.openide.nodes.Node;
-//import com.netbeans.developer.modules.loaders.form.FormEditor;
-//import com.netbeans.developer.modules.loaders.form.RADNode;
-//import com.netbeans.developer.modules.loaders.form.EventsList;
+import com.netbeans.developer.modules.loaders.form.FormEditor;
+import com.netbeans.developer.modules.loaders.form.RADComponent;
+import com.netbeans.developer.modules.loaders.form.EventsList;
 import com.netbeans.developer.modules.loaders.form.RADComponentCookie;
 
-/** Events action - subclass of NodeAction - enabled on RADNodes.
+/** Events action - subclass of NodeAction - enabled on RADComponents.
 *
 * @author   Ian Formanek
 */
@@ -85,7 +84,7 @@ public class EventsAction extends CookieAction {
   /** Returns a JMenuItem that presents the Action, that implements this
   * interface, in a MenuBar.
   * @return the JMenuItem representation for the Action
-  * /
+  */
   public JMenuItem getMenuPresenter() {
     return getPopupPresenter ();
   }
@@ -93,9 +92,9 @@ public class EventsAction extends CookieAction {
   /** Returns a JMenuItem that presents the Action, that implements this
   * interface, in a Popup Menu.
   * @return the JMenuItem representation for the Action
-  * /
+  */
   public JMenuItem getPopupPresenter() {
-    JMenu popupMenu = new JMenu (FormEditor.getFormBundle ().getString ("ACT_Events"));
+    JMenu popupMenu = new JMenu (org.openide.util.NbBundle.getBundle (EventsAction.class).getString ("ACT_Events"));
     popupMenu.setEnabled (isEnabled ());
     popupMenu.addMenuListener(new MenuListener() {
         Hashtable mapping = new Hashtable ();
@@ -107,11 +106,12 @@ public class EventsAction extends CookieAction {
           if (nodes.length == 0) return;
           Node n = nodes[0]; // we suppose that one node is activated
 
-          if (! (Cookies.isInstanceOf (nodes[0].getCookie (), RADComponentCookie.class))) 
+          RADComponent radComp = ((RADComponentCookie) n.getCookie(RADComponentCookie.class)).getRADComponent ();
+          if (radComp == null) {
             return;
-            
-          RADNode node = ((RADComponentCookie) Cookies.getInstanceOf (n.getCookie(), RADComponentCookie.class)).getFormNode ();
-          EventsList em = node.getEventsList ();
+          }            
+
+          EventsList em = radComp.getEventsList ();
           EventsList.EventSet[] setHandlers = em.getEventSets ();
          
           for (int i = 0; i < setHandlers.length; i++) {
@@ -151,10 +151,11 @@ public class EventsAction extends CookieAction {
     );
     return popupMenu;
   }
-*/
 }
 /*
  * Log
+ *  6    Gandalf   1.5         6/27/99  Ian Formanek    FUlly implemented for 
+ *       Gandalf
  *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  4    Gandalf   1.3         5/20/99  Ian Formanek    FormNodeCookie->RADComponentCookie
