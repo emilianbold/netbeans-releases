@@ -4,7 +4,6 @@ OpenIDE-Module-Install: org/netbeans/modules/debugger/support/DebuggerModule.cla
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/resources/mf-layer.xml
 OpenIDE-Module-Specification-Version: 1.1.7
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Module-Dependencies: org.openidex.util/1
 
 Name: org/netbeans/modules/debugger/support/DebuggerSettings.class
 OpenIDE-Module-Class: Option
