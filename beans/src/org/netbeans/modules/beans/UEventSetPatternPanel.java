@@ -23,7 +23,7 @@ import org.openide.util.NbBundle;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.src.*;
-
+import org.openide.util.HelpCtx;
 /** Customizer for new Unicast Event Set Pattern
  *
  * @author Petr Hrebejk
@@ -64,6 +64,8 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
         implRadioButton.setText( PatternNode.getString( "CTL_UEventSetPanel_implRadioButton" ) );
         fireCheckBox.setText( PatternNode.getString( "CTL_UEventSetPanel_fireCheckBox" ) );
         passEventCheckBox.setText( PatternNode.getString( "CTL_UEventSetPanel_passEventCheckBox" ) );
+        
+        HelpCtx.setHelpIDString(this, HelpCtxKeys.BEAN_EVENTSETS_HELP); //NO I18N
     }
 
     /** This method is called from within the constructor to

@@ -23,6 +23,7 @@ import org.openide.util.NbBundle;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.src.*;
+import org.openide.util.HelpCtx;
 /** Customizer for new Multicast Event Set
  *
  * @author Petr Hrebejk
@@ -66,6 +67,8 @@ public class EventSetPatternPanel extends javax.swing.JPanel
         ellRadioButton.setText( PatternNode.getString( "CTL_EventSetPanel_ellRadioButton" ) );
         fireCheckBox.setText( PatternNode.getString( "CTL_EventSetPanel_fireCheckBox" ) );
         passEventCheckBox.setText( PatternNode.getString( "CTL_EventSetPanel_passEventCheckBox" ) );
+        
+        HelpCtx.setHelpIDString(this, HelpCtxKeys.BEAN_EVENTSETS_HELP); //NO I18N
     }
 
     /** This method is called from within the constructor to

@@ -34,7 +34,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
-
+import org.openide.util.HelpCtx;
 
 /**
 * Search doc action.
@@ -42,6 +42,7 @@ import org.openide.util.actions.SystemAction;
 * @author   Petr Hrebejk
 */
 public class BiPanel extends ExplorerPanel  {
+    public static final String BEANINFO_HELP = "beans.beaninfo.nodes";
 
     private SplittedPanel sp;
     private static ExplorerManager em;
@@ -101,6 +102,9 @@ public class BiPanel extends ExplorerPanel  {
         em.setExploredContext( node );
     }
 
+    public HelpCtx getHelpCtx(){
+        return new HelpCtx(BiPanel.BEANINFO_HELP);
+    }
 }
 
 /*

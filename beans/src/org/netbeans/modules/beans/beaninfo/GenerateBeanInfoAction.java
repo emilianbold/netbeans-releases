@@ -105,7 +105,8 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
                               NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                               NotifyDescriptor.OK_OPTION,                           // Default
                               DialogDescriptor.BOTTOM_ALIGN,                        // Align
-                              new HelpCtx (GenerateBeanInfoAction.class.getName () + ".dialog"), // Help // NOI18N
+                              //new HelpCtx (GenerateBeanInfoAction.class.getName () + ".dialog"), // Help // NOI18N
+                              new HelpCtx (BiPanel.BEANINFO_HELP), // Help // NOI18N                              
                               null );
 
         biDialog = TopManager.getDefault().createDialog( dd );

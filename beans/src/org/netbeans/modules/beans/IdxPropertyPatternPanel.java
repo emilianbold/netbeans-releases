@@ -23,6 +23,7 @@ import org.openide.util.NbBundle;
 import org.openide.src.Type;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 
 /** Customizer for newIndexed Property Pattern
  *
@@ -89,8 +90,10 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
         niReturnCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_niReturnCheckBox" ) );
         niSetterCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_niSetterCheckBox" ) );
         niSetCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_niSetCheckBox" ) );
+        HelpCtx.setHelpIDString(this, HelpCtxKeys.BEAN_PROPERTIES_HELP); //NO I18N
 
     }
+
 
     /** This method is called from within the constructor to
      * initialize the form.

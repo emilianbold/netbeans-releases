@@ -211,7 +211,8 @@ public class  PatternGroupNode extends AbstractNode {
                                        PatternNode.getString( "CTL_TITLE_NewProperty"),            // Title
                                        true,                                                 // Modal
                                        propertyPanel );
-            dd.setHelpCtx (new HelpCtx (PatternGroupNode.class.getName () + ".dialogProperty")); // NOI18N
+            //dd.setHelpCtx (new HelpCtx (PatternGroupNode.class.getName () + ".dialogProperty")); // NOI18N
+            dd.setHelpCtx (new HelpCtx (HelpCtxKeys.BEAN_PROPERTIES_HELP));
             dd.setClosingOptions( new Object[]{} );
 
             dialog = TopManager.getDefault().createDialog( dd );
@@ -241,7 +242,8 @@ public class  PatternGroupNode extends AbstractNode {
                                        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                                        NotifyDescriptor.OK_OPTION,                           // Default
                                        DialogDescriptor.BOTTOM_ALIGN,                        // Align
-                                       new HelpCtx (PatternGroupNode.class.getName () + ".dialogIdxProperty"), // Help // NOI18N
+                                       //new HelpCtx (PatternGroupNode.class.getName () + ".dialogIdxProperty"), // Help // NOI18N
+                                       new HelpCtx (HelpCtxKeys.BEAN_PROPERTIES_HELP), // Help // NOI18N
                                        idxPropertyPanel );
             dd.setClosingOptions( new Object[]{} );
 
@@ -275,7 +277,8 @@ public class  PatternGroupNode extends AbstractNode {
                                        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                                        NotifyDescriptor.OK_OPTION,                           // Default
                                        DialogDescriptor.BOTTOM_ALIGN,                        // Align
-                                       new HelpCtx (PatternGroupNode.class.getName () + ".dialogUniCastES"), // Help // NOI18N
+                                       //new HelpCtx (PatternGroupNode.class.getName () + ".dialogUniCastES"), // Help // NOI18N
+                                       new HelpCtx (HelpCtxKeys.BEAN_EVENTSETS_HELP), // Help // NOI18N
                                        uEventSetPanel );
             dd.setClosingOptions( new Object[]{} );
 
@@ -301,7 +304,8 @@ public class  PatternGroupNode extends AbstractNode {
                                        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                                        NotifyDescriptor.OK_OPTION,                           // Default
                                        DialogDescriptor.BOTTOM_ALIGN,                        // Align
-                                       new HelpCtx (PatternGroupNode.class.getName () + ".dialogMultiCastES"), // Help // NOI18N
+                                       //new HelpCtx (PatternGroupNode.class.getName () + ".dialogMultiCastES"), // Help // NOI18N
+                                       new HelpCtx (HelpCtxKeys.BEAN_EVENTSETS_HELP), // Help // NOI18N
                                        eventSetPanel );
             dd.setClosingOptions( new Object[]{} );
 

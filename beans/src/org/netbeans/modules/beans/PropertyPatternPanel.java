@@ -23,7 +23,7 @@ import org.openide.util.NbBundle;
 import org.openide.src.Type;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
-
+import org.openide.util.HelpCtx;
 /** Customizer for new Property Pattern
  *
  * @author Petr Hrebejk
@@ -85,6 +85,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
         setCheckBox.setText( PatternNode.getString( "CTL_PropertyPanel_setCheckBox" ) );
         supportCheckBox.setText( PatternNode.getString( "CTL_PropertyPanel_supportCheckBox" ) );
 
+        HelpCtx.setHelpIDString(this, HelpCtxKeys.BEAN_PROPERTIES_HELP); //NO I18N
     }
 
     /** This method is called from within the constructor to

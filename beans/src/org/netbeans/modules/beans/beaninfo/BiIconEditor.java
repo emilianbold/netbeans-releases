@@ -43,6 +43,8 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
  */
 class BiIconEditor extends PropertyEditorSupport {
     
+    private static final String BEAN_ICONEDITOR_HELP = "beans.icon";    
+    
     /** Standard variable for localization. */
     static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
     BiIconEditor.class);
@@ -349,7 +351,7 @@ class BiIconEditor extends PropertyEditorSupport {
             rbClasspath.setSelected(true);
             bSelect.setEnabled(true);
             tfName.setText(((BiImageIcon)i).name);
-            HelpCtx.setHelpIDString(this, IconPanel.class.getName());
+            HelpCtx.setHelpIDString(this, BEAN_ICONEDITOR_HELP); //NO I18N
         }
         
         void updateIcon() {
