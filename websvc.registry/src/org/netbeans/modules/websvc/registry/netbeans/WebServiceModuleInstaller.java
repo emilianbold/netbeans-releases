@@ -18,121 +18,120 @@
 package org.netbeans.modules.websvc.registry.netbeans;
 
 import java.io.*;
+
+import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.InstalledFileLocator;
+
 import org.netbeans.modules.j2ee.platform.api.PlatformProvider;
 
 
-// This is here just to persist the snippets
-
+/** class WebServiceModuleInstaller
+ *
+ *  ModuleInstall for the web service registry module.  Handles reading
+ *  the registry on module startup and saving any changes on module shutdown.
+ */
 public class WebServiceModuleInstaller extends ModuleInstall {
-    PersistenceManagerInterface pmi;
-    static private ExtensionClassLoader specialLoader=null;
-    public void restored() {
-        restoreds();
-        try{
-            PersistenceManagerInterface persistenceManager =(PersistenceManagerInterface)specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance();//NOI18N
-            persistenceManager.load(specialLoader);
-        }
-        catch (Exception e){
-          //  System.out.println("-----null restored because lacking app server classes");
-          //  e.printStackTrace();
-            
-        }
-    }
-    
-    public void close() {
-        //Debug.print(this,"close"," called");
-        try{
-            PersistenceManagerInterface persistenceManager =(PersistenceManagerInterface)specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance();//NOI18N
-            persistenceManager.save(specialLoader);
-        }
-        catch (Exception e){
-          //  System.out.println("-----null close because lacking app server classes");
-            
-        }
-        finally{
-            
-        }
-        
-    }
-    static public  ClassLoader getExtensionClassLoader(){
-        
-        return specialLoader;
-    }
-    
-    public void uninstalled() {
-        close();
-    }
-    
-    public static void restoreds() {
-        if(specialLoader==null){
-            
-            try {
-                specialLoader = new ExtensionClassLoader( new Empty().getClass().getClassLoader());
-                updatesSecialLoader(specialLoader);
-            }
-            catch (Exception ex2) {
-                org.openide.ErrorManager.getDefault().notify(ex2);
-                System.out.println(ex2);
-            }
-        }
-    }
-    
-    public static void updatesSecialLoader(ExtensionClassLoader loader) throws Exception{
-        try {
-            PlatformProvider pm = PlatformProvider.getDefault();
-            File f1 = pm.getLocation();
+	
+	private static ExtensionClassLoader specialLoader = null;
+	private static boolean registryInstalled = false;
+	
+	private PersistenceManagerInterface pmi = null;
+	
+	public void restored() {
+		restoreds();
+		
+		if(registryInstalled) {
+			try {
+				PersistenceManagerInterface persistenceManager = (PersistenceManagerInterface) 
+					specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
+				persistenceManager.load(specialLoader);
+			} catch(Exception ex) {
+				ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+			}
+		}
+	}
+
+	public void close() {
+		if(registryInstalled) {
+			try {
+				PersistenceManagerInterface persistenceManager =(PersistenceManagerInterface)
+					specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
+				persistenceManager.save(specialLoader);
+			} catch(Exception ex) {
+				ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+			} finally {
+			}
+		}
+	}
+	
+	public void uninstalled() {
+		close();
+	}
+
+	public static void restoreds() {
+		if(specialLoader == null) {
+			try {
+				specialLoader = new ExtensionClassLoader(new Empty().getClass().getClassLoader());
+				updatesSecialLoader(specialLoader);
+			} catch(Exception ex) {
+				ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+			}
+		}
+	}
+
+	public static ClassLoader getExtensionClassLoader() {
+		return specialLoader;
+	}
+
+	public static void updatesSecialLoader(ExtensionClassLoader loader) throws Exception {
+		try {
+			PlatformProvider pm = PlatformProvider.getDefault();
+			File f1 = pm.getLocation();
 			if(f1 != null && f1.exists()) {
 				String installRoot = f1.getAbsolutePath();
-				if (installRoot==null){
-					// !PW What will this do on UNIX?
-					File temp = new File("c:\\sun\\appserver\\lib\\appserv-admin.jar");
-					// need also to check on Unix system the defautl location
-					if (temp.exists()){
-						installRoot = "c:\\sun\\appserver";
-						System.setProperty("com.sun.aas.installRoot", installRoot);
-					} else {
-						// !PW due to null check on f1, I don't think this entire block
-						// is even necessary or useful anymore, but just in case,
-						// add a return here so we don't get a NPE later.
-						return;
-					}
-				}
-				File f ;
-				InstalledFileLocator fff= InstalledFileLocator.getDefault();
+//				if(installRoot == null) {
+//					// !PW What will this do on UNIX?
+//					File temp = new File("c:\\sun\\appserver\\lib\\appserv-admin.jar"); // NOI18N
+//					// need also to check on Unix system the defautl location
+//					if(temp.exists()) {
+//						installRoot = "c:\\sun\\appserver"; // NOI18N
+//						System.setProperty("com.sun.aas.installRoot", installRoot); // NOI18N
+//					} else {
+//						// !PW due to null check on f1, I don't think this entire block
+//						// is even necessary or useful anymore, but just in case,
+//						// add a return here so we don't get a NPE later.
+//						return;
+//					}
+//				}
+				
+				InstalledFileLocator locator = InstalledFileLocator.getDefault();
 
-				f = fff.locate("modules/ext/websvcregistry.jar", null, true);
-				if (f!=null)
+				File f = locator.locate("modules/ext/websvcregistry.jar", null, true); // NOI18N
+				if(f != null) {
+					registryInstalled = true;
 					loader.addURL(f);
-				else
-					System.out.println("cannot locate file modules/ext/websvcregistry.jar");
+				} else {
+					ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot locate file modules/ext/websvcregistry.jar");
+				}
 
-				f = new File(installRoot+"/lib/jaxrpc-api.jar");
-				loader.addURL(f);
-				f = new File(installRoot+"/lib/jaxrpc-spi.jar");
-				loader.addURL(f);
-				f = new File(installRoot+"/lib/j2ee.jar");
-				loader.addURL(f);
-				f = new File(installRoot+"/lib/jaxrpc-impl.jar");
-				loader.addURL(f);
-				f = new File(installRoot+"/lib/endorsed/xercesImpl.jar");
-				loader.addURL(f);
-				f = new File(installRoot+"/lib/endorsed/dom.jar");
-				loader.addURL(f);
-				f = new File(installRoot+"/lib/endorsed/xalan.jar");
-				loader.addURL(f);
+				// Add correct jars from the installed application server.
+				SJSASVersion appServerVersion = SJSASVersion.getSJSAppServerVersion();
+				String [] registryRuntimeJars = appServerVersion.getRegistryRuntimeLibraries();
+				
+				for(int i = 0; i < registryRuntimeJars.length; i++) {
+					loader.addURL(new File(installRoot + registryRuntimeJars[i]));
+				}
 			}
-        }
-        catch (Exception ex2) {
-            throw new Exception(ex2.getLocalizedMessage(), ex2);
-        }
-    }
-        /*
-         *used to get the netbeans classload of this class.
-         *
-         **/
-    static class Empty{
-        
-    }
+		} catch(Exception ex) {
+			throw new Exception(ex.getLocalizedMessage(), ex);
+		}
+	}
+	
+	/*
+	 * Used to get the netbeans classloader of this class.
+	 *
+	 */
+	static class Empty {
+	}
 }
