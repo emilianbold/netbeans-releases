@@ -53,7 +53,16 @@ implements FileChangeListener {
         DataObject obj1;
             obj1 = findIt("Services/Misc/inst-2.settings");
             assertEquals("No saved state for inst-2.settings", null, FileUtil.toFile(obj1.getPrimaryFile()));
+            org.openide.ErrorManager.getDefault ().log ("BEFORE THE COOKIE QUERY");
             InstanceCookie inst1 = (InstanceCookie)obj1.getCookie(InstanceCookie.class);
+            org.openide.ErrorManager.getDefault ().log ("AFTER THE COOKIE QUERY");
+            {
+                int debug = 5;
+                while (inst1 == null && debug-- > 0) {
+                    Thread.sleep (300);
+                    org.openide.ErrorManager.getDefault ().log ("  SLEEP[300ms]: " + obj1.getCookie(InstanceCookie.class));
+                }
+            }
             assertNotNull("Had an instance from " + obj1, inst1);
             Action a1 = (Action)inst1.instanceCreate();
             assertTrue("Old version of action", a1.isEnabled());
