@@ -182,10 +182,10 @@ public class LinkProcessor implements InstanceCookie,
     
     /**
      */
-    private void notifyFileDoesNotExist(File file) {
+    private void notifyFileDoesNotExist(String path) {
         String msg = NbBundle.getMessage(LinkProcessor.class,
                                          "MSG_File_does_not_exist",     //NOI18N
-                                         file.getAbsolutePath());
+                                         path);
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                 msg, NotifyDescriptor.WARNING_MESSAGE));
     }
@@ -220,7 +220,7 @@ public class LinkProcessor implements InstanceCookie,
             File file = InstalledFileLocator.getDefault()
                         .locate(path, null, true);
             if (file == null) {
-                notifyFileDoesNotExist(file);
+                notifyFileDoesNotExist(path);
                 return null;
             }
             return file;
@@ -308,7 +308,7 @@ public class LinkProcessor implements InstanceCookie,
                     new PDFOpenSupport(file).open();
                     return;
                 } catch (IllegalArgumentException ex) {
-                    notifyFileDoesNotExist(file);
+                    notifyFileDoesNotExist(file.getPath());
                 }
             }
         } catch (Exception e) {
