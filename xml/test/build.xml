@@ -62,6 +62,7 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="../catalog/test/qa-functional/src"/>
             <fileset dir="../core/test/qa-functional/src"/>
             <fileset dir="../tax/lib/test/qa-functional/src"/>
+            <fileset dir="../tools/test/qa-functional/src"/>
         </copy>
         <ant antfile="${xtest.module_harness.antfile}" dir="." target="compiler-launcher"/>
     </target>

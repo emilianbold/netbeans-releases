@@ -17,11 +17,20 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" compiler="qa-compiler" executor="ide" name="all_xml_stable" resultsprocessor="qa-reporter">
         <testset dir="qa-functional/src">
             <patternset>
+                <!-- TAX -->
 		<include name="org/netbeans/tax/EncodingTest.class"/>
 		<include name="org/netbeans/tax/XMLCloneTest.class"/>
-		<include name="org/netbeans/modules/xml/core/CoreTemplatesTest.class"/>
+                <!-- CORE -->
+		<!-- include name="org/netbeans/modules/xml/core/CoreTemplatesTest.class"/-->
 		<include name="org/netbeans/modules/xml/core/settings/CoreSettingsTest.class"/>
-		<include name="org/netbeans/modules/xml/catalog/CatalogTest.class"/>
+                <!-- CATALOG -->
+		<!-- include name="org/netbeans/modules/xml/catalog/CatalogTest.class"/-->
+                <!-- TOOLS -->
+                <include name="org/netbeans/modules/xml/tools/generator/GenerateDOMScannerSupportTest.class"/>
+                <include name="org/netbeans/modules/xml/tools/generator/GenerateDTDSupportTest.class"/>
+                <include name="org/netbeans/modules/xml/tools/doclet/DTDDocletTest.class"/>
+                <include name="org/netbeans/modules/xml/tools/actions/CheckActionTest.class"/>
+                <include name="org/netbeans/modules/xml/tools/actions/ValidateActionTest.class"/>
             </patternset>
         </testset>
     </testbag>
