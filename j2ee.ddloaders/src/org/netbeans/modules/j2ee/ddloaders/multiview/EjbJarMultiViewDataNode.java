@@ -26,7 +26,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- * A node to represent this entity-jar.xml object.
+ * A node to represent this ejb-jar.xml object.
  *
  * @author pfiala
  */
