@@ -47,11 +47,11 @@ public class XMLUtil {
         else if (attribute) {
             if (msg == '"')
                 out.append("&quot;");
-            else if (attribute && msg == '\'')
+            else if (msg == '\'')
                 out.append("&apos;");
-            else if (attribute && msg == '\n')
+            else if (msg == '\n')
                 out.append("&#xA");
-            else if (attribute && msg == '\t')
+            else if (msg == '\t')
                 out.append("&#x9");
             else
                 out.append(msg);
@@ -146,14 +146,18 @@ public class XMLUtil {
             out.write("&lt;");
         else if (msg == '>')
             out.write("&gt;");
-        else if (attribute && msg == '"')
-            out.write("&quot;");
-        else if (attribute && msg == '\'')
-            out.write("&apos;");
-        else if (attribute && msg == '\n')
-            out.write("&#xA;");
-        else if (attribute && msg == '\t')
-            out.write("&#x9;");
+        else if (attribute) {
+            if (msg == '"')
+                out.write("&quot;");
+            else if (msg == '\'')
+                out.write("&apos;");
+            else if (msg == '\n')
+                out.write("&#xA;");
+            else if (msg == '\t')
+                out.write("&#x9;");
+            else
+                out.write(msg);
+        }
         else
             out.write(msg);
     }
