@@ -142,7 +142,7 @@ class OutWriter extends PrintWriter {
                         StringBuffer sb = new StringBuffer (s.length() + 10);
                         for (int i=0; i < c.length; i++) {
                             if ('\t' == c[i]) {
-                                sb.append ("    ");
+                                sb.append("        "); // NOI18N
                             } else {
                                 sb.append (c[i]);
                             }
@@ -395,7 +395,7 @@ class OutWriter extends PrintWriter {
                 StringBuffer sb = new StringBuffer(data.length + 10);
                 for (int i=0; i < data.length; i++) {
                     if (data[i] == '\t') {
-                        sb.append ("    ");
+                        sb.append("        "); // NOI18N
                     } else {
                         sb.append (data[i]);
                     }
