@@ -28,6 +28,9 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
             <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
             <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
+            <pathelement location="${java/editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar" />       
+            <pathelement location="${java/editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor-lib.jar" /> 
+            <pathelement location="../../../editor/build/test/unit/classes" />
 <!--            <pathelement location="${debuggercore/oldapi.dir}/${nb.modules.dir}/org-openide-debugger.jar"/> -->
             <pathelement location="${projects/queries.dir}/${nb.modules.dir}/org-netbeans-modules-queries.jar"/>
 <!--            <pathelement path="${junit.path}"/> -->
@@ -56,6 +59,9 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${clazz.dir}/${nb.modules.dir}/org-netbeans-modules-clazz.jar"/>
             <pathelement location="${projects/queries.dir}/${nb.modules.dir}/org-netbeans-modules-queries.jar"/>
             <pathelement location="${java/platform.dir}/${nb.modules.dir}/org-netbeans-modules-java-platform.jar"/>
+            <pathelement location="${java/editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar" />       
+            <pathelement location="${java/editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor-lib.jar" /> 
+            <pathelement location="../../../editor/build/test/unit/classes" />
 
 <!--            <pathelement path="${junit.path}"/> -->
             <pathelement path="${xerces.path}"/>

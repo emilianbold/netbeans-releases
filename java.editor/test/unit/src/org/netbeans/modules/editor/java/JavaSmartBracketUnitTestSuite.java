@@ -1,4 +1,4 @@
-package org.netbeans.modules.editor;
+package org.netbeans.modules.editor.java;
 
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSuite;
@@ -10,17 +10,17 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author Miloslav Metelka
  */
-  public class SmartBracketUnitTestSuite extends NbTestSuite {
+  public class JavaSmartBracketUnitTestSuite extends NbTestSuite {
       
-    public SmartBracketUnitTestSuite() {
-        super("Smart Brackets");
+    public JavaSmartBracketUnitTestSuite() {
+        super("Java Smart Brackets");
         
-  //      addTestSuite(JavaBracketCompletionUnitTest.class);
+        addTestSuite(JavaBracketCompletionUnitTest.class);
     }
     
 
     public static NbTestSuite suite() {
-        return new SmartBracketUnitTestSuite();
+        return new JavaSmartBracketUnitTestSuite();
     }
     
 }

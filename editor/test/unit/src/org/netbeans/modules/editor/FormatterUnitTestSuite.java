@@ -2,7 +2,7 @@ package org.netbeans.modules.editor;
 
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.editor.java.JavaFormatterUnitTest;
+//import org.netbeans.modules.editor.java.JavaFormatterUnitTest;
 
 
 /**
@@ -15,7 +15,7 @@ import org.netbeans.modules.editor.java.JavaFormatterUnitTest;
     public FormatterUnitTestSuite() {
         super("Formatter");
         
-        addTestSuite(JavaFormatterUnitTest.class);
+  //      addTestSuite(JavaFormatterUnitTest.class);
     }
     
 
