@@ -377,7 +377,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         
         public DragRepaintManager (DropTargetGlassPane pane) {
             this.pane = pane;
-            if (isHardwareDoubleBuffer) {
+            if (isHardwareDoubleBuffer && !Boolean.getBoolean("nb.winsys.mac.no.double.buffer")) { //NOI18N
                //Only way to avoid screen corruption on OS-X
                RepaintManager.currentManager(pane).setDoubleBufferingEnabled(true);
             }
@@ -385,7 +385,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         
         protected void finalize() {
             if (g != null) g.dispose();
-            if (isHardwareDoubleBuffer) {
+            if (isHardwareDoubleBuffer && !Boolean.getBoolean("nb.winsys.mac.no.double.buffer")) { //NOI18N
                RepaintManager.currentManager(pane).setDoubleBufferingEnabled(false);
             }
         }
