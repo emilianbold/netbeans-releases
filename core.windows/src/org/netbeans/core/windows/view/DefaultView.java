@@ -353,19 +353,21 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         hierarchy.getMainWindow().prepareWindow();
 
         debugLog("Init view 4="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
-        
-        // Adjusts positions of splits.
-        hierarchy.updateSplits();
        
         // Shows main window
         hierarchy.getMainWindow().setVisible(true);
         
-        // XXX Seems it needs to be after setVisible(true);
+        // XXX Seems it needs to be called after setVisible(true);
+        // When tried to be set (maximized) immediately after prepareWindow, it didn't work,
+        // even thou its peer was already present (addNotify from pack was called on frame).
         if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
             hierarchy.getMainWindow().setExtendedState(wsa.getMainWindowFrameStateJoined());
         } else {
             hierarchy.getMainWindow().setExtendedState(wsa.getMainWindowFrameStateSeparated());
         }
+        // XXX #37369 Again this needs to be called after setting possible 
+        // Adjusts positions of splits.
+        hierarchy.updateSplits();
         
         // Show separate modes.
         hierarchy.setSeparateModesVisible(true);
