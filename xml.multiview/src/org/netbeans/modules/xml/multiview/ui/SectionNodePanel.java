@@ -20,6 +20,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import java.awt.*;
 
 /**
  * @author pfiala
@@ -87,6 +88,22 @@ public class SectionNodePanel extends SectionPanel {
 
     protected void closeInnerPanel() {
         if (getFoldButton().isVisible()) {
+            if (getSectionView().getActivePanel() == this) {
+                Container parent = getParent();
+                while (parent != null) {
+                    if (parent instanceof SectionPanel) {
+                        final SectionPanel sectionPanel = (SectionPanel) parent;
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                sectionPanel.setActive(true);
+                            }
+                        });
+                        break;
+                    } else {
+                        parent = parent.getParent();
+                    }
+                }
+            }
             super.closeInnerPanel();
         }
     }
