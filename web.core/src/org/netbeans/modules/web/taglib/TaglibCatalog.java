@@ -141,4 +141,19 @@ public class TaglibCatalog implements CatalogReader, CatalogDescriptor, org.xml.
         }
     }
     
+    /**
+     * Get registered URI for the given name or null if not registered.
+     * @return null if not registered
+     */
+    public String resolveURI(String name) {
+        return null;
+    }
+    /**
+     * Get registered URI for the given publicId or null if not registered.
+     * @return null if not registered
+     */ 
+    public String resolvePublic(String publicId) {
+        return null;
+    }
+    
 }
