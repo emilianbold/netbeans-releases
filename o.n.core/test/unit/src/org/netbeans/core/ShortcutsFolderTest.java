@@ -93,21 +93,6 @@ public class ShortcutsFolderTest extends NbTestCase {
         fs = null;
         fld = null;
         fo = null;
-        try {
-            if (dir.exists()) {
-                File[] f = dir.listFiles();
-                for (int i=0; i < f.length; i++) {
-                    f[i].delete();
-                }
-                dir.delete();
-            }
-            dir = null;
-            folderName = null;
-            repository = null;
-            
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public void testHyphenation (String s) {
@@ -288,9 +273,6 @@ public class ShortcutsFolderTest extends NbTestCase {
         FileObject data2 = fo.createData("OS-F6.instance");
         assertNotNull(data2);
         data2.setAttribute("instanceClass", "org.netbeans.core.ShortcutsFolderTest$TestAction");
-        
-        File file = new File (lastDir + folderName + File.separator + "OD-F6.instance");
-        assertTrue ("Actual file not created: " + file.getPath(), file.exists());
 
         sf.refreshGlobalMap();
         
@@ -315,45 +297,13 @@ public class ShortcutsFolderTest extends NbTestCase {
         FileObject now = fo.getFileObject ("OD-F6.instance");
         //XXX WTF??
         assertNull ("File object should be deleted - but is " + (now == null ? " null " : now.getPath()), now);
-        
-        assertFalse ("File still exists: " + lastDir + "OD-F6.instance", file.exists());
-        
-        file = new File (lastDir + "Shortcuts" + File.separator + "OS-F6.instance");
-        assertTrue ("File should not have been deleted: " + file.getPath(), file.exists());
-        
     }  
 
   
-    
-    private static String lastDir = null;
-    private static File dir = null;
-    private File getTempDir() {
-        String outdir = System.getProperty("java.io.tmpdir"); //NOI18N
-        if (!outdir.endsWith(File.separator)) {
-            outdir += File.separator;
-        }
-        String dirname = Long.toHexString(System.currentTimeMillis());
-        lastDir = outdir + dirname + File.separator;
-        dir = new File (outdir + dirname);
-        try {
-            dir.mkdir();
-        } catch (Exception ioe) {
-            ioe.printStackTrace();
-            fail ("Exception creating temporary dir for tests " + dirname + " - " + ioe.getMessage());
-        }
-        dir.deleteOnExit();
-        
-        return dir;
-    }
-    
     private FileSystem createTestingFilesystem () {
-        FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        FileSystem result = Repository.getDefault ().getDefaultFileSystem ();
+        FileObject root = result.getRoot ();
         try {
-            LocalFileSystem result = new LocalFileSystem();
-            result.setRootDirectory(getTempDir());
-            repository = new Repository (result);
-            fixDefaultRepository();
-            System.setProperty ("org.openide.util.Lookup", "org.netbeans.core.ShortcutsFolderTest$LKP");
             FileObject[] arr = root.getChildren ();
             for (int i = 0; i < arr.length; i++) {
                 arr[i].delete ();
@@ -363,27 +313,15 @@ public class ShortcutsFolderTest extends NbTestCase {
             e.printStackTrace();
             fail (e.getMessage());
         }
-        return null;
-    }
-    
-    private void fixDefaultRepository () {
-        try {
-            Class c = ClassLoader.getSystemClassLoader().loadClass("org.openide.filesystems.ExternalUtil");
-            Method m = c.getDeclaredMethod ("setRepository", new Class[] {Repository.class});
-            m.setAccessible(true);
-            m.invoke (null, new Object[] { repository });
-        } catch (Exception e) {
-            throw new RuntimeException (e);
-        }
+        return result;
     }
     
     private FileObject getFolderForShortcuts(FileSystem fs) {
         FileObject result = null;
         try {
-            folderName = "Shortcuts";
-            result = fs.getRoot().getFileObject(folderName);
+            result = fs.getRoot().getFileObject("Shortcuts");
             if (result == null) {
-                result = fs.getRoot().createFolder(folderName);
+                result = fs.getRoot().createFolder("Shortcuts");
             }
         } catch (Exception e) {
             e.printStackTrace();
