@@ -7,8 +7,9 @@
 package org.netbeans.modules.web.examples;
 
 import java.io.File;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import javax.swing.JComponent;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -79,7 +80,14 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
         FileObject prjLoc = null;
         prjLoc = WebSampleProjectGenerator.createProjectFromTemplate(templateWizard.getTemplate().getPrimaryFile(), projectLocation, name);
         
-        return Collections.singleton(DataObject.find(prjLoc));
+        FileObject webRoot = prjLoc.getFileObject("web");    //NOI18N
+        FileObject index = getIndexFile(webRoot);
+
+        Set hset = new HashSet();
+        hset.add(DataObject.find(prjLoc));
+        hset.add(DataObject.find(index));
+        
+        return hset;
     }
     
     public String name() {
@@ -106,5 +114,15 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
         component.putClientProperty ("WizardPanel_contentData", list); // NOI18N
         component.putClientProperty ("WizardPanel_contentSelectedIndex", new Integer (currentIndex)); // NOI18N
     }
+    
+    private FileObject getIndexFile(FileObject webRoot) {
+        FileObject file = null;
+        file = webRoot.getFileObject("index", "jsp");
+        if (file == null) {
+            file = webRoot.getFileObject("index", "html");
+        }
+        return file;
+    }
+    
     
 }
