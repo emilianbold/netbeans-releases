@@ -101,7 +101,7 @@ public class OptionsAction extends CallableSystemAction {
         protected TreeView initGui () {
             TreeView view;
 
-            if (Boolean.getBoolean ("netbeans.options.new")) {
+            if (!Boolean.getBoolean ("netbeans.options.old")) {
                 view = new TreeTableView();
                 ((TreeTableView)view).setProperties ( new Node.Property [] { 
                     new SettingChildren.IndicatorProperty () ,
@@ -139,7 +139,7 @@ public class OptionsAction extends CallableSystemAction {
         
         private Node initRC () {
             Node rc;
-            if (Boolean.getBoolean ("netbeans.options.new"))
+            if (!Boolean.getBoolean ("netbeans.options.old"))
                 rc = new OptionsFilterNode ();
             else
                 rc = TopManager.getDefault().getPlaces().nodes().session();
