@@ -90,7 +90,8 @@ public class I18nPanel extends JPanel {
     public I18nPanel(PropertyPanel propertyPanel, boolean withButtons, Project project, FileObject file) {
         this.project = project;
         this.file = file;
-        this.propertyPanel = propertyPanel;   
+        this.propertyPanel = propertyPanel; 
+        this.propertyPanel.setEnabled(project != null);
 
         // Init bundle.
         bundle = I18nUtil.getBundle();
@@ -141,6 +142,8 @@ public class I18nPanel extends JPanel {
      */
     public void setProject(Project project) {
         ((ResourcePanel)resourcePanel).setProject(project);
+        propertyPanel.setEnabled(project != null);
+
     }
 
     public Project getProject() { 

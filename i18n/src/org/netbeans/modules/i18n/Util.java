@@ -89,23 +89,22 @@ public class Util {
     public static ClassPath getExecClassPath(FileObject srcFile, FileObject resFile) {
         // try EXECUTE class-path first
         ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE );
-        if (ecp.getResourceName( resFile, '.',false) != null)
+        if ((ecp != null) && (ecp.getResourceName( resFile, '.',false) != null))
             return ecp;
 
 
         // if not directly on EXECUTE, might be on SOURCE
         ClassPath scp = ClassPath.getClassPath( srcFile, ClassPath.SOURCE);
         // try to find  the resource on source class path
-        if (scp.getResourceName( resFile, '.',false) != null) 
+        if ((scp != null) && (scp.getResourceName( resFile, '.',false) != null)) 
             return scp; 
 
         // now try resource owner
         ClassPath rcp = ClassPath.getClassPath( resFile, ClassPath.SOURCE);
-        if (rcp!=null) {
-            // try to find  the resource on source class path
-            if (rcp.getResourceName( resFile, '.',false) != null) 
+        // try to find  the resource on source class path
+        if ((rcp!=null) && (rcp.getResourceName( resFile, '.',false) != null))  
                 return rcp; 
-        }
+        
 
         return null;
     }
@@ -117,13 +116,17 @@ public class Util {
     public static FileObject getResource(FileObject srcFile, String bundleName) {
         // try to find it in sources
         ClassPath scp = ClassPath.getClassPath( srcFile, ClassPath.SOURCE);
-        FileObject ret = scp.findResource(bundleName);
-        if (ret != null) return ret;
+        if (scp != null) {
+            FileObject ret = scp.findResource(bundleName);
+            if (ret != null) return ret;
+        }
 
         // or on the execution class-path
         ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE);
-        ret = ecp.findResource(bundleName);
-        if (ret != null) return ret;
+        if (ecp != null) {
+            FileObject ret = ecp.findResource(bundleName);
+            if (ret != null) return ret;
+        }
 
         return null;
     }
@@ -137,16 +140,20 @@ public class Util {
     public static String getResourceName(FileObject srcFile, FileObject resFile, char separator, boolean bpar) {
         // try SOURCE class-path first
         ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE );
-        String ret = ecp.getResourceName( resFile, separator, bpar);
-        if (ret != null) return ret;
+        if (ecp!=null) {
+            String ret = ecp.getResourceName( resFile, separator, bpar);
+            if (ret != null) return ret;
+        }
 
         ClassPath scp = ClassPath.getClassPath( srcFile, ClassPath.SOURCE );
-        ret = scp.getResourceName( resFile, separator, bpar);
-        if (ret!=null) return ret;
+        if (scp!= null) {
+            String ret = scp.getResourceName( resFile, separator, bpar);
+            if (ret!=null) return ret;
+        }
 
         ClassPath rcp = ClassPath.getClassPath( resFile, ClassPath.SOURCE );
         if (rcp != null) {
-            ret = rcp.getResourceName( resFile, separator, bpar);
+            String ret = rcp.getResourceName( resFile, separator, bpar);
             if (ret!=null) return ret;
         }
         

@@ -48,6 +48,24 @@ public class PropertyPanel extends JPanel {
         initAccessibility();
     }
 
+    public void setEnabled(boolean ena) {
+        super.setEnabled(ena);
+        commentText.setEnabled(ena);
+        commentLabel.setEnabled(ena);
+        commentScroll.setEnabled(ena);
+        
+        keyBundleCombo.setEnabled(ena);
+        keyLabel.setEnabled(ena);
+        
+        replaceFormatButton.setEnabled(ena);
+        replaceFormatLabel.setEnabled(ena);
+        replaceFormatTextField.setEnabled(ena);
+        
+        valueLabel.setEnabled(ena); 
+        valueText.setEnabled(ena);
+        valueScroll.setEnabled(ena);
+    }
+    
     /** Seter for <code>i18nString</code> property. */
     public void setI18nString(I18nString i18nString) {
         this.i18nString = i18nString;
