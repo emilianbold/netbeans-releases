@@ -68,7 +68,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
     }
     
     public void write(java.io.Writer w, Object inst) throws IOException {
-        w.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"); // NOI18N
+        w.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"+XMLSettingsSupport.LINE_SEPARATOR); // NOI18N
         w.write("<!DOCTYPE properties PUBLIC \""); // NOI18N
         
         FileObject foEntity = Env.findEntityRegistration(providerFO);
@@ -80,11 +80,11 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
         }
         
         w.write((String) publicId);
-        w.write("\" \"http://www.netbeans.org/dtds/properties-1_0.dtd\">\n"); // NOI18N
-        w.write("<properties>\n"); // NOI18N
+        w.write("\" \"http://www.netbeans.org/dtds/properties-1_0.dtd\">"+XMLSettingsSupport.LINE_SEPARATOR); // NOI18N
+        w.write("<properties>"+XMLSettingsSupport.LINE_SEPARATOR); // NOI18N
         Properties p = getProperties(inst);
         if (p != null && !p.isEmpty()) writeProperties(w, p);
-        w.write("</properties>\n"); // NOI18N
+        w.write("</properties>"+XMLSettingsSupport.LINE_SEPARATOR); // NOI18N
     }
     
     /** an object listening on the setting changes */
@@ -245,7 +245,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             w.write(key);
             w.write("\" value=\""); // NOI18N
             w.write(p.getProperty(key));
-            w.write("\"/>\n"); // NOI18N
+            w.write("\"/>"+XMLSettingsSupport.LINE_SEPARATOR); // NOI18N
         }
     }
 

@@ -39,6 +39,7 @@ final class XMLSettingsSupport {
     public static final String INSTANCE_DTD_WWW = "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd"; // NOI18N
     /** File extension for xml settings. */
     public static final String XML_EXT = "settings"; //NOI18N
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
     
     /** Logging for events in XML settings system. */
     private static final ErrorManager err = ErrorManager.getDefault().getInstance("XMLSettingsSupport"); // NOI18N
@@ -58,7 +59,7 @@ final class XMLSettingsSupport {
         while (it.hasNext()) {
             sb.append("    <instanceof class=\""). // NOI18N
             append((String)it.next()).
-            append("\"/>\n"); // NOI18N
+            append("\"/>"+LINE_SEPARATOR); // NOI18N
         }
         pw.print(sb.toString());
     }
