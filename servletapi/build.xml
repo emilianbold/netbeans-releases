@@ -55,9 +55,9 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release">
-    <copy todir="netbeans">
-      <fileset dir="${binroot}/httpserver/servletapi/release"/>
-    </copy>
+    <mkdir dir="netbeans/modules/autoload/ext"/>
+    <copy file="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"
+          tofile="netbeans/modules/autoload/ext/servlet-2.2.jar"/>
   </target>
 
   <target name="javahelp">
