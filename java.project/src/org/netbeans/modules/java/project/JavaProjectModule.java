@@ -16,75 +16,22 @@ package org.netbeans.modules.java.project;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import javax.swing.Action;
-import org.netbeans.api.project.ProjectManager;
-import org.openide.ErrorManager;
-import org.openide.loaders.DataLoaderPool;
-import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
-import org.openide.loaders.DataLoader;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
-import org.openide.util.actions.SystemAction;
 
 /**
- * Startup and shutdown hooks for java project support module. It ensures that the
- * Nodes representing Java classes will have project specific actions (e.g.
- * compile/run/debug file) in the popup menu.
+ * Supplies project-specific file actions (e.g. compile/run/debug) for *.java files.
  * @author Petr Hrebejk
  */
-public class JavaProjectModule extends ModuleInstall {
-    /*
-    public void restored() {
-        // Hack JavaDataLoader actions
-        
-        DataLoaderPool dataLoaderPool = (DataLoaderPool) Lookup.getDefault().lookup(DataLoaderPool.class);
-        
-        try {
-            Class javaDataObjectClass = Class.forName( "org.netbeans.modules.java.JavaDataObject", 
-                                                        true, 
-                                                        (ClassLoader)Lookup.getDefault().lookup( ClassLoader.class ) );
+public class JavaProjectModule {
             
-            DataLoader javaLoader = dataLoaderPool.firstProducerOf( javaDataObjectClass );
-            
-            ArrayList actions = new ArrayList(Arrays.asList(javaLoader.getActions()));
-            ArrayList newActions = new ArrayList( actions.size() + 6 );
-
-            for( Iterator it = actions.iterator(); it.hasNext(); ) {
-                SystemAction a = (SystemAction)it.next();
-                newActions.add( a );
-                if ( a instanceof org.openide.actions.OpenAction ) {
-                    newActions.add( null );
-                    newActions.add( new CompileWrapper( ) );
-                    newActions.add( null );
-                    newActions.add( new RunWrapper(  ) );
-                    newActions.add( new DebugWrapper(  ) );
-                    newActions.add( null );
-                }
-            }
-
-
-            javaLoader.setActions((SystemAction[])newActions.toArray(new SystemAction[newActions.size()]));        
-
-            
-        }
-        catch( ClassNotFoundException e ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
-        }
-        
-    }
-     */
-    
-            
-    public static class ActionWrapper extends CallableSystemAction implements ContextAwareAction, PropertyChangeListener {
+    private static class ActionWrapper extends CallableSystemAction implements ContextAwareAction, PropertyChangeListener {
         
         private Action action;
         
@@ -138,9 +85,7 @@ public class JavaProjectModule extends ModuleInstall {
             firePropertyChange( evt.getPropertyName(), evt.getOldValue(), evt.getNewValue() );
         }
         
-        
     }
-    
     
     public static class CompileWrapper extends ActionWrapper {
         

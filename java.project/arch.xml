@@ -967,6 +967,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="resources-layer">
   <p>
    Registers iterators for Java templates.
+   Also registers context menu actions for Java source files.
   </p>
  </answer>
 
