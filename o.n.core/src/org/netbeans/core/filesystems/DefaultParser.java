@@ -120,9 +120,12 @@ abstract class DefaultParser  extends DefaultHandler {
             if (stopException()  != sex) {
                 ErrorManager emgr = ErrorManager.getDefault();
                 emgr.log("While parsing: " + fo.toString());
+                //System.out.println("While parsing: " + fo.toString());
                 Exception e = sex.getException();
                 if (e != null) emgr.notify(emgr.WARNING, e);
                 emgr.notify(emgr.INFORMATIONAL, sex);
+                System.out.println("sex exception: " + sex.getException());
+                //sex.printStackTrace();
                 state = ERROR;
             }
         } finally {
@@ -156,8 +159,14 @@ abstract class DefaultParser  extends DefaultHandler {
 
     /** Report error occured during custom validation. */
     protected void error(String reason) throws SAXException {
-        String msg = reason + ": " + locator == null ? fo.toString() : locator.toString();  //NOI18N
-        throw new SAXException(msg);
+        StringBuffer buf = new StringBuffer (reason).append(": ").append(fo.toString());//NOI18N
+        if (locator != null) {
+            buf.append(" line: ").append(locator.getLineNumber());//NOI18N
+            buf.append(" column: ").append(locator.getColumnNumber());//NOI18N
+        }
+        String msg = buf.toString();  //NOI18N
+        SAXException sex = new SAXException(msg);
+        throw sex;
     }
 
     public void error(SAXParseException exception) throws SAXException {

@@ -189,7 +189,8 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         // references active resolver component
         private MIMEComponent component = null;        
         private String componentDelimiter = null;
-        
+
+
         DescParser(FileObject fo) {
             super(fo);
         }
@@ -316,7 +317,8 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
                         
                         
                     } else {
-                        error();
+                        String reason = "Unexpected element:  " + qName;
+                        error(reason);
                     }
                     break;
 
