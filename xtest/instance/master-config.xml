@@ -205,8 +205,8 @@ Microsystems, Inc. All Rights Reserved.
   </config>
 
   <config name="qa-performance">
- 	<module name="qa"   	testtypes="qa-performance"  attributes="measure_ide"/>  
-        <module name="core"   	testtypes="qa-performance" attributes="measure_ui"/>  
+ 	<module name="performance"   testtypes="unit"  attributes="measure_ide"/>  
+        <module name="performance"   testtypes="qa-functional"  attributes="measure_ui"/>  
   </config>
   
   <config name="david">
