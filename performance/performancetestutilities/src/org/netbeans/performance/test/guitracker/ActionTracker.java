@@ -338,7 +338,7 @@ public class ActionTracker {
         }
         else if (event instanceof WindowEvent) {
             WindowEvent we = (WindowEvent) event;
-            System.out.println("WindowEvent " + we.paramString());
+            //System.out.println("WindowEvent " + we.paramString());
         }
         else if (event instanceof FocusEvent) {
             FocusEvent fe = (FocusEvent) event;
