@@ -42,6 +42,8 @@ import org.openide.util.*;
 import org.openide.util.io.*;
 import org.openide.nodes.*;
 import org.openide.util.lookup.*;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.core.actions.*;
@@ -321,14 +323,14 @@ public abstract class NbTopManager {
         /** Default constructor for lookup. */
         public NbURLDisplayer() {}
         /** WWW browser window. */
-        private HtmlBrowserComponent htmlViewer;
+        private NbBrowser htmlViewer;
         public void showURL(final URL u) {
             Mutex.EVENT.readAccess(new Runnable() {
                 public void run() {
                     if (htmlViewer == null) {
                         htmlViewer = new NbBrowser();
                     }
-                    ((NbBrowser)htmlViewer).showUrl(u);
+                    htmlViewer.showUrl(u);
                 }
             });
         }
@@ -631,14 +633,13 @@ public abstract class NbTopManager {
 
 
     /**
-    * For externalization of HTMLBrowser.
-    */
-    public static class NbBrowser extends HtmlBrowserComponent {
-
-        static final long serialVersionUID =5000673049583700380L;
-
-        private transient PropertyChangeListener idePCL = null;
-        private static Lookup.Result factoryResult = null;
+     * Able to reuse HtmlBrowserComponent.
+     */
+    public static class NbBrowser {
+        
+        private HtmlBrowserComponent brComp;
+        private PropertyChangeListener idePCL;
+        private static Lookup.Result factoryResult;
         
         static {            
             factoryResult = Lookup.getDefault().lookup(new Lookup.Template (HtmlBrowser.Factory.class));
@@ -650,52 +651,57 @@ public abstract class NbTopManager {
             });                                    
         }
         
-        /**
-        * For externalization.
-        */
-        public NbBrowser () {
-            super (((IDESettings)IDESettings.findObject (IDESettings.class, true)).getWWWBrowser (), true, true);
-            putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
-            setListener ();
-        }
-        
-        /** 
-         * Release resources and also allow to create new browser later using another implementation
-         * @return result from ancestor is returned 
-         */
-        protected boolean closeLast () {
-            if (idePCL != null) {
-                ((IDESettings)IDESettings.findObject (IDESettings.class, true)).removePropertyChangeListener (idePCL);
-                idePCL = null;
+        public NbBrowser() {
+            IDESettings settings = (IDESettings)IDESettings.findObject(IDESettings.class, true);
+            HtmlBrowser.Factory browser = settings.getWWWBrowser();
+            // try if an internal browser is set and possibly try to reuse an 
+            // existing component
+            if (browser.createHtmlBrowserImpl().getComponent() != null) {
+                brComp = findOpenedBrowserComponent();
             }
-            ((NbURLDisplayer)org.openide.awt.HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = null;
-            return super.closeLast ();
+            if (brComp == null) {
+                brComp = new HtmlBrowserComponent(browser, true, true);
+                brComp.putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
+            }
+            setListener();
         }
 
-	/** Show URL in browser
-	 * @param url URL to be shown 
-	 */
-	private void showUrl (URL url) {
-            open ();
-            requestActive ();
-            setURL (url);
-	}
-        
-        /* Deserialize this top component.
-        * @param in the stream to deserialize from
-        */
-        public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
-            super.readExternal (in);
-            setListener ();
-            ((NbURLDisplayer)org.openide.awt.HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = this;
+        /** 
+         * Tries to find already opened <code>HtmlBrowserComponent</code>. In
+         * the case of success returns the instance, null otherwise.         
+         */
+        private HtmlBrowserComponent findOpenedBrowserComponent() {
+            for (Iterator it = WindowManager.getDefault().getModes().iterator(); it.hasNext(); ) {
+                Mode m = (Mode) it.next();
+                if ("editor".equals(m.getName())) { // NOI18N
+                    TopComponent[] tcs = m.getTopComponents();
+                    for (int i = 0; i < tcs.length; i++) {
+                        if (tcs[i] instanceof HtmlBrowserComponent) {
+                            return (HtmlBrowserComponent) tcs[i];
+                        }
+                    }
+                    break;
+                }
+            }
+            return null;
+        }
+
+        /** Show URL in browser
+         * @param url URL to be shown
+         */
+        private void showUrl(URL url) {
+            brComp.open();
+            brComp.requestActive();
+            brComp.setURL(url);
         }
 
         /**
          *  Sets listener that invalidates this as main IDE's browser if user changes the settings
          */
         private void setListener () {
-            if (idePCL != null)
+            if (idePCL != null) {
                 return;
+            }
             try {                
                 // listen on preffered browser change
                 idePCL = new PropertyChangeListener () {
@@ -705,9 +711,10 @@ public abstract class NbTopManager {
                         if (name.equals (IDESettings.PROP_WWWBROWSER)) {
                             ((NbURLDisplayer)org.openide.awt.HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = null;
                             if (idePCL != null) {
-                                ((IDESettings)IDESettings.findObject (IDESettings.class, true))
-                                .removePropertyChangeListener (idePCL);
+                                ((IDESettings)IDESettings.findObject (IDESettings.class, true)).
+                                        removePropertyChangeListener (idePCL);
                                 idePCL = null;
+                                brComp = null;
                             }
                         }
                     }
