@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+TODO:
+ - backup instrumented jar files and restore them after test
+ - test if metadata file exists already (Is it needed ?)
+-->
+<project name="emma_main" basedir="." default="coverage-usage">
+    
+    <dirname property="emma_main.basedir" file="${ant.file.emma_main}"/>
+    
+    <property name="nb_all" location="${emma_main.basedir}/../.."/>
+    <property name="xtest.home" location="${nb_all}/xtest"/>
+    <property name="netbeans.dest.dir" location="${nb_all}/nbbuild/netbeans"/>
+    
+    <property file="${xtest.home}/lib/directories.properties"/>
+    <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
+    
+    <property name="xtest.workdir" location="work"/>
+    <property name="emma.dir" location="${xtest.home}/external"/>
+    
+    <path id="emma.lib">
+        <pathelement location="${emma.dir}/emma.jar"/>
+        <pathelement location="${emma.dir}/emma_ant.jar"/>
+    </path>
+    
+    <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
+    
+    <property name="coverage.dir" location="coverage"/>
+    <property name="coverage.filter" location="coverage.filter"/>
+    <property name="coverage.properties" location="coverage.properties"/>
+    
+    <available file="${coverage.filter}" property="available.coverage.filter"/>
+    <available file="${coverage.properties}" property="available.coverage.properties"/>
+    
+    <condition property="do.we.need.to.parse.project.xml.file.for.coverage" >
+        <not><isset property="coverage.path"/></not>
+    </condition>
+    
+    <available file="../nbproject/project.properties" property="do.we.need.to.process.properties.file.for.coverage"/>
+    
+    <target name="load-coverage-properties" if="available.coverage.properties">
+        <property file="${coverage.properties}"/>
+    </target>
+    
+    <target name="emma-init-nbproject-property-files" depends="load-coverage-properties">
+        <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
+        <property file="../nbproject/private/private.properties"/>
+        <property file="../nbproject/project.properties"/>
+    </target>
+    
+    <target name="emma-init-read-property-files" depends="emma-init-nbproject-property-files" 
+            if="do.we.need.to.process.properties.file.for.coverage">
+        <property name="temp.properties.path" location="${xtest.workdir}/sys/temp.properties"/>
+        <copy file="../nbproject/project.properties" tofile="${temp.properties.path}"/>
+        <replace file="${temp.properties.path}" token="test-unit-sys-prop." value="xtest.userdata|"/>
+        <property file="${temp.properties.path}"/>
+        <!-- Properties with prefix "xtest.userdata|" are written to the
+            ${xtest.workdir}/sys/userdata.properties in module_harness.xml#write-property 
+            target and then loaded as system properties before test execution. -->
+        <delete file="${temp.properties.path}"/>
+    </target>
+    
+    <target name="emma-init-parse-project-xml" depends="emma-init-read-property-files" 
+            if="do.we.need.to.parse.project.xml.file.for.coverage" >
+        <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml"
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <parseprojectxml project=".." modulesxml="${nb_all}/nbbuild/templates/modules.xml"
+            codenamebasedashesproperty="code.name.base.dashes"
+            moduleclasspathproperty="module.classpath"/>
+    </target>
+    
+    <target name="emma-init" depends="buildtests,emma-init-parse-project-xml,emma-init-read-property-files,emma-init-coverage-path,emma-init-coverage-source-path"/>
+    
+    <target name="emma-init-coverage-path">
+        <property name="module.jar.dir" value="${nb.modules.dir}"/>
+        <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
+        <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
+        <property name="coverage.path" location="${netbeans.dest.dir}/${cluster.dir}/${module.jar}"/>
+        <echo>coverage.path=${coverage.path}</echo>
+        <path id="coverage.path" path="${coverage.path}"/>
+    </target>
+    
+    <target name="emma-init-coverage-source-path">
+        <property name="coverage.source.path" location="../src"/>
+        <echo>coverage.source.path=${coverage.source.path}</echo>
+        <path id="coverage.source.path" path="${coverage.source.path}"/>
+    </target>
+    
+    <!-- xxx -->
+    
+    <target name="emma" description="turns on emma instrumentation/reporting">
+        <property name="emma.enabled" value="true"/>
+    </target>
+            
+    <target name="emma-instrument"  if="available.coverage.filter">
+        <emma enabled="${emma.enabled}">
+            <instr instrpathref="coverage.path"
+                metadatafile="${coverage.dir}/metadata.emma"
+                mode="overwrite" merge="true">
+                <filter file="coverage.filter"/>
+            </instr>
+        </emma>
+    </target>
+    
+    <target name="emma-instrument-no-filter" unless="available.coverage.filter">
+        <emma enabled="${emma.enabled}">
+            <instr instrpathref="coverage.path"
+                metadatafile="${coverage.dir}/metadata.emma"
+                mode="overwrite" merge="true">
+            </instr>
+        </emma>
+    </target>
+    
+    <target name="emma-report">
+        <emma enabled="${emma.enabled}">
+            <report sourcepathref="coverage.source.path">
+                <fileset dir="${coverage.dir}">
+                    <include name="*.emma"/>
+                </fileset>
+                <txt outfile="${coverage.dir}/coverage.txt"/>
+                <html outfile="${coverage.dir}/coverage.html"/>
+            </report>
+        </emma>
+    </target>
+    
+    <target name="coverage" depends="emma,emma-init,emma-instrument,emma-instrument-no-filter,coverage-runtests,emma-report"/>
+    
+    <!--
+    following must be passed to running measured process:
+    <jvmarg value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
+    and following must be added to its running cp:
+    ${emma.dir}/emma.jar
+    -->
+    
+    <target name="coverage-runtests">
+      <antcall target="runtests">
+            <param name="coverage.lib.path" location="${emma.dir}/emma.jar"/>
+            <param name="coverage.jvm.args" value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
+            <param name="xtest.ide.commandline.suffix" 
+               value="-J-Dnetbeans.security.nocheck=true -J-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
+       </antcall>
+    </target>
+    
+    <target name="cleancoverage">
+        <delete dir="${coverage.dir}"/>
+    </target>
+    
+    <target name="coverage-usage">
+        <echo message="This Ant script is supposed to be imported only!"/>
+    </target>
+    
+</project>
