@@ -146,7 +146,7 @@ final class DefaultCodeExpression implements CodeExpression {
         getExpressionUsage().removeUsingObject(usingObject);
         boolean stillUsed = !getExpressionUsage().isEmpty();
         if (!stillUsed) // the elment is no longer used in the structure
-            codeStructure.removeExpressionUsingVariable(this);
+            codeStructure.removeExpressionFromVariable(this);
         return stillUsed;
     }
 
@@ -172,7 +172,7 @@ final class DefaultCodeExpression implements CodeExpression {
 //        if (!(usedObject instanceof CodeExpression))
 //            return true;
         // an used expression was removed - this expression will be too ...
-        codeStructure.removeExpressionUsingVariable(this);
+        codeStructure.removeExpressionFromVariable(this);
         return false;
     }
 

@@ -121,7 +121,7 @@ class CodeSupport {
         }
 
         public Object getMetaObject() {
-            return null;
+            return parentExpression;
         }
 
         public CodeExpression[] getStatementParameters() {
@@ -161,7 +161,7 @@ class CodeSupport {
         }
 
         public Object getMetaObject() {
-            return null;
+            return variable;
         }
 
         public CodeExpression[] getStatementParameters() {

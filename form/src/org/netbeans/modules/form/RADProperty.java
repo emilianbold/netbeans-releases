@@ -86,10 +86,10 @@ public class RADProperty extends FormProperty {
         Object beanInstance = component.getBeanInstance();
 
         // Ugly hack for Scrollbar - Scrollbar.setOrientation(...) method tries
-        // to re-create the (native) peer, which is not possible. So we detach
+        // to re-create the (native) peer, which we cannot allow. So we detach
         // the peer first before calling the method. This is the only place
         // where we can do it. It could be probably done for all AWT
-        // components, but don't know about any other which would need it.
+        // components, but I don't know about any other which would need it.
         java.awt.peer.ComponentPeer scrollbarPeerHack =
             "setOrientation".equals(writeMethod.getName()) // NOI18N
                     && beanInstance instanceof java.awt.Scrollbar ?

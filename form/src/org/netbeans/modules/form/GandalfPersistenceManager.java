@@ -32,53 +32,82 @@ import org.netbeans.modules.form.layoutsupport.delegates.*;
 import org.netbeans.modules.form.codestructure.*;
 
 /**
+ * XML persistence manager - responsible for saving/loading forms to/from XML.
+ * The class contains lots of complicated code with many hacks ensuring full
+ * compatibility of the format despite that many original classes don't exist
+ * yet (e.g. FormInfo and DesignLayout and subclasses).
  *
- * @author Ian Formanek
+ * @author Ian Formanek, Tomas Pavek
  */
+
 public class GandalfPersistenceManager extends PersistenceManager {
-    public static final String NB32_VERSION = "1.0"; // NOI18N
-    public static final String CURRENT_VERSION = "1.1"; // NOI18N
+    static final String NB32_VERSION = "1.0"; // NOI18N
+    static final String CURRENT_VERSION = "1.1"; // NOI18N
 
-    public static final String XML_FORM = "Form"; // NOI18N
-    public static final String XML_NON_VISUAL_COMPONENTS = "NonVisualComponents"; // NOI18N
-    public static final String XML_CONTAINER = "Container"; // NOI18N
-    public static final String XML_COMPONENT = "Component"; // NOI18N
-    public static final String XML_MENU_COMPONENT = "MenuItem"; // NOI18N
-    public static final String XML_MENU_CONTAINER = "Menu"; // NOI18N
-    public static final String XML_LAYOUT = "Layout"; // NOI18N
-    public static final String XML_CONSTRAINTS = "Constraints"; // NOI18N
-    public static final String XML_CONSTRAINT = "Constraint"; // NOI18N
-    public static final String XML_SUB_COMPONENTS = "SubComponents"; // NOI18N
-    public static final String XML_EVENTS = "Events"; // NOI18N
-    public static final String XML_EVENT = "EventHandler"; // NOI18N
-    public static final String XML_PROPERTIES = "Properties"; // NOI18N
-    public static final String XML_PROPERTY = "Property"; // NOI18N
-    public static final String XML_SYNTHETIC_PROPERTY = "SyntheticProperty"; // NOI18N
-    public static final String XML_SYNTHETIC_PROPERTIES = "SyntheticProperties"; // NOI18N
-    public static final String XML_AUX_VALUES = "AuxValues"; // NOI18N
-    public static final String XML_AUX_VALUE = "AuxValue"; // NOI18N
-    public static final String XML_SERIALIZED_PROPERTY_VALUE = "SerializedValue"; // NOI18N
+    // XML elements names
+    static final String XML_FORM = "Form"; // NOI18N
+    static final String XML_NON_VISUAL_COMPONENTS = "NonVisualComponents"; // NOI18N
+    static final String XML_CONTAINER = "Container"; // NOI18N
+    static final String XML_COMPONENT = "Component"; // NOI18N
+    static final String XML_COMPONENT_REF = "ComponentRef"; // NOI18N
+    static final String XML_MENU_COMPONENT = "MenuItem"; // NOI18N
+    static final String XML_MENU_CONTAINER = "Menu"; // NOI18N
+    static final String XML_LAYOUT = "Layout"; // NOI18N
+    static final String XML_LAYOUT_CODE = "LayoutCode"; // NOI18N
+    static final String XML_CONSTRAINTS = "Constraints"; // NOI18N
+    static final String XML_CONSTRAINT = "Constraint"; // NOI18N
+    static final String XML_SUB_COMPONENTS = "SubComponents"; // NOI18N
+    static final String XML_EVENTS = "Events"; // NOI18N
+    static final String XML_EVENT = "EventHandler"; // NOI18N
+    static final String XML_PROPERTIES = "Properties"; // NOI18N
+    static final String XML_PROPERTY = "Property"; // NOI18N
+    static final String XML_VALUE = "Value"; // NOI18N
+    static final String XML_SYNTHETIC_PROPERTY = "SyntheticProperty"; // NOI18N
+    static final String XML_SYNTHETIC_PROPERTIES = "SyntheticProperties"; // NOI18N
+    static final String XML_AUX_VALUES = "AuxValues"; // NOI18N
+    static final String XML_AUX_VALUE = "AuxValue"; // NOI18N
+    static final String XML_SERIALIZED_PROPERTY_VALUE = "SerializedValue"; // NOI18N
+    static final String XML_CODE_EXPRESSION = "CodeExpression"; // NOI18N
+    static final String XML_CODE_VARIABLE = "CodeVariable"; // NOI18N
+    static final String XML_CODE_ORIGIN = "ExpressionOrigin"; // NOI18N
+    static final String XML_CODE_STATEMENT = "CodeStatement"; // NOI18N
+    static final String XML_CODE_PARAMETERS = "Parameters"; // NOI18N
+    static final String XML_CODE_STATEMENTS = "Statements"; // NOI18N
+    static final String XML_ORIGIN_META_OBJECT = "ExpressionProvider"; // NOI18N
+    static final String XML_STATEMENT_META_OBJECT = "StatementProvider"; // NOI18N
+    static final String XML_CODE_CONSTRUCTOR = "CodeConstructor"; // NOI18N
+    static final String XML_CODE_METHOD = "CodeMethod";
+    static final String XML_CODE_FIELD = "CodeField";
 
-    public static final String ATTR_FORM_VERSION = "version"; // NOI18N
-    public static final String ATTR_FORM_TYPE = "type"; // NOI18N
-    public static final String ATTR_COMPONENT_NAME = "name"; // NOI18N
-    public static final String ATTR_COMPONENT_CLASS = "class"; // NOI18N
-    public static final String ATTR_PROPERTY_NAME = "name"; // NOI18N
-    public static final String ATTR_PROPERTY_TYPE = "type"; // NOI18N
-    public static final String ATTR_PROPERTY_EDITOR = "editor"; // NOI18N
-    public static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
-    public static final String ATTR_PROPERTY_PRE_CODE = "preCode"; // NOI18N
-    public static final String ATTR_PROPERTY_POST_CODE = "postCode"; // NOI18N
-    public static final String ATTR_EVENT_NAME = "event"; // NOI18N
-    public static final String ATTR_EVENT_LISTENER = "listener"; // NOI18N
-    public static final String ATTR_EVENT_PARAMS = "parameters"; // NOI18N
-    public static final String ATTR_EVENT_HANDLER = "handler"; // NOI18N
-    public static final String ATTR_AUX_NAME = "name"; // NOI18N
-    public static final String ATTR_AUX_VALUE = "value"; // NOI18N
-    public static final String ATTR_AUX_VALUE_TYPE = "type"; // NOI18N
-    public static final String ATTR_LAYOUT_CLASS = "class"; // NOI18N
-    public static final String ATTR_CONSTRAINT_LAYOUT = "layoutClass"; // NOI18N
-    public static final String ATTR_CONSTRAINT_VALUE = "value"; // NOI18N
+    // XML attributes names
+    static final String ATTR_FORM_VERSION = "version"; // NOI18N
+    static final String ATTR_FORM_TYPE = "type"; // NOI18N
+    static final String ATTR_COMPONENT_NAME = "name"; // NOI18N
+    static final String ATTR_COMPONENT_CLASS = "class"; // NOI18N
+    static final String ATTR_PROPERTY_NAME = "name"; // NOI18N
+    static final String ATTR_PROPERTY_TYPE = "type"; // NOI18N
+    static final String ATTR_PROPERTY_EDITOR = "editor"; // NOI18N
+    static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
+    static final String ATTR_PROPERTY_PRE_CODE = "preCode"; // NOI18N
+    static final String ATTR_PROPERTY_POST_CODE = "postCode"; // NOI18N
+    static final String ATTR_EVENT_NAME = "event"; // NOI18N
+    static final String ATTR_EVENT_LISTENER = "listener"; // NOI18N
+    static final String ATTR_EVENT_PARAMS = "parameters"; // NOI18N
+    static final String ATTR_EVENT_HANDLER = "handler"; // NOI18N
+    static final String ATTR_AUX_NAME = "name"; // NOI18N
+    static final String ATTR_AUX_VALUE = "value"; // NOI18N
+    static final String ATTR_AUX_VALUE_TYPE = "type"; // NOI18N
+    static final String ATTR_LAYOUT_CLASS = "class"; // NOI18N
+    static final String ATTR_CONSTRAINT_LAYOUT = "layoutClass"; // NOI18N
+    static final String ATTR_CONSTRAINT_VALUE = "value"; // NOI18N
+    static final String ATTR_EXPRESSION_ID = "id"; // NOI18N
+    static final String ATTR_VAR_NAME = "name"; // NOI18N
+    static final String ATTR_VAR_TYPE = "type"; // NOI18N
+    static final String ATTR_VAR_DECLARED_TYPE = "declaredType"; // NOI18N
+    static final String ATTR_META_OBJECT_TYPE = "type"; // NOI18N
+    static final String ATTR_MEMBER_CLASS = "class"; // NOI18N
+    static final String ATTR_MEMBER_PARAMS = "parameterTypes"; // NOI18N
+    static final String ATTR_MEMBER_NAME = "name"; // NOI18N
 
     private static final String ONE_INDENT =  "  "; // NOI18N
     private static final Object NO_VALUE = new Object();
@@ -86,11 +115,22 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private org.w3c.dom.Document topDocument =
         org.openide.xml.XMLUtil.createDocument("topDocument",null,null,null); // NOI18N
 
+    private FileObject formFile;
+
     private FormModel formModel;
 
+    // map of properties that cannot be loaded before a container is filled
     private Map containerDependentProperties;
 
-    private FileObject formFile;
+    // map of loaded components (not necessarily added to FormModel yet)
+    private Map loadedComponents;
+
+    // XML persistence of code structure
+    private Map expressions; // map of expressions/IDs already saved/loaded
+    private int lastExpId; // CodeExpression ID counter (for saving)
+    private Map savedVariables; // set of code variables already saved
+    private boolean codeFlow = true; // we can save/load either code flow
+                                     // or static code structure
 
     private String formInfoName; // name of FormInfo class loaded from the form file
     private String formatVersion; // format version for saving the form file
@@ -298,6 +338,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
         }
 
+        if (loadedComponents != null)
+            loadedComponents.clear();
+        if (expressions != null)
+            expressions.clear();
         containerDependentProperties = null;
 
         loadNonVisuals(mainElement); //, formModel
@@ -313,6 +357,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         containerDependentProperties = null;
+        if (expressions != null)
+            expressions.clear();
+        if (loadedComponents != null)
+            loadedComponents.clear();
     }
 
     private void loadNonVisuals(org.w3c.dom.Node node/*, FormModel formModel*/) {
@@ -373,6 +421,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
             newComponent.initInstance(compClass);
             newComponent.setName(compName);
 
+            getComponentsMap().put(compName, newComponent);
+
             loadComponent(node, newComponent, parentComponent);
 
             return newComponent;
@@ -403,6 +453,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return;
 
         org.w3c.dom.Node layoutNode = null;
+        org.w3c.dom.Node layoutCodeNode = null;
         org.w3c.dom.Node subCompsNode = null;
         org.w3c.dom.Node constraintsNode = null;
 
@@ -426,7 +477,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 constraintsNode = childNode;
             }
             else if (XML_LAYOUT.equals(nodeName)) {
-                layoutNode = childNode;
+                if (layoutCodeNode == null)
+                    layoutNode = childNode;
+            }
+            else if (XML_LAYOUT_CODE.equals(nodeName)) {
+                layoutCodeNode = childNode;
+                layoutNode = null;
             }
             else if (XML_SUB_COMPONENTS.equals(nodeName)) {
                 subCompsNode = childNode;
@@ -474,8 +530,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         if (component instanceof RADVisualComponent
-            && parentComponent instanceof RADVisualContainer)
-        { // load layout constraints for visual component
+            && parentComponent instanceof RADVisualContainer
+            && layoutConvIndex != LAYOUT_FROM_CODE)
+        {   // this is a visual component in a visual contianer,
+            // load NB 3.1 layout constraints for it
             CodeExpression compExp = component.getCodeExpression();
             LayoutSupportManager layoutSupport =
                 ((RADVisualContainer)parentComponent).getLayoutSupport();
@@ -485,9 +543,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
             if (constrNodes == null || constrNodes.length == 0)
                 loadConstraints(null, compExp, layoutSupport);
-            else { // NB 3.1 used to save all constraints ever set, not only for
-                   // the current layout. We must go through all of them, but
-                   // only those of current layout will be loaded.
+            else {
+                // NB 3.1 used to save all constraints ever set. We must
+                // go through all of them, but only those of current layout
+                // will be loaded.
                 for (int i=0; i < constrNodes.length; i++)
                     loadConstraints(constrNodes[i], compExp, layoutSupport);
             }
@@ -499,18 +558,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (container == null)
             return; // this component is not a container
 
+        // we continue in container loading
+
         RADVisualContainer visualContainer =
                 component instanceof RADVisualContainer ?
                         (RADVisualContainer) component : null;
 
-        int convIndex = -1;
-        if (layoutNode != null && visualContainer != null)
-            convIndex = loadLayout(layoutNode, visualContainer.getLayoutSupport());
+        int convIndex = LAYOUT_FROM_CODE;
+        if (visualContainer != null && layoutNode != null) {
+            // this visual container has NB 3.1 layout properties saved
+            convIndex = loadLayout(layoutNode,
+                                   visualContainer.getLayoutSupport());
+        }
 
         // load subcomponents
         RADComponent[] childComponents;
-        childNodes = subCompsNode != null ? subCompsNode.getChildNodes() : null;
-
+        childNodes = subCompsNode != null ?
+                     subCompsNode.getChildNodes() : null;
         if (childNodes != null) {
             ArrayList list = new ArrayList();
             for (int i=0, n=childNodes.getLength(); i < n; i++) {
@@ -532,6 +596,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
         else childComponents = new RADComponent[0];
 
+        if (visualContainer != null && layoutCodeNode != null) {
+            // this visual container has complete layout code saved (doesn't
+            // use NB 3.1 format for saving layout properties and constraints)
+            loadLayoutCode(layoutCodeNode);
+        }
+
         // initialize layout support from restored code
         if (visualContainer != null) {
             if (visualContainer.getLayoutSupport().initializeFromCode()) {
@@ -546,9 +616,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 // [this won't work !!]
             }
         }
-        else container.initSubComponents(childComponents);
+        else // non-visual container
+            container.initSubComponents(childComponents);
 
-        // hack for properties that can't be set until all children 
+        // hack for properties that can't be set until all subcomponents
         // are added to the container
         List postProps;
         if (containerDependentProperties != null
@@ -607,7 +678,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         try { // obligatory try/catch block for finding methods and constructors
 
         if (constrNode == null) { // no constraints found
-            if (convIndex < 0 && layoutConvIndex >= LAYOUT_JSCROLL) {
+            if (convIndex < 0 && layoutConvIndex == LAYOUT_JSCROLL) {
                 // JScrollPane requires special add code although there are
                 // no constraints ...
                 if (setViewportViewMethod == null)
@@ -958,9 +1029,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                                     strValue);
             }
 
-            CodeStatement[] statements = CodeStructure.getStatements(
-                                                         contDelCodeExp,
-                                                         getSetLayoutMethod());
+            Iterator it = CodeStructure.getDefinedStatementsIterator(contDelCodeExp);
+            CodeStatement[] statements = CodeStructure.filterStatements(
+                                                it, getSetLayoutMethod());
             boolean nullLayout;
             if (statements.length > 0) {
                 CodeExpression layoutExp =
@@ -1303,12 +1374,25 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return convIndex;
     }
 
-    private int findName(String name, String[] names) {
+    private static int findName(String name, String[] names) {
         if (names != null)
             for (int i=0; i < names.length; i++)
                 if (name.equals(names[i]))
                     return i;
         return -1;
+    }
+
+    private void loadLayoutCode(org.w3c.dom.Node node) {
+        org.w3c.dom.NodeList childNodes = node.getChildNodes();
+        if (childNodes != null) {
+//            codeFlow = true;
+            for (int i=0, n=childNodes.getLength(); i < n; i++) {
+                org.w3c.dom.Node childNode = childNodes.item(i);
+
+                if (XML_CODE_STATEMENT.equals(childNode.getNodeName()))
+                    loadCodeStatement(childNode, null);
+            }
+        }
     }
 
     private void loadProperties(org.w3c.dom.Node node, RADComponent comp) {
@@ -1339,7 +1423,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 if (propertyEditor != null) {
                     try {
                         Class editorClass = PersistenceObjectRegistry.loadClass(propertyEditor);
-                        Class propertyClass = findPropertyType(propType);
+                        Class propertyClass = getClassFromString(propType);
                         PropertyEditor ed = createPropertyEditor(editorClass, propertyClass, prop);
                         ((RADProperty)prop).setCurrentEditor(ed);
                     } catch (Exception e) {
@@ -1399,7 +1483,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
                 Class propClass = null;
                 try {
-                    if (propType != null) propClass = findPropertyType(propType);
+                    if (propType != null)
+                        propClass = getClassFromString(propType);
                 } catch (Exception e2) {
                     // OK, try to use decodeValue in this case
                     if (Boolean.getBoolean("netbeans.debug.exceptions")) e2.printStackTrace(); // NOI18N
@@ -1514,7 +1599,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             Class auxValueType = null;
                             if (auxValueClass != null) {
                                 try {
-                                    auxValueType = findPropertyType(auxValueClass);
+                                    auxValueType = getClassFromString(auxValueClass);
                                 } catch (Exception e2) {
                                     // OK, try to use decodeValue in this case
                                     if (Boolean.getBoolean("netbeans.debug.exceptions")) e2.printStackTrace(); // NOI18N
@@ -1568,6 +1653,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
             lock = formFile.lock();
             StringBuffer buf1 = new StringBuffer();
             StringBuffer buf2 = new StringBuffer();
+
+            lastExpId = 0; // CodeExpression ID counter
+            if (expressions != null)
+                expressions.clear();
+            if (savedVariables != null)
+                savedVariables.clear();
 
             // start with the lowest version; if there is nothing in the
             // form that requires higher format version, then the form file
@@ -1643,8 +1734,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
             os.write(buf2.toString().getBytes(encoding));
         }
         finally {
-            if (os != null) os.close();
-            if (lock != null) lock.releaseLock();
+            if (expressions != null)
+                expressions.clear();
+            if (savedVariables != null)
+                savedVariables.clear();
+
+            if (os != null)
+                os.close();
+            if (lock != null)
+                lock.releaseLock();
         }
     }
 
@@ -1697,16 +1795,22 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private void saveContainer(ComponentContainer container, StringBuffer buf, String indent) {
+    private void saveContainer(ComponentContainer container,
+                               StringBuffer buf, String indent)
+    {
+        RADVisualContainer visualContainer =
+            container instanceof RADVisualContainer ?
+                (RADVisualContainer) container : null;
+
         RADComponent[] children = null;
 
-        if (container instanceof RADVisualContainer) {
-            saveVisualComponent((RADVisualComponent)container, buf, indent);
-            saveLayout(((RADVisualContainer)container), buf, indent);
+        if (visualContainer != null) {
+            saveVisualComponent(visualContainer, buf, indent);
+            layoutConvIndex = saveLayout(visualContainer, buf, indent);
 
             // compatibility hack for saving form's menu bar (part II)
             if (container instanceof RADVisualFormContainer)
-                children = ((RADVisualContainer)container).getSubComponents();
+                children = visualContainer.getSubComponents();
         } 
         else saveComponent((RADComponent)container, buf, indent);
 
@@ -1714,7 +1818,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
             children = container.getSubBeans();
 
         if (children.length > 0) {
-            buf.append(indent); addElementOpen(buf, XML_SUB_COMPONENTS);
+            buf.append(indent);
+            addElementOpen(buf, XML_SUB_COMPONENTS);
             for (int i = 0; i < children.length; i++) {
                 if (children[i] instanceof RADMenuItemComponent)
                     raiseFormatVersion(CURRENT_VERSION);
@@ -1724,10 +1829,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
             buf.append(indent);
             addElementClose(buf, XML_SUB_COMPONENTS);
         }
+
+        if (visualContainer != null && layoutConvIndex < 0)
+            saveLayoutCode(visualContainer.getLayoutSupport(), buf, indent);
     }
 
-    private void saveLayout(RADVisualContainer container,
-                            StringBuffer buf, String indent)
+    private int saveLayout(RADVisualContainer container,
+                           StringBuffer buf, String indent)
     {
         LayoutSupportManager layoutSupport = container.getLayoutSupport();
         Class layoutClass = layoutSupport.getLayoutDelegate().getSupportedClass();
@@ -1744,12 +1852,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     break;
                 }
 
-            if (convIndex < 0)
-                return; // [to do: XML code persistence]
+            if (convIndex < 0) // not a standard layout
+                return convIndex;
         }
 
         StringBuffer buf2 = new StringBuffer();
-        boolean anyPropertySaved = false;
 
         if (convIndex != LAYOUT_ABSOLUTE && convIndex != LAYOUT_NULL) {
             Node.Property[] properties = layoutSupport.getAllProperties();
@@ -1774,7 +1881,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     if (layout31PropName != null) {
                         saveProperty(property, layout31PropName,
                                      buf2, indent + ONE_INDENT);
-                        anyPropertySaved = true;
                     }
                 }
             }
@@ -1791,12 +1897,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                ATTR_PROPERTY_VALUE },
                 new String[] { "useNullLayout", "boolean", nullLayout } // NOI18N
             );
-            anyPropertySaved = true;
         }
 
         buf.append("\n"); // NOI18N
         buf.append(indent);
-        if (anyPropertySaved) {
+        if (buf2.length() > 0) {
             addElementOpenAttr(
                 buf,
                 XML_LAYOUT,
@@ -1817,6 +1922,48 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                    layout31Names[convIndex]) }
             );
         }
+
+        return convIndex;
+    }
+
+    private void saveLayoutCode(LayoutSupportManager layoutSupport,
+                                StringBuffer buf, String indent)
+    {
+        raiseFormatVersion(CURRENT_VERSION);
+
+        StringBuffer buf2 = new StringBuffer();
+        String subIndent = indent + ONE_INDENT;
+//        codeFlow = true;
+
+        // layout manager code
+        CodeGroup code = layoutSupport.getLayoutCode();
+        if (code != null) {
+            Iterator it = code.getStatementsIterator();
+            while (it.hasNext()) {
+                saveCodeStatement((CodeStatement) it.next(), buf2, subIndent);
+            }
+        }
+
+        // components code
+        for (int i=0, n=layoutSupport.getComponentCount(); i < n; i++) {
+            code = layoutSupport.getComponentCode(i);
+            if (code != null) {
+                Iterator it = code.getStatementsIterator();
+                while (it.hasNext()) {
+                    saveCodeStatement((CodeStatement) it.next(), buf2, subIndent);
+                }
+            }
+        }
+
+        if (buf2.length() > 0) {
+            buf.append(indent);
+            addElementOpen(buf, XML_LAYOUT_CODE);
+
+            buf.append(buf2.toString());
+
+            buf.append(indent);
+            addElementClose(buf, XML_LAYOUT_CODE);
+        }
     }
 
     private void saveVisualComponent(RADVisualComponent component,
@@ -1828,34 +1975,34 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (container == null)
             return;
 
-        LayoutConstraints constr = container.getLayoutSupport().getConstraints(
-                                       container.getIndexOf(component));
+        int componentIndex = container.getIndexOf(component);
+        LayoutConstraints constr =
+            container.getLayoutSupport().getConstraints(componentIndex);
         if (constr == null)
-            return;
+            return; // no constraints
 
-        StringBuffer buf2 = new StringBuffer();
+        StringBuffer buf2 = new StringBuffer(); // [might be not used at all]
         int convIndex = saveConstraints(constr, buf2,
                                         indent + ONE_INDENT + ONE_INDENT);
-        if (convIndex < 0)
-            return;
-
-        buf.append(indent);
-        addElementOpen(buf, XML_CONSTRAINTS);
-        buf.append(indent + ONE_INDENT);
-        addElementOpenAttr(
-            buf,
-            XML_CONSTRAINT,
-            new String[] { ATTR_CONSTRAINT_LAYOUT, ATTR_CONSTRAINT_VALUE },
-            new String[] { PersistenceObjectRegistry.getPrimaryName(
-                               layout31Names[convIndex]),
-                           PersistenceObjectRegistry.getPrimaryName(
-                               layout31ConstraintsNames[convIndex]) }
-        );
-        buf.append(buf2);
-        buf.append(indent + ONE_INDENT);
-        addElementClose(buf, XML_CONSTRAINT);
-        buf.append(indent);
-        addElementClose(buf, XML_CONSTRAINTS);
+        if (convIndex >= 0) { // standard constraints (saved in buf2)
+            buf.append(indent);
+            addElementOpen(buf, XML_CONSTRAINTS);
+            buf.append(indent + ONE_INDENT);
+            addElementOpenAttr(
+                buf,
+                XML_CONSTRAINT,
+                new String[] { ATTR_CONSTRAINT_LAYOUT, ATTR_CONSTRAINT_VALUE },
+                new String[] { PersistenceObjectRegistry.getPrimaryName(
+                                   layout31Names[convIndex]),
+                               PersistenceObjectRegistry.getPrimaryName(
+                                   layout31ConstraintsNames[convIndex]) }
+            );
+            buf.append(buf2);
+            buf.append(indent + ONE_INDENT);
+            addElementClose(buf, XML_CONSTRAINT);
+            buf.append(indent);
+            addElementClose(buf, XML_CONSTRAINTS);
+        }
     }
 
     private int saveConstraints(LayoutConstraints constr,
@@ -1870,8 +2017,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 buf,
                 "BorderConstraints", // NOI18N
                 new String[] { "direction" }, // NOI18N
-                new String[] { position }
-            );
+                new String[] { position });
+
             return LAYOUT_BORDER;
         }
 
@@ -1902,8 +2049,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                Integer.toString(gbConstr.insets.right),
                                Integer.toString(gbConstr.anchor),
                                Double.toString(gbConstr.weightx),
-                               Double.toString(gbConstr.weighty) }
-            );
+                               Double.toString(gbConstr.weighty) });
+
             return LAYOUT_GRIDBAG;
         }
 
@@ -1913,26 +2060,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 (JTabbedPaneSupport.TabConstraints) constr;
 
             StringBuffer buf2 = new StringBuffer();
-            boolean anyPropertySaved = false;
             Node.Property[] tabProperties = constr.getProperties();
 
             for (int i=0; i < tabProperties.length; i++) {
                 FormProperty prop = (FormProperty) tabProperties[i];
-                if (prop.isChanged()) {
+                if (prop.isChanged())
                     saveProperty(prop, prop.getName(),
                                  buf2, indent + ONE_INDENT);
-                    anyPropertySaved = true;
-                }
             }
 
             buf.append(indent);
-            if (anyPropertySaved) {
+            if (buf2.length() > 0) {
                 addElementOpenAttr(
                     buf,
                     "JTabbedPaneConstraints", // NOI18N
                     new String[] { "tabName", "toolTip" }, // NOI18N
-                    new String[] { tabConstr.getTitle(), tabConstr.getToolTip() }
-                );
+                    new String[] { tabConstr.getTitle(),
+                                   tabConstr.getToolTip() });
                 buf.append(buf2);
                 buf.append(indent);
                 addElementClose(buf, "JTabbedPaneConstraints"); // NOI18N
@@ -1942,9 +2086,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     buf,
                     "JTabbedPaneConstraints", // NOI18N
                     new String[] { "tabName", "toolTip" }, // NOI18N
-                    new String[] { tabConstr.getTitle(), tabConstr.getToolTip() }
-                );
+                    new String[] { tabConstr.getTitle(),
+                                   tabConstr.getToolTip() });
             }
+
             return LAYOUT_JTAB;
         }
 
@@ -1967,8 +2112,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 buf,
                 "JSplitPaneConstraints", // NOI18N
                 new String[] { "position" }, // NOI18N
-                new String[] { position }
-            );
+                new String[] { position });
+
             return LAYOUT_JSPLIT;
         }
 
@@ -1980,8 +2125,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 buf,
                 "CardConstraints", // NOI18N
                 new String[] { "cardName" }, // NOI18N
-                new String[] { card }
-            );
+                new String[] { card });
+
             return LAYOUT_CARD;
         }
 
@@ -2003,8 +2148,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                Integer.toString(r.width),
                                Integer.toString(r.height),
                                Integer.toString(layer),
-                               "-1" } // NOI18N
-            );
+                               "-1" }); // NOI18N
+
             return LAYOUT_JLAYER;
         }
 
@@ -2022,8 +2167,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 new String[] { Integer.toString(r.x),
                                Integer.toString(r.y),
                                Integer.toString(r.width),
-                               Integer.toString(r.height) }
-            );
+                               Integer.toString(r.height) });
+
             return LAYOUT_ABSOLUTE;
         }
 
@@ -2230,6 +2375,67 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return true;
     }
 
+    private boolean saveValue(Object value,
+                              Class valueType,
+                              PropertyEditor prEd,
+                              StringBuffer buf,
+                              String indent)
+    {
+        String encodedValue = null;
+        String encodedSerializeValue = null;
+        org.w3c.dom.Node valueNode = null;
+
+        if (prEd instanceof XMLPropertyEditor) {
+            prEd.setValue(value);
+            valueNode = ((XMLPropertyEditor)prEd).storeToXML(topDocument);
+            if (valueNode == null)
+                return false; // property editor refused to save the value
+        }
+        else {
+            encodedValue = encodePrimitiveValue(value);
+            if (encodedValue == null) {
+                encodedSerializeValue = encodeValue(value);
+                if (encodedSerializeValue == null) {
+                    System.err.println("[WARNING] Cannot save value to XML: " // NOI18N
+                                       + value);
+                    return false;
+                }
+            }
+        }
+
+        buf.append(indent);
+
+        if (encodedValue != null) {
+            addLeafElementOpenAttr(
+                buf,
+                XML_VALUE,
+                new String[] { ATTR_PROPERTY_TYPE, ATTR_PROPERTY_VALUE },
+                new String[] { valueType.getName(), encodedValue });
+        }
+        else {
+            addElementOpenAttr(
+                buf,
+                XML_VALUE,
+                new String[] { ATTR_PROPERTY_TYPE, ATTR_PROPERTY_EDITOR },
+                new String[] { valueType.getName(), prEd.getClass().getName() });
+
+            if (valueNode != null) {
+                saveNodeIntoText(buf, valueNode, indent + ONE_INDENT);
+            }
+            else {
+                buf.append(indent + ONE_INDENT);
+                addLeafElementOpenAttr(
+                    buf,
+                    XML_SERIALIZED_PROPERTY_VALUE,
+                    new String[] { ATTR_PROPERTY_VALUE },
+                    new String[] { encodedSerializeValue });
+            }
+            buf.append(indent);
+            addElementClose(buf, XML_VALUE);
+        }
+        return true;
+    }
+
     private void saveSyntheticProperties(RADComponent component, StringBuffer buf, String indent) {
         // compatibility hack for saving form's menu bar (part III)
         if (component instanceof RADVisualFormContainer) {
@@ -2362,6 +2568,866 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return ed;
     }
 
+    // -------
+    // The following code ensures persistence of code structure in XML. The
+    // code is quite general except special hacks for meta components which
+    // must be handled specially (as references) - as we don't save full code
+    // yet but only its parts; components are saved separately. [This feature
+    // is used only for saving/loading code of non-standard layout supports.]
+    //
+    // There are two possible ways how to save the code structure - to save
+    // the code flow or the static structure.
+    //
+    // In the first case (code flow), a sequence of code statements is saved
+    // (together with epxressions used by the statements). In the second case
+    // (static structure), root code expressions are saved as trees including
+    // all used expressions and all defined statements. Which style is used
+    // is controlled by the codeFlow variable. [We use only code flow now.]
+
+    // XML persistence of code structure - saving
+
+    private void saveCodeExpression(CodeExpression exp,
+                                    StringBuffer buf, String indent)
+    {
+        buf.append(indent);
+
+        Object value = getExpressionsMap().get(exp);
+        if (value != null) { // save expression reference only
+            addLeafElementOpenAttr(buf,
+                                   XML_CODE_EXPRESSION,
+                                   new String[] { ATTR_EXPRESSION_ID },
+                                   new String[] { value.toString() });
+        }
+        else { // save complete expression
+            // create expression ID
+            lastExpId++;
+            String expId = Integer.toString(lastExpId);
+            CodeVariable var = exp.getVariable();
+            if (var != null)
+                expId += "_" + var.getName(); // NOI18N
+            getExpressionsMap().put(exp, expId);
+
+            addElementOpenAttr(buf,
+                               XML_CODE_EXPRESSION,
+                               new String[] { ATTR_EXPRESSION_ID },
+                               new String[] { expId.toString() });
+
+            String subIndent = indent + ONE_INDENT;
+
+            if (var != null)
+                saveCodeVariable(var, buf, subIndent);
+
+            saveExpressionOrigin(exp.getOrigin(), buf, subIndent);
+
+            if (!codeFlow) {
+                // if static code structure is being saved, statements are
+                // saved inside their parent expressions
+                Iterator it = CodeStructure.getDefinedStatementsIterator(exp);
+                if (it.hasNext()) {
+                    buf.append(subIndent);
+                    addElementOpen(buf, XML_CODE_STATEMENTS);
+
+                    String subSubIndent = subIndent + ONE_INDENT;
+                    do {
+                        saveCodeStatement((CodeStatement) it.next(),
+                                          buf, subSubIndent);
+                    }
+                    while (it.hasNext());
+
+                    buf.append(subIndent);
+                    addElementClose(buf, XML_CODE_STATEMENTS);
+                }
+            }
+
+            buf.append(indent);
+            addElementClose(buf, XML_CODE_EXPRESSION);
+        }
+    }
+
+    private void saveCodeVariable(CodeVariable var,
+                                  StringBuffer buf, String indent)
+    {
+        buf.append(indent);
+        if (getVariablesMap().get(var) != null) {
+            addLeafElementOpenAttr(buf,
+                                   XML_CODE_VARIABLE,
+                                   new String[] { ATTR_VAR_NAME },
+                                   new String[] { var.getName() });
+        }
+        else {
+            addLeafElementOpenAttr(
+                buf,
+                XML_CODE_VARIABLE,
+                new String[] { ATTR_VAR_NAME,
+                               ATTR_VAR_TYPE,
+                               ATTR_VAR_DECLARED_TYPE },
+                new String[] { var.getName(),
+                               Integer.toString(var.getType()),
+                               var.getDeclaredType().getName() });
+
+            getVariablesMap().put(var, var);
+        }
+    }
+
+    private void saveExpressionOrigin(CodeExpressionOrigin origin,
+                                      StringBuffer buf, String indent)
+    {
+        buf.append(indent);
+        addElementOpen(buf, XML_CODE_ORIGIN);
+
+        String subIndent = indent + ONE_INDENT;
+
+        CodeExpression parentExp = origin.getParentExpression();
+        if (parentExp != null)
+            saveCodeExpression(parentExp, buf, subIndent);
+
+        Object metaObject = origin.getMetaObject();
+        if (metaObject != null)
+            saveOriginMetaObject(metaObject, buf, subIndent);
+        else
+            saveValue(origin.getValue(), origin.getType(), null,
+                      buf, subIndent);
+
+        saveParameters(origin.getCreationParameters(), buf, subIndent);
+
+        buf.append(indent);
+        addElementClose(buf, XML_CODE_ORIGIN);
+    }
+
+    private void saveCodeStatement(CodeStatement statement,
+                                   StringBuffer buf, String indent)
+    {
+        buf.append(indent);
+        addElementOpen(buf, XML_CODE_STATEMENT);
+
+        String subIndent = indent + ONE_INDENT;
+
+        if (codeFlow) {
+            // if code flow is being saved, also the parent expression of
+            // the statement must be saved for it
+            CodeExpression parentExp = statement.getParentExpression();
+            if (parentExp != null)
+                saveCodeExpression(parentExp, buf, subIndent);
+        }
+
+        Object metaObject = statement.getMetaObject();
+        if (metaObject != null)
+            saveStatementMetaObject(metaObject, buf, subIndent);
+
+        saveParameters(statement.getStatementParameters(), buf, subIndent);
+
+        buf.append(indent);
+        addElementClose(buf, XML_CODE_STATEMENT);
+    }
+
+    private void saveOriginMetaObject(Object metaObject,
+                                      StringBuffer buf, String indent)
+    {
+        if (metaObject instanceof Node.Property) {
+            Node.Property property = (Node.Property) metaObject;
+            Object value;
+            try {
+                value = property.getValue();
+            }
+            catch (Exception ex) { // should not happen
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
+                return;
+            }
+
+            PropertyEditor prEd = property instanceof FormProperty ?
+                                  ((FormProperty)property).getCurrentEditor() :
+                                  property.getPropertyEditor();
+            saveValue(value, property.getValueType(), prEd, buf,indent);
+            return;
+        }
+
+        StringBuffer buf2 = new StringBuffer();
+        String subIndent = indent + ONE_INDENT;
+        String originType = null;
+
+        if (metaObject instanceof Constructor) {
+            Constructor ctor = (Constructor) metaObject;
+            StringBuffer buf3 = new StringBuffer();
+            Class[] paramTypes = ctor.getParameterTypes();
+
+            for (int i=0; i < paramTypes.length; i++) {
+                buf3.append(paramTypes[i].getName());
+                if (i+1 < paramTypes.length)
+                    buf3.append(", "); // NOI18N
+            }
+
+            buf2.append(subIndent);
+            addLeafElementOpenAttr(
+                buf2,
+                XML_CODE_CONSTRUCTOR,
+                new String[] { ATTR_MEMBER_CLASS,
+                               ATTR_MEMBER_PARAMS },
+                new String[] { ctor.getDeclaringClass().getName(),
+                               buf3.toString() });
+
+            originType = XML_CODE_CONSTRUCTOR;
+        }
+
+        // special code for handling meta component references
+        else if (metaObject instanceof RADComponent) {
+            RADComponent metacomp = (RADComponent) metaObject;
+
+            buf2.append(subIndent);
+            addLeafElementOpenAttr(
+                buf2,
+                XML_COMPONENT_REF,
+                new String[] { ATTR_COMPONENT_NAME },
+                new String[] { metacomp != formModel.getTopRADComponent() ?
+                               metacomp.getName() : "." }); // NOI18N
+
+            originType = XML_COMPONENT_REF;
+        }
+
+        else if (metaObject instanceof Method) {
+            saveMethod((Method) metaObject, buf2, subIndent);
+            originType = XML_CODE_METHOD;
+        }
+
+        else if (metaObject instanceof Field) {
+            saveField((Field) metaObject, buf2, subIndent);
+            originType = XML_CODE_FIELD;
+        }
+
+        if (originType == null)
+            return; // unknown origin
+
+        buf.append(indent);
+        addElementOpenAttr(buf,
+                           XML_ORIGIN_META_OBJECT,
+                           new String[] { ATTR_META_OBJECT_TYPE },
+                           new String[] { originType } );
+        buf.append(buf2);
+        buf.append(indent);
+        addElementClose(buf, XML_ORIGIN_META_OBJECT);
+    }
+
+    private void saveStatementMetaObject(Object metaObject,
+                                         StringBuffer buf, String indent)
+    {
+        StringBuffer buf2 = new StringBuffer();
+        String subIndent = indent + ONE_INDENT;
+        String statementType = null;
+
+        if (metaObject instanceof Method) {
+            saveMethod((Method) metaObject, buf2, subIndent);
+            statementType = XML_CODE_METHOD;
+        }
+        else if (metaObject instanceof Field) {
+            saveField((Field) metaObject, buf2, subIndent);
+            statementType = XML_CODE_FIELD;
+        }
+        else if (metaObject instanceof CodeExpression) { // variable assignment
+            CodeExpression exp = (CodeExpression) metaObject;
+            if (exp.getVariable() != null) {
+                saveCodeExpression(exp, buf2, subIndent);
+                statementType = XML_CODE_EXPRESSION;
+            }
+        }
+        // [... variable declaration statement]
+
+        if (statementType == null)
+            return; // unknown statement
+
+        buf.append(indent);
+        addElementOpenAttr(buf,
+                           XML_STATEMENT_META_OBJECT,
+                           new String[] { ATTR_META_OBJECT_TYPE },
+                           new String[] { statementType } );
+        buf.append(buf2);
+        buf.append(indent);
+        addElementClose(buf, XML_STATEMENT_META_OBJECT);
+    }
+
+    private void saveParameters(CodeExpression[] parameters,
+                                StringBuffer buf, String indent)
+    {
+        if (parameters.length > 0) {
+            buf.append(indent);
+            addElementOpen(buf, XML_CODE_PARAMETERS);
+
+            String subIndent = indent + ONE_INDENT;
+            for (int i=0; i < parameters.length; i++)
+                saveCodeExpression(parameters[i], buf, subIndent);
+
+            buf.append(indent);
+            addElementClose(buf, XML_CODE_PARAMETERS);
+        }
+    }
+
+    private static void saveMethod(Method method,
+                                   StringBuffer buf, String indent)
+    {
+        StringBuffer buf2 = new StringBuffer();
+        Class[] paramTypes = method.getParameterTypes();
+
+        for (int i=0; i < paramTypes.length; i++) {
+            buf2.append(paramTypes[i].getName());
+            if (i+1 < paramTypes.length)
+                buf2.append(", "); // NOI18N
+        }
+
+        buf.append(indent);
+        addLeafElementOpenAttr(
+            buf,
+            XML_CODE_METHOD,
+            new String[] { ATTR_MEMBER_NAME,
+                           ATTR_MEMBER_CLASS,
+                           ATTR_MEMBER_PARAMS },
+            new String[] { method.getName(),
+                           method.getDeclaringClass().getName(),
+                           buf2.toString() });
+    }
+
+    private static void saveField(Field field, StringBuffer buf, String indent)
+    {
+        buf.append(indent);
+        addLeafElementOpenAttr(
+            buf,
+            XML_CODE_FIELD,
+            new String[] { ATTR_MEMBER_NAME,
+                           ATTR_MEMBER_CLASS },
+            new String[] { field.getName(),
+                           field.getDeclaringClass().getName() });
+    }
+
+    // -------
+    // XML persistence of code structure - loading
+
+    private CodeExpression loadCodeExpression(org.w3c.dom.Node node) {
+        String expId = findAttribute(node, ATTR_EXPRESSION_ID);
+        if (expId == null)
+            return null; // missing ID error
+
+        CodeExpression exp = (CodeExpression) getExpressionsMap().get(expId);
+        if (exp != null)
+            return exp;
+
+        org.w3c.dom.NodeList childNodes = node.getChildNodes();
+        if (childNodes == null)
+            return null; // missing subnodes (expression content) error
+
+        org.w3c.dom.Node variableNode = null;
+        org.w3c.dom.Node originNode = null;
+        org.w3c.dom.Node statementsNode = null;
+
+        for (int i=0, n=childNodes.getLength(); i < n; i++) {
+            org.w3c.dom.Node childNode = childNodes.item(i);
+            if (childNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
+                continue; // ignore text nodes
+
+            String nodeName = childNode.getNodeName();
+
+            if (XML_CODE_VARIABLE.equals(nodeName))
+                variableNode = childNode;
+            else if (XML_CODE_ORIGIN.equals(nodeName))
+                originNode = childNode;
+            else if (!codeFlow && XML_CODE_STATEMENTS.equals(nodeName))
+                statementsNode = childNode;
+        }
+
+        if (originNode == null)
+            return null; // missing origin error
+
+        CodeExpressionOrigin origin = loadExpressionOrigin(originNode);
+        if (origin == null)
+            return null; // origin loading error
+
+        // special code for handling meta component references
+        Object originMetaObject = origin.getMetaObject();
+        if (originMetaObject instanceof RADComponent) {
+            // use the expression from meta component
+            exp = ((RADComponent)originMetaObject).getCodeExpression();
+        }
+        else { // create a new expression normally
+            exp = getCodeStructure().createExpression(origin);
+
+            CodeVariable var = variableNode != null ?
+                               loadCodeVariable(variableNode) : null;
+            if (var != null)
+                getCodeStructure().attachExpressionToVariable(exp, var);
+        }
+
+        getExpressionsMap().put(expId, exp);
+
+        if (statementsNode != null) {
+            childNodes = statementsNode.getChildNodes();
+            if (childNodes != null) {
+                for (int i=0, n=childNodes.getLength(); i < n; i++) {
+                    org.w3c.dom.Node childNode = childNodes.item(i);
+
+                    if (XML_CODE_STATEMENT.equals(childNode.getNodeName()))
+                        loadCodeStatement(childNode, exp);
+                }
+            }
+        }
+
+        return exp;
+    }
+
+    private CodeVariable loadCodeVariable(org.w3c.dom.Node node) {
+        org.w3c.dom.NamedNodeMap attr = node.getAttributes();
+        if (attr == null)
+            return null; // no attributes error
+
+        node = attr.getNamedItem(ATTR_VAR_NAME);
+        if (node == null)
+            return null; // missing variable name error
+        String name = node.getNodeValue();
+
+        CodeVariable var = getCodeStructure().getVariable(name);
+        if (var != null)
+            return var;
+
+        node = attr.getNamedItem(ATTR_VAR_TYPE);
+        if (node == null)
+            return null; // missing variable type error
+        int type = Integer.parseInt(node.getNodeValue());
+
+        node = attr.getNamedItem(ATTR_VAR_DECLARED_TYPE);
+        if (node == null)
+            return null; // missing variable declared type error
+        Class declaredType = null;
+
+        try {
+            declaredType = getClassFromString(node.getNodeValue());
+        }
+        catch (ClassNotFoundException ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+        }
+        if (declaredType == null)
+            return null; // variable declared type loading error
+
+        return getCodeStructure().createVariable(type, declaredType, name);
+    }
+
+    private CodeExpressionOrigin loadExpressionOrigin(org.w3c.dom.Node node) {
+        org.w3c.dom.NodeList childNodes = node.getChildNodes();
+        if (childNodes == null)
+            return null; // missing subnodes (origin content) error
+
+        org.w3c.dom.Node parentExpNode = null;
+        org.w3c.dom.Node metaObjectNode = null;
+        org.w3c.dom.Node valueNode = null;
+        org.w3c.dom.Node parametersNode = null;
+
+        for (int i=0, n=childNodes.getLength(); i < n; i++) {
+            org.w3c.dom.Node childNode = childNodes.item(i);
+            if (childNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
+                continue; // ignore text nodes
+
+            String nodeName = childNode.getNodeName();
+
+            if (XML_CODE_EXPRESSION.equals(nodeName))
+                parentExpNode = childNode;
+            else if (XML_ORIGIN_META_OBJECT.equals(nodeName))
+                metaObjectNode = childNode;
+            else if (XML_VALUE.equals(nodeName))
+                valueNode = childNode;
+            else if (XML_CODE_PARAMETERS.equals(nodeName))
+                parametersNode = childNode;
+        }
+
+        if (metaObjectNode == null && valueNode == null)
+            return null; // missing origin metaobject or value error
+
+        CodeExpression parentExp;
+        if (parentExpNode != null) {
+            parentExp = loadCodeExpression(parentExpNode);
+            if (parentExp == null)
+                return null; // parent expression loading error
+        }
+        else parentExp = null; // origin without parent expression
+
+        CodeExpression[] parameters = parametersNode != null ?
+                                        loadParameters(parametersNode) :
+                                        CodeStructure.EMPTY_PARAMS;
+        if (parameters == null)
+            return null; // error loading parameters
+
+        CodeExpressionOrigin origin = null;
+
+        if (metaObjectNode != null) {
+            String metaObjectType = findAttribute(metaObjectNode,
+                                                  ATTR_META_OBJECT_TYPE);
+            childNodes = metaObjectNode.getChildNodes();
+            if (metaObjectType != null && childNodes != null) {
+                for (int i=0, n=childNodes.getLength(); i < n; i++) {
+                    org.w3c.dom.Node childNode = childNodes.item(i);
+
+                    String nodeName = childNode.getNodeName();
+                    if (!metaObjectType.equals(nodeName))
+                        continue;
+
+                    if (XML_VALUE.equals(nodeName)) {
+                        valueNode = childNode;
+                        break;
+                    }
+
+                    if (XML_CODE_CONSTRUCTOR.equals(nodeName)) {
+                        org.w3c.dom.NamedNodeMap attr = childNode.getAttributes();
+                        if (attr == null)
+                            return null; // no attributes error
+
+                        node = attr.getNamedItem(ATTR_MEMBER_CLASS);
+                        if (node == null)
+                            return null; // missing constructor class error
+
+                        Class ctorClass;
+                        try {
+                            ctorClass = getClassFromString(node.getNodeValue());
+                        }
+                        catch (ClassNotFoundException ex) {
+                            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                                ex.printStackTrace();
+                            return null; // constructor class loading error
+                        }
+
+                        node = attr.getNamedItem(ATTR_MEMBER_PARAMS);
+                        if (node == null)
+                            return null; // missing constructor parameter types error
+
+                        Class[] paramTypes;
+                        StringTokenizer paramTokens =
+                            new StringTokenizer(node.getNodeValue(), ", "); // NOI18N
+                        List typeList = new ArrayList();
+                        try {
+                            while (paramTokens.hasMoreTokens()) {
+                                typeList.add(getClassFromString(
+                                                 paramTokens.nextToken()));
+                            }
+                            paramTypes = new Class[typeList.size()];
+                            typeList.toArray(paramTypes);
+                        }
+                        catch (ClassNotFoundException ex) {
+                            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                                ex.printStackTrace();
+                            return null; // parameters classes loading error
+                        }
+
+                        Constructor ctor;
+                        try {
+                            ctor = ctorClass.getConstructor(paramTypes);
+                        }
+                        catch (NoSuchMethodException ex) {
+                            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                                ex.printStackTrace();
+                            return null; // constructor not found error
+                        }
+
+                        origin = CodeStructure.createOrigin(ctor, parameters);
+                        break;
+                    }
+
+                    // special code for handling meta component references
+                    if (XML_COMPONENT_REF.equals(nodeName)) {
+                        String name = findAttribute(childNode,
+                                                    ATTR_COMPONENT_NAME);
+                        if (name == null)
+                            return null; // missing component name error
+
+                        RADComponent comp = name.equals(".") ?
+                                formModel.getTopRADComponent() :
+                                (RADComponent) getComponentsMap().get(name);
+                        if (comp == null)
+                            return null; // no such component error
+
+                        origin = comp.getCodeExpression().getOrigin();
+                        break;
+                    }
+
+                    if (XML_CODE_METHOD.equals(nodeName)) {
+                        Method m = loadMethod(childNode);
+                        if (m == null)
+                            return null; // method loading error
+
+                        origin = CodeStructure.createOrigin(
+                                                   parentExp, m, parameters);
+                        break;
+                    }
+
+                    if (XML_CODE_FIELD.equals(nodeName)) {
+                        Field f = loadField(childNode);
+                        if (f == null)
+                            return null; // field loading error
+
+                        origin = CodeStructure.createOrigin(parentExp, f);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (origin == null) {
+            if (valueNode == null)
+                return null; // origin metaobject loading error
+
+            String typeStr = findAttribute(valueNode, ATTR_PROPERTY_TYPE);
+            if (typeStr == null)
+                return null; // missing value type error
+
+            try {
+                Class valueType = getClassFromString(typeStr);
+                Object value = getEncodedPropertyValue(valueNode);
+
+                origin = CodeStructure.createOrigin(
+                             valueType,
+                             value,
+                             value != null ? value.toString() : "null"); // NOI18N
+            }
+            catch (Exception ex) {
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
+                return null; // value loading error
+            }
+        }
+
+        return origin;
+    }
+
+    private CodeStatement loadCodeStatement(org.w3c.dom.Node node,
+                                            CodeExpression parentExp)
+    {
+        org.w3c.dom.NodeList childNodes = node.getChildNodes();
+        if (childNodes == null)
+            return null; // missing subnodes (statement content) error
+
+        org.w3c.dom.Node parentExpNode = null;
+        org.w3c.dom.Node metaObjectNode = null;
+        org.w3c.dom.Node parametersNode = null;
+
+        for (int i=0, n=childNodes.getLength(); i < n; i++) {
+            org.w3c.dom.Node childNode = childNodes.item(i);
+            if (childNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
+                continue; // ignore text nodes
+
+            String nodeName = childNode.getNodeName();
+
+            if (XML_CODE_EXPRESSION.equals(nodeName)) {
+                if (parentExp == null)
+                    parentExpNode = childNode;
+            }
+            else if (XML_STATEMENT_META_OBJECT.equals(nodeName))
+                metaObjectNode = childNode;
+            else if (XML_CODE_PARAMETERS.equals(nodeName))
+                parametersNode = childNode;
+        }
+
+        if (metaObjectNode == null)
+            return null; // missing statement metaobject error
+
+        if (parentExpNode != null) {
+            parentExp = loadCodeExpression(parentExpNode);
+            if (parentExp == null)
+                return null; // parent expression loading error
+        }
+
+        CodeExpression[] parameters = parametersNode != null ?
+                                        loadParameters(parametersNode) :
+                                        CodeStructure.EMPTY_PARAMS;
+        if (parameters == null)
+            return null; // error loading parameters
+
+        CodeStatement statement = null;
+
+        String metaObjectType = findAttribute(metaObjectNode,
+                                              ATTR_META_OBJECT_TYPE);
+        childNodes = metaObjectNode.getChildNodes();
+        if (metaObjectType != null && childNodes != null) {
+            for (int i=0, n=childNodes.getLength(); i < n; i++) {
+                org.w3c.dom.Node childNode = childNodes.item(i);
+
+                String nodeName = childNode.getNodeName();
+                if (!metaObjectType.equals(nodeName))
+                    continue;
+
+                if (XML_CODE_METHOD.equals(nodeName)) {
+                    Method m = loadMethod(childNode);
+                    if (m == null)
+                        return null; // method loading error
+
+                    statement = CodeStructure.createStatement(
+                                                parentExp, m, parameters);
+                    break;
+                }
+
+                if (XML_CODE_FIELD.equals(nodeName)) {
+                    Field f = loadField(childNode);
+                    if (f == null)
+                        return null; // field loading error
+
+                    if (parameters.length != 1)
+                        return null; // inconsistent data error
+
+                    statement = CodeStructure.createStatement(
+                                                  parentExp, f, parameters[0]);
+                    break;
+                }
+
+                if (XML_CODE_EXPRESSION.equals(nodeName)) {
+                    // variable assignment
+                    CodeExpression exp = loadCodeExpression(childNode);
+                    if (exp != parentExp)
+                        return null; // inconsistent data error
+
+                    CodeVariable var = exp.getVariable();
+                    if (var == null)
+                        return null; // non-existing variable error
+
+                    statement = var.getAssignment(exp);
+                    break;
+                }
+            }
+        }
+
+        return statement;
+    }
+
+    private CodeExpression[] loadParameters(org.w3c.dom.Node node) {
+        List paramList = new ArrayList();
+        org.w3c.dom.NodeList childNodes = node.getChildNodes();
+        if (childNodes != null) {
+            for (int i=0, n=childNodes.getLength(); i < n; i++) {
+                org.w3c.dom.Node childNode = childNodes.item(i);
+
+                if (XML_CODE_EXPRESSION.equals(childNode.getNodeName())) {
+                    CodeExpression exp = loadCodeExpression(childNode);
+                    if (exp == null)
+                        return null; // parameter loading error
+
+                    paramList.add(exp);
+                }
+            }
+
+            CodeExpression[] params = new CodeExpression[paramList.size()];
+            paramList.toArray(params);
+            return params;
+        }
+        else return CodeStructure.EMPTY_PARAMS;
+    }
+
+    private static Method loadMethod(org.w3c.dom.Node node) {
+        org.w3c.dom.NamedNodeMap attr = node.getAttributes();
+        if (attr == null)
+            return null; // no attributes error
+
+        node = attr.getNamedItem(ATTR_MEMBER_NAME);
+        if (node == null)
+            return null; // missing method name error
+        String name = node.getNodeValue();
+
+        node = attr.getNamedItem(ATTR_MEMBER_CLASS);
+        if (node == null)
+            return null; // missing method class error
+
+        Class methodClass;
+        try {
+            methodClass = getClassFromString(node.getNodeValue());
+        }
+        catch (ClassNotFoundException ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+            return null; // method class loading error
+        }
+
+        node = attr.getNamedItem(ATTR_MEMBER_PARAMS);
+        if (node == null)
+            return null; // missing method parameter types error
+
+        Class[] paramTypes;
+        StringTokenizer paramTokens =
+            new StringTokenizer(node.getNodeValue(), ", "); // NOI18N
+        List typeList = new ArrayList();
+        try {
+            while (paramTokens.hasMoreTokens()) {
+                typeList.add(getClassFromString(
+                                 paramTokens.nextToken()));
+            }
+            paramTypes = new Class[typeList.size()];
+            typeList.toArray(paramTypes);
+        }
+        catch (ClassNotFoundException ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+            return null; // parameters classes loading error
+        }
+
+        try {
+            return methodClass.getMethod(name, paramTypes);
+        }
+        catch (NoSuchMethodException ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+            return null; // method not found error
+        }
+    }
+
+    private static Field loadField(org.w3c.dom.Node node) {
+        org.w3c.dom.NamedNodeMap attr = node.getAttributes();
+        if (attr == null)
+            return null; // no attributes error
+
+        node = attr.getNamedItem(ATTR_MEMBER_NAME);
+        if (node == null)
+            return null; // missing field name error
+        String name = node.getNodeValue();
+
+        node = attr.getNamedItem(ATTR_MEMBER_CLASS);
+        if (node == null)
+            return null; // missing field class error
+
+        Class fieldClass;
+        try {
+            fieldClass = getClassFromString(node.getNodeValue());
+        }
+        catch (ClassNotFoundException ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+            return null; // field class loading error
+        }
+
+        try {
+            return fieldClass.getField(name);
+        }
+        catch (NoSuchFieldException ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace();
+            return null; // field not found error
+        }
+    }
+
+    // -------
+
+    private CodeStructure getCodeStructure() {
+        return formModel.getCodeStructure();
+    }
+
+    // -------
+
+    private Map getExpressionsMap() {
+        if (expressions == null)
+            expressions = new HashMap(100);
+        return expressions;
+    }
+
+    private Map getVariablesMap() {
+        if (savedVariables == null)
+            savedVariables = new HashMap(50);
+        return savedVariables;
+    }
+
+    private Map getComponentsMap() {
+        if (loadedComponents == null)
+            loadedComponents = new HashMap(50);
+        return loadedComponents;
+    }
+
     // --------------------------------------------------------------------------------------
     // Value encoding methods
 
@@ -2405,7 +3471,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return NO_VALUE; // value is not stored for this property
         }
 
-        Class propertyType = findPropertyType(typeNode.getNodeValue());
+        Class propertyType = getClassFromString(typeNode.getNodeValue());
         PropertyEditor ed = null;
         if (editorNode != null) {
             Class editorClass =
@@ -2502,7 +3568,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (typeNode == null)
             return null; // value is not stored for this property
 
-        Class valueType = findPropertyType(typeNode.getNodeValue());
+        Class valueType = getClassFromString(typeNode.getNodeValue());
         Object value = null;
 
         PropertyEditor prEd = null;
@@ -2559,18 +3625,27 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return value;
     }
 
-    private Class  findPropertyType(String type) throws ClassNotFoundException {
-        if ("int".equals(type)) return Integer.TYPE; // NOI18N
-        else if ("short".equals(type)) return Short.TYPE; // NOI18N
-        else if ("byte".equals(type)) return Byte.TYPE; // NOI18N
-        else if ("long".equals(type)) return Long.TYPE; // NOI18N
-        else if ("float".equals(type)) return Float.TYPE; // NOI18N
-        else if ("double".equals(type)) return Double.TYPE; // NOI18N
-        else if ("boolean".equals(type)) return Boolean.TYPE; // NOI18N
-        else if ("char".equals(type)) return Character.TYPE; // NOI18N
-        else {
+    private static Class getClassFromString(String type)
+        throws ClassNotFoundException
+    {
+        if ("int".equals(type)) // NOI18N
+            return Integer.TYPE;
+        else if ("short".equals(type)) // NOI18N
+            return Short.TYPE;
+        else if ("byte".equals(type)) // NOI18N
+            return Byte.TYPE;
+        else if ("long".equals(type)) // NOI18N
+            return Long.TYPE;
+        else if ("float".equals(type)) // NOI18N
+            return Float.TYPE;
+        else if ("double".equals(type)) // NOI18N
+            return Double.TYPE;
+        else if ("boolean".equals(type)) // NOI18N
+            return Boolean.TYPE;
+        else if ("char".equals(type)) // NOI18N
+            return Character.TYPE;
+        else
             return PersistenceObjectRegistry.loadClass(type);
-        }
     }
 
     /** Decodes a value of given type from the specified String. Supported types are: <UL>
@@ -2723,13 +3798,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
     // --------------------------------------------------------------------------------------
     // Utility formatting methods
 
-    private void addElementOpen(StringBuffer buf, String elementName) {
+    private static void addElementOpen(StringBuffer buf, String elementName) {
         buf.append("<"); // NOI18N
         buf.append(elementName);
         buf.append(">\n"); // NOI18N
     }
 
-    private void addElementOpenAttr(StringBuffer buf, String elementName, String[] attrNames, String[] attrValues) {
+    private static void addElementOpenAttr(StringBuffer buf,
+                                           String elementName,
+                                           String[] attrNames,
+                                           String[] attrValues)
+    {
         buf.append("<"); // NOI18N
         buf.append(elementName);
         for (int i = 0; i < attrNames.length; i++) {
@@ -2743,7 +3822,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
         buf.append(">\n"); // NOI18N
     }
 
-    private void addLeafElementOpenAttr(StringBuffer buf, String elementName, String[] attrNames, String[] attrValues) {
+    private static void addLeafElementOpenAttr(StringBuffer buf,
+                                               String elementName,
+                                               String[] attrNames,
+                                               String[] attrValues)
+    {
         buf.append("<"); // NOI18N
         buf.append(elementName);
         for (int i = 0; i < attrNames.length; i++) {
@@ -2757,7 +3840,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         buf.append("/>\n"); // NOI18N
     }
 
-    private void addElementClose(StringBuffer buf, String elementName) {
+    private static void addElementClose(StringBuffer buf, String elementName) {
         buf.append("</"); // NOI18N
         buf.append(elementName);
         buf.append(">\n"); // NOI18N
@@ -2821,35 +3904,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
     // --------------------------------------------------------------------------------------
     // Utility DOM access methods
 
-    /*  private void walkTree(org.w3c.dom.Node node, String indent) {
-        if (node.getNodeType() == org.w3c.dom.Node.TEXT_NODE) return; // ignore text nodes
-        System.out.println(indent + node.getNodeName());
-        org.w3c.dom.NamedNodeMap attrs = node.getAttributes();
-        if (attrs != null) {
-        for (int i = 0; i < attrs.getLength(); i++) {
-        org.w3c.dom.Node attr = attrs.item(i);
-        System.out.println(indent + "  Attribute: "+ attr.getNodeName()+", value: "+attr.getNodeValue());
-        }
-        }
+    private static String encodeToProperXML(String text) {
+        if (text.indexOf('&') != -1)
+            text = Utilities.replaceString(text, "&", "&amp;"); // must be the first to prevent changes in the &XX; codes // NOI18N
 
-        org.w3c.dom.NodeList children = node.getChildNodes();
-        if (children != null) {
-        for (int i = 0; i < children.getLength(); i++) {
-        walkTree(children.item(i), indent + "  ");
-        }
-        }
-        }
-    */
+        if (text.indexOf('<') != -1)
+            text = Utilities.replaceString(text, "<", "&lt;"); // NOI18N
+        if (text.indexOf('>') != -1)
+            text = Utilities.replaceString(text, ">", "&gt;"); // NOI18N
+        if (text.indexOf('\'') != -1)
+            text = Utilities.replaceString(text, "\'", "&apos;"); // NOI18N
+        if (text.indexOf('\"') != -1)
+            text = Utilities.replaceString(text, "\"", "&quot;"); // NOI18N
+        if (text.indexOf('\n') != -1)
+            text = Utilities.replaceString(text, "\n", "&#xa;"); // NOI18N
+        if (text.indexOf('\t') != -1)
+            text = Utilities.replaceString(text, "\t", "&#x9;"); // NOI18N
 
-    private String encodeToProperXML(String text) {
-        if (text.indexOf('&') != -1) text = Utilities.replaceString(text, "&", "&amp;"); // must be the first to prevent changes in the &XX; codes // NOI18N
-
-        if (text.indexOf('<') != -1) text = Utilities.replaceString(text, "<", "&lt;"); // NOI18N
-        if (text.indexOf('>') != -1) text = Utilities.replaceString(text, ">", "&gt;"); // NOI18N
-        if (text.indexOf('\'') != -1) text = Utilities.replaceString(text, "\'", "&apos;"); // NOI18N
-        if (text.indexOf('\"') != -1) text = Utilities.replaceString(text, "\"", "&quot;"); // NOI18N
-        if (text.indexOf('\n') != -1) text = Utilities.replaceString(text, "\n", "&#xa;"); // NOI18N
-        if (text.indexOf('\t') != -1) text = Utilities.replaceString(text, "\t", "&#x9;"); // NOI18N
         return text;
     }
 
@@ -3029,6 +4100,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private static final int LAYOUT_JLAYER = 12;
     private static final int LAYOUT_TOOLBAR = 13;
 
+    private static final int LAYOUT_UNKNOWN = -1;
+    private static final int LAYOUT_FROM_CODE = -2;
+
     private static final String[] layout31Names = {
         "org.netbeans.modules.form.compat2.layouts.DesignBorderLayout", // NOI18N
         "org.netbeans.modules.form.compat2.layouts.DesignFlowLayout", // NOI18N
@@ -3142,5 +4216,5 @@ public class GandalfPersistenceManager extends PersistenceManager {
     // constraints, the layout is already loaded but the layout support is not
     // established yet, so the loadConstraints method cannot find out what the
     // current layout of container is.
-    private static int layoutConvIndex = -1;
+    private static int layoutConvIndex = LAYOUT_UNKNOWN;
 }

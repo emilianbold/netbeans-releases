@@ -249,7 +249,7 @@ public class RADComponent implements FormDesignValue {
 
         if (formModel.getTopRADComponent() != this)
             codeStructure.createVariableForExpression(componentCodeExpression,
-                                                      CodeVariable.DEFAULT_TYPE,
+                                                      0x30DF, // default type
                                                       storedName);
     }
 
@@ -416,20 +416,9 @@ public class RADComponent implements FormDesignValue {
         }
 
         String oldName = var.getName();
-        formModel.getCodeStructure().renameVariable(oldName, name);
-/*        if (var != null) {
-            oldName = var.getName();
-            formModel.getCodeStructure().renameVariable(oldName, name);
-        }
-        else {
-            oldName = null;
-            formModel.getCodeStructure().createVariableForExpression(
-                                             componentCodeExpression,
-                                             CodeVariable.DEFAULT_TYPE,
-                                             name);
-        }
 
-        if (oldName != null) */
+        formModel.getCodeStructure().renameVariable(oldName, name);
+
         renameDefaultEventHandlers(oldName, name);
         // [renaming of default event handlers should be probably a setting
         //  be in global options]
@@ -441,10 +430,6 @@ public class RADComponent implements FormDesignValue {
             getNodeReference().updateName();
         }
     }
-
-//    String getStoredName() {
-//        return storedName;
-//    }
 
     void setStoredName(String name) {
         storedName = name;

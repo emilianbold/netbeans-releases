@@ -105,7 +105,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 
         if (fromCode) { // read components from code
             CodeGroup componentCode = null;
-            Iterator it = CodeStructure.getStatementsIterator(
+            Iterator it = CodeStructure.getDefinedStatementsIterator(
                                             getActiveContainerCodeExpression());
             while (it.hasNext()) {
                 if (componentCode == null)
@@ -476,9 +476,10 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
             getCodeStructure().createCodeGroup();
         CodeStatement setLayoutStatement = null;
 
-        CodeStatement[] statements = CodeStructure.getStatements(
-                                           getActiveContainerCodeExpression(),
-                                           getSetLayoutMethod());
+        Iterator it = CodeStructure.getDefinedStatementsIterator(
+                                        getActiveContainerCodeExpression());
+        CodeStatement[] statements = CodeStructure.filterStatements(
+                                                     it, getSetLayoutMethod());
         if (statements.length > 0) { // read from code
             setLayoutStatement = statements[0];
             readInitLayoutCode(setLayoutStatement.getStatementParameters()[0],
@@ -689,9 +690,10 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     }
 
     protected final CodeStatement getSetLayoutStatement() {
-        CodeStatement[] found = CodeStructure.getStatements(
-                                     getActiveContainerCodeExpression(),
-                                     getSetLayoutMethod());
+        Iterator it = CodeStructure.getDefinedStatementsIterator(
+                                        getActiveContainerCodeExpression());
+        CodeStatement[] found = CodeStructure.filterStatements(
+                                                  it, getSetLayoutMethod());
         return found != null && found.length > 0 ? found[0] : null;
     }
 

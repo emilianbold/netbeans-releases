@@ -33,7 +33,6 @@ public interface CodeVariable {
     public static final int PRIVATE = 0x0002;
     public static final int PROTECTED = 0x0004;
     public static final int PACKAGE_PRIVATE = 0x0000;
-//    public static final int DEFAULT_ACCESS = 0x0007;
 
     // other modifiers  - conforms to Modifier class (bits 3, 4, 6, 7)
     public static final int STATIC = 0x0008;
@@ -41,7 +40,7 @@ public interface CodeVariable {
     public static final int VOLATILE = 0x0040;
     public static final int TRANSIENT = 0x0080;
 
-    public static final int DEFAULT_TYPE = 0x30DF;
+    static final int DEFAULT_TYPE = 0x30DF;
 
     // explicit local variable declaration in code (bit 14)
     public static final int EXPLICIT_DECLARATION = 0x4000;

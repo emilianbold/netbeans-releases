@@ -55,18 +55,10 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         layoutDelegate = null;
 
         containerCodeExpression = metaContainer.getCodeExpression();
-
-        java.lang.reflect.Method delegateGetter =
-                                   metaContainer.getContainerDelegateMethod();
-        if (delegateGetter != null) {
-            containerDelegateCodeExpression = codeStructure.createExpression(
-                    CodeStructure.createOrigin(containerCodeExpression,
-                                               delegateGetter, null));
-        }
-        else containerDelegateCodeExpression = containerCodeExpression;
+        containerDelegateCodeExpression = null;
     }
 
-    // initialization for a container restored from XML (or code)
+    // further initialization for a container restored from XML (or code)
     // initialize(...) method must be called first
     public boolean initializeFromCode() {
         // first try to find a dedicated layout delegate (for a container)
@@ -76,10 +68,11 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
         if (layoutDelegateClass == null) {
             // find a general layout delegate (for given LayoutManager)
+            Iterator it = CodeStructure.getDefinedStatementsIterator(
+                                          getContainerDelegateCodeExpression());
             CodeStatement[] statements =
-                CodeStructure.getStatements(
-                                  containerDelegateCodeExpression,
-                                  AbstractLayoutSupport.getSetLayoutMethod());
+                CodeStructure.filterStatements(
+                                it, AbstractLayoutSupport.getSetLayoutMethod());
 
             if (statements.length > 0) { // LayoutManager from code
                 CodeExpressionOrigin layoutOrigin =
@@ -622,6 +615,32 @@ public final class LayoutSupportManager implements LayoutSupportContext {
     }
 
     public CodeExpression getContainerDelegateCodeExpression() {
+        if (containerDelegateCodeExpression == null) {
+            java.lang.reflect.Method delegateGetter =
+                metaContainer.getContainerDelegateMethod();
+
+            if (delegateGetter != null) { // there should be a container delegate
+                Iterator it = CodeStructure.getDefinedExpressionsIterator(
+                                                  containerCodeExpression);
+                CodeExpression[] expressions = CodeStructure.filterExpressions(
+                                                            it, delegateGetter);
+                if (expressions.length > 0) {
+                    // the expresion for the container delegate already exists
+                    containerDelegateCodeExpression = expressions[0];
+                }
+                else { // create a new expresion for the container delegate
+                    CodeExpressionOrigin origin = CodeStructure.createOrigin(
+                                                    containerCodeExpression,
+                                                    delegateGetter,
+                                                    null);
+                    containerDelegateCodeExpression =
+                        codeStructure.createExpression(origin);
+                }
+            }
+            else // no special container delegate
+                containerDelegateCodeExpression = containerCodeExpression;
+        }
+
         return containerDelegateCodeExpression;
     }
 

@@ -198,7 +198,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
             boolean isAnyChanged = false;
 
-            Iterator it = CodeStructure.getStatementsIterator(constrExp);
+            Iterator it = CodeStructure.getDefinedStatementsIterator(constrExp);
             while (it.hasNext()) {
                 CodeStatement statement = (CodeStatement) it.next();
                 for (int j=0; j < properties.length; j++) {
@@ -280,8 +280,8 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                                                 defaultVariableName);
                     }
                     else { // attach the constraints expression to the variable
-                        codeStructure.addExpressionUsingVariable(
-                                          var, constraintsExpression);
+                        codeStructure.attachExpressionToVariable(
+                                          constraintsExpression, var);
                     }
                 }
                 // add assignment code
@@ -289,7 +289,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                                   0, var.getAssignment(constraintsExpression));
             }
             else { // no variable needed
-                codeStructure.removeExpressionUsingVariable(
+                codeStructure.removeExpressionFromVariable(
                                   constraintsExpression);
             }
         }

@@ -130,7 +130,7 @@ final class BeanCodeManager
         }
 
         // read properties code
-        Iterator it = CodeStructure.getStatementsIterator(beanExpression);
+        Iterator it = CodeStructure.getDefinedStatementsIterator(beanExpression);
         while (it.hasNext()) {
             CodeStatement statement = (CodeStatement) it.next();
             for (int j=0; j < properties.length; j++) {
@@ -207,8 +207,10 @@ final class BeanCodeManager
 
             Method statementMethod = ((RADProperty)property)
                              .getPropertyDescriptor().getWriteMethod();
-            CodeStatement[] existingStatements = CodeStructure
-                             .getStatements(beanExpression, statementMethod);
+            Iterator it = CodeStructure.getDefinedStatementsIterator(
+                                                       beanExpression);
+            CodeStatement[] existingStatements =
+                CodeStructure.filterStatements(it, statementMethod);
 
             if (removeStatement) {
                 for (int j=0; j < existingStatements.length; j++) {
@@ -278,7 +280,7 @@ final class BeanCodeManager
                 if (beanCode != null)
                     beanCode.remove(var.getAssignment(beanExpression));
                 variableType = var.getType();
-                codeStructure.removeExpressionUsingVariable(beanExpression);
+                codeStructure.removeExpressionFromVariable(beanExpression);
             }
             isVariableSet = false;
         }

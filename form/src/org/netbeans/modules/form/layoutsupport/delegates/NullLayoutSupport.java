@@ -103,8 +103,9 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
             constr.nullMode = true;
 //            constr.refComponent = getLayoutContext().getPrimaryComponent(index);
 
-            CodeStatement[] statements = CodeStructure.getStatements(
-                                           compExp, getSetBoundsMethod());
+            Iterator it = CodeStructure.getDefinedStatementsIterator(compExp);
+            CodeStatement[] statements = CodeStructure.filterStatements(
+                                                it, getSetBoundsMethod());
             if (statements.length > 0) {
                 CodeStatement boundsStatement =
                     statements[statements.length-1];

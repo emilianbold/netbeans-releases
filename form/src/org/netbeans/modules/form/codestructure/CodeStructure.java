@@ -17,7 +17,8 @@ import java.util.*;
 import java.lang.reflect.*;
 
 /**
- * Class representing a code structure of one form.
+ * Class representing a code structure of one form. Also manages a pool
+ * of variables for code expressions.
  *
  * @author Tomas Pavek
  */
@@ -38,7 +39,7 @@ public class CodeStructure {
     // -------
     // expressions
 
-    // Creates a new expression from a constructor.
+    /** Creates a new expression based on a constructor. */
     public CodeExpression createExpression(Constructor ctor,
                                            CodeExpression[] params)
     {
@@ -47,7 +48,7 @@ public class CodeStructure {
         return new DefaultCodeExpression(this, origin);
     }
 
-    // Creates a new expression from a method.
+    /** Creates a new expression based on a method. */
     public CodeExpression createExpression(CodeExpression parent,
                                            Method method,
                                            CodeExpression[] params)
@@ -57,13 +58,13 @@ public class CodeStructure {
         return new DefaultCodeExpression(this, origin);
     }
 
-    // Creates a new expression from a field.
+    /** Creates a new expression based on a field. */
     public CodeExpression createExpression(CodeExpression parent, Field field) {
         CodeExpressionOrigin origin = new CodeSupport.FieldOrigin(parent, field);
         return new DefaultCodeExpression(this, origin);
     }
 
-    // Creates a new expression from a value.
+    /** Creates a new expression from based on a value. */
     public CodeExpression createExpression(Class type,
                                            Object value,
                                            String javaInitStr)
@@ -72,24 +73,25 @@ public class CodeStructure {
                                                     type, value, javaInitStr));
     }
 
-    // Creates a new expression of an arbitrary origin.
+    /** Creates a new expression of an arbitrary origin. /*/
     public CodeExpression createExpression(CodeExpressionOrigin origin) {
         return new DefaultCodeExpression(this, origin);
     }
 
-    // Creates an expression representing null value.
+    /** Creates an expression representing null value. */
     public CodeExpression createNullExpression(Class type) {
         return new DefaultCodeExpression(this, new CodeSupport.ValueOrigin(
                                                     type, null, "null")); // NOI18N
     }
 
-    // Creates an expression with no origin.
+    /** Creates an expression with no origin. The origin must be set
+     * explicitly before the expression is used. */
     public CodeExpression createDefaultExpression() {
         return new DefaultCodeExpression(this);
     }
 
-    // Prevents expression from being removed automatically from structure when
-    // not used (by any UsingCodeObject).
+    /** Prevents an expression from being removed automatically from structure
+     * when no more used (by any UsingCodeObject). */
     public void registerExpression(CodeExpression expression) {
         if (globalUsingObject == null)
             globalUsingObject = new GlobalUsingObject();
@@ -99,18 +101,32 @@ public class CodeStructure {
                                   CodeStructure.class);
     }
 
-    // Removes expression from the structure completely.
+    /** Removes an expression from the structure completely. */
     public static void removeExpression(CodeExpression expression) {
         unregisterUsedCodeObject(expression);
         unregisterUsingCodeObject(expression);
 
-        expression.getCodeStructure().removeExpressionUsingVariable(expression);
+        expression.getCodeStructure().removeExpressionFromVariable(expression);
+    }
+
+    /** Filters out expressions whose origin uses given or equal meta object.
+     * Passed expressions are returned in an array. */
+    public static CodeExpression[] filterExpressions(Iterator it,
+                                                     Object originMetaObject)
+    {
+        List list = new ArrayList();
+        while (it.hasNext()) {
+            CodeExpression exp = (CodeExpression) it.next();
+            if (originMetaObject.equals(exp.getOrigin().getMetaObject()))
+                list.add(exp);
+        }
+        return (CodeExpression[]) list.toArray(new CodeExpression[list.size()]);
     }
 
     // --------
     // statements
 
-    // Creates a new method statement.
+    /** Creates a new method statement. */
     public static CodeStatement createStatement(CodeExpression expression,
                                                 Method m,
                                                 CodeExpression[] params)
@@ -121,7 +137,7 @@ public class CodeStructure {
         return statement;
     }
 
-    // Creates a new field statement.
+    /** Creates a new field statement. */
     public static CodeStatement createStatement(CodeExpression expression,
                                                 Field f,
                                                 CodeExpression assignExp)
@@ -132,12 +148,12 @@ public class CodeStructure {
         return statement;
     }
 
-    // Removes statement from the structure completely.
+    /** Removes a statement from the structure completely. */
     public static void removeStatement(CodeStatement statement) {
         unregisterUsingCodeObject(statement);
     }
 
-    // Removes all statement provided by an Iterator.
+    /** Removes all statements provided by an Iterator. */
     public static void removeStatements(Iterator it) {
         List list = new ArrayList();
         while (it.hasNext())
@@ -147,29 +163,12 @@ public class CodeStructure {
             unregisterUsingCodeObject((CodeStatement) list.get(i));
     }
 
-    // Returns Iterator of all statements of given parent expression.
-    public static Iterator getStatementsIterator(CodeExpression expression) {
-        return expression.getUsingObjectsIterator(UsedCodeObject.DEFINING,
-                                                  CodeStatement.class);
-    }
-
-    // Returns all statements (of an parent expression) in array.
-    public static CodeStatement[] getStatements(CodeExpression expression) {
-        ArrayList list = new ArrayList();
-        Iterator it = getStatementsIterator(expression);
-        while (it.hasNext())
-            list.add(it.next());
-
-        return (CodeStatement[]) list.toArray(new CodeStatement[list.size()]);
-    }
-
-    // Returns all expression's statements which use given (or equal)
-    // statement meta object.
-    public static CodeStatement[] getStatements(CodeExpression expression,
-                                                Object metaObject)
+    /** Filters out statements using given or equal meta object. Passed
+     * statements are returned in an array. */
+    public static CodeStatement[] filterStatements(Iterator it,
+                                                   Object metaObject)
     {
-        ArrayList list = new ArrayList();
-        Iterator it = getStatementsIterator(expression);
+        List list = new ArrayList();
         while (it.hasNext()) {
             CodeStatement statement = (CodeStatement) it.next();
             if (metaObject.equals(statement.getMetaObject()))
@@ -181,6 +180,7 @@ public class CodeStructure {
     // --------
     // statements code group
 
+    /** Creates a default group of statements. */
     public CodeGroup createCodeGroup() {
         return new CodeSupport.DefaultCodeGroup();
     }
@@ -188,12 +188,14 @@ public class CodeStructure {
     // --------
     // origins
 
+    /** Creates an expression origin from a constructor. */
     public static CodeExpressionOrigin createOrigin(Constructor ctor,
                                                     CodeExpression[] params)
     {
         return new CodeSupport.ConstructorOrigin(ctor, params);
     }
 
+    /** Creates an expression origin from a method. */
     public static CodeExpressionOrigin createOrigin(CodeExpression parent,
                                                     Method m,
                                                     CodeExpression[] params)
@@ -201,17 +203,52 @@ public class CodeStructure {
         return new CodeSupport.MethodOrigin(parent, m, params);
     }
 
+    /** Creates an expression origin from a field. */
     public static CodeExpressionOrigin createOrigin(CodeExpression parent,
                                                     Field f)
     {
         return new CodeSupport.FieldOrigin(parent, f);
     }
 
+    /** Creates an expression origin from a value (and provided java string). */
     public static CodeExpressionOrigin createOrigin(Class type,
                                                     Object value,
                                                     String javaStr)
     {
         return new CodeSupport.ValueOrigin(type, value, javaStr);
+    }
+
+    // -------
+    // getting to expressions and statements dependent on given expression
+    // (used as their parent or parameter)
+
+    /** Returns an iterator of expressions that are defined by given
+     * expression. These expressions use the given expression as the parent
+     * of origin). */
+    public static Iterator getDefinedExpressionsIterator(CodeExpression exp) {
+        return exp.getUsingObjectsIterator(UsedCodeObject.DEFINING,
+                                           CodeExpression.class);
+    }
+
+    /** Returns an iterator of exppressions that use given expression as
+     * a parameter in their origin. */
+    public static Iterator getUsingExpressionsIterator(CodeExpression exp) {
+        return exp.getUsingObjectsIterator(UsedCodeObject.USING,
+                                           CodeExpression.class);
+    }
+
+    /** Returns an iterator of statements that are defined by given
+     * expression. These statements use the given expression as the parent. */
+    public static Iterator getDefinedStatementsIterator(CodeExpression exp) {
+        return exp.getUsingObjectsIterator(UsedCodeObject.DEFINING,
+                                           CodeStatement.class);
+    }
+
+    /** Returns an iterator of statements that use given expression as
+     * a parameter. */
+    public static Iterator getUsingStatementsIterator(CodeExpression exp) {
+        return exp.getUsingObjectsIterator(UsedCodeObject.USING,
+                                           CodeStatement.class);
     }
 
     // -------
@@ -307,8 +344,7 @@ public class CodeStructure {
     // -------
     // variables
 
-    /** Creates a new variable. It is empty - with no expression attached.
-     */
+    /** Creates a new variable. It is empty - with no expression attached. */
     public CodeVariable createVariable(int type,
                                        Class declaredType,
                                        String name)
@@ -324,8 +360,7 @@ public class CodeStructure {
         return var;
     }
 
-    /** Renames variable of name oldName to newName.
-     */
+    /** Renames variable of name oldName to newName. */
     public boolean renameVariable(String oldName, String newName) {
         Variable var = (Variable) namesToVariables.get(oldName);
         if (var == null || newName == null
@@ -340,8 +375,7 @@ public class CodeStructure {
         return true;
     }
 
-    /** Releases variable of given name.
-     */
+    /** Releases variable of given name. */
     public CodeVariable releaseVariable(String name) {
         Variable var = (Variable) namesToVariables.remove(name);
         if (var == null)
@@ -358,16 +392,14 @@ public class CodeStructure {
         return var;
     }
 
-    /** Checks whether given name is already used by some variable.
-     */
+    /** Checks whether given name is already used by some variable. */
     public boolean isVariableNameReserved(String name) {
         return namesToVariables.get(name) != null;
     }
 
     /** Creates a new variable and attaches given expression to it. If the
      * requested name is already in use, then a free name is found. If null
-     * is provided as the name, then expression's short class name is used.
-     */
+     * is provided as the name, then expression's short class name is used. */
     public CodeVariable createVariableForExpression(CodeExpression expression,
                                                     int type,
                                                     String name)
@@ -412,10 +444,10 @@ public class CodeStructure {
         return var;
     }
 
-    /** Attaches an expression to variable.
-     */
-    public void addExpressionUsingVariable(CodeVariable var,
-                                           CodeExpression expression)
+    /** Attaches an expression to a variable. The variable will be used in the
+     * code instead of the expression. */
+    public void attachExpressionToVariable(CodeExpression expression,
+                                           CodeVariable var)
     {
         if (expression == null)
             return;
@@ -447,9 +479,8 @@ public class CodeStructure {
         expressionsToVariables.put(expression, var);
     }
 
-    /** Removes an expression from variable.
-     */
-    public void removeExpressionUsingVariable(CodeExpression expression) {
+    /** Releases an expression from using a variable. */
+    public void removeExpressionFromVariable(CodeExpression expression) {
         if (expression == null)
             return;
 
@@ -460,34 +491,32 @@ public class CodeStructure {
         var.removeCodeExpression(expression);
     }
 
-    /** Returns variable of given name.
-     */
+    /** Returns variable of given name. */
     public CodeVariable getVariable(String name) {
         return (Variable) namesToVariables.get(name);
     }
 
-    /** Returns variable of an expression.
-     */
+    /** Returns variable of an expression. */
     public CodeVariable getVariable(CodeExpression expression) {
         return (Variable) expressionsToVariables.get(expression);
     }
 
-    /** Returns Iterator of variables of given criterions.
-     */
+    /** Returns an iterator of variables of given criterions. */
     public Iterator getVariablesIterator(int type, int typeMask,
                                          Class declaredType)
     {
         return new VariablesIterator(type, typeMask, declaredType);
     }
 
-    /** Returns all variables in this CodeStructure.
-     */
+    /** Returns all variables in this CodeStructure. */
     public Collection getAllVariables() {
         return Collections.unmodifiableCollection(namesToVariables.values());
     }
 
     // ---------
 
+    /** WARNING: This method will be removed in full two-way editing
+     *           implementation! */
     public static void setGlobalDefaultVariableType(int type) {
         if (type < 0) {
             globalDefaultVariableType = CodeVariable.FIELD
@@ -502,6 +531,8 @@ public class CodeStructure {
         }
     }
 
+    /** WARNING: This method will be removed in full two-way editing
+     *           implementation! */
     public void setDefaultVariableType(int type) {
         if (type < 0) {
             defaultVariableType = -1; // global default will be used

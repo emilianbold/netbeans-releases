@@ -16,6 +16,7 @@ package org.netbeans.modules.form.layoutsupport.delegates;
 import java.awt.*;
 import javax.swing.*;
 import java.beans.*;
+import java.util.Iterator;
 import java.lang.reflect.Method;
 
 import org.openide.nodes.*;
@@ -78,8 +79,9 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
         LayeredConstraints constr = new LayeredConstraints(0, 0, 0, -1, -1);
 //        constr.refComponent = getLayoutContext().getPrimaryComponent(index);
 
-        CodeStatement[] statements = CodeStructure.getStatements(
-                                         compExp, getSetBoundsMethod());
+        Iterator it = CodeStructure.getDefinedStatementsIterator(compExp);
+        CodeStatement[] statements = CodeStructure.filterStatements(
+                                            it, getSetBoundsMethod());
         if (statements.length > 0) {
             CodeStatement boundsStatement = statements[statements.length-1];
             constr.readPropertyExpressions(
