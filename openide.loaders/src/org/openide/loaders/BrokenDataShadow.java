@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
@@ -65,17 +67,17 @@ final class BrokenDataShadow extends MultiDataObject {
         enqueueBrokenDataShadow(this);
     }
         
-    /** Set of all DataShadows */
-    private static Set allDataShadows;
+    /** Map of <String(nameoffileobject), DataShadow> */
+    private static Map allDataShadows;
     /** ReferenceQueue for collected DataShadows */
     private static ReferenceQueue rqueue;
     
     private static final long serialVersionUID = -3046981691235483810L;
     
     /** Getter for the Set that contains all DataShadows. */
-    private static synchronized Set getDataShadowsSet() {
+    private static synchronized Map getDataShadowsSet() {
        if (allDataShadows == null) {
-           allDataShadows = new HashSet();
+           allDataShadows = new HashMap();
        }
         return allDataShadows;
     }
@@ -105,23 +107,40 @@ final class BrokenDataShadow extends MultiDataObject {
     
     private static synchronized void enqueueBrokenDataShadow(BrokenDataShadow ds) {
         checkQueue();
-        getDataShadowsSet().add(DataShadow.createReference(ds, getRqueue()));
+        Map m = getDataShadowsSet ();
+        
+        String prim = ds.origFOName;
+        Reference ref = DataShadow.createReference(ds, getRqueue());
+        Set s = (Set)m.get (prim);
+        if (s == null) {
+            s = java.util.Collections.singleton (ref);
+            getDataShadowsSet ().put (prim, s);
+        } else {
+            if (! (s instanceof HashSet)) {
+                s = new HashSet (s);
+                getDataShadowsSet ().put (prim, s);
+            }
+            s.add (ref);
+        }
     }
 
     /** @return all active DataShadows or null */
     private static synchronized List getAllDataShadows() {
-        Set allShadows = allDataShadows;
-        if ((allShadows == null) || allShadows.isEmpty()) {
+        if (allDataShadows == null || allDataShadows.isEmpty()) {
             return null;
         }
         
-        List ret = new ArrayList(allShadows.size());
-        Iterator it = allShadows.iterator();
+        List ret = new ArrayList(allDataShadows.size());
+        Iterator it = allDataShadows.values ().iterator();
         while (it.hasNext()) {
-            Reference ref = (Reference) it.next();
-            Object shadow = ref.get();
-            if (shadow != null) {
-                ret.add(shadow);
+            Set ref = (Set) it.next();
+            Iterator refs = ref.iterator ();
+            while (refs.hasNext ()) {
+                Reference r = (Reference)refs.next ();
+                Object shadow = r.get();
+                if (shadow != null) {
+                    ret.add(shadow);
+                }
             }
         }
         
@@ -132,6 +151,26 @@ final class BrokenDataShadow extends MultiDataObject {
      * does not revalidate a BrokenDataShadow
      */
     static void checkValidity(EventObject ev) {
+        DataObject src = null;
+        if (ev instanceof OperationEvent) {
+            src = ((OperationEvent)ev).getObject();
+        }
+
+        Set shadows = null;
+        synchronized (BrokenDataShadow.class) {
+            if (allDataShadows == null || allDataShadows.isEmpty ()) return;
+            
+            if (src != null) {
+                shadows = (Set)allDataShadows.get (src.getPrimaryFile ().toString ());
+                if (shadows == null) {
+                    // we know the source of the event and there are no
+                    // shadows with such original
+                    return;
+                }
+            }
+        }
+        
+        
         List all = getAllDataShadows();
         if (all == null) {
             return;

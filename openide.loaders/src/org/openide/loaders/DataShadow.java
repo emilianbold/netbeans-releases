@@ -50,8 +50,9 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     /** Extension name. */
     static final String SHADOW_EXTENSION = "shadow"; // NOI18N
     
-    /** Set of all DataShadows */
-    private static Set allDataShadows;
+    /** Map of all <FileObject, Set<DataShadow>>. Where the file object
+     Is the original file */
+    private static Map allDataShadows;
     /** ReferenceQueue for collected DataShadows */
     private static ReferenceQueue rqueue;
     
@@ -61,9 +62,9 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     private static final int IDX_PATH = 1;
 
     /** Getter for the Set that contains all DataShadows. */
-    private static synchronized Set getDataShadowsSet() {
+    private static synchronized Map getDataShadowsSet() {
         if (allDataShadows == null) {
-            allDataShadows = new HashSet();
+            allDataShadows = new HashMap();
         }
         return allDataShadows;
     }
@@ -86,35 +87,54 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         
         Reference ref = rqueue.poll();
         while (ref != null) {
-           getDataShadowsSet().remove(ref);
-           ref = rqueue.poll();
+            synchronized (getDataShadowsSet ()) {
+                getDataShadowsSet().remove(ref);
+            }
+            ref = rqueue.poll();
         }
     }
     
     /** Creates WeakReference for given DataShadow */
-    static Reference createReference(Object ds, ReferenceQueue q) {
+    static Reference createReference(DataObject ds, ReferenceQueue q) {
         return new DSWeakReference(ds, q);
     }
     
     private static synchronized void enqueueDataShadow(DataShadow ds) {
         checkQueue();
-        getDataShadowsSet().add(createReference(ds, getRqueue()));
+        Map m = getDataShadowsSet ();
+        
+        FileObject prim = ds.getOriginal ().getPrimaryFile ();
+        Reference ref = createReference(ds, getRqueue());
+        Set s = (Set)m.get (prim);
+        if (s == null) {
+            s = Collections.singleton (ref);
+            getDataShadowsSet ().put (prim, s);
+        } else {
+            if (! (s instanceof HashSet)) {
+                s = new HashSet (s);
+                getDataShadowsSet ().put (prim, s);
+            }
+            s.add (ref);
+        }
     }
 
     /** @return all active DataShadows or null */
     private static synchronized List getAllDataShadows() {
-        Set allShadows = allDataShadows;
-        if ((allShadows == null) || allShadows.isEmpty()) {
+        if (allDataShadows == null || allDataShadows.isEmpty()) {
             return null;
         }
         
-        List ret = new ArrayList(allShadows.size());
-        Iterator it = allShadows.iterator();
+        List ret = new ArrayList(allDataShadows.size());
+        Iterator it = allDataShadows.values ().iterator();
         while (it.hasNext()) {
-            Reference ref = (Reference) it.next();
-            Object shadow = ref.get();
-            if (shadow != null) {
-                ret.add(shadow);
+            Set ref = (Set) it.next();
+            Iterator refs = ref.iterator ();
+            while (refs.hasNext ()) {
+                Reference r = (Reference)refs.next ();
+                DataShadow shadow = (DataShadow)r.get ();
+                if (shadow != null) {
+                    ret.add (shadow);
+                }
             }
         }
         
@@ -125,18 +145,56 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
      * does not hurt validity of a DataShadow
      */
     static void checkValidity(EventObject ev) {
+        DataObject src = null;
+        if (ev instanceof OperationEvent) {
+            src = ((OperationEvent)ev).getObject();
+        }
+
+        Set shadows = null;
+        synchronized (DataShadow.class) {
+            if (allDataShadows == null || allDataShadows.isEmpty ()) return;
+            
+            if (src != null) {
+                shadows = (Set)allDataShadows.get (src.getPrimaryFile ());
+                if (shadows == null) {
+                    // we know the source of the event and there are no
+                    // shadows with such original
+                    return;
+                }
+            }
+        }
+        
+        DataObject changed = null;
+        OperationEvent.Copy c;
+        if (
+            ev instanceof OperationEvent.Rename
+            ||
+            ev instanceof OperationEvent.Move
+        ) {
+            changed = ((OperationEvent)ev).getObject();
+        }
+        
+        if (shadows != null) {
+            //
+            // optimized for speed, we have found the shadow(s) that
+            // belong to this FileObject
+            //
+            Iterator refs = shadows.iterator ();
+            while (refs.hasNext ()) {
+                Reference r = (Reference)refs.next ();
+                DataShadow shadow = (DataShadow)r.get ();
+                if (shadow != null) {
+                    shadow.refresh (shadow.getOriginal () == changed);
+                }
+            }
+            return;
+        }
+        
         List all = getAllDataShadows();
         if (all == null) {
             return;
         }
         
-        DataObject changed = null;
-        if (
-            (ev instanceof OperationEvent.Rename) || 
-            (ev instanceof OperationEvent.Move)
-        ) {
-            changed = ((OperationEvent)ev).getObject();
-        }
         
         int size = all.size();
         for (int i = 0; i < size; i++) {
@@ -1056,10 +1114,15 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     
     static final class DSWeakReference extends WeakReference {
         private int hash;
+        private FileObject original;
         
-        DSWeakReference(Object o, ReferenceQueue rqueue) {
+        DSWeakReference(DataObject o, ReferenceQueue rqueue) {
             super(o, rqueue);
-            hash = o.hashCode();
+            this.hash = o.hashCode();
+            if (o instanceof DataShadow) {
+                DataShadow s = (DataShadow)o;
+                this.original = s.getOriginal ().getPrimaryFile ();
+            }
         }
         
         public int hashCode() {
