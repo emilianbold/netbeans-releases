@@ -249,7 +249,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module openide/registry..."/>
     <ant dir="../openide/registry" target="netbeans"/>
   </target>
-  <target name="all-core/registry" depends="all-openide,all-openide/registry,all-openide/loaders,all-core,all-openide/convertor">
+  <target name="all-core/registry" depends="all-openide,all-openide/registry,all-openide/loaders,all-core,all-openide/convertor,all-libs/xerces">
     <echo message="Building module core/registry..."/>
     <ant dir="../core/registry" target="netbeans"/>
   </target>
@@ -552,7 +552,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module objectbrowser..."/>
     <ant dir="../objectbrowser" target="netbeans"/>
   </target>
-  <target name="all-openidex" depends="all-openide">
+  <target name="all-openidex" depends="all-openide,all-openide/loaders">
     <echo message="Building module openidex..."/>
     <ant dir="../openidex" target="netbeans"/>
   </target>
