@@ -61,6 +61,12 @@ public class FormModelEvent extends EventObject
     }
 
     FormModelEvent(FormModel source,
+                   ComponentContainer metacont) {
+        this(source);
+        container = metacont;
+    }
+
+    FormModelEvent(FormModel source,
                    RADVisualContainer metacont,
                    LayoutSupport oldLayoutSupp, LayoutSupport newLayoutSupp) {
         this(source);
@@ -79,6 +85,11 @@ public class FormModelEvent extends EventObject
 
     String getPropertyName() {
         return propertyName;
+    }
+
+    RADProperty getComponentProperty() {
+        return component != null && propertyName != null ?
+               component.getPropertyByName(propertyName) : null;
     }
 
     Object getPropertyOldValue() {

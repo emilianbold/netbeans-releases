@@ -21,16 +21,22 @@ package org.netbeans.modules.form;
 
 public interface FormModelListener extends java.util.EventListener
 {
-    public void formLoaded(FormModelEvent e);
     public void formChanged(FormModelEvent e);
+
+    public void formLoaded(FormModelEvent e);
     public void formToBeSaved(FormModelEvent e);
-    
-    public void layoutChanged(FormModelEvent e);
-    
+//    public void formToBeClosed(FormModelEvent e);
+
+    public void containerLayoutChanged(FormModelEvent e);
+    public void componentLayoutChanged(FormModelEvent e);
+
     public void componentAdded(FormModelEvent e);
     public void componentRemoved(FormModelEvent e);
+    public void componentsReordered(FormModelEvent e);
+
     public void componentPropertyChanged(FormModelEvent e);
-    
+    public void syntheticPropertyChanged(FormModelEvent e);
+
     public void eventHandlerAdded(FormModelEvent e);
     public void eventHandlerRemoved(FormModelEvent e);
     public void eventHandlerRenamed(FormModelEvent e);

@@ -365,6 +365,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     /** Closes the form. Used when closing or reloading the document.
      */
     private void closeForm() {
+//        formModel.fireFormToBeClosed();
         openForms.remove(this);
 
         // remove nodes hierarchy
@@ -388,6 +389,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         if (formWin != null) {
             formWin.setCloseOperation(TopComponent.CLOSE_EACH);
             formWin.close();
+
         }
 
         RADMenuItemComponent.freeDesignTimeMenus(formModel);
@@ -444,15 +446,16 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                     FormModel formModel = fes.getFormModel();
                     String propName = evt.getPropertyName();
 
-                    if (FormLoaderSettings.PROP_USE_INDENT_ENGINE.equals(propName)) {
-                        formModel.fireFormChanged();
-                    }
-                    else if (FormLoaderSettings.PROP_VARIABLES_MODIFIER.equals(propName)) {
-                        formModel.fireFormChanged();
+                    if (FormLoaderSettings.PROP_USE_INDENT_ENGINE.equals(propName)
+                        || FormLoaderSettings.PROP_VARIABLES_MODIFIER.equals(propName))
+                    {
+                        formModel.fireSyntheticPropertyChanged(null, propName,
+                                        evt.getOldValue(), evt.getNewValue());
                     }
                     else if (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE.equals(propName)
                           || FormLoaderSettings.PROP_SELECTION_BORDER_COLOR.equals(propName)
-                          || FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR.equals(propName)) {
+                          || FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR.equals(propName))
+                    {
                         formModel.getFormDesigner().repaint();
                     }
                 }

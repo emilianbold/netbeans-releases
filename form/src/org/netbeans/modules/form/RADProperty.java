@@ -31,6 +31,10 @@ import org.netbeans.modules.form.fakepeer.FakePeerSupport;
  */
 public class RADProperty extends FormProperty {
 
+    public static final String SYNTH_PREFIX = "$$$_"; // NOI18N
+    public static final String SYNTH_PRE_CODE = SYNTH_PREFIX + PROP_PRE_CODE;
+    public static final String SYNTH_POST_CODE = SYNTH_PREFIX + PROP_POST_CODE;
+    
     private RADComponent component;
     private PropertyDescriptor desc;
 
@@ -166,20 +170,22 @@ public class RADProperty extends FormProperty {
     public void setPreCode(String value) {
         if ((preCode == null && value != null)
                 || (preCode != null && !preCode.equals(value))) {
+            Object old = preCode;
             preCode = value;
             if (isChangeFiring() && component.getFormModel() != null)
-                component.getFormModel().fireComponentPropertyChanged(
-                    component, desc.getName(), null, null);
+                component.getFormModel().fireSyntheticPropertyChanged(
+                    component, SYNTH_PRE_CODE, old, value);
         }
     }
 
     public void setPostCode(String value) {
         if ((postCode == null && value != null)
                 || (postCode != null && !postCode.equals(value))) {
+            Object old = postCode;
             postCode = value;
             if (isChangeFiring() && component.getFormModel() != null)
                 component.getFormModel().fireComponentPropertyChanged(
-                    component, desc.getName(), null, null);
+                    component, SYNTH_POST_CODE, old, value);
         }
     }
 

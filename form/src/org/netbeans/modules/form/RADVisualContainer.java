@@ -267,7 +267,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             }
         }
         //XXXgetDesignLayout().updateLayout();
-        getFormModel().fireFormChanged();
+        getFormModel().fireComponentsReordered(this);
     }
 
     public void add(RADComponent comp) {

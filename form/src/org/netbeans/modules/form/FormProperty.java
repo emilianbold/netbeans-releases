@@ -53,6 +53,8 @@ public abstract class FormProperty extends Node.Property {
     // constants
     public static final String PROP_VALUE = "propertyValue";
     public static final String CURRENT_EDITOR = "currentEditor";
+    public static final String PROP_PRE_CODE = "preCode";
+    public static final String PROP_POST_CODE = "postCode";
 
     // Type of the property in relation to target object ("access type").
     // There are three levels of restriction here:

@@ -16,8 +16,6 @@ package org.netbeans.modules.form;
 import java.util.*;
 import java.beans.*;
 import java.awt.Component;
-//import java.lang.reflect.InvocationTargetException;
-//import java.lang.reflect.Method;
 
 import org.openide.nodes.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupport;
@@ -214,7 +212,8 @@ public class RADVisualComponent extends RADComponent {
         beanPropertySets = null;
 
         RADComponentNode node = getNodeReference();
-        if (node != null) node.fireComponentPropertySetsChange();
+        if (node != null)
+            node.fireComponentPropertySetsChange();
     }
 
     private PropertyChangeListener getConstraintsListener() {
@@ -238,7 +237,10 @@ public class RADVisualComponent extends RADComponent {
                 laysup.addComponent(components[i],
                                     laysup.getConstraints(components[i]));
 
-            getFormModel().fireFormChanged();
+            getFormModel().fireComponentLayoutChanged(RADVisualComponent.this,
+                                                      evt.getPropertyName(),
+                                                      evt.getOldValue(),
+                                                      evt.getNewValue());
         }
     }
 

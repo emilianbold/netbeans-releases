@@ -212,9 +212,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setFormPosition(Point value) {
+        Object old = formPosition;
         formPosition = value;
-        // [PENDING - set on form window if in single mode]
-        getFormModel().fireFormChanged();
+        getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_POSITION,
+                                                    old, value);
     }
 
     public Dimension getFormSize() {
@@ -225,9 +226,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setFormSize(Dimension value) {
+        Object old = formSize;
         formSize = value;
-        // [PENDING - set on form window if in single mode]
-        getFormModel().fireFormChanged();
+        getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE,
+                                                    old, value);
     }
 
     public boolean getGeneratePosition() {
@@ -236,8 +238,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
     public void setGeneratePosition(boolean value) {
         // [PENDING - set as aux value]
+        boolean old = generatePosition;
         generatePosition = value;
-        getFormModel().fireFormChanged();
+        getFormModel().fireSyntheticPropertyChanged(this, PROP_GENERATE_POSITION,
+                                        new Boolean(old), new Boolean(value));
     }
 
     public boolean getGenerateSize() {
@@ -246,8 +250,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
     public void setGenerateSize(boolean value) {
         // [PENDING - set as aux value]
+        boolean old = generateSize;
         generateSize = value;
-        getFormModel().fireFormChanged();
+        getFormModel().fireSyntheticPropertyChanged(this, PROP_GENERATE_SIZE,
+                                        new Boolean(old), new Boolean(value));
     }
 
     public boolean getGenerateCenter() {
@@ -256,8 +262,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
     public void setGenerateCenter(boolean value) {
         // [PENDING - set as aux value]
+        boolean old = generateCenter;
         generateCenter = value;
-        getFormModel().fireFormChanged();
+        getFormModel().fireSyntheticPropertyChanged(this, PROP_GENERATE_CENTER,
+                                        new Boolean(old), new Boolean(value));
     }
 
     public int getFormSizePolicy() {
@@ -273,8 +281,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
     public void setFormSizePolicy(int value) {
         // [PENDING - set as aux value]
+        int old = formSizePolicy;
         formSizePolicy = value;
-        getFormModel().fireFormChanged();
+        getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE_POLICY,
+                                        new Integer(old), new Integer(value));
     }
 
     // ------------------------------------------------------------------------------
@@ -456,9 +466,11 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             public void setValue(Object val) throws IllegalAccessException,
                                                     IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 if (!(val instanceof String)) throw new IllegalArgumentException();
-                String s =(String) val;
+                Object old = getFormMenu();
+                String s = (String) val;
                 setFormMenu(s.equals(NO_MENU) ? null : s);
-                getFormModel().fireFormChanged();
+                getFormModel().fireSyntheticPropertyChanged(
+                        RADVisualFormContainer.this, PROP_MENU_BAR, old, val);
             }
 
             public boolean canWrite() {

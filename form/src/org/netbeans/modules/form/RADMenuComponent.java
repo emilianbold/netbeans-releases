@@ -77,7 +77,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     // cloning menu instance (including submenus)
 
     public Object cloneMenuInstance() {
-        Object menu = cloneBeanInstance();
+        Object menu = cloneBeanInstance(null);
 
         for (Iterator it=subComponents.iterator(); it.hasNext(); ) {
             RADMenuItemComponent menuItemComp = (RADMenuItemComponent) it.next();
@@ -88,7 +88,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
             {
                 menuItem = menuItemComp instanceof RADMenuComponent ?
                     ((RADMenuComponent)menuItemComp).cloneMenuInstance() :
-                    menuItemComp.cloneBeanInstance();
+                    menuItemComp.cloneBeanInstance(null);
             }
             else menuItem = null;
 
@@ -165,7 +165,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         for (int i = 0, n = list.size(); i < n; i++)
             add((RADMenuItemComponent) list.get(i));
 
-        getFormModel().fireFormChanged();
+        getFormModel().fireComponentsReordered(this);
     }
 
     public void add(RADComponent comp) {

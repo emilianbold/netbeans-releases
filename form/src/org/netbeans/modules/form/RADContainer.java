@@ -48,7 +48,7 @@ public class RADContainer extends RADComponent implements ComponentContainer {
                 subComponents.add(to, value);
             }
         }
-        getFormModel().fireFormChanged();
+        getFormModel().fireComponentsReordered(this);
     }
 
     public void add(RADComponent comp) {

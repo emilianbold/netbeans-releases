@@ -111,7 +111,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
         if (metaLayout == null) return null;
 
         try {
-            return (LayoutManager) metaLayout.cloneBeanInstance();
+            return (LayoutManager) metaLayout.cloneBeanInstance(null);
         }
         catch (Exception ex) {
             ex.printStackTrace();

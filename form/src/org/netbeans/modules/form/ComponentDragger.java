@@ -170,7 +170,8 @@ class ComponentDragger
         }
 
         targetMetaContainer.getNodeReference().updateChildren();
-        formDesigner.getModel().fireFormChanged();
+        formDesigner.getModel().fireContainerLayoutChanged(targetMetaContainer,
+                                                           null, null);
 
         if (formDesigner.getSelectedComponents().size() == 0) {
             for (int i=0; i < selectedComponents.length; i++)

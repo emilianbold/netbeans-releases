@@ -18,9 +18,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.lang.reflect.Method;
 import javax.swing.JComponent;
 import java.text.MessageFormat;
@@ -408,6 +406,36 @@ public class FormUtils
                 }
             }
             catch (Exception ex) { // ignore
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
+            }
+        }
+    }
+
+    public static void copyPropertiesToBean(RADProperty[] props,
+                                            Object targetBean,
+                                            Collection relativeProperties) {
+        for (int i = 0; i < props.length; i++) {
+            RADProperty prop = props[i];
+            if (!prop.isChanged())
+                continue;
+
+            try {
+                Object value = prop.getRealValue();
+                if (value == FormDesignValue.IGNORED_VALUE)
+                    continue; // ignore this value, as it is not a real value
+
+                if (value instanceof RADComponent
+                        && relativeProperties != null)
+                    relativeProperties.add(prop);
+
+                value = FormUtils.cloneObject(value);
+
+                Method writeMethod = prop.getPropertyDescriptor().getWriteMethod();
+                if (writeMethod != null)
+                    writeMethod.invoke(targetBean, new Object[] { value });
+            }
+            catch (Exception ex) {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                     ex.printStackTrace();
             }

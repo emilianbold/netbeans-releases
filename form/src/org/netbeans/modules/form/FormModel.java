@@ -226,7 +226,7 @@ public class FormModel
                 nonVisualComponents.add(to, value);
             }
         }
-        fireFormChanged();
+        fireComponentsReordered(null); // no container for non-visuals...
     }
 
     NonVisualChildren getNonVisualChildren() {
@@ -259,29 +259,12 @@ public class FormModel
         }
     }
 
-    public void setContainerLayout(RADVisualContainer cont,
+    public void setContainerLayout(RADVisualContainer metacont,
                                    LayoutSupport layoutSupport) {
-        LayoutSupport current = cont.getLayoutSupport();
-
-//        cont.setLayoutSupport(null);
-//        ((RADChildren) cont.getNodeReference().getChildren()).updateKeys();
-        cont.setLayoutSupport(layoutSupport);
-        ((RADChildren) cont.getNodeReference().getChildren()).updateKeys();
-        
-//            Node[] childrenNodes = ((RADChildren) cont.getNodeReference().getChildren()).getNodes();
-
-//            if (childrenNodes != null) {
-//                Node layoutNode = null;
-//                if (cont instanceof FormContainer && childrenNodes.length > 0) {
-//                    layoutNode = childrenNodes[1];
-//                } else if (childrenNodes.length > 0) {
-//                    layoutNode =  childrenNodes[0]; // [PENDING IAN - ugly patch !!! - on Form nodes, the layout is the second child]
-//                }
-//                if ((layoutNode != null) &&(layoutNode instanceof LayoutNode)) {
-//                  ((RADLayoutNode)layoutNode).updateState();
-//              }
-//          }
-        fireFormChanged();
+        LayoutSupport current = metacont.getLayoutSupport();
+        metacont.setLayoutSupport(layoutSupport);
+        ((RADChildren)metacont.getNodeReference().getChildren()).updateKeys();
+        fireContainerLayoutChanged(metacont, current, layoutSupport);
     }
 
     public void addVisualComponent(
@@ -365,16 +348,24 @@ public class FormModel
         listenerList.remove(FormModelListener.class, l);
     }
 
+    public void fireFormChanged() {
+        t("formChanged"); // NOI18N
+        FormModelEvent e = new FormModelEvent(this);
+        
+  	Object[] listeners = listenerList.getListenerList();
+  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
+  	    if (listeners[i] == FormModelListener.class) {
+  		((FormModelListener)listeners[i+1]).formChanged(e);
+  	    }
+  	}
+
+        if (!readOnly) // form should be marked as modified explicitly
+            getFormEditorSupport().markFormModified();
+    }
+
     public void fireFormLoaded() {
+        t("formLoaded"); // NOI18N
         formLoaded = true;
-        // restore menu bar on the form window
-/*        Object menuVal = topRADComponent.getAuxValue(
-            RADVisualFormContainer.AUX_MENU_COMPONENT);
-        if (menuVal != null
-              && menuVal instanceof String
-              && topRADComponent instanceof RADVisualFormContainer) {
-            ((RADVisualFormContainer)topRADComponent).setFormMenu((String)menuVal);
-        } */
         initializeCodeGenerator();
 
         FormModelEvent e = new FormModelEvent(this);
@@ -388,6 +379,7 @@ public class FormModel
     }
 
     public void fireFormToBeSaved() {
+        t("formToBeSaved"); // NOI18N
         FormModelEvent e = new FormModelEvent(this);
 
   	Object[] listeners = listenerList.getListenerList();
@@ -398,44 +390,113 @@ public class FormModel
   	}
     }
 
-    public void fireFormChanged() {
-        FormModelEvent e = new FormModelEvent(this);
-        
-  	Object[] listeners = listenerList.getListenerList();
-  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-  	    if (listeners[i] == FormModelListener.class) {
-  		((FormModelListener)listeners[i+1]).formChanged(e);
-  	    }
-  	}
-    }
+//    public void fireFormToBeClosed() {
+//        t("formToBeClosed fired"); // NOI18N
+//        FormModelEvent e = new FormModelEvent(this);
+//
+//  	Object[] listeners = listenerList.getListenerList();
+//  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
+//  	    if (listeners[i] == FormModelListener.class) {
+//  		((FormModelListener)listeners[i+1]).formToBeClosed(e);
+//  	    }
+//  	}
+//    }
 
-    public void fireContainerLayoutChanged(RADVisualContainer cont,
+    public void fireContainerLayoutChanged(RADVisualContainer metacont,
                                            LayoutSupport oldLayoutSupp,
                                            LayoutSupport newLayoutSupp) {
-        FormModelEvent e = new FormModelEvent(this, cont,
+        t("containerLayoutChanged, container: " // NOI18N
+          + (metacont != null ? metacont.getName() : "null")); // NOI18N
+        FormModelEvent e = new FormModelEvent(this, metacont,
                                               oldLayoutSupp, newLayoutSupp);
-        
+
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == FormModelListener.class) {
+                FormModelListener l = (FormModelListener)listeners[i+1];
+                l.containerLayoutChanged(e);
+                l.formChanged(e);
+            }
+        }
+    }
+
+    public void fireComponentLayoutChanged(RADVisualComponent metacomp,
+                                           String propName,
+                                           Object propOldVal,
+                                           Object propNewVal) {
+        t("componentLayoutChanged, component: " // NOI18N
+          + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
+        FormModelEvent e = new FormModelEvent(this, metacomp,
+                                              propName, propOldVal, propNewVal);
+
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == FormModelListener.class) {
+                FormModelListener l = (FormModelListener)listeners[i+1];
+                l.componentLayoutChanged(e);
+                l.formChanged(e);
+            }
+        }
+
+        // Form should be marked as modified explicitly in case of a property
+        // change of serialized bean (the change didn't affect generated code).
+        if (!readOnly)
+            getFormEditorSupport().markFormModified();
+    }
+
+    public void fireComponentAdded(RADComponent metacomp,
+                                   ComponentContainer metacont) {
+        t("componentAdded, component: " // NOI18N
+          + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
+        FormModelEvent e = new FormModelEvent(this, metacomp, metacont);
+
   	Object[] listeners = listenerList.getListenerList();
   	for (int i = listeners.length - 2; i >= 0; i -= 2) {
   	    if (listeners[i] == FormModelListener.class) {
                 FormModelListener l = (FormModelListener)listeners[i+1];
-  		l.layoutChanged(e);
+  		l.componentAdded(e);
                 l.formChanged(e);
   	    }
   	}
+    }
+    
+    public void fireComponentRemoved(RADComponent metacomp) {
+        t("componentRemoved, component: " // NOI18N
+          + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
+        FormModelEvent e = new FormModelEvent(this, metacomp);
 
-        // If changed property is of a serialized component, it may not change
-        // the source file - so the form data object is not marked as modified and
-        // cannot be saved - though there are unsaved changes.
-        // So form should be marked as modified explicitly if needed.
-        if (!readOnly)
-            getFormEditorSupport().markFormModified();
+  	Object[] listeners = listenerList.getListenerList();
+  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
+  	    if (listeners[i] == FormModelListener.class) {
+                FormModelListener l = (FormModelListener)listeners[i+1];
+  		l.componentRemoved(e);
+                l.formChanged(e);
+  	    }
+  	}
+    }
+
+    public void fireComponentsReordered(ComponentContainer metacont) {
+        t("componentsReordered, container: " // NOI18N
+          + (metacont != null ? ((RADComponent)metacont).getName() : "null")); // NOI18N
+        FormModelEvent e = new FormModelEvent(this, metacont);
+
+  	Object[] listeners = listenerList.getListenerList();
+  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
+  	    if (listeners[i] == FormModelListener.class) {
+                FormModelListener l = (FormModelListener)listeners[i+1];
+  		l.componentsReordered(e);
+                l.formChanged(e);
+  	    }
+  	}
     }
 
     public void fireComponentPropertyChanged(RADComponent metacomp,
                                              String propName,
                                              Object propOldVal,
                                              Object propNewVal) {
+        t("componentPropertyChanged, component: " // NOI18N
+          + (metacomp != null ? metacomp.getName() : "null") // NOI18N
+          + ", property: " + propName); // NOI18N
         FormModelEvent e = new FormModelEvent(this, metacomp,
                                               propName, propOldVal, propNewVal);
 
@@ -456,31 +517,41 @@ public class FormModel
             getFormEditorSupport().markFormModified();
     }
 
-    public void fireComponentAdded(RADComponent metacomp,
-                                   ComponentContainer metacont) {
-        FormModelEvent e = new FormModelEvent(this, metacomp, metacont);
-        
+    public void fireSyntheticPropertyChanged(RADComponent metacomp,
+                                             String propName,
+                                             Object propOldVal,
+                                             Object propNewVal) {
+        t("syntheticPropertyChanged, component: " // NOI18N
+          + (metacomp != null ? metacomp.getName() : "null") // NOI18N
+          + ", property: " + propName); // NOI18N
+        FormModelEvent e = new FormModelEvent(this, metacomp,
+                                              propName, propOldVal, propNewVal);
+
   	Object[] listeners = listenerList.getListenerList();
   	for (int i = listeners.length - 2; i >= 0; i -= 2) {
   	    if (listeners[i] == FormModelListener.class) {
                 FormModelListener l = (FormModelListener)listeners[i+1];
-  		l.componentAdded(e);
+  		l.syntheticPropertyChanged(e);
                 l.formChanged(e);
   	    }
   	}
+
+        // Form should be marked as modified explicitly in case the change
+        // did not affect generated code.
+        if (!readOnly)
+            getFormEditorSupport().markFormModified();
     }
-    
-    public void fireComponentRemoved(RADComponent metacomp) {
-        FormModelEvent e = new FormModelEvent(this, metacomp);
-        
-  	Object[] listeners = listenerList.getListenerList();
-  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-  	    if (listeners[i] == FormModelListener.class) {
-                FormModelListener l = (FormModelListener)listeners[i+1];
-  		l.componentRemoved(e);
-                l.formChanged(e);
-  	    }
-  	}
+
+    public void fireEventHandlerAdded(EventHandler handler) {
+        t("eventHandlerAdded"); // NOI18N
+    }
+
+    public void fireEventHandlerRemoved(EventHandler handler, String oldName) {
+        t("eventHandlerRemoved"); // NOI18N
+    }
+
+    public void fireEventHandlerRenamed(EventHandler handler) {
+        t("eventHandlerRenamed"); // NOI18N
     }
 
     // }}}
@@ -579,5 +650,20 @@ public class FormModel
         }
 
         return null;
+    }
+
+    // ---------------
+    
+    /** For debugging purposes only. */
+    static private int traceCount = 0;
+    /** For debugging purposes only. */
+    static private final boolean TRACE = false;
+    /** For debugging purposes only. */
+    static void t(String str) {
+        if (TRACE)
+            if (str != null)
+                System.out.println(Integer.toString(++traceCount) + " Form: "+str); // NOI18N
+            else
+                System.out.println(""); // NOI18N
     }
 }

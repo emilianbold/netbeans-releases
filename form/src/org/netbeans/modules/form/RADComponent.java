@@ -35,8 +35,9 @@ public class RADComponent implements FormDesignValue {
     // -----------------------------------------------------------------------------
     // Static variables
 
-    public static final String SYNTHETIC_PREFIX = "synthetic_"; // NOI18N
-    public static final String PROP_NAME = SYNTHETIC_PREFIX + "Name"; // NOI18N
+//    public static final String SYNTHETIC_PREFIX = "synthetic_"; // NOI18N
+//    public static final String PROP_NAME = SYNTHETIC_PREFIX + "Name"; // NOI18N
+    public static final String PROP_NAME = "Name"; // NOI18N
 
     static final NewType[] NO_NEW_TYPES = {};
     static final Node.Property[] NO_PROPERTIES = {};
@@ -281,47 +282,12 @@ public class RADComponent implements FormDesignValue {
         return getBeanInstance();
     }
 
-    public Object cloneBeanInstance() {
+    public Object cloneBeanInstance(Collection relativeProperties) {
         Object clone = createBeanInstance();
-//        try {
-            setProps(clone, getAllBeanProperties());
-//        }
-//        catch (Exception ex) {
-//            ex.printStackTrace(); // XXX
-//        }
+        FormUtils.copyPropertiesToBean(getAllBeanProperties(),
+                                       clone,
+                                       relativeProperties);
         return clone;
-    }
-
-    static void setProps(Object bean, Node.Property[] props) {//throws Exception {
-        for (int i = 0; i < props.length; i++) {
-            RADProperty prop = (RADProperty) props[i];
-            if (!prop.isChanged())
-                continue;
-
-            try {
-                Object value = prop.getRealValue();
-                if (value == FormDesignValue.IGNORED_VALUE)
-                    continue; // ignore this value, as it is not a real value
-
-                // HOTFIX: memory leak workaround
-                if (value instanceof javax.swing.DefaultComboBoxModel) {
-                    try {
-                        value = FormUtils.cloneBeanInstance(value, null);
-                    }
-                    catch (CloneNotSupportedException ex) {
-                        continue;
-                    }
-                }
-
-                Method writeMethod = prop.getPropertyDescriptor().getWriteMethod();
-                if (writeMethod != null)
-                    writeMethod.invoke(bean, new Object[] { value });
-            }
-            catch (Exception ex) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
-            }
-        }
     }
 
     /** Provides access to BeanInfo of the bean represented by this RADComponent
@@ -398,9 +364,9 @@ public class RADComponent implements FormDesignValue {
             renameDefaultEventHandlers(oldName, componentName);
         // [PENDING] renaming of default event handlers could be in global options...
 
-        formModel.fireComponentPropertyChanged(this,PROP_NAME,oldName,componentName);
-//        formModel.fireFormChanged();
-        
+        formModel.fireSyntheticPropertyChanged(this, PROP_NAME,
+                                               oldName, componentName);
+
         if (getNodeReference() != null) {
             getNodeReference().updateName();
         }
