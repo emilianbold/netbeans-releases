@@ -890,6 +890,7 @@ public final class AntProjectHelper {
                 m.putAll(p);
             }
             m.put("basedir", FileUtil.toFile(dir).getAbsolutePath()); // NOI18N
+            // XXX define ant.home
             stockPropertyPreprovider = PropertyUtils.fixedPropertyProvider(m);
         }
         return stockPropertyPreprovider;

@@ -49,6 +49,7 @@ public class RunTargetsAction extends CookieAction implements Presenter.Popup {
     }
 
     public JMenuItem getPopupPresenter() {
+        // XXX should perhaps be rewritten to use a plain JMenu and override getPopup
         return new SpecialSubMenu (this, new ActSubMenuModel (this), true);
     }
 
