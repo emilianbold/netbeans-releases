@@ -44,7 +44,7 @@ class HTTPFileObject extends FileObject {
     // Directory object that contains this file
     transient private HTTPFileObject    parentFileObject;
     // Child file objects of this file if it is a directory
-    transient private Hashtable         childFileObjects;
+    transient private Map               childFileObjects;
     // URL to this file
     transient URL                       fileURL;
     // The file name part of this file
@@ -114,7 +114,7 @@ class HTTPFileObject extends FileObject {
             // initialize this file object
             this.parentFileSystem = parentFileSystem;
             this.parentFileObject = null;
-            this.childFileObjects = new Hashtable( );
+            this.childFileObjects = Collections.synchronizedMap( new Hashtable( ) );
             this.uriStem = uriStem;
             this.fileURL = new java.net.URL( parentFileSystem.baseURL, "." + uriStem );//NOI18N
             this.fileAttributes = new Hashtable( 0 );
@@ -741,10 +741,10 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    synchronized void addChild( HTTPFileObject newChildFileObject ) {        
+    void addChild( HTTPFileObject newChildFileObject ) {        
 
-        childFileObjects.put( newChildFileObject.getNameExt( ), newChildFileObject );
         newChildFileObject.parentFileObject = this;
+        childFileObjects.put( newChildFileObject.getNameExt( ), newChildFileObject );
 
         // Notify any listeners that this item has been added
         if( !listeners.isEmpty( ) ) {
@@ -769,7 +769,7 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 3.4
      */
-    synchronized void removeAllChildren(
+    void removeAllChildren(
     ) {
 
         // Iterator through list of chlildren
@@ -778,17 +778,21 @@ class HTTPFileObject extends FileObject {
         HTTPFileObject  childFile;
 
 
-        childIterator = childFileObjects.values( ).iterator( );
-        while( childIterator.hasNext( ) ) {
+        synchronized( childFileObjects ) {
 
-            childFile = (HTTPFileObject)childIterator.next( );
-            childIterator.remove( );
-            childFile.parentFileObject = null;
+            childIterator = childFileObjects.values( ).iterator( );
+            while( childIterator.hasNext( ) ) {
 
-            // Notify any listeners that this file has been removed
-            if( !listeners.isEmpty( ) ) {
+                childFile = (HTTPFileObject)childIterator.next( );
+                childIterator.remove( );
+                childFile.parentFileObject = null;
 
-                fireFileDeletedEvent( listeners.elements( ), new FileEvent( this, childFile, true ) );
+                // Notify any listeners that this file has been removed
+                if( !listeners.isEmpty( ) ) {
+
+                    fireFileDeletedEvent( listeners.elements( ), new FileEvent( this, childFile, true ) );
+
+                }
 
             }
 
@@ -904,7 +908,7 @@ class HTTPFileObject extends FileObject {
 
 
     /**
-     *  Returns the Hashtable that contains all of the child FileObjects.  This
+     *  Returns the Map that contains all of the child FileObjects.  This
      *  provides synchronized access to the methods that read the contents of the
      *  folder.
      *
@@ -915,14 +919,22 @@ class HTTPFileObject extends FileObject {
      *
      *  @since 1.0
      */
-    synchronized private Hashtable getChildFileObjects( boolean readPackageContents ) {
+    private Map getChildFileObjects( boolean readPackageContents ) {
 		
         // If this is a directory that has not been read yet and the root object has been initialized,
-        if( !areFolderContentsKnown && readPackageContents ) {
-            
-            // Read the list of files in this package directory
-            readPackageContents( );
-                
+        if( readPackageContents ) {
+
+            synchronized( childFileObjects ) {
+
+                if( !areFolderContentsKnown ) {
+
+                    // Read the list of files in this package directory
+                    readPackageContents( );
+
+                }
+
+            }
+
         }
         return childFileObjects;
 

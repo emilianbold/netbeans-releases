@@ -40,6 +40,7 @@ class HTTPRootFileObject
     private Thread  refreshThread;
     private Date    lastRefreshDate;
     private boolean threadIsRunning;
+	private boolean refreshPending;
     
     private static boolean proxyInit;
 
@@ -59,6 +60,7 @@ class HTTPRootFileObject
         // Start reading the items in the root directory in the background
         refreshThread = new Thread( this );
         threadIsRunning = true;
+		refreshPending = false;
         refreshThread.start( );
 
     }
@@ -79,6 +81,19 @@ class HTTPRootFileObject
 
 
     /**
+     *  Forces the filesystem to be refreshed.
+     *
+     *  @since 3.4
+     */
+    void triggerRefresh( ) {
+
+        refreshPending = true;
+        refreshThread.interrupt( );
+
+    }
+
+
+    /**
      *  Called to initialize the root file object in the background, and to
      *  run the background refresh thread.
      *
@@ -90,6 +105,8 @@ class HTTPRootFileObject
         int         refreshInterval;
         // The next time the web site is scheduled to be checked
         Calendar    nextRefreshTime;
+        // Flags whether the docs have changed
+        boolean     docsHaveChanged;
 
 
         // Start by reading the web site's contents for the first time
@@ -98,41 +115,40 @@ class HTTPRootFileObject
 
         while( threadIsRunning ) {
 
+            docsHaveChanged = false;
+
+            // If this file system is configured to be refreshed,
+            refreshInterval = parentFileSystem.getRefreshRate( );
+            if( refreshInterval > 0 ) {
+
+                // Calculate the next time this file object should try to refresh
+                nextRefreshTime = new GregorianCalendar( );
+                nextRefreshTime.setTime( lastRefreshDate );
+                nextRefreshTime.add( Calendar.MINUTE, refreshInterval );
+
+                // If the next refresh time has passed,
+                if( nextRefreshTime.before( new GregorianCalendar( ) ) ) {
+
+                    // Check if the documentation has changed
+                    docsHaveChanged = hasDocumentationChanged( );
+
+                }
+
+            }
+
+            // If the JavaDocs need to be refreshed,
+            if( docsHaveChanged || refreshPending ) {
+
+                // Refresh the contents of this root file object
+                refreshPending = false;
+                refreshRootContents( );
+
+            }
+
             try {
 
                 // Test if it's time to check once every minute
                 Thread.sleep( 60 * 1000 );
-                if( threadIsRunning ) {
-
-                    synchronized( this ) {
-
-                        // If this file system is configured to be refreshed,
-                        refreshInterval = parentFileSystem.getRefreshRate( );
-                        if( refreshInterval > 0 ) {
-
-                            // Calculate the next time this file object should try to refresh
-                            nextRefreshTime = new GregorianCalendar( );
-                            nextRefreshTime.setTime( lastRefreshDate );
-                            nextRefreshTime.add( Calendar.MINUTE, refreshInterval );
-
-                            // If the next refresh time has passed,
-                            if( nextRefreshTime.before( new GregorianCalendar( ) ) ) {
-
-                                // Check if the documentation has changed
-                                if( hasDocumentationChanged( ) ) {
-
-                                    // Refresh the contents of this root file object
-                                    refreshRootContents( );
-
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                }
 
             } catch( InterruptedException e ) {
 
@@ -153,7 +169,7 @@ class HTTPRootFileObject
      *
      *  @since 3.4
      */
-    synchronized boolean hasDocumentationChanged(
+    private boolean hasDocumentationChanged(
     ) {
 
         // File object for /package-list
@@ -207,7 +223,7 @@ class HTTPRootFileObject
      *
      *	@since 3.4
      */
-    synchronized void refreshRootContents( ) {
+    private void refreshRootContents( ) {
         initHTTPProxyHack();
         // File object for /package-list
         HTTPFileObject	packageFile;

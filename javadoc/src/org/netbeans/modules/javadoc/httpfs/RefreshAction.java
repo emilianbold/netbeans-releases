@@ -148,7 +148,7 @@ class RefreshAction
             // Refresh the contents of each file system selected
             dataObject = (DataObject)activatedNodes[ nodeIndex ].getCookie( DataObject.class );
             rootFileObject = (HTTPRootFileObject)dataObject.getPrimaryFile( );
-            rootFileObject.refreshRootContents( );
+            rootFileObject.triggerRefresh( );
 
         }
 
