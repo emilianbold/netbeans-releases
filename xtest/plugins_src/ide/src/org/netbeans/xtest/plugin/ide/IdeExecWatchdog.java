@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -74,6 +74,8 @@ public class IdeExecWatchdog extends ExecuteWatchdog {
     public void timeoutOccured(Watchdog w) {
         antProject.log("XTest: Hard timeout occured - trying to kill IDE");
         try {
+            // Capture screen to IDE userdir. It is copied to results in target 
+            // move-ide-userdir of plugins_src/base/lib/basic_results_processor_targets.
             PNGEncoder.captureScreenToIdeUserdir(ideUserdir,"screenshot-kill.png");
         } catch (Throwable captureException) {
             // we have a problem when capturing
@@ -87,7 +89,6 @@ public class IdeExecWatchdog extends ExecuteWatchdog {
         antProject.log("XTest: IDE killed.");
         //System.out.println("process destroyed");
     }
-
     
     /**
      * Watches the ide process and terminates it, if it runs for to long.

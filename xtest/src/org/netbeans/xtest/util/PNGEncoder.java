@@ -241,9 +241,9 @@ public class PNGEncoder extends Object {
         if (ideUserdir != null) {
             File ideDir = new File(ideUserdir);
             if (ideDir.isDirectory()) {
-                File sysDir = new File(ideDir,"system");
-                if (sysDir.isDirectory()) {
-                    File screenshotDir = new File(sysDir,"screenshots");
+                File varDir = new File(ideDir, "var");
+                if (varDir.isDirectory()) {
+                    File screenshotDir = new File(varDir,"screenshots");
                     if (!screenshotDir.exists()) {
                         boolean result = screenshotDir.mkdir();
                         if (result == false) {
@@ -257,7 +257,7 @@ public class PNGEncoder extends Object {
                     PNGEncoder.captureScreen(screenShotFilename);
                     return;
                 } else {
-                    throw new IOException("Cannot create screendump, ide userdir/system "+sysDir.getPath()+" is not a valid directory");
+                    throw new IOException("Cannot create screendump, ide userdir/system "+varDir.getPath()+" is not a valid directory");
                 }
             } else {
                 throw new IOException("Cannot create screendump, ide userdir: "+ideDir.getPath()+" is not a valid directory");
