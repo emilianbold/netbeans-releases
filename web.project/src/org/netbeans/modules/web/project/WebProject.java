@@ -425,7 +425,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             if (eval != null) {
                 f = helper.resolveFile(eval);
             }
-            VisualClassPathItem cpItem = new VisualClassPathItem( f, VisualClassPathItem.TYPE_JAR, file, eval, VisualClassPathItem.PATH_IN_WAR_LIB);
+            VisualClassPathItem cpItem = VisualClassPathItem.create ( f, VisualClassPathItem.PATH_IN_WAR_LIB);
             cpItems.add (cpItem);
         }
         return needsAdding;

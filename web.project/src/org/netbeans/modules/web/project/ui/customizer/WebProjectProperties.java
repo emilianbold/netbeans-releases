@@ -754,7 +754,7 @@ public class WebProjectProperties {
                     AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact( pe[i] );                     
                     if ( artifact != null ) {
                         // Sub project artifact
-                        String eval = antProjectHelper.getStandardPropertyEvaluator ().evaluate (pe[i]);
+                        String eval = artifact.getArtifactLocation().toString();
                         cpItem = new VisualClassPathItem( artifact, VisualClassPathItem.TYPE_ARTIFACT, pe[i], eval, VisualClassPathItem.PATH_IN_WAR_NONE );
                     } else {
                         cpItem = new VisualClassPathItem(null, VisualClassPathItem.TYPE_ARTIFACT, pe[i], null, VisualClassPathItem.PATH_IN_WAR_NONE);
@@ -927,32 +927,31 @@ public class WebProjectProperties {
                     cpItem = new VisualClassPathItem( lib, VisualClassPathItem.TYPE_LIBRARY, file, eval, pathInWar );
                 }
                 else {
-                    //Invalid library. The lbirary was probably removed from system.
-                    cpItem = null;
+                    cpItem = new VisualClassPathItem( null, VisualClassPathItem.TYPE_LIBRARY, file, null, pathInWar );
                 }
-            }
-            else {
+            } else if (file.startsWith(ANT_ARTIFACT_PREFIX)) {
                 AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact( file );                     
                 if ( artifact != null ) {
                     // Sub project artifact
-                    String eval = antProjectHelper.getStandardPropertyEvaluator ().evaluate (file);
+                    String eval = artifact.getArtifactLocation().toString();
                     cpItem = new VisualClassPathItem( artifact, VisualClassPathItem.TYPE_ARTIFACT, file, eval, pathInWar );
+                } else {
+                    cpItem = new VisualClassPathItem( null, VisualClassPathItem.TYPE_ARTIFACT, file, null, pathInWar );
+                }
+            } else {
+                // Standalone jar or property
+                String eval;
+                if (isAntProperty (file)) {
+                    eval = antProjectHelper.getStandardPropertyEvaluator ().getProperty(getAntPropertyName(file));
                 }
                 else {
-                    // Standalone jar or property
-                    String eval;
-                    if (isAntProperty (file)) {
-                        eval = antProjectHelper.getStandardPropertyEvaluator ().getProperty(getAntPropertyName(file));
-                    }
-                    else {
-                        eval = file;
-                    }                    
-                    File f = null;
-                    if (eval != null) {
-                        f = antProjectHelper.resolveFile(eval);
-                    }                    
-                    cpItem = new VisualClassPathItem( f, VisualClassPathItem.TYPE_JAR, file, eval, pathInWar );
-                }
+                    eval = file;
+                }                    
+                File f = null;
+                if (eval != null) {
+                    f = antProjectHelper.resolveFile(eval);
+                }                    
+                cpItem = new VisualClassPathItem( f, VisualClassPathItem.TYPE_JAR, file, eval, pathInWar );
             }
             if (cpItem!=null) {
                 cpItems.add( cpItem );
@@ -994,29 +993,30 @@ public class WebProjectProperties {
                 if (lib != null)
                     cpItem = new VisualClassPathItem(lib, VisualClassPathItem.TYPE_LIBRARY, file, eval, pathInWar);
                 else
-                    //Invalid library. The lbirary was probably removed from system.
-                    cpItem = null;
-            } else {
+                    cpItem = new VisualClassPathItem(null, VisualClassPathItem.TYPE_LIBRARY, file, null, pathInWar);
+            } else if (file.startsWith(ANT_ARTIFACT_PREFIX)) {
                 AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact(file);                     
                 if (artifact != null) {
                     // Sub project artifact
-                    String eval = antProjectHelper.getStandardPropertyEvaluator().evaluate(file);
+                    String eval = artifact.getArtifactLocation().toString();
                     cpItem = new VisualClassPathItem(artifact, VisualClassPathItem.TYPE_ARTIFACT, file, eval, pathInWar);
                 } else {
-                    // Standalone jar or property
-                    String eval;
-                    if (isAntProperty (file)) {
-                        eval = antProjectHelper.getStandardPropertyEvaluator ().getProperty(getAntPropertyName(file));
-                    }
-                    else {
-                        eval = file;
-                    }                    
-                    File f = null;
-                    if (eval != null) {
-                        f = antProjectHelper.resolveFile(eval);
-                    }                    
-                    cpItem = new VisualClassPathItem(f, VisualClassPathItem.TYPE_JAR, file, eval, pathInWar);
+                    cpItem = new VisualClassPathItem(null, VisualClassPathItem.TYPE_ARTIFACT, file, null, pathInWar);
                 }
+            } else {
+                // Standalone jar or property
+                String eval;
+                if (isAntProperty (file)) {
+                    eval = antProjectHelper.getStandardPropertyEvaluator ().getProperty(getAntPropertyName(file));
+                }
+                else {
+                    eval = file;
+                }                    
+                File f = null;
+                if (eval != null) {
+                    f = antProjectHelper.resolveFile(eval);
+                }                    
+                cpItem = new VisualClassPathItem(f, VisualClassPathItem.TYPE_JAR, file, eval, pathInWar);
             }
             if (cpItem != null)
                 warAddItems.add(cpItem);
