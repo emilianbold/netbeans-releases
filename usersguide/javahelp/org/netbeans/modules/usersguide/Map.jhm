@@ -363,8 +363,8 @@ the Options window:-->
 <mapID target="org.netbeans.modules.project.ui.TemplatesPanel" url="project/csh/proj_wiz.html" />
 
 <!-- New J2SE lib, J2SE app, and J2SE project from existing sources :-->
-<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_APP" url="project/csh/proj_j2sestand_wiz.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_LIB" url="project/csh/proj_j2sestand_wiz.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_APP" url="project/csh/proj_j2se-standapp_wiz.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_LIB" url="project/csh/proj_j2se-standclasslib_wiz.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_EXT" url="project/csh/proj_j2seexist_wiz.html" />
 
 <!-- Freeform J2SE and Web Project wizards :-->
