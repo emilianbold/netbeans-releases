@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.projectimport.eclipse.wizard;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -38,7 +39,6 @@ import org.netbeans.modules.projectimport.eclipse.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.Workspace;
 import org.netbeans.modules.projectimport.eclipse.WorkspaceFactory;
 
-
 /**
  * Represent "Project to import" step(panel) in the Eclipse importer wizard.
  *
@@ -57,11 +57,16 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
             setText(project.getName());
             setSelected(selectedProjects.contains(project) ||
                     requiredProjects.contains(project));
+            setToolTipText(""); // NOI18N
             if (project.hasJavaNature() && !requiredProjects.contains(project)) {
                 setEnabled(true);
             } else {
                 // required and non-java project are disabled
                 setEnabled(false);
+                if (!project.hasJavaNature()) {
+                    setToolTipText(ProjectImporterWizard.getMessage(
+                            "MSG_NonJavaProject", project.getName())); // NOI18N
+                }
             }
             return this;
         }
@@ -230,8 +235,8 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         }
         selectedProjects = new HashSet();
         requiredProjects = new HashSet();
-        projectTable.setPreferredScrollableViewportSize(projectTable.getPreferredSize());
-        projectTableSP.setMinimumSize(projectTableSP.getPreferredSize());
+//        projectTable.setPreferredScrollableViewportSize(projectTable.getPreferredSize());
+//        projectTableSP.setMinimumSize(projectTableSP.getPreferredSize());
         updateValidity();
     }
     
@@ -272,7 +277,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         projectTableSP = new javax.swing.JScrollPane();
         projectTable = new javax.swing.JTable();
 
-        setLayout(new java.awt.BorderLayout(0, 24));
+        setLayout(new java.awt.BorderLayout(0, 12));
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
         choosePanel.setLayout(new java.awt.GridBagLayout());
@@ -314,7 +319,7 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
 
         projectListLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "CTL_ProjectSelectionStep_Mnem").charAt(0));
         projectListLabel.setLabelFor(projectTable);
-        projectListLabel.setText(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "CTL_ProjectSelectionStep"));
+        projectListLabel.setText(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_ProjectsToImport"));
         projectListLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -330,9 +335,10 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         projectPanel.add(projectTableSP, gridBagConstraints);
 
         add(projectPanel, java.awt.BorderLayout.CENTER);

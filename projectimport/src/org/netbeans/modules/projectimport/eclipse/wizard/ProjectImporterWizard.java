@@ -43,7 +43,7 @@ public final class ProjectImporterWizard {
                         iterator.getErrorMessage());
             }
         });
-        wizardDescriptor.setTitleFormat(new java.text.MessageFormat(" {1}"));  // NOI18N
+        wizardDescriptor.setTitleFormat(new java.text.MessageFormat("{1}")); // NOI18N
         wizardDescriptor.setTitle(
                 ProjectImporterWizard.getMessage("CTL_WizardTitle")); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
