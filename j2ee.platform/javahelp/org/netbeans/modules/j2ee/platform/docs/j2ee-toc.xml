@@ -76,21 +76,11 @@
   </tocitem> <!-- Working With Listeners -->
 
   <tocitem text="Web Services">
-	  <tocitem text="About Web Services" target="about_web_service" />
-     <tocitem text="Creating Web Services" target="about_web_service" />
-     <tocitem text="Implementing Web Service Operations" target="about_web_service" />
-     <tocitem text="Adding SOAP Message Handlers" target="about_web_service" />
-     <tocitem text="Adding the Web Module to the J2EE Application" target="about_web_service"/>
-     <tocitem text="Running and Debugging Web Services" target="about_web_service" />
+	  <tocitem text="Working with Web Services" target="about_web_service" /> 
   </tocitem> <!-- Working With Web Services --> 
 
   <tocitem text="Web Service Clients">
-	  <tocitem text="About Web Service Clients" target="about_web_service_client" />
-     <tocitem text="Creating Web Service Clients" target="about_web_service_client" />
-     <tocitem text="Implementing Web Service Operations" target="about_web_service_client" />
-     <tocitem text="Adding SOAP Message Handlers" target="about_web_service_client" />
-     <tocitem text="Adding the Web Module to the J2EE Application" target="about_web_service_client"/>
-     <tocitem text="Running and Debugging Web Service Clients" target="about_web_service_client" />
+	  <tocitem text="Working with Web Service Clients" target="about_web_service_client" />
   </tocitem> <!-- Working With Web Service Clients --> 
   
   <tocitem text="Tags">
