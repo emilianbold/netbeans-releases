@@ -16,6 +16,7 @@ package org.netbeans.modules.java.j2seproject;
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +30,8 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
 import org.netbeans.spi.project.ActionProvider;
@@ -42,19 +45,14 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
 import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 import org.openide.src.ClassElement;
 import org.openide.src.SourceElement;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
-import org.openide.filesystems.FileStateInvalidException;
-import java.net.URL;
-
-import org.netbeans.api.project.ProjectUtils;
 
 /** Action provider of the J2SE project. This is the place where to do
  * strange things to J2SE actions. E.g. compile-single.
