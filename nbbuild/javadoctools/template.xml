@@ -65,6 +65,7 @@ cause it to fail.
         <property name="javadoc.docs.openide/loaders" value="http://www.netbeans.org/download/dev/javadoc/LoadersAPI"/>
         <property name="javadoc.docs.openide/deprecated" value="http://www.netbeans.org/download/dev/javadoc/DeprecatedAPIs"/>
         <property name="javadoc.docs.core/javahelp" value="http://www.netbeans.org/download/dev/javadoc/JavaHelpAPI"/>
+        <property name="javadoc.docs.core/term" value="http://www.netbeans.org/download/dev/javadoc/TerminalEmulatorAPI"/>
         <property name="javadoc.docs.java/api" value="http://www.netbeans.org/download/dev/javadoc/JavaSupportAPIs"/>
         <!-- add more here as needed... -->
         <property name="javadoc.css.dir" location="."/>
@@ -122,6 +123,7 @@ cause it to fail.
             <link href="${javadoc.docs.openide/compiler}" offline="true" packagelistloc="../../openide/compiler/javadoc/CompilerAPI"/>
             <link href="${javadoc.docs.openide/loaders}" offline="true" packagelistloc="../../openide/loaders/javadoc/LoadersAPI"/>
             <link href="${javadoc.docs.core/javahelp}" offline="true" packagelistloc="../../core/javahelp/javadoc/JavaHelpAPI"/>
+            <link href="${javadoc.docs.core/term}" offline="true" packagelistloc="../../core/term/javadoc/TerminalEmulatorAPI"/>
             <link href="${javadoc.docs.java/api}" offline="true" packagelistloc="../../java/api/javadoc/JavaSupportAPIs"/>
             <doctitle>NetBeans ${javadoc.title}</doctitle>
             <header>${javadoc.header}</header>
@@ -164,6 +166,7 @@ cause it to fail.
             <replacefilter token="@OPENIDE/LOADERS@" value="${javadoc.docs.openide/loaders}"/>
             <replacefilter token="@OPENIDE/DEPRECATED@" value="${javadoc.docs.openide/deprecated}"/>
             <replacefilter token="@CORE/JAVAHELP@" value="${javadoc.docs.core/javahelp}"/>
+            <replacefilter token="@CORE/TERM@" value="${javadoc.docs.core/term}"/>
             <replacefilter token="@JAVA/API@" value="${javadoc.docs.java/api}"/>
             <replacefilter token="@FOOTER@" value="${javadoc.footer}"/>
         </replace>
