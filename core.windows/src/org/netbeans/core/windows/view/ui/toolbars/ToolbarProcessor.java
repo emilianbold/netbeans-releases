@@ -54,13 +54,6 @@ public class ToolbarProcessor implements XMLDataObject.Processor, InstanceCookie
      */
     public Object instanceCreate () throws IOException {
         if (configuration != null) {
-            // #17300 Updates configuration.
-            // XXX Probably should be refined. To by pass the NPE is
-            // currently necessary to call readConfig(), but in fact only
-            // checkConfiguration() is only needed for this case -> refactore
-            // ToolbarConfiguration.
-            configuration.updateConfiguration(xmlDataObject);
-            
             return configuration;
         }
         ToolbarConfiguration tc = new ToolbarConfiguration (xmlDataObject);
