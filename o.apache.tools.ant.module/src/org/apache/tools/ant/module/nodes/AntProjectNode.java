@@ -137,14 +137,13 @@ public class AntProjectNode extends DataNode implements ChangeListener {
     protected Sheet createSheet() {  
         Sheet sheet = super.createSheet();
 
-        // Make sure there is a "Properties" set: // NOI18N
-        Sheet.Set props = sheet.get(Sheet.PROPERTIES); // get by name, not display name
-        if (props == null)  {
-            props = Sheet.createPropertiesSet ();
-            sheet.put(props);
-        }
-        add2Sheet (props);
+        Sheet.Set props = new Sheet.Set();
+        props.setName("project"); // NOI18N
+        props.setDisplayName(NbBundle.getMessage(AntProjectNode.class, "LBL_proj_sheet"));
+        props.setShortDescription(NbBundle.getMessage(AntProjectNode.class, "HINT_proj_sheet"));
         props.setValue("helpID", "org.apache.tools.ant.module.nodes.AntProjectNode.Properties");
+        add2Sheet (props);
+        sheet.put(props);
 
         Sheet.Set exec = new Sheet.Set ();
         exec.setName ("execution"); // NOI18N
