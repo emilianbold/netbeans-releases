@@ -159,8 +159,8 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
   }
 
   public void setValue (Object object) {
-    if (!(object instanceof Color)) throw new IllegalArgumentException (object.toString ());
     if (object != null) {
+      if (!(object instanceof Color)) throw new IllegalArgumentException (object.toString ());
       if (object instanceof SuperColor) color = (SuperColor) object;
       else color = new SuperColor ((Color) object);
     }
@@ -603,6 +603,7 @@ static final long serialVersionUID =-6230228701104365037L;
 
 /*
  * Log
+ *  20   Gandalf   1.19        12/8/99  Petr Nejedly    Enabled setValue(null)
  *  19   Gandalf   1.18        11/26/99 Patrik Knakal   
  *  18   Gandalf   1.17        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
