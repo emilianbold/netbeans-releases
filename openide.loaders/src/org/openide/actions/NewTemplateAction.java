@@ -34,7 +34,6 @@ import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.Mutex;
 import org.openide.util.HelpCtx;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.*;
 import org.openide.util.WeakListener;
@@ -54,8 +53,8 @@ public class NewTemplateAction extends NodeAction {
     private static DataObject selectedTemplate;
     private static DataFolder targetFolder;
 
-    /** The list of recently used templates, List<DataObject> */
-    private List recent = new LinkedList();
+    /** Maximum count of recent templates. */
+    private static int MAX_RECENT_ITEMS = 5;
     
     /** Getter for wizard.
      * @param the node that is currently activated
@@ -122,7 +121,7 @@ public class NewTemplateAction extends NodeAction {
                 try {
                     selectedTemplate = wizard.getTemplate();
                     // Put the template in the recent list
-                    if (selectedTemplate != null) addRecent(selectedTemplate);
+                    if (selectedTemplate != null) addRecent (selectedTemplate);
                     targetFolder = wizard.getTargetFolder();
                 }
                 catch (IOException ignore) {
@@ -241,8 +240,8 @@ public class NewTemplateAction extends NodeAction {
                 }
 
                 // all recent items
-                if (recent.size() > 0) popup.add(new JSeparator()); // separator
-                for (Iterator it = recent.iterator(); it.hasNext(); ) {
+                if (getRecentList ().size() > 0) popup.add(new JSeparator()); // separator
+                for (Iterator it = getRecentList ().iterator(); it.hasNext(); ) {
                     popup.add(new Item((DataObject)it.next(), false));
                 }
                 
@@ -289,22 +288,30 @@ public class NewTemplateAction extends NodeAction {
     }
     
     /** Cached content of Templates/Privileged */
-    private DataFolder privFolder;
+    private DataFolder privilegedListFolder;
+    
+    /** Cached content of Templates/Recent */
+    private DataFolder recentListFolder;
+    
+    private boolean recentChanged = true;
+    private List recentList = new ArrayList (0);
     
     private List getPrivilegedList() {
-        if (privFolder == null) {
+        if (privilegedListFolder == null) {
             FileObject fo = Repository.getDefault().getDefaultFileSystem().
                                     findResource("Templates/Privileged"); // NOI18N
-            if (fo != null) privFolder = DataFolder.findFolder(fo);
+            if (fo != null) privilegedListFolder = DataFolder.findFolder(fo);
         }
-        if (privFolder != null) {
-            DataObject[] data = privFolder.getChildren();
+        if (privilegedListFolder != null) {
+            DataObject[] data = privilegedListFolder.getChildren();
             List l2 = new ArrayList(data.length);
             for (int i=0; i<data.length; i++) {
                 DataObject dobj = data[i];
                 if (dobj instanceof DataShadow)
                                 dobj = ((DataShadow)dobj).getOriginal();
-                l2.add(dobj);
+                if (isValidTemplate (dobj)) {
+                    l2.add(dobj);
+                }
             }
             return l2;
         } else {
@@ -322,7 +329,7 @@ public class NewTemplateAction extends NodeAction {
                 if (created != null && wizard instanceof DefaultTemplateWizard) {
                     // put the item in the recent list
                     selectedTemplate = wizard.getTemplate();
-                    if (selectedTemplate != null) addRecent(selectedTemplate);
+                    if (selectedTemplate != null) addRecent (selectedTemplate);
                 }
             } catch (IOException e) {
                 ErrorManager em = ErrorManager.getDefault();
@@ -330,16 +337,111 @@ public class NewTemplateAction extends NodeAction {
                 em.notify(e);
             }
     }
-
-    private void addRecent(DataObject template) {
-        if (getPrivilegedList().contains(template)) return;
-        recent.remove(template);
-        if (recent.size() >= 5) {
-            recent.remove(recent.size()-1);
+    
+    private DataFolder getRecentFolder () {
+        if (recentListFolder == null) {
+            FileObject fo = Repository.getDefault ().getDefaultFileSystem ().
+                                    findResource ("Templates/Recent"); // NOI18N
+            if (fo != null) {
+                recentListFolder = DataFolder.findFolder(fo);
+            }
         }
-        recent.add(0, template);
+        
+        return recentListFolder;
     }
     
+    private List getRecentList () {
+        if (!recentChanged) return recentList;
+        if (getRecentFolder () != null) {
+            DataObject[] data = getRecentFolder ().getChildren ();
+            List l2 = new ArrayList(data.length);
+            for (int i=0; i<data.length; i++) {
+                DataObject dobj = data[i];
+                if (dobj instanceof DataShadow)
+                                dobj = ((DataShadow)dobj).getOriginal();
+                if (isValidTemplate (dobj)) {
+                    l2.add(dobj);
+                } else {
+                    removeRecent (data[i]);
+                }
+            }
+            recentList = l2;
+        } else {
+            recentList = new ArrayList (0);
+        }
+        
+        return recentList;
+    }
+    
+    private boolean isValidTemplate (DataObject template) {
+        return (template != null) && template.isTemplate ();
+    }
+
+    private boolean addRecent (DataObject template) {
+        DataFolder folder = getRecentFolder ();
+        
+        // no recent folder, no recent templates
+        if (folder == null) return false;
+        
+        // check if privileged
+        if (getPrivilegedList ().contains (template)) return false;
+        
+        // check if recent already
+        if (isRecent (template)) return false;
+        
+        DataObject[] templates = folder.getChildren ();
+        
+        DataObject[] newOrder = new DataObject[templates.length + 1];
+        for (int i = 1; i < newOrder.length; i++) {
+            newOrder[i] = templates[i - 1];
+        }
+        
+        try {
+            newOrder[0] = template.createShadow (folder);
+            folder.setOrder (newOrder);
+        } catch (IOException ioe) {
+            ErrorManager em = ErrorManager.getDefault();
+            em.notify (ErrorManager.INFORMATIONAL, ioe);
+            // can't create shadow
+            return false;
+        }
+        
+        // reread children
+        templates = folder.getChildren ();
+        int size = templates.length;
+        
+        while (size > MAX_RECENT_ITEMS) {
+            // remove last
+            removeRecent (templates[size - 1]);
+            size--;
+        }
+        
+        recentChanged = true;
+        
+        return true;
+    }
+    
+    private boolean removeRecent (DataObject template) {
+        DataFolder folder = getRecentFolder ();
+        
+        // no recent folder, no recent templates
+        if (folder == null) return false;
+        
+        try {
+            template.delete ();
+            recentChanged = true;
+            return true;
+        } catch (IOException ioe) {
+            ErrorManager em = ErrorManager.getDefault();
+            em.notify (ErrorManager.INFORMATIONAL, ioe);
+            // it couldn't be deleted
+            return false;
+        }
+    }
+    
+    private boolean isRecent (DataObject template) {
+        return recentList.contains (template);
+    }
     
     /** Create a hierarchy of templates.
     * @return a node representing all possible templates
