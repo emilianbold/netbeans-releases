@@ -7,6 +7,7 @@
 <taglib>
     <tlib-version>1.0</tlib-version>
     <jsp-version>1.2</jsp-version>
+    <short-name>MyTaglib</short-name>
     
     <!-- A validator verifies that the tags are used correctly at JSP
          translation time. Validator entries look like this: 
