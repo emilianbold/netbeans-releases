@@ -7,40 +7,26 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.project.ui.templates.support;
 
-import java.awt.Component;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.modules.project.uiapi.Utilities;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.SourceGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-
 
 /**
  * Default implementations of template UI. 
- *
- * <B>Warning</B> : This is unstable API and is subject to change.
- *
- * @author Jesse Glick
+ * @author Jesse Glick et al.
  */
 public class Templates {
     
@@ -54,7 +40,7 @@ public class Templates {
     }
     
     /** Method to communicate current choice of template to a custom 
-     * WizardIteartor associated with particular template.
+     * {@link WizardDescriptor.InstantiatingIterator} associated with particular template.
      */
     public static FileObject getTemplate( WizardDescriptor wizardDescriptor ) {
         assert wizardDescriptor != null : "wizardDescriptor cannot be null.";
@@ -68,7 +54,7 @@ public class Templates {
     }
     
     /** Method to communicate current choice of target folder to a custom 
-     * WizardIteartor associated with particular template.
+     * {@link WizardDescriptor.InstantiatingIterator} associated with particular template.
      */
     public static FileObject getTargetFolder( WizardDescriptor wizardDescriptor ) {
         
@@ -100,7 +86,7 @@ public class Templates {
     }
 
     /** Method to communicate current choice of target name to a custom 
-     * WizardIteartor associated with particular template.
+     * {@link WizardDescriptor.InstantiatingIterator} associated with particular template.
      */
     public static String getTargetName( WizardDescriptor wizardDescriptor ) {
         if ( wizardDescriptor instanceof TemplateWizard ) {
