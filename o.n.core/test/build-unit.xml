@@ -82,6 +82,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     
     <target name="unit-compiler" depends="set_classpath">
+	<ant dir="../../nbbuild" target="bootstrap"/>
         <ant dir="unit/src/org/netbeans/core/modules"/>
         <ant dir="unit/src/org/netbeans/core/projects"/>
         <ant dir="unit/src/org/netbeans/core/lookup/data"/>
