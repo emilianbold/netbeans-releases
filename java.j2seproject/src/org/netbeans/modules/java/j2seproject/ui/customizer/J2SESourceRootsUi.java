@@ -40,6 +40,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
@@ -80,18 +81,14 @@ final class J2SESourceRootsUi {
                                              JButton addFolderButton,
                                              JButton removeButton,
                                              JButton upButton,
-                                             JButton downButton,
-                                             String errorMessagePOR,
-                                             String errorMessageRR ) {
+                                             JButton downButton) {
         
         EditMediator em = new EditMediator( master,
                                             rootsList,
                                             addFolderButton,
                                             removeButton,
                                             upButton,
-                                            downButton,
-                                            errorMessagePOR,
-                                            errorMessageRR);
+                                            downButton);
         
         // Register the listeners        
         // On all buttons
@@ -132,8 +129,6 @@ final class J2SESourceRootsUi {
         private final Set ownedFolders;
         private DefaultTableModel rootsModel;
         private EditMediator relatedEditMediator;
-        private final String errorMessageRR;
-        private final String errorMessagePOR;
 
         
         public EditMediator( J2SEProject master,
@@ -141,9 +136,7 @@ final class J2SESourceRootsUi {
                              JButton addFolderButton,
                              JButton removeButton,
                              JButton upButton,
-                             JButton downButton,
-                             String errorMessagePOR,
-                             String errorMessageRR ) {
+                             JButton downButton) {
 
             if ( !( rootsList.getModel() instanceof DefaultTableModel ) ) {
                 throw new IllegalArgumentException( "Jtable's model has to be of class DefaultTableModel" ); // NOI18N
@@ -154,8 +147,6 @@ final class J2SESourceRootsUi {
             this.removeButton = removeButton;
             this.upButton = upButton;
             this.downButton = downButton;
-            this.errorMessagePOR = errorMessagePOR;
-            this.errorMessageRR = errorMessageRR;
             this.ownedFolders = new HashSet();
 
             this.project = master;
@@ -293,11 +284,26 @@ final class J2SESourceRootsUi {
                 }
             }
             if (rootsFromOtherProjects.size() > 0 || rootsFromRelatedSourceRoots.size() > 0) {
-                JPanel warning = new WarningDlg (rootsFromOtherProjects, rootsFromRelatedSourceRoots,
-                    this.errorMessagePOR, this.errorMessageRR);
-                DialogDescriptor dd = new DialogDescriptor(warning,NbBundle.getMessage(J2SESourceRootsUi.class,"TITLE_InvalidRoot"),
-                    true, new Object[] {DialogDescriptor.OK_OPTION},DialogDescriptor.OK_OPTION,
-                    DialogDescriptor.DEFAULT_ALIGN, new HelpCtx (J2SESourceRootsUi.class),null);
+                rootsFromOtherProjects.addAll(rootsFromRelatedSourceRoots);
+                JPanel warning = new WarningDlg (rootsFromOtherProjects);                
+                String message = NbBundle.getMessage(J2SESourceRootsUi.class,"MSG_InvalidRoot");
+                JOptionPane optionPane = new JOptionPane (new Object[] {message, warning},
+                    JOptionPane.WARNING_MESSAGE,
+                    0, 
+                    null, 
+                    new Object[0], 
+                    null);
+                optionPane.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(J2SESourceRootsUi.class,"AD_InvalidRootDlg"));
+                DialogDescriptor dd = new DialogDescriptor (optionPane,
+                    NbBundle.getMessage(J2SESourceRootsUi.class,"TITLE_InvalidRoot"),
+                    true,
+                    new Object[] {
+                        DialogDescriptor.OK_OPTION,
+                    },
+                    DialogDescriptor.OK_OPTION,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    null,
+                    null);                
                 DialogDisplayer.getDefault().notify(dd);
             }
             // fireActionPerformed();
@@ -433,60 +439,52 @@ final class J2SESourceRootsUi {
 
     private static class WarningDlg extends JPanel {
 
-        public WarningDlg (Set projectOwned, Set related, String messagePOR, String messageRR) {
-            this.initGui (projectOwned, related, messagePOR, messageRR);
+        public WarningDlg (Set invalidRoots) {            
+            this.initGui (invalidRoots);
         }
 
-        private void initGui (Set projectOwned, Set related, String messagePOR, String messageRR) {
-            setLayout( new GridBagLayout ());
-            if (projectOwned.size()>0) {
-                JLabel tf = new JLabel(messagePOR);
-                GridBagConstraints c = new GridBagConstraints();
-                c.gridx = GridBagConstraints.RELATIVE;
-                c.gridy = GridBagConstraints.RELATIVE;
-                c.gridwidth = GridBagConstraints.REMAINDER;
-                c.fill = GridBagConstraints.HORIZONTAL;
-                c.weightx = 1.0;
-                c.insets = new Insets (12,12,12,12);
-                ((GridBagLayout)this.getLayout()).setConstraints(tf,c);
-                this.add (tf);
-                JList proots = new JList (projectOwned.toArray());
-                proots.setCellRenderer (new InvalidRootRenderer(true));
-                JScrollPane p = new JScrollPane (proots);
-                c = new GridBagConstraints();
-                c.gridx = GridBagConstraints.RELATIVE;
-                c.gridy = GridBagConstraints.RELATIVE;
-                c.gridwidth = GridBagConstraints.REMAINDER;
-                c.fill = GridBagConstraints.BOTH;
-                c.weightx = c.weighty = 1.0;
-                c.insets = new Insets (0,12,12,12);
-                ((GridBagLayout)this.getLayout()).setConstraints(p,c);
-                this.add (p);
-            }
-            if (related.size()>0) {
-                JLabel tf = new JLabel(messageRR);
-                GridBagConstraints c = new GridBagConstraints();
-                c.gridx = GridBagConstraints.RELATIVE;
-                c.gridy = GridBagConstraints.RELATIVE;
-                c.gridwidth = GridBagConstraints.REMAINDER;
-                c.fill = GridBagConstraints.HORIZONTAL;
-                c.weightx = 1.0;
-                c.insets = new Insets (projectOwned.size()>0?0:12,12,12,12);
-                ((GridBagLayout)this.getLayout()).setConstraints(tf,c);
-                this.add (tf);
-                JList rroots = new JList (related.toArray());
-                JScrollPane p = new JScrollPane (rroots);
-                rroots.setCellRenderer (new InvalidRootRenderer(false));
-                c = new GridBagConstraints();
-                c.gridx = GridBagConstraints.RELATIVE;
-                c.gridy = GridBagConstraints.RELATIVE;
-                c.gridwidth = GridBagConstraints.REMAINDER;
-                c.fill = GridBagConstraints.BOTH;
-                c.weightx = c.weighty = 1.0;
-                c.insets = new Insets (0,12,12,12);
-                ((GridBagLayout)this.getLayout()).setConstraints(p,c);
-                this.add (p);
-            }
+        private void initGui (Set invalidRoots) {
+            setLayout( new GridBagLayout ());                        
+            JLabel label = new JLabel ();
+            label.setText (NbBundle.getMessage(J2SESourceRootsUi.class,"LBL_InvalidRoot"));
+            label.setDisplayedMnemonic(NbBundle.getMessage(J2SESourceRootsUi.class,"MNE_InvalidRoot").charAt(0));            
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.anchor = GridBagConstraints.NORTHWEST;
+            c.weightx = 1.0;
+            c.insets = new Insets (12,0,6,0);
+            ((GridBagLayout)this.getLayout()).setConstraints(label,c);
+            this.add (label);            
+            JList roots = new JList (invalidRoots.toArray());
+            roots.setCellRenderer (new InvalidRootRenderer(true));
+            JScrollPane p = new JScrollPane (roots);
+            c = new GridBagConstraints();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.fill = GridBagConstraints.BOTH;
+            c.anchor = GridBagConstraints.NORTHWEST;
+            c.weightx = c.weighty = 1.0;
+            c.insets = new Insets (0,0,12,0);
+            ((GridBagLayout)this.getLayout()).setConstraints(p,c);
+            this.add (p);
+            label.setLabelFor(roots);
+            roots.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(J2SESourceRootsUi.class,"AD_InvalidRoot"));
+            JLabel label2 = new JLabel ();
+            label2.setText (NbBundle.getMessage(J2SESourceRootsUi.class,"MSG_InvalidRoot2"));
+            c = new GridBagConstraints();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.anchor = GridBagConstraints.NORTHWEST;
+            c.weightx = 1.0;
+            c.insets = new Insets (0,0,0,0);
+            ((GridBagLayout)this.getLayout()).setConstraints(label2,c);
+            this.add (label2);            
         }
 
         private static class InvalidRootRenderer extends DefaultListCellRenderer {
@@ -514,9 +512,7 @@ final class J2SESourceRootsUi {
                         }
                     }
                 }
-                Component c =  super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
-                c.setForeground (new Color (164,0,0));
-                return c;
+                return super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
             }
         }
     }

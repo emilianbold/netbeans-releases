@@ -49,9 +49,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             addSourceRoot,
             removeSourceRoot, 
             upSourceRoot, 
-            downSourceRoot,
-            NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), 
-            NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInTests") );
+            downSourceRoot);
         
         J2SESourceRootsUi.EditMediator emTSR = J2SESourceRootsUi.registerEditMediator(
             (J2SEProject)uiProperties.getProject(),
@@ -59,9 +57,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             addTestRoot,
             removeTestRoot, 
             upTestRoot, 
-            downTestRoot,
-            NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), 
-            NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInSources"));
+            downTestRoot);
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );
