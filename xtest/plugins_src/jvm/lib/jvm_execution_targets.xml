@@ -74,6 +74,7 @@ Microsystems, Inc. All Rights Reserved.
             <sysproperty key="xtest.tmpdir" value="${xtest.tmpdir}"/>
             <!-- http://www.netbeans.org/issues/show_bug.cgi?id=52385
             It can cause problems when temp files are not deleted if test crashes -->
+            <sysproperty key="java.io.tmpdir.default" value="${java.io.tmpdir}"/>
             <sysproperty key="java.io.tmpdir" value="${xtest.tmpdir}"/>
             <sysproperty key="xtest.sketchpad" value="${xtest.sketchpad}"/>
             <sysproperty key="nbjunit.workdir" value="${xtest.workdir}/user"/>
