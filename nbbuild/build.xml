@@ -41,8 +41,6 @@ makefile
 multicompile
 remotefs
 scripting
-serialversion
-sysprops
 treefs
 -->
 
@@ -53,7 +51,7 @@ treefs
 
   <!-- Override this with the Ant command, e.g. -Dmodules=... -->
   <property name="modules" value="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,text,usersguide,utilities,vcscvs,web"/>
-  <!-- Optional: crosscompile -->
+  <!-- Optional: crosscompile,sysprops,serialversion -->
 
   <!-- Ditto (note: need not necessarily be a number at all): -->
   <property name="buildnumber" value="123"/>
