@@ -15,6 +15,7 @@ package threaddemo.views;
 
 import java.io.IOException;
 import java.util.Collections;
+import javax.swing.Action;
 import org.openide.actions.*;
 import org.openide.cookies.*;
 import org.openide.nodes.*;
@@ -100,8 +101,8 @@ final class PhadhailNode extends AbstractNode implements PhadhailListener, Phadh
         }
     }
     
-    public SystemAction[] createActions() {
-        return new SystemAction[] {
+    public Action[] getActions(boolean context) {
+        return new Action[] {
             SystemAction.get(OpenAction.class),
             SystemAction.get(SaveAction.class),
             null,
