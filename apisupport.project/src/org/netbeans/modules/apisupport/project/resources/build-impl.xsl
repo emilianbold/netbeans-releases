@@ -116,7 +116,7 @@ NOTE: nbbuild/build.xml should contain:
             <property name="build.test.results.dir" location="build/test/results"/>
             <path id="test.cp">
                 <path refid="cp"/>
-                <pathelement location="${{src.dir}}"/>
+                <pathelement location="netbeans/${{module.jar}}"/>
                 <pathelement location="${{nbroot}}/xtest/lib/junit.jar"/>
                 <pathelement location="${{nbroot}}/xtest/lib/nbjunit.jar"/>
                 <pathelement path="${{test.cp.extra}}"/>
@@ -245,7 +245,7 @@ NOTE: nbbuild/build.xml should contain:
     </xsl:if>
 
     <xsl:if test="/p:project/p:configuration/nbm:data/nbm:unit-tests">
-        <target name="test-build" depends="init,compile">
+        <target name="test-build" depends="init,jar">
             <mkdir dir="${{build.test.classes.dir}}"/>
             <javac srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}"
                    debug="true" deprecation="${{build.compile.deprecation}}"
