@@ -7,6 +7,9 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/netbeans/modules/i18n/I18nModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/i18n/Layer.xml
 
+Name: org/netbeans/modules/i18n/LocaleExecutor.class
+OpenIDE-Module-Class: Service
+
 Name: org/netbeans/modules/i18n/I18nOptions.class
 OpenIDE-Module-Class: Option
 
