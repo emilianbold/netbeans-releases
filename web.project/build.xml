@@ -19,6 +19,7 @@ Microsystems, Inc. All Rights Reserved.
             <include name="${module.jar}"/>
             <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
             <include name="ant/extra/copyfiles.jar"/>
+            <include name="ant/sources/**/*.java"/>
         </patternset>
     </target>
 
