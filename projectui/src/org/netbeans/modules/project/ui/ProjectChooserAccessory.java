@@ -624,7 +624,12 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             }
             else {
                 if ( projects == null ) {
-                    ((DefaultListModel)jListSubprojects.getModel()).clear();
+                    ListModel spListModel = jListSubprojects.getModel();
+                    if (spListModel instanceof DefaultListModel) {
+                        ((DefaultListModel)spListModel).clear();                
+                    } else {
+                        jListSubprojects.setListData (new String[0]);
+                    }
                     jCheckBoxSubprojects.setEnabled( false );
                 }
                 else {
