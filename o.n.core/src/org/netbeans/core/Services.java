@@ -16,6 +16,8 @@ package org.netbeans.core;
 import java.io.*;
 import java.beans.*;
 import java.util.*;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 
 import org.openide.*;
 import org.openide.modules.ManifestSection;
@@ -60,6 +62,9 @@ final class Services extends ServiceType.Registry implements Comparator {
     
     /** Mapping between service name and given ServiceType instance. */
     private Map name2Service;
+    
+    /** Mapping between Class and instances */
+    private Map klass2Instances;
 
     /** Default instance */
     public static Services getDefault () {
@@ -69,6 +74,7 @@ final class Services extends ServiceType.Registry implements Comparator {
     public Services() {
         name2Service = new HashMap();
         fillMap(name2Service);
+        klass2Instances = new HashMap();
     }
     
     private static void fillMap(Map map) {
@@ -119,6 +125,7 @@ final class Services extends ServiceType.Registry implements Comparator {
             // adds also default instance of this service
             current.add (s.getServiceType());
             supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
+            servicesChangedNotify();
         }
     }
 
@@ -135,6 +142,7 @@ final class Services extends ServiceType.Registry implements Comparator {
             ServiceType st = s.getServiceType();
             if (current.remove (st)) {
                 supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
+                servicesChangedNotify();
             }
             getDefault().name2Service.remove(st.getName());
         }
@@ -239,6 +247,7 @@ final class Services extends ServiceType.Registry implements Comparator {
         current.clear ();
         current.addAll (arr);
         supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
+        servicesChangedNotify();
     }
 
     /** all services */
@@ -246,6 +255,40 @@ final class Services extends ServiceType.Registry implements Comparator {
         return Collections.enumeration (getServiceTypes ());
     }
 
+    /** Get all available services that are subclass of given class
+    * @param clazz the class that all services should be subclass of
+    * @return an enumeration of {@link ServiceType}s that are subclasses of
+    *    given class
+    */
+    public Enumeration services (Class clazz) {
+        if (clazz == null) {
+            return new org.openide.util.enum.EmptyEnumeration();
+        }
+        
+        Reference ref = (Reference) klass2Instances.get(clazz);
+        List types = (List) (ref == null ? null : ref.get());
+        if (types == null) {
+            types = createTypes(clazz);
+            klass2Instances.put(clazz, new SoftReference(types));
+        }
+        
+        return Collections.enumeration(types);
+    }
+    
+    /** Scans through SrviceTypes and returns instances of given Class */
+    private synchronized List createTypes(Class klass) {
+        List ret = new ArrayList(current.size());
+        Iterator it = current.iterator();
+        while (it.hasNext()) {
+            Object next = it.next();
+            if (klass.isInstance(next)) {
+                ret.add(next);
+            }
+        }
+        it = null;
+        return ret;
+    }
+    
     /** Adds a service type.
     */
     public synchronized void addServiceType (ServiceType t) 
@@ -259,6 +302,7 @@ final class Services extends ServiceType.Registry implements Comparator {
         
         current.add (t);
         supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
+        servicesChangedNotify();
     }
 
     /** Removes a service type.
@@ -267,6 +311,7 @@ final class Services extends ServiceType.Registry implements Comparator {
         name2Service.remove(t.getName());
         current.remove (t);
         supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
+        servicesChangedNotify();
     }
     
     /** Creates array of new types each for one section.
@@ -300,6 +345,10 @@ final class Services extends ServiceType.Registry implements Comparator {
             
             return (NewType[])l.toArray (new NewType[l.size ()]);
         }
+    }
+    
+    private static void servicesChangedNotify() {
+        INSTANCE.klass2Instances.clear();
     }
 
     /** Write the object down.
@@ -474,6 +523,9 @@ final class Services extends ServiceType.Registry implements Comparator {
 
 /*
 * $Log$
+* Revision 1.36  2000/11/23 13:50:45  anovak
+* improved method services(Class) - made faster
+*
 * Revision 1.35  2000/10/03 12:05:20  anovak
 * faster implementation of find(...) method
 *
