@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.ejb;
 
-import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDataObject;
+import org.openide.loaders.DataObject;
 
 /** DDChangeEvent describes the change that affects deployment of web application.
  *  Deployment descriptor object can listen to these changes 
@@ -66,14 +66,14 @@ public class DDChangeEvent extends java.util.EventObject {
     private int type;
     
     /** placeholder for old depl. descriptor (only for ejb moves) */
-    private EjbJarDataObject oldDD;
+    private DataObject oldDD;
     
     /** Creates new event.
      *
      * @param src class name of ejb
      * @param type type of change
      */    
-    public DDChangeEvent (Object src, EjbJarDataObject oldDD, String oldVal, String newVal, int type) {
+    public DDChangeEvent (Object src, DataObject oldDD, String oldVal, String newVal, int type) {
         super (src);
         newValue = newVal;
         oldValue = oldVal;
@@ -98,7 +98,7 @@ public class DDChangeEvent extends java.util.EventObject {
         return oldValue;
     }
     
-    public EjbJarDataObject getOldDD () {
+    public DataObject getOldDD () {
         return oldDD;
     }
     

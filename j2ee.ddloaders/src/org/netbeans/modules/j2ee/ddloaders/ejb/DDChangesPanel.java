@@ -23,10 +23,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 
 import org.openide.util.NbBundle;
-import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileStateInvalidException;
-
-import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeEvent;
 
 /** Panel that contains list of changes for deployment descriptor
  * to accomodate recent servlet modification.
@@ -91,7 +88,7 @@ public class DDChangesPanel extends JPanel {
         return new java.awt.Dimension(600, 400);
     }
     
-    synchronized void setChanges (List changes) {
+    public synchronized void setChanges (List changes) {
         listModel.clear ();
         if (changes != null) {
             Iterator it = changes.iterator ();
@@ -99,7 +96,15 @@ public class DDChangesPanel extends JPanel {
                 listModel.addElement (it.next ());
         }
     }
-    
+
+    public DefaultListModel getListModel() {
+        return listModel;
+    }
+
+    public JList getChangesList() {
+        return changesList;
+    }
+
     static class ChangesListCellRenderer extends DefaultListCellRenderer {
 
         public Component getListCellRendererComponent(JList list, Object value,
