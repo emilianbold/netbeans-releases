@@ -106,7 +106,7 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
                 if (holder == null)
                     holder = (XMLDataObject) DataObject.find(fo);
                 InputSource is = new org.xml.sax.InputSource(holder.getPrimaryFile().getInputStream());
-                is.setSystemId(holder.getPrimaryFile().getPackageNameExt('/', '.'));
+                is.setSystemId(holder.getPrimaryFile().getURL().toExternalForm());
                 reader.setContentHandler(handler);
                 reader.setErrorHandler(handler);
                 reader.setEntityResolver(EntityCatalog.getDefault());
