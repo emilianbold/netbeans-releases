@@ -975,6 +975,25 @@ public class BaseOptions extends OptionSupport {
             }
         
         }
+
+        // [BACKWARD-COMPATIBILITY-START]
+        /* Either handle or real indent-egine is attempted
+         * to be obtained from property.
+         */
+        Object o = getProperty(INDENT_ENGINE_PROP);
+        if (o instanceof IndentEngine.Handle) {
+            IndentEngine eng = (IndentEngine)((IndentEngine.Handle)o).getServiceType();
+            if (eng != null) {
+                setIndentEngine(eng);
+                return eng;
+            }
+
+        } else if (o instanceof IndentEngine) {
+            setIndentEngine((IndentEngine)o);
+            return (IndentEngine)o;
+        }
+        // [BACKWARD-COMPATIBILITY-END]
+                                       
         
         // Try to find the default indent engine in Services registry
         IndentEngine eng = findDefaultIndentEngine();
