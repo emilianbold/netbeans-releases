@@ -72,7 +72,21 @@ Microsystems, Inc. All Rights Reserved.
         <include name="org/netbeans/Main*.class"/>
         <include name="org/netbeans/core/modules/"/>
     </jar>        
+    <copy file="${xtest.extra.home}/lib/junit.jar" todir="lib"/>
+    <copy file="${xtest.extra.home}/lib/xerces.jar" todir="lib"/>
+    <copy file="${xtest.extra.home}/lib/xalan.jar" todir="lib"/>
+    <copy file="${xtest.extra.home}/lib/xtest-ext.jar" todir="lib"/>
 
+  </target>
+  
+  <target name="makedist" depends="jars">
+     <zip zipfile="xtest-distribution.zip">
+     
+	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar"/>
+	<zipfileset dir="xslt" prefix="xslt"/>
+        <zipfileset dir="." includes="dist_build.xml" fullpath="build.xml"/>
+        <zipfileset dir="." includes="standard-test-includes.txt,standard-test-excludes.txt"/>
+     </zip>
   </target>
 
   <target name="netbeans" depends="jars"/>
@@ -88,6 +102,10 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="lib/patches"/>
     <delete file="lib/xtest.jar"/>
     <delete file="lib/junit-ext.jar"/>
+    <delete file="lib/junit.jar"/>
+    <delete file="lib/xerces.jar"/>
+    <delete file="lib/xalan.jar"/>
+    <delete file="lib/xtest-ext.jar"/>
   </target>
 
 </project>
