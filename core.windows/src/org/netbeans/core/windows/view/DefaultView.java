@@ -624,8 +624,11 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         }
 
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
-        ModeImpl mode = getModeForModeAccessor(modeAccessor);
-        controllerHandler.userResizedModeBounds(mode, bounds);
+        // XXX PENDING #39083 Investigate how it could happen.
+        if(modeAccessor != null) {
+            ModeImpl mode = getModeForModeAccessor(modeAccessor);
+            controllerHandler.userResizedModeBounds(mode, bounds);
+        }
     }
     
     public void userMovedSplit(double splitLocation, SplitView splitView,
