@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- path to close source repository -->
     <property name="ffj.repository" location="../../../nbextra"/>
-    <property name="xtest.ide.winsys" value="sdi"/>
+    <!--property name="xtest.ide.winsys" value="sdi"/-->
 
 
     <property name="build.sysclasspath" value="ignore"/>
