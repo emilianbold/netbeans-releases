@@ -311,12 +311,18 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
      */
     private NewType createSeparatorNewType() {
         int type = getMenuItemType();
-        return((type == T_MENU) ||(type == T_POPUPMENU) ||
-               (type == T_JMENU) ||(type == T_JPOPUPMENU)) ? new NewSeparatorType() : null;
+        if (type == T_MENU  ||  type == T_POPUPMENU) return new NewSeparatorType(MASK_AWT);
+        if (type == T_JMENU  ||  type == T_JPOPUPMENU) return new NewSeparatorType(MASK_SWING);
+        return null;
     }
 
     /** NewType class for creating the separator */
     private class NewSeparatorType extends NewType {
+        private int mask;
+        
+        public NewSeparatorType(int m) {
+            mask = m;
+        }
 
         /** Help context for the creation action.
          * @return the help context
@@ -331,7 +337,8 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
          * @return the name of the action
          */
         public String getName() {
-            return FormEditor.getFormBundle().getString("CTL_separator");
+            if (mask == MASK_SWING) return "JSeparator";  // NOI18N
+            else return "Separator";  // NOI18N
         }
 
         /** Create the object.
@@ -340,10 +347,10 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         public void create() throws IOException {
             RADMenuItemComponent newSeparatorComp = new RADMenuItemComponent();
             newSeparatorComp.initialize(getFormModel());
-            if ((getMenuItemType() == T_MENU) ||(getMenuItemType() == T_POPUPMENU)) {
-                newSeparatorComp.setComponent(org.netbeans.modules.form.Separator.class);
-            } else {
+            if (mask == MASK_SWING) {
                 newSeparatorComp.setComponent(JSeparator.class);
+            } else {
+                newSeparatorComp.setComponent(org.netbeans.modules.form.Separator.class);
             }
             getFormModel().addNonVisualComponent(newSeparatorComp, RADMenuComponent.this);
             //XXX(-tdt) addVisualMenu(newSeparatorComp);
