@@ -406,10 +406,10 @@ public final class NbMainExplorer extends CloneableTopComponent
         // switch according to the type of the root context
         MainTab panel = null;
         NbPlaces places = NbPlaces.getDefault();
-        if (rc.equals(places.projectDesktop())) {
-            // projects tab
-            panel = ProjectsTab.getDefault();
-        } else 
+//        if (rc.equals(places.projectDesktop())) {
+//            // projects tab
+//            panel = ProjectsTab.getDefault();
+//        } else
         if (rc.equals(RepositoryNodeFactory.getDefault().repository(DataFilter.ALL))) {
             panel = RepositoryTab.getDefaultRepositoryTab();
         } else if (rc.equals(places.environment())) {
@@ -1078,45 +1078,14 @@ public final class NbMainExplorer extends CloneableTopComponent
     public static class ProjectsTab extends RepositoryTab {
         static final long serialVersionUID =-8178367548546385799L;
         
-        private static ProjectsTab DEFAULT;
-        
         /** Must have *default* constructor - deserialization from 3.2 supposes it */
         private ProjectsTab() {
         }
         
-        public static synchronized ProjectsTab getDefault() {
-            if (DEFAULT == null) {
-                DEFAULT = new ProjectsTab();
-                // put a request for later validation
-                // we must do this here, because of ExplorerManager's deserialization.
-                // Root context of ExplorerManager is validated AFTER all other
-                // deserialization, so we must wait for it
-                DEFAULT.scheduleValidation();
-            }
-            
-            return DEFAULT;
-        }
-
-        
-        /** Exchanges deserialized root context to projects root context
-        * to keep the uniquennes. */
-        protected void validateRootContext () {
-            Node projectsRc = NbPlaces.getDefault().projectDesktop();
-            setRootContext(projectsRc);
-            registerRootContext(projectsRc);
-        }
-
-        public void doSelectNode (DataObject obj) {
-            DataFolder root = (DataFolder)getRootContext ().getCookie (DataFolder.class);
-            if (selectNode (obj, root)) {
-                requestFocus ();
-            }
-        }
-        
         /** Old (3.2) deserialization of the ProjectTab */
         public Object readResolve() throws java.io.ObjectStreamException {
-            getDefault().scheduleValidation();
-            return getDefault();
+            throw new java.io.InvalidObjectException(
+                "Old [NB3.2 ProjectsTab] component is not supported anymore."); // NOI18N
         }
 
     } // end of ProjectsTab inner class
