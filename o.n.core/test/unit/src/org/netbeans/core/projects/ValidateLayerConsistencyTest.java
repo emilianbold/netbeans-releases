@@ -165,7 +165,13 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         Enumeration/*<URL>*/ en = l.getResources("META-INF/MANIFEST.MF");
         while (en.hasMoreElements ()) {
             URL u = (URL) en.nextElement();
-            Manifest mf = new Manifest(u.openStream());
+            InputStream is = u.openStream();
+            Manifest mf;
+            try {
+                mf = new Manifest(is);
+            } finally {
+                is.close();
+            }
             String module = mf.getMainAttributes ().getValue ("OpenIDE-Module");
             if (module == null) continue;
             String layer = mf.getMainAttributes ().getValue ("OpenIDE-Module-Layer");
