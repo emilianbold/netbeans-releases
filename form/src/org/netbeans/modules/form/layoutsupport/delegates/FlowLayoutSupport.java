@@ -113,7 +113,7 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
             }
         }
 
-        int m = (r == 0) ? 0 : rowStarts[r];
+        int m = (r <= 0) ? 0 : rowStarts[r];
         int n = rowStarts[r + 1];
 
         if (n > components.length || n < 0)
