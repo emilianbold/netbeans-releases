@@ -355,6 +355,17 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     return new RADTransferable (RAD_COMPONENT_COPY_FLAVOR, component);
   }
 
+  /** Store original name of component and subcomponents. */
+  private void storeNames (RADComponent comp) {
+    comp.storeName ();
+    if (comp instanceof ComponentContainer) {
+      RADComponent comps[] = ((ComponentContainer) comp).getSubBeans ();     
+      for (int i=0, n=comps.length; i<n; i++) {
+        storeNames (comps[i]);
+      }
+    }
+  }
+  
   /** Cut this node to the clipboard.
   *
   * @return {@link ExTransferable.Single} with one flavor, {@link NodeTransfer#nodeCopyFlavor}
@@ -362,7 +373,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   */
   public Transferable clipboardCut () throws java.io.IOException {
     final RADComponent comp = component;
-    comp.storeName ();
+    storeNames (comp);
     destroy (); // delete node and component from form
     return new RADTransferable (RAD_COMPONENT_CUT_FLAVOR, component);
   }
@@ -528,7 +539,7 @@ static final long serialVersionUID =3851021533468196849L;
     }
     copyComponent.initialize (component.getFormManager ());
     copyComponent.setComponent (original.getBeanClass ());
-    if (assignName) copyComponent.setName(component.getFormManager ().getVariablesPool ().getNewName (original.getBeanClass ())); 
+    //if (assignName) copyComponent.setName(component.getFormManager ().getVariablesPool ().getNewName (original.getBeanClass ())); 
 
     // 1. clone layout on containers
     if (original instanceof RADVisualContainer) {
@@ -732,6 +743,8 @@ static final long serialVersionUID =3851021533468196849L;
 
 /*
  * Log
+ *  46   Gandalf   1.45        1/17/00  Pavel Buzek     do not create new names 
+ *       for components on Copy; store names of subcomponents on Cut
  *  45   Gandalf   1.44        1/14/00  Pavel Buzek     #5363 fixed - DataObject
  *       cookie added
  *  44   Gandalf   1.43        1/13/00  Ian Formanek    NOI18N #2
