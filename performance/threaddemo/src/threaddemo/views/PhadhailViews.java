@@ -16,23 +16,29 @@ package threaddemo.views;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyVetoException;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.TreeModel;
 import threaddemo.views.looktree.LookTreeView;
-import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import threaddemo.model.Phadhail;
 import org.netbeans.api.nodes2looks.Nodes;
 import org.netbeans.spi.looks.Selectors;
+import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.lookup.Lookups;
 import threaddemo.locking.LockAction;
 import threaddemo.locking.Locks;
 
@@ -53,7 +59,7 @@ public class PhadhailViews {
         } else {
             root2 = new EQReplannedNode(root);
         }
-        ExplorerPanel p = new ExplorerPanel();
+        ExpPanel p = new ExpPanel();
         p.setLayout(new BorderLayout());
         JComponent tree = new BeanTreeView();
         p.add(tree, BorderLayout.CENTER);
@@ -164,6 +170,42 @@ public class PhadhailViews {
                 }
             });
         }
+    }
+    
+    /**
+     * Replacement for ExplorerPanel, which is deprecated (and uses Filesystems!).
+     * @see "#36315"
+     */
+    private static final class ExpPanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
+        
+        private final ExplorerManager manager;
+        
+        public ExpPanel() {
+            manager = new ExplorerManager();
+            ActionMap map = getActionMap();
+            map.put(DefaultEditorKit.copyAction, ExplorerManager.actionCopy(manager));
+            map.put(DefaultEditorKit.cutAction, ExplorerManager.actionCut(manager));
+            map.put(DefaultEditorKit.pasteAction, ExplorerManager.actionPaste(manager));
+            map.put("delete", ExplorerManager.actionDelete(manager, true));
+            InputMap keys = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+            keys.put(KeyStroke.getKeyStroke("control c"), DefaultEditorKit.copyAction);
+            keys.put(KeyStroke.getKeyStroke("control x"), DefaultEditorKit.cutAction);
+            keys.put(KeyStroke.getKeyStroke("control v"), DefaultEditorKit.pasteAction);
+            keys.put(KeyStroke.getKeyStroke("DELETE"), "delete");
+        }
+        
+        public ExplorerManager getExplorerManager() {
+            return manager;
+        }
+        
+        public Lookup getLookup() {
+            Node[] ns = manager.getSelectedNodes();
+            Object[] stuff = new Object[ns.length + 1];
+            stuff[0] = getActionMap();
+            System.arraycopy(ns, 0, stuff, 1, ns.length);
+            return Lookups.fixed(stuff);
+        }
+        
     }
     
 }

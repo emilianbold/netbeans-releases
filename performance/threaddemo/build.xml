@@ -25,8 +25,11 @@ Microsystems, Inc. All Rights Reserved.
     <property name="text.jar" location="${openide}/text/netbeans/lib/openide-text.jar"/>
     <property name="dialogs.jar" location="${openide}/dialogs/netbeans/lib/openide-dialogs.jar"/>
     <property name="windows.jar" location="${openide}/windows/netbeans/lib/openide-windows.jar"/>
+    <property name="awt.jar" location="${openide}/awt/netbeans/lib/openide-awt.jar"/>
+    <property name="options.jar" location="${openide}/options/netbeans/lib/openide-options.jar"/>
     <property name="looks" location="${openide}/looks"/>
     <property name="looks.jar" location="${looks}/netbeans/modules/autoload/openide-looks.jar"/>
+    <property name="registry.jar" location="${openide}/registry/netbeans/modules/org-netbeans-modules-registry.jar"/>
     <property name="Spin.jar" location="???/spin-1.1/Spin.jar"/>
     <!-- only needed for optit target: -->
     <property name="optit" location="???/optit"/>
@@ -49,14 +52,21 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${windows.jar}"/>
         <pathelement location="${looks.jar}"/>
         <pathelement location="${Spin.jar}"/>
-        <fileset dir="${nbroot}/libs/external">
-            <include name="xerces*.jar"/>
-            <include name="xml-commons-dom-ranges*.jar"/>
-        </fileset>
     </path>
     
     <path id="run.cp">
         <path refid="build.cp"/>
+        <!-- Only because Looks links against it (but will not use it): -->
+        <pathelement location="${registry.jar}"/>
+        <!-- explorer.jar uses it: -->
+        <pathelement location="${awt.jar}"/>
+        <!-- NbDocument links against it currently (but will not use it): -->
+        <pathelement location="${options.jar}"/>
+        <!-- Crimson is useless: -->
+        <fileset dir="${nbroot}/libs/external">
+            <include name="xerces*.jar"/>
+            <include name="xml-commons-dom-ranges*.jar"/>
+        </fileset>
         <pathelement location="threaddemo.jar"/>
     </path>
     

@@ -17,8 +17,6 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.io.*;
 import javax.swing.*;
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.*;
 
@@ -116,8 +114,7 @@ public class Populate {
                 try {
                     if (xml) {
                         Document doc = createXML(i);
-                        XMLSerializer ser = new XMLSerializer(os, new OutputFormat(doc, "UTF-8", true));
-                        ser.serialize(doc);
+                        XMLUtil.write(doc, os, "UTF-8");
                     } else {
                         PrintStream ps = new PrintStream(os);
                         ps.println("Sample data for file #" + i);
