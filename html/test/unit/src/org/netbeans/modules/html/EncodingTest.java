@@ -55,7 +55,7 @@ public class EncodingTest extends NbTestCase {
         Lookup.getDefault().lookup(org.openide.modules.ModuleInfo.class);
         // log (org.openide.loaders.DataLoader.getLoader(HtmlLoader.class).toString());
         
-        File f = File.createTempFile (name (), "");
+        File f = File.createTempFile (this.getName (), "");
         f.delete ();
         f.mkdirs ();
         

@@ -33,6 +33,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="java" testtypes="unit" attributes="stable"/>
       <module name="openide" testtypes="unit" attributes="stable"/>
       <module name="openide/compat" testtypes="unit" attributes="stable"/>
+      <module name="html" testtypes="unit" attributes="stable"/>
       <!--
       <module name="openidex" testtypes="unit" attributes="stable"/>
       -->
