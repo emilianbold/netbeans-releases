@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -77,6 +78,15 @@ public class DiffAction extends NodeAction {
         return false;
     }
     
+    /**
+     * This action should not be run in AWT thread, because it opens streams
+     * to files.
+     * @return true not to run in AWT thread!
+     */
+    protected boolean asynchronous() {
+        return true;
+    }
+    
     public void performAction(Node[] nodes) {
         ArrayList fos = new ArrayList();
         for (int i = 0; i < nodes.length; i++) {
@@ -89,6 +99,10 @@ public class DiffAction extends NodeAction {
         performAction(fo1, fo2);
     }
     
+    /**
+     * Shows the diff between two FileObject objects.
+     * This is expected not to be called in AWT thread.
+     */
     public static void performAction(FileObject fo1, FileObject fo2) {
         //System.out.println("performAction("+fo1+", "+fo2+")");
         //doDiff(fo1, fo2);
@@ -112,12 +126,17 @@ public class DiffAction extends NodeAction {
         }
         //System.out.println("tp = "+tp);
         if (tp != null) {
-            if (tp instanceof TopComponent) {
-                ((TopComponent) tp).open();
-            } else {
-                tp.setVisible(true);
-            }
-            tp.requestFocus();
+            final Component ftp = tp;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (ftp instanceof TopComponent) {
+                        ((TopComponent) ftp).open();
+                    } else {
+                        ftp.setVisible(true);
+                    }
+                    ftp.requestFocus();
+                }
+            });
         }
     }
     
