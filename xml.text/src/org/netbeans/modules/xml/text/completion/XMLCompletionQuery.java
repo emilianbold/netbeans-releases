@@ -607,11 +607,13 @@ class XMLCompletionQuery implements CompletionQuery {
               
                 public void removeUpdate(DocumentEvent e) {
                     try {
+                        // ignore removal at document end
+                        if (e.getOffset() >= e.getDocument().getLength()) return;
                         SyntaxElement el = sup.getElementChain(e.getOffset() + 1);  // it returns in or previous so +1
                         if (el instanceof SyntaxElement.Declaration) {
                             invalidateGrammar();
                         }                  
-                    } catch (BadLocationException ex) {
+                    } catch (BadLocationException ex) {                        
                         ex.printStackTrace();
                     }
                 }
