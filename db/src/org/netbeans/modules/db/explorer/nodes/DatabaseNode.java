@@ -16,12 +16,13 @@ package org.netbeans.modules.db.explorer.nodes;
 import java.io.IOException;
 import java.util.*;
 
+import javax.swing.Action;
+
 import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.actions.*;
@@ -172,16 +173,16 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
         return super.getCookie(cls);
     }
 
-    protected SystemAction[] createActions()
-    {
-        SystemAction[] retacts, sysacts = NodeOp.getDefaultActions();
+    public Action[] getActions(boolean context) {
+        Action[] retacts, sysacts = NodeOp.getDefaultActions();
         Vector actions = info.getActions();
         if (actions.size() > 0) {
-            SystemAction[] myacts = (SystemAction[])actions.toArray(new SystemAction[actions.size()]);
-            retacts = new SystemAction[sysacts.length+myacts.length];
-            System.arraycopy((Object)myacts,0,(Object)retacts,0,myacts.length);
-            System.arraycopy((Object)sysacts,0,(Object)retacts,myacts.length,sysacts.length);
-        } else retacts = sysacts;
+            Action[] myacts = (Action[]) actions.toArray(new Action[actions.size()]);
+            retacts = new Action[sysacts.length + myacts.length];
+            System.arraycopy((Object) myacts, 0, (Object) retacts, 0, myacts.length);
+            System.arraycopy((Object)sysacts, 0, (Object)retacts, myacts.length, sysacts.length);
+        } else
+            retacts = sysacts;
 
         return retacts;
     }

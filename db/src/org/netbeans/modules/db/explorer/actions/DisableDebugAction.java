@@ -44,6 +44,5 @@ public class DisableDebugAction extends DatabaseAction {
 
         DatabaseNodeInfo nfo = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
         nfo.setDebugMode(false);
-        DriverManager.setLogStream(null);
     }
 }
