@@ -117,6 +117,21 @@ public class AntLoggerTest extends NbTestCase {
         assertTrue("got warn message", LOGGER.messages.contains("mytask:" + AntEvent.LOG_WARN + ":MyTask warn message"));
     }
     
+    public void testCorrectTaskFromIndirectCall() throws Exception {
+        // #49464: if a task calls something which in turn does Project.log w/o the Task handle,
+        // you lose all useful information. But you can guess which Task it is - you know some
+        // task has been started and not yet finished. Within limits. Imports, <ant>, etc. can
+        // screw up the accounting.
+        LOGGER.interestedInSessionFlag = true;
+        LOGGER.interestedInAllScriptsFlag = true;
+        LOGGER.interestingTargets = AntLogger.ALL_TARGETS;
+        LOGGER.interestingTasks = AntLogger.ALL_TASKS;
+        LOGGER.interestingLogLevels = new int[] {AntEvent.LOG_DEBUG};
+        run(testdirFO.getFileObject("property.xml"));
+        //System.err.println("messages=" + LOGGER.messages);
+        assertTrue("have message with task ID in " + LOGGER.messages, LOGGER.messages.contains("property:4:Setting project property: propname -> propval"));
+    }
+    
     /**
      * Sample logger which collects results.
      */
