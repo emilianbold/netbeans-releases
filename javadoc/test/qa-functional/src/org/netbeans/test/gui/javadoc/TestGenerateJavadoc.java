@@ -30,6 +30,7 @@ import org.netbeans.jellytools.*;
 
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.PropertiesAction;
 
 import org.netbeans.jellytools.nodes.Node;
 
@@ -71,6 +72,7 @@ public class TestGenerateJavadoc extends JavadocTestCase {
     /** method called before each testcase
      */
     protected void setUp() {
+        new PropertiesAction().perform();
     }
     
     /** method called after each testcase
@@ -86,8 +88,8 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         RepositoryTabOperator repoTabOper = RepositoryTabOperator.invoke();
         Node topNode = new Node(repoTabOper.getRootNode(), 0);
         
-        String sampledirPath = topNode.getPath();// + sep + "org" + sep + "netbeans" + sep + "test" + sep + // NOI18N
-//                               "gui" + sep + "javadoc" + sep + "data" + sep + "sampledir"; // NOI18N
+        String sampledirPath = topNode.getPath() + sep + "org" + sep + "netbeans" + sep + "test" + sep + // NOI18N
+                               "gui" + sep + "javadoc" + sep + "data" + sep + "sampledir"; // NOI18N
         
         repoTabOper.mountLocalDirectoryAPI(sampledirPath); // NOI18N
         
@@ -183,8 +185,8 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         RepositoryTabOperator repoTabOper = RepositoryTabOperator.invoke();
         Node topNode = new Node(repoTabOper.getRootNode(), 0);
         
-        String sampledirPath = topNode.getPath();// + sep + "org" + sep + "netbeans" + sep + "test" + sep + // NOI18N
-//                               "gui" + sep + "javadoc" + sep + "data" + sep + "sampledir"; // NOI18N
+        String sampledirPath = topNode.getPath() + sep + "org" + sep + "netbeans" + sep + "test" + sep + // NOI18N
+                               "gui" + sep + "javadoc" + sep + "data" + sep + "sampledir"; // NOI18N
         
         repoTabOper.mountLocalDirectoryAPI(sampledirPath); // NOI18N
         Action generateJDoc = new Action(toolsMainMenuItem + "|" + generateMenuItem, // NOI18N
