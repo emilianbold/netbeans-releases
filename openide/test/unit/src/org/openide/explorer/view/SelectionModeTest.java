@@ -118,6 +118,14 @@ public class SelectionModeTest extends NbTestCase {
         contiguousSelection = new Node[] {one1, one2};
         discontiguousSelection = new Node[] {one2, two1};
         
+        // wait bit for TreeView.addNotify is called
+        synchronized (this) {
+            try {
+                wait (1000);
+            } catch (InterruptedException ie) {
+            }
+        }
+
         mgr = p.getExplorerManager();
         prepared = true;
         
