@@ -58,7 +58,7 @@ public class TomcatModule implements TargetModuleID {
             return new java.net.URL ("http", "localhost", 8080, path).toExternalForm ();
         }
         catch (java.net.MalformedURLException ex) {
-            return "http://localhost:8080"+path;
+            return "http://localhost:8080"+path;    // NOI18N
         }
     }
     

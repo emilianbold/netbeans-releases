@@ -73,6 +73,6 @@ public class Status implements DeploymentStatus {
     }
     
     public String toString () {
-        return "A="+getAction ()+" S="+getState ()+" "+getMessage ();
+        return "A="+getAction ()+" S="+getState ()+" "+getMessage ();   // NOI18N
     }
 }
