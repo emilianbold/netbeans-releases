@@ -90,7 +90,14 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
   }
 
   public String getAsText () {
-    return null;
+    if (current == null) {
+      return NO_BORDER; 
+    } else if (current instanceof DesignBorder) {
+      BorderInfo info = ((DesignBorder)current).getInfo();
+      return info.getDisplayName ();
+    } else {
+      return org.openide.util.Utilities.getShortClassName (current.getClass ());
+    }
   }
 
   public void setAsText (String string) {
@@ -431,6 +438,8 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
 
 /*
  * Log
+ *  15   Gandalf   1.14        1/10/00  Ian Formanek    provides better 
+ *       getAsText 
  *  14   Gandalf   1.13        12/3/99  Pavel Buzek     in readFromXML creating 
  *       instance with currentClassLoader
  *  13   Gandalf   1.12        11/27/99 Patrik Knakal   
