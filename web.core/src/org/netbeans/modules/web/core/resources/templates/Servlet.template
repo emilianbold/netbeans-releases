@@ -14,7 +14,7 @@ import javax.servlet.http.*;
 
 /** 
  *
- * @author  __USER__
+ * @author __USER__
  * @version 
  */
 public class Servlet extends HttpServlet {
