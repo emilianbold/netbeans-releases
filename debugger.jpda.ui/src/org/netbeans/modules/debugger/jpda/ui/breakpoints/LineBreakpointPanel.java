@@ -95,7 +95,7 @@ public class LineBreakpointPanel extends JPanel implements Controller {
 
         pSettings.setLayout(new java.awt.GridBagLayout());
 
-        pSettings.setBorder(new javax.swing.border.TitledBorder("Settings"));
+        pSettings.setBorder(new javax.swing.border.TitledBorder(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("L_Line_Breakpoint_BorderTitle")));
         jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("MN_L_Line_Breakpoint_File_Name").charAt(0));
         jLabel3.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("L_Line_Breakpoint_File_Name"));
         jLabel3.setLabelFor(tfFileName);
