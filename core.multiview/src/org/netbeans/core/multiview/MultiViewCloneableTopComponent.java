@@ -205,10 +205,20 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         if (peer == null || peer.model == null) {
             return null;
         }
+        MultiViewElement paneEl = findPaneElement();
+        if (paneEl != null) {
+            CloneableEditorSupport.Pane pane = (CloneableEditorSupport.Pane)paneEl.getVisualRepresentation();
+            return pane.getEditorPane();
+        }
+        // hopeless case, don't try to create new elements. it's users responsibility to
+        // switch to the editor element before getEditorPane() 
+        return null;
+    }
+    
+    private MultiViewElement findPaneElement() {
         MultiViewElement el = peer.model.getActiveElement(false);
         if (el != null && el.getVisualRepresentation() instanceof CloneableEditorSupport.Pane) {
-            CloneableEditorSupport.Pane pane = (CloneableEditorSupport.Pane)el.getVisualRepresentation();
-            return pane.getEditorPane();
+            return el;
         }
         // now try a best guess.. iterate the already created elements and check if any of
         // them is a Pane
@@ -219,8 +229,7 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
             if (el.getVisualRepresentation() instanceof CloneableEditorSupport.Pane) {
                 // fingers crossed and hope for the best... could result in bad results once
                 // we have multiple editors in the multiview component.
-                CloneableEditorSupport.Pane pane = (CloneableEditorSupport.Pane)el.getVisualRepresentation();
-                return pane.getEditorPane();
+                return el;
             }
         }
         // hopeless case, don't try to create new elements. it's users responsibility to
@@ -271,6 +280,18 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
             }
         }
     }
+    
+    /**
+     * callback for the Pane implementation to adjust itself to the openAt() request.
+     */
+    public void ensureVisible() {
+        MultiViewElement paneEl = findPaneElement();
+        if (paneEl != null) {
+            open();
+            MultiViewElementCallback call = peer.getModel().getCallbackForElement(paneEl);
+            call.requestVisible();
+        }
+    }    
     
     
     /**

@@ -42,6 +42,7 @@ class MultiViewModel {
     
     private MultiViewDescription currentEditor;
     private Map nestedElements; //key=description, value null or multiviewelement
+    private Map nestedCallbacks; //key=element, value null or the MultiViewElementCallback that it's used by this element.
     private Map nestedPerspectives; //key=description, value perspective
 //    private Map nestedPerspectiveComponents; //key=description, value mull or perspectiveComponent
     private MultiViewDescription[] descriptions;
@@ -64,6 +65,7 @@ class MultiViewModel {
         nestedElements = new HashMap();
 //        nestedPerspectiveComponents = new HashMap();
         nestedPerspectives = new HashMap();
+        nestedCallbacks = new HashMap();
         shownElements = new HashSet(descs.length + 3);
         descriptions = descs;
         this.group = group;
@@ -73,7 +75,9 @@ class MultiViewModel {
             nestedPerspectives.put(descriptions[i], Accessor.DEFAULT.createPerspective(descriptions[i]));
             if (element != null) {
                 // set the observer..
-                element.setMultiViewCallback(factory.createElementCallback(descriptions[i]));
+                MultiViewElementCallback call = factory.createElementCallback(descriptions[i]);
+                nestedCallbacks.put(element, call);
+                element.setMultiViewCallback(call);
 //                nestedPerspectiveComponents.put(descriptions[i], Accessor.DEFAULT.createPersComponent(element));
             }
         }
@@ -179,12 +183,18 @@ class MultiViewModel {
         MultiViewElement element = (MultiViewElement)nestedElements.get(description);
         if (element == null && create) {
             element = description.createElement();
-            element.setMultiViewCallback(observerFactory.createElementCallback(description));
+            MultiViewElementCallback call = observerFactory.createElementCallback(description);
+            nestedCallbacks.put(element, call);
+            element.setMultiViewCallback(call);
             nestedElements.put(description, element);
  //           nestedPerspectiveComponents.put(description, Accessor.DEFAULT.createPersComponent(element));
         }
         return element;
     }
+     
+     synchronized MultiViewElementCallback getCallbackForElement(MultiViewElement elem) {
+         return (MultiViewElementCallback)nestedCallbacks.get(elem);
+     }
     
     
     void addElementSelectionListener(ElementSelectionListener listener) {
