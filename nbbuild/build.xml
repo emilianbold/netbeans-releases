@@ -363,13 +363,13 @@ to make the first user start faster and better.)
     <!-- possibly after filtering for duplicates or something like this. -->
     <!-- Timeout is ten minutes; should be enough for valid first start, while preventing -->
     <!-- a deadlock from hanging an automated build: -->
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000" dir="netbeans/bin" executable="netbeans/bin/runide.exe" failonerror="yes" timeout="600000">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000" dir="." executable="netbeans/bin/runide.exe" failonerror="yes" timeout="600000">
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg line="${firststart.args}"/>
     </exec>
-    <exec os="Linux SunOS Solaris" dir="netbeans/bin" executable="sh" failonerror="yes" timeout="600000">
-      <arg value="runide.sh"/>
+    <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes" timeout="600000">
+      <arg value="netbeans/bin/runide.sh"/>
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg line="${firststart.args}"/>
@@ -419,13 +419,13 @@ the nbbuild/netbeans/bin/ directory.
   </target>
   <target name="tryme" depends="init,maybe-firststart"
           description="Try running the IDE interactively (build it first if needed).">
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000" dir="netbeans/bin" executable="netbeans/bin/runide.exe" failonerror="yes">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000" dir="." executable="netbeans/bin/runide.exe" failonerror="yes">
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg line="${tryme.args}"/>
     </exec>
-    <exec os="Linux SunOS Solaris" dir="netbeans/bin" executable="sh" failonerror="yes">
-      <arg value="runide.sh"/>
+    <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes">
+      <arg value="netbeans/bin/runide.sh"/>
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg line="${tryme.args}"/>
