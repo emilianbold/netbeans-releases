@@ -89,7 +89,11 @@ public class SelfResizingPanel extends JPanel {
      * @param  g  <code>Graphics</code> used to paint this panel's children
      */
     protected void paintedFirstTime(java.awt.Graphics g) {
-        adjustWindowSize();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                adjustWindowSize();
+            }
+        });
     }
     
     /**
