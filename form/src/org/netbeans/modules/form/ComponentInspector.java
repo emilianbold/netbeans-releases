@@ -96,6 +96,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
 
         // Force winsys to not show tab when this comp is alone
         putClientProperty("TabPolicy", "HideWhenAlone");
+        setToolTipText(FormEditor.getFormBundle().getString("HINT_ComponentInspector"));
         
         manager.addPropertyChangeListener(new NodeSelectedListener());
     }

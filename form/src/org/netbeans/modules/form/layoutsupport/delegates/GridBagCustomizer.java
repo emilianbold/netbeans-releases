@@ -121,6 +121,8 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             formModel.addFormModelListener(new FormModelWeakListener(formListener));
         }
 
+        getAccessibleContext().setAccessibleDescription(GridBagLayoutSupport.getBundleHack().getString("ACSD_GridBagCustomizer"));
+        
         HelpCtx.setHelpIDString(this, "gui.layouts.gbcustomizer"); // NOI18N
     }
 
