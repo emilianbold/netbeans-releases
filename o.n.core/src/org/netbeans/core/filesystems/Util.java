@@ -13,13 +13,14 @@
 
 package org.netbeans.core.filesystems;
 
+import org.openide.util.Utilities;
+
 /**
  *
  * @author  Petr Kuzel
  * @version 
  */
-class Util {
-
+class Util {    
     /** Forbid creating new Util */
     private Util() {
     }
@@ -35,15 +36,33 @@ class Util {
         }
     }
  
-    static int indexOf(Object[] where, Object what) {
+    static int indexOf(Object[] where, Object what) {                    
         if (where == null) return -1;
         for (int i = 0; i<where.length; i++) {
             if (where[i].equals(what)) return i;
         }        
         return -1;
     }
-    
+
+    static int indexOf(String[] where, String what, boolean caseInsensitiv) {                  
+        boolean isEqual;        
+        
+        for (int i = 0; where != null && i < where.length; i++) {            
+            if (caseInsensitiv)
+                isEqual = where[i].equalsIgnoreCase (what);
+            else  
+                isEqual = where[i].equals(what);
+            
+            if (isEqual)  return i;
+        }                
+        return -1;
+    }
+        
     static boolean contains(Object[] where, Object what) {
         return indexOf(where, what) != -1;
     }
+    
+    static boolean contains(String[] where, String what, boolean caseInsensitiv) {                    
+        return indexOf(where, what, caseInsensitiv) != -1;
+    }    
 }

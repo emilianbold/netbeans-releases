@@ -52,6 +52,9 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
     // enable some tracing
     private static final boolean DEBUG = false;
         
+    private static final boolean CASE_INSENSITIVE =
+        Utilities.isWindows() || Utilities.getOperatingSystem() == Utilities.OS_VMS;
+    
     // DefaultEnvironmentProvider~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     protected InstanceContent createInstanceContent(DataObject obj) {
@@ -515,7 +518,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
             // check for resource extension
 
             if (exts != null && fo.getExt() != null) {
-                if (Util.contains(exts, fo.getExt())) return true;
+                if (Util.contains(exts, fo.getExt(), CASE_INSENSITIVE)) return true;
             }
             
             // check for resource mime type
