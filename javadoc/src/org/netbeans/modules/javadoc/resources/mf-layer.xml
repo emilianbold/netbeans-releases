@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- Contribute actions to main menu -->
   <folder name="Menu">
-	<folder name="Window">
+	<folder name="View">
             <file name="org-netbeans-modules-javadoc-search-SearchDocAction.instance"/>
             <file name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance"/>
             <attr name="org-netbeans-modules-javadoc-search-SearchDocAction.instance/org-netbeans-modules-javadoc-search-IndexOverviewAction.instance" boolvalue="true"/>
