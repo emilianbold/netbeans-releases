@@ -54,6 +54,8 @@ public class ListModelEditor extends StringArrayEditor {
     }
 
     public String getJavaInitializationString() {
+        if (getStrings(true).equals(""))
+            return null;
         StringBuffer buf = new StringBuffer("new javax.swing.AbstractListModel() {\n"); // NOI18N
         buf.append("String[] strings = { "); // NOI18N
         buf.append(getStrings(true));

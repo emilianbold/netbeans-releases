@@ -54,6 +54,8 @@ public class ComboBoxModelEditor extends StringArrayEditor {
     }
 
     public String getJavaInitializationString() {
+        if (getStrings(true).equals(""))
+            return null;
         StringBuffer buf = new StringBuffer(
                 "new javax.swing.DefaultComboBoxModel(new String[] { "); // NOI18N
         buf.append(getStrings(true));
