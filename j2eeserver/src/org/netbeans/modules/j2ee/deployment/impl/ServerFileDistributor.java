@@ -25,6 +25,7 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.status.*;
 import org.openide.util.NbBundle;
+import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider;
 import java.net.URL;
@@ -100,24 +101,6 @@ public class ServerFileDistributor extends ServerProgress {
         return new AppChanges(descriptorRelativePaths, serverDescriptorRelativePaths);
     }
     
-    public boolean checkServiceImplementations() {
-        String missing = null;
-        if (splitter == null)
-            missing = DeploymentPlanSplitter.class.getName();
-        if (urlResolver == null)
-            missing = ModuleUrlResolver.class.getName();
-        if (fileLayout == null) 
-            missing = FileDeploymentLayout.class.getName();
-            
-        if (missing != null) {
-            String msg = NbBundle.getMessage(ServerFileDistributor.class, "MSG_MissingServiceImplementations", missing);
-            this.setStatusDistributeFailed(msg);
-            return false;
-        }
-        
-        return true;
-    }
-    
     public AppChangeDescriptor distribute(TargetModule targetModule, ModuleChangeReporter mcr) {
         long lastDeployTime = targetModule.getTimestamp();
         TargetModuleID[] childModules = targetModule.getChildTargetModuleID();
@@ -143,7 +126,7 @@ public class ServerFileDistributor extends ServerProgress {
     private AppChanges _distribute(Iterator source, TargetModuleID target, String moduleUrl, long lastDeployTime) {
         AppChanges mc = createModuleChangeDescriptor(target);
         if (source == null) {
-            System.out.println("WARNING: there is no contents for "+target);
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "There is no contents for "+target); //NOI18N
             return mc;
         }
         setStatusDistributeRunning(NbBundle.getMessage(
@@ -153,14 +136,14 @@ public class ServerFileDistributor extends ServerProgress {
         try {
             //get relative-path-key map from FDL
             File dir = fileLayout.getDirectoryForModule(target);
-            System.out.println("Distributing files for "+target+" to "+dir);
-            File parent = dir.getParentFile();
+            //System.out.println("Distributing files for "+target+" to "+dir);
             dir.mkdirs();
+            File parent = dir.getParentFile();
             lfs = new LocalFileSystem();
             lfs.setRootDirectory(parent);
             Repository.getDefault().addFileSystem(lfs);
             FileObject destRoot = lfs.findResource(dir.getName());
-            System.out.println("destRoot="+destRoot.getPath());
+            //System.out.println("destRoot="+destRoot.getPath());
             
             // create target FOs map keyed by relative paths
             java.util.Enumeration destFiles = destRoot.getChildren (true);
@@ -180,15 +163,14 @@ public class ServerFileDistributor extends ServerProgress {
                 FileObject targetFO = (FileObject) destMap.get(relativePath);
                 FileObject destFolder;
                 if (targetFO == null) {
-                    System.out.println("Target for "+sourceFO.getPath()+" not exists, ensure destination containing folder ready");
-                    destFolder = createFolderFor(destRoot, relativePath);
+                    destFolder = findOrCreateParentFolder(destRoot, relativePath);
                 } else {
                     // remove from map to form of to-remove-target-list
                     destMap.remove(relativePath);
                     
                     //check timestamp
                     if (! sourceFO.lastModified().after(targetFO.lastModified())) {
-                        System.out.println("Skipping file "+sourceFO.getPath());
+                        //System.out.println("Skipping file "+sourceFO.getPath());
                         continue;
                     }
                     destFolder = targetFO.getParent();
@@ -198,11 +180,17 @@ public class ServerFileDistributor extends ServerProgress {
                 }
                 mc.record(relativePath);
                 //PENDING: update progress object or should we not for performance?
-                System.out.println("Copying "+sourceFO.getPath()+" to "+destFolder.getPath());
+                //System.out.println("Copying "+sourceFO.getPath()+" to "+destFolder.getPath());
                 
                 FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
             }
             
+            String[] rPaths = fileLayout.getDeploymentPlanFilenames(target);
+            /*for (int n=0; n < rPaths.length; n++) {
+                FileObject removedFO = (FileObject)destMap.remove(rPaths[n]);
+                System.out.println("Sparing plan file: "+rPaths[n]+" removedFO="+removedFO);
+            }
+
             // Cleanup destination
             for (Iterator k=destMap.values().iterator(); k.hasNext();) {
                 FileObject remainingFO = (FileObject) k.next();
@@ -212,24 +200,26 @@ public class ServerFileDistributor extends ServerProgress {
                 System.out.println("File "+remainingFO.getPath()+" deleted");
                 lock.releaseLock();
                 lock = null;
-            }
+            }*/
             
             // copying serverconfiguration files if changed
-            String[] rPaths = fileLayout.getDeploymentPlanFilenames(target);
             File configFile = dtarget.getConfigurationFile();
-            if (rPaths == null || rPaths.length == 0 || configFile.lastModified() <= lastDeployTime)
+            if (rPaths == null || rPaths.length == 0)
                 return mc;
             
-            System.out.println("configFile.lastModified="+configFile.lastModified()+" lastDeployTime="+lastDeployTime);
             File[] paths = new File[rPaths.length];
             for (int n=0; n<rPaths.length; n++) {
                 paths[n] = new File(FileUtil.toFile(destRoot), rPaths[n]);
+                if (! paths[n].exists() || paths[n].lastModified() < configFile.lastModified())
+                    mc.record(rPaths[n]);
             }
-            DeploymentConfigurationProvider dcp = dtarget.getDeploymentConfigurationProvider();
-            DeploymentConfiguration config = dcp.getDeploymentConfiguration();
-            DeployableObject deployable = dcp.getDeployableObject(moduleUrl);
-            splitter.writeDeploymentPlanFiles(config, deployable, paths);
-            mc.record(rPaths[0]);
+
+            if (mc.serverDescriptorChanged()) {
+                DeploymentConfigurationProvider dcp = dtarget.getDeploymentConfigurationProvider();
+                DeploymentConfiguration config = dcp.getDeploymentConfiguration();
+                DeployableObject deployable = dcp.getDeployableObject(moduleUrl);
+                splitter.writeDeploymentPlanFiles(config, deployable, paths);
+            }
             
             return mc;
             
@@ -247,7 +237,15 @@ public class ServerFileDistributor extends ServerProgress {
         }
     }
     
-    private FileObject createFolderFor(FileObject dest, String relativePath) throws IOException {
+    /**
+     * Find or create parent folder of a file given its root and its relative path.
+     * The target file does not need to exist.
+     *
+     * @param dest FileObject for the root of the target file
+     * @param relativePaht relative path of the target file
+     * @return the FileObject for the parent folder target file.
+     */
+    public static FileObject findOrCreateParentFolder(FileObject dest, String relativePath) throws IOException {
         File parentRelativePath = (new File(relativePath)).getParentFile();
         if (parentRelativePath == null) 
             return dest;
@@ -256,7 +254,7 @@ public class ServerFileDistributor extends ServerProgress {
         if (folder == null)
             folder = FileUtil.createFolder(dest, parentRelativePath.getPath());
         
-        System.out.println("Created folder "+folder.getPath());
+        //System.out.println("Created folder "+folder.getPath());
         return folder;
     }
     
