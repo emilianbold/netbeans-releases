@@ -617,16 +617,20 @@ public final class AntProjectHelper {
      * @param shared to use project.xml vs. private.xml
      * @return (a clone of) the named configuration fragment, or null if it does not exist
      */
-    Element getConfigurationFragment(String elementName, String namespace, boolean shared) {
-        Element root = getConfigurationDataRoot(shared);
-        Element data = Util.findElement(root, elementName, namespace);
-        if (data != null) {
-            // XXX should also perhaps set ownerDocument to a dummy empty document?
-            // or create a new document with this as a root?
-            return (Element)data.cloneNode(true);
-        } else {
-            return null;
-        }
+    Element getConfigurationFragment(final String elementName, final String namespace, final boolean shared) {
+        return (Element) ProjectManager.mutex().readAccess(new Mutex.Action() {
+            public Object run() {
+                Element root = getConfigurationDataRoot(shared);
+                Element data = Util.findElement(root, elementName, namespace);
+                if (data != null) {
+                    // XXX should also perhaps set ownerDocument to a dummy empty document?
+                    // or create a new document with this as a root?
+                    return (Element) data.cloneNode(true);
+                } else {
+                    return null;
+                }
+            }
+        });
     }
     
     /**
@@ -634,32 +638,37 @@ public final class AntProjectHelper {
      * @param fragment a piece of the subtree to store (overwrite or add)
      * @param shared to use project.xml vs. private.xml
      */
-    void putConfigurationFragment(Element fragment, boolean shared) {
-        Element root = getConfigurationDataRoot(shared);
-        Element existing = Util.findElement(root, fragment.getLocalName(), fragment.getNamespaceURI());
-        // XXX first compare to existing and return if the same
-        if (existing != null) {
-            root.removeChild(existing);
-        }
-        // the children are alphabetize: find correct place to insert new node
-        Node ref = null;
-        NodeList list = root.getChildNodes();
-        for (int i=0; i<list.getLength(); i++) {
-            Node node  = list.item(i);
-            if (node.getNodeType() != Node.ELEMENT_NODE) {
-                continue;
+    void putConfigurationFragment(final Element fragment, final boolean shared) {
+        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            public Object run() {
+                Element root = getConfigurationDataRoot(shared);
+                Element existing = Util.findElement(root, fragment.getLocalName(), fragment.getNamespaceURI());
+                // XXX first compare to existing and return if the same
+                if (existing != null) {
+                    root.removeChild(existing);
+                }
+                // the children are alphabetize: find correct place to insert new node
+                Node ref = null;
+                NodeList list = root.getChildNodes();
+                for (int i=0; i<list.getLength(); i++) {
+                    Node node  = list.item(i);
+                    if (node.getNodeType() != Node.ELEMENT_NODE) {
+                        continue;
+                    }
+                    int comparison = node.getNodeName().compareTo(fragment.getNodeName());
+                    if (comparison == 0) {
+                        comparison = node.getNamespaceURI().compareTo(fragment.getNamespaceURI());
+                    }
+                    if (comparison > 0) {
+                        ref = node;
+                        break;
+                    }
+                }
+                root.insertBefore(root.getOwnerDocument().importNode(fragment, true), ref);
+                modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
+                return null;
             }
-            int comparison = node.getNodeName().compareTo(fragment.getNodeName());
-            if (comparison == 0) {
-                comparison = node.getNamespaceURI().compareTo(fragment.getNamespaceURI());
-            }
-            if (comparison > 0) {
-                ref = node;
-                break;
-            }
-        }
-        root.insertBefore(root.getOwnerDocument().importNode(fragment, true), ref);
-        modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
+        });
     }
     
     /**
