@@ -18,6 +18,7 @@ package org.netbeans.modules.url;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
@@ -357,7 +358,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
     private static class SimpleNodeButtonBridge extends Object implements ActionListener, PropertyChangeListener {
 
         /** Icon. */
-        private static Icon icon;
+        private static ImageIcon defaultIcon;
         
         /** Node to bind with. */
         private final DataObject dataObject;
@@ -373,11 +374,20 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
             
             updateText();
 
-            if(icon == null) {
-                icon = new ImageIcon(URLDataObject.class.getResource("/org/netbeans/modules/url/urlObject.gif")); // NOI18N
+            if(defaultIcon == null) {
+                defaultIcon = new ImageIcon(URLDataObject.class.getResource("/org/netbeans/modules/url/urlObject.gif")); // NOI18N
             }
-            
-            this.button.setIcon(icon);
+
+            try { 
+                this.button.setIcon(new ImageIcon(this.dataObject.getPrimaryFile().getFileSystem().getStatus().annotateIcon(
+                    defaultIcon.getImage(), 
+                    BeanInfo.ICON_COLOR_16x16, 
+                    dataObject.files()))
+                );
+            } catch(FileStateInvalidException fsie) {
+                // No filesystem, set defaultIcon.
+                this.button.setIcon(defaultIcon);
+            }
             
             HelpCtx.setHelpIDString(button, dataObject.getHelpCtx().getHelpID());
             
@@ -410,7 +420,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
             try {
                 text = dataObject.getPrimaryFile().getFileSystem().getStatus().annotateName(text, dataObject.files());
             } catch(FileStateInvalidException fsie) {
-                // No fs, do nothing.
+                // No filesystem, do nothing.
             }
             
             Actions.setMenuText(button, text, true);
