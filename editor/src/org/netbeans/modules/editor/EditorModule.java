@@ -242,16 +242,7 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
 
     private static class HackMap extends Hashtable {
         
-        private static final Object NULL = new Object();
-
 	private Hashtable delegate;
-
-        /** kits registered by put() into this hackmap. They
-         * are added to delegate too, but the delegate
-         * can contain additional kits registered before
-         * the hackp was installed.
-         */
-        private Hashtable override;
 
         HackMap(Hashtable h) {
             delegate = h;
@@ -259,7 +250,7 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
 
         private Object findKit(String type) {
             FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Editors/" + type + "/EditorKit.instance");
-            if (fo == null) return NULL;
+            if (fo == null) return null;
 
             DataObject dobj;
             try {
@@ -274,41 +265,45 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
             catch (IOException e) {}
             catch (ClassNotFoundException e) {}
 
-            return NULL;
+            return null;
         }
+        
+        private String getKitClassName(String type) {
+            try {
+                Field keyField = JEditorPane.class.getDeclaredField("kitTypeRegistryKey");  // NOI18N
+                keyField.setAccessible(true);
+                Object key = keyField.get(JEditorPane.class);
+                Hashtable kitTypeMapping = (Hashtable)sun.awt.AppContext.getAppContext().get(key);
+                if (kitTypeMapping != null) {
+                    return (String)kitTypeMapping.get(type);
+                }
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+            
+            return null;
+        }
+            
         
         public synchronized Object get(Object key) {
             Object retVal = null;
             
-            if (override != null) {
-                retVal = override.get(key);
-            }
-            
-            if (retVal == null) {
-                retVal = super.get(key);
+            if (delegate != null) {
+                retVal = delegate.get(key);
             }
 
 	    if (retVal == null && key instanceof String) {
-		retVal = findKit((String)key);
+                // first check the type registry
+                String kitClassName = getKitClassName((String)key);
+                if (kitClassName == null || kitClassName.startsWith("javax.swing")) { // prefer layers
+                    retVal = findKit((String)key);
+                }
 	    }
-
-            if (retVal == NULL) {
-                retVal = null;
-            }
-
-            if (retVal == null && delegate != null) {
-                retVal = delegate.get(key);
-            }
 
             return retVal;
         }
         
         public synchronized Object put(Object key, Object value) {
-            if (override == null) {
-                override = new Hashtable();
-            }
-            override.put(key, value);
-
             if (delegate == null) {
                 delegate = new Hashtable();
             }
