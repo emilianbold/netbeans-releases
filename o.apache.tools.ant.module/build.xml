@@ -109,6 +109,9 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <delete file="ant.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
+    <delete dir="AntAPIs"/>
+    <delete file="AntAPIs.zip"/>
+    <delete dir="javadoc"/>
     <!-- See target 'release-helper': -->
     <delete dir="release-work"/>
   </target>
@@ -256,15 +259,62 @@ After that you should be done!
         <style in="api/doc/changes/apichanges.xml" out="www/apichanges.html" destdir="www" style="../openide/api/doc/changes/apichanges.xsl"/>
     </target>
 
+    <target name="ant-module-javadoc">
+        <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.3/docs/api"/>
+        <property name="openide-docs-location" value="http://www.netbeans.org/download/apis/"/>
+        <echo message="Build Lexer API documentation..."/>
+        <delete dir="AntAPIs"/>
+        <mkdir dir="AntAPIs"/>
+        <javadoc destdir="AntAPIs"
+             packagenames="org.netbeans.api.*,org.netbeans.spi.*,org.apache.tools.ant.module.*"
+             doctitle="NetBeans module ant APIs"
+             use="true"
+             splitindex="true"
+             author="false"
+             version="false"
+             maxmemory="64m"
+        >
+          <sourcepath>
+            <pathelement location="src"/>
+          </sourcepath>
+          <classpath>
+            <pathelement location="../openide/openide-13javac-workaround.jar"/>
+            <fileset dir="../openide/netbeans/lib">
+              <include name="openide*.jar" />
+            </fileset>
+            <fileset dir="${binroot}/ant/release/modules/ext">
+              <include name="ant.jar"/>
+              <include name="ant-1.*.jar"/>
+            </fileset>
+            <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
+            <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+            <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
+          </classpath>
+          <link href="${jdk-docs-location}"
+                offline="true"
+                packagelistLoc="${nbroot}/openide/api/doc"
+          />
+          <link href="${openide-docs-location}"
+                offline="true"
+                packagelistLoc="api/doc/openide"
+          />
+        </javadoc>
+        <zip zipfile="AntAPIs.zip" basedir="AntAPIs"/>
+    </target>
+
     <target name="javadoc" depends="release-helper">
-      <copy todir="javadoc/AntAPIs">
-        <fileset dir="${javadoc-out}" />
-      </copy>
       <copy todir="javadoc">
         <fileset dir=".">
-          <include name="docs/release/docs/ant-api.zip"/>
+          <include name="AntAPIs"/>
+          <include name="AntAPIs.zip"/>
         </fileset>
       </copy>
+<!-- Ant's javadoc not necessary
+      <copy todir="javadoc/JakartaAntAPIs">
+        <fileset dir="${javadoc-out}" />
+      </copy>
+      <copy file="docs/release/docs/ant-api.zip" tofile="javadoc/JakartaAntAPIs.zip"/>
+-->
     </target>
 
 </project>
