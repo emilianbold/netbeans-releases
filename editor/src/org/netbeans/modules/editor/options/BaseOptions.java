@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import javax.swing.text.JTextComponent;
   
 import com.netbeans.editor.Settings;
+import com.netbeans.editor.DefaultSettings;
 import com.netbeans.editor.SettingsUtil;
 import com.netbeans.editor.Coloring;
 import com.netbeans.editor.BaseKit;
@@ -260,32 +261,36 @@ public class BaseOptions extends OptionSupport {
   }
 
   public void setColoringMap(Map coloringMap) {
-    coloringMap.remove(null); // remove kit class
-    SettingsUtil.updateColoringSettings(getKitClass(), coloringMap, false);
+    if (coloringMap != null) {
+      coloringMap.remove(null); // remove kit class
+      SettingsUtil.updateColoringSettings(getKitClass(), coloringMap, false);
+    }
   }
   
   public int getFontSize() {
     Coloring dc = SettingsUtil.getColoring(getKitClass(), Settings.DEFAULT_COLORING, false);
-    return dc.getFont().getSize();
+    return (dc != null) ? dc.getFont().getSize() : DefaultSettings.defaultFont.getSize();
   }
   
   public void setFontSize(final int size) {
     final int oldSize = getFontSize();
     Map cm = SettingsUtil.getColoringMap(getKitClass(), false);
-    SettingsUtil.changeColorings(cm,
-      new SettingsUtil.ColoringChanger() {
-        public Coloring changeColoring(String coloringName, Coloring c) {
-          if (c != null) {
-            Font font = c.getFont();
-            if (font != null && font.getSize() == oldSize) {
-              return Coloring.changeFontSize(c, size);
+    if (cm != null) {
+      SettingsUtil.changeColorings(cm,
+        new SettingsUtil.ColoringChanger() {
+          public Coloring changeColoring(String coloringName, Coloring c) {
+            if (c != null) {
+              Font font = c.getFont();
+              if (font != null && font.getSize() == oldSize) {
+                return Coloring.changeFontSize(c, size);
+              }
             }
+            return c;
           }
-          return c;
         }
-      }
-    );
-    SettingsUtil.updateColoringSettings(getKitClass(), cm, false);
+      );
+      SettingsUtil.updateColoringSettings(getKitClass(), cm, false);
+    }
   }
   
   public float getLineHeightCorrection() {
@@ -423,6 +428,7 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  14   Gandalf   1.13        1/10/00  Miloslav Metelka 
  *  13   Gandalf   1.12        12/28/99 Miloslav Metelka 
  *  12   Gandalf   1.11        11/11/99 Miloslav Metelka 
  *  11   Gandalf   1.10        11/5/99  Jesse Glick     Context help jumbo 
