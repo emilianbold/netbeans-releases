@@ -21,12 +21,8 @@ import java.io.Serializable;
 
 /**
 * Implementation of table column.
-*
-* @author Slavek Psenicka
 */
-public class TableColumn extends AbstractTableColumn
-            implements Serializable, TableColumnDescriptor, CheckConstraintDescriptor
-{
+public class TableColumn extends AbstractTableColumn implements Serializable, TableColumnDescriptor, CheckConstraintDescriptor {
     /** String constant for column type */
     public static final String COLUMN = "COLUMN"; // NOI18N
     /** String constant for column check */
@@ -191,7 +187,6 @@ public class TableColumn extends AbstractTableColumn
         }
 
         String qdefval = defval;
-        if (charactertypes.contains(spec.getType(type))) qdefval = strdelim+defval+strdelim;
         args.put("column.type", spec.getType(type)); // NOI18N
         if (!nullable) args.put("column.notnull", ""); // NOI18N
         
@@ -239,16 +234,3 @@ public class TableColumn extends AbstractTableColumn
         out.writeObject(checke);
     }
 }
-
-/*
-* <<Log>>
-*  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  5    Gandalf   1.4         9/10/99  Slavek Psenicka 
-*  4    Gandalf   1.3         8/17/99  Ian Formanek    Generated serial version 
-*       UID
-*  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
-*/
