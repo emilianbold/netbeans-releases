@@ -279,9 +279,11 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
            
             // Try to compute relative path            
             FileObject spDir = p.getProjectDirectory();
+            // XXX this does not work:
             String relPath = relativizePath( pDir, FileUtil.toFile( spDir ), 3 );
                         
             if ( relPath == null ) { // Can't realtivize                
+                // XXX this should be FileUtil.toFile and getAbsolutePath:
                 relPath = spDir.getPath();
             }
             String displayName = MessageFormat.format( 
