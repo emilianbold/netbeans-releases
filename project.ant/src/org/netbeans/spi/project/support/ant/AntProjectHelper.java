@@ -467,7 +467,13 @@ public final class AntProjectHelper {
             it.remove();
         }
         if (hook != null) {
-            hook.projectXmlSaved();
+            try {
+                hook.projectXmlSaved();
+            } catch (IOException e) {
+                // Treat it as still modified.
+                modifiedMetadataPaths.add(PROJECT_XML_PATH);
+                throw e;
+            }
         }
     }
     
