@@ -15,7 +15,8 @@ package com.netbeans.enterprise.modules.db.explorer.infos;
 
 import java.sql.*;
 import java.util.*;
-import java.io.IOException;
+import java.io.*;
+import java.lang.reflect.*;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.*;
 import org.openide.nodes.Node;
@@ -24,6 +25,7 @@ import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
+import org.openide.TopManager;
 
 public class ConnectionNodeInfo extends DatabaseNodeInfo
 implements ConnectionOperations
@@ -35,20 +37,21 @@ implements ConnectionOperations
 		String dburl = getDatabase();
 		Properties dbprops = getConnectionProperties();
 		try {
-			Class xxx = Class.forName(drvurl);
-	    	Connection connection = DriverManager.getConnection(dburl, dbprops);
+
+			DatabaseConnection con = new DatabaseConnection(drvurl, dburl, getUser(), getPassword());
+			Connection connection = con.createJDBCConnection();
 			SpecificationFactory factory = (SpecificationFactory)getSpecificationFactory();
-			System.out.println("factory: "+factory);
 			Specification spec;
 			
 			if (dbsys != null) {
-				spec = (Specification)factory.createSpec(new DatabaseConnection(drvurl, dburl, getUser(), getPassword()), dbsys);
-			} else spec = (Specification)factory.createSpec(new DatabaseConnection(drvurl, dburl, getUser(), getPassword()));
+				spec = (Specification)factory.createSpec(con, dbsys);
+			} else spec = (Specification)factory.createSpec(con, connection);
 			setSpecification(spec);
 			setConnection(connection); // fires change
 		} catch (DatabaseProductNotFoundException e) {
 			throw new DatabaseException("database "+e.getDatabaseProductName()+" is not supported by system");	
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new DatabaseException(e.getMessage());	
 		}
 	}
