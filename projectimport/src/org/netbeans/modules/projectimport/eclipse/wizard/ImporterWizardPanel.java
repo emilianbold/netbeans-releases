@@ -42,9 +42,9 @@ abstract class ImporterWizardPanel extends JPanel
     private String errorMessage;
     
     static final String WORKSPACE_LOCATION_STEP =
-            NbBundle.getMessage(ImporterWizardPanel.class, "CTL_WorkspaceLocationStep"); // NOI18N
+            ProjectImporterWizard.getMessage("CTL_WorkspaceLocationStep"); // NOI18N
     static final String PROJECT_SELECTION_STEP =
-            NbBundle.getMessage(ImporterWizardPanel.class, "CTL_ProjectSelectionStep"); // NOI18N
+            ProjectImporterWizard.getMessage("CTL_ProjectSelectionStep"); // NOI18N
     
     /** Creates a new instance of ImporterPanel */
     ImporterWizardPanel(int wizardNumber) {

@@ -44,8 +44,8 @@ public final class ProjectImporterWizard {
             }
         });
         wizardDescriptor.setTitleFormat(new java.text.MessageFormat(" {1}"));  // NOI18N
-        wizardDescriptor.setTitle(NbBundle.getMessage(
-                ProjectImporterWizard.class, "CTL_WizardTitle")); // NOI18N
+        wizardDescriptor.setTitle(
+                ProjectImporterWizard.getMessage("CTL_WizardTitle")); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.show();
         dialog.toFront();
@@ -63,7 +63,7 @@ public final class ProjectImporterWizard {
     }
     
     /**
-     * Returns number of projects which will be imported (including both 
+     * Returns number of projects which will be imported (including both
      * required and selected projects)
      */
     public int getNumberOfImportedProject() {
@@ -76,11 +76,21 @@ public final class ProjectImporterWizard {
     public String getDestination() {
         return destination;
     }
-
+    
     /**
      * Returns whether user canceled the wizard.
      */
     public boolean isCancelled() {
         return cancelled;
+    }
+    
+    /** Gets message from properties bundle for this package. */
+    static String getMessage(String key) {
+        return NbBundle.getMessage(ProjectImporterWizard.class, key);
+    }
+    
+    /** Gets message from properties bundle for this package. */
+    static String getMessage(String key, Object param1) {
+        return NbBundle.getMessage(ProjectImporterWizard.class, key, param1);
     }
 }
