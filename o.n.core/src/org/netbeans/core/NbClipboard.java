@@ -45,7 +45,7 @@ public final class NbClipboard extends ExClipboard implements LookupListener, AW
         if (System.getProperty("netbeans.slow.system.clipboard.hack") != null) // NOI18N
             slowSystemClipboard = Boolean.getBoolean("netbeans.slow.system.clipboard.hack"); // NOI18N
         else
-            slowSystemClipboard = Utilities.isUnix();
+            slowSystemClipboard = true;
         
         if (slowSystemClipboard) {
             Toolkit.getDefaultToolkit().addAWTEventListener(
