@@ -1048,6 +1048,8 @@ class JavaCodeGenerator extends CodeGenerator {
                         // generate the call to the handlers
                         for (Iterator it = events[j].getHandlers().iterator(); it.hasNext();) {
                             EventHandler handler = (EventHandler) it.next();
+                            if (evtMethod.getName().equals(handler.getName()))
+                                initCodeWriter.write(formEditorSupport.getFormDataObject().getName() + ".this."); // NOI18N                            
                             initCodeWriter.write(handler.getName());
                             initCodeWriter.write("("); // NOI18N
                             for (int k = 0; k < varNames.length; k++) {

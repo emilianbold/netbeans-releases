@@ -246,6 +246,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         formModel.setName(name);
         formModel.getFormDesigner().updateName(name);
         formRootNode.updateName(name);
+        formModel.fireFormChanged();
     }
 
     void updateNodeChildren(ComponentContainer metacont) {
