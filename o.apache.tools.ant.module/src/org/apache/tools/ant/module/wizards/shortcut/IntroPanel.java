@@ -161,6 +161,11 @@ final class IntroPanel extends javax.swing.JPanel {
     public static class IntroWizardPanel implements WizardDescriptor.Panel {
     
         private IntroPanel panel = null;
+        private ShortcutWizard wiz = null;
+        
+        public void initialize(ShortcutWizard wiz) {
+            this.wiz = wiz;
+        }
         
         public Component getComponent () {
             return getPanel();
@@ -195,6 +200,9 @@ final class IntroPanel extends javax.swing.JPanel {
             }
         }
         protected final void fireChangeEvent () {
+            // #44409: need to update the PROP_SHOW_* flags before storeSettings is called,
+            // because then it will be too late (iterator will already have progressed):
+            storeSettings(wiz);
             Iterator it;
             synchronized (listeners) {
                 it = new HashSet (listeners).iterator ();
