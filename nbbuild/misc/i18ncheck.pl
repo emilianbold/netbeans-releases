@@ -177,6 +177,7 @@ sub checkline {
             && ! m,getString\s*\(,
             && ! m,err\. ?print,
             && ! m,getProperty,
+            && ! m,getBoolean,
             && ! m,NbBundle\. ?getMessage,
             && m,".*", 
            ); 
