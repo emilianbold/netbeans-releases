@@ -875,10 +875,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/taglibed..."/>
     <ant dir="../web/taglibed" target="netbeans"/>
   </target>
-  <target name="all-web/advanced" depends="build-platform,all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-j2eeserver,all-html,all-openidex,all-java/srcmodel">
-    <echo message="Building module web/advanced..."/>
-    <ant dir="../web/advanced" target="netbeans"/>
-  </target>
   <target name="all-webl" depends="build-platform,all-java,all-openide/compiler,all-openide/deprecated">
     <echo message="Building module webl..."/>
     <ant dir="../webl" target="netbeans"/>
