@@ -19,6 +19,7 @@
     </folder>
     <folder name="Tools">
       <file name="Auto Comment Action[org-netbeans-modules-javadoc-comments-AutoCommentAction].instance" />
+      <file name="Correct Javadoc Action[org-netbeans-modules-javadoc-comments-CorrectJavaDocAction].instance" />
     </folder>
   </folder>
 

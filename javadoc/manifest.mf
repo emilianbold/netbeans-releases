@@ -15,6 +15,9 @@ OpenIDE-Module-Class: Action
 Name: org/netbeans/modules/javadoc/comments/AutoCommentAction.class
 OpenIDE-Module-Class: Action
 
+Name: org/netbeans/modules/javadoc/comments/CorrectJavaDocAction.class
+OpenIDE-Module-Class: Action
+
 Name: org/netbeans/modules/javadoc/search/JavaDocNode.class
 OpenIDE-Module-Class: Node
 Type: Roots
