@@ -6,7 +6,7 @@
 	<testbag compiler="default-compiler" executor="ide" name="all ide tests" testattribs="all and ide">
  		<testset dir="qa-functional/src">
 			<patternset>
-				<include name="**/*.class"/>
+				<include name="org/netbeans/modules/testtools/**/*.class"/>
 				<exclude name="**/data/**"/>
  			</patternset>
  		</testset>

@@ -35,7 +35,6 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.ComboBoxProperty;
 import org.netbeans.jellytools.properties.StringProperty;
 import org.netbeans.jemmy.drivers.input.KeyRobotDriver;
-import org.netbeans.modules.jemmysupport.generator.data.TestPanel;
 
 /** JUnit test suite with Jemmy/Jelly2 support
  *
