@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -61,6 +61,9 @@ Microsystems, Inc. All Rights Reserved.
         <!-- install xtest error manager to IDE which tracks internal errors. 
              If exception or error appear, the test is signed as error. -->
         <property name="xtest.ide.error.manager" value="true"/>
+        <!-- Use prebuilt JDK mdr storage at specified location. It sets 
+             IDE option -J-Dprebuilt.storage.dir -->
+        <property name="xtest.ide.mdrstorage" location="${jdkhome}/mdrstorage"/>
         
         <property name="xtest.ide.use.classloader" value=""/>
         
@@ -228,7 +231,8 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dxtest.ide.open.project=&quot;${xtest.ide.open.project}&quot;
 -J-Dxtest.ide.error.manager=${xtest.ide.error.manager}
 -J-Dxtest.userdir=&quot;${xtest.userdir}&quot;
--J-Dxtest.ide.use.classloader=${xtest.ide.use.classloader}    
+-J-Dxtest.ide.use.classloader=${xtest.ide.use.classloader}
+-J-Dprebuilt.storage.dir=&quot;${xtest.ide.mdrstorage}&quot;
 ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
 
 <!--
