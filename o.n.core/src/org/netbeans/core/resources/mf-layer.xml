@@ -91,6 +91,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-ToolsAction.instance"/>
             <file name="org-openide-actions-ViewAction.instance"/>
             <file name="org-openide-actions-NewTemplateAction.instance"/>
+            <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance"/>
             <file name="org-netbeans-core-actions-SetupWizardAction.instance"/>
         </folder>
         <folder name="View">
@@ -123,10 +124,10 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Welcome">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-        <file name="org-openide-actions-NewTemplateAction.instance">
+        <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance">
             <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-NewTemplateAction.html" />
         </file>
-        <attr name="org-openide-actions-NewTemplateAction.instance/org-netbeans-core-ui-ProxySettingsAction.instance" boolvalue="true" />
+        <attr name="org-netbeans-core-actions-NewTemplateCallableAction.instance/org-netbeans-core-ui-ProxySettingsAction.instance" boolvalue="true" />
         <file name="org-netbeans-core-ui-ProxySettingsAction.instance">
             <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-ProxySettingsAction.html" />
         </file>
@@ -136,8 +137,8 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
       <folder name="File">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          <file name="org-openide-actions-NewTemplateAction.instance"/>
-          <attr name="org-openide-actions-NewTemplateAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
+          <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance"/>
+          <attr name="org-netbeans-core-actions-NewTemplateCallableAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator1[javax-swing-JSeparator].instance"/>
           <attr name="Separator1[javax-swing-JSeparator].instance/org-netbeans-core-actions-NewFileSystemAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-NewFileSystemAction.instance"/>
@@ -406,8 +407,8 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="System">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-NewTemplateAction.instance"/>
-            <attr name="org-openide-actions-NewTemplateAction.instance/org-netbeans-core-actions-OpenExplorerAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance"/>
+            <attr name="org-netbeans-core-actions-NewTemplateCallableAction.instance/org-netbeans-core-actions-OpenExplorerAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-OpenExplorerAction.instance"/>
             <attr name="org-netbeans-core-actions-OpenExplorerAction.instance/org-openide-actions-SaveAction.instance" boolvalue="true" />
             <file name="org-openide-actions-SaveAction.instance"/>
@@ -472,7 +473,7 @@ Microsystems, Inc. All Rights Reserved.
     <file name="C-0[org-openide-actions-OpenLocalExplorerAction].instance" />
     <file name="CS-S[org-openide-actions-SaveProjectAction].instance" />
     <file name="S-F8[org-openide-actions-AddWatchAction].instance" />
-    <file name="C-N[org-openide-actions-NewTemplateAction].instance" />
+    <file name="C-N[org-netbeans-core-actions-NewTemplateCallableAction].instance" />
     <file name="S-F10[org-openide-actions-PopupAction].instance" />
 
   </folder>
