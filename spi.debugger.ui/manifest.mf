@@ -7,7 +7,7 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Short-Description: The IDE's basic infrastructure for debugging.
 OpenIDE-Module-Long-Description: The Debugger Core module provides the basic infrastructure
   in the IDE for debugging. Modules for specific debugger implementations are based on this module.
-  
+
 Name: org/netbeans/modules/debugger/support/DebuggerSettings.class
 OpenIDE-Module-Class: Option
 
