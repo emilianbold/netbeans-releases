@@ -81,9 +81,9 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
         FileObject template = Templates.getTemplate( wiz );
         
         DataObject dTemplate = DataObject.find( template );                
-        dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );
+        DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );
         
-        return Collections.singleton(dir);
+        return Collections.singleton (dobj.getPrimaryFile ());
     }
     
         
