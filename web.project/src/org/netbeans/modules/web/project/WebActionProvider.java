@@ -44,6 +44,7 @@ import org.netbeans.modules.j2ee.deployment.execution.*;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import javax.enterprise.deploy.spi.Target;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.openide.*;
@@ -54,11 +55,7 @@ import org.openide.*;
 class WebActionProvider implements ActionProvider {
     
     // Definition of commands
-    private static final String COMMAND_COMPILE_SINGLE = "compile.single"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_RUN = "run"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_DEBUG = "debug"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_JAVADOC = "javadoc"; /*XXX define somewhere*/ // NOI18N
-    private static final String COMMAND_DEBUG_FIX = "debug.fix"; /*XXX define somewhere*/ // NOI18N
+    
     private static final String COMMAND_COMPILE = "compile"; //NOI18N
     private static final String COMMAND_COMPILE_JSPS = "compile-jsps"; //NOI18N
         
@@ -70,8 +67,8 @@ class WebActionProvider implements ActionProvider {
         COMMAND_COMPILE_SINGLE, 
         COMMAND_RUN, 
         COMMAND_DEBUG, 
-        COMMAND_JAVADOC, 
-        COMMAND_DEBUG_FIX,
+        JavaProjectConstants.COMMAND_JAVADOC, 
+        JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_COMPILE,
         COMMAND_COMPILE_JSPS,
     };
@@ -94,8 +91,8 @@ class WebActionProvider implements ActionProvider {
             commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
             commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-            commands.put(COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
-            commands.put(COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
+            commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
+            commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
             commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
             commands.put(COMMAND_COMPILE_JSPS, new String[] {"compile-jsps"}); // NOI18N
         
