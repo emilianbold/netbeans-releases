@@ -39,10 +39,11 @@ Microsystems, Inc. All Rights Reserved.
             <hint>
             What will be API for 
             <a href="http://openide.netbeans.org/tutorial/api-design.html#design.apiandspi">
-                clients and what support API
-            </a>? 
-            What parts will be plugable.
-            How the plugins will registrate. If possible please provide 
+                clients and what support API</a>? 
+            What parts will be plugable?
+            How the plugins will registrate? Please use <code>&lt;api type="export" /&gt;</code>
+            to describe your general APIs.
+            If possible please provide 
             simple diagrams. 
             </hint>
         </question>
@@ -61,6 +62,15 @@ Microsystems, Inc. All Rights Reserved.
             stabilization are likely to last. How many people will be needed to
             implement this and what is the expected milestone the work should be 
             ready.
+            </hint>
+        </question>
+        
+        <question id="arch-quality" when="init">
+            How the quality of your code will be tested and 
+            how future regressions are going to be prevented?
+            <hint>
+            What kind of testing you want to use? What/how much area of functionality
+            should be covered by the tests? 
             </hint>
         </question>
     </category>
