@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
+            <code-name-base>org.netbeans.lib.cvsclient</code-name-base>
+            <path>javacvs/libmodule</path>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.openide</code-name-base>
+                    <build-prerequisite/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>4.20</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <public-packages>
+                <package>org.netbeans.lib.cvsclient</package>
+                <package>org.netbeans.lib.cvsclient.admin</package>
+                <package>org.netbeans.lib.cvsclient.command</package>
+                <package>org.netbeans.lib.cvsclient.command.add</package>
+                <package>org.netbeans.lib.cvsclient.command.annotate</package>
+                <package>org.netbeans.lib.cvsclient.command.checkout</package>
+                <package>org.netbeans.lib.cvsclient.command.commit</package>
+                <package>org.netbeans.lib.cvsclient.command.diff</package>
+                <package>org.netbeans.lib.cvsclient.command.edit</package>
+                <package>org.netbeans.lib.cvsclient.command.editors</package>
+                <package>org.netbeans.lib.cvsclient.command.export</package>
+                <package>org.netbeans.lib.cvsclient.command.history</package>
+                <package>org.netbeans.lib.cvsclient.command.importcmd</package>
+                <package>org.netbeans.lib.cvsclient.command.log</package>
+                <package>org.netbeans.lib.cvsclient.command.remove</package>
+                <package>org.netbeans.lib.cvsclient.command.status</package>
+                <package>org.netbeans.lib.cvsclient.command.tag</package>
+                <package>org.netbeans.lib.cvsclient.command.unedit</package>
+                <package>org.netbeans.lib.cvsclient.command.update</package>
+                <package>org.netbeans.lib.cvsclient.command.watch</package>
+                <package>org.netbeans.lib.cvsclient.command.watchers</package>
+                <package>org.netbeans.lib.cvsclient.commandLine</package>
+                <package>org.netbeans.lib.cvsclient.commandLine.command</package>
+                <package>org.netbeans.lib.cvsclient.connection</package>
+                <package>org.netbeans.lib.cvsclient.event</package>
+                <package>org.netbeans.lib.cvsclient.file</package>
+                <package>org.netbeans.lib.cvsclient.request</package>
+                <package>org.netbeans.lib.cvsclient.response</package>
+                <package>org.netbeans.lib.cvsclient.util</package>
+             </public-packages>
+            <javadoc/>
+        </data>
+    </configuration>
+</project>

@@ -8,91 +8,37 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="javacvs/libmodule">
-  <import file="../../nbbuild/default.xml"/> 
+    <import file="../../nbbuild/templates/projectized.xml"/>
 
-  <target name="init" depends="default.init">
-    <patternset id="javacvs/libmodule.files">
-      <include name="${nb.modules/autoload.dir}/cvslib.jar"/>
-    </patternset>
-  </target>
+    <target name="jar-no-module-deps" unless="module.dependencies">
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+            <manifest>
+                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
+                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
+                <attribute name="Implementation-Version" value="${buildnumber}"/>
+            </manifest>
+            <fileset dir="${build.classes.dir}"/>
+        </jar>
+    </target>
 
-  <target name="compile" depends="init"> 
-    <javac debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" destdir="../libsrc" srcdir="../libsrc"/>
-  </target>
+    <target name="jar-with-module-deps" if="module.dependencies">
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+            <manifest>
+                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
+                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
+                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
+                <attribute name="Implementation-Version" value="${buildnumber}"/>
+            </manifest>
+            <fileset dir="${build.classes.dir}"/>
+        </jar>
+    </target>
 
-  <target depends="compile" name="jars">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" filtering="on" tofile="manifest-subst.mf"/>
-    <taskdef classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar" name="locjar"/>
-    <jar basedir="../libsrc" 
-         compress="false" 
-         excludesfile="../../nbbuild/standard-jar-excludes.txt" 
-         jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/cvslib.jar" 
-         manifest="manifest-subst.mf"/>
-  </target>
-
-  <target depends="jars" name="netbeans">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/cvslib.jar">
-       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-         <patternset refID="javacvs/libmodule.files"/>
-       </fileset>
-    </genlist>
-  </target>
-
-  <target depends="netbeans" name="nbm">
-    <makenbm distribution="http://${dist.base}/cvslib.nbm" 
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             file="cvslib.nbm" 
-             homepage="http://javacvs.${homepage.base}/" 
-             module="${nb.modules/autoload.dir}/cvslib.jar">
-      <license file="${license.file}"/>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="clean" depends="init">
-    <delete>
-      <fileset dir="../libsrc">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="javacvs/libmodule.files"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
-    <delete file="cvslib.nbm"/>
-    <delete dir="javadoc"/>
-  </target>
-
-  <target name="javadoc" description="Build cvs library module API documentation.">
-    <tstamp/>
-    <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
-    <echo message="Build cvs library module API documentation..."/>
-    <mkdir dir="javadoc"/>
-    <javadoc destdir="javadoc"
-             packagenames="org.netbeans.lib.*"
-             doctitle="NetBeans Cvs Client library APIs - All Classes"
-             windowtitle="NetBeans Cvs Client library APIs - All Classes"
-             bottom="${apis-footer}"
-             use="true"
-             protected="true"
-             splitindex="true"
-             author="false"
-             version="false"
-             maxmemory="384m"
-    >
-      <sourcepath>
-        <pathelement location="../libsrc"/>
-      </sourcepath>
-      <classpath>
-        <pathelement location="../libsrc"/>
-      </classpath>
-    </javadoc>    
-  </target>
-  
 </project>
