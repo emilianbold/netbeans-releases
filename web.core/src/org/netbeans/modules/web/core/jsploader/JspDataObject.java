@@ -64,8 +64,6 @@ import org.netbeans.modules.web.core.WebExecSupport;
 */
 public class JspDataObject extends MultiDataObject implements QueryStringCookie, URLCookie {
 
-    public static final String EA_CONTENT_LANGUAGE = "AttrJSPContentLanguage"; // NOI18N
-    public static final String EA_SCRIPTING_LANGUAGE = "AttrJSPScriptingLanguage"; // NOI18N
     public static final String EA_JSP_ERRORPAGE = "jsp_errorpage"; // NOI18N
     // property for the servlet dataobject corresponding to this page
     public static final String PROP_SERVLET_DATAOBJECT = "servlet_do"; // NOI18N
@@ -163,46 +161,14 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
      * If nothing is set, defaults to 'text/html'.
      */
     public String getContentLanguage() {
-        try {
-            String contentLanguage = (String)getPrimaryFile ().getAttribute (EA_CONTENT_LANGUAGE);
-            if (contentLanguage != null) {
-                return contentLanguage;
-            }
-        } catch (Exception ex) {
-            // null pointer or IOException
-        }
         return "text/html"; // NOI18N
     }
-
-    /** Sets the MIME type of the content language for this page. The language is stored 
-     * in this page's filesystem attributes set in this file's attributes. 
-     */
-    public void setContentLanguage(String contentLanguage) throws IOException {
-        getPrimaryFile ().setAttribute (EA_CONTENT_LANGUAGE, contentLanguage);
-        firePropertyChange(PROP_CONTENT_LANGUAGE, null, contentLanguage);
-    }
-
+    
     /** Returns the MIME type of the scripting language for this page set in this file's attributes. 
      * If nothing is set, defaults to 'text/x-java'.
      */
     public String getScriptingLanguage() {
-        try {
-            String scriptingLanguage = (String)getPrimaryFile ().getAttribute (EA_SCRIPTING_LANGUAGE);
-            if (scriptingLanguage != null) {
-                return scriptingLanguage;
-            }
-        } catch (Exception ex) {
-            // null pointer or IOException
-        }
         return "text/x-java"; // NOI18N
-    }
-
-    /** Sets the MIME type of the scripting language for this page. The language is stored 
-     * in this page's filesystem attributes set in this file's attributes. 
-     */
-    public void setScriptingLanguage(String scriptingLanguage) throws IOException {
-        getPrimaryFile ().setAttribute (EA_SCRIPTING_LANGUAGE, scriptingLanguage);
-        firePropertyChange(PROP_SCRIPTING_LANGUAGE, null, scriptingLanguage);
     }
         
     public String getFileEncoding(boolean useEditor) {

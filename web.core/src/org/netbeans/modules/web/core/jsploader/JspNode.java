@@ -88,70 +88,6 @@ public class JspNode extends DataNode {
 
         Sheet sheet = super.createSheet();
 
-        ps = sheet.get(Sheet.PROPERTIES);
-        // content language
-        ps.put(new PropertySupport.ReadWrite (
-                   JspDataObject.PROP_CONTENT_LANGUAGE,
-                   String.class,
-                   NbBundle.getBundle(JspNode.class).getString("PROP_contentLanguage"),
-                   NbBundle.getBundle(JspNode.class).getString("HINT_contentLanguage")
-               ) {
-                   public Object getValue() {
-                       return ((JspDataObject)getDataObject()).getContentLanguage();
-                   }
-                   public void setValue (Object val) throws InvocationTargetException {
-                       if (val instanceof String) {
-                           try {
-                               ((JspDataObject)getDataObject()).setContentLanguage((String)val);
-                           } catch(IOException e) {
-                               throw new InvocationTargetException (e);
-                           }
-                       }
-                       else {
-                           throw new IllegalArgumentException();
-                       }
-                   }
-                   public PropertyEditor getPropertyEditor() {
-                       return new LanguageEditor(FeatureFactory.getFactory().getJSPContentLanguages());
-                   }
-                   
-                   public boolean supportsDefaultValue() {
-                       return true;
-                   }
-                   
-                   public void restoreDefaultValue() throws IllegalAccessException,InvocationTargetException {
-                       setValue( "text/html" );     // NOI18N
-                   }
-               }
-            );
-        // scripting language
-        ps.put(new PropertySupport.ReadWrite (
-                   JspDataObject.PROP_SCRIPTING_LANGUAGE,
-                   String.class,
-                   NbBundle.getBundle(JspNode.class).getString("PROP_scriptingLanguage"),
-                   NbBundle.getBundle(JspNode.class).getString("HINT_scriptingLanguage")
-               ) {
-                   public Object getValue() {
-                       return ((JspDataObject)getDataObject()).getScriptingLanguage();
-                   }
-                   public void setValue (Object val) throws InvocationTargetException {
-                       if (val instanceof String) {
-                           try {
-                               ((JspDataObject)getDataObject()).setScriptingLanguage((String)val);
-                           } catch(IOException e) {
-                               throw new InvocationTargetException (e);
-                           }
-                       }
-                       else {
-                           throw new IllegalArgumentException();
-                       }
-                   }
-                   public PropertyEditor getPropertyEditor() {
-                       return new LanguageEditor(FeatureFactory.getFactory().getJSPScriptingLanguages());
-                   }
-               }
-            );
- 
         ps = new Sheet.Set ();
         ps.setName(EXECUTION_SET_NAME);
         ps.setDisplayName(NbBundle.getBundle(JspNode.class).getString("PROP_executionSetName"));
@@ -194,7 +130,7 @@ public class JspNode extends DataNode {
         ps.setDisplayName(NbBundle.getBundle(JspNode.class).getString("PROP_textfileSetName")); // NOI18N
         ps.setShortDescription(NbBundle.getBundle(JspNode.class).getString("HINT_textfileSetName")); // NOI18N
         sheet.put(ps);
-        
+    
         return sheet;
     }
 
