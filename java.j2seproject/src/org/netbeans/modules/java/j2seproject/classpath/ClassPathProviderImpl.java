@@ -24,6 +24,7 @@ import java.util.HashMap;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -87,6 +88,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return getDir(BUILD_TEST_CLASSES_DIR);
     }
     
+    /**
+     * Find what a given file represents.
+     * @param file a file in the project
+     * @return one of: <dl>
+     *         <dt>0</dt> <dd>normal source</dd>
+     *         <dt>1</dt> <dd>test source</dd>
+     *         <dt>2</dt> <dd>built class (unpacked)</dd>
+     *         <dt>3</dt> <dd>built test class</dd>
+     *         <dt>4</dt> <dd>built class (in dist JAR)</dd>
+     *         <dt>-1</dt> <dd>something else</dd>
+     *         </dl>
+     */
     private int getType(FileObject file) {
         FileObject dir = getPrimarySrcDir();
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
@@ -100,9 +113,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
             return 2;
         }
-        dir = getDistJar();
-        if (dir != null && (dir.equals(file))) {     //TODO: When MasterFs check also isParentOf
-            return 2;
+        dir = getDistJar(); // not really a dir at all, of course
+        if (dir != null && dir.equals(FileUtil.getArchiveFile(file))) {
+            return 4;
         }
         dir = getBuildTestClassesDir();
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
@@ -114,6 +127,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private ClassPath getCompileTimeClasspath(FileObject file) {
         int type = getType(file);
         if (type < 0 || type > 1) {
+            // Not a source file.
             return null;
         }
         ClassPath cp = null;
@@ -134,6 +148,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private ClassPath getRunTimeClasspath(FileObject file) {
         int type = getType(file);
         if (type < 0 || type > 3) {
+            // Unregistered file, or in a JAR.
+            // For jar:file:$projdir/dist/*.jar!/**/*.class, it is misleading to use
+            // run.classpath since that does not actually contain the file!
+            // (It contains file:$projdir/build/classes/ instead.)
             return null;
         } else if (type > 1) {
             type-=2;            //Compiled source transform into source
@@ -155,8 +173,30 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private ClassPath getSourcepath(FileObject file) {
         int type = getType(file);
-        if (type < 0 || type > 1) {
-            return null;
+        if (type < 0) {
+            // Unknown.
+        } else if (type > 1) {
+            // Class file. Return a "source path" of the binary dir.
+            // Seems to make clazz.CompiledDataNode happy at least in the case
+            // of a dist.jar class (see comment in getRunTimeClasspath).
+            // XXX this stuff should be cached and react to changes...
+            // not nearly as frequently used as the real source paths though.
+            FileObject root;
+            switch (type) {
+            case 2:
+                root = getBuildClassesDir();
+                break;
+            case 3:
+                root = getBuildTestClassesDir();
+                break;
+            case 4:
+                root = FileUtil.getArchiveRoot(getDistJar());
+                break;
+            default:
+                throw new AssertionError("weird type " + type); // NOI18N
+            }
+            assert root != null : "No root for files of type " + type;
+            return ClassPathSupport.createClassPath(new FileObject[] {root});
         }
         ClassPath cp = null;
         if (cache[type] == null || (cp = (ClassPath)cache[type].get()) == null) {
