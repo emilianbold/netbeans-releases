@@ -39,10 +39,9 @@ xtest_server_run() {
     while true
     do
 	if [ "$timer" -eq 0 ]; then
-	    echo "Running tests. DON'T INTERRUPT."
 	    cd ${XTEST_SERVER_HOME}/bin
 	    sh testBuild.sh
-    	    echo SLEEPING for $SLEEP_INTERVAL seconds. Now you can interrupt me.
+    	    echo Sleeping for $SLEEP_INTERVAL seconds.
 	fi
 
 	timer=`expr $timer + $check_interval`

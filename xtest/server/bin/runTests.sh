@@ -80,7 +80,7 @@ fi
 
 CMD_TO_RUN="cd ${XTEST_SERVER_BIN} ; ant ${LOG_ARG} -Dide.install.path=${BUILDFILE} \
    -Dxtest.tested.project='${PROJECT_NAME}' -Dxtest.driver.config=${DRIVER_CONFIG} \
-   -Dxtest.machine=${HOST_NAME} ${SHIP_ARG} ${DRIVER_ARGS} &"
+   -Dxtest.machine=${HOST_NAME} ${SHIP_ARG} ${DRIVER_ARGS}"
 
 JDK_HOME=$JAVA_HOME
 JAVA_PATH=$JAVA_HOME
@@ -99,8 +99,6 @@ echo Testing build ${BUILDFILE} of project ${PROJECT_NAME}
 echo Time: `date`  Log: ${LOGFILE}
 
 eval $CMD_TO_RUN
-echo $! > ${LOG_DIR}/driver.pid
-wait $!
 
 if [ ! $? -eq 0 ]; then
   ant -buildfile ${XTEST_SERVER_BIN}/mail.xml -Dxtest.mail.subject="TR ERROR: Test buildscript failed" \
