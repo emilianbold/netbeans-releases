@@ -45,6 +45,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="runidetest_measure_memory" depends="prepare_measure_memory">
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="ide">
+            <property name="xtest.enable.assertions" value="false" /> 
             <classpath/>
         </executeTests>
         <antcall target="copy_original_ide_cfg_file"/>
@@ -55,6 +56,8 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
+            
+            <property name="xtest.enable.assertions" value="false" /> 
             
             <!-- Property for repeatedly used New Userdirs and Userdirs used on old Userdirs -->
             <property name="xtest.userdata|org.netbeans.performance.repeat.with.new.userdir" value="5"/>
@@ -71,6 +74,8 @@ Microsystems, Inc. All Rights Reserved.
         <executeTests pluginName="ide">
             <classpath refid="jemmy.and.jelly.path"/>
             
+            <property name="xtest.enable.assertions" value="false" /> 
+            
             <!-- Opens project at specified location -->
             <property name="xtest.ide.open.project" location="${xtest.tmpdir}/jEdit41"/>
             
@@ -84,6 +89,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="runcodetest_measure_complex_startup" depends="set_bootclasspath_jdk142, set_bootclasspath_jdk150, make_netbeans_executable">
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
+            <property name="xtest.enable.assertions" value="false" /> 
             <property name="xtest.ide.reuse.userdir" value="true"/>
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
             <property name="xtest.userdata|userdir.prepared" value="${xtest.workdir}"/>

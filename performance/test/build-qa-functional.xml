@@ -125,7 +125,8 @@ Microsystems, Inc. All Rights Reserved.
             <classpath refid="jemmy.and.jelly.path"/>
             <classpath refid="performance.testutilities"/>
             
-            <property name="xtest.ide.reuse.userdir" value="true"/>
+            <property name="xtest.enable.assertions" value="false" /> 
+            <property name="xtest.ide.reuse.userdir" value="true" />
             <property name="xtest.timeout" value="7200000" />
         </executeTests>
         
