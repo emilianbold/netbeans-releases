@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -46,10 +46,8 @@ public class ActionUtilsTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        LocalFileSystem fs = new LocalFileSystem();
         clearWorkDir();
-        fs.setRootDirectory(getWorkDir());
-        dir = fs.getRoot();
+        dir = FileUtil.toFileObject(getWorkDir());
         f1 = dir.createData("f1.data");
         f2 = dir.createData("f2");
         subdir = dir.createFolder("sub");

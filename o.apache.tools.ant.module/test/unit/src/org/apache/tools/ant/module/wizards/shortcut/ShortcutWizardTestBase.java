@@ -25,6 +25,10 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -35,29 +39,69 @@ import org.w3c.dom.NodeList;
  */
 public abstract class ShortcutWizardTestBase extends NbTestCase {
     
+    static {
+        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
+    }
+    
+    public static final class Lkp extends ProxyLookup {
+        public Lkp() {
+            super(new Lookup[] {
+                Lookups.fixed(new Object[] {"repo"}, new Conv()),
+                Lookups.metaInfServices(Lkp.class.getClassLoader()),
+                Lookups.singleton(Lkp.class.getClassLoader()),
+            });
+        }
+        private static final class Conv implements InstanceContent.Convertor {
+            public Conv() {}
+            public Object convert(Object obj) {
+                assert obj == "repo";
+                try {
+                    return new Repo();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+            public String displayName(Object obj) {
+                return obj.toString();
+            }
+            public String id(Object obj) {
+                return obj.toString();
+            }
+            public Class type(Object obj) {
+                assert obj == "repo";
+                return Repository.class;
+            }
+        }
+    }
+    
     protected ShortcutWizardTestBase(String name) {
         super(name);
     }
 
+    private File scratchF;
     protected ShortcutWizard wiz;
     private AntProjectCookie project;
     private Element target1;
     protected ShortcutIterator iter;
+    private void mkdir(String path) {
+        new File(scratchF, path.replace('/', File.separatorChar)).mkdirs();
+    }
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        File scratchF = getWorkDir();
+        scratchF = getWorkDir();
+        mkdir("system/Menu/&File");
+        mkdir("system/Menu/&Edit");
+        mkdir("system/Menu/&Build");
+        mkdir("system/Menu/&Build/Other");
+        mkdir("system/Menu/Help");
+        mkdir("system/Toolbars/Build");
+        mkdir("system/Toolbars/Help");
+        mkdir("system/Shortcuts");
+        System.setProperty("SYSTEMDIR", new File(scratchF, "system").getAbsolutePath());
         FileObject scratch = FileUtil.toFileObject(scratchF);
         assertNotNull("have a scratch dir", scratch);
-        FileUtil.createFolder(scratch, "system/Menu/&File");
-        FileUtil.createFolder(scratch, "system/Menu/&Edit");
-        FileUtil.createFolder(scratch, "system/Menu/&Build");
-        FileUtil.createFolder(scratch, "system/Menu/&Build/Other");
-        FileUtil.createFolder(scratch, "system/Menu/Help");
-        FileUtil.createFolder(scratch, "system/Toolbars/Build");
-        FileUtil.createFolder(scratch, "system/Toolbars/Help");
-        FileUtil.createFolder(scratch, "system/Shortcuts");
-        System.setProperty("SYSTEMDIR", new File(scratchF, "system").getAbsolutePath());
         FileObject sfs = Repository.getDefault().getDefaultFileSystem().getRoot();
         FileObject menuFolder = sfs.getFileObject("Menu");
         assertNotNull("have Menu", menuFolder);
@@ -98,7 +142,7 @@ public abstract class ShortcutWizardTestBase extends NbTestCase {
         return true;
     }
     
-    public static final class Repo extends Repository {
+    private static final class Repo extends Repository {
         
         public Repo() throws Exception {
             super(mksystem());
