@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+
+<!--/space/home/ms113234/cvs/beetle/cvsweb/advanced/documents/plans/orion/xml/testspec
+  XML Schema schema document
+  Date:   April 25, 2002
+-->
+
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        xmlns:ts="http://www.netbeans.org/xml/TestSpec"
+        targetNamespace="http://www.netbeans.org/xml/TestSpec"
+        elementFormDefault="unqualified"
+        attributeFormDefault="unqualified">
+
+
+<annotation>
+<documentation xml:lang="en">
+Test Specification schema.
+Copyright 2002 netbeans.org. All rights reserved.
+</documentation>
+</annotation>
+
+<element name="test-spec" type="ts:TestSpecificationType"/>
+<element name="comments"  type="ts:MixedType"/>
+
+<!-- Test specification's root element type -->
+<complexType name="TestSpecificationType">
+    <sequence>
+        <element name="introduction" type="string"/>
+        <element name="suite" type="ts:SuiteType" minOccurs="1" maxOccurs="unbounded"/>
+        <element ref="ts:comments" minOccurs="0"/>
+    </sequence>
+    <attribute name="module" type="string" use="required"/>
+    <attribute name="author" type="string" use="required"/>
+    <attribute name="email" type="anyURI" use="required"/>
+    <attribute name="version" type="string" use="required"/>
+    <attribute name="changed" type="string" use="required"/>
+</complexType>
+
+<complexType name="SuiteType">
+    <sequence>
+        <element name="setup" type="ts:MixedType" minOccurs="0"/>
+        <element name="purpose" type="ts:MixedType"/>
+        <choice minOccurs="0" maxOccurs="unbounded">
+            <element name="suite-case" type="ts:SuiteCaseType"/>
+            <element name="var" type="ts:VariableType"/>
+        </choice>
+        <element ref="ts:comments" minOccurs="0"/>
+    </sequence>
+    <attribute name="suite_id" type="ID" use="required"/>
+    <attribute name="title" type="string" use="required"/>
+</complexType>
+
+<complexType name="MixedType" mixed="true">
+    <choice minOccurs="0" maxOccurs="unbounded">
+        <element name="style" type="ts:StyleType"/>
+        <element name="image" type="ts:ImageType"/>
+        <element name="code" type="ts:CodeType"/>
+        <element name="link" type="ts:LinkType"/>
+        <element name="properties" type="ts:PropertiesType"/>
+        <element name="include" type="ts:IncludeType"/>
+    </choice>
+</complexType>
+
+<complexType name="SuiteCaseType">
+    <simpleContent>
+        <extension base="string">
+            <attribute name="ref" type="NMTOKEN" use="required"/>
+        </extension>
+    </simpleContent>
+</complexType>
+
+<complexType name="VariableType">
+    <sequence>
+        <element name="atr" minOccurs="1" maxOccurs="unbounded">
+            <complexType>
+                <attribute name="ref" type="NMTOKEN"/>
+                <attribute name="value" type="string"/>
+            </complexType>
+        </element>
+    </sequence>
+</complexType>
+
+<complexType name="IncludeType">
+    <attribute name="name" type="NMTOKEN" use="required"/>
+    <attribute name="default" type="string"/>
+</complexType>
+
+<complexType name="LinkType">
+    <simpleContent>
+        <extension base="string">
+            <attribute name="url" type="anyURI" use="required"/>
+            <attribute name="mime" type="string" use="required"/>
+        </extension>
+    </simpleContent>
+</complexType>
+
+<complexType name="StyleType">
+    <simpleContent>
+        <extension base="string">
+            <attribute name="type" use="required">
+                <simpleType>
+                    <restriction base="string">
+                        <enumeration value="menu"/>
+                        <enumeration value="button"/>
+                    </restriction>
+                </simpleType>
+            </attribute>
+        </extension>
+    </simpleContent>
+</complexType>
+
+<complexType name="ImageType">
+    <attribute name="url" type="anyURI" use="required"/>
+    <attribute name="title" type="string"/>
+</complexType>
+
+<complexType name="CodeType">
+<simpleContent>
+<extension base="string">
+<!--attribute name="xml:space" default="preserve">
+<simpleType>
+<restriction base="string">
+<enumeration value="default"/>
+<enumeration value="preserve"/>
+</restriction>
+</simpleType>
+</attribute-->
+<attribute name="lang" type="string"/>
+</extension>
+</simpleContent>
+</complexType>
+
+<complexType name="PropertiesType">
+<sequence>
+<element name="item" minOccurs="0">
+<complexType>
+<attribute name="name" type="string"/>
+<attribute name="value" type="string"/>
+</complexType>
+</element>
+</sequence>
+</complexType>
+
+</schema>
+
