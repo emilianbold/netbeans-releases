@@ -1,0 +1,41 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+ 
+package Templates.JSP_Servlet;           
+
+import javax.servlet.jsp.tagext.*;
+import javax.servlet.jsp.JspWriter;
+import javax.servlet.jsp.JspException;
+
+/** 
+ *
+ * @author  __USER__
+ * @version 
+ */
+
+public class BodyTagHandler extends SimpleTagSupport {
+
+    /**Called by the container to invoke this tag. 
+    * The implementation of this method is provided by the tag library developer,
+    * and handles all tag processing, body iteration, etc.
+    */
+    public void doTag() throws JspException {
+        
+        // TODO: you can output a static text or process the tag body
+        /*
+        JspWriter out=getJspContext().getOut();
+        try {
+            out.print("Hello: ");
+
+            JspFragment f=getJspBody();
+            f.invoke(out);
+
+        } catch (java.io.IOException ex) {
+            throw new JspException(ex.getMessage());
+        }
+        */
+    }
+}
