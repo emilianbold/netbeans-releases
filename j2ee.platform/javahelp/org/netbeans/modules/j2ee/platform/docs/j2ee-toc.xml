@@ -66,41 +66,21 @@
 	   <tocitem text="About Structuring Web Source Files" target="about_struct_webapps" />
 	   <tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
 	   <tocitem text="Upgrading to the J2EE 1.4 Specification" target="upgrade_to_j2ee14" />
-       <tocitem text="JSP Files">
-          <tocitem text="About Creating and Editing JSP Files" target="about_jsp_edit" />
+       <tocitem text="JSP and HTML Files">
+          <tocitem text="About Creating and Editing JSP and HTML Files" target="about_jsp_edit" />
           <tocitem text="About JavaServer Pages Technology" target="about_jsp_technology" />
           <tocitem text="About JSP Syntax" target="about_jsp_syntax" />
-          <tocitem text="Creating a JSP File" target="jsp_create" />
-	  <tocitem text="Editing a JSP File" target="jsp_edit" />
+	  <tocitem text="Creating a JSP File" target="jsp_create" />
+	  <tocitem text="Creating an HTML File" target="html_create" />
+	  <tocitem text="Editing a JSP or HTML File" target="jsp_edit" />
           <tocitem text="Using a Tag Library in a JSP File" target="jsp_usetaglib"/>
 	  <tocitem text="Tomcat Connection Pooling from a JSP Page" target="jsp_connectionpool_tomcat"/>
           <tocitem text="Compiling a JSP File" target="jsp_compile" />
           <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
           <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
           <tocitem text="Running a JSP File" target="jsp_run" />
-       </tocitem> 
-       <tocitem text="Servlets">
-         <tocitem text="About Servlets" target="about_servlet" />
-         <tocitem text="Creating a Servlet" target="servlet_create" />
-	 <tocitem text="Editing a Servlet" target="servlet_edit"/>
-         <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
-         <tocitem text="Adding a Servlet JAR file to a WAR File" target="servlet_addtowar" />
-         <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
-	 <tocitem text="Running a Servlet" target="servlet_run" />
-       </tocitem> 
-       <tocitem text="Filters"> 
-         <tocitem text="About Filters" target="about_filter"  />
-         <tocitem text="Creating a Filter" target="filter_create"/>
-         <tocitem text="Registering a Filter" target="filter_addtodd"/>
-         <tocitem text="Running a Filter" target="filter_run"/>
-      </tocitem> 
-      <tocitem text="Web Application Listeners">
-         <tocitem text="About Web Application Listeners" target="about_listener"  />       					
-         <tocitem text="Creating a Web Application Listener" target="listener_create"/>
-         <tocitem text="Registering a Web Application Listener" target="listener_addtodd"/>
-         <tocitem text="Running a Web Application Listener" target="listener_run"/>
-       </tocitem> 
-      <tocitem text="Tags">
+     </tocitem>
+     <tocitem text="Tags">
 	  <tocitem text="About Tag Libraries" target="about_taglib"/>
 	  <tocitem text="About the JSTL" target="about_jstl" />
       
@@ -131,16 +111,34 @@
           <tocitem text="Creating a New Application with Struts Support" target="framework_struts_create" />
 	  <tocitem text="Adding Struts Support to an Existing Application" target="framework_struts_add" />
       </tocitem>
-      </tocitem>
-      <tocitem text="HTML Files" >      
-	  <tocitem text="Creating an HTML File" target="html_create" />  
       </tocitem> 
-      <tocitem text="Applets" >
+       <tocitem text="Applets" >
               <tocitem text="Creating an Applet" target="applet_create"/>
               <tocitem text="Adding an Applet JAR File to a WAR File" target="applet_addtowar"/>
 	      <tocitem text="Running an Applet" target="applet_run"/>
               <tocitem text="Setting Permissions for an Applet" target="applet_security"/>
-      </tocitem>
+       </tocitem>
+       <tocitem text="Servlets">
+         <tocitem text="About Servlets" target="about_servlet" />
+         <tocitem text="Creating a Servlet" target="servlet_create" />
+	 <tocitem text="Editing a Servlet" target="servlet_edit"/>
+         <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
+         <tocitem text="Adding a Servlet JAR file to a WAR File" target="servlet_addtowar" />
+         <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
+	 <tocitem text="Running a Servlet" target="servlet_run" />
+       </tocitem> 
+       <tocitem text="Filters"> 
+         <tocitem text="About Filters" target="about_filter"  />
+         <tocitem text="Creating a Filter" target="filter_create"/>
+         <tocitem text="Registering a Filter" target="filter_addtodd"/>
+         <tocitem text="Running a Filter" target="filter_run"/>
+      </tocitem> 
+      <tocitem text="Web Application Listeners">
+         <tocitem text="About Web Application Listeners" target="about_listener"  />       					
+         <tocitem text="Creating a Web Application Listener" target="listener_create"/>
+         <tocitem text="Registering a Web Application Listener" target="listener_addtodd"/>
+         <tocitem text="Running a Web Application Listener" target="listener_run"/>
+       </tocitem> 
    </tocitem>
    <tocitem text="Configuring Web Applications" >
 	   <tocitem text="About Configuring Web Applications" target="about_webapp_configure" />
