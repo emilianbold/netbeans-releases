@@ -22,6 +22,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,6 +37,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.HelpCtx;
@@ -69,21 +71,21 @@ class ProjectNode extends AbstractNode {
     private static final String PROJECT_ICON = "org/netbeans/modules/java/j2seproject/ui/resources/projectDependencies.gif";    //NOI18N
     private static final Component CONVERTOR_COMPONENT = new Panel();
 
-    private final Project project;
+    private final AntArtifact antArtifact;
+    private final URI artifactLocation;
     private Image cachedIcon;
 
-    ProjectNode (Project project, UpdateHelper helper,ReferenceHelper refHelper, String classPathId, String entryId) {
-        super (Children.LEAF, Lookups.fixed(new Object[] {
-            project,
-            new JavadocProvider(project),
-            new Removable(helper,refHelper, classPathId, entryId)}));
-        this.project = project;
+    ProjectNode (AntArtifact antArtifact, URI artifactLocation, UpdateHelper helper,ReferenceHelper refHelper, String classPathId, String entryId) {
+        super (Children.LEAF, createLookup (antArtifact, artifactLocation, helper, refHelper, classPathId, entryId));
+        this.antArtifact = antArtifact;
+        this.artifactLocation = artifactLocation;
     }
 
-    public String getDisplayName () {
-        ProjectInformation info = (ProjectInformation) this.project.getLookup().lookup(ProjectInformation.class);
+    public String getDisplayName () {        
+        ProjectInformation info = getProjectInformation();        
         if (info != null) {
-            return info.getDisplayName();
+            return MessageFormat.format(NbBundle.getMessage(ProjectNode.class,"TXT_ProjectArtifactFormat"),
+                    new Object[] {info.getDisplayName(), artifactLocation.toString()});
         }
         else {
             return NbBundle.getMessage (ProjectNode.class,"TXT_UnknownProjectName");
@@ -96,7 +98,7 @@ class ProjectNode extends AbstractNode {
 
     public Image getIcon(int type) {
         if (cachedIcon == null) {
-            ProjectInformation info = (ProjectInformation) this.project.getLookup().lookup(ProjectInformation.class);
+            ProjectInformation info = getProjectInformation();
             if (info != null) {
                 Icon icon = info.getIcon();
                 //XXX: There should be an API for Icon -> Image conversion,
@@ -137,13 +139,40 @@ class ProjectNode extends AbstractNode {
     public Action getPreferredAction () {
         return getActions(false)[0];
     }
+    
+    private ProjectInformation getProjectInformation () {
+        Project p = this.antArtifact.getProject();
+        if (p != null) {
+            return (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+        }
+        return null;
+    }
+    
+    private static Lookup createLookup (AntArtifact antArtifact, URI artifactLocation, 
+            UpdateHelper helper, ReferenceHelper refHelper, String classPathId, String entryId) {
+        Project p = antArtifact.getProject();
+        Object[] content;
+        if (p == null) {
+            content = new Object[1];
+        }
+        else {
+            content = new Object[3];
+            content[1] = new JavadocProvider(antArtifact, artifactLocation);
+            content[2] = p;
+        }
+        content[0] = new Removable(helper,refHelper, classPathId, entryId);        
+        Lookup lkp = Lookups.fixed(content);
+        return lkp;
+    }
 
     private static class JavadocProvider implements ShowJavadocAction.JavadocProvider {
 
-        private final Project project;
+        private final AntArtifact antArtifact;
+        private final URI artifactLocation;
 
-        JavadocProvider (Project project) {
-            this.project = project;
+        JavadocProvider (AntArtifact antArtifact, URI artifactLocation) {
+            this.antArtifact = antArtifact;
+            this.artifactLocation = artifactLocation;
         }
 
 
@@ -158,35 +187,27 @@ class ProjectNode extends AbstractNode {
             if (pageURL == null) {
                 pageURL = ShowJavadocAction.findJavadoc("index.html",urls);
             }
-            ProjectInformation info = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
+            ProjectInformation info = null;
+            Project p = this.antArtifact.getProject ();
+            if (p != null) {
+                info = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+            }
             ShowJavadocAction.showJavaDoc (pageURL, info == null ?
                 NbBundle.getMessage (ProjectNode.class,"TXT_UnknownProjectName") : info.getDisplayName());
         }
         
-        private Set findJavadoc() {
-            AntArtifactProvider provider = (AntArtifactProvider) project.getLookup().lookup(AntArtifactProvider.class);
-            if (provider == null) {
-                return new HashSet();
-            }
-            AntArtifact[] artifacts = provider.getBuildArtifacts();
-            if (artifacts.length==0) {
-                return new HashSet();
-            }
-            File scriptLocation = artifacts[0].getScriptLocation();
-            URI artifactLocations[] = artifacts[0].getArtifactLocations();
+        private Set findJavadoc() {            
+            File scriptLocation = this.antArtifact.getScriptLocation();            
             Set urls = new HashSet();
-            URL artifactURL;
-            for (int i=0; i<artifactLocations.length; i++) {
-                try {
-                    artifactURL = scriptLocation.toURI().resolve(artifactLocations[i]).normalize().toURL();
-                } catch (MalformedURLException mue) {
-                    continue;
-                }
+            try {
+                URL artifactURL = scriptLocation.toURI().resolve(this.artifactLocation).normalize().toURL();
                 if (FileUtil.isArchiveFile(artifactURL)) {
                     artifactURL = FileUtil.getArchiveRoot(artifactURL);
                 }
-                urls.addAll(Arrays.asList(JavadocForBinaryQuery.findJavadoc(artifactURL).getRoots()));
-            }
+                urls.addAll(Arrays.asList(JavadocForBinaryQuery.findJavadoc(artifactURL).getRoots()));                
+            } catch (MalformedURLException mue) {
+                ErrorManager.getDefault().notify (mue);                
+            }                                    
             return urls;
         }
 
