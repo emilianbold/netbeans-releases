@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -30,6 +31,7 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -40,6 +42,7 @@ import org.openide.util.Utilities;
  */
 public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, ChangeListener {
 
+    private final SpecificationVersion JDK_14 = new SpecificationVersion ("1.4");   //NOI18N
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     private JavaTargetChooserPanelGUI gui;
     private WizardDescriptor.Panel bottomPanel;
@@ -72,13 +75,11 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
         return null;
     }
 
-    public boolean isValid() {
-              
+    public boolean isValid() {              
         if (gui == null || gui.getTargetName() == null) {
            setErrorMessage( null );
            return false;
-        }
-        
+        }        
         if ( isPackage ) {
             if ( !isValidPackageName( gui.getTargetName() ) ) {
                 setErrorMessage( "ERR_JavaTargetChooser_InvalidPackage" );
@@ -93,15 +94,15 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
             else if ( !isValidPackageName( gui.getPackageName() ) ) {
                 setErrorMessage( "ERR_JavaTargetChooser_InvalidPackage" );
                 return false;
-            }
+            }            
         }
         
         // check if the file name can be created
         FileObject template = Templates.getTemplate( wizard );
 
         boolean returnValue=true;
-        
-        String errorMessage = canUseFileName (gui.getRootFolder(), gui.getPackageFileName(), gui.getTargetName(), template.getExt ());        
+        FileObject rootFolder = gui.getRootFolder();
+        String errorMessage = canUseFileName (rootFolder, gui.getPackageFileName(), gui.getTargetName(), template.getExt ());        
         if (gui.isShowing ()) {
             setLocalizedErrorMessage (errorMessage);
         }
@@ -113,7 +114,11 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
            if (!bottomPanel.isValid())
                return false;
         }
-        
+        //Only warning, display it only if everything else id OK.
+        String sl = SourceLevelQuery.getSourceLevel(rootFolder);   
+        if (!isPackage && returnValue && gui.getPackageName().length() == 0 && sl != null && JDK_14.compareTo(new SpecificationVersion(sl))<=0) {                
+                setErrorMessage( "ERR_JavaTargetChooser_DefaultPackage" );            
+        }
         return returnValue;
     }
 
