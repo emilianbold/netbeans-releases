@@ -83,13 +83,19 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements NbCusto
     java.awt.GridBagConstraints gridBagConstraints1;
 
       xLabel = new javax.swing.JLabel ();
-      xLabel.setText ("X:");
+      xLabel.setText (null);
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
     jPanel2.add (xLabel, gridBagConstraints1);
 
       xField = new javax.swing.JTextField ();
+      xField.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            updateRectangle (evt);
+          }
+        }
+      );
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -99,13 +105,19 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements NbCusto
     jPanel2.add (xField, gridBagConstraints1);
 
       yLabel = new javax.swing.JLabel ();
-      yLabel.setText ("Y:");
+      yLabel.setText (null);
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
     jPanel2.add (yLabel, gridBagConstraints1);
 
       yField = new javax.swing.JTextField ();
+      yField.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            updateRectangle (evt);
+          }
+        }
+      );
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -115,13 +127,19 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements NbCusto
     jPanel2.add (yField, gridBagConstraints1);
 
       widthLabel = new javax.swing.JLabel ();
-      widthLabel.setText ("Width:");
+      widthLabel.setText (null);
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
     jPanel2.add (widthLabel, gridBagConstraints1);
 
       widthField = new javax.swing.JTextField ();
+      widthField.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            updateRectangle (evt);
+          }
+        }
+      );
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -131,13 +149,19 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements NbCusto
     jPanel2.add (widthField, gridBagConstraints1);
 
       heightLabel = new javax.swing.JLabel ();
-      heightLabel.setText ("Height:");
+      heightLabel.setText (null);
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
     jPanel2.add (heightLabel, gridBagConstraints1);
 
       heightField = new javax.swing.JTextField ();
+      heightField.addActionListener (new java.awt.event.ActionListener () {
+          public void actionPerformed (java.awt.event.ActionEvent evt) {
+            updateRectangle (evt);
+          }
+        }
+      );
 
     gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -184,6 +208,7 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements NbCusto
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/2/99   Ian Formanek    Fixed event handlers
  *  3    Gandalf   1.2         5/31/99  Ian Formanek    Updated to X2 format
  *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
