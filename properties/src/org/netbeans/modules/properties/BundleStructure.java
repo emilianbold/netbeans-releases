@@ -131,6 +131,12 @@ public class BundleStructure extends PropertyChangeSupport {
       throw new InternalError(getClass().getName() +" - Entries not initialized");
   }       
   
+  public String[] getKeys() {
+    if (keyList == null)
+      throw new InternalError(getClass().getName() +" - KeyList not initialized");
+    return (String[])keyList.toArray();
+  }
+  
   /** Retrieves n-th key from the list, indexed from 0 */
   public String getNthKey(int keyIndex) {
     if (keyList == null)

@@ -31,7 +31,7 @@ import org.openide.text.PositionBounds;
 *
 * @author Petr Hamernik, Petr Jiricka
 */
-class StructHandler extends Element /*implements TaskListener*/ {
+public class StructHandler extends Element /*implements TaskListener*/ {
 
   public static final String PROP_PARSE = "parse";
 

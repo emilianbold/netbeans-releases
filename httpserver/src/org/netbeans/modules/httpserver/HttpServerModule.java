@@ -58,7 +58,9 @@ public class HttpServerModule implements ModuleInstall {
   public boolean closing () {
     // stop the server, don't set the running status
     org.openide.util.HttpServer.deregisterServer(HttpServerSettings.OPTIONS);
-    stopHTTPServer();
+    synchronized (HttpServerSettings.OPTIONS) {
+      stopHTTPServer();
+    }  
     return true; // agree to close
   }
 
@@ -153,6 +155,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  18   Gandalf   1.17        7/24/99  Petr Jiricka    
  *  17   Gandalf   1.16        7/3/99   Petr Jiricka    
  *  16   Gandalf   1.15        7/3/99   Petr Jiricka    
  *  15   Gandalf   1.14        6/23/99  Petr Jiricka    

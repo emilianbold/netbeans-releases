@@ -80,7 +80,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   public PropertiesEditorSupport(PropertiesFileEntry entry) {
     super (entry);
     super.setModificationListening(false);
-    setMIMEType ("text/plain");
+    setMIMEType ("text/properties");
     initTimer();
 
     // listen to myself so I can add a listener for changes when the document is loaded
