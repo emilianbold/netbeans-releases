@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.loaders.form;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String XML_AUX_VALUE = "AuxValue";
   
   public static final String ATTR_FORM_VERSION = "version";
-  public static final String ATTR_FORM_TYPE = "version";
+  public static final String ATTR_FORM_TYPE = "type";
   public static final String ATTR_COMPONENT_NAME = "name";
   public static final String ATTR_COMPONENT_CLASS = "class";
   public static final String ATTR_PROPERTY_NAME = "name";
@@ -64,6 +65,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String ATTR_EVENT_HANDLER = "handler";
   public static final String ATTR_AUX_NAME = "name";
   public static final String ATTR_AUX_VALUE = "value";
+  public static final String ATTR_LAYOUT_CLASS = "class";
   public static final String ATTR_CONSTRAINT_LAYOUT = "layoutClass";
   public static final String ATTR_CONSTRAINT_VALUE = "value";
 
@@ -102,10 +104,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @exception IOException if any problem occured when loading the form
   */
   public FormManager2 loadForm (FormDataObject formObject) throws IOException {
-/*    FileObject formFile = formObject.getFormEntry ().getFile ();
+    FileObject formFile = formObject.getFormEntry ().getFile ();
     org.w3c.dom.Document doc = org.openide.loaders.XMLDataObject.parse (formFile.getURL ());
     org.w3c.dom.Element mainElement = doc.getDocumentElement ();
-    walkTree (mainElement, "");
+//    walkTree (mainElement, "");
 // A. Do various checks
 
   // 1. check the top-level element name
@@ -144,16 +146,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
     processNonVisuals (mainElement, formManager2);
     processContainer (mainElement, formManager2, topComp, null);
 
-    return formManager2;*/
-return null;
+    return formManager2;
   }
 
-/*  private boolean processNonVisuals (org.w3c.dom.Node node, FormManager2 formManager2) {
-    org.w3c.dom.Node nonVisualsNode = findNode (node, XML_NON_VISUAL_COMPONENTS);
+  private boolean processNonVisuals (org.w3c.dom.Node node, FormManager2 formManager2) {
+    org.w3c.dom.Node nonVisualsNode = findSubNode (node, XML_NON_VISUAL_COMPONENTS);
     org.w3c.dom.NodeList childNodes = (nonVisualsNode == null) ? null : nonVisualsNode.getChildNodes ();
     ArrayList list = new ArrayList ();
     if (childNodes != null) {
-      for (int i = 0; i < childNodes.length (); i++) {
+      for (int i = 0; i < childNodes.getLength (); i++) {
         if (childNodes.item (i).getNodeType () == org.w3c.dom.Node.TEXT_NODE) return true; // ignore text nodes
         if (XML_COMPONENT.equals (childNodes.item (i).getNodeName ())) {
           RADComponent comp = new RADComponent ();
@@ -169,21 +170,23 @@ return null;
       }
     }
 
-    RADComponent[] nonVisualsComps = new RADComponent[list.size ()];
-    list.copyInto (nonVisualComps);
-    formManager2.initNonVisualComponents (nonVisualsComps);
+    RADComponent[] nonVisualComps = new RADComponent[list.size ()];
+    list.toArray (nonVisualComps);
+    formManager2.initNonVisualComponents (nonVisualComps);
+    return true;
   }
 
   private boolean processComponent (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
+    System.out.println ("ProcessComponent: "+node.getNodeName ());
     comp.initialize (formManager2);
-    NamedNodeMap attributes = node.getAttributes ();
-    String className = attributes.getNamedItem (ATTR_COMPONENT_CLASS);
+    org.w3c.dom.NamedNodeMap attributes = node.getAttributes ();
+    String className = attributes.getNamedItem (ATTR_COMPONENT_CLASS).getNodeValue (); // [PENDING - survive non-existent attr]
     Class compClass = null;
     try {
       compClass = TopManager.getDefault ().systemClassLoader ().loadClass (className);
     } catch (Exception e) {
     }
-    String compName = attributes.getNamedItem (ATTR_COMPONENT_NAME);
+    String compName = attributes.getNamedItem (ATTR_COMPONENT_NAME).getNodeValue (); // [PENDING - survive non-existent attr]
     comp.setComponent (compClass);
     comp.setName (compName);
     formManager2.getVariablesPool ().createVariable (compName, compClass);
@@ -191,24 +194,74 @@ return null;
     return true;
   }
 
-  private boolean processContainer (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
-    processComponent (comp);
+  private boolean processVisualComponent (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
+    processComponent (node, formManager2, comp, parentContainer);
+    return true;
+  }
 
-    if (comp instanceof RADVisualComponent) {
-      processVisualComponent (comp);
+  private boolean processContainer (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
+    if (!(comp instanceof FormContainer)) {
+      if (comp instanceof RADVisualComponent) {
+        processVisualComponent (node, formManager2, comp, parentContainer);
+      } else {
+        processComponent (node, formManager2, comp, parentContainer);
+      }
     }
 
-    if (comp instanceof ComponentsContainer) {
+    if (comp instanceof ComponentContainer) {
       org.w3c.dom.Node subCompsNode = findSubNode (node, XML_SUB_COMPONENTS);
-      
+      org.w3c.dom.NodeList children = subCompsNode.getChildNodes ();
+      if (children != null) {
+        ArrayList list = new ArrayList ();
+        for (int i = 0; i < children.getLength (); i++) {
+          org.w3c.dom.Node componentNode = children.item (i);
+          if (componentNode.getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
+
+          if (XML_COMPONENT.equals (componentNode.getNodeName ())) {  // [PENDING - visual x non-visual]
+            RADVisualComponent newComp = new RADVisualComponent ();
+            processVisualComponent (componentNode, formManager2, newComp, (ComponentContainer)comp);
+            list.add (newComp);
+          } else {
+            RADVisualContainer newComp = new RADVisualContainer ();
+            processContainer (componentNode, formManager2, newComp, (ComponentContainer)comp);
+            list.add (newComp);
+          }
+        }
+        RADComponent[] childComps = new RADComponent[list.size ()];
+        list.toArray (childComps);
+        ((ComponentContainer)comp).initSubComponents (childComps);
+      } else {
+        ((ComponentContainer)comp).initSubComponents (new RADComponent[0]);
+      }
     }
 
     if (comp instanceof RADVisualContainer) {
       org.w3c.dom.Node layoutNode = findSubNode (node, XML_LAYOUT);
+      org.w3c.dom.NamedNodeMap attributes = layoutNode.getAttributes ();
+      String className = attributes.getNamedItem (ATTR_LAYOUT_CLASS).getNodeValue (); // [PENDING - survive non-existent attr]
+      try {
+        DesignLayout dl = (DesignLayout)TopManager.getDefault ().systemClassLoader ().loadClass (className).newInstance ();
+        ((RADVisualContainer)comp).setDesignLayout (dl); // [PENDING]
+      } catch (Exception e) {
+        return false; // [PENDING - notify]
+      }
     }
+    return true;
   }
 
-  private boolean processNode (org.w3c.dom.Node node, RADComponent component) {
+  private org.w3c.dom.Node findSubNode (org.w3c.dom.Node node, String name) {
+    org.w3c.dom.NodeList children = node.getChildNodes ();
+    if (children != null) {
+      for (int i = 0; i < children.getLength (); i++) {
+        if (name.equals (children.item (i).getNodeName ())) {
+          return children.item (i);
+        }
+      }
+    }
+    return null;
+  }
+
+/*  private boolean processNode (org.w3c.dom.Node node, RADComponent component) {
     if (node.getNodeType () == org.w3c.dom.Node.TEXT_NODE) return true; // ignore text nodes
     if (XML_NON_VISUAL_COMPONENTS.equals (node.getNodeName ())) {
       nonVisualsPresent = true;
@@ -219,7 +272,8 @@ return null;
       loadNonVisual (node);
     } else if (false) { //[PENDING]
     }
-  }
+    return true;
+  } */
 
   private void walkTree (org.w3c.dom.Node node, String indent) {
     if (node.getNodeType () == org.w3c.dom.Node.TEXT_NODE) return; // ignore text nodes
@@ -311,7 +365,13 @@ return null;
     if (container instanceof RADVisualContainer) {
       saveVisualComponent ((RADVisualComponent)container, buf, indent);
       buf.append ("\n");
-      buf.append (indent); addElementOpen (buf, XML_LAYOUT);
+      buf.append (indent);
+      addElementOpenAttr (
+          buf, 
+          XML_LAYOUT, 
+          new String[] { ATTR_LAYOUT_CLASS }, 
+          new String[] { ((RADVisualContainer)container).getDesignLayout ().getClass ().getName () }
+      );
       // [PENDING]
       buf.append (indent); addElementClose (buf, XML_LAYOUT);
     } else {
@@ -630,6 +690,7 @@ return null;
 
 /*
  * Log
+ *  11   Gandalf   1.10        7/12/99  Ian Formanek    First cut of saving
  *  10   Gandalf   1.9         7/11/99  Ian Formanek    hex encoding is 2-char 
  *       for all bytes
  *  9    Gandalf   1.8         7/11/99  Ian Formanek    
