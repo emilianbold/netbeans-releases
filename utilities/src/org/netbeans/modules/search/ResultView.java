@@ -412,6 +412,9 @@ final class ResultView extends TopComponent
         root.setDisplayName(getInitialRootNodeText());
         explorerManager.setRootContext(root);
         selectAndActivateNode(root);
+        if (lastSearchNodes == null) {
+            btnModifySearch.setEnabled(false);
+        }
     }
 
     /* overridden */
@@ -491,6 +494,7 @@ final class ResultView extends TopComponent
         searchInProgress = true;
         updateShowAllDetailsBtn();
         updateSortUnsortBtns();
+        setStateFromAWT(btnModifySearch, true);
         setStateFromAWT(btnStop, true);
     }
     
@@ -725,15 +729,10 @@ final class ResultView extends TopComponent
         Node[] nodesToSearch;
         List searchTypes;
         
-        if (lastSearchNodes != null) {
-            nodesToSearch = lastSearchNodes;
-            searchTypes = lastEnabledSearchTypes;
-        } else {
-            Node repositoryNode = RepositoryNodeFactory.getDefault()
-                                  .repository(DataFilter.ALL);
-            nodesToSearch = new Node[] {repositoryNode};
-            searchTypes = SearchPerformer.getTypes(nodesToSearch);
-        }
+        assert (lastSearchNodes != null);
+        nodesToSearch = lastSearchNodes;
+        searchTypes = lastEnabledSearchTypes;
+            
         /*
         if (resultModel != null) {
             nodesToSearch = resultModel.getSearchGroup().getSearchRoots();
