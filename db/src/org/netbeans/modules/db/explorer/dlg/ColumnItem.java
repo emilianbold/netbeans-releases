@@ -115,20 +115,25 @@ public class ColumnItem extends Hashtable {
         return get(pname);
     }
 
-    public void setProperty(String pname, Object value)
-    {
-        if (pname == null) return;
+    public void setProperty(String pname, Object value) {
+        if (pname == null)
+            return;
+        
         Object old = get(pname);
         if (old != null) {
             Class oldc = old.getClass();
-            if (old.equals(value)) return;
+            if (old.equals(value))
+                return;
 
             try {
-                if (!oldc.equals(value.getClass())) {
-                    if (oldc.equals(Integer.class)) value = new Integer((String)value);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+                if (!oldc.equals(value.getClass()))
+                    if (oldc.equals(Integer.class))
+                        if ("".equals((String) value))
+                            value = new Integer(0);
+                        else
+                            value = Integer.valueOf((String) value);
+            } catch (NumberFormatException e) {
+                //PENDING                
             }
         }
 
@@ -141,14 +146,20 @@ public class ColumnItem extends Hashtable {
         return (String)get(NAME);
     }
 
-    public TypeElement getType()
-    {
-        return (TypeElement)get(TYPE);
+    public TypeElement getType() {
+        return (TypeElement) get(TYPE);
     }
 
-    public int getSize()
-    {
-        return ((Integer)get(SIZE)).intValue();
+    public int getSize() {
+        Object size = get(SIZE);
+        
+        if (size instanceof String) {
+            if ("".equals(size))
+                size = "0";
+            return Integer.valueOf((String) size).intValue();
+        }
+        
+        return ((Integer) size).intValue();
     }
 
     public boolean isPrimaryKey()
