@@ -22,7 +22,7 @@ import org.netbeans.spi.lexer.javacc.LexerInputCharStream;
 import org.netbeans.spi.lexer.javacc.TokenMgrError;
 
 /**
- * Wrapper around generated java token manager
+ * Wrapper around generated token manager
  *
  * @author Miloslav Metelka
  * @version 1.00
