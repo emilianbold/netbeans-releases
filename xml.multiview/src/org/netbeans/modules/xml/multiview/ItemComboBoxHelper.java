@@ -13,11 +13,9 @@
 
 package org.netbeans.modules.xml.multiview;
 
-import javax.accessibility.AccessibleContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collections;
 
 /**
  * The class simplifies use of a combo box to show/set value of an item
@@ -62,6 +60,7 @@ public abstract class ItemComboBoxHelper implements ActionListener {
 
     /**
      * Combo box getter
+     *
      * @return handled combo box
      */
     public JComboBox getComboBox() {
@@ -71,9 +70,7 @@ public abstract class ItemComboBoxHelper implements ActionListener {
     /**
      * Retrieves the text value selected in the combo box.
      *
-     * @return an accessibleName property of the AccessibleContext object related
-     *         to the button representing the selected option. If the accessibleName property
-     *         is null, a text property of the button is used instead.
+     * @return selected item of the combo box
      */
     public String getValue() {
         return (String) comboBox.getSelectedItem();
