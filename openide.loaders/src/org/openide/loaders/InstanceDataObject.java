@@ -1375,7 +1375,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                 me.name = name;
                 me.create = create;
 
-                DataObjectPool.getPOOL().runAtomicAction (folder.getPrimaryFile(), me);
+                DataObjectPool.getPOOL().runAtomicActionSimple (folder.getPrimaryFile(), me);
                 me.mi = null;
                 me.folder = null;
                 me.instance = null;
