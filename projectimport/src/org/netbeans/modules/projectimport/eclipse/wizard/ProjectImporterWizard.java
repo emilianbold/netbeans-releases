@@ -47,7 +47,7 @@ public final class ProjectImporterWizard {
         wizardDescriptor.setTitle(
                 ProjectImporterWizard.getMessage("CTL_WizardTitle")); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
-        dialog.show();
+        dialog.setVisible(true);
         dialog.toFront();
         cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {

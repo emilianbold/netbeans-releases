@@ -63,7 +63,8 @@ public final class ClassPathEntry {
         if ("output".equals(rawType)) {
             this.type = TYPE_OUTPUT;
         } else if ("src".equals(rawType)) {
-            if (!isRawPathRelative()) {
+            // raw path for project entries starts with slash (on all platforms)
+            if (rawPath.startsWith("/")) {
                 this.type = TYPE_PROJECT;
             } else {
                 this.type = TYPE_SOURCE;
@@ -85,7 +86,6 @@ public final class ClassPathEntry {
             this.type = TYPE_UNKNOWN;
         }
     }
-    
     
     Type getType() {
         return type;
