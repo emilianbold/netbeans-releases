@@ -13,4 +13,4 @@ Class-Path: ext/ant-1.4.1.jar ext/ant-optional-1.4.1.jar docs/ant-manual.zip
 
 Name: org/apache/tools/ant/module/loader/AntProjectDataLoader.class
 OpenIDE-Module-Class: Loader
-
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
