@@ -314,9 +314,10 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             //??? it may be caused by wrong user XML document
             ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);           
             if (emgr != null) {
-                emgr.log(NbBundle.getMessage(XMLMIMEComponent.class, "W-001", fo, new Integer(exception.getLineNumber()))); //NOI18N
-                emgr.log(NbBundle.getMessage(XMLMIMEComponent.class, "W-002"));  //NOI18N
-                emgr.notify(emgr.INFORMATIONAL, exception);  
+                String msg = NbBundle.getMessage(XMLMIMEComponent.class, "W-001", fo, new Integer(exception.getLineNumber())); //NOI18N
+                msg += "\n" + NbBundle.getMessage(XMLMIMEComponent.class, "W-002");  //NOI18N
+                emgr.annotate(exception, msg);
+                emgr.notify(emgr.INFORMATIONAL, exception);
             }
 
             this.state = ERROR;
