@@ -14,6 +14,8 @@
 package com.netbeans.developer.impl;
 
 import java.util.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.*;
@@ -469,6 +471,15 @@ public final class LoaderPoolNode extends AbstractNode {
     /** Update the the nodes */
     public void update () {
       setKeys (loaders);
+      
+      Iterator it = loaders.iterator ();
+      while (it.hasNext ()) {
+        DataLoader l = (DataLoader)it.next ();
+        
+        // so the pool is there only once
+        l.removePropertyChangeListener (loaderPool);
+        l.addPropertyChangeListener (loaderPool);
+      }
     }
 
     /** Creates new node for the loader.
@@ -492,11 +503,9 @@ public final class LoaderPoolNode extends AbstractNode {
   * can be obtained via LoaderPoolNode.getNbLoaderPool() call.
   * Delegates its work to the outer class LoaderPoolNode.
   */
-  public static final class NbLoaderPool extends DataLoaderPool {
-    NbLoaderPool () {
-      super();
-    }
-
+  public static final class NbLoaderPool extends DataLoaderPool 
+  implements PropertyChangeListener {
+    
     /** Enumerates all loaders. Loaders are taken from children
     * structure of LoaderPoolNode. */
     protected Enumeration loaders () {
@@ -514,6 +523,18 @@ public final class LoaderPoolNode extends AbstractNode {
       return new ArrayEnumeration (loadersArray);
     }
 
+    /** Listener to property changes.
+    */
+    public void propertyChange (PropertyChangeEvent ev) {
+      Thread t = new Thread ("Data Loader Change Notification " + ev.getSource ()) {
+        public void run () {
+          superFireChangeEvent (new ChangeEvent (this));
+        }
+      };
+      t.setPriority (Thread.MIN_PRIORITY);
+      t.start ();
+    }
+    
     /** Fires change event to all listeners
     * (Delegates all work to its superclass)
     * Accessor for inner classes only.
@@ -573,6 +594,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  25   Gandalf   1.24        9/28/99  Jaroslav Tulach Changes in loader pool 
+*       are reflected in repository.
 *  24   Gandalf   1.23        8/30/99  Jaroslav Tulach Notification of change of
 *       loaders in different thread.
 *  23   Gandalf   1.22        7/8/99   Jesse Glick     Context help.
