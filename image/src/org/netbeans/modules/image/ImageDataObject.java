@@ -19,12 +19,13 @@ import java.io.*;
 import java.net.URL;
 
 import org.openide.*;
+import org.openide.actions.OpenAction;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
-import org.openide.windows.*;
-import org.openide.actions.OpenAction;
-import org.openide.util.actions.*;
 import org.openide.nodes.*;
+import org.openide.util.actions.*;
+import org.openide.util.HelpCtx;
+import org.openide.windows.*;
 
 
 /** 
@@ -40,7 +41,7 @@ public class ImageDataObject extends MultiDataObject {
     private static final String IMAGE_ICON_BASE = "org/netbeans/modules/image/imageObject"; // NOI18N
 
     /** Helper variable. Speeds up <code>DataObject</code> recognition. */
-    private boolean shouldInitCookieSet = true;
+    private transient boolean shouldInitCookieSet = true;
     
     
     /** Constructor.
@@ -56,14 +57,14 @@ public class ImageDataObject extends MultiDataObject {
     /** Help context for this object.
     * @return the help context
     */
-    public org.openide.util.HelpCtx getHelpCtx () {
-        return new org.openide.util.HelpCtx (ImageDataObject.class);
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ImageDataObject.class);
     }
 
     /** Get a URL for the image.
     * @return the image url
     */
-    java.net.URL getImageURL() {
+    URL getImageURL() {
         try {
             return getPrimaryFile().getURL();
         } catch (FileStateInvalidException ex) {
