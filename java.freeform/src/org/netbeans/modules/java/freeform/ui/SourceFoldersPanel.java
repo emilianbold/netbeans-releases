@@ -65,6 +65,8 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         testFoldersModel = new SourcesModel(true);
         testFolders.setModel(testFoldersModel);
         testFolders.getSelectionModel().addListSelectionListener(this);
+        sourceFolders.getTableHeader().setReorderingAllowed(false);
+        testFolders.getTableHeader().setReorderingAllowed(false);
         initSourceLevel();
         updateColumnWidths();
         jLabel1.setVisible(isWizard);
