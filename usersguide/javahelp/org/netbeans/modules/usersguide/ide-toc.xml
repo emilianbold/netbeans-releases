@@ -60,6 +60,7 @@
     <tocitem text="Working with Version Control" target="vcs.overview" />
     <tocitem text="VCS Tasks: Quick Reference" target="vcs.quickref" />
     <tocitem text="Using Version Control with the IDE" target="vcs.usingvcs" />
+    <tocitem text="Using VCS with IDE Projects" target="vcs.project-system" />
     <tocitem text="Setting Up VCS" target="vcs.repositorysetup" />
     <tocitem text="Checking Out Files with CVS" target="vcs.checkout" />
     <tocitem text="Comparing File Revisions" target="vcs.diff" />
