@@ -99,11 +99,12 @@ final class NbKeymap implements Keymap {
   }
 
   public KeyStroke[] getKeyStrokesForAction(Action a) {
-    if (actions == null) {
-      buildReverseMapping ();
+    Map localActions = actions;
+    if (localActions == null) {
+      localActions = buildReverseMapping ();
     }
 
-    List strokes = (List)actions.get (a);
+    List strokes = (List)localActions.get (a);
     if (strokes != null) {
       return (KeyStroke[])strokes.toArray(new KeyStroke[strokes.size ()]);
     } else {
@@ -111,7 +112,7 @@ final class NbKeymap implements Keymap {
     }
   }
 
-  private void buildReverseMapping () {
+  private Map buildReverseMapping () {
     Map localActions = actions = new HashMap ();
     
     synchronized (this) {
@@ -129,6 +130,8 @@ final class NbKeymap implements Keymap {
         keysForAction.add (curKey);
       }
     }
+    
+    return localActions;
   }
   
   public synchronized boolean isLocallyDefined(KeyStroke key) {
@@ -193,6 +196,7 @@ final class NbKeymap implements Keymap {
 
 /*
 * Log
+*  11   src-jtulach1.10        3/8/00   Jaroslav Tulach Proper synchronization.
 *  10   src-jtulach1.9         1/13/00  Jaroslav Tulach I18N
 *  9    src-jtulach1.8         1/5/00   Ian Formanek    Removed obsoleted field
 *  8    src-jtulach1.7         12/21/99 Ian Formanek    Optimized adding multiple
