@@ -616,7 +616,7 @@ public class EjbJarProjectProperties {
             ArrayList /*File*/ dirs = new ArrayList ();
             getFilesForItem (item, files, dirs);
             String key;
-            if (files.size() > 0) {
+            if (files.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getReference() == null ? item.getRaw() : item.getReference();
                 for (int i = 0; i < files.size(); i++) {
                     File f = (File) files.get(i);
@@ -625,7 +625,7 @@ public class EjbJarProjectProperties {
                     exLibs.remove(key);
                 }
             }
-            if (dirs.size() > 0) {
+            if (dirs.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getReference() == null ? item.getRaw() : item.getReference();
                 for (int i = 0; i < dirs.size(); i++) {
                     File f = (File) dirs.get(i);

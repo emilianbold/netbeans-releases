@@ -501,18 +501,35 @@ is divided into following sections:
                         <xsl:value-of select="."/>
                     </xsl:variable>
                     <xsl:if test="//ejbjarproject3:included-library[@files]">
-                        <xsl:call-template name="copyIterateFiles">
-                            <xsl:with-param name="files" select="@files"/>
-                            <xsl:with-param name="target" select="'${build.classes.dir}'"/>
-                            <xsl:with-param name="libfile" select="$included.prop.name"/>
-                        </xsl:call-template>
+                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
+                            <xsl:call-template name="copyIterateFiles">
+                                <xsl:with-param name="files" select="@files"/>
+                                <xsl:with-param name="target" select="'${build.classes.dir}'"/>
+                                <xsl:with-param name="libfile" select="$included.prop.name"/>
+                            </xsl:call-template>
+                        </xsl:if>
+                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
+                            <xsl:variable name="target" select="'${build.classes.dir}'"/>
+                            <xsl:variable name="libfile" select="concat('${',$included.prop.name,'}')"/>
+                            <copy file="{$libfile}" todir="{$target}"/>
+                        </xsl:if>
+                        
                     </xsl:if>
                     <xsl:if test="//ejbjarproject3:included-library[@dirs]">
-                        <xsl:call-template name="copyIterateDirs">
-                            <xsl:with-param name="files" select="@dirs"/>
-                            <xsl:with-param name="target" select="'${build.classes.dir}'"/>
-                            <xsl:with-param name="libfile" select="$included.prop.name"/>
-                        </xsl:call-template>
+                        <xsl:if test="(@dirs &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
+                            <xsl:call-template name="copyIterateDirs">
+                                <xsl:with-param name="files" select="@dirs"/>
+                                <xsl:with-param name="target" select="'${build.classes.dir}'"/>
+                                <xsl:with-param name="libfile" select="$included.prop.name"/>
+                            </xsl:call-template>
+                        </xsl:if>
+                        <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
+                            <xsl:variable name="target" select="'${build.classes.dir}'"/>
+                            <xsl:variable name="libfile" select="concat('${',$included.prop.name,'}')"/>
+                            <copy todir="{$target}">
+                                <fileset dir="{$libfile}" includes="**/*"/>
+                            </copy>
+                      </xsl:if>
                     </xsl:if>
                 </xsl:for-each>   
             </target> 
@@ -525,24 +542,48 @@ is divided into following sections:
                     <xsl:variable name="base.prop.name">
                         <xsl:value-of select="concat('included.lib.', $included.prop.name, '')"/>
                     </xsl:variable>
-                    <basename>
-                        <xsl:attribute name="property"><xsl:value-of select="$base.prop.name"/></xsl:attribute>
-                        <xsl:attribute name="file">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
-                    </basename>
-                     
                     <xsl:if test="//ejbjarproject3:included-library[@files]">
-                        <xsl:call-template name="copyIterateFiles">
+                      <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
+                        <xsl:call-template name="manifestBasenameIterateFiles">
+                            <xsl:with-param name="property" select="$base.prop.name"/>
                             <xsl:with-param name="files" select="@files"/>
-                            <xsl:with-param name="target" select="'${dist.ear.dir}'"/>
                             <xsl:with-param name="libfile" select="$included.prop.name"/>
                         </xsl:call-template>
+                      </xsl:if>
+                      <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
+                            <xsl:variable name="libfile" select="concat('${',$included.prop.name,'}')"/>
+                            <basename property="{$base.prop.name}" file="{$libfile}"/>
+                      </xsl:if>
+                    </xsl:if>
+                    <xsl:if test="//ejbjarproject3:included-library[@files]">
+                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
+                            <xsl:call-template name="copyIterateFiles">
+                                <xsl:with-param name="files" select="@files"/>
+                                <xsl:with-param name="target" select="'${dist.ear.dir}'"/>
+                                <xsl:with-param name="libfile" select="$included.prop.name"/>
+                            </xsl:call-template>
+                        </xsl:if>
+                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
+                            <xsl:variable name="target" select="'${dist.ear.dir}'"/>
+                            <xsl:variable name="libfile" select="concat('${',$included.prop.name,'}')"/>
+                            <copy file="{$libfile}" todir="{$target}"/>
+                        </xsl:if>
                     </xsl:if>
                     <xsl:if test="//ejbjarproject3:included-library[@dirs]">
-                        <xsl:call-template name="copyIterateDirs">
-                            <xsl:with-param name="files" select="@dirs"/>
-                            <xsl:with-param name="target" select="'${dist.ear.dir}'"/>
-                            <xsl:with-param name="libfile" select="$included.prop.name"/>
-                        </xsl:call-template>
+                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
+                            <xsl:call-template name="copyIterateDirs">
+                                <xsl:with-param name="files" select="@dirs"/>
+                                <xsl:with-param name="target" select="'${dist.ear.dir}'"/>
+                                <xsl:with-param name="libfile" select="$included.prop.name"/>
+                            </xsl:call-template>
+                        </xsl:if>
+                        <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
+                            <xsl:variable name="target" select="'${dist.ear.dir}'"/>
+                            <xsl:variable name="libfile" select="$included.prop.name"/>
+                            <copy todir="{$target}">
+                                <fileset dir="{$libfile}" includes="**/*"/>
+                            </copy>
+                      </xsl:if>
                     </xsl:if>
                 </xsl:for-each>   
                 
@@ -553,10 +594,21 @@ is divided into following sections:
                             <xsl:attribute name="value">
                                 <xsl:for-each select="//ejbjarproject3:included-library">
                                     <xsl:variable name="base.prop.name">
-                                        <xsl:value-of select="concat('${included.lib.', ., '}')"/>
+                                        <xsl:value-of select="concat('included.lib.', .)"/>
                                     </xsl:variable>
-                                    <xsl:if test="position()>1"><xsl:text> </xsl:text></xsl:if>
-                                    <xsl:value-of select="$base.prop.name"/>
+                                    <xsl:variable name="included.prop.name">
+                                        <xsl:value-of select="."/>
+                                    </xsl:variable>
+                                    <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
+                                        <xsl:call-template name="manifestPrintEntriesIterateFiles">
+                                            <xsl:with-param name="property" select="$base.prop.name"/>
+                                            <xsl:with-param name="files" select="@files"/>
+                                            <xsl:with-param name="libfile" select="$included.prop.name"/>
+                                        </xsl:call-template>
+                                    </xsl:if>
+                                    <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
+                                        <xsl:text>${</xsl:text><xsl:value-of select="$base.prop.name"/><xsl:text>} </xsl:text>
+                                    </xsl:if>
                                 </xsl:for-each>  
                             </xsl:attribute>
                          </attribute>
@@ -1262,6 +1314,40 @@ to simulate
             </xsl:for-each>						
     </xsl:template>
 
+    <xsl:template name="manifestBasenameIterateFiles" >
+            <xsl:param name="property"/>
+            <xsl:param name="files" /><!-- number of files in the libfile property -->
+            <xsl:param name="libfile"/>
+            <xsl:if test="$files &gt; 0">
+                <xsl:variable name="fileNo" select="$files+(-1)"/>
+                <xsl:variable name="lib" select="concat('${',$libfile,'.libfile.',$files,'}')"/>
+                <xsl:variable name="propertyName" select="concat($property, '.', $fileNo+1)"/>
+                <basename property="{$propertyName}" file="{$lib}"/>
+                <xsl:call-template name="manifestBasenameIterateFiles">
+                    <xsl:with-param name="files" select="$fileNo"/>
+                    <xsl:with-param name="libfile" select="$libfile"/>
+                    <xsl:with-param name="property" select="$property"/>
+                </xsl:call-template>
+            </xsl:if>
+        </xsl:template>
+    
+     <xsl:template name="manifestPrintEntriesIterateFiles" >
+            <xsl:param name="property"/>
+            <xsl:param name="files" /><!-- number of files in the libfile property -->
+            <xsl:param name="libfile"/>
+            <xsl:if test="$files &gt; 0">
+                <xsl:variable name="fileNo" select="$files+(-1)"/>
+                <xsl:variable name="lib" select="concat('${',$libfile,'.libfile.',$files,'}')"/>
+                <xsl:variable name="propertyName" select="concat($property, '.', $fileNo+1)"/>
+                <xsl:text>${</xsl:text><xsl:value-of select="$propertyName"/><xsl:text>} </xsl:text>
+                <xsl:call-template name="manifestPrintEntriesIterateFiles">
+                    <xsl:with-param name="files" select="$fileNo"/>
+                    <xsl:with-param name="libfile" select="$libfile"/>
+                    <xsl:with-param name="property" select="$property"/>
+                </xsl:call-template>
+            </xsl:if>
+        </xsl:template>
+    
     <xsl:template name="copyIterateFiles" >
         <xsl:param name="files" />
         <xsl:param name="target"/>
