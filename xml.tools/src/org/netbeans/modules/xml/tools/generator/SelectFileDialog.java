@@ -167,7 +167,8 @@ public class SelectFileDialog extends JPanel {
             fs.runAtomicAction (new FileSystem.AtomicAction () {
                 public void run () throws IOException {
 
-                    if ( tempFile.isVirtual() ) {
+                    if ( ( tempFile != null ) &&
+                         tempFile.isVirtual() ) {
                         tempFile.delete();
                     }
                     folder.createData (newName, ext);                    
