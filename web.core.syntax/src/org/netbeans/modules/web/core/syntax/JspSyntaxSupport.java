@@ -679,12 +679,15 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             attr = (String[])directiveTagFileData.get("attribute"); // NOI18N
             TagAttributeInfo[] attributeAttrInfos = new TagAttributeInfo [attr.length];
             for (int i = 0; i < attr.length; i++)
-                attributeAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
+                if (attr[i].equals("name")) // NOI18N
+                    attributeAttrInfos[i] = new TagAttributeInfo (attr[i], true, "",  false);
+                else 
+                    attributeAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
             
             attr = (String[])directiveTagFileData.get("variable");  // NOI18N
             TagAttributeInfo[] variableAttrInfos = new TagAttributeInfo [attr.length];
             for (int i = 0; i < attr.length; i++)
-                variableAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
+               variableAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
             
             xmlTagFileTagDatas = new TagInfo[] {
                 new TagInfo ("directive.tag", null, TagInfo.BODY_CONTENT_EMPTY, "", // NOI18N
