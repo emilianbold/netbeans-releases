@@ -753,12 +753,15 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * should be GCed
      */
     public static void assertGC(String text, java.lang.ref.Reference ref) {
+        ArrayList alloc = new ArrayList ();
+        int size = 100000;
         for (int i = 0; i < 10; i++) {
             if (ref.get() == null) {
                 return;
             }
             System.gc();
             System.runFinalization();
+            alloc.add (new byte[size *= 2]);
         }
         fail(text + " " + ref.get());
     }
