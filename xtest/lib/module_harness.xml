@@ -39,9 +39,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- nbjunit library home -->
     <property name="nbjunit.home" value="${xtest.home}/lib"/>
     
-    <!-- XTest ide plugin ant script name - mostly for compatibility reason -->
-    <property name="xtest.ide.plugin.ant.script" value="${xtest.home}/plugins/ide/lib/ide_plugin_targets.xml"/>
-
 
     <!-- These in/excludes will be added to xtest.pattern    -->
     <!-- if you want to use these properties, you should use -->
@@ -125,25 +122,13 @@ Microsystems, Inc. All Rights Reserved.
         
         <!-- initialize plugins -->
         <property name="xtest.preferred.plugins" value=""/>
-        <pluginsInit pluginsHome="${xtest.home}/plugins" preferredPlugins="${xtest.preferred.plugins}"/>
-        
-        
-        <!-- check whether XTest ide-plugin is available  !!! TO BE REMOVED -->
-        <available file="${xtest.ide.plugin.ant.script}" property="xtest.ide.plugin.available"/>
-        
-        
-                
+        <pluginsInit pluginsHome="${xtest.home}/plugins" preferredPlugins="${xtest.preferred.plugins}"/>                      
     </target>
     
     <target name="prepare-xtest">
         <ant dir="${xtest.home}/lib" antfile="harness.xml" target="buildxtest"/>
     </target>
     
-    <target name="extra-classpath" if="xtest.extra.jars">
-        <jar-finder dirs="${xtest.extra.jars.path}" files="${xtest.extra.jars}" 
-                   property="test.extra.classpath"/>
-    </target>
-
     
     <!-- ======== -->
     <!-- Run test -->
@@ -199,7 +184,6 @@ Microsystems, Inc. All Rights Reserved.
     
     
     <target name="test" depends="deprecated_executors">
-
         <!-- prepare workdir structure -->
         <mkdir dir="${xtest.workdir}/xmlresults"/>
         <mkdir dir="${xtest.workdir}/xmlresults/suites"/>
@@ -216,10 +200,9 @@ Microsystems, Inc. All Rights Reserved.
         
         <antcall target="prepare-tests"/>
         
-        <echo message="Just a simple try - tests don't run ..."/>
         <property name="plugin.name" value=""/>
         <property name="plugin.executor" value=""/>
-        <pluginExecute  pluginName="${plugin.name}" executeType="executor" executeTarget="${plugin.executor}"/>
+        <pluginExecute  pluginName="${plugin.name}" executeType="executor" executeAction="${plugin.executor}"/>
         <!--
         <antcall target="${xtest.exectype}_test_bootstrap"/>
         -->
@@ -227,33 +210,35 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- deprecated executors - !!! -->
     <target name="deprecated_executors" if="xtest.exectype">
+        <!--
         <echo message="**********"/>
         <echo message="! This is DEPRECATED test mode. Please refer to a http://xtest.netbeans.org to get information how to update your tests"/>
         <echo message="**********"/>
+        -->
         <echo message="Requested xtest.exectype=${xtest.exectype}"/>
        
         <!-- original code mode -->
-        <condition property="plugin.name" value="jvm">
+        <condition property="plugin.name" value="deprecated">
             <equals arg1="code" arg2="${xtest.exectype}"/>
         </condition>
-        <condition property="plugin.executor" value="jvm_execution">
+        <condition property="plugin.executor" value="deprecated_jvm_execution">
             <equals arg1="code" arg2="${xtest.exectype}"/>
         </condition>        
         
         <!-- original ide mode -->
-        <condition property="plugin.name" value="ide">
+        <condition property="plugin.name" value="deprecated">
             <equals arg1="ide" arg2="${xtest.exectype}"/>
         </condition>
-        <condition property="plugin.executor" value="ide_internal_execution">
+        <condition property="plugin.executor" value="deprecated_ide_internal_execution">
             <equals arg1="ide" arg2="${xtest.exectype}"/>
         </condition>
         
         <echo message="Using plugin ${plugin.name}, executor ${plugin.executor}"/>
+        <!--
         <echo message="**********"/>
+        -->
     </target>
-    
-    
-    
+            
     <target name="prepare-tests" depends="test-unjared" unless="unjared">
         <unjar dest="${xtest.workdir}/sys/tests" 
                src="${xtest.build}/${xtest.file.location}/${xtest.file.name}"/>
@@ -268,90 +253,28 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Code test part -->
     <!-- ============== -->
    
-    <!-- nothing - everything has moved to jvm plugin -->
+    <!-- nothing - everything has moved to deprecated plugin -->
      
   
     <!-- ============= -->
     <!-- IDE test part -->
-    <!-- ============= -->
-    
-    <!-- this needs to be here, beacuse of compilation !!! - might be removed
-         for projectized IDE -->
-    <target name="ide-extra-jars" if="xtest.extra.jars.ide">
-        <jar-finder dirs="${xtest.extra.jars.path}" files="${xtest.extra.jars.ide}" 
-                   property="ide.extra.classpath"/>
-    </target>
+    <!-- ============= -->    
                 
-    <!-- proxy for moving results from ide testrun 
-        - this should be solved differently in XTest 2 
-    -->
-    <target name="move-ide-results-proxy" if="xtest.ide.plugin.available">
-        <ant antfile="${xtest.ide.plugin.ant.script}" target="move-ide-results"/>
-    </target>
-    
-    
-    
-    
-    
+    <!-- nothing - everything has moved to deprecated plugin -->
+        
+
+        
     <!-- ======================= -->
     <!-- Test results formatting -->
     <!-- ======================= -->
+    
     <target name="test_report" depends="init">
-    
-        <!-- give me a new dir for just run testbag -->
-        <getResultsDirs testRunDirProperty="xtest.results.testrun.dir" testBagDirProperty="xtest.results.testbag.dir"/>
-       
-        <property name="xtest.current.results" value="${xtest.results.testbag.dir}"/>
-       
-        <!-- move the results -->
-        <antcall target="move-results"/>       
-        
-        <!-- a mew testbag was added, regenerate the XML tree -->
-        <regenerateXML inputDir="${xtest.results}"/>
-                      
-        <!-- transform XML files of new testbag to HTML format -->
-        <transformXML inputDir="${xtest.current.results}"
-                      outputDir="${xtest.current.results}"/>
-            
-          
-        <!-- because we have regenerated the XML tree, we need to\
-            transform the new stuff to HTML -->
-        <transformXML inputDir="${xtest.results}"
-                      outputDir="${xtest.results}"/>                      
-        
-        <!-- print summary -->
-        <!-- Moved to target runtests
-        <printSummary resultsDir="${xtest.results}"/>
-        -->
-        
-
+       <!-- deprecated again -->
+       <property name="plugin.name" value="deprecated"/>
+       <property name="plugin.compiler" value="deprecated_result_processor"/>
+       <pluginExecute pluginName="${plugin.name}" executeType="result_processor" executeAction="${plugin.compiler}"/>      
     </target>
-    
-    <target name="move-results">
-        <!-- copy results from workdir to result dir --> 
-        <copy toDir="${xtest.current.results}">
-            <fileset dir="${xtest.workdir}" defaultexcludes="no">
-                <include name="user/**"/>
-                <include name="xmlresults/**"/>
-                <include name="sys/userdata.properties"/>
-            </fileset>
-        </copy>
-        
-        <!-- if ide plugin is available -> move results from ide to report -->
-        <!-- do the ide userdir stuff  (if ide-plugin is available) -->
-        <antcall target="move-ide-results-proxy"/>
-        
-        <!--  now delete all the stuff -->
-        <delete dir="${xtest.workdir}/sys/tests" />
-        <delete includeEmptyDirs="true">
-            <fileset dir="${xtest.workdir}/user">
-                <exclude name="sketch-pad/**"/>
-            </fileset>
-        </delete>
-        <delete dir="${xtest.workdir}/xmlresults"/>
-    </target>
-    
-    
+       
     
     <!-- ======== -->
     <!-- Building -->
@@ -365,29 +288,13 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="compiletests" depends="init" unless="xtest.distexec">
-       <for list="${compile.srcdir}" delimiters=";${path.separator}," property="compile.srcdir.parsed">
-         <antcall target="compile-one-dir"/>
-       </for>
+       <!-- deprecated again -->
+       <property name="plugin.name" value="deprecated"/>
+       <property name="plugin.compiler" value="deprecated_compilation"/>
+       <pluginExecute pluginName="${plugin.name}" executeType="compiler" executeAction="${plugin.compiler}"/>       
     </target>
-    
-    <target name="compile-one-dir" depends="init,extra-classpath,ide-extra-jars">
-        <property name="test.extra.classpath" value=""/>
-        <property name="compiletest.classpath" value=""/>
-        <property name="compile.excludes" value=""/>
-        <javac srcdir="${compile.srcdir.parsed}" 
-               deprecation="${build.compiler.deprecation}"
-               debug="${build.compiler.debug}"
-               excludes="${compile.excludes}">
-            <classpath>
-           	<pathelement path="${junit.path}"/>    		
-    		<pathelement path="${test.extra.classpath}"/>
-		<pathelement path="${compiletest.classpath}"/>
-		<pathelement path="${ide.extra.classpath}"/>
-            </classpath>
-        </javac>
-    </target>
-    
-    <!-- Creates lib/test.jar with all tests for this module,       -->
+        
+    <!-- Creates lib/tests.xar with all tests for this module,       -->
     <!-- maybe there should be more includes here, not just classes -->
     <target name="buildtests" depends="compiletests" unless="xtest.distexec">
         <antcall target="jartests"/>

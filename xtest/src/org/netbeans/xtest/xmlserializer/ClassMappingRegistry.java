@@ -236,13 +236,18 @@ public class ClassMappingRegistry {
 	private Field findFieldInClass(String fieldName) throws MappingException {
 		if (fieldName == null) {
 			throw new IllegalArgumentException("fieldName cannot be null");
-		}	
-		try {
-			Field aField = clazz.getDeclaredField(fieldName);
-			return aField;
-		} catch (NoSuchFieldException nsfe) {
-			throw new MappingException("Field "+fieldName+" does not exist in class:"+clazz.getName());
-		}		
+		}                
+                Class examinedClazz = clazz;
+                while (examinedClazz != null) {
+                    try {
+                        Field aField = examinedClazz.getDeclaredField(fieldName);
+                        return aField;
+                    } catch (NoSuchFieldException nsfe) {
+                        // get superclass
+                        examinedClazz = clazz.getSuperclass();
+                    }
+                }
+                throw new MappingException("Field "+fieldName+" does not exist in class:"+clazz.getName());
 	}
 	
 	

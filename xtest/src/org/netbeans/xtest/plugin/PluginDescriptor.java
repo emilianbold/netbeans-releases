@@ -149,59 +149,84 @@ public class PluginDescriptor implements XMLSerializable, Serializable {
         return availableExecutors;
     }
     
-    // get executor for defined plugin with defined ID
-    public Executor getExecutor(String executorID) throws PluginResourceNotFoundException {
-        for (int i=0; i < availableExecutors.length; i++) {
-            if (executorID.equals(availableExecutors[i].executorID)) {
-                return availableExecutors[i];
+    // get action for defined plugin with defined ID
+    // returns null if the action hasn't been found
+    private static Action getAction(Action[] availableActions, String actionID) {
+        for (int i=0; i < availableActions.length; i++) {
+            if (actionID.equals(availableActions[i].actionID)) {
+                return availableActions[i];
             }
         }
-        if (hasParentPlugin()) {
-            return getParentPlugin().getExecutor(executorID);
+        return null;
+    }
+    
+    // get the default action in a set
+    // returns null if the default action hasn't been found
+    private static Action getDefaultAction(Action[] availableActions) {
+        for (int i=0; i < availableActions.length; i++) {
+            if (availableActions[i].isDefault()) {
+                return availableActions[i];
+            }
         }        
-        throw new PluginResourceNotFoundException("Cannot find executor "+executorID+" for plugin "+getName());
+        return null;
+    }
+    
+    // has default action ...
+    private static boolean hasDefaultAction(Action[] availableActions) {
+        for (int i=0; i < availableActions.length; i++) {
+            if (availableActions[i].isDefault()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    
+    // executor stuff !!!    
+    // get executor for defined plugin with defined ID
+    public Executor getExecutor(String executorID) throws PluginResourceNotFoundException {
+        Action action = getAction(availableExecutors, executorID);
+        if (action != null) {
+            return (Executor)action;
+        } else if (hasParentPlugin()) {
+            return getParentPlugin().getExecutor(executorID);
+        }
+        
+        throw new PluginResourceNotFoundException("Cannot find executor "+executorID+" for plugin "+getName());        
     }
     
     // get default plugin executor
     public Executor getDefaultExecutor() throws PluginResourceNotFoundException {
-        for (int i=0; i < availableExecutors.length; i++) {
-            if (availableExecutors[i].isDefault()) {
-                return availableExecutors[i];
-            }
-        }
-        if (hasParentPlugin()) {
+        Action action = getDefaultAction(availableExecutors);
+        if (action != null) {
+            return (Executor)action;
+        } else if (hasParentPlugin()) {
             return getParentPlugin().getDefaultExecutor();
         }
-        throw new PluginResourceNotFoundException("Cannot find default executor for plugin "+getName());        
+        throw new PluginResourceNotFoundException("Cannot find default executor for plugin "+getName());
     }
     
     public boolean hasDefaultExecutor() {
-        for (int i=0; i < availableExecutors.length; i++) {
-            if (availableExecutors[i].isDefault()) {
-                return true;
-            }
-        }
-        if (hasParentPlugin()) {
+        if (hasDefaultAction(availableExecutors)) {
+            return true;
+        } else if (hasParentPlugin()) {
             return getParentPlugin().hasDefaultExecutor();
         }
         return false;
     }
     
     
-    // compilers !!!
-    
+    // compilers !!!    
     public Compiler[] getCompilers() {
         return availableCompilers;
     }
     
     // get compiler for defined plugin with defined ID
     public Compiler getCompiler(String compilerID) throws PluginResourceNotFoundException {
-        for (int i=0; i < availableCompilers.length; i++) {
-            if (compilerID.equals(availableCompilers[i].compilerID)) {
-                return availableCompilers[i];
-            }
-        }
-        if (hasParentPlugin()) {
+        Action action = getDefaultAction(availableCompilers);
+        if (action != null) {
+            return (Compiler)action;
+        } else if (hasParentPlugin()) {
             return getParentPlugin().getCompiler(compilerID);
         }        
         throw new PluginResourceNotFoundException("Cannot find compiler "+compilerID+" for plugin "+getName());
@@ -209,28 +234,23 @@ public class PluginDescriptor implements XMLSerializable, Serializable {
     
     // get default plugin executor
     public Compiler getDefaultCompiler() throws PluginResourceNotFoundException {
-        for (int i=0; i < availableCompilers.length; i++) {
-            if (availableCompilers[i].isDefault()) {
-                return availableCompilers[i];
-            }
-        }
-        if (hasParentPlugin()) {
+        Action action = getDefaultAction(availableExecutors);
+        if (action != null) {
+            return (Compiler)action;
+        } else if (hasParentPlugin()) {
             return getParentPlugin().getDefaultCompiler();
         }
         throw new PluginResourceNotFoundException("Cannot find default compiler for plugin "+getName());        
     }
     
     public boolean hasDefaultCompiler() {
-        for (int i=0; i < availableCompilers.length; i++) {
-            if (availableCompilers[i].isDefault()) {
-                return true;
-            }
-        }
-        if (hasParentPlugin()) {
+        if (hasDefaultAction(availableCompilers)) {
+            return true;
+        } else if (hasParentPlugin()) {
             return getParentPlugin().hasDefaultCompiler();
         }
         return false;
-    }    
+    }
     
     
     // result processors
@@ -241,12 +261,10 @@ public class PluginDescriptor implements XMLSerializable, Serializable {
     
     // get compiler for defined plugin with defined ID
     public ResultProcessor getResultProcessor(String rpID) throws PluginResourceNotFoundException {
-        for (int i=0; i < availableResultProcessors.length; i++) {
-            if (rpID.equals(availableResultProcessors[i].rpID)) {
-                return availableResultProcessors[i];
-            }
-        }
-        if (hasParentPlugin()) {
+        Action action = getDefaultAction(availableResultProcessors);
+        if (action != null) {
+            return (ResultProcessor)action;
+        } else if (hasParentPlugin()) {
             return getParentPlugin().getResultProcessor(rpID);
         }        
         throw new PluginResourceNotFoundException("Cannot find result processor "+rpID+" for plugin "+getName());
@@ -254,24 +272,19 @@ public class PluginDescriptor implements XMLSerializable, Serializable {
     
     // get default plugin executor
     public ResultProcessor getDefaultResultProcessor() throws PluginResourceNotFoundException {
-        for (int i=0; i < availableResultProcessors.length; i++) {
-            if (availableResultProcessors[i].isDefault()) {
-                return availableResultProcessors[i];
-            }
-        }
-        if (hasParentPlugin()) {
+        Action action = getDefaultAction(availableResultProcessors);
+        if (action != null) {
+            return (ResultProcessor)action;
+        } else if (hasParentPlugin()) {
             return getParentPlugin().getDefaultResultProcessor();
         }
-        throw new PluginResourceNotFoundException("Cannot find default result processor for plugin "+getName());        
+        throw new PluginResourceNotFoundException("Cannot find default result processor for plugin "+getName());
     }
     
     public boolean hasDefaultResultProcessor() {
-        for (int i=0; i < availableResultProcessors.length; i++) {
-            if (availableResultProcessors[i].isDefault()) {
-                return true;
-            }
-        }
-        if (hasParentPlugin()) {
+        if (hasDefaultAction(availableResultProcessors)) {
+            return true;
+        } else if (hasParentPlugin()) {
             return getParentPlugin().hasDefaultResultProcessor();
         }
         return false;
@@ -387,31 +400,15 @@ public class PluginDescriptor implements XMLSerializable, Serializable {
     }
     
     
-    
-    public static class Executor implements XMLSerializable, java.io.Serializable {
-        static ClassMappingRegistry classMappingRegistry = new ClassMappingRegistry(PluginDescriptor.Executor.class);
-        static {
-            try {
-                // register this class
-                classMappingRegistry.registerSimpleField("executorID",ClassMappingRegistry.ATTRIBUTE,"id");
-                classMappingRegistry.registerSimpleField("target",ClassMappingRegistry.ATTRIBUTE,"target");
-                classMappingRegistry.registerSimpleField("antFile",ClassMappingRegistry.ATTRIBUTE,"antfile");
-                classMappingRegistry.registerSimpleField("defaultExecutor",ClassMappingRegistry.ATTRIBUTE,"default");
-                
-            } catch (MappingException me) {
-                me.printStackTrace();
-                classMappingRegistry = null;
-            }
-        }
-        
-        public ClassMappingRegistry registerXMLMapping() {
-            return classMappingRegistry;
-        }   
-        
-        private String executorID;
+    // abstract class as a base for executor/compiler/result processor
+    // only have methods/fields - each implementation have to create classMapping registry
+    // on its own
+    public static abstract class Action implements java.io.Serializable {
+
+        private String actionID;
         private String target;
-        private String antFile;      
-        private boolean defaultExecutor = false;
+        private String antFile;
+        private boolean defaultAction = false;
         
         // return target of this executor
         public String getTarget() {
@@ -425,24 +422,46 @@ public class PluginDescriptor implements XMLSerializable, Serializable {
         
         // is this Executor defalt?
         public boolean isDefault() {
-            return defaultExecutor;
+            return defaultAction;
         }
         
         // returns executorID - package private, used only by PluginManager
-        String getExecutorID() {
-            return executorID;
-        }
+        String getID() {
+            return actionID;
+        }        
     }
     
-    public static class Compiler implements XMLSerializable, java.io.Serializable {
+    
+    public static class Executor extends Action implements XMLSerializable, java.io.Serializable {
+        static ClassMappingRegistry classMappingRegistry = new ClassMappingRegistry(PluginDescriptor.Executor.class);
+        static {
+            try {
+                // register this class
+                classMappingRegistry.registerSimpleField("actionID",ClassMappingRegistry.ATTRIBUTE,"id");
+                classMappingRegistry.registerSimpleField("target",ClassMappingRegistry.ATTRIBUTE,"target");
+                classMappingRegistry.registerSimpleField("antFile",ClassMappingRegistry.ATTRIBUTE,"antfile");
+                classMappingRegistry.registerSimpleField("defaultAction",ClassMappingRegistry.ATTRIBUTE,"default");
+                
+            } catch (MappingException me) {
+                me.printStackTrace();
+                classMappingRegistry = null;
+            }
+        }
+        
+        public ClassMappingRegistry registerXMLMapping() {
+            return classMappingRegistry;
+        }    
+    }
+    
+    public static class Compiler extends Action implements XMLSerializable, java.io.Serializable {
         static ClassMappingRegistry classMappingRegistry = new ClassMappingRegistry(PluginDescriptor.Compiler.class);
         static {
             try {
                 // register this class
-                classMappingRegistry.registerSimpleField("compilerID",ClassMappingRegistry.ATTRIBUTE,"id");
+                classMappingRegistry.registerSimpleField("actionID",ClassMappingRegistry.ATTRIBUTE,"id");
                 classMappingRegistry.registerSimpleField("target",ClassMappingRegistry.ATTRIBUTE,"target");
                 classMappingRegistry.registerSimpleField("antFile",ClassMappingRegistry.ATTRIBUTE,"antfile");
-                classMappingRegistry.registerSimpleField("defaultCompiler",ClassMappingRegistry.ATTRIBUTE,"default");
+                classMappingRegistry.registerSimpleField("defaultAction",ClassMappingRegistry.ATTRIBUTE,"default");
                 
             } catch (MappingException me) {
                 me.printStackTrace();
@@ -452,43 +471,18 @@ public class PluginDescriptor implements XMLSerializable, Serializable {
         
         public ClassMappingRegistry registerXMLMapping() {
             return classMappingRegistry;
-        }   
-        
-        private String compilerID;
-        private String target;
-        private String antFile;      
-        private boolean defaultCompiler = false;
-        
-        // return target of this compiler
-        public String getTarget() {
-            return target;
-        }
-        
-        // return ant file where this compiler is stored
-        public String getAntFile() {
-            return antFile;
-        }
-        
-        // is this compiler defalt?
-        public boolean isDefault() {
-            return defaultCompiler;
-        }
-        
-        // returns compilerID - package private, used only by PluginManager
-        String getCompilerID() {
-            return compilerID;
-        }
+        }        
     }    
     
-    public static class ResultProcessor implements XMLSerializable, java.io.Serializable {
+    public static class ResultProcessor extends Action implements XMLSerializable, java.io.Serializable {
         static ClassMappingRegistry classMappingRegistry = new ClassMappingRegistry(PluginDescriptor.ResultProcessor.class);
         static {
             try {
                 // register this class
-                classMappingRegistry.registerSimpleField("rpID",ClassMappingRegistry.ATTRIBUTE,"id");
+                classMappingRegistry.registerSimpleField("actionID",ClassMappingRegistry.ATTRIBUTE,"id");
                 classMappingRegistry.registerSimpleField("target",ClassMappingRegistry.ATTRIBUTE,"target");
                 classMappingRegistry.registerSimpleField("antFile",ClassMappingRegistry.ATTRIBUTE,"antfile");
-                classMappingRegistry.registerSimpleField("defaultRP",ClassMappingRegistry.ATTRIBUTE,"default");
+                classMappingRegistry.registerSimpleField("defaultAction",ClassMappingRegistry.ATTRIBUTE,"default");
                 
             } catch (MappingException me) {
                 me.printStackTrace();
@@ -499,32 +493,5 @@ public class PluginDescriptor implements XMLSerializable, Serializable {
         public ClassMappingRegistry registerXMLMapping() {
             return classMappingRegistry;
         }   
-        
-        private String rpID;
-        private String target;
-        private String antFile;      
-        private boolean defaultRP = false;
-        
-        // return target of this result processor
-        public String getTarget() {
-            return target;
-        }
-        
-        // return ant file where this result processor is stored
-        public String getAntFile() {
-            return antFile;
-        }
-        
-        // is this result processor defalt?
-        public boolean isDefault() {
-            return defaultRP;
-        }
-        
-        // returns result processor ID - package private, used only by PluginManager
-        String getRpID() {
-            return rpID;
-        }
-    }        
-    
-    
+    }
 }

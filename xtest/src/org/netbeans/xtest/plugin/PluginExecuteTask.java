@@ -42,7 +42,7 @@ public class PluginExecuteTask extends Task {
     /* execution types */
     public static final String EXECUTE_COMPILER="compiler";
     public static final String EXECUTE_EXECUTOR="executor";
-    public static final String EXECUTE_RESULTS_PROCESSOR="results_processor";
+    public static final String EXECUTE_RESULT_PROCESSOR="result_processor";
     
     /* property names */
     public static final String XTEST_PLUGIN_HOME_PROPERTY_NAME="xtest.plugin.home";
@@ -51,7 +51,7 @@ public class PluginExecuteTask extends Task {
     
     private String pluginName;
     private String executeType;
-    private String executeTarget;
+    private String actionID;
     
     public void setPluginName(String pluginName) {
         this.pluginName = pluginName;
@@ -61,8 +61,8 @@ public class PluginExecuteTask extends Task {
         this.executeType = executeType;
     }
     
-    public void setExecuteTarget(String executeTarget) {
-        this.executeTarget = executeTarget;
+    public void setExecuteAction(String actionID) {
+        this.actionID = actionID;
     }    
 
     
@@ -77,14 +77,31 @@ public class PluginExecuteTask extends Task {
         if (pluginName == null) {
             throw new BuildException("pluginName attribute not specified");
         }
+        if (executeType == null) {
+            throw new BuildException("executeType attribute not specified");
+        }
+        if (actionID == null) {
+            throw new BuildException("executeAction attribute not specified");
+        }
         try {
             // plugin manager found - let's execute the stuff
-            PluginDescriptor.Executor pluginExecutor = pluginManager.getPreferredPluginDescriptor(pluginName).getExecutor(executeTarget);
+            PluginDescriptor pluginDescriptor = pluginManager.getPreferredPluginDescriptor(pluginName);
+            PluginDescriptor.Action pluginAction = null;
+            // depending on execute type get appropriate action
+            if (executeType.equalsIgnoreCase(EXECUTE_COMPILER)) {
+                pluginAction=pluginDescriptor.getCompiler(actionID);
+            } else if (executeType.equalsIgnoreCase(EXECUTE_EXECUTOR)) {
+                pluginAction=pluginDescriptor.getExecutor(actionID); 
+            } else if (executeType.equalsIgnoreCase(EXECUTE_RESULT_PROCESSOR)) {
+                pluginAction=pluginDescriptor.getResultProcessor(actionID); 
+            } else {
+                throw new BuildException("executeType "+executeType+" is not supported");
+            }
             
-            String antTarget = pluginExecutor.getTarget();
+            String antTarget = pluginAction.getTarget();
             
             File pluginHomeDirectory=pluginManager.getPluginHomeDirectory(pluginName);
-            File antFile = new File(pluginHomeDirectory, pluginExecutor.getAntFile());
+            File antFile = new File(pluginHomeDirectory, pluginAction.getAntFile());
             String pluginVersion = pluginManager.getPluginVersion(pluginName);
             
             Ant ant = new Ant();
