@@ -68,6 +68,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/nbbuild/MakeParserDB.java"/>
                 <include name="org/netbeans/nbbuild/MakeUpdateDesc.java"/>
                 <include name="org/netbeans/nbbuild/UpdateTracking.java"/>
+                <include name="org/netbeans/nbbuild/ModuleTracking.java"/>
                 <include name="org/netbeans/nbbuild/XMLUtil.java"/>
                 <include name="org/netbeans/nbbuild/package.html"/>
             </fileset>
