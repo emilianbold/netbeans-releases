@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Random;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.modules.xml.tax.cookies.TreeDocumentCookie;
 import org.netbeans.tax.TreeDocument;
@@ -48,7 +49,7 @@ import org.openide.util.Lookup.Template;
  * @author mschovanek
  */
 public abstract class AbstractTestUtil {
-    protected static boolean DEBUG = false;
+    protected static boolean DEBUG = true;
     
     public static final String CATALOG_PACKAGE    = "org.netbeans.modules.xml.catalog";
     public static final String CORE_PACKAGE       = "org.netbeans.modules.xml.core";
@@ -315,17 +316,14 @@ public abstract class AbstractTestUtil {
      * <i>e.g. "sub_dir/data.xml"</i>
      */
     public DataObject findData(String name) throws DataObjectNotFoundException {
-        URL url = this.getClass().getResource("data/" + name);
-        if (url == null) {
-            if (DEBUG) {
-                System.err.println("'data/" + name +"' URL is null.");
-            }
-            return null;
-        }
-        FileObject fo = findFileObject(url.toExternalForm());
+        //Repository.getDefault().
+        String resName = this.getClass().getPackage().getName();
+        resName = resName.replace('.', '/');
+        resName += "/data/" + name;
+        FileObject fo = ClassPath.getClassPath(null, ClassPath.EXECUTE).findResource(resName);
         if (fo == null) {
             if (DEBUG) {
-                System.err.println("I cannot find FileObject: " + url);
+                System.err.println("I cannot find FileObject: " + resName);
             }
             return null;
         } else {

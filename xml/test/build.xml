@@ -147,7 +147,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${netbeans.home}/modules/autoload/openide-execution.jar"/>
         <pathelement location="${netbeans.home}/modules/autoload/xml-core.jar"/>
         <pathelement location="${netbeans.home}/modules/autoload/xml-tax.jar"/>	
-        <pathelement location="${netbeans.home}/modules/css.jar"/>
+        <pathelement location="${netbeans.home}/modules/autoload/java-api.jar"/>	
+         <pathelement location="${netbeans.home}/modules/css.jar"/>
         <!--
         <pathelement location="${netbeans.home}/modules/xml-catalog.jar"/>
         <pathelement location="${netbeans.home}/modules/xml-syntax.jar"/>
@@ -161,7 +162,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nbextra.repository}/jellytools/jelly-nb.jar"/>
         <pathelement location="${nbextra.repository}/jellytools/jelly2-nb.jar"/>
         <pathelement location="${xtest.home}/lib/junit.jar"/>                    
-        <pathelement location="${xtest.home}/lib/junit-ext.jar"/>                    
+        <pathelement location="${xtest.home}/lib/nbjunit.jar"/>                    
         <!--pathelement location="${xtest.home}/lib/xtest.jar"/-->                    
     </path>
 </project>
