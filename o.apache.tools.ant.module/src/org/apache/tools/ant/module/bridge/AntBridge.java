@@ -24,7 +24,6 @@ import java.util.jar.JarFile;
 import javax.swing.event.*;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
 import org.openide.execution.NbClassPath;
 import org.openide.filesystems.FileObject;
@@ -202,34 +201,6 @@ public final class AntBridge {
     }
     
     /**
-     * Return a class loader which can load from Ant JARs as well the user
-     * development class path. It is not cached, since user classes can
-     * change quickly. Similar to NbClassLoader.
-     * @param reference a file to refer to in order to determine the proper class path; may be null
-     */
-    public static ClassLoader createUserClassLoader(FileObject reference) {
-        ClassLoader main = getMainClassLoader();
-        // XXX use of a null reference, or a reference which is not a *.java file,
-        // will not work in D - need to find the classpath by some other means...
-        ClassPath cp = ClassPath.getClassPath(reference, ClassPath.EXECUTE);
-        if (cp != null) {
-            try {
-                // XXX use ClassPath.getClassLoader when that method accepts a parent loader!
-                // Cf. #37437.
-                FileObject[] roots = cp.getRoots();
-                URL[] urls = new URL[roots.length];
-                for (int i = 0; i < roots.length; i++) {
-                    urls[i] = roots[i].getURL();
-                }
-                return new AllPermissionURLClassLoader(urls, main);
-            } catch (FileStateInvalidException ie) {
-                AntModule.err.notify(ErrorManager.INFORMATIONAL, ie);
-            }
-        }
-        return main;
-    }
-    
-    /**
      * Get the bridge interface.
      */
     public static BridgeInterface getInterface() {
@@ -256,12 +227,36 @@ public final class AntBridge {
         try {
             ClassLoader main = createMainClassLoader();
             m.put(KEY_MAIN_CLASS_LOADER, main);
-            // Ensures that the loader is functional, and that it is at least 1.5.x
-            // so that our classes can link against it successfully:
-            main.loadClass("org.apache.tools.ant.input.InputHandler"); // NOI18N
             ClassLoader bridgeLoader = createBridgeClassLoader(main);
             m.put(KEY_BRIDGE_CLASS_LOADER, bridgeLoader);
+            // Ensures that the loader is functional, and that it is at least 1.5.x
+            // so that our classes can link against it successfully, and that
+            // we are really loading Ant from the right place:
+            Class ihClazz = Class.forName("org.apache.tools.ant.input.InputHandler", false, bridgeLoader); // NOI18N
+            ClassLoader loaderUsedForAnt = ihClazz.getClassLoader();
+            if (loaderUsedForAnt != main) {
+                throw new IllegalStateException("Wrong class loader is finding Ant: " + loaderUsedForAnt); // NOI18N
+            }
+            Class ihClazz2 = Class.forName("org.apache.tools.ant.input.InputHandler", false, main); // NOI18N
+            if (ihClazz2 != ihClazz) {
+                throw new IllegalStateException("Main and bridge class loaders do not agree on version of Ant: " + ihClazz2.getClassLoader()); // NOI18N
+            }
+            try {
+                Class alClazz = Class.forName("org.apache.tools.ant.taskdefs.Antlib", false, bridgeLoader); // NOI18N
+                if (alClazz.getClassLoader() != main) {
+                    throw new IllegalStateException("Bridge loader is loading stuff from elsewhere: " + alClazz.getClassLoader()); // NOI18N
+                }
+                Class alClazz2 = Class.forName("org.apache.tools.ant.taskdefs.Antlib", false, main); // NOI18N
+                if (alClazz2 != alClazz) {
+                    throw new IllegalStateException("Main and bridge class loaders do not agree on version of Ant: " + alClazz2.getClassLoader()); // NOI18N
+                }
+            } catch (ClassNotFoundException cnfe) {
+                // Fine, it was added in Ant 1.6.
+            }
             Class impl = bridgeLoader.loadClass("org.apache.tools.ant.module.bridge.impl.BridgeImpl"); // NOI18N
+            if (impl.getClassLoader() != bridgeLoader) {
+                throw new IllegalStateException("Wrong class loader is finding bridge impl: " + impl.getClassLoader()); // NOI18N
+            }
             m.put(KEY_BRIDGE, (BridgeInterface)impl.newInstance());
             Map cDCLs = createCustomDefClassLoaders(main);
             m.put(KEY_CUSTOM_DEF_CLASS_LOADERS, cDCLs);
@@ -330,7 +325,9 @@ public final class AntBridge {
         // well because Ant assumes that tools.jar is in its classpath (for <javac> etc.).
         // Manually readding the JDK JARs would be possible, but then they would not be shared
         // with the versions used inside NB, which may cause inefficiencies or more memory usage.
-        return new AllPermissionURLClassLoader((URL[])cp.toArray(new URL[cp.size()]), ClassLoader.getSystemClassLoader());
+        // On the other hand, if ant.jar is in ${java.class.path} (e.g. from a unit test), we
+        // have to explicitly mask it out. What a mess...
+        return new MaskedClassLoader((URL[])cp.toArray(new URL[cp.size()]), ClassLoader.getSystemClassLoader());
     }
     
     private static ClassLoader createBridgeClassLoader(ClassLoader main) throws Exception {
@@ -505,6 +502,44 @@ public final class AntBridge {
         
     }
     
+    private static boolean masked(String clazz) {
+        return clazz.startsWith("org.apache.tools.") || clazz.startsWith("org.netbeans."); // NOI18N
+    }
+
+    /**
+     * Special class loader that refuses to load Ant or NetBeans classes from its parent.
+     * Necessary in order to be able to load the intended Ant distro from a unit test.
+     */
+    private static final class MaskedClassLoader extends AllPermissionURLClassLoader {
+        
+        public MaskedClassLoader(URL[] urls, ClassLoader parent) {
+            super(urls, parent);
+            /*
+            System.err.println("MaskedClassLoader: delegating to " + parent);
+            if (parent instanceof URLClassLoader) {
+                System.err.println("...which has URLs: " + Arrays.asList(((URLClassLoader) parent).getURLs()));
+            }
+             */
+        }
+        
+        protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            if (masked(name)) {
+                Class c = findLoadedClass(name);
+                // Careful with that parent loader Eugene!
+                if (c == null) {
+                    c = findClass(name);
+                }
+                if (resolve) {
+                    resolveClass(c);
+                }
+                return c;
+            } else {
+                return super.loadClass(name, resolve);
+            }
+        }
+        
+    }
+    
     // I/O redirection impl. Keyed by thread group (each Ant process has its own TG).
     // Various Ant tasks (e.g. <java fork="false" output="..." ...>) need the system
     // I/O streams to be redirected to the demux streams of the project so they can
@@ -519,6 +554,8 @@ public final class AntBridge {
     private static Map/*<ThreadGroup,InputStream>*/ delegateIns = new HashMap();
     private static Map/*<ThreadGroup,PrintStream>*/ delegateOuts = new HashMap();
     private static Map/*<ThreadGroup,PrintStream>*/ delegateErrs = new HashMap();
+    /** map, not set, so can be reentrant */
+    private static List/*<ThreadGroup>*/ suspendedDelegationTasks = new ArrayList();
     
     /**
      * Handle I/O scoping for overlapping project runs.
@@ -561,6 +598,31 @@ public final class AntBridge {
         delegateOuts.remove(tg);
         delegateErrs.remove(tg);
     }
+
+    /**
+     * Temporarily suspend delegation of system I/O streams for the current thread group.
+     * Useful when running callbacks to IDE code that might try to print to stderr etc.
+     * Must be matched in a finally block by {@link #resumeDelegation}.
+     * Safe to call when not actually delegating; in that case does nothing.
+     * Safe to call in reentrant but not overlapping fashion.
+     */
+    public static synchronized void suspendDelegation() {
+        ThreadGroup tg = Thread.currentThread().getThreadGroup();
+        //assert delegateOuts.containsKey(tg) : "Not currently delegating in " + tg;
+        //assert !suspendedDelegationTasks.contains(tg) : "Already suspended delegation in " + tg;
+        suspendedDelegationTasks.add(tg);
+    }
+    
+    /**
+     * Resume delegation of system I/O streams for the current thread group
+     * after a call to {@link #suspendDelegation}.
+     */
+    public static synchronized void resumeDelegation() {
+        ThreadGroup tg = Thread.currentThread().getThreadGroup();
+        //assert delegateOuts.containsKey(tg) : "Not currently delegating in " + tg;
+        assert suspendedDelegationTasks.contains(tg) : "Have not suspended delegation in " + tg;
+        suspendedDelegationTasks.remove(tg);
+    }
     
     private static final class MultiplexInputStream extends InputStream {
         
@@ -572,7 +634,7 @@ public final class AntBridge {
                 tg = tg.getParent();
             }
             InputStream is = (InputStream)delegateIns.get(tg);
-            if (is != null) {
+            if (is != null && !suspendedDelegationTasks.contains(tg)) {
                 return is;
             } else if (delegating > 0) {
                 assert origIn != null;
@@ -642,7 +704,7 @@ public final class AntBridge {
                 tg = tg.getParent();
             }
             PrintStream ps = (PrintStream)delegates.get(tg);
-            if (ps != null) {
+            if (ps != null && !suspendedDelegationTasks.contains(tg)) {
                 return ps;
             } else if (delegating > 0) {
                 PrintStream orig = err ? origErr : origOut;

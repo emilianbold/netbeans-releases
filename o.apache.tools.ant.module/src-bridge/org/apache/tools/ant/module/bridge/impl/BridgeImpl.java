@@ -33,6 +33,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.*;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.OutputWriter;
 
 /**
  * Implements the BridgeInterface using the current version of Ant.
@@ -81,10 +82,12 @@ public class BridgeImpl implements BridgeInterface {
         return null;
     }
     
-    public boolean run(File buildFile, final FileObject buildFileObject, List targets,
-                       InputStream in, PrintStream out, PrintStream err,
-                       Properties properties, int verbosity, boolean useStatusLine, String displayName) {
+    public boolean run(File buildFile, List targets, InputStream in, OutputWriter out, OutputWriter err,
+                       Properties properties, int verbosity, String displayName) {
         boolean ok = false;
+        
+        // Important for various other stuff.
+        final boolean ant16 = isAnt16();
         
         // Make sure "main Ant loader" is used as context loader for duration of the
         // run. Otherwise some code, e.g. JAXP, will accidentally pick up NB classes,
@@ -101,9 +104,11 @@ public class BridgeImpl implements BridgeInterface {
         
         // first use the ProjectHelper to create the project object
         // from the given build file.
-        BuildLogger logger;
+        NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName);
+        Vector targs;
         try {
             project = new Project();
+            project.addBuildListener(logger);
             project.init();
             try {
                 addCustomDefs(project);
@@ -119,11 +124,7 @@ public class BridgeImpl implements BridgeInterface {
                 Map.Entry entry = (Map.Entry) it.next();
                 project.setUserProperty((String) entry.getKey(), (String) entry.getValue());
             }
-            logger = new NbBuildLogger(useStatusLine, displayName);
-            logger.setMessageOutputLevel(verbosity);
-            logger.setOutputPrintStream(out);
-            logger.setErrorPrintStream(err);
-            if (in != null && isAnt16()) {
+            if (in != null && ant16) {
                 try {
                     Method m = Project.class.getMethod("setDefaultInputStream", new Class[] {InputStream.class}); // NOI18N
                     m.invoke(project, new Object[] {in});
@@ -131,7 +132,6 @@ public class BridgeImpl implements BridgeInterface {
                     AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
-            project.addBuildListener(logger);
             if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 AntModule.err.log("CCL when configureProject is called: " + Thread.currentThread().getContextClassLoader());
             }
@@ -139,33 +139,18 @@ public class BridgeImpl implements BridgeInterface {
             project.addReference("ant.projectHelper", projhelper); // NOI18N
             projhelper.parse(project, buildFile);
             
-            String inputHandlerName = AntSettings.getDefault().getInputHandler();
-            InputHandler inputHandler = null;
-            if (inputHandlerName != null && inputHandlerName.length() > 0) {
-                try {
-                    ClassLoader l = AntBridge.createUserClassLoader(buildFileObject);
-                    Class clazz = Class.forName(inputHandlerName, true, l);
-                    inputHandler = (InputHandler)clazz.newInstance();
-                } catch (Exception ex) {
-                    throw new BuildException(NbBundle.getMessage(BridgeImpl.class, "MSG_input_handler_exception", inputHandlerName), ex); // NOI18N
-                }
+            project.setInputHandler(new NbInputHandler());
+            
+            if (targets != null) {
+                targs = new Vector(targets);
+            } else {
+                targs = new Vector(1);
+                targs.add(project.getDefaultTarget());
             }
-            if (inputHandler == null) {
-                inputHandler = new NbInputHandler();
-            }
-            project.setInputHandler(inputHandler);
+            logger.setActualTargets(targets != null ? (String[])targets.toArray(new String[targets.size()]) : null);
         }
         catch (BuildException be) {
-            // Write errors to the output window, since
-            // a lot of errors could be annoying as dialogs
-            if (verbosity >= Project.MSG_VERBOSE) {
-                be.printStackTrace(err);
-            } else {
-                err.println(be);
-            }
-            if (useStatusLine) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "FMT_target_failed_status", displayName));
-            }
+            logger.buildInitializationFailed(be);
             out.close();
             err.close();
             if (in != null) {
@@ -182,7 +167,7 @@ public class BridgeImpl implements BridgeInterface {
         
         // Save & restore system output streams.
         InputStream is = System.in;
-        if (in != null && isAnt16()) {
+        if (in != null && ant16) {
             try {
                 Class dis = Class.forName("org.apache.tools.ant.DemuxInputStream"); // NOI18N
                 Constructor c = dis.getConstructor(new Class[] {Project.class});
@@ -198,13 +183,6 @@ public class BridgeImpl implements BridgeInterface {
         try {
             // Execute the configured project
             //writer.println("#4"); // NOI18N
-            Vector targs;
-            if (targets != null) {
-                targs = new Vector(targets);
-            } else {
-                targs = new Vector(1);
-                targs.add(project.getDefaultTarget());
-            }
             project.executeTargets(targs);
             //writer.println("#5"); // NOI18N
             project.fireBuildFinished(null);
@@ -243,7 +221,7 @@ public class BridgeImpl implements BridgeInterface {
                     fs.refresh(false);                    
                 }                                
                 gutProject(p2);
-                if (!isAnt16()) {
+                if (!ant16) {
                     // #36393 - memory leak in Ant 1.5.
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {

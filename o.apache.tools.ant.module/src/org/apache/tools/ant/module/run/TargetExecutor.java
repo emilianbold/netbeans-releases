@@ -200,13 +200,13 @@ public final class TargetExecutor implements Runnable {
             LifecycleManager.getDefault ().saveAll ();
         }
         
-        PrintStream out;
-        PrintStream err;
+        OutputWriter out;
+        OutputWriter err;
         if (outputStream == null) {
-            out = new PrintStream(new OutputWriterOutputStream(io.getOut()));
-            err = new PrintStream(new OutputWriterOutputStream(io.getErr()));
+            out = io.getOut();
+            err = io.getErr();
         } else {
-            out = err = new PrintStream(outputStream);
+            throw new RuntimeException("XXX No support for outputStream currently!");
         }
         
         File buildFile = pcookie.getFile ();
@@ -227,8 +227,7 @@ public final class TargetExecutor implements Runnable {
             }
         }
         
-        ok = AntBridge.getInterface().run(buildFile, pcookie.getFileObject(), targetNames,
-                                          in, out, err, properties, verbosity, outputStream == null, displayName);
+        ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName);
         
         } finally {
             if (io != null) {

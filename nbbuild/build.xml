@@ -289,7 +289,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module a11y..."/>
     <ant dir="../a11y" target="netbeans"/>
   </target>
-  <target name="all-ant" depends="build-platform,all-java/api">
+  <target name="all-ant" depends="build-platform">
     <echo message="Building module ant..."/>
     <ant dir="../ant" target="netbeans"/>
   </target>
@@ -1076,7 +1076,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module java/j2seplatform..."/>
     <ant dir="../java/j2seplatform" target="netbeans"/>
   </target>
-  <target name="all-java/j2seproject" depends="build-platform,all-java/api,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi">
+  <target name="all-java/j2seproject" depends="build-platform,all-java/api,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-ant">
     <echo message="Building module java/j2seproject..."/>
     <ant dir="../java/j2seproject" target="netbeans"/>
   </target>
@@ -1084,7 +1084,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <echo message="Building module ant/project..."/>
       <ant dir="../ant/project" target="netbeans"/>
   </target>
-  <target name="all-java/project" depends="build-platform,all-openidex,all-projects/projectapi,all-projects/projectuiapi,all-projects/queries,all-java/api,all-java,all-java/platform,all-ant/project,all-projects/libraries">
+  <target name="all-java/project" depends="build-platform,all-openidex,all-projects/projectapi,all-projects/projectuiapi,all-projects/queries,all-java/api,all-java,all-java/platform,all-ant/project,all-projects/libraries,all-ant">
     <echo message="Building module java/project..."/>
     <ant dir="../java/project" target="netbeans"/>
   </target>

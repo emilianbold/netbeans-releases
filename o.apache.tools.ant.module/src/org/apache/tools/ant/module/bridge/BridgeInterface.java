@@ -15,10 +15,9 @@ package org.apache.tools.ant.module.bridge;
 
 import java.io.File;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.util.List;
 import java.util.Properties;
-import org.openide.filesystems.FileObject;
+import org.openide.windows.OutputWriter;
 
 /**
  * What is implemented by bridge.jar.
@@ -30,8 +29,15 @@ public interface BridgeInterface {
      * Actually run a build script.
      * @param buildFile an Ant build script
      * @param targets a list of target names to run, or null to run the default target
+     * @param in an input stream for console input
+     * @param out an output stream with the ability to have hyperlinks
+     * @param err an error stream with the ability to have hyperlinks
+     * @param properties any Ant properties to define
+     * @param verbosity the intended logging level
+     * @param displayName a user-presentable name for the session
+     * @return true if the build succeeded, false if it failed for any reason
      */
-    boolean run(File buildFile, FileObject buildFileObject, List targets, InputStream in, PrintStream out, PrintStream err, Properties properties, int verbosity, boolean useStatusLine, String displayName);
+    boolean run(File buildFile, List targets, InputStream in, OutputWriter out, OutputWriter err, Properties properties, int verbosity, String displayName);
     
     /**
      * Get some informational value of the Ant version.

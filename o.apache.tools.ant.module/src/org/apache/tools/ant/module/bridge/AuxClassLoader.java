@@ -20,14 +20,21 @@ import org.openide.util.Enumerations;
 
 /**
  * Loads classes in the following order:
- * 1. JRE
+ * 1. JRE (well, actually app loader, but minus org.apache.tools.** and org.netbeans.**)
  * 2. Ant JARs - whatever is in the "main" class loader.
  * 3. Some NetBeans module class loader.
  * 4. Some other JAR from $nbhome/ant/nblib/*.jar.
+ * Used for two cases:
+ * A. bridge.jar for #4 and the Ant module for #3.
+ * B. ant/nblib/o-n-m-foo.jar for #4 and modules/o-n-m-foo.jar for #3.
  * Lightly inspired by ProxyClassLoader, but much less complex.
  * @author Jesse Glick
  */
 final class AuxClassLoader extends AntBridge.AllPermissionURLClassLoader {
+    
+    private static boolean masked(String name) {
+        return name.startsWith("org.apache.tools.") && !name.startsWith("org.apache.tools.ant.module."); // NOI18N
+    }
     
     private final ClassLoader nbLoader;
     
@@ -37,23 +44,28 @@ final class AuxClassLoader extends AntBridge.AllPermissionURLClassLoader {
     }
     
     protected Class findClass(String name) throws ClassNotFoundException {
-        try {
-            return nbLoader.loadClass(name);
-        } catch (ClassNotFoundException cnfe) {
-            return super.findClass(name);
+        if (!masked(name)) {
+            try {
+                return nbLoader.loadClass(name);
+            } catch (ClassNotFoundException cnfe) {
+                // OK, didn't find it.
+            }
         }
+        return super.findClass(name);
     }
     
     public URL findResource(String name) {
-        URL u = nbLoader.getResource(name);
-        if (u != null) {
-            return u;
-        } else {
-            return super.findResource(name);
+        if (!masked(name)) {
+            URL u = nbLoader.getResource(name);
+            if (u != null) {
+                return u;
+            }
         }
+        return super.findResource(name);
     }
     
     public Enumeration findResources(String name) throws IOException {
+        // XXX probably wrong now... try to fix somehow
         return Enumerations.removeDuplicates (
             Enumerations.concat (
                 nbLoader.getResources(name), 

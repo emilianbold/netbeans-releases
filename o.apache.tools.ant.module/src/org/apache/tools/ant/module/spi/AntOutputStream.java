@@ -20,7 +20,6 @@ import java.lang.StringBuffer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.apache.tools.ant.module.AntModule;
-import org.apache.tools.ant.module.run.AntOutputParser;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -30,6 +29,8 @@ import org.openide.util.NbBundle;
  * parsing Ant output.
  *
  * @since 2.15
+ * @deprecated This functionality is not recommended to be used and may result
+ *             in loss of some Ant module features as of org.apache.tools.ant.module/3 3.12.
  */
 public abstract class AntOutputStream extends OutputStream {
 
@@ -37,12 +38,9 @@ public abstract class AntOutputStream extends OutputStream {
     private StringBuffer buffer = new StringBuffer (1000);
     /** have we printed any lines yet? used to prevent initial blank line */
     private boolean hadFirst = false;
-	    
-    private AntOutputParser antOutputParser = new AntOutputParser();
 
     final public void close() throws IOException {
         flush ();
-        antOutputParser = null;
         handleClose();
     }
 
@@ -104,9 +102,6 @@ public abstract class AntOutputStream extends OutputStream {
         }
     }
     
-    /** see NbBuildLogger */
-    private static final String CP_PREFIX = "***CLASSPATH***="; // NOI18N
-
     private void flushLine (String l) throws IOException {
         //System.err.println("flushing: " + l);
         if (! hadFirst) {
@@ -116,30 +111,7 @@ public abstract class AntOutputStream extends OutputStream {
                 return;
             }
         }
-        if (l.startsWith(CP_PREFIX)) {
-            String cp = l.substring(CP_PREFIX.length());
-            antOutputParser.setClasspath(cp);
-            return; // do not actually print it!
-        }
-        AntOutputParser.Result r;
-        try {
-            r = antOutputParser.parse(l);
-        } catch (IOException e) {
-            r = null;
-            AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
-        }
-        if (r == null) {
-            writeLine(l);
-        } else {
-            URL u = r.getURL();
-            if (!writeLine(l, u, r.getLineStart(), r.getColumnStart(), r.getLineEnd(), r.getColumnEnd(), r.getMessage())) {
-                // Fallback for old subclasses of AOS - compatibility. Cf. #42666.
-                FileObject f = URLMapper.findFileObject(u);
-                if (f != null) {
-                    writeLine(l, f, r.getLineStart(), r.getColumnStart(), r.getLineEnd(), r.getColumnEnd(), r.getMessage());
-                }
-            }
-        }
+        writeLine(l);
     }
 
     /**
@@ -155,6 +127,7 @@ public abstract class AntOutputStream extends OutputStream {
      * @param message message
      * @return must always return true
      * @since org.apache.tools.ant.module/3 3.10
+     * @deprecated No longer called.
      */
     protected boolean writeLine(String line, URL file, int line1, int col1, int line2, int col2, String message) throws IOException {
         return false;
@@ -183,33 +156,7 @@ public abstract class AntOutputStream extends OutputStream {
      * @deprecated No longer used since org.apache.tools.ant.module/3 3.8.
      */
     protected String formatMessage(String fileName, String message, int line1, int col1, int line2, int col2) {
-        String m = (message != null ? message : NbBundle.getMessage (AntOutputStream.class, "ERR_unknown"));
-        if (line1 == -1) {
-            return NbBundle.getMessage
-                (AntOutputStream.class, "MSG_err", fileName, m); // NOI18N
-        } else {
-            if (col1 == -1) {
-                return NbBundle.getMessage
-                    (AntOutputStream.class, "MSG_err_line", fileName, m, // NOI18N
-                     new Integer (line1 + 1));
-            } else {
-                if (line2 == -1 || col2 == -1 || (line1 == line2 && col1 == col2)) {
-                    return NbBundle.getMessage
-                        (AntOutputStream.class, "MSG_err_line_col", // NOI18N
-                         new Object[] { fileName, m, new Integer (line1 + 1), new Integer (col1 + 1) });
-                } else {
-                    if (line1 == line2) {
-                        return NbBundle.getMessage
-                            (AntOutputStream.class, "MSG_err_line_col_col", // NOI18N
-                             new Object[] { fileName, m, new Integer (line1 + 1), new Integer (col1 + 1), new Integer (col2 + 1) });
-                    } else {
-                        return NbBundle.getMessage
-                            (AntOutputStream.class, "MSG_err_line_col_line_col", // NOI18N
-                             new Object[] { fileName, m, new Integer (line1 + 1), new Integer (col1 + 1), new Integer (line2 + 1), new Integer (col2 + 1) });
-                    }
-                }
-            }
-        }
+        return message;
     }
     
 }

@@ -20,6 +20,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Enumerations;
+import org.openide.windows.OutputWriter;
 
 /**
  * Used when the real Ant class loader cannot be initialized for some reason.
@@ -74,7 +75,7 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
         return null;
     }
     
-    public boolean run(File buildFile, FileObject buildFileObject, List targets, InputStream in, PrintStream out, PrintStream err, Properties properties, int verbosity, boolean useStatusLine, String displayName) {
+    public boolean run(File buildFile, List targets, InputStream in, OutputWriter out, OutputWriter err, Properties properties, int verbosity, String displayName) {
         err.println(NbBundle.getMessage(DummyBridgeImpl.class, "ERR_cannot_run_target"));
         problem.printStackTrace(err);
         return false;
