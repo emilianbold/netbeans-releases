@@ -49,10 +49,10 @@ public class FormCustomEditor extends JPanel implements NbCustomPropertyEditor {
 
     if (allEditors.length == 1) {
       if (editor.getCurrentEditor ().supportsCustomEditor ()) {
-        add (editor.getCurrentEditor ().getCustomEditor (), BorderLayout.CENTER);
+        add (allCustomEditors[0] = editor.getCurrentEditor ().getCustomEditor (), BorderLayout.CENTER);
       } else {
         // [PENDING - add property sheet line component]
-        add (new JLabel ("PropertyEditor does not support custom editing"), BorderLayout.CENTER);
+        add (allCustomEditors[0] = new JLabel ("PropertyEditor does not support custom editing"), BorderLayout.CENTER);
       }
       
     } else {
@@ -62,10 +62,10 @@ public class FormCustomEditor extends JPanel implements NbCustomPropertyEditor {
           ((FormAwareEditor)allEditors[i]).setRADComponent (editor.getRADComponent ());
         }
         if (allEditors[i].supportsCustomEditor ()) {
-          tabs.addTab (Utilities.getShortClassName (allEditors[i].getClass ()), allEditors[i].getCustomEditor ());
+          tabs.addTab (Utilities.getShortClassName (allEditors[i].getClass ()), allCustomEditors[i] = allEditors[i].getCustomEditor ());
         } else {
           // [PENDING - add property sheet line component]
-          tabs.addTab (Utilities.getShortClassName (allEditors[i].getClass ()), new JLabel ("PropertyEditor does not support custom editing"));
+          tabs.addTab (Utilities.getShortClassName (allEditors[i].getClass ()), allCustomEditors[i] = new JLabel ("PropertyEditor does not support custom editing"));
         }
       }
       add (tabs, BorderLayout.CENTER);
@@ -113,6 +113,7 @@ public class FormCustomEditor extends JPanel implements NbCustomPropertyEditor {
 
 /*
  * Log
+ *  6    Gandalf   1.5         6/23/99  Ian Formanek    
  *  5    Gandalf   1.4         6/22/99  Ian Formanek    Further tweaked for 
  *       multiple (custom) editors
  *  4    Gandalf   1.3         6/22/99  Ian Formanek    Fixed working with 
