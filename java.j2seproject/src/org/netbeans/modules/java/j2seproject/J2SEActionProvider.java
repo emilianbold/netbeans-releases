@@ -200,7 +200,9 @@ class J2SEActionProvider implements ActionProvider {
             }
 
             p.setProperty("main.class", mainClass); // NOI18N
-            p.setProperty("debug.class", mainClass); // NOI18N
+            if (!command.equals(COMMAND_RUN)) {
+                p.setProperty("debug.class", mainClass); // NOI18N
+            }
             
             targetNames = (String[])commands.get(command);
             if (targetNames == null) {
@@ -237,7 +239,6 @@ class J2SEActionProvider implements ActionProvider {
                         }
                         p.setProperty("applet.url", url.toString()); // NOI18N
                         if (command.equals (COMMAND_RUN_SINGLE)) {
-                            p.setProperty("run.class", clazz); // NOI18N
                             targetNames = new String[] {"run-applet"}; // NOI18N
                         } else {
                             p.setProperty("debug.class", clazz); // NOI18N

@@ -274,7 +274,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertNotNull("Must found some targets for COMMAND_DEBUG_SINGLE", targets);
         assertEquals("There must be one target for COMMAND_DEBUG_SINGLE", 1, targets.length);
         assertEquals("Unexpected target name", "debug-applet", targets[0]);
-        assertEquals("There must be one target parameter", 2, p.keySet().size());
+        assertEquals("There must be one target parameter", 3, p.keySet().size());
         assertEquals("There must be be target parameter", "foo/Main.java", p.getProperty("javac.includes"));
         appletHtml = build.getFileObject("Main", "html");
         assertNotNull("Applet HTML page must be generated", appletHtml);
@@ -325,7 +325,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertNotNull("Must found some targets for COMMAND_DEBUG", targets);
         assertEquals("There must be one target for COMMAND_DEBUG", 1, targets.length);
         assertEquals("Unexpected target name", "debug", targets[0]);
-        assertEquals("There must be one target parameter", 1, p.keySet().size());
+        assertEquals("There must be one target parameter", 2, p.keySet().size());
         assertEquals("There must be be target parameter", "foo.Main", p.getProperty("main.class"));
         
         // test COMMAND_DEBUG_STEP_INTO
@@ -341,7 +341,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertNotNull("Must found some targets for COMMAND_DEBUG_STEP_INTO", targets);
         assertEquals("There must be one target for COMMAND_DEBUG_STEP_INTO", 1, targets.length);
         assertEquals("Unexpected target name", "debug-stepinto", targets[0]);
-        assertEquals("There must be one target parameter", 1, p.keySet().size());
+        assertEquals("There must be one target parameter", 2, p.keySet().size());
         assertEquals("There must be be target parameter", "foo.Main", p.getProperty("main.class"));
         
     }
