@@ -2482,6 +2482,10 @@ the ${netbeans.dest}/bin/ directory.
     </chmod>
   </target>
 
+  <target name="build-platform" depends="init">
+    <run-depend-build clusters-to-build="nb.cluster.platform"/>
+  </target>
+
   <macrodef name="resolve">
     <attribute name="name"/>
     <attribute name="property"/>
@@ -2515,7 +2519,6 @@ the ${netbeans.dest}/bin/ directory.
   <target name="build-one-cluster-dependencies" 
           depends="build-one-cluster-dependencies-check"
           unless="${one.cluster.name}-hasNoDependencies">
-    <echo>Jsem zde: ${one.cluster.name}</echo>
     <run-depend-build clusters-to-build="${one.cluster.dependencies}"/> 
   </target>
 
@@ -2539,7 +2542,6 @@ the ${netbeans.dest}/bin/ directory.
       <param name="netbeans.no.pre.unscramble" value="true"/>
     </antcall>
     <mkdir dir="${netbeans.dest.dir}"/>
-    <echo>Pokracuji ${one.cluster.name}</echo>
     <nbmerge failonerror="${stop.when.broken.modules}" 
              dest="${netbeans.dest.dir}" 
              topdir="${nb_all}" 
