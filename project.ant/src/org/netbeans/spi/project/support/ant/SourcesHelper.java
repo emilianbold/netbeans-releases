@@ -17,7 +17,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -39,6 +41,7 @@ import org.netbeans.modules.project.ant.FileChangeSupportEvent;
 import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
@@ -359,6 +362,10 @@ public final class SourcesHelper {
         
         private final List/*<ChangeListener>*/ listeners = new ArrayList();
         private final Set/*<FileObject>*/ rootsListenedTo = new WeakSet();
+        /**
+         * The root URLs which were computed last, keyed by group type.
+         */
+        private final Map/*<String,List<URL>>*/ lastComputedRoots = new HashMap();
         
         public SourcesImpl() {
             evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
@@ -435,6 +442,18 @@ public final class SourcesHelper {
                     groups.add(r.toGroup(loc));
                 }
             }
+            // Remember what we computed here so we know whether to fire changes later.
+            List/*<URL>*/ rootURLs = new ArrayList(groups.size());
+            Iterator/*<SourceGroup>*/ it = groups.iterator();
+            while (it.hasNext()) {
+                SourceGroup g = (SourceGroup) it.next();
+                try {
+                    rootURLs.add(g.getRootFolder().getURL());
+                } catch (FileStateInvalidException e) {
+                    assert false : e; // should be a valid file object!
+                }
+            }
+            lastComputedRoots.put(type, rootURLs);
             return (SourceGroup[])groups.toArray(new SourceGroup[groups.size()]);
         }
         
@@ -470,15 +489,35 @@ public final class SourcesHelper {
                 _listeners[i].stateChanged(ev);
             }
         }
+        
+        private void maybeFireChange() {
+            // #47451: check whether anything really changed.
+            boolean change = false;
+            // Cannot iterate over entrySet, as the map will be modified by getSourceGroups.
+            Iterator it = new HashSet(lastComputedRoots.keySet()).iterator();
+            while (it.hasNext()) {
+                String type = (String) it.next();
+                List/*<URL>*/ previous = new ArrayList((List) lastComputedRoots.get(type));
+                getSourceGroups(type);
+                List/*<URL>*/ nue = (List) lastComputedRoots.get(type);
+                if (!nue.equals(previous)) {
+                    change = true;
+                    break;
+                }
+            }
+            if (change) {
+                fireChange();
+            }
+        }
 
         public void fileCreated(FileChangeSupportEvent event) {
             // Root might have been created on disk.
-            fireChange();
+            maybeFireChange();
         }
 
         public void fileDeleted(FileChangeSupportEvent event) {
             // Root might have been deleted.
-            fireChange();
+            maybeFireChange();
         }
 
         public void fileModified(FileChangeSupportEvent event) {
@@ -487,7 +526,7 @@ public final class SourcesHelper {
         
         public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
             // Properties may have changed so as cause external roots to move etc.
-            fireChange();
+            maybeFireChange();
         }
 
     }

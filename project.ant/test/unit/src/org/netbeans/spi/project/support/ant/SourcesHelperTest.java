@@ -217,7 +217,54 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("group #1 is src4dir", src4dir, groups[0].getRootFolder());
         assertEquals("right display name for src4dir", "Packages #1", groups[0].getDisplayName());
         assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
-        // XXX test also change firing in Sources object
+    }
+    
+    public void testSourceLocationChangesFired() throws Exception {
+        Sources s = sh.createSources();
+        // Listen to changes.
+        AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
+        s.addChangeListener(l);
+        // Check baseline GENERIC sources.
+        SourceGroup[] groups = s.getSourceGroups(Sources.TYPE_GENERIC);
+        assertEquals("should have maindir plus src2dir plus src3dir", 3, groups.length);
+        assertEquals("group #1 is src2dir", src2dir, groups[0].getRootFolder());
+        assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
+        assertEquals("group #3 is maindir", maindir, groups[2].getRootFolder());
+        assertFalse("no initial changes", l.expect());
+        // Now change one of them to a different dir.
+        EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("src2.dir", "../../src4");
+        p.setProperty("src2a.dir", "nonsense");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        ProjectManager.getDefault().saveProject(project);
+        assertTrue("got change in GENERIC sources", l.expect());
+        // Check new values.
+        groups = s.getSourceGroups(Sources.TYPE_GENERIC);
+        assertEquals("should have maindir plus src4dir plus src3dir", 3, groups.length);
+        assertEquals("group #1 is src4dir", src4dir, groups[0].getRootFolder());
+        assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
+        assertEquals("group #3 is maindir", maindir, groups[2].getRootFolder());
+        // Check 'java' type groups also.
+        groups = s.getSourceGroups("java");
+        assertEquals("should have src1dir plus src3dir", 2, groups.length);
+        assertEquals("group #1 is src1dir", src1dir, groups[0].getRootFolder());
+        assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
+        assertFalse("no additional changes yet", l.expect());
+        p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("src1.dir", "does-not-exist");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        ProjectManager.getDefault().saveProject(project);
+        assertTrue("got change in java sources", l.expect());
+        groups = s.getSourceGroups("java");
+        assertEquals("should have just src3dir", 1, groups.length);
+        assertEquals("group #2 is src3dir", src3dir, groups[0].getRootFolder());
+        assertFalse("no further changes", l.expect());
+        // #47451: should not fire changes for unrelated properties.
+        p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("irrelevant", "value");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        ProjectManager.getDefault().saveProject(project);
+        assertFalse("no changes fired from an unrelated property", l.expect());
     }
     
     public void testExternalRootLocationChanges() throws Exception {
