@@ -68,8 +68,8 @@ Microsystems, Inc. All Rights Reserved.
         <makenbm file="${libs_root}/xerces.nbm"
                  topdir="."
                  module="netbeans/modules/autoload/xerces.jar"
-                 homepage="http://${homepage.base}/#xerces"
-                 distribution="${dist.base}/xerces.nbm">
+                 homepage="http://libs.${homepage.base}/#xerces"
+                 distribution="http://${dist.base}/xerces.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
@@ -78,8 +78,15 @@ Microsystems, Inc. All Rights Reserved.
     <target name="clean">
         <delete file="manifest-subst.mf"/>
         <delete file="${libs_root}/xerces.nbm"/>
+<!-- directories netbeans and Info had been accidentally created 
+       in repository, do not delete them during clean,
+       because further build will create the directories again
+       and cvs client will not be able  to work with them -->
+<!--
         <delete dir="netbeans"/>
         <delete dir="Info"/>
+-->
+
     </target>
 
     <target name="all" depends="clean, nbm"/>
