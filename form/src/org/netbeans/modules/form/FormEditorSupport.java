@@ -201,7 +201,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   }
 
   /** @returns the FormManager2 of this form */
-  FormManager2 getFormManager () {
+  public FormManager2 getFormManager () {
     return formManager;
   }
   
@@ -273,7 +273,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     }
 
     if (loadManager == null) {
-      // [PENDING - notify user]
+      TopManager.getDefault ().notify (
+        new NotifyDescriptor.Message (
+          FormEditor.getFormBundle ().getString ("MSG_ERR_NotRecognizedForm"),
+          NotifyDescriptor.ERROR_MESSAGE));
       return false;
     }
 
@@ -292,12 +295,16 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       saveManager = loadManager;
     }
 
-    FileObject formFile = formObject.getFormEntry ().getFile ();
     try {
       formManager = loadManager.loadForm (formObject);
       if (formManager == null) {
+        TopManager.getDefault ().notify (
+          new NotifyDescriptor.Message (
+            java.text.MessageFormat.format (
+              FormEditor.getFormBundle ().getString ("FMT_ERR_LoadingForm"), 
+              new Object[] { formObject.getName () }),
+            NotifyDescriptor.ERROR_MESSAGE));
         return false;
-        // [PENDING] - solve the failure
       }
       if (formTopComponent != null) {
         formManager.initFormTopComponent (formTopComponent);
@@ -311,10 +318,21 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       sc.add (new RADComponentNode [] { formRootNode });
         
       formLoaded = true;
-    } catch (IOException e) {
-      TopManager.getDefault ().notifyException (e);
+    } catch (Throwable t) {
+      if (t instanceof ThreadDeath) {
+        throw (ThreadDeath)t;
+      }
+      TopManager.getDefault ().notify (
+        new NotifyDescriptor.Message (
+          java.text.MessageFormat.format (
+            FormEditor.getFormBundle ().getString ("FMT_ERR_LoadingFormDetails"), 
+            new Object[] { formObject.getName (), org.openide.util.Utilities.getShortClassName (t.getClass ()), t.getMessage ()}),
+          NotifyDescriptor.ERROR_MESSAGE));
       return false;
     }
+
+    // if there are errors or warnings, display it
+    FormEditor.displayErrorLog ();
 
     return true;
   }
@@ -352,7 +370,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   private void saveForm () {
     if (formLoaded) {
       formManager.fireFormToBeSaved ();
-      FileObject formFile = formObject.getFormEntry ().getFile ();
       try {
         saveManager.saveForm (formObject, formManager);
       } catch (IOException e) {
@@ -388,6 +405,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  32   Gandalf   1.31        9/7/99   Ian Formanek    Method getFormManager 
+ *       made public, removed some obsoleted code, improved errors notification
  *  31   Gandalf   1.30        8/17/99  Ian Formanek    Fixed closing forms if 
  *       opened on workspace without form
  *  30   Gandalf   1.29        8/15/99  Ian Formanek    Form is opened on 
