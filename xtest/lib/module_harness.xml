@@ -48,6 +48,7 @@ Microsystems, Inc. All Rights Reserved.
         <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">
             <taskdef name="test-configurator" classname="org.netbeans.xtest.MTestConfigurator"/>
             <taskdef name="test-executor" classname="org.netbeans.xtest.MTestExecutor"/>            
+            <taskdef name="test-compiler" classname="org.netbeans.xtest.MTestCompiler"/>            
             <taskdef name="nbpath" classname="org.netbeans.xtest.NbPath"/>
             <!--
             <taskdef name="sysinfo" classname="org.netbeans.xtest.SysInfo"/>
@@ -407,7 +408,15 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Building -->
     <!-- ======== -->
     
-    <!-- Compiles all tests -->
+    <target name="compiler-launcher" depends="config" unless="xtest.distexec">
+       <test-compiler paramClasspathProp="tbag.classpath"
+                        paramPatternsetInProp="tbag.patternset.include"
+                        paramPatternsetExProp="tbag.patternset.exclude"
+                        paramTestConfigProp="tbag.testtype"
+                        paramFormaterProp="tbag.formater"
+                        paramNameProp="tbag.name"
+                        paramExecutorProp="tbag.executor"/>    
+    </target>
     
     <target name="compiletests" depends="init" unless="xtest.distexec">
        <for list="${compile.srcdir}" delimiters=";${path.separator}," property="compile.srcdir.parsed">
@@ -418,9 +427,11 @@ Microsystems, Inc. All Rights Reserved.
     <target name="compile-one-dir" depends="init,extra-classpath,ide-extra-jars">
         <property name="test.extra.classpath" value=""/>
         <property name="compiletest.classpath" value=""/>
+        <property name="compile.excludes" value=""/>
         <javac srcdir="${compile.srcdir.parsed}" 
                deprecation="${build.compiler.deprecation}"
-               debug="${build.compiler.debug}">
+               debug="${build.compiler.debug}"
+               excludes="${compile.excludes}">
             <classpath>
            	<pathelement path="${junit.path}"/>
     		<pathelement path="${xerces.path}"/>
@@ -434,6 +445,12 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Creates lib/test.jar with all tests for this module,       -->
     <!-- maybe there should be more includes here, not just classes -->
     <target name="buildtests" depends="compiletests" unless="xtest.distexec">
+        <antcall target="jars"/>
+    </target>
+    
+    <!-- Creates lib/test.jar with all tests for this module,       -->
+    <!-- maybe there should be more includes here, not just classes -->
+    <target name="jars" unless="xtest.distexec">
         <mkdir dir="${xtest.build}/${xtest.file.location}"/>
         <jar basedir="." 
              jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}"
