@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -42,7 +42,6 @@ public class ClassNode extends Node {
        super(treeOperator, path);
     }
 
-    static final ExecuteAction executeAction = new ExecuteAction();
     static final CutAction cutAction = new CutAction();
     static final CopyAction copyAction = new CopyAction();
     static final PasteAction pasteAction = new PasteAction();
@@ -67,19 +66,11 @@ public class ClassNode extends Node {
         cutAction,
         copyAction,
         deleteAction,
-        compileAction,
-        buildAction,
-        executeAction
     };
     
     Action[] getActions() {
         return javaActions;
     }*/
-
-    /** performs ExecuteAction with this node */    
-    public void execute() {
-        executeAction.perform(this);
-    }
 
     /** performs CutAction with this node */    
     public void cut() {
