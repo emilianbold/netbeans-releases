@@ -93,7 +93,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
             /* At present not allowed to construct actions for selected nodes on more filesystems - its safe behaviour
              * If this restriction will be considered as right solution, then code of this method can be simplified
              */
-            if (fsSet.size () == 0 || fsSet.size() > 1) return createMenu (org.openide.util.Enumerations.EMPTY, popUp, lookup);
+            if (fsSet.size () == 0 || fsSet.size() > 1) return createMenu (org.openide.util.Enumerations.empty(), popUp, lookup);
             
             Iterator entrySetIt = fsSet.entrySet ().iterator();
             LinkedList result = new LinkedList ();

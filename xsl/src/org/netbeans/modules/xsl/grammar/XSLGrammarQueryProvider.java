@@ -85,7 +85,7 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
                 // almost forever, until client uses its own invalidation
                 // rules based e.g. on new node detection at root level
                 // or MIME type listening
-                return org.openide.util.Enumerations.EMPTY;
+                return org.openide.util.Enumerations.empty();
             }
         }
         

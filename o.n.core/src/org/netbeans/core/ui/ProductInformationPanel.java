@@ -488,7 +488,7 @@ public class ProductInformationPanel extends JPanel {
         if (nbdirs != null) {
             more = new java.util.StringTokenizer (nbdirs, File.pathSeparator);
         } else {
-            more = org.openide.util.Enumerations.EMPTY;
+            more = org.openide.util.Enumerations.empty();
         }
             
         java.util.Enumeration all = org.openide.util.Enumerations.concat (

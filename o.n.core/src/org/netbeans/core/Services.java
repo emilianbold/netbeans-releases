@@ -275,7 +275,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
     *    given class
     */
     public Enumeration services (Class clazz) {
-        if (clazz == null) return org.openide.util.Enumerations.EMPTY;
+        if (clazz == null) return org.openide.util.Enumerations.empty();
         Collection res = Lookup.getDefault().lookup(new Lookup.Template(clazz)).allInstances();
         return Collections.enumeration(res);
     }

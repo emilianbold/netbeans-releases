@@ -96,7 +96,7 @@ public class GrammarQueryManagerTest extends NbTestCase {
             // test
             
             GrammarQueryManager manager = GrammarQueryManager.getDefault();
-            GrammarEnvironment env = new GrammarEnvironment(org.openide.util.Enumerations.EMPTY, new InputSource(), null);
+            GrammarEnvironment env = new GrammarEnvironment(org.openide.util.Enumerations.empty(), new InputSource(), null);
             Enumeration trigger = manager.enabled(env);
             assertTrue("No grammar found!", trigger!=null);
         } finally {

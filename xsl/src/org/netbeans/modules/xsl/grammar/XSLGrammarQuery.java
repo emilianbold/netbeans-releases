@@ -431,7 +431,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
         if (node instanceof Element) {
             Element el = (Element) node;
             updateProperties(el);
-            if (prefixList.size() == 0) return org.openide.util.Enumerations.EMPTY;
+            if (prefixList.size() == 0) return org.openide.util.Enumerations.empty();
 
             String firstXslPrefixWithColon = prefixList.get(0) + ":"; // NOI18N
             Set elements;
@@ -476,10 +476,10 @@ public final class XSLGrammarQuery implements GrammarQuery{
 
         } else if (node instanceof Document) {
             //??? it should be probably only root element name
-            if (prefixList.size() == 0) return org.openide.util.Enumerations.EMPTY;
+            if (prefixList.size() == 0) return org.openide.util.Enumerations.empty();
             addXslElementsToEnum(list, getElementDecls().keySet(), prefixList.get(0) + ":", prefix); // NOI18N
         } else {
-            return org.openide.util.Enumerations.EMPTY;
+            return org.openide.util.Enumerations.empty();
         }
 
         return list;
@@ -493,7 +493,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
         } else if (ctx.getNodeType() == Node.ELEMENT_NODE) {
             el = (Element) ctx;
         }
-        if (el == null) return org.openide.util.Enumerations.EMPTY;
+        if (el == null) return org.openide.util.Enumerations.empty();
 
         String elTagName = el.getTagName();
         NamedNodeMap existingAttributes = el.getAttributes();
@@ -523,7 +523,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
                 }
             }
         }
-        if (possibleAttributes == null) return org.openide.util.Enumerations.EMPTY;
+        if (possibleAttributes == null) return org.openide.util.Enumerations.empty();
 
         String prefix = ctx.getCurrentPrefix();
 
@@ -555,7 +555,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
     public Enumeration queryValues(HintContext ctx) {
        if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
             updateProperties(((Attr)ctx).getOwnerElement());
-            if (prefixList.size() == 0) return org.openide.util.Enumerations.EMPTY;
+            if (prefixList.size() == 0) return org.openide.util.Enumerations.empty();
             String xslNamespacePrefix = prefixList.get(0) + ":"; // NOI18N
 
             String prefix = ctx.getCurrentPrefix();
@@ -576,7 +576,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
                 if ("output".equals(key)) {                             // NOI18N
                     if ("doctype-public".equals(attr.getName())) {      // NOI18N
                         UserCatalog catalog = UserCatalog.getDefault();
-                        if (catalog == null) return org.openide.util.Enumerations.EMPTY;
+                        if (catalog == null) return org.openide.util.Enumerations.empty();
                         QueueEnumeration en = new QueueEnumeration();
                         Iterator it = catalog.getPublicIDs();
                         while (it.hasNext()) {
@@ -711,7 +711,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
             }
         }
 
-        return org.openide.util.Enumerations.EMPTY;
+        return org.openide.util.Enumerations.empty();
     }
 
     public GrammarResult queryDefault(HintContext ctx) {
@@ -739,7 +739,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
     }
 
     public Enumeration queryNotations(String prefix) {
-        return org.openide.util.Enumerations.EMPTY;
+        return org.openide.util.Enumerations.empty();
     }
 
     public java.awt.Component getCustomizer(HintContext ctx) {

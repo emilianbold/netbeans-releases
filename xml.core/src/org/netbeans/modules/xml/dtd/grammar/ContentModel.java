@@ -210,7 +210,7 @@ abstract class ContentModel {
             if (terminated() == false) {
                 return org.openide.util.Enumerations.singleton (name);
             } else {
-                return org.openide.util.Enumerations.EMPTY;
+                return org.openide.util.Enumerations.empty();
             }
         }
 
@@ -310,7 +310,7 @@ abstract class ContentModel {
         
         protected Enumeration possibilities() {
             if (terminated() == false) {
-                Enumeration en = org.openide.util.Enumerations.EMPTY;
+                Enumeration en = org.openide.util.Enumerations.empty();
                 for ( int i = current; i<models.length; i++) {
                     ContentModel next = models[i];                    
                     en = org.openide.util.Enumerations.concat (en, next.possibilities());
@@ -318,7 +318,7 @@ abstract class ContentModel {
                 }
                 return en;
             } else {
-                return org.openide.util.Enumerations.EMPTY;
+                return org.openide.util.Enumerations.empty();
             }
         }
 
@@ -389,7 +389,7 @@ abstract class ContentModel {
                 if (peer.terminated()) peer.reset();
                 return peer.possibilities();
             } else {
-                return org.openide.util.Enumerations.EMPTY;
+                return org.openide.util.Enumerations.empty();
             }
         }
 
@@ -495,7 +495,7 @@ abstract class ContentModel {
         
         protected Enumeration possibilities() {
             if (terminated() == false) {
-                Enumeration en = org.openide.util.Enumerations.EMPTY;
+                Enumeration en = org.openide.util.Enumerations.empty();
                 for ( int i = 0; i<models.length; i++) {
                     if (modelsThatNotAcceptedAtLeastOne[i]) continue;
                     ContentModel next = models[i];                    
@@ -503,7 +503,7 @@ abstract class ContentModel {
                 }
                 return en;
             } else {
-                return org.openide.util.Enumerations.EMPTY;
+                return org.openide.util.Enumerations.empty();
             }
         }
 

@@ -63,7 +63,7 @@ public class DTDGrammar implements GrammarQuery {
      * @return list of <code>CompletionResult</code>s (ENTITY_REFERENCE_NODEs)
      */
     public Enumeration queryEntities(String prefix) {
-        if (entities == null) return org.openide.util.Enumerations.EMPTY;
+        if (entities == null) return org.openide.util.Enumerations.empty();
         
         LinkedList list = new LinkedList();
         Iterator it = entities.iterator();
@@ -94,7 +94,7 @@ public class DTDGrammar implements GrammarQuery {
      *        Every list member represents one possibility.
      */
     public Enumeration queryAttributes(HintContext ctx) {
-        if (attrDecls == null) return org.openide.util.Enumerations.EMPTY;
+        if (attrDecls == null) return org.openide.util.Enumerations.empty();
         
         Element el = null;
         // Support two versions of GrammarQuery contract
@@ -103,12 +103,12 @@ public class DTDGrammar implements GrammarQuery {
         } else if (ctx.getNodeType() == Node.ELEMENT_NODE) {
             el = (Element) ctx;
         }
-        if (el == null) return org.openide.util.Enumerations.EMPTY;
+        if (el == null) return org.openide.util.Enumerations.empty();
         
         NamedNodeMap existingAttributes = el.getAttributes();        
         
         Set possibleAttributes = (Set) attrDecls.get(el.getTagName());
-        if (possibleAttributes == null) return org.openide.util.Enumerations.EMPTY;
+        if (possibleAttributes == null) return org.openide.util.Enumerations.empty();
         
         String prefix = ctx.getCurrentPrefix();
         
@@ -136,14 +136,14 @@ public class DTDGrammar implements GrammarQuery {
      *        Every list member represents one possibility.
      */
     public Enumeration queryElements(HintContext ctx) {
-        if (elementDecls == null) return org.openide.util.Enumerations.EMPTY;;
+        if (elementDecls == null) return org.openide.util.Enumerations.empty();;
         
         Node node = ((Node)ctx).getParentNode();        
         Set elements = null;
         
         if (node instanceof Element) {
             Element el = (Element) node;
-            if (el == null) return org.openide.util.Enumerations.EMPTY;;
+            if (el == null) return org.openide.util.Enumerations.empty();;
 
             // lazilly parse content model
             Object model = null;
@@ -161,7 +161,7 @@ public class DTDGrammar implements GrammarQuery {
             }
             if (model instanceof ContentModel) {
                 Enumeration en = ((ContentModel)model).whatCanFollow(new PreviousEnumeration(el, ctx));
-                if (en == null) return org.openide.util.Enumerations.EMPTY;
+                if (en == null) return org.openide.util.Enumerations.empty();
                 String prefix = ctx.getCurrentPrefix();
                 elements = new TreeSet();
                 while (en.hasMoreElements()) {
@@ -178,10 +178,10 @@ public class DTDGrammar implements GrammarQuery {
         } else if (node instanceof Document) {
             elements = elementDecls.keySet();  //??? should be one from DOCTYPE if exist
         } else {
-            return org.openide.util.Enumerations.EMPTY;
+            return org.openide.util.Enumerations.empty();
         }
                 
-        if (elements == null) return org.openide.util.Enumerations.EMPTY;;
+        if (elements == null) return org.openide.util.Enumerations.empty();;
         String prefix = ctx.getCurrentPrefix();
         
         LinkedList list = new LinkedList ();
@@ -201,7 +201,7 @@ public class DTDGrammar implements GrammarQuery {
      * @return list of <code>CompletionResult</code>s (NOTATION_NODEs)
      */
     public Enumeration queryNotations(String prefix) {
-        if (notations == null) return org.openide.util.Enumerations.EMPTY;;
+        if (notations == null) return org.openide.util.Enumerations.empty();;
         
         LinkedList list = new LinkedList ();
         Iterator it = notations.iterator();
@@ -225,17 +225,17 @@ public class DTDGrammar implements GrammarQuery {
      *        Every list member represents one possibility.
      */
     public Enumeration queryValues(HintContext ctx) {
-        if (attrEnumerations.isEmpty()) return org.openide.util.Enumerations.EMPTY;
+        if (attrEnumerations.isEmpty()) return org.openide.util.Enumerations.empty();
         
         if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
             String attributeName = ctx.getNodeName();
             Element element = ((Attr)ctx).getOwnerElement();
-            if (element == null) return org.openide.util.Enumerations.EMPTY;
+            if (element == null) return org.openide.util.Enumerations.empty();
             
             String elementName = element.getNodeName();
             String key = elementName + " " + attributeName;
             List values = (List) attrEnumerations.get(key);
-            if (values == null) return org.openide.util.Enumerations.EMPTY;
+            if (values == null) return org.openide.util.Enumerations.empty();
             
             String prefix = ctx.getCurrentPrefix();
             LinkedList en = new LinkedList ();
@@ -248,7 +248,7 @@ public class DTDGrammar implements GrammarQuery {
             }
             return Collections.enumeration (en);
         }
-        return org.openide.util.Enumerations.EMPTY;
+        return org.openide.util.Enumerations.empty();
     }
 
     // return defaults for attribute values (DTD does not declare content defaults)

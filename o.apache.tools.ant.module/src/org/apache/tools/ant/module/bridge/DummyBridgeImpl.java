@@ -51,7 +51,7 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
     }
     
     public Enumeration getAttributes() {
-        return Enumerations.EMPTY;
+        return Enumerations.empty();
     }
     
     public Class getElementType(String name) {
@@ -59,7 +59,7 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
     }
     
     public Enumeration getNestedElements() {
-        return Enumerations.EMPTY;
+        return Enumerations.empty();
     }
     
     public boolean supportsCharacters() {
