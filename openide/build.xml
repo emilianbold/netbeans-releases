@@ -148,12 +148,7 @@ Microsystems, Inc. All Rights Reserved.
                 <member name="r3fr3shRoot" rename="refreshRoot" />
             </patch>
 
-            <!-- Make toString non-final -->
-	    <patch class="org/openide/filesystems/FileObject"> 
-                <member name="toString"/>
-            </patch>
-            
-            <!-- superclass implements intefaces AbstractFileSystem.Info, List, Change -->
+           <!-- superclass implements intefaces AbstractFileSystem.Info, List, Change -->
 	    <patch class="org/openide/filesystems/LocalFileSystem" super="org/openide/filesystems/$$LocalFileSystem$$Patch$$"> 
                 <!-- methods are made public instead of proteted -->
                 <member name="children" />
