@@ -355,15 +355,16 @@ public class AllOptionsFolder{
     /** Create the instance of appropriate BaseOption subclass */
     private void initInstance(InstanceCookie ic){
         try{
+            Object optionObj;
             synchronized (INSTALLED_OPTIONS_LOCK){
                 if (installedOptions.containsKey(ic.instanceClass())) {
                     return;
                 }
-                Object optionObj = ic.instanceCreate();
+                optionObj = ic.instanceCreate();
                 if (!(optionObj instanceof BaseOptions)) return;
                 installedOptions.put(ic.instanceClass(), (BaseOptions)optionObj);
-                processInitializers((BaseOptions)optionObj, false);
             }
+            processInitializers((BaseOptions)optionObj, false);
         }catch(ClassNotFoundException cnfe){
             cnfe.printStackTrace();
         }catch(IOException ioex){
@@ -389,11 +390,15 @@ public class AllOptionsFolder{
             if (processOldTypeOption){
                 BaseOptions oldBO = BaseOptions.getOptions(kitClass);
                 if (oldBO != null){
+                    boolean process = false;
                     synchronized (INSTALLED_OPTIONS_LOCK){
                         if (!installedOptions.containsKey(kitClass)){
                             installedOptions.put(kitClass, oldBO);
-                            processInitializers(oldBO, false);
+                            process = true;
                         }
+                    }
+                    if (process){
+                        processInitializers(oldBO, false);
                     }
                 }
             }
@@ -417,23 +422,25 @@ public class AllOptionsFolder{
     /** Updates MIME option initializer. Loads user's settings stored in XML
      *  files and updates Setting's initializers via reset method */
     private void processInitializers(BaseOptions bo, boolean remove) {
-        synchronized (Settings.class){
-            Settings.Initializer si = bo.getSettingsInitializer();
-            // Remove the old one
-            Settings.removeInitializer(si.getName());
-            if (!remove) { // add the new one
-                Settings.addInitializer(si, Settings.OPTION_LEVEL);
+        synchronized (BaseKit.class){
+            synchronized (Settings.class){
+                Settings.Initializer si = bo.getSettingsInitializer();
+                // Remove the old one
+                Settings.removeInitializer(si.getName());
+                if (!remove) { // add the new one
+                    Settings.addInitializer(si, Settings.OPTION_LEVEL);
+                }
+
+                // load all settings of this mime type from XML files
+                bo.loadXMLSettings();
+
+                //initialize popup menu
+                bo.initPopupMenuItems();
+
+                /* Reset the settings so that the new initializers take effect
+                 * or the old are removed. */
+                Settings.reset();
             }
-
-            // load all settings of this mime type from XML files
-            bo.loadXMLSettings();
-
-            //initialize popup menu
-            bo.initPopupMenuItems();
-
-            /* Reset the settings so that the new initializers take effect
-             * or the old are removed. */
-            Settings.reset();
         }
     }
     
