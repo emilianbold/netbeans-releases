@@ -526,6 +526,11 @@ ToDo:
       <ant dir="../openidex/looks" target="netbeans"/>
   </target>
 
+  <target name="all-utilities/loaderswitcher" depends="all-openide">
+      <echo message="Building module utilitiesx/loaderswitcher..."/>
+      <ant dir="../utilities/loaderswitcher" target="netbeans"/>
+  </target>
+  
   <!-- build NBMs for selected modules -->
   <target name="build-nbms" depends="init">
       <for-each startdir=".." target="nbm" locations="${fixedmodules},${modules}"/>
