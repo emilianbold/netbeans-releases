@@ -92,9 +92,26 @@ public class ComponentInspector extends TopComponent
     // ------------
     // construction (ComponentInspector is a singleton)
 
-    public static ComponentInspector getInstance() {
-        if (instance == null)
+    /** Gets default instance. Don't use directly, it reserved for '.settings' file only,
+     * i.e. deserialization routines, otherwise you can get non-deserialized instance. */
+    public static synchronized ComponentInspector getDefault() {
+        if(instance == null) {
             instance = new ComponentInspector();
+        }
+        return instance;
+    }
+
+    /** Finds default instance. Use in client code instead of {@link #getDefault()}. */
+    public static synchronized ComponentInspector getInstance() {
+        if(instance == null) {
+            TopComponent tc = WindowManager.getDefault().findTopComponent("ComponentInspector"); // NOI18N
+            if(instance == null) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
+                    "Can not find ComponentInspector component for its ID. Returned " + tc)); // NOI18N
+                instance = new ComponentInspector();
+            }
+        }
+        
         return instance;
     }
 
@@ -146,20 +163,6 @@ public class ComponentInspector extends TopComponent
     // Lookup.Provider from TopComponent
     public Lookup getLookup() {
         return lookup;
-    }
-
-    public void open() {
-        // #37141 Rough workaround.
-        WindowManager wm = WindowManager.getDefault();
-        Mode mode = wm.findMode(this);
-        if(mode == null) {
-            mode = wm.findMode("inspector"); // NOI18N
-            if(mode != null) {
-                mode.dockInto(this);
-            }
-        }
-        
-        super.open();
     }
 
     public UndoRedo getUndoRedo() {
@@ -733,7 +736,7 @@ public class ComponentInspector extends TopComponent
     final public static class ResolvableHelper implements java.io.Serializable {
         static final long serialVersionUID = 7424646018839457544L;
         public Object readResolve() {
-            return ComponentInspector.getInstance();
+            return ComponentInspector.getDefault();
         }
     }
 }

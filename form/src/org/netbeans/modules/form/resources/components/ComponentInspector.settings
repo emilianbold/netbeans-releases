@@ -14,8 +14,5 @@
     <instanceof class="javax.swing.JComponent"/>
     <instanceof class="java.awt.Component"/>
     <instanceof class="java.io.Externalizable"/>
-    <serialdata class="org.netbeans.modules.form.ComponentInspector">
-        ACED00057372003D6F72672E6E65746265616E732E6D6F64756C65732E666F726D2E436F6D706F6E656E74496E7370656374
-        6F72245265736F6C7661626C6548656C7065726709A43777F1AF080200007870
-    </serialdata>
+    <instance class="org.netbeans.modules.form.ComponentInspector" method="getDefault"/>
 </settings>
