@@ -118,9 +118,10 @@ final class Services extends ServiceType.Registry {
     return System.getProperty ("netbeans.debug.exceptions") != null;
   }
   
-  
-  /** all services */
-  public Enumeration services () {
+  /** Getter for list of all services types.
+  * @return list of ServiceType
+  */
+  private java.util.List getServiceTypesImpl () {
     List l = current;
     if (l == null) {
       l = (List)Children.MUTEX.readAccess (new Mutex.Action () {
@@ -135,8 +136,47 @@ final class Services extends ServiceType.Registry {
       });
       current = l;
     }
-    return Collections.enumeration (l);
+    return l;
   }
+
+  /** Getter for list of all services types.
+  * @return list of ServiceType
+  */
+  public java.util.List getServiceTypes () {
+    return new LinkedList (getServiceTypesImpl ());
+  }
+
+  /** Setter for list of all services types. This allows to change
+  * instaces of the objects but only of the types that are already registered
+  * to the system by manifest sections.
+  *
+  * @param arr list of ServiceTypes 
+  */
+  private void setServiceTypesImpl (final java.util.List arr) {
+    Children.MUTEX.postWriteRequest (new Runnable () {
+      public void run () {
+        FIRST.changeAll (arr);
+        firePropertyChange ();
+      }
+    });
+  }
+  
+  /** Setter for list of all services types. This allows to change
+  * instaces of the objects but only of the types that are already registered
+  * to the system by manifest sections.
+  *
+  * @param arr list of ServiceTypes 
+  */
+  public void setServiceTypes (java.util.List arr) {
+    setServiceTypesImpl (new LinkedList (arr));
+  }
+  
+  /** all services */
+  public Enumeration services () {
+    return Collections.enumeration (getServiceTypesImpl ());
+  }
+  
+
   
   
   /** Write the object down.
@@ -188,13 +228,8 @@ final class Services extends ServiceType.Registry {
         } // else ignore
       }
     }
-    
-    Children.MUTEX.postWriteRequest (new Runnable () {
-      public void run () {
-        FIRST.changeAll (ll);
-        firePropertyChange ();
-      }
-    });
+
+    setServiceTypesImpl (ll);
   }
   
   /** Only one instance */
@@ -685,6 +720,7 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  15   Gandalf   1.14        12/21/99 Jaroslav Tulach serviceTypes r/w property
 *  14   Gandalf   1.13        12/20/99 Jesse Glick     No more "default 
 *       services", all are freely reorderable.
 *  13   Gandalf   1.12        11/16/99 Ales Novak      RuntimeException Platform
