@@ -81,7 +81,9 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
 
 
     private boolean wasPopupDisplayed;
-    private KeyEvent lastKeyPressed; // which posted a popup from main menu
+    private int lastModifiers;
+    private char lastKeyChar;
+    private boolean lastSampled = false;
     
     public boolean postProcessKeyEvent(KeyEvent ev) {
         if (ev.isConsumed())
@@ -138,7 +140,10 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
         }
 
         if (ev.getID() == KeyEvent.KEY_PRESSED) {
-            lastKeyPressed = ev;
+            // decompose to primitive fields to avoid memory profiler confusion (keyEevnt keeps source reference)
+            lastKeyChar = ev.getKeyChar();
+            lastModifiers = ev.getModifiers();
+            lastSampled = true;
         }
         
         MenuElement[] arr = MenuSelectionManager.defaultManager().getSelectedPath();
@@ -164,11 +169,11 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
         }
         
         if (!wasPopupDisplayed
-            && lastKeyPressed != null
+            && lastSampled == true
             && ev.getID() == KeyEvent.KEY_TYPED
-            && lastKeyPressed.getModifiers() == InputEvent.ALT_MASK
+            && lastModifiers == InputEvent.ALT_MASK
             && ev.getModifiers() == InputEvent.ALT_MASK
-            && lastKeyPressed.getKeyChar() == ev.getKeyChar()
+            && lastKeyChar == ev.getKeyChar()
             ) {
             wasPopupDisplayed = true;
             ev.consume();
