@@ -80,7 +80,7 @@ public class NbEditorKit extends ExtKit {
 
     /** Name of the action for generating of code folding popup menu*/
     public static final String generateFoldPopupAction = "generate-fold-popup"; // NOI18N
-    
+
     static {
         contentTypeTable = new HashMap();
         contentTypeTable.put("org.netbeans.modules.properties.syntax.PropertiesKit", "text/x-properties"); // NOI18N
@@ -314,6 +314,7 @@ public class NbEditorKit extends ExtKit {
                     item.putClientProperty ("HelpID", helpID); // NOI18N
                 }
                 assignAccelerator(component.getKeymap(), action, item);
+                debugPopupMenuItem(item, action);
                 popupMenu.add(item);
             }
         }
@@ -337,6 +338,7 @@ public class NbEditorKit extends ExtKit {
                             item
                         );
 
+                        debugPopupMenuItem(item, action);
                         popupMenu.add(item);
                     }
                 }
@@ -373,6 +375,7 @@ public class NbEditorKit extends ExtKit {
                                  action,
                                  item
                             );
+                            debugPopupMenuItem(item, action);
                             popupMenu.add(item);
                         }
 
