@@ -76,7 +76,7 @@ public class Installer extends ModuleInstall {
   /** Start listening at SELECTED_NODES.
   */
   public void restored () {
-    hook = new SearchHook(new SearchPresenter());
+    hook = new SearchHook(new SearchPerformer());
     hook.hook();   
   }
   
@@ -115,6 +115,7 @@ public class Installer extends ModuleInstall {
 
 /* 
 * Log
+*  5    Gandalf   1.4         12/17/99 Petr Kuzel      Bundling.
 *  4    Gandalf   1.3         12/16/99 Petr Kuzel      
 *  3    Gandalf   1.2         12/15/99 Petr Kuzel      
 *  2    Gandalf   1.1         12/14/99 Petr Kuzel      Minor enhancements
