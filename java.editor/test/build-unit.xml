@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="java/editor/test/unit" basedir="." default="all">
+    
+    <target name="init">
+    
+        <path id="compiletest.classpath">
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-util.jar"/>
+
+            <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+            <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
+            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+            <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
+            <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
+<!--            <pathelement location="${debuggercore/oldapi.dir}/${nb.modules.dir}/org-openide-debugger.jar"/> -->
+            <pathelement location="${projects/queries.dir}/${nb.modules.dir}/org-netbeans-modules-queries.jar"/>
+<!--            <pathelement path="${junit.path}"/> -->
+            <pathelement path="${xerces.path}"/>
+        </path>
+    
+        <path id="codetest.classpath">
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-fold.jar"/>
+            <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-util.jar"/>
+
+            <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+            <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
+            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+            <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
+            <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
+<!--            <pathelement location="${debuggercore/oldapi.dir}/${nb.modules.dir}/org-openide-debugger.jar"/> -->
+            <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
+            <pathelement location="${openide/execution/deprecated.dir}/${nb.modules.dir}/org-openide-execution-deprecated.jar"/>
+            <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/>
+            <pathelement location="${core/output2.dir}/${nb.modules.dir}/org-netbeans-core-output2.jar"/>
+            <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
+            <pathelement location="${classfile.dir}/${nb.modules/autoload.dir}/classfile.jar"/>
+            <pathelement location="${clazz.dir}/${nb.modules.dir}/org-netbeans-modules-clazz.jar"/>
+            <pathelement location="${projects/queries.dir}/${nb.modules.dir}/org-netbeans-modules-queries.jar"/>
+            <pathelement location="${java/platform.dir}/${nb.modules.dir}/org-netbeans-modules-java-platform.jar"/>
+
+<!--            <pathelement path="${junit.path}"/> -->
+            <pathelement path="${xerces.path}"/>
+        </path>
+    
+    </target>
+    
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+    
+    <target name="unit-compiler" depends="init">
+        <buildTests srcDir="unit/src" compileExcludes="**/data/**">
+            <classpath refid="compiletest.classpath"/>
+        </buildTests>
+    </target>
+
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes tests inside IDE -->
+    <target name="runidetest" depends="init">
+        <executeTests  pluginName="ide">
+            <classpath refid="codetest.classpath"/>
+        </executeTests>
+    </target>
+    
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes standalone tests -->
+    <target name="runcodetest" depends="init">
+        <executeTests  pluginName="jvm">
+            <classpath refid="codetest.classpath"/>
+        </executeTests>
+    </target>
+
+    
+</project>

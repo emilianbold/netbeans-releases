@@ -134,9 +134,11 @@ public class EditorTestCase extends JellyTestCase {
      *
      * @return default project name
      */
-    protected final String getDefaultProjectName() {
+    protected String getDefaultProjectName() {
         return defaultProjectName;
     }
+    
+    
     
     /**
      * Set the default project name to be used
@@ -144,9 +146,11 @@ public class EditorTestCase extends JellyTestCase {
      *
      * @param defaultProjectName new default project name.
      */
+    /*
     protected void setDefaultProjectName(String defaultProjectName) {
         this.defaultProjectName = defaultProjectName;
     }
+     */
     
     /**
      * Open default project determined
