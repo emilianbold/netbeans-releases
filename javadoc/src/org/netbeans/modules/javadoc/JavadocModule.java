@@ -28,18 +28,18 @@ import org.openide.src.nodes.FilterFactory;
 import org.openide.actions.CutAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.modules.ModuleInstall;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataLoader;
 import org.openide.TopManager;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.*;
 
 // MODULE imports ---------------
 
-import com.netbeans.developer.modules.loaders.java.JavaDataObject;
-import com.netbeans.developer.modules.loaders.java.JavaNode;
+//import com.netbeans.developer.modules.loaders.java.JavaDataObject;
+//import com.netbeans.developer.modules.loaders.java.JavaNode;
 import com.netbeans.developer.modules.javadoc.settings.StdDocletSettings;
 import com.netbeans.developer.modules.javadoc.comments.JavaDocPropertySupportFactory;
+import com.netbeans.developer.modules.javadoc.search.SearchDocAction;
 
 /** Class for initializing Javadoc module on IDE startup.
 
@@ -110,11 +110,26 @@ public class JavadocModule implements ModuleInstall {
     }
 
 
+    // Create default directory for JavaDoc
 
     File dir = sdsTemp.getDirectory();
     
     if ( !dir.isDirectory() ) 
       dir.mkdirs();
+
+    // Install Search Action
+
+    try {
+      createFirstAction (SearchDocAction.class, 
+        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help") );
+    } catch (Exception e) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) {
+        e.printStackTrace ();
+      }
+      // ignore failure to install
+    }
+
+
 
     restored();
   }
@@ -122,39 +137,23 @@ public class JavadocModule implements ModuleInstall {
   /** By uninstalling module from the IDE do nothing. 
   */
   public void uninstalled () {
+
+    // Remove doc search action
+    try {
+      removeAction (SearchDocAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help"));
+    } 
+    catch (Exception e) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) {
+        e.printStackTrace ();
+      }
+    } 
   }
   
   /** Called on IDE startup. Registers actions for generating documentation 
   * on DataFolder and JavaDataObject.
   */
   public void restored() {
-    
-    // Install DataFolder action
-    /*
-    installActions( TopManager.getDefault().getLoaderPool().firstProducerOf( DataFolder.class ),
-      new SystemAction[] { SystemAction.get( GenerateDocAction.class ), null } );
-    */
-    // Install GenerateDocActon for every producer of JavaDataObject and derived classes.
-    /*
-    TopManager.getDefault().getLoaderPool().addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
-
-        Class jdoClass = JavaDataObject.class;
-        if ( jdoClass == null ) {
-          return;
-        }
-
-        Enumeration en = TopManager.getDefault().getLoaderPool().producersOf( jdoClass );
-
-        while ( en.hasMoreElements() ) {
-          DataLoader loader =  (DataLoader)en.nextElement();
-          if ( !hasGenerateDoc( loader )) 
-            installActions(loader, new SystemAction[] { SystemAction.get( GenerateDocAction.class ), null } );                          
-        }
-      }
-    });
-    */
-  
+      
     // Install the factory for adding JavaDoc property to nodes
     invokeDynamic( "com.netbeans.developer.modules.loaders.java.JavaDataObject",
                    "addExplorerFilterFactory",
@@ -181,51 +180,40 @@ public class JavadocModule implements ModuleInstall {
     return true;
   }
 
- 
-  /** Installs array of new actions into popup menu of DataLoeader before the action Cut
-  * @param dl DataLoadaer object where to install new actions
-  * @param sa[] Array of new acrions
-  */
-  /*
-  private void installActions ( DataLoader dl, SystemAction sa[] ) {
-    SystemAction old_sa[], new_sa[]; 
-    int i;
-    int j = 0;
+  // UTILITY METHODS ----------------------------------------------------------------------
 
-    old_sa = dl.getActions();
+  private void createFirstAction ( Class actionClass, DataFolder folder )
+  throws java.io.IOException {
+    String actionShortName = Utilities.getShortClassName (actionClass);
+    String actionName = actionClass.getName ();
 
-    new_sa = new SystemAction[ old_sa.length + sa.length ];
-     
-    for (i = 0; i < old_sa.length; i++) {
-      if ( old_sa[i] instanceof CutAction ) {
-        for (j = 0; j < sa.length ; j++ )
-          new_sa[i + j] = sa[j];
-        }
-      new_sa[i+j] = old_sa[i];
-    } 
-
-    if (j == 0) {
-      for (j = 0; i < sa.length ; j++ )
-          new_sa[i + j] = sa[j];
-    }
-
-  dl.setActions( new_sa );
-  }  
-  */
-  /** Checks whether an action of type actionClass is already installed in 
-  * DataLoader's popup menu
-  */
-  /*
-  private boolean hasGenerateDoc ( DataLoader dl ) {
-    SystemAction actions[] = dl.getActions();
+    DataObject[] children = folder.getChildren ();
+    DataObject[] newOrder = new DataObject [children.length + 2 ];
     
-    for (int i = 0; i < actions.length; i++) 
-      if (actions[i] instanceof GenerateDocAction )
-        return true;
+    System.arraycopy (children, 0, newOrder, 2, children.length );
+    InstanceDataObject actionInstance = InstanceDataObject.create (folder, actionShortName, actionName);
+    InstanceDataObject afterSeparator = InstanceDataObject.create (folder, "Separator2-"+actionShortName, "javax.swing.JSeparator");
 
-    return false;
+    newOrder[0] = actionInstance;
+    newOrder[1] = afterSeparator;
+
+    folder.setOrder (newOrder);
+
   }
-  */
+
+ 
+  private void removeAction (Class actionClass, DataFolder folder) throws java.io.IOException {
+    String actionShortName = Utilities.getShortClassName (actionClass);
+    InstanceDataObject.remove (folder, actionShortName, actionClass.getName ());
+    try {
+      InstanceDataObject.remove (folder, "Separator1-"+actionShortName, "javax.swing.JSeparator");
+      InstanceDataObject.remove (folder, "Separator2-"+actionShortName, "javax.swing.JSeparator");
+    } catch (Exception e) {
+      // these do not have to exist, wo we will catch the exception silently
+    }
+  }
+
+  
 
   /** Assigns a key to an action
   * @param key key name
@@ -247,7 +235,8 @@ public class JavadocModule implements ModuleInstall {
     map.addActionForKeyStroke (str, a);
   }
 
-
+  /** Dynamicaly invokes a method
+   */
   private void invokeDynamic( String className, String methodName, FilterFactory factory ) {  
 
     try {
@@ -276,6 +265,8 @@ public class JavadocModule implements ModuleInstall {
 
 /* 
  * Log
+ *  13   Gandalf   1.12        7/20/99  Petr Hrebejk    Action installation 
+ *       added
  *  12   Gandalf   1.11        7/9/99   Petr Hrebejk    JavaDoc comments support
  *       added to module
  *  11   Gandalf   1.10        6/9/99   Ian Formanek    ---- Package Change To 
