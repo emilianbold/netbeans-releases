@@ -430,9 +430,6 @@ public final class BeanInstaller
 
     /** Auto loading all jars - beans */
     public static void autoLoadBeans() {
-        FormLoaderSettings settings = (FormLoaderSettings)SharedClassObject
-                                    .findObject(FormLoaderSettings.class, true);
-
         File globalFolder = new File(System.getProperty("netbeans.home") + File.separator + "beans");
         try {
             globalFolder = new File(globalFolder.getCanonicalPath());
