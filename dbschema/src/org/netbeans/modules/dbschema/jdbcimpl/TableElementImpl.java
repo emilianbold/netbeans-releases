@@ -273,7 +273,7 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                             name = (String) rset.get(new Integer(6));
                             columnName = (String) rset.get(new Integer(9));
                             uniqueStr = (String) rset.get(new Integer(4));
-                            if (uniqueStr == null || uniqueStr.equals("0") || uniqueStr.equalsIgnoreCase("false"))
+                            if (uniqueStr == null || uniqueStr.equals("0") || uniqueStr.equalsIgnoreCase("false") || uniqueStr.equalsIgnoreCase("f"))
                                 unq = false;
                             else
                                 unq = true;
