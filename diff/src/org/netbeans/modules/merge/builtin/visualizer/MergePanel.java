@@ -211,9 +211,9 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 2);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 2);
         leftCommandPanel.add(acceptAndNextLeftButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -272,9 +272,9 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 2);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 1, 0, 2);
         rightCommandPanel.add(acceptAndNextRightButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -796,90 +796,6 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         //        joinScrollBars();
     }
     
-/*    private void syncFont(JEditorPane editorPane, JTextPane numLineText) {
-        //editorPane.getToolkit().sync();
-        /*
-        try {
-            //System.out.println("editor size = "+editorPane.getSize()+", last pos = "+editorPane.modelToView(editorPane.getDocument().getEndPosition().getOffset()));
-            java.awt.Rectangle viewRect = editorPane.modelToView(editorPane.getDocument().getEndPosition().getOffset());
-            if (viewRect.y <= totalLines && viewRect.height == 1) return; // probably not complete or empty document
-            editorPane.setSize(editorPane.getSize().width, viewRect.y + viewRect.height);
-            totalHeight = viewRect.y + viewRect.height;
-            //System.out.println("  => new editor size = "+editorPane.getSize());
-        } catch (javax.swing.text.BadLocationException exc) {
-            // ignored
-        }
- */
-/*        //editorPane.getToolkit().sync();
-        java.awt.Font f = editorPane.getFont();
-        //numLineText.setFont(f);
-        float fontSize = f.getSize();
-        java.awt.Font nlf = numLineText.getFont();
-        StyledDocument doc = (StyledDocument) editorPane.getDocument();
-        Element root = org.openide.text.NbDocument.findLineRootElement(doc);
-        Element element = root.getElement(0);
-        //System.out.println("fontSize = "+fontSize);
-        javax.swing.text.View v = this.jEditorPane2.getUI().getRootView(this.jEditorPane2);
-        if (v.getViewCount() == 1)
-            v = v.getView (0);
-        int rh = (int) v.getPreferredSpan (View.Y_AXIS);
-        int lineHeight = rh/(org.openide.text.NbDocument.findLineNumber(doc, doc.getEndPosition().getOffset())+1);
-        int spacingGap = 0;
-        if (element != null) {
-            javax.swing.text.ViewFactory viewFactory = editorPane.getEditorKit().getViewFactory();
-            if (viewFactory != null) {
-                javax.swing.text.View view = viewFactory.create(element);
-                fontSize = view.getMaximumSpan(javax.swing.text.View.Y_AXIS);
-            } else {
-                //System.out.println("size = "+editorPane.getSize().height+", num lines = "+org.openide.text.NbDocument.findLineNumber(doc, doc.getEndPosition().getOffset()));
-                //int lineHeight = editorPane.getSize().height/org.openide.text.NbDocument.findLineNumber(doc, doc.getEndPosition().getOffset());
-                //System.out.println("lineHeight = "+lineHeight);
-                int fmh;
-                do {
-                    java.awt.Font nlf1 = nlf.deriveFont(fontSize);
-                    fmh = numLineText.getFontMetrics(nlf1).getHeight();
-                    //System.out.println("fontSize = "+fontSize+" => fmh = "+fmh);
-                    if (fmh < lineHeight) fontSize += 1;
-                } while (fmh < lineHeight);
-                int maxfmh = fmh;
-                do {
-                    java.awt.Font nlf1 = nlf.deriveFont(fontSize);
-                    fmh = numLineText.getFontMetrics(nlf1).getHeight();
-                    //System.out.println("fontSize = "+fontSize+" => fmh = "+fmh);
-                    if (fmh > lineHeight) fontSize -= 1;
-                } while (fmh > lineHeight && fontSize > 1);
-                int minfmh = fmh;
-                spacingGap = maxfmh - minfmh;
-                //                if (minfmh != maxfmh && (lineHeight - minfmh)/(maxfmh - lineHeight) > 1) fontSize += 1;
-            }
-            //System.out.println("recalculated fontSize = "+fontSize);
-        }
-        nlf = nlf.deriveFont(fontSize);
-        int nlfLineHeight = numLineText.getFontMetrics(nlf).getHeight();
-        numLineText.setFont(nlf);
-        int numLines = root.getElementCount();
-        StyledDocument docNl = numLineText.getStyledDocument();
-        Element rootNl = docNl.getDefaultRootElement();
-        if (numLines < rootNl.getElementCount()) numLines = rootNl.getElementCount();
-        //for(int i = 0; i < numLines; i++) {
-        Element elementNl = rootNl;//.getElement(i);
-        AttributeSet attrNl =  elementNl.getAttributes();
-        Style s = docNl.getLogicalStyle(elementNl.getStartOffset());
-        //System.out.println("style at "+elementNl.getStartOffset()+": "+s.getAttribute(StyleConstants.FontConstants.FontSize));
-/*        StyleConstants.setLineSpacing(s, ((float) StyleConstants.getLineSpacing(s)lineHeight)/nlfLineHeight);
-/*        StyleConstants.setFontSize(s, nlf.getSize());
-        if (spacingGap > 0) {
-            float currentGap = StyleConstants.getSpaceAbove(s);
-            currentGap = currentGap + spacingGap;
-            StyleConstants.setSpaceAbove(s, currentGap);
-        }
-        //StyleConstants.setSpaceAbove(s, lineHeight - nlf.getSize());
-/*        docNl.setLogicalStyle(elementNl.getStartOffset(), s);
-        //}
-        numLineText.repaint();
-    }
- */
-    
     private void setScrollBarsIncrements() {
         StyledDocument doc = (StyledDocument) jEditorPane1.getDocument();
         int lineHeight = jEditorPane1.getSize().height/org.openide.text.NbDocument.findLineNumber(doc, doc.getEndPosition().getOffset());
@@ -888,17 +804,6 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         jScrollPane1.getHorizontalScrollBar().setUnitIncrement((int) (HORIZONTAL_SCROLL_NUM_LINES*lineHeight));
         jScrollPane2.getHorizontalScrollBar().setUnitIncrement((int) (HORIZONTAL_SCROLL_NUM_LINES*lineHeight));
     }
-    
-    /**
-     * Synchronize the font of line numbers with the editor's font.
-     */
-/*    private void syncFont() {
-        initGlobalSizes();
-//        syncFont(jEditorPane1, jTextPane1);
-//        syncFont(jEditorPane2, jTextPane2);
-        setScrollBarsIncrements();
-    }
- */
     
     private void addChangeListeners() {
         jEditorPane1.addPropertyChangeListener("font", new java.beans.PropertyChangeListener() {
@@ -1059,15 +964,29 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         jEditorPane3.setEditorKit(kit);
     }
     
+    /*
     public void setDocument1(Document doc) {
         if (doc != null) {
             jEditorPane1.setDocument(doc);
         }
     }
+     */
     
-    public void setDocument2(Document doc) {
+    public void setResultDocument(Document doc) {
         if (doc != null) {
-            jEditorPane2.setDocument(doc);
+            jEditorPane3.setDocument(doc);
+            jEditorPane3.setEditable(false);
+            linesComp3 = new LinesComponent(jEditorPane3);
+            resultScrollPane.setRowHeaderView(linesComp3);
+        }
+    }
+    
+    public void writeResult(Writer w) throws IOException {
+        try {
+            jEditorPane3.getEditorKit().write(w, jEditorPane3.getDocument(),
+                                              0, jEditorPane3.getDocument().getLength());
+        } catch (BadLocationException blex) {
+            throw new IOException(blex.getLocalizedMessage());
         }
     }
     
@@ -1121,6 +1040,11 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         setHighlight(doc, line1, line2, color);
     }
     
+    public void highlightRegion3(int line1, int line2, java.awt.Color color) {
+        StyledDocument doc = (StyledDocument) jEditorPane3.getDocument();
+        setHighlight(doc, line1, line2, color);
+    }
+    
     private void addEmptyLines(StyledDocument doc, int line, int numLines) {
         int lastOffset = doc.getEndPosition().getOffset();
         int totLines = org.openide.text.NbDocument.findLineNumber(doc, lastOffset);
@@ -1153,6 +1077,13 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         //System.out.println("addEmptyLines2: line = "+line+", numLines = "+numLines); // NOI18N
         addEmptyLines(doc, line, numLines);
         linesComp2.addEmptyLines(line, numLines);
+    }
+    
+    public void addEmptyLines3(int line, int numLines) {
+        StyledDocument doc = (StyledDocument) jEditorPane3.getDocument();
+        //System.out.println("addEmptyLines2: line = "+line+", numLines = "+numLines); // NOI18N
+        addEmptyLines(doc, line, numLines);
+        linesComp3.addEmptyLines(line, numLines);
     }
     
     
@@ -1195,7 +1126,7 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
     private javax.swing.JLabel resultLabel;
     // End of variables declaration//GEN-END:variables
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
         final MergePanel panel = new MergePanel();
         panel.setMimeType1("text/x-java");
         panel.setMimeType2("text/x-java");
@@ -1229,5 +1160,48 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         frame.getContentPane().add(panel);
         frame.setVisible(true);
         panel.open();
+    }
+
+    public static void main(String[] args) {
+        final MergePanel panel = new MergePanel();
+        panel.setMimeType1("text/x-java");
+        panel.setMimeType2("text/x-java");
+        panel.setMimeType3("text/x-java");
+        try {
+            panel.setSource1(new java.io.BufferedReader(new java.io.InputStreamReader(panel.getClass().getResourceAsStream("/org/netbeans/modules/diff/builtin/visualizer/DiffPanel.java"))));
+            panel.setSource2(new java.io.BufferedReader(new java.io.InputStreamReader(panel.getClass().getResourceAsStream("/org/netbeans/modules/merge/builtin/visualizer/MergePanel.java"))));
+            panel.setResultSource(new java.io.BufferedReader(new java.io.InputStreamReader(panel.getClass().getResourceAsStream("/org/netbeans/modules/merge/builtin/visualizer/MergePanel.java.TEST.txt"))));
+        } catch (java.io.IOException ioex) {}
+        //panel.addEmptyLines1(15, 2);
+        //panel.highlightRegion2(16, 17, new java.awt.Color(180, 255, 180));
+        panel.addEmptyLines1(37, 2);
+        panel.highlightRegion2(38, 39, new java.awt.Color(255, 160, 180));
+        panel.highlightRegion1(45, 45, new java.awt.Color(255, 160, 180));
+        panel.highlightRegion2(45, 45, new java.awt.Color(255, 160, 180));
+        panel.highlightRegion3(45, 45, new java.awt.Color(255, 160, 180));
+        panel.addPrevLineButtonListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                panel.setCurrentLine(38, 2);
+            }
+        });
+        panel.addNextLineButtonListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                panel.setCurrentLine(45, 1);
+            }
+        });
+        panel.setSource1Title("Working File");
+        panel.setSource2Title("Revision 1.2");
+        panel.setResultSourceTitle("Merge Result");
+        panel.setStatusLabel("Conflict: 2 of 10, Unresolved: 8");
+        org.openide.DialogDescriptor dlg = new org.openide.DialogDescriptor(
+            panel, "Merge", false, org.openide.DialogDescriptor.OK_CANCEL_OPTION,
+            org.openide.DialogDescriptor.OK_OPTION, 0, new HelpCtx(panel.getClass()), null);
+        java.awt.Dialog dialog = org.openide.TopManager.getDefault().createDialog(dlg);
+        dialog.show();
+        panel.open();
+        //javax.swing.JFrame frame = new javax.swing.JFrame();
+        //frame.getContentPane().add(panel);
+        //frame.setVisible(true);
+        //panel.open();
     }
 }
