@@ -156,13 +156,8 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         descs[customDesc.length]=xmlDesc;
         xmlMultiViewIndex=customDesc.length;
 
-        CloneableTopComponent mvtc = MultiViewFactory.createCloneableMultiView(descs, descs[0],
-                new CloseOperationHandler() {
-                    public boolean resolveCloseOperation(CloseOperationState[] elements) {
-                        return canClose();
-                    }
-                });
-        
+        CloneableTopComponent mvtc = MultiViewFactory.createCloneableMultiView(descs, descs[0],new MyCloseHandler(dObj));
+
         // #45665 - dock into editor mode if possible..
         Mode editorMode = WindowManager.getDefault().findMode(org.openide.text.CloneableEditorSupport.EDITOR_MODE);
 
@@ -172,60 +167,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         this.mvtc=mvtc;
         return mvtc;
     }
-    
-    /** rewriting canClose() method in order to be able to rollback the changes on discard obtion
-    */
-    protected boolean canClose () {
-        if (dObj.isModified () || dObj.isChangedFromUI()) {
-            String msg = messageSave ();
-
-            java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(org.openide.text.CloneableEditorSupport.class);
-
-            javax.swing.JButton saveOption = new javax.swing.JButton (bundle.getString("CTL_Save")); // NOI18N
-            saveOption.getAccessibleContext ().setAccessibleDescription (bundle.getString("ACSD_CTL_Save")); // NOI18N
-            saveOption.getAccessibleContext ().setAccessibleName (bundle.getString("ACSN_CTL_Save")); // NOI18N
-            javax.swing.JButton discardOption = new javax.swing.JButton (bundle.getString("CTL_Discard")); // NOI18N
-            discardOption.getAccessibleContext ().setAccessibleDescription (bundle.getString("ACSD_CTL_Discard")); // NOI18N
-            discardOption.getAccessibleContext ().setAccessibleName (bundle.getString("ACSN_CTL_Discard")); // NOI18N
-            discardOption.setMnemonic (bundle.getString ("CTL_Discard_Mnemonic").charAt (0)); // NOI18N
-
-            NotifyDescriptor nd = new NotifyDescriptor(
-                msg,
-                bundle.getString("LBL_SaveFile_Title"),
-                NotifyDescriptor.YES_NO_CANCEL_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                new Object[] {saveOption, discardOption, NotifyDescriptor.CANCEL_OPTION},
-                saveOption
-            );
-                
-            Object ret = org.openide.DialogDisplayer.getDefault().notify(nd);
-
-            if (NotifyDescriptor.CANCEL_OPTION.equals(ret)
-                    || NotifyDescriptor.CLOSED_OPTION.equals(ret)
-               ) {
-                return false;
-            }
-
-            if (saveOption.equals(ret)) {
-                try {
-                    saveDocument ();
-                } catch (java.io.IOException e) {
-                    org.openide.ErrorManager.getDefault().notify(e);
-                    return false;
-                }
-            } else if (discardOption.equals(ret)) {
-                try {
-                    dObj.reloadModelFromFileObject();
-                    notifyClosed();
-                } catch (java.io.IOException e) {
-                    org.openide.ErrorManager.getDefault().notify(e);
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
 
     /** Focuses existing component to view, or if none exists creates new.
     * The default implementation simply calls {@link #open}.
@@ -366,11 +307,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         if (xmlTC==null) xmlTC=super.createCloneableTopComponent();
         return xmlTC;
     }
-    
-    void setXmlTopComponent(TopComponent xmlTC) {
-        this.xmlTC=xmlTC;
-    }
-    
+
     void setLastOpenView(int index) {
         lastOpenView=index;
     }
@@ -381,7 +318,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
             try {
                 openDocument().addDocumentListener(xmlDocListener);
             } catch (java.io.IOException ex){}
-            //getDocument().addDocumentListener(xmlDocListener);
         }
     }
     
@@ -406,6 +342,70 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         private void doUpdate() {
             if (dObj.isChangedFromUI()) restartTimer1(); // validation (without updating model)
             else restartTimer(); // validation+model update
+        }
+    }
+    
+    static class MyCloseHandler implements CloseOperationHandler, java.io.Serializable {
+        static final long serialVersionUID = -6512103928294991474L;
+        private XmlMultiViewDataObject dObj;
+        MyCloseHandler() {     
+        }
+        
+        MyCloseHandler(XmlMultiViewDataObject dObj) {
+            this.dObj=dObj;
+        }
+        
+        public boolean resolveCloseOperation(CloseOperationState[] elements) {
+            if (dObj.isModified () || dObj.isChangedFromUI()) {
+                XmlMultiViewEditorSupport support = dObj.getEditorSupport();
+                String msg = support.messageSave ();
+
+                java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(org.openide.text.CloneableEditorSupport.class);
+
+                javax.swing.JButton saveOption = new javax.swing.JButton (bundle.getString("CTL_Save")); // NOI18N
+                saveOption.getAccessibleContext ().setAccessibleDescription (bundle.getString("ACSD_CTL_Save")); // NOI18N
+                saveOption.getAccessibleContext ().setAccessibleName (bundle.getString("ACSN_CTL_Save")); // NOI18N
+                javax.swing.JButton discardOption = new javax.swing.JButton (bundle.getString("CTL_Discard")); // NOI18N
+                discardOption.getAccessibleContext ().setAccessibleDescription (bundle.getString("ACSD_CTL_Discard")); // NOI18N
+                discardOption.getAccessibleContext ().setAccessibleName (bundle.getString("ACSN_CTL_Discard")); // NOI18N
+                discardOption.setMnemonic (bundle.getString ("CTL_Discard_Mnemonic").charAt (0)); // NOI18N
+
+                NotifyDescriptor nd = new NotifyDescriptor(
+                    msg,
+                    bundle.getString("LBL_SaveFile_Title"),
+                    NotifyDescriptor.YES_NO_CANCEL_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE,
+                    new Object[] {saveOption, discardOption, NotifyDescriptor.CANCEL_OPTION},
+                    saveOption
+                );
+
+                Object ret = org.openide.DialogDisplayer.getDefault().notify(nd);
+
+                if (NotifyDescriptor.CANCEL_OPTION.equals(ret)
+                        || NotifyDescriptor.CLOSED_OPTION.equals(ret)
+                   ) {
+                    return false;
+                }
+
+                if (saveOption.equals(ret)) {
+                    try {
+                        support.saveDocument ();
+                    } catch (java.io.IOException e) {
+                        org.openide.ErrorManager.getDefault().notify(e);
+                        return false;
+                    }
+                } else if (discardOption.equals(ret)) {
+                    try {
+                        dObj.reloadModelFromFileObject();
+                        support.notifyClosed();
+                    } catch (java.io.IOException e) {
+                        org.openide.ErrorManager.getDefault().notify(e);
+                        return false;
+                    }
+                }
+            }
+            return true;
+
         }
     }
 }
