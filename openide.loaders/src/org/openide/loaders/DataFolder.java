@@ -472,7 +472,7 @@ implements Serializable, DataObject.Container {
     * @return help context
     */
     public HelpCtx getHelpCtx () {
-        return new HelpCtx (DataFolder.class);
+        return null;
     }
 
     /** Create a folder for a specified file object.
