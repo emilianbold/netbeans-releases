@@ -267,7 +267,7 @@ public class BaseOptions extends OptionSupport {
          */
         BaseKit kit = BaseKit.getKit(getKitClass());
         String name = kit.getContentType();
-        if (kit == null || name == null) {
+        if (name == null) {
             return null;
         }
 
