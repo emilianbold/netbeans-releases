@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -48,13 +48,13 @@ public abstract class JavadocSearchType extends ServiceType {
     private synchronized void prepareOverviewFilter() {
         if (overviewLabelFilters != null)
             return;
-        String filter = NbBundle.getMessage(getClass(), "FILTER_OverviewIndiceLabel");
+        String filter = NbBundle.getMessage(JavadocSearchType.class, "FILTER_OverviewIndiceLabel"); // NOI18N
         StringTokenizer tok = new StringTokenizer(filter, "\n");
         LinkedList ll = new LinkedList();
         for (int i = 0; tok.hasMoreTokens(); i++) {
             try {
                 String expr = tok.nextToken();
-                Pattern re = Pattern.compile(expr, Pattern.CASE_INSENSITIVE);
+                Pattern re = Pattern.compile(expr);
                 ll.add(re);
             } catch (PatternSyntaxException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
