@@ -195,11 +195,6 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             return;
         }
         ConfigUtils.setBeanPropertyValue(configBean, webContextRootPropName, contextRoot);
-        try {
-            getStorage ().save ();
-        } catch (java.io.IOException e) {
-            ErrorManager.getDefault ().notify (e);
-        }
     }
     
     public void resetStorage() {
