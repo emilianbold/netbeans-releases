@@ -904,14 +904,8 @@
   <mapID target="glossary_deploymentdesc_html" url="j2eeserver/glossary/deploymentdesc.html" />
   <mapID target="glossary_webserverdef_html" url="j2eeserver/glossary/webserverdef.html" />
 
-  <mapID target="nodes_server_registry_node_html" url="j2eeserver/nodes/server_registry_node.html" />
-
   <!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions--> 
   <mapID target="org.netbeans.modules.j2ee.impl.DeployAction" url="pending.html" />
-
-  <mapID target="org.netbeans.modules.j2ee.deployment.config.ConfigDataObject" url="j2eeserver/nodes/context_descriptor_node.html" />
-  <!--ID used for server nodes if not overridden by ID for specific server-->
-  
   
 <!--PENDING - map these IDs if possible-->
 

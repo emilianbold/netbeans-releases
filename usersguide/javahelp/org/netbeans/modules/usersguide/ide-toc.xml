@@ -552,9 +552,8 @@
       <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
     </tocitem>
 
-    <tocitem text="Web Servers">
-      <tocitem text="About" target="general_about_the_j2eeserver_module_html"/>
-      <tocitem text="Server Registry Node" target="nodes_server_registry_node_html" />
+    <tocitem text="Server Plugins">
+      <tocitem text="About Server Plugins" target="general_about_the_j2eeserver_module_html"/>
     </tocitem>
 
 </tocitem>
