@@ -18,6 +18,7 @@ import com.sun.jdi.Field;
 import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.ClassNotPreparedException;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.event.Event;
@@ -187,6 +188,12 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 if (!list.isEmpty ()) return (Location) list.get (0);
             }
         } catch (AbsentInformationException ex) {
+            // we are not able to create breakpoint in this situation. 
+            // should we write some message?!?
+        } catch (ClassNotPreparedException ex) {
+            // should not occurre. VirtualMachine.allClasses () returns prepared
+            // classes only. But...
+            ex.printStackTrace ();
         }
         return null;
     }
