@@ -200,7 +200,7 @@ public class ExportHtmlAction extends CookieAction {
         Color lnfgColor = coloring.getForeColor();
         FileObject fo = ((DataObject)bdoc.getProperty (Document.StreamDescriptionProperty)).getPrimaryFile();
         HtmlPrintContainer htmlPrintContainer = new HtmlPrintContainer();
-        htmlPrintContainer.begin (fo, font, fgColor, bgColor,lnfgColor,lnbgColor);
+        htmlPrintContainer.begin (fo, font, fgColor, bgColor,lnfgColor,lnbgColor, bdoc.getKitClass());
         bdoc.print (htmlPrintContainer,false, lineNumbers, selectionStart, selectionEnd);
         String result = htmlPrintContainer.end();
         PrintWriter out = null;

@@ -18,7 +18,9 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import org.netbeans.editor.Coloring;
 import org.netbeans.editor.PrintContainer;
+import org.netbeans.editor.SettingsUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -47,6 +49,7 @@ public class HtmlPrintContainer implements PrintContainer {
     private static final String ST_BGCOLOR = "background-color: ";    //NOI18N
     private static final String ST_BOLD = "font-weight: bold";    //NOI18N
     private static final String ST_ITALIC = "font-style: italic"; //NOI18N
+    private static final String ST_SIZE = "font-size: "; //NOI18N
     private static final String ST_FONT_FAMILY = "font-family: ";    //NOI18N
     private static final String ST_SEPARATOR = "; ";    //NOI18N
     private static final String ST_END = "}";           //NOI18N
@@ -69,11 +72,12 @@ public class HtmlPrintContainer implements PrintContainer {
     private String fileName;
     private Styles styles;
     private boolean[] boolHolder;
+    private Map syntaxColoring;
 
     public HtmlPrintContainer () {
     }
 
-    public final void begin (FileObject fo, Font font, Color fgColor, Color bgColor, Color hfgColor, Color hbgColor) {
+    public final void begin (FileObject fo, Font font, Color fgColor, Color bgColor, Color hfgColor, Color hbgColor, Class kitClass) {
         styles = new Styles ();
         buffer = new StringBuffer();
         fileName = FileUtil.getFileDisplayName(fo);
@@ -83,6 +87,7 @@ public class HtmlPrintContainer implements PrintContainer {
         this.defaultFont = font;
         this.headerForegroundColor = hfgColor;
         this.headerBackgroundColor = hbgColor;
+        this.syntaxColoring = SettingsUtil.getColoringMap(kitClass, false, true);
     }
 
     public final void add(char[] chars, Font font, Color foreColor, Color backColor) {
@@ -237,6 +242,13 @@ public class HtmlPrintContainer implements PrintContainer {
                 sb.append (ST_SEPARATOR);
                 sb.append (ST_ITALIC);
             }
+            Font defaultFont = getDefaultFont();
+            if (defaultFont!=null && defaultFont.getSize() != font.getSize()) {
+                sb.append (ST_SEPARATOR);
+                sb.append (ST_SIZE);
+                sb.append (String.valueOf(font.getSize()));
+            }
+            
         }
         sb.append (ST_END);
         return sb.toString();
@@ -271,12 +283,36 @@ public class HtmlPrintContainer implements PrintContainer {
             this.descs = new HashMap();
         }
 
+        private boolean coloringEquals(Coloring coloring, Font f, Color fc, Color bc){
+            if (coloring == null) return false;
+            Font coloringFont = coloring.getFont();
+            if (coloringFont == null) coloringFont = getDefaultFont();
+            Color coloringForeColor = coloring.getForeColor();
+            if (coloringForeColor == null) coloringForeColor = getDefaultColor();
+            Color coloringBackColor = coloring.getBackColor();
+            if (coloringBackColor == null) coloringBackColor = getDefaultBackgroundColor();
+            
+            return f.equals(coloringFont) && fc.equals(coloringForeColor) && bc.equals(coloringBackColor);
+        }
+        
         public final String getStyleId (Font f, Color fc, Color bc) {
-            if (!fc.equals(getDefaultColor()) || !bc.equals(getDefaultBackgroundColor())) {
+            if (!fc.equals(getDefaultColor()) || !bc.equals(getDefaultBackgroundColor()) || !f.equals(getDefaultFont())) {
                 StyleDescriptor sd = new StyleDescriptor (f, fc, bc);
                 String id = (String) this.descs.get (sd);
                 if (id == null) {
-                    id = STYLE_PREFIX + this.sequence++;
+                    java.util.Set keySet = syntaxColoring.keySet();
+                    Iterator iter = keySet.iterator();
+                    while(iter.hasNext()){
+                        Object key = iter.next();
+                        if (coloringEquals((Coloring)syntaxColoring.get(key), f, fc, bc)){
+                            id = (String) key;
+                            break;
+                        }
+                    }
+                    
+                    if (id == null){
+                        id = STYLE_PREFIX + this.sequence++;
+                    }
                     sd.name = id;
                     this.descs.put (sd, id);
                 }
@@ -329,13 +365,11 @@ public class HtmlPrintContainer implements PrintContainer {
                 if (!(object instanceof StyleDescriptor))
                     return false;
                 StyleDescriptor od = (StyleDescriptor) object;
-                return font == null ? od.font == null : font.equals (od.font) &&
-                        fgColor == null ? od.fgColor == null : fgColor.equals (od.fgColor) &&
-                        bgColor == null ? od.bgColor == null : bgColor.equals (od.bgColor);
+                return coloringEquals(new Coloring(font, fgColor, bgColor), od.font, od.fgColor, od.bgColor);
             }
 
             public final int hashCode () {
-                return this.fgColor.hashCode();
+                return this.font.hashCode() ^ this.fgColor.hashCode() ^ this.bgColor.hashCode();
             }
         }
     }
