@@ -51,6 +51,7 @@ import org.netbeans.editor.Bookmarks;
 import org.openide.text.Line;
 import org.netbeans.editor.ActionFactory.ToggleBookmarkAction;
 import org.netbeans.editor.ActionFactory.GotoNextBookmarkAction;
+import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -479,7 +480,19 @@ public class NbEditorKit extends ExtKit {
 
             Annotation anno = bookmark.getAnno();
             anno.moveToFront();
+            if (doc instanceof NbEditorDocument){
+                NbEditorDocument nbDoc = (NbEditorDocument)doc;
+                Map annoMap = nbDoc.getAnnoMap();
+                Object obj = annoMap.get(anno);
+                if (obj instanceof AnnotationDesc){
+                    AnnotationDesc desc = (AnnotationDesc) obj;
+                    caret.setDot(desc.getOffset());
+                    return;
+                }
+            }
+            
             ((Line)anno.getAttachedAnnotatable()).show(Line.SHOW_GOTO);
+
         }
     }
 

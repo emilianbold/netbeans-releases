@@ -41,6 +41,7 @@ import org.netbeans.editor.Mark;
 import org.netbeans.editor.Annotations;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
@@ -220,6 +221,10 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
         } finally {
             readUnlock();
         }
+    }
+    
+    Map getAnnoMap(){
+        return annoMap;
     }
 
     /** Implementation of AnnotationDesc, which delegate to Annotation instance
