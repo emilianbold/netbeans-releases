@@ -14,6 +14,12 @@
 
 package org.netbeans.modules.properties;
 
+
+import java.awt.Color;
+import java.awt.SystemColor;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import java.util.ResourceBundle;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.table.TableColumn;
@@ -23,10 +29,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.SwingUtilities;
 import javax.swing.JTable;
-import java.awt.Color;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.util.ResourceBundle;
 
 import org.openide.util.NbBundle;
 import org.openide.loaders.MultiDataObject;
@@ -34,6 +36,7 @@ import org.openide.loaders.DataObject;
 import org.openide.TopManager;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
+
 
 /**
  * @author  Petr Jiricka
@@ -96,13 +99,22 @@ public class BundleEditPanel extends javax.swing.JPanel {
         theTable.setDefaultEditor(PropertiesTableModel.StringPair.class,
                                   new PropertiesTableCellEditor(textField, textComment, textValue));
 
+        // set renderer
         theTable.setDefaultRenderer(PropertiesTableModel.StringPair.class, new javax.swing.table.DefaultTableCellRenderer() {
             public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table,
                     Object value, boolean isSelected, boolean hasFocus, int row, int column) {
   
-                return super.getTableCellRendererComponent(table,
+                java.awt.Component c = super.getTableCellRendererComponent(table,
                     UtilConvert.unicodesToChars(((PropertiesTableModel.StringPair)value).getValue()),
                     isSelected, hasFocus, row, column);
+         
+                PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)value;
+                if( (!sp.isKeyType()) && sp.getValue() == null) {
+                    c.setBackground(new Color(SystemColor.controlHighlight.getRGB()));
+                } else
+                    c.setBackground(Color.white);
+                
+                return c;
             }
         });
 
@@ -394,21 +406,24 @@ public class BundleEditPanel extends javax.swing.JPanel {
 
     private void removeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         stopEditing();
-        PropertiesTableModel.StringPair sp =
-            (PropertiesTableModel.StringPair)theTable.getModel().getValueAt(rowSelections.getMinSelectionIndex(), 0);
-        if(sp.getValue()==null) return; // dont't remove elemnt with key == null ( only case -> empty file with comment)
+        String key = ((PropertiesTableModel.StringPair)theTable.getModel().getValueAt(rowSelections.getMinSelectionIndex(), 0)).getValue();
+        
+        // dont't remove elemnt with key == null ( this is only case -> when there is an empty file with comment only)
+        if(key == null) return; 
+        
         NotifyDescriptor.Confirmation msg = new NotifyDescriptor.Confirmation(
                                                 java.text.MessageFormat.format(
                                                     NbBundle.getBundle(BundleEditPanel.class).getString("MSG_DeleteKeyQuestion"),
-                                                    new Object[] {sp.getValue()}),
+                                                    new Object[] { key }),
                                                 NotifyDescriptor.OK_CANCEL_OPTION);
+                                                    
         if (TopManager.getDefault().notify(msg).equals(NotifyDescriptor.OK_OPTION)) {
             for (int i=0; i < ((PropertiesDataObject)dobj).getBundleStructure().getEntryCount(); i++) {
                 PropertiesFileEntry entry = ((PropertiesDataObject)dobj).getBundleStructure().getNthEntry(i);
                 if (entry != null) {
                     PropertiesStructure ps = entry.getHandler().getStructure();
                     if (ps != null) {
-                        ps.deleteItem(sp.getValue());
+                        ps.deleteItem(key);
                     }
                 }
             }
@@ -424,16 +439,18 @@ public class BundleEditPanel extends javax.swing.JPanel {
         boolean okPressed = TopManager.getDefault ().notify (descr).equals (NotifyDescriptor.OK_OPTION);
 
         if (okPressed) {
-            if (((PropertiesFileEntry)((MultiDataObject)dobj).getPrimaryEntry()).
-                    getHandler().getStructure().addItem(
-                        UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText())), "", ""));
-            else {
-                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                                   java.text.MessageFormat.format(
-                                                       NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
-                                                       new Object[] {UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText()))}),
-                                                   NotifyDescriptor.ERROR_MESSAGE);
-                TopManager.getDefault().notify(msg);
+            String key = UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText()));
+            // add key to all entries
+            for (int i=0; i < ((PropertiesDataObject)dobj).getBundleStructure().getEntryCount(); i++) {            
+                PropertiesFileEntry entry = ((PropertiesDataObject)dobj).getBundleStructure().getNthEntry(i);
+                if (!entry.getHandler().getStructure().addItem(key, "", "")) {
+                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                                                       java.text.MessageFormat.format(
+                                                           NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
+                                                           new Object[] {UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText()))}),
+                                                       NotifyDescriptor.ERROR_MESSAGE);
+                    TopManager.getDefault().notify(msg);
+                }
             }
         }
     }//GEN-LAST:event_addButtonActionPerformed
