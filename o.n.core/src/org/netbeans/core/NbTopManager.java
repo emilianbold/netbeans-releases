@@ -91,6 +91,8 @@ public class NbTopManager extends TopManager {
   /** repository */
   static Repository defaultRepository;
 
+  /** the error level code for restarting windows */
+  private static final int RESTART_EXIT_CODE = 66;
 
   /** Constructs a new manager.
   */
@@ -343,9 +345,66 @@ public class NbTopManager extends TopManager {
       NbBundle.getBundle (NbTopManager.class).getString ("MSG_AllSaved"));
   }    
 
+  
+  private void storeLastProject () {
+    com.netbeans.ide.actions.SaveProjectAction spa = new com.netbeans.ide.actions.SaveProjectAction ();
+    if (spa.isEnabled ()) {
+      boolean doSave = true;
+  //    if (new IDESettings ().getConfirmSaveOnExit ()) {
+  //      if (TopManager.notify (...)
+  //    }
+      
+      if (doSave) {
+        try {
+          spa.performAction ();
+          NbProjectOperation.saveLastProjectUsed ();
+        } catch (IOException e) {
+          TopManager.getDefault ().notifyException (e); // [PENDING]
+        }
+      }
+    }
+  }
+
   /** The ide is left after calling this method.
   * The method return iff Runtim.getRuntime().exit() fails
   */
+  public void restart () {
+    // save project
+    storeLastProject ();
+
+    // uninstall updated modules
+    ModuleUpdater.loadNewModules ();
+    
+    /*
+    // copy
+    AutoUpdate.copyUpdatedModules ();
+    */
+    
+    // do exit
+    if (ModuleInstaller.exit ()) {
+      Runtime.getRuntime().exit (RESTART_EXIT_CODE);
+    }
+  }
+
+  /** The ide is left after calling this method.
+  * The method return iff Runtim.getRuntime().exit() fails
+  */
+  public void exit () {
+    // save project
+    storeLastProject ();
+
+    if (ModuleInstaller.exit ()) {
+      Runtime.getRuntime().exit (0);
+    }
+  }
+
+  
+  
+  
+  /** The ide is left after calling this method.
+  * The method return iff Runtim.getRuntime().exit() fails
+  */
+  /*
   public void exit () {
     com.netbeans.ide.actions.SaveProjectAction spa = new com.netbeans.ide.actions.SaveProjectAction ();
     if (spa.isEnabled ()) {
@@ -368,7 +427,8 @@ public class NbTopManager extends TopManager {
       Runtime.getRuntime().exit (0);
     }
   }
-
+  */
+  
   /** @return the workspace pool for this manager
   */
   public WorkspacePool getWorkspacePool () {
