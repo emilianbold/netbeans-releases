@@ -152,7 +152,7 @@ public class ServerFileDistributor extends ServerProgress {
             for (; destFiles.hasMoreElements (); ) {
                 FileObject destFO = (FileObject) destFiles.nextElement ();
                 //System.out.println("Dest : relpath="+relPaths[0]+" file="+files[0]);
-                destMap.put(destFO.getPath ().substring (rootPathLen), destFO);
+                destMap.put(destFO.getPath ().substring (rootPathLen + 1), destFO);
             }
             
             // iterate through source changes
@@ -162,6 +162,11 @@ public class ServerFileDistributor extends ServerProgress {
                 FileObject sourceFO = entry.getFileObject ();
                 FileObject targetFO = (FileObject) destMap.get(relativePath);
                 FileObject destFolder;
+                if (sourceFO.isFolder ()) {
+                    destMap.remove (relativePath);
+                    System.out.println("entering folder:"+relativePath);
+                    continue;
+                }
                 if (targetFO == null) {
                     destFolder = findOrCreateParentFolder(destRoot, relativePath);
                 } else {
