@@ -287,8 +287,14 @@ Microsystems, Inc. All Rights Reserved.
   </target>        
 
   <!-- Open API documentation. -->
-  <!-- XXX ignore open-apis-up-to-date if dir OpenAPIs does not exist at all -->
-  <target name="open-apis-check-timestamps" unless="open-apis-force-rebuild">
+  <target name="open-apis-check-existence-1" unless="open-apis-force-rebuild">
+    <available property="open-apis-exists" file="OpenAPIs.zip"/>
+  </target>
+  <target name="open-apis-check-existence" depends="open-apis-check-existence-1" unless="open-apis-exists">
+    <property name="open-apis-force-rebuild" value="true"/>
+    <echo message="Open APIs are not built at all, will be created."/>
+  </target>
+  <target name="open-apis-check-timestamps-1" depends="open-apis-check-existence" unless="open-apis-force-rebuild">
     <uptodate property="open-apis-up-to-date" targetfile="OpenAPIs.zip">
       <srcfiles dir="src">
         <include name="org/openide/**/*.java"/>
@@ -300,12 +306,19 @@ Microsystems, Inc. All Rights Reserved.
       </srcfiles>
     </uptodate>
   </target>
-  <target name="open-apis-maybe-skip" if="open-apis-up-to-date">
+  <target name="open-apis-check-timestamps" depends="open-apis-check-timestamps-1" unless="open-apis-up-to-date">
+    <property name="open-apis-force-rebuild" value="true"/>
+    <echo>Open APIs are out of date and will be rebuilt.
+To avoid rebuilding them after every change in API sources,
+use -Dopen-apis-up-to-date=true
+</echo>
+  </target>
+  <target name="open-apis-maybe-skip" depends="open-apis-check-timestamps" unless="open-apis-force-rebuild">
     <echo>Not building Open APIs because they are up-to-date...
 To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
 </echo>
   </target>
-  <target name="open-apis" depends="open-apis-check-timestamps,open-apis-maybe-skip" unless="open-apis-up-to-date"
+  <target name="open-apis" depends="open-apis-check-timestamps,open-apis-maybe-skip" if="open-apis-force-rebuild"
           description="Create Open API documentation.">
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.3/docs/api"/>
     <property name="xml-docs-location" value="http://xml.apache.org/apiDocs"/>
