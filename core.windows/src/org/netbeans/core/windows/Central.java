@@ -649,7 +649,7 @@ final class Central implements ControllerHandler {
     
     /** Removed top component from model and requests view (if needed). */
     public void removeModeTopComponent(ModeImpl mode, TopComponent tc) {
-        if(!getModeTopComponents(mode).contains(tc)) {
+        if(!containsModeTopComponent(mode, tc)) {
             return;
         }
         
