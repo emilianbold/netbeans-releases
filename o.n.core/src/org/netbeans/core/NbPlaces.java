@@ -134,7 +134,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
   * @return the node
   */ 
   public Node packages (DataFilter f) {
-    return new PackageNode (repository (), f);
+    return PackageChildren.createNode (f);
   }
 
   /** Node with all installed loaders.
@@ -257,6 +257,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  32   Gandalf   1.31        11/29/99 Jaroslav Tulach new packages 
+*       implementation.
 *  31   Gandalf   1.30        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  30   Gandalf   1.29        9/10/99  Jaroslav Tulach Services API.
