@@ -105,6 +105,9 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     
     /** Lock used for ensuring there will be just one node delegate */
     private Object nodeCreationLock = new Object();
+    
+    /** Lock for copy/move/rename/etc. operations */
+    private static Object synchObject = new Object ();
 
     /** Create new data object.
      * <p>
@@ -740,7 +743,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
      *     (MultiDataObject) can rewrite this method and return own synch object.
      */
     Object synchObject() {
-        return nodeCreationLock;
+        return synchObject;
     }
     
     /** Invokes atomic action. 
