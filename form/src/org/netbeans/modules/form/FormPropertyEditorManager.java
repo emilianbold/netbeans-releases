@@ -67,6 +67,7 @@ final public class FormPropertyEditorManager extends Object {
       else if (Boolean.TYPE.equals (type)) typeName = "boolean";
       else if (Float.TYPE.equals (type)) typeName = "float";
       else if (Double.TYPE.equals (type)) typeName = "double";
+      else if (Character.TYPE.equals (type)) typeName = "char";
     }
     return typeName;
   }
@@ -170,6 +171,8 @@ final public class FormPropertyEditorManager extends Object {
 
 /*
  * Log
+ *  10   Gandalf   1.9         9/24/99  Ian Formanek    Fixed char primitive 
+ *       type not being included in list of primitive types.
  *  9    Gandalf   1.8         8/9/99   Ian Formanek    Used currentClassLoader 
  *       to fix problems with loading beans only present in repository
  *  8    Gandalf   1.7         8/1/99   Ian Formanek    PropertyEditors from 
