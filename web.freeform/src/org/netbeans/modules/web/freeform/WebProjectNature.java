@@ -33,6 +33,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -178,6 +179,7 @@ public class WebProjectNature implements ProjectNature {
             "ant-task",             // NOI18N
             "servlet-types",        // NOI18N
             "web-types",            // NOI18N
+            "j2ee-types",           // NOI18N
             "junit",                // NOI18N
             "simple-files"          // NOI18N
         };
@@ -189,8 +191,5 @@ public class WebProjectNature implements ProjectNature {
         public String[] getRecommendedTypes() {
             return RECOMENDED_TYPES;
         }
-        
-        
-        
     }
 }
