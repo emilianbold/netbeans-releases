@@ -104,8 +104,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             desc[11].setShortDescription(bundleUIMode.getString("HINT_UI_Mode"));
             desc[11].setPropertyEditorClass(UIModePropertyEditor.class);
 
-            desc[12].setDisplayName(bundleTabbedContainerUI.getString("PROP_UI_Mode"));
-            desc[12].setShortDescription(bundleTabbedContainerUI.getString("HINT_UI_Mode"));
+            desc[12].setDisplayName(bundleTabbedContainerUI.getString("PROP_TabbedContainerUI"));
+            desc[12].setShortDescription(bundleTabbedContainerUI.getString("HINT_TabbedContainerUI"));
             desc[12].setPropertyEditorClass(TabbedContainerUIPropertyEditor.class);
 
         } catch (IntrospectionException ex) {
