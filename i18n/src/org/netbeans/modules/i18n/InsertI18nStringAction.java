@@ -25,6 +25,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -96,7 +97,7 @@ public class InsertI18nStringAction extends CookieAction {
         }
 
         // Ensure caret is visible.
-        panes[0].getCaret().setVisible(true);;
+        panes[0].getCaret().setVisible(true);
     }
 
     /** Create panel used for specifying i18n string. */
@@ -231,42 +232,18 @@ public class InsertI18nStringAction extends CookieAction {
 
         if(topComponent == null) {
             JPanel panel = createPanel(sourceDataObject);
-            
-            // actually create the dialog as top component
-            topComponent = new TopComponent() {
-                public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-                }
-                
-                public void writeExternal(ObjectOutput out) throws IOException {
-                }
-                
-                protected Object writeReplace() throws ObjectStreamException {
-                    return null;
-                }
-            };            
-            topComponent.setCloseOperation(TopComponent.CLOSE_EACH);
-            topComponent.setLayout(new BorderLayout());
-            topComponent.add(panel, BorderLayout.CENTER);
-            topComponent.setName(sourceDataObject.getName());           
 
-            // dock into I18N mode if possible
-            Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
-            for (int i = currentWs.length; --i >= 0; ) {
-                Mode i18nMode = currentWs[i].findMode(I18nManager.I18N_MODE);
-                if (i18nMode == null) {
-                    i18nMode = currentWs[i].createMode(
-                        I18nManager.I18N_MODE,
-                        I18nUtil.getBundle().getString("CTL_I18nDialogTitle"),
-                        I18nManager.class.getResource("/org/netbeans/modules/i18n/i18nAction.gif") // NOI18N
-                    );
-                }
-                i18nMode.dockInto(topComponent);
-            }
-            
+            String title = Util.getString("CTL_I18nDialogTitle");
+            URL icon = getClass().getResource("i18nAction.gif");                // NOI18N
+            String name = sourceDataObject.getName();
+            topComponent = I18nUtil.createTopComponent(panel, name, title, icon);
+                
             // Reset weak reference.
             topComponentWRef = new WeakReference(topComponent);
         }
 
+        I18nPanel panel = (I18nPanel)  topComponent.getClientProperty("I18nPanel");
+        panel.setDefaultResource(sourceDataObject);
         topComponent.open();
         topComponent.requestFocus();
     }

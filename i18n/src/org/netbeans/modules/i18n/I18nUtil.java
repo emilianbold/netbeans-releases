@@ -14,6 +14,14 @@
 
 package org.netbeans.modules.i18n;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.ObjectStreamException;
+import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -22,15 +30,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
+import javax.swing.JPanel;
 
 import org.netbeans.modules.i18n.wizard.SourceData;
-import org.netbeans.modules.properties.PropertiesDataObject; // PENDING
+import org.netbeans.modules.properties.PropertiesDataObject;
+import org.openide.TopManager;
+ // PENDING
 
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.Workspace;
 
 
 /**
@@ -342,5 +356,56 @@ public final class I18nUtil {
                 return false;
         }
     } // End of class DataObjectComparator.
-    
+
+    /**
+     * Create new topcomponent associated with I18N_MODE.
+     */
+    public static TopComponent createTopComponent(JPanel interior, String name, String title, URL icon) {
+        TopComponent topComponent;
+        
+        // Actually create dialog, as non serializable top component.
+        topComponent = new TopComponent() {
+            public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+            }
+
+            public void writeExternal(ObjectOutput out) throws IOException {
+            }
+
+            protected Object writeReplace() throws ObjectStreamException {
+                return null;
+            }
+        };
+        topComponent.setCloseOperation(TopComponent.CLOSE_EACH);
+        topComponent.setLayout(new BorderLayout());
+        topComponent.add(interior, BorderLayout.CENTER);
+        topComponent.setName(name);
+        topComponent.setToolTipText(title);
+
+        topComponent.putClientProperty("I18nPanel", interior);                  // NOI18N
+        
+        // #24106
+        topComponent.putClientProperty("TabPolicy", "HideWhenAlone");           // NOI18N
+
+         // dock into I18N mode if possible
+        Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
+        for (int i = currentWs.length; --i >= 0; ) {
+            Mode i18nMode = currentWs[i].findMode(I18nManager.I18N_MODE);
+            if (i18nMode == null) {
+                i18nMode = currentWs[i].createMode(
+                    I18nManager.I18N_MODE,
+                    title,
+                    icon
+                );
+                // adjust mode size to sice of the first TopComponent(i18nPanel)
+                Rectangle bounds = i18nMode.getBounds();
+                Dimension size = interior.getPreferredSize();
+                size.width += 50;
+                bounds.setSize(size);
+                i18nMode.setBounds(bounds);
+            }
+
+            i18nMode.dockInto(topComponent);
+        }
+        return topComponent;
+    }
 }

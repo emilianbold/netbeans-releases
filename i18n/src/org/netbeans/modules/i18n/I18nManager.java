@@ -26,6 +26,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -302,42 +303,9 @@ public class I18nManager {
         i18nPanel.setI18nString(support.getDefaultI18nString());
         
         if(topComponent == null) {
-            // Actually create dialog, as non serializable top component.
-            topComponent = new TopComponent() {
-                public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-                }
-                
-                public void writeExternal(ObjectOutput out) throws IOException {
-                }
-                
-                protected Object writeReplace() throws ObjectStreamException {
-                    return null;
-                }
-            };
-            topComponent.setCloseOperation(TopComponent.CLOSE_EACH);
-            topComponent.setLayout(new BorderLayout());
-            topComponent.add(i18nPanel, BorderLayout.CENTER);
-            topComponent.setName(name);               
-            topComponent.setToolTipText(I18nUtil.getBundle().getString("CTL_I18nDialogTitle"));
-
-            // #24106
-            topComponent.putClientProperty("TabPolicy", "HideWhenAlone");       // NOI18N
-            
-             // dock into I18N mode if possible
-            Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
-            for (int i = currentWs.length; --i >= 0; ) {
-                Mode i18nMode = currentWs[i].findMode(I18N_MODE);
-                if (i18nMode == null) {
-                    i18nMode = currentWs[i].createMode(
-                        I18N_MODE,
-                        I18nUtil.getBundle().getString("CTL_I18nDialogTitle"),
-                        I18nManager.class.getResource("/org/netbeans/modules/i18n/i18nAction.gif") // NOI18N
-                    );
-                    createdMode = i18nMode;
-                }
-                                               
-                i18nMode.dockInto(topComponent);
-            }
+            String title = Util.getString("CTL_I18nDialogTitle");
+            URL icon = getClass().getResource("i18nAction.gif");                // NOI18N
+            topComponent = I18nUtil.createTopComponent(i18nPanel, name, title, icon);
                 
             // Reset weak reference.
             topComponentWRef = new WeakReference(topComponent);
@@ -345,16 +313,6 @@ public class I18nManager {
         
         topComponent.open();
         topComponent.requestFocus();
-        
-        if (createdMode != null) {
-            // adjust mode size to sice of the first TopComponent(i18nPanel)
-            Rectangle bounds = createdMode.getBounds();
-            if (bounds == null) bounds = new Rectangle();
-            Dimension size = i18nPanel.getPreferredSize();
-            size.width += 50;
-            bounds.setSize(size);
-            createdMode.setBounds(bounds);
-        }
         
     }
     

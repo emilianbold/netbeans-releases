@@ -18,6 +18,7 @@ package org.netbeans.modules.i18n;
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -25,6 +26,9 @@ import javax.swing.SwingUtilities;
 
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.WeakListener;
 
@@ -136,9 +140,34 @@ public class I18nPanel extends JPanel {
         replaceButton.setEnabled(isBundle);
     }
 
+    public void setDefaultResource(DataObject dataObject) {
+        if (dataObject != null) {
+            // look for peer Bundle.properties
+            FileObject fo = dataObject.getPrimaryFile();
+            FileObject folder = fo;
+            
+            // scan parents for first Bundle.properties
+            while (true) {
+                folder = folder.getParent();
+                if (folder == null) return;
+                String name = folder.getPackageName('/');
+                FileObject peer = Repository.getDefault().findResource(name + "/Bundle.properties");
+                if (peer != null) {
+                    try {
+                        DataObject peerDataObject = DataObject.find(peer);
+                        ((ResourcePanel)resourcePanel).setResource(peerDataObject);
+                        return;
+                    } catch (IOException ex) {
+                        // no default resource
+                    }
+                }
+            }
+        }        
+    }
+    
     /** Creates <code>ResourcePanel</code>. */
     private JPanel createResourcePanel() {
-        return new ResourcePanel();
+        return  new ResourcePanel();
     }
     
     private void initAccessibility() {
