@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
-import java.awt.Dialog;
 import java.awt.Dimension;
 
 import java.beans.PropertyChangeEvent;
@@ -22,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
-import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -32,7 +30,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.DialogDescriptor;
+import org.netbeans.modules.web.project.ui.FileChooser;
 import org.openide.DialogDisplayer;
 
 import org.openide.NotifyDescriptor;
@@ -170,7 +168,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
      * @return null if canceled selected jars if some jars selected
      */
     public static AntArtifact[] showDialog( String artifactType, Project master ) {
-        
+
         JFileChooser chooser = ProjectChooser.projectChooser();
         chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
         chooser.setApproveButtonText( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_SelectProject" ) ); // NOI18N
@@ -180,12 +178,19 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         
         chooser.setPreferredSize( new Dimension( 650, 360 ) );
         
+        String key = AntArtifactChooser.class.getName();
+        final File lastChooserLocation = FileChooser.getLastChooserLocation(key);
+        if (lastChooserLocation != null) {
+            chooser.setSelectedFile(lastChooserLocation);
+        }
+
         int option = chooser.showOpenDialog( null ); // Show the chooser
               
         if ( option == JFileChooser.APPROVE_OPTION ) {
             
             File dir = chooser.getSelectedFile();
             dir = FileUtil.normalizeFile (dir);
+            FileChooser.setLastChooserLocation(key, dir);
             Project selectedProject = accessory.getProject( dir );
 
             if ( selectedProject == null ) {
