@@ -788,35 +788,9 @@ to simulate
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps:script"/>
-                <xsl:variable name="scriptdir" select="substring-before($script, '/')"/>
-                <xsl:variable name="scriptdirslash">
-                    <xsl:choose>
-                        <xsl:when test="$scriptdir = ''"/>
-                        <xsl:otherwise>
-                            <xsl:text>/</xsl:text>
-                            <xsl:value-of select="$scriptdir"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
-                <xsl:variable name="scriptfileorblank" select="substring-after($script, '/')"/>
-                <xsl:variable name="scriptfile">
-                    <xsl:choose>
-                        <xsl:when test="$scriptfileorblank != ''">
-                            <xsl:value-of select="$scriptfileorblank"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="$script"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
                 <ant target="{$subtarget}" inheritall="false">
                     <!-- XXX #43624: cannot use inline attr on JDK 1.5 -->
-                    <xsl:attribute name="dir">${project.<xsl:value-of select="$subproj"/>}<xsl:value-of select="$scriptdirslash"/></xsl:attribute>
-                    <xsl:if test="$scriptfile != 'build.xml'">
-                        <xsl:attribute name="antfile">
-                            <xsl:value-of select="$scriptfile"/>
-                        </xsl:attribute>
-                    </xsl:if>
+                    <xsl:attribute name="antfile">${project.<xsl:value-of select="$subproj"/>}/<xsl:value-of select="$script"/></xsl:attribute>
                 </ant>
             </xsl:for-each>
         </target>
