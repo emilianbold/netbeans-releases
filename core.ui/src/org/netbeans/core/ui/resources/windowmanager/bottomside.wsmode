@@ -9,6 +9,7 @@
     <name unique="bottomSlidingSide" />
     <kind type="sliding" />
     <slidingSide side="bottom" />
-    <relative-bounds x="10" y="18" width="20" height="50" />
+<!-- initial dimension is 0,0, we set it according to the first component to be docked -->
+    <relative-bounds x="10" y="18" width="0" height="0" />
     <empty-behavior permanent="true" />
 </mode>
