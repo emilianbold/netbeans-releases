@@ -641,7 +641,6 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
             } catch (UnsupportedFlavorException e) {
                 return null; // ignore
             }
-            //      System.out.println("RADPaste.paste() : fromCut: "+fromCut+", : "+radComponent); // NOI18N
 
             FormManager2 pasteManager = component.getFormManager();
 
@@ -650,7 +649,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
                 RADComponent newCopy = makeCopy(radComponent, false);
                 if ((newCopy instanceof RADVisualComponent) &&(component instanceof RADVisualContainer)) {
                     pasteManager.addVisualComponent((RADVisualComponent)newCopy,(RADVisualContainer)component, null);
-                    pasteManager.addVisualComponentsRecursively((RADVisualContainer)component);
+//                    pasteManager.addVisualComponentsRecursively((RADVisualContainer)component);
                     pasteManager.getFormTopComponent().validate();
                     pasteManager.fireCodeChange();
                 } else {
@@ -663,7 +662,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
                 radComponent.initialize(pasteManager); // if pasting into another form
                 if (radComponent instanceof RADVisualComponent) {
                     pasteManager.addVisualComponent((RADVisualComponent)radComponent,(RADVisualContainer)component, null);
-                    pasteManager.addVisualComponentsRecursively((RADVisualContainer)component);
+//                    pasteManager.addVisualComponentsRecursively((RADVisualContainer)component);
                     pasteManager.getFormTopComponent().validate();
                     pasteManager.fireCodeChange();
                 } else {
