@@ -17,6 +17,7 @@ import java.util.*;
 import java.awt.Color;
 import java.net.URL;
 import java.io.IOException;
+import java.util.Enumeration;
 
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
@@ -448,70 +449,69 @@ class XMLCompletionQuery implements CompletionQuery {
     // Delegate queriing to performer ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     private List queryEntities() {
-        NodeList res = getPerformer().queryEntities(ctx.getCurrentPrefix());
+        Enumeration res = getPerformer().queryEntities(ctx.getCurrentPrefix());
         return translateEntityRefs(res);
     }
     
     private List queryElements() {
-        NodeList res = getPerformer().queryElements(ctx);
+        Enumeration res = getPerformer().queryElements(ctx);
         return translateElements(res);
     }
 
     private List queryAttributes() {
-        NodeList res = getPerformer().queryAttributes(ctx);
+        Enumeration res = getPerformer().queryAttributes(ctx);
         return translateAttributes(res);
     }
 
     private List queryValues() {
-        NodeList res = getPerformer().queryValues(ctx);
+        Enumeration res = getPerformer().queryValues(ctx);
         return translateValues(res);
     }
     
-
     private List queryNotations() {  //!!! to be implemented
-        NodeList res = getPerformer().queryNotations(ctx.getCurrentPrefix());
+        Enumeration res = getPerformer().queryNotations(ctx.getCurrentPrefix());
         return null;
     }
     
     // Translate general results to editor ones ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         
-    private List translateEntityRefs(NodeList refs ) {
-        int len = refs.getLength();
-        List result = new ArrayList( len );
-        for( int i = 0; i<len ; i++ ) {
-            //!!! result.add( new EntityRefCItem( ((GrammarResult)refs.item(i)).getNodeName()));
+    private List translateEntityRefs(Enumeration refs ) {
+        List result = new ArrayList(133);
+        while ( refs.hasMoreElements() ) {
+            GrammarResult next = (GrammarResult) refs.nextElement();
+            EntityRefResultItem ref = new EntityRefResultItem(next);
+            result.add( ref );
         }
         return result;
     }
     
-    private List translateElements(NodeList els ) {
-        int len = els.getLength();
-        List result = new ArrayList(len);
-        for( int i = 0; i<len ; i++ ) {
-            ElementCItem eci = new ElementCItem( ((GrammarResult)els.item(i)).getNodeName());
-            ElementItem ei = new ElementItem(eci);
+    private List translateElements(Enumeration els ) {
+        List result = new ArrayList(13);
+        while (els.hasMoreElements()) {
+            GrammarResult next = (GrammarResult) els.nextElement();
+            ElementResultItem ei = new ElementResultItem(next);
             result.add( ei );
         }
         return result;
     }
     
     
-    private List translateAttributes(NodeList attrs ) {
-        int len = attrs.getLength();
-        List result = new ArrayList(len);
-        for( int i = 0; i<len ; i++ ) {
-            AttributeCItem aci = new AttributeCItem( ((GrammarResult)attrs.item(i)).getNodeName());
-            AttributeItem ai = new AttributeItem(aci);
-            result.add( ai );
+    private List translateAttributes(Enumeration attrs ) {
+        List result = new ArrayList(13);
+        while (attrs.hasMoreElements()) {
+            GrammarResult next = (GrammarResult) attrs.nextElement();            
+            AttributeResultItem attr = new AttributeResultItem(next);
+            result.add( attr );
         }
         return result;
     }
     
-    private List translateValues(NodeList values ) {
-        int len = values.getLength();
-        List result = new ArrayList(len);
-        for( int i = 0; i<len ; i++ ) {
-            //!!! result.add( new ValueCItem( ((GrammarResult)values.item(i)).getNodeName()));
+    private List translateValues(Enumeration values ) {
+        List result = new ArrayList(3);
+        while (values.hasMoreElements()) {
+            GrammarResult next = (GrammarResult) values.nextElement();
+            ValueResultItem val = new ValueResultItem(next);
+            result.add( val );
         }
         return result;
     }
@@ -728,159 +728,5 @@ class XMLCompletionQuery implements CompletionQuery {
         }
 
     }
-    
-    // Editor Result Items ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    
-    /**
-     * One abstract result item.
-     */
-    private static abstract class XMLResultItem implements CompletionQuery.ResultItem {
-        /** The Component used as a rubberStamp for painting items */
-        static javax.swing.JLabel rubberStamp = new javax.swing.JLabel();
-        static {
-            rubberStamp.setOpaque( true );
-        }
                 
-        protected XCItem item;
-        
-        public XMLResultItem( XCItem item ) {
-            this.item = item;
-        }
-        
-        boolean replaceText( JTextComponent component, String text, int offset, int len) {
-            BaseDocument doc = (BaseDocument)component.getDocument();
-            doc.atomicLock();
-            try {
-                doc.remove( offset, len );
-                doc.insertString( offset, text, null);
-            } catch( BadLocationException exc ) {
-                return false;    //not sucessfull
-            } finally {
-                doc.atomicUnlock();
-            }
-            return true;
-        }
-        
-        public boolean substituteCommonText( JTextComponent c, int offset, int len, int subLen ) {
-            return replaceText( c, item.getReplacementText(-1).substring( 0, subLen ), offset, len );
-        }
-        
-        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            return substituteText(c, offset, len, java.awt.event.InputEvent.SHIFT_MASK);
-        }
-        
-        public boolean substituteText( JTextComponent c, int offset, int len, int modifiers ){
-            return replaceText(c, item.getReplacementText(modifiers), offset, len);
-        }
-        
-        /** @return Properly colored JLabel with text gotten from <CODE>getPaintText()</CODE>. */
-        public java.awt.Component getPaintComponent( javax.swing.JList list, boolean isSelected, boolean cellHasFocus ) {
-            // The space is prepended to avoid interpretation as HTML Label
-            if (getIcon() != null) rubberStamp.setIcon(getIcon());
-            
-            rubberStamp.setText( getItemText() );
-            if (isSelected) {
-                rubberStamp.setBackground(item.selectionBackground);
-                rubberStamp.setForeground(item.selectionForeground);
-            } else {
-                rubberStamp.setBackground(item.background);
-                rubberStamp.setForeground(item.foreground);
-            }
-            return rubberStamp;
-        }
-        
-        protected Icon getIcon(){
-            return item.icon;
-        }
-        
-        public java.lang.String getItemText() {
-            return item.displayText;
-        }
-    }
-    
-    private static class ElementItem extends XMLResultItem {
-        
-        public ElementItem( ElementCItem item) {
-            super( item );
-        }
-        
-        public boolean substituteText( JTextComponent c, int a, int b, boolean shift ) {
-            return substituteText(c, a, b, java.awt.event.InputEvent.SHIFT_MASK);
-        }
-        
-        public boolean substituteText( JTextComponent c, int a, int b, int modifiers ){
-            String replacementText = item.getReplacementText(modifiers);
-            replaceText(c, replacementText, a, b);
-            Caret caret = c.getCaret();
-            
-            boolean shift = (modifiers & java.awt.event.InputEvent.SHIFT_MASK) != 0;
-            
-//            if(shift)
-//                caret.setDot( caret.getDot() - (replacementText.length() - replacementText.indexOf('>') + 1));
-//            else
-//                caret.setDot( caret.getDot() - (replacementText.length() - replacementText.indexOf('>') + 3) );
-            return !shift; //???
-        }
-        
-        
-    }
-
-    // Customized behaviour for particular subclasses
-    
-    private  static class AttributeItem extends XMLResultItem {
-        
-        public AttributeItem( AttributeCItem item) {
-            super( item );
-        }
-        
-//        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-//            super.substituteText( c, offset, len, shift );
-//            return false; //??? always refresh
-//        }
-    }
-    
-    private static class AttributeValueItem extends XMLResultItem {
-        
-        public AttributeValueItem( ValueCItem item) {
-            super( item );
-        }
-    }
-    
-    private static class EntityRefItem extends XMLResultItem {
-        
-        public EntityRefItem( EntityRefCItem item ) {
-            super( item );
-        }
-        
-    }
-
-    
-    //??? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    // should be end tag modleled as Result item?
-    // there is always just one choice!
-    
-    private static class EndTagItem extends XMLResultItem {
-        
-        public EndTagItem( XCItem item, int offset, int length ) {
-            super( item );
-        }
-        
-        public String getItemText(){
-            return "</" + super.getItemText() + '>';
-        }
-    }
-
-
-    private class EndTagCItem extends XCItem{
-        public EndTagCItem(String displayText){
-            super(displayText);
-        }
-
-        public String getReplacementText(int modifiers) {
-            return "</" + displayText + '>';
-        }        
-    }
-    
 }

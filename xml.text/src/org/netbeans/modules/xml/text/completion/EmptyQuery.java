@@ -13,13 +13,17 @@
 
 package org.netbeans.modules.xml.text.completion;
 
+import java.util.Enumeration;
+
 import org.w3c.dom.*;
+
+import org.openide.util.enum.EmptyEnumeration;
 
 import org.netbeans.modules.xml.spi.model.*;
 import org.netbeans.modules.xml.text.syntax.dom.*;
 
 /**
- * This query always return an empty result.
+ * This query always returns an empty result from all its query methods.
  *
  * @author  Petr Kuzel
  */
@@ -30,58 +34,26 @@ public class EmptyQuery implements GrammarQuery {
      */
     public static final GrammarQuery INSTANCE = new EmptyQuery();
 
-    /**
-     * Allow to get names of <b>parsed general entities</b>.
-     * @return list of <code>GrammarResult</code>s (ENTITY_REFERENCE_NODEs)
-     */
-    public NodeList queryEntities(String prefix) {
-        return NodeListImpl.EMPTY; 
+    // inherit JavaDoc from interface description
+    
+    public Enumeration queryEntities(String prefix) {
+        return EmptyEnumeration.EMPTY; 
     }
     
-    /**
-     * @stereotype query
-     * @output list of results that can be queried on name, and attributes
-     * @time Performs fast up to 300 ms.
-     * @param ctx represents virtual attribute <code>Node</code> to be replaced. Its parent is a element node.
-     * @return list of <code>GrammarResult</code>s (ATTRIBUTE_NODEs) that can be queried on name, and attributes.
-     *        Every list member represents one possibility.
-     */
-    public NodeList queryAttributes(HintContext ctx) {
-        return NodeListImpl.EMPTY;
+    public Enumeration queryAttributes(HintContext ctx) {
+        return EmptyEnumeration.EMPTY; 
     }
     
-    /**
-     * @semantics Navigates through read-only Node tree to determine context and provide right results.
-     * @postconditions Let ctx unchanged
-     * @time Performs fast up to 300 ms.
-     * @stereotype query
-     * @param ctx represents virtual element Node that has to be replaced, its own attributes does not name sense, it can be used just as the navigation start point.
-     * @return list of <code>GrammarResult</code>s (ELEMENT_NODEs) that can be queried on name, and attributes
-     *        Every list member represents one possibility.
-     */
-    public NodeList queryElements(HintContext ctx) {
-        return NodeListImpl.EMPTY;
+    public Enumeration queryElements(HintContext ctx) {
+        return EmptyEnumeration.EMPTY; 
     }
     
-    /**
-     * Allow to get names of <b>declared notations</b>.
-     * @return list of <code>GrammarResult</code>s (NOTATION_NODEs)
-     */
-    public NodeList queryNotations(String prefix) {
-        return NodeListImpl.EMPTY;
+    public Enumeration queryNotations(String prefix) {
+        return EmptyEnumeration.EMPTY; 
     }
     
-    /**
-     * @semantics Navigates through read-only Node tree to determine context and provide right results.
-     * @postconditions Let ctx unchanged
-     * @time Performs fast up to 300 ms.
-     * @stereotype query
-     * @input ctx represents virtual Node that has to be replaced (parent can be either Attr or Element), its own attributes does not name sense, it can be used just as the navigation start point.
-     * @return list of <code>GrammarResult</code>s (TEXT_NODEs) that can be queried on name, and attributes.
-     *        Every list member represents one possibility.
-     */
-    public NodeList queryValues(HintContext ctx) {
-        return NodeListImpl.EMPTY;
+    public Enumeration queryValues(HintContext ctx) {
+        return EmptyEnumeration.EMPTY; 
     }
     
 }
