@@ -26,13 +26,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="compile-cli" depends="init">
-        <path id="cli-cp">
-            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-            <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
-        </path>
         <mkdir dir="build/cliclasses"/>
         <javac srcdir="clisrc" destdir="build/cliclasses" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-            <classpath refid="cli-cp"/>
+            <classpath path="${cp.cli}"/>
         </javac>
         <copy todir="build/cliclasses">
             <fileset dir="clisrc" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
