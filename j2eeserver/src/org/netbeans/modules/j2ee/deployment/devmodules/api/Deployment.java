@@ -63,7 +63,7 @@ public final class Deployment {
         ServerString server = target.getServer();
         J2eeModule module = target.getModule();
         TargetModule[] modules = null;
-        DeployProgressUI progress = new DeployProgressMonitor(false, true, logger);  // modeless with stop/cancel buttons
+        DeployProgressMonitor progress = new DeployProgressMonitor(false, true, logger);  // modeless with stop/cancel buttons
         progress.startProgressUI(MAX_DEPLOY_PROGRESS);
         
         try {
@@ -106,18 +106,24 @@ public final class Deployment {
             progress.addError(err);
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             throw new DeploymentException (err, ex);
+        } finally {
+            if (progress != null)
+                progress.setLogger(null);
         }
         
-        if (modules != null && modules.length > 0) {
-            target.setTargetModules(modules);
-            progress.recordWork(MAX_DEPLOY_PROGRESS);
-        } else {
-            err = NbBundle.getMessage (Deployment.class, "MSG_AnotherError");
-            //nam: avoid overwriting original message.
-            //progress.addError(err);
-            throw new DeploymentException (err);
+        try {
+            if (modules != null && modules.length > 0) {
+                target.setTargetModules(modules);
+                progress.recordWork(MAX_DEPLOY_PROGRESS);
+            } else {
+                err = NbBundle.getMessage (Deployment.class, "MSG_AnotherError");
+                throw new DeploymentException (err);
+            }
+            return target.getClientUrl(clientUrlPart);
+        } finally {
+            if (progress != null)
+                progress.setLogger(null);
         }
-        return target.getClientUrl(clientUrlPart);
     }
     
     public static final class DeploymentException extends Exception {
