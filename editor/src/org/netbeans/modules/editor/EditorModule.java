@@ -22,6 +22,7 @@ import java.io.IOException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
+
 import com.netbeans.editor.BaseDocument;
 import com.netbeans.editor.BaseKit;
 import com.netbeans.editor.Settings;
@@ -30,6 +31,7 @@ import com.netbeans.editor.ext.JavaKit;
 import com.netbeans.editor.Formatter;
 import com.netbeans.editor.view.DialogSupport;
 import com.netbeans.editor.ext.ExtSettings;
+
 import org.openide.modules.ModuleInstall;
 import org.openide.text.IndentEngine;
 import org.openide.TopManager;
@@ -37,8 +39,13 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+
 import com.netbeans.developer.modules.text.java.JCStorage;
+import com.netbeans.developer.modules.text.java.JCUpdateAction;
 import com.netbeans.developer.modules.text.java.NbEditorJavaKit;
+
+import org.openidex.util.Utilities2;
 
 /**
 * Module installation class for editor
@@ -77,6 +84,17 @@ public class EditorModule extends ModuleInstall {
   private static void registerIndents() {
     IndentEngine.register(MIME_JAVA,
         new FilterIndentEngine(Formatter.getFormatter(JavaKit.class)));
+  }
+  
+  public void installed () {
+    try {
+      Utilities2.createAction (JCUpdateAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
+    } catch (IOException ioe) {
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+        ioe.printStackTrace ();
+    }
+    
+    restored ();
   }
 
   /** Module installed again. */
@@ -117,6 +135,13 @@ public class EditorModule extends ModuleInstall {
   }
 
   public void uninstalled() {
+    try {
+      Utilities2.removeAction (JCUpdateAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
+    } catch (IOException ioe) {
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+        ioe.printStackTrace ();
+    }
+    
     if (Boolean.getBoolean("netbeans.module.test")) { // NOI18N
       /* Reset the hashtable holding the editor kits, so the editor kit
       * can be refreshed. As the JEditorPane.kitRegistryKey is private
@@ -180,6 +205,7 @@ public class EditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  39   Gandalf   1.38        1/16/00  Jesse Glick     Actions pool.
  *  38   Gandalf   1.37        1/13/00  Miloslav Metelka Localization
  *  37   Gandalf   1.36        1/4/00   Miloslav Metelka 
  *  36   Gandalf   1.35        11/27/99 Patrik Knakal   
