@@ -70,7 +70,8 @@ public class PostInstallFixupAction extends ProductAction {
             sep = fileService.getSeparator();
             rootInstallDir = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation"));
             if (Util.isMacOSX()) {
-                nbInstallDir = rootInstallDir + sep + "Contents" + sep + "Resources" + sep + "NetBeans";
+                nbInstallDir = rootInstallDir + sep 
+                + resolveString("$L(org.netbeans.installer.Bundle,Product.nbLocationBelowInstallRoot)");
             } else {
                 nbInstallDir = rootInstallDir;
             }

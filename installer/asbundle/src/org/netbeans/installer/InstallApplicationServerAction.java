@@ -120,7 +120,8 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         
         rootInstallDir = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation"));
         if (Util.isMacOSX()) {
-            nbInstallDir = rootInstallDir + File.separator + "Contents" + File.separator + "Resources" + File.separator + "NetBeans";
+            nbInstallDir = rootInstallDir + File.separator 
+            + resolveString("$L(org.netbeans.installer.Bundle,Product.nbLocationBelowInstallRoot)");
         } else {
             nbInstallDir = rootInstallDir;
         }

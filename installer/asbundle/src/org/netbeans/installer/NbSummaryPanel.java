@@ -155,20 +155,41 @@ public class NbSummaryPanel extends TextDisplayPanel
         summaryMessage += " " + "$L(org.netbeans.installer.Bundle, AS.shortName)";
         summaryMessage += " " + "$L(org.netbeans.installer.Bundle, SummaryPanel.description3)";
         
+        //Location of NB
         summaryMessage += "<br><br>"
         + "$L(org.netbeans.installer.Bundle,Product.displayName)" + " "
         + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
         + nbInstallDir;
         
-        summaryMessage += "<br><br>"
-        + "$L(org.netbeans.installer.Bundle,AS.shortName)" + " "
-        + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
-        + nbInstallDir + File.separator + InstallApplicationServerAction.IMAGE_DIRECTORY_NAME;
-        
-        if (Util.isWindowsOS()) {
-            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description5,netbeans.exe,uninstaller.exe)";
+        //Location of AS
+        if (Util.isMacOSX()) {
+            summaryMessage += "<br><br>"
+            + "$L(org.netbeans.installer.Bundle,AS.shortName)" + " "
+            + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
+            + nbInstallDir
+            + File.separator + resolveString("$L(org.netbeans.installer.Bundle,Product.nbLocationBelowInstallRoot)")
+            + File.separator + InstallApplicationServerAction.IMAGE_DIRECTORY_NAME;
         } else {
-            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description5,netbeans,uninstaller)";
+            summaryMessage += "<br><br>"
+            + "$L(org.netbeans.installer.Bundle,AS.shortName)" + " "
+            + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
+            + nbInstallDir + File.separator + InstallApplicationServerAction.IMAGE_DIRECTORY_NAME;
+        }
+        
+        //How to run IDE
+        if (Util.isWindowsOS()) {
+            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description51,netbeans.exe)";
+        } else if (Util.isMacOSX()) {
+            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description52,netbeans)";
+        } else {
+            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description51,netbeans)";
+        }
+        
+        //How to run uninstaller
+        if (Util.isWindowsOS()) {
+            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description53,uninstaller.exe)";
+        } else {
+            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description53,uninstaller)";
         }
         
         return summaryMessage;
