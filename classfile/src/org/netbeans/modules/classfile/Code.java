@@ -28,6 +28,7 @@ import java.io.IOException;
  * @author  Thomas Ball
  */
 public final class Code {
+    private static final boolean debug = false;
     
     private int maxStack;
     private int maxLocals;
@@ -69,7 +70,9 @@ public final class Code {
                 localVariableTable = 
                     LocalVariableTableEntry.loadLocalVariableTable(in, pool);
             else {
-                System.out.println("skipped unknown code attribute: " + name);
+		if (debug)
+		    System.out.println("skipped unknown code attribute: " + name);
+		
                 // ignore unknown attribute...
 		ClassFile.skip(in, len);
             }
