@@ -13,12 +13,15 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.awt.Component;
+import java.awt.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.*;
+
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -29,10 +32,7 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.AsyncGUIJob;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 
 /**
  *
@@ -42,7 +42,8 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
     
     private ArrayList listeners;
     private TemplatesPanelGUI panel;
-    
+    private WarmupJob warmUp;
+    private boolean warmUpActive;
     private boolean needsReselect = false;   // WelcomeScreen hack, XXX Delete after WS is redesigned
         
     /** Creates a new instance of TemplatesPanel */
@@ -61,14 +62,21 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         String preselectedCategory = (String)wd.getProperty( "PRESELECT_CATEGORY" );        
         if ( templatesFolder != null && templatesFolder.isFolder() && 
             ( wd.getTemplate() == null || preselectedCategory != null || needsReselect ) ) {
-            TemplatesPanelGUI gui = (TemplatesPanelGUI)this.getComponent();
-            gui.setTemplatesFolder (templatesFolder);
-            
             String selectedCategory = OpenProjectListSettings.getInstance().getLastSelectedProjectCategory ();
-            gui.setSelectedCategoryByName( preselectedCategory != null ? preselectedCategory : selectedCategory );
-            
             String selectedTemplate = OpenProjectListSettings.getInstance().getLastSelectedProjectType ();
-            gui.setSelectedTemplateByName( preselectedCategory != null ? null : selectedTemplate);            
+            TemplatesPanelGUI p = (TemplatesPanelGUI) this.getComponent();
+            if (isWarmUpActive()) {
+                WarmupJob wup = getWarmUp();
+                wup.setTemplatesFolder (templatesFolder);
+                wup.setSelectedCategory( preselectedCategory != null ? preselectedCategory : selectedCategory );
+                wup.setSelectedTemplate( preselectedCategory != null ? null : selectedTemplate);
+            }
+            else {
+                p.setTemplatesFolder(templatesFolder);
+                p.setSelectedCategoryByName (preselectedCategory != null ? preselectedCategory : selectedCategory);
+                p.setSelectedTemplateByName (preselectedCategory != null ? null : selectedTemplate);
+            }
+
         }
         // bugfix #44792: project wizard title always changes
         ((WizardDescriptor)settings).putProperty ("NewProjectWizard_Title", null); // NOI18N
@@ -130,17 +138,27 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
     
     public synchronized Component getComponent() {        
         if (this.panel == null) {
-            this.panel = new TemplatesPanelGUI ();
-            Utilities.attachInitJob (panel, new WarmupJob ());
+            TemplatesPanelGUI.Builder firer = new Builder();
+            this.panel = new TemplatesPanelGUI (firer);
+            Utilities.attachInitJob (panel, getWarmUp());
+            this.warmUpActive = true;
             this.panel.setName (NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Name")); // NOI18N
         }
         return this.panel;
     }
-    
-//    private TemplatesPanelGUI.Builder constructBuilder () {
-//        return new Builder ();
-//    }
-//    
+
+
+    private synchronized WarmupJob getWarmUp () {
+        if (this.warmUp == null) {
+            this.warmUp = new WarmupJob();
+        }
+        return this.warmUp;
+    }
+
+    private synchronized boolean isWarmUpActive () {
+        return warmUpActive;
+    }
+
     private static class CategoriesChildren extends Children.Keys {
         
         private DataFolder root;
@@ -150,7 +168,8 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
         }
         
         protected void addNotify () {
-            this.setKeys (this.root.getChildren());
+            DataObject[] children = root.getChildren();
+            setKeys (children);
         }
         
         protected void removeNotify () {
@@ -217,14 +236,41 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
     }
     
     private class WarmupJob implements AsyncGUIJob {
+
+        private FileObject templatesFolder;
+        private String category;
+        private String template;
+
         public void construct () {
-            TemplatesPanelGUI.Builder firer = new Builder();
-            panel.doWarmUp (firer);
-            
+            panel.warmUp (this.templatesFolder);
         }
         
         public void finished () {
-            panel.doFinished ();
+            Cursor cursor = null;
+            try {
+                cursor = panel.getCursor();
+                panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                panel.doFinished (this.templatesFolder, this.category, this.template);
+            } finally {
+                if (cursor != null) {
+                    panel.setCursor (cursor);
+                }
+                synchronized(TemplatesPanel.this) {
+                    warmUpActive = false;
+                }
+            }
+        }
+
+        void setTemplatesFolder (FileObject fo) {
+            this.templatesFolder = fo;
+        }
+
+        void setSelectedCategory (String s) {
+            this.category = s;
+        }
+
+        void setSelectedTemplate (String s) {
+            this.template = s;
         }
     }
     

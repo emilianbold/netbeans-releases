@@ -13,9 +13,7 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.awt.Component;
-import java.awt.ContainerOrderFocusTraversalPolicy;
-import java.awt.FocusTraversalPolicy;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -32,6 +30,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -77,27 +76,27 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     
     // private final String[] recommendedTypes = null;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
-    
+
+    //Templates folder root
+    private FileObject templatesFolder;
+
     //GUI Builder
     private TemplatesPanelGUI.Builder builder;
     private Project project;
-    private boolean isWarmingUp = false;
     
     public TemplateChooserPanelGUI(Project p /* , String[] recommendedTypes */ ) {
         assert p != null : "Project cannot be null.";  // NOI18N
         project = p;
+        this.builder = new FileChooserBuilder ();
+        initComponents();
         setPreferredSize( PREF_DIM );
         setName (org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_Name")); // NOI18N
-        isWarmingUp = true;
         Utilities.attachInitJob (this, this);
      }
     
     /** Called from readSettings, to initialize the GUI with proper components
      */
     public void initValues( Project p ) {
-        if (isWarmingUp) {
-            return ;
-        }
         // Populate the combo box with list of projects
         Project openProjects[] = OpenProjectList.getDefault().getOpenProjects();
         Arrays.sort( openProjects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
@@ -132,17 +131,10 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     
     
     public Project getProject() {
-        if (isWarmingUp) {
-            // during warming up the form then return then project given from constructor
-            return project;
-        }
         return (Project)projectsComboBox.getSelectedItem();
     }
     
     public FileObject getTemplate() {
-        if (isWarmingUp) {
-            return null;
-        }
         return ((TemplatesPanelGUI)this.templatesPanel).getSelectedTemplate ();
     }
     
@@ -156,9 +148,6 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     }
     
     private String getCategory () {
-        if (isWarmingUp) {
-            return null;
-        }
         return ((TemplatesPanelGUI)this.templatesPanel).getSelectedCategoryName ();
     }
 
@@ -444,23 +433,24 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     }
     
     public void construct () {
-        this.builder = new FileChooserBuilder ();
-        initComponents();
-        isWarmingUp = false;
-        projectsComboBox.setRenderer( PROJECT_CELL_RENDERER );                
-        initValues( project );        
+        this.templatesFolder = Repository.getDefault().getDefaultFileSystem().findResource("Templates");
+        ((TemplatesPanelGUI)this.templatesPanel).warmUp(this.templatesFolder);
     }
     
     public void finished () {
-        final TemplatesPanelGUI tempPanel = (TemplatesPanelGUI)this.templatesPanel;
-        ((TemplatesPanelGUI)this.templatesPanel).setTemplatesFolder (Repository.getDefault().getDefaultFileSystem().findResource("Templates"));  //NOI18N
-        // select first category
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                tempPanel.setSelectedCategoryByName (null);
+        //In the awt
+        Cursor cursor = null;
+        try {
+            cursor = TemplateChooserPanelGUI.this.getCursor();
+            TemplateChooserPanelGUI.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            projectsComboBox.setRenderer( PROJECT_CELL_RENDERER );
+            initValues( project );
+            ((TemplatesPanelGUI)this.templatesPanel).doFinished (this.templatesFolder,null,null);
+        } finally {
+            if (cursor != null) {
+                this.setCursor (cursor);
             }
-        });
-        ((TemplatesPanelGUI)this.templatesPanel).doFinished ();
+        }
     }
     
 }
