@@ -182,6 +182,9 @@ public class CmpFieldHelper {
     public void setLocalSetter(boolean create) {
         ClassElement localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
         if (create) {
+            if (setterMethod == null) {
+                setterMethod = entityHelper.createAccessMethod(field.getFieldName(), getType(), false);
+            }
             Utils.addMethod(localBusinessInterfaceClass, setterMethod, false, 0);
         } else {
             Utils.removeBusinessMethod(localBusinessInterfaceClass, setterMethod);

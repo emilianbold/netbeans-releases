@@ -28,7 +28,7 @@ class CmpFieldsNode extends EjbSectionNode {
     }
 
     protected SectionNodeInnerPanel createNodeInnerPanel() {
-        final CmpFieldsTableModel model = new CmpFieldsTableModel(cmpFields);
+        final CmpFieldsTableModel model = cmpFields.getCmpFieldsTableModel();
         final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
             protected void editCell(final int row, final int column) {
                 model.editRow(row);

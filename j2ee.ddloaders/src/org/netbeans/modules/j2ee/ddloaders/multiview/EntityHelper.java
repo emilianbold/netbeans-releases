@@ -164,6 +164,7 @@ public class EntityHelper extends EntityAndSessionHelper {
 
         private List listeners = new LinkedList();
         private HashMap cmpFieldHelperMap = new HashMap();
+        private CmpFieldsTableModel cmpFieldsTableModel = new CmpFieldsTableModel(this);
 
         public int getCmpFieldCount() {
             return entity.getCmpField().length;
@@ -250,6 +251,10 @@ public class EntityHelper extends EntityAndSessionHelper {
         public void addCmpField() {
             new AddCmpFieldAction().addCmpField(beanClass, ejbJarFile);
             modelUpdatedFromUI();
+        }
+
+        public CmpFieldsTableModel getCmpFieldsTableModel() {
+            return cmpFieldsTableModel;
         }
     }
 

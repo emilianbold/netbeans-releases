@@ -13,6 +13,9 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -36,7 +39,10 @@ class CmpFieldsTableModel extends InnerTableModel {
         this.cmpFields = cmpFields;
         cmpFields.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                tableChanged();
+                if (evt != null && evt.getSource() instanceof Entity &&
+                        (evt.getOldValue() instanceof CmpField || evt.getNewValue() instanceof CmpField)) {
+                    tableChanged();
+                }
             }
         });
     }
