@@ -497,4 +497,10 @@ Microsystems, Inc. All Rights Reserved.
     <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
   </folder>
 
+  <folder name="Wizards">
+    <folder name="Setup">
+      <file name="Module Installation[org-netbeans-core-ModuleSelectionPanel].instance" />
+    </folder>
+  </folder>
+
 </filesystem>
