@@ -16,6 +16,8 @@ package org.netbeans.modules.xsl.grammar;
 import org.w3c.dom.*;
 
 /**
+ * Node that can be used as HintContext. It's used for nested grammars.
+ * It can narrow context to given namespace etc.
  *
  * @author  asgeir@dimonsoftware.com
  */
@@ -181,17 +183,19 @@ public class ResultNode implements Node {
     public void setPrefix(String prefix) throws DOMException {
         peer.setPrefix(prefix);
     }
-    
+
+    /**
+     *  Create narrowing result node from given node.
+     */
     protected Node createNode(Node orig) {
-        if (orig instanceof Element) {
+        if (orig.getNodeType() == Node.ELEMENT_NODE) {
             return new ResultElement((Element)orig, ignorePrefix, onlyUsePrefix);
-        } else if (orig instanceof Document) {
+        } else if (orig.getNodeType() == Node.DOCUMENT_NODE) {
             return new ResultDocument((Document)orig, ignorePrefix, onlyUsePrefix);
-            
-        } else if (orig instanceof Attr) {
+        } else if (orig.getNodeType() == Node.ATTRIBUTE_NODE) {
             return new ResultAttr((Attr)orig, ignorePrefix, onlyUsePrefix);
         } else {
-            return createNode(orig);            
+            return orig;
         }
     }
     
