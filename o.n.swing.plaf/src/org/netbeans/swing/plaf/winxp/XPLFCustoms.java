@@ -13,6 +13,8 @@
 
 package org.netbeans.swing.plaf.winxp;
 
+import javax.swing.UIManager;
+import javax.swing.plaf.ColorUIResource;
 import org.netbeans.swing.plaf.LFCustoms;
 import org.netbeans.swing.plaf.util.GuaranteedValue;
 import org.netbeans.swing.plaf.util.UIBootstrapValue;
@@ -101,7 +103,25 @@ public final class XPLFCustoms extends LFCustoms {
 
 
         }; //NOI18N
+        
+        //Workaround for JDK 1.5.0 bug 5080144 - Disabled JTextFields stay white
+        //XPTheme uses Color instead of ColorUIResource
+        convert ("TextField.background"); //NOI18N
+        convert ("TextField.inactiveBackground"); //NOI18N
+        convert ("TextField.disabledBackground");  //NOI18N
+
         return uiDefaults;
+    }
+    
+    /**
+     * Takes a UIManager color key and ensures that it is stored as a 
+     * ColorUIResource, not a Color. 
+     */
+    private static final void convert (String key) {
+        Color c = UIManager.getColor(key);
+        if (c != null && !(c instanceof ColorUIResource)) {
+            UIManager.put (key, new ColorUIResource(c));
+        }
     }
 
     private class XPEditorColorings extends UIBootstrapValue.Lazy {
