@@ -99,27 +99,27 @@ public class AntGrammarTest extends NbTestCase {
     public void testSpecialAttrCompletion() throws Exception {
         String p = "<project default='x'><target nHERE=''/></project>";
         List l = TestUtil.grammarResultValues(g.queryAttributes(TestUtil.createCompletion(p)));
-        assertEquals("matched name on <target>", l, Collections.singletonList("name"));
+        assertEquals("matched name on <target>", Collections.singletonList("name"), l);
         p = "<project default='x'><target dHERE=''/></project>";
         l = TestUtil.grammarResultValues(g.queryAttributes(TestUtil.createCompletion(p)));
         Collections.sort(l);
-        assertEquals("matched depends and description on <target>", l,
-            Arrays.asList(new String[] {"depends", "description"}));
+        assertEquals("matched depends and description on <target>",
+            Arrays.asList(new String[] {"depends", "description"}), l);
         // XXX more...
     }
     
     public void testEnumeratedValueCompletion() throws Exception {
         String p = "<project default='x'><target><echo level='vHERE'/></target></project>";
         List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
-        assertEquals("matched level='verbose' on <echo>", l, Collections.singletonList("verbose"));
+        assertEquals("matched level='verbose' on <echo>", Collections.singletonList("verbose"), l);
     }
     
     public void testBooleanValueCompletion() throws Exception {
         String p = "<project default='x'><target><echo append='HERE'/></target></project>";
         List l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         Collections.sort(l);
-        assertEquals("true or false for append on <echo>", l,
-            Arrays.asList(new String[] {"false", "true"}));
+        assertEquals("true or false for append on <echo>",
+            Arrays.asList(new String[] {"false", "true"}), l);
     }
     
     public void testStockProperties() throws Exception {
@@ -254,8 +254,8 @@ public class AntGrammarTest extends NbTestCase {
         p = "<project default='x'><import file='y' optional='HERE'/></project>";
         l = TestUtil.grammarResultValues(g.queryValues(TestUtil.createCompletion(p)));
         Collections.sort(l);
-        assertEquals("true or false for optional on <import>", l,
-            Arrays.asList(new String[] {"false", "true"}));
+        assertEquals("true or false for optional on <import>",
+            Arrays.asList(new String[] {"false", "true"}), l);
     }
 
 }
