@@ -43,6 +43,29 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="test/perf" antfile="build.xml" />
   </target>
 	  
-	  
-  
+  <!-- <target name="grammar" if="${javacchome}"> -->
+  <target name="grammar" >
+    <mkdir dir="src/org/netbeans/performance/bde/generated"/>
+
+    <jjtree 
+      javacchome="${javacchome}" 
+      target="src/org/netbeans/performance/bde/BDEGrammar.jjt" 
+      outputdirectory="src/org/netbeans/performance/bde/generated"
+    />
+
+    <javacc 
+      javacchome="${javacchome}" 
+      target="src/org/netbeans/performance/bde/generated/BDEGrammar.jj" 
+      outputdirectory="src/org/netbeans/performance/bde/generated"
+    />
+
+    <copy file="src/org/netbeans/performance/bde/override/SimpleNode.xjava" tofile="src/org/netbeans/performance/bde/generated/SimpleNode.java" overwrite="true" />
+
+    <antcall target="jars"/>
+  </target>
+
+  <target name="clean_grammar">
+    <delete dir="src/org/netbeans/performance/bde/generated"/>
+  </target>
+	
 </project>

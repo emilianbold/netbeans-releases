@@ -222,7 +222,7 @@ public final class BenchmarkSuite implements Test {
                             localMapList.addAll(localMapList2);
                             localMapList2.clear();
                         }
-                        if (i > interval.getEnd()) {
+                        if (i >= interval.getEnd()) {
                             createArgsAndPut(keys, as, mab, localMapList2, key, new Integer(interval.getEnd()));
                             localMapList.addAll(localMapList2);
                         }
