@@ -1034,6 +1034,13 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     protected String topComponentID (TopComponent tc, String preferredID) {
         assertEventDispatchThreadWeak();
         
+        if (preferredID == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                new IllegalStateException("Assertion failed. " + tc.getClass().getName() + // NOI18N 
+                ".preferredID method shouldn't be overriden to return null. " + // NOI18N
+                "Please change your impl to return non-null string.")); // NOI18N
+        }
+        
         return PersistenceManager.getDefault().getGlobalTopComponentID(tc, preferredID);
     }
     // Manipulating methods (overriding the superclass dummy ones) <<
@@ -1086,5 +1093,6 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 new IllegalStateException("Assertion failed. " + ASSERTION_ERROR_MESSAGE)); // NOI18N
         }
     }
+    
 }
 
