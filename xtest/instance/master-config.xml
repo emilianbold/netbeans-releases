@@ -43,6 +43,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="qa"       	testtypes="serialization"  attributes="nb34,validation"/>
       <module name="qa"       	testtypes="qa-functional"  attributes="stable,validation"/>
       <module name="vcsgeneric"	testtypes="qa-functional"  attributes="stable,validation"/>      
+      <module name="xml"	testtypes="qa-functional"  attributes="stable,validation"/>
       <module name="xml/catalog"	testtypes="qa-functional"  attributes="stable,validation"/>
       <module name="xml/core"		testtypes="qa-functional"  attributes="stable,validation"/>
       <module name="xml/text-edit"	testtypes="qa-functional"  attributes="stable,validation"/>
@@ -67,6 +68,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="qa"       	testtypes="qa-functional"  attributes="stable,validation"/>
       <module name="rmi" 	testtypes="qa-functional"  attributes="stable,validation"/>
       <module name="vcsgeneric"	testtypes="qa-functional"  attributes="stable,validation"/>      
+      <module name="xml"	testtypes="qa-functional"  attributes="stable,validation"/>
       <module name="xml/catalog"	testtypes="qa-functional"  attributes="stable,validation"/>
       <module name="xml/core"		testtypes="qa-functional"  attributes="stable,validation"/>
       <module name="xml/text-edit"	testtypes="qa-functional"  attributes="stable,validation"/>
