@@ -768,25 +768,46 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             output.append("  " + prefix + "\n");    // NOI18N
             List tags = getTags(prefix, "");    // NOI18N
             for (int j = 0; j < tags.size(); j++) {
-                String tagName = (String)tags.get(j);
-                output.append("    " + tagName + "\n"); // NOI18N
-                List attributes = getTagAttributes(prefix, tagName, "");// NOI18N
-                for (int k = 0; k < attributes.size(); k++) {
-                    String attribute = (String)attributes.get(k);
-                    output.append("      " + attribute + "\n");// NOI18N
+                if (tags.get(j) instanceof TagInfo){
+                    TagInfo ti = (TagInfo) tags.get(j);
+                    output.append("    " + ti.getTagName() + "\n");
+                    TagAttributeInfo[] attributes =  ti.getAttributes();
+                    for (int k = 0; k < attributes.length; k++) {
+                        output.append("      " + attributes[k].getName() + "\n");// NOI18N
+                    }
+                }
+                else {
+                    String tagName = (String)tags.get(j);
+                    output.append("    " + tagName + "\n"); // NOI18N
+                    List attributes = getTagAttributes(prefix, tagName, "");// NOI18N
+                    for (int k = 0; k < attributes.size(); k++) {
+                        String attribute = (String)attributes.get(k);
+                        output.append("      " + attribute + "\n");// NOI18N
+                    }
                 }
             }
+
         }
         
         output.append("DIRECTIVES\n");// NOI18N
         List directives = getDirectives("");// NOI18N
         for (int i = 0; i < directives.size(); i++) {
-            String directive = (String)directives.get(i);
-            output.append("  " + directive + "\n");// NOI18N
-            List attributes = getDirectiveAttributes(directive, "");// NOI18N
-            for (int k = 0; k < attributes.size(); k++) {
-                String attribute = (String)attributes.get(k);
-                output.append("      " + attribute + "\n");// NOI18N
+            if (directives.get(i) instanceof TagInfo){
+                TagInfo ti = (TagInfo) directives.get(i);
+                output.append("    " + ti.getTagName() + "\n");
+                TagAttributeInfo[] attributes =  ti.getAttributes();
+                for (int k = 0; k < attributes.length; k++) {
+                    output.append("      " + attributes[k].getName() + "\n");// NOI18N
+                }
+            }
+            else {
+                String directive = (String)directives.get(i);
+                output.append("  " + directive + "\n");// NOI18N
+                List attributes = getDirectiveAttributes(directive, "");// NOI18N
+                for (int k = 0; k < attributes.size(); k++) {
+                    String attribute = (String)attributes.get(k);
+                    output.append("      " + attribute + "\n");// NOI18N
+                }
             }
         }
         
@@ -1203,7 +1224,20 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
      * SyntaxElement's method getPrevious()
      */
     SyntaxElement getPreviousElement( int offset ) throws BadLocationException {
-        return offset == 0 ? null : getElementChain( offset - 1 );
+        if (offset == 0)
+            return null;
+        SyntaxElement elem = null;
+        offset--;
+        do {
+            elem = getElementChain( offset);
+            if (elem == null){
+                TokenItem ti = getItemAtOrBefore(offset);
+                if (ti == null)
+                    return null;
+                offset = ti.getOffset() -1 ;
+            }
+        } while (elem == null && offset >= 0);
+        return elem;
     }
 
     public List getPossibleEndTags (int offset, String pattern) throws BadLocationException {
@@ -1221,10 +1255,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 return result;
             }
         }
+        
 
-/*        TagLibParseSupport support = (dobj == null) ? 
-            null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
-*/           
         for( ; elem != null; elem = elem.getPrevious() ) {
             
             if( elem instanceof SyntaxElement.EndTag ) {
@@ -1240,16 +1272,11 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 String name = image.substring (image.indexOf (':')+1);
                 TagInfo ti = null;
 
-/*                if (support != null) {
-                    // add all tags for the given prefix
-                    TagLibParseSupport.TagLibData tagLibData = support.getTagLibEditorData().getTagLibData(prefix);
-                    if (tagLibData != null) {
-                        TagLibraryInfo tli = (TagLibraryInfo)tagLibData.getTagLibraryInfo();
-                        if (tli != null) {
-                            ti = tli.getTag(name);
-                        }
-                    }
-                }*/
+                TagLibraryInfo tli = getTagLibrary(prefix);
+                if (tli != null) {
+                    ti = tli.getTag(name);
+                }
+                
                 if (STANDARD_JSP_PREFIX.equals (prefix)) { 
                     initCompletionData ();
                     TagInfo[] stanTagDatas = getTagInfos();
