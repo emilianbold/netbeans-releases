@@ -1140,8 +1140,8 @@ public class TomcatManager implements DeploymentManager {
                 "</Host>",   // NOI18N
                 "</tomcat-users>",   // NOI18N
                 null, 
-                "docBase=\"../server/webapps/admin\"", 
-                "docBase=\"../server/webapps/manager\"",
+                null, 
+                null,
                 "docBase=\"balancer\""
             };
             String passwd = readPassword();
@@ -1159,8 +1159,8 @@ public class TomcatManager implements DeploymentManager {
                 "</Host>",   // NOI18N
                 "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager\"/>\n</tomcat-users>",   // NOI18N
                 null, 
-                "docBase=\""+new File (homeDir, "server/webapps/admin").getAbsolutePath ()+"\"",   // NOI18N
-                "docBase=\""+new File (homeDir, "server/webapps/manager").getAbsolutePath ()+"\"",   // NOI18N
+                null,
+                null,
                 "docBase=\""+new File (homeDir, "webapps/balancer").getAbsolutePath ()+"\""   // NOI18N
             };
             for (int i = 0; i<files.length; i++) {
