@@ -145,61 +145,20 @@ Microsystems, Inc. All Rights Reserved.
           </file>
       </folder> <!-- Javadoc -->
   </folder>
-
-    <folder name="Looks">
-      <folder name="Types">
-        <folder name="org">
-          <folder name="netbeans">
-            <folder name="modules">
-              <folder name="web">
-                <folder name="core">
-                  <folder name="jsploader">
-                        <file name="JspNode.instance">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-                            <attr name="instanceCreate" methodvalue="org.netbeans.spi.looks.Looks.composite" />
-                            <attr name="instanceClass" stringvalue="org.netbeans.spi.looks.Look" />
-                            <!-- XXX maybe this should match to class name -->
-                            <attr name="Context" stringvalue="Looks/Composites/org-netbeans-modules-web-core-WebLook/" />
-                        </file>
-                        <file name="ServletDataNode.instance">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-                            <attr name="instanceCreate" methodvalue="org.netbeans.spi.looks.Looks.composite" />
-                            <attr name="instanceClass" stringvalue="org.netbeans.spi.looks.Look" />
-                            <!-- XXX maybe this should match to class name -->
-                            <attr name="Context" stringvalue="Looks/Composites/org-netbeans-modules-web-core-WebLook/" />
-                        </file>
-                  </folder>
-                </folder>
-                <folder name="dd">
-                    <file name="DDDataNode.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-                        <attr name="instanceCreate" methodvalue="org.netbeans.spi.looks.Looks.composite" />
-                        <attr name="instanceClass" stringvalue="org.netbeans.spi.looks.Look" />
-                        <!-- XXX maybe this should match to class name -->
-                        <attr name="Context" stringvalue="Looks/Composites/org-netbeans-modules-web-core-WebLook/" />
-                    </file>
-                </folder>
-              </folder>
-            </folder>
-          </folder>
-        </folder>
-      </folder>
-
-        <folder name="Composites">
-            <folder name="org-netbeans-modules-web-core-WebLook">
-                <file name="defaultLook.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.spi.looks.Look" />
-                    <attr name="instanceCreate" methodvalue="org.netbeans.api.nodes2looks.Nodes.nodeLook" />
-                </file>
-            </folder>
-        </folder>
-    </folder> <!-- Looks -->
-  
   <folder name="Services">
     <folder name="Hidden">
 	    <attr name="hidden" boolvalue="true" />
 	    <file name="org-netbeans-modules-web-core-resources-EntityCatalog.xml" url="entityCatalog.xml"/>
     </folder>
+
+    <folder name="Looks">
+        <!-- JSPDefaultLook class defines Basic look -->
+        <file name="org.openidex.nodes.looks.NodeProxyLook$Web-Basic.xml" url="look-web-basic.xml" />
+        <!-- JSPDefaultLook class defines composite look for servlet, JSP and DD objects 
+             it merges available (sub)set of sublooks -->
+        <file name="org.openidex.nodes.looks.CompositeLook$Web-Look.xml" url="web-look.xml"/>
+    </folder> <!-- Looks -->
+
 
     <folder name="JSP_Servlet">
       <file name="org-netbeans-modules-web-core-ServletSettings.settings" url="servlet.settings">
