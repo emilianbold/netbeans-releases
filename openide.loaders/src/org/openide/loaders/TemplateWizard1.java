@@ -228,7 +228,7 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
     }
     
 
-    private class DataShadowFilterNode extends FilterNode {
+    private static class DataShadowFilterNode extends FilterNode {
         
         private String name;
         
@@ -291,7 +291,7 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         browserPanel.setLayout(new java.awt.CardLayout());
 
         // same background as html browser to avoid flicking
-        noBrowser.setBackground((java.awt.Color) javax.swing.UIManager.getDefaults().get("EditorPane.background"));
+        noBrowser.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
         noBrowser.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         // bigger minimum size then usual to behave well in card
         // layout together with HtmlBrowser

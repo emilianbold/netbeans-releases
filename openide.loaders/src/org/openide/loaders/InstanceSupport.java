@@ -566,7 +566,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     /** The exception to use to signal succesful find of a class.
     * Used in method readClass.
     */
-    private class ClassEx extends IOException {
+    private static class ClassEx extends IOException {
         /** founded class */
         public Class clazz;
 
