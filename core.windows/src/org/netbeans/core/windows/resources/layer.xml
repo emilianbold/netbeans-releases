@@ -30,9 +30,14 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="Window">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-CloneViewAction.instance"/>
-            <file name="org-openide-actions-PreviousTabAction.instance"/>
-            <file name="org-openide-actions-NextTabAction.instance"/>
+            <file name="CloneDocumentAction.shadow">
+                <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-windows-actions-CloneDocumentAction.instance"/>
+            </file>
+            <file name="org-netbeans-core-windows-actions-NextTabAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
+            <file name="RecentViewListAction.shadow">
+                <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
+            </file>
             <file name="org-openide-actions-UndockAction.instance"/>
         </folder>    
     </folder>
@@ -84,11 +89,11 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="Shortcuts">
-        <file name="A-LEFT.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.PreviousTabAction" />
+        <file name="A-LEFT.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance" />
         </file>
-        <file name="A-RIGHT.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.NextTabAction"/>
+        <file name="A-RIGHT.shadow">
+	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
 	</file>
         
         <file name="C-F4.shadow">
