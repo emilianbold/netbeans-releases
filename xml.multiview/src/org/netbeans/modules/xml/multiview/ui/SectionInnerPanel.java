@@ -199,8 +199,6 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
 
         public void focusGained(FocusEvent evt) {
             activeListener = this;
-            System.out.println(SectionInnerPanel.this + " - activeListener =" + activeListener);
-
             orgValue = tc.getText();
             if (sectionView.getErrorPanel().getError() != null) {
                 viewIsBuggy = true;
@@ -220,7 +218,6 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                     });
                 } else {
                     activeListener = null;
-                    System.out.println(SectionInnerPanel.this + " - activeListener =" + activeListener);
                 }
             }
         }
@@ -279,14 +276,12 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
         public void focusGained(FocusEvent evt) {
             orgValue = tc.getText();
             activeListener = this;
-            System.out.println(SectionInnerPanel.this + " - activeListener =" + activeListener);
         }
 
         public void focusLost(FocusEvent evt) {
             if (!closing) {
                 flushData();
                 activeListener = null;
-                System.out.println(SectionInnerPanel.this + " - activeListener =" + activeListener);
             }
         }
 
