@@ -20,11 +20,6 @@
 <p>An entity bean represents data in a database. If it uses container-managed 
   persistence (CMP), the bean must have a set of CMP fields that the container 
   uses to map to fields in the database. </p>
-<ul class="note">
-  <li>If you use the CMP Entity EJB wizard to create the bean, you can have the 
-    wizard create the CMP fields for you from an existing database or database 
-    schema. </li>
-</ul>
 <p><b>To define a CMP field for an existing entity bean:</b></p>
 <ol>
   <li>In the Projects window, expand the Enterprise JavaBeans node. </li>
@@ -42,6 +37,11 @@
   <li>Adds the get and set methods for the field to the bean class.</li>
   <li>Registers the CMP field in the deployment descriptor.</li>
 </ul>
+<ul class="note">
+  <li>If you use the <a href="generate_cmp_beans.html">Entity Beans from Database</a> 
+    wizard to create the bean, the IDE can automatically create the CMP fields 
+    for all the fields in a database. </li>
+</ul>
 <p><b>To view or edit an existing CMP field:</b></p>
 <ol>
   <li>In the Projects window, expand the Configuration Files node for your EJB 
@@ -58,19 +58,13 @@
   </tr>
   <tr valign="top"> 
     <td width="23px" nowrap>&nbsp;</td>
-    <!--
-    <td nowrap><a href="../ejbql/about_ejbql.html">Enterprise 
-      JavaBeans Query Language</a><br>
-      <a href="add_ejbql.html">Adding EJB QL to a Select or Finder Method</a><br>
-      <a href="define_finder_method.html">Defining a Finder Method</a><br>
-      <a href="creating_an_ejb.html">Creating an Enterprise Bean</a><br>
-        <a href="working_with_ejbs.html">Working With Enterprise Beans</a><br>
-        <a href="../general/about_session_beans.html">Session Beans</a><br>
-       <a href="../general/about_entity_beans.html">Entity Beans</a></td>    -->
+    <td nowrap><a href="../general/about_entity_beans.html">About Entity Beans</a><br>
+      <a href="create_ejb.html">Creating an Enterprise Bean</a><br>
+      <a href="generate_cmp_beans.html">Generating CMP Entity Beans from a Database</a><br>
+      <a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a><br>
+      <a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/dbschema/docs/dbschema.html">Obtaining a Database Schema</a>
+      </td>
   </tr>
-</table>
-<table border="0">
-  <tr valign="top"></tr>
 </table>
 <hr>
 <small> <a href="../../credits.html">Legal Notices</a></small> 

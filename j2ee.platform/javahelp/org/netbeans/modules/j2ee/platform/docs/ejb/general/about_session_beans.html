@@ -41,22 +41,36 @@
       and enable the end user to add more.</p>
   </li>
 </ul>
+<h3>Interfaces</h3>
+<p>Like all entity beans, session beans can have local interfaces, remote interfaces, 
+  or both. Session beans are more likely to have remote interfaces than entity 
+  beans and message-driven beans, since they are usually the entry point for access 
+  from remote clients.</p>
+<p>The interfaces handle client access to the session bean's methods. Modules 
+  that are included in the same enterprise application as the EJB module can access 
+  the session bean's modules through its local interfaces. Modules that are not 
+  in the same enterprise application must access the bean's methods through its 
+  remote interfaces.</p>
 <table border="0">
-  
-<tr> 
-    
-<th scope="col" colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-  
-<tr valign="top"> 
-    
-<td width="23px">&nbsp;</td>
-    <td nowrap><a href="about_entity_beans.html">Entity Beans</a><a href="about_entity_beans.html"><br>
-      Creating an Enterprise Bean</a> </td>
-</tr>
+  <tr> 
+    <th scope="col" colspan=2 align=left><a name="seealso">See Also</a></th>
+  </tr>
+  <tr valign="top"> 
+    <td width="23px">&nbsp;</td>
+    <td nowrap><a href="about_entity_beans.html">About Entity Beans</a><br>
+      <a href="about_msg_driven_beans.html">About Message-Driven Beans</a> <br>
+      <a href="../editing/create_ejb.html">Creating an Enterprise Bean</a> <br>
+      <a href="../editing/about_business_method.html">About Business Methods</a> 
+    </td>
+  </tr>
 </table>
- 
 <hr>
+<!-- 
+Index:
+enterprise beans - interfaces
+				   remote clients
+session beans - stateful stateless
+-->
 <small> <a href="../../credits.html">Legal Notices</a></small> 
 <table cellpadding="150" border="0"> 
    <tr><td>&nbsp;</td></tr> 

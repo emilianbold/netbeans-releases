@@ -24,9 +24,34 @@
     <param name="textFontWeight" value="bold">
     <param name="textColor" value="blue">
   </object>&nbsp;and choosing Properties. The Sources page lets you define the 
-  folders that contain the project's source packages and test packages. 
-<p>Use the buttons on the right of the dialog box to add, remove, 
-  and change the order of the folders.
+  folders that contain the project's source packages and test packages. Use the 
+  buttons on the right of the dialog box to add, remove, and change the order 
+  of the folders. 
+<p>You can have multiple source roots in a standard project, with the following 
+  exceptions: 
+<ul>
+  <li>The source root cannot already exist in another IDE project. </li>
+  <li>The source root cannot already be added to another compilation unit of the 
+    same project. For example, a source root that is registered under Test Packages 
+    cannot be added to the list of Source Packages.</li>
+  <li>All of the source roots are packaged into the same JAR file and share the 
+    same classpath.</li>
+</ul>
+<ul class="note">
+  <li>If you have a source root that needs to be used by several projects, you 
+    should create a separate project for the source root and <a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_dependencies.html">set 
+    up compilation dependencies</a> between the projects.</li>
+</ul>
+<p>You can use the Source Level combo box at the bottom of the Sources page to 
+  set the Java platform version that the generated Java code should be compatible 
+  with. This setting corresponds to the <tt>javac -source</tt> option.
+<ul class="note">
+  <li>Specifying the Source Level does not change the Java platform whose libraries 
+    and executables are used to compile and run your project. To set the Java 
+    platform that is used for compiling and running your project, click Libraries 
+    and set the Java Platform setting accordingly. You cannot set the Source Level 
+    of a project to a higher release than the project's Java platform.</li>
+</ul>
 <table>
   <tr> 
     <th colspan=2 align=left><a name="seealso">See also</a></th>
@@ -42,7 +67,10 @@
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="stand-ejb-properties-packaging.html">Packaging</a> 
       <br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="stand-ejb-properties-javadoc.html">Documenting</a><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="stand-ejb-properties-run.html">Run</a></td>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="stand-ejb-properties-run.html">Run</a><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Web Services <br>
+      <a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_jdk.html">Setting 
+      the Target JDK in a Project</a> </td>
   </tr>
 </table>
 

@@ -17,12 +17,9 @@
  
 <h2>Defining a Business Method</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>When you create an enterprise bean in the IDE, the IDE creates a special <tt><i>BeanName</i>RemoteBusiness</tt> 
-  interface in which it registers business methods. The <tt><i>BeanName</i>Remote</tt> 
-  interface extends the <tt><i>BeanName</i>RemoteBusiness</tt> and the bean class 
-  implements both the <tt><i>BeanName</i>Remote</tt> interface and the <tt><i>BeanName</i>RemoteBusiness</tt> 
-  interface. If your remote interface does not extend a remote business interface, 
-  the IDE registers business methods directly in the remote interface.</p>
+<p>A <a href="about_business_method.html">business method</a> is a method inside 
+  an enterprise bean that performs some function and is available for any clients 
+  of the bean.</p>
 <p><b>To define a business method for an enterprise bean:</b></p>
 <ol>
   <li>In the Projects window, expand the Enterprise JavaBeans node and the node 
@@ -50,7 +47,13 @@
   </li>
   <li>Edit your new business method. </li>
 </ol>
-<ul class="note">
+<p><b>Notes:</b></p>
+<ul>
+  <li>When you create an enterprise bean in the IDE, the IDE creates a special 
+    <tt><i>BeanName</i>RemoteBusiness</tt> interface in which it registers business 
+    methods. The <tt><i>BeanName</i>Remote</tt> interface extends the <tt><i>BeanName</i>RemoteBusiness</tt> 
+    and the bean class implements both the <tt><i>BeanName</i>Remote</tt> interface 
+    and the <tt><i>BeanName</i>RemoteBusiness</tt> interface. </li>
   <li>When the IDE adds a business method to an enterprise, it does not save the 
     bean class or the remote interface. Only when you compile or save the class 
     is the new method saved to disk.</li>

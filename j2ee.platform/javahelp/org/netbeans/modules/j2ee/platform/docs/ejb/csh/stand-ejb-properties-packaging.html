@@ -23,19 +23,16 @@
     <param name="textFontStyle" value="italic">
     <param name="textFontWeight" value="bold">
     <param name="textColor" value="blue">
-  </object>&nbsp;and choosing Properties. The Packaging page lets 
-  you set up the filter for which files are included in the WAR file.
+  </object>&nbsp;and choosing Properties. The Packaging page lets you set up the 
+  filter for which files are included in the EJB JAR file. 
 <p><b>Notes:</b>
 <ul>
-  <li>To change the WAR name and location, open the project.properties file. Enter 
-    the full path to the WAR file in the <tt>dist.dir</tt> property and the WAR 
-    file's name in the <tt>war.name</tt> property. Notice that these two properties 
-    are concatenated to form the <tt>dist.war</tt> property</li>
-  <li>To disable building of WAR files for a project, open <tt>build.xml, </tt>override 
-    the <tt>do-dist</tt> target and remove all the dependencies from the target, 
-    like so:<br>
-    <pre>&lt;target name=&quot;do-dist&quot; /&gt;</pre>
-  </li>
+  <li>To change the JAR name and location, expand the project's folder in the 
+    Files window and open <tt>project.properties</tt>. Enter the full path to 
+    the JAR file folder in the <tt>dist.dir</tt> property and the JAR file's name 
+    in the jar.name property. </li>
+  <li>To manage the project's classpath, click Libraries in the left panel of 
+    the dialog box. To set command-line options for <tt>javac</tt>, click Compiling.</li>
 </ul>
 <table>
   <tr> 
@@ -44,7 +41,9 @@
   <tr> 
     <td width="23px">&nbsp;</td>
     <td><a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_stand_about.html">About Standard Projects</a><br>
-      <a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_free_about.html">About Free-Form Projects</a> <br>
+      <a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_free_about.html">About 
+      Free-Form Projects</a> <br>
+      <a href="../deploy/build_ejb.html">Building an EJB Module</a> <br>
       Standard EJB Module Project Properties Dialog Box:<br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="stand-ejb-properties-sources.html">Sources</a> 
       <br>
@@ -52,7 +51,8 @@
       <br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="stand-ejb-properties-compile.html">Compiling</a><br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="stand-ejb-properties-javadoc.html">Documenting</a><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="stand-ejb-properties-run.html">Run</a></td>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="stand-ejb-properties-run.html">Run</a><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Web Services</td>
   </tr>
 </table>
 

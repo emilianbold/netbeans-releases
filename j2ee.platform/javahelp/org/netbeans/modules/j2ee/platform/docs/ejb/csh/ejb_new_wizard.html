@@ -5,13 +5,13 @@
 -->
 <html>
 <head>
-<title>New Enterprise JavaBeans Module Wizard: Name and Location</title>
+<title>New EJB Module Wizard: Name and Location</title>
 <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>New Enterprise JavaBeans Module Wizard: Name and Location</h2>
+<h2>New EJB Module Wizard: Name and Location</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>The New Enterprise JavaBeans Module wizard creates a new <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+<p>The New EJB Module wizard creates a new <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
     <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
     <param name="viewerActivator" value="javax.help.LinkLabel">
     <param name="viewerStyle" value="javax.help.Popup">
@@ -22,23 +22,35 @@
     <param name="textFontStyle" value="italic">
     <param name="textFontWeight" value="bold">
     <param name="textColor" value="blue">
-  </object>&nbsp; containing an EJB module. You open the New Empty Enterprise 
-  Application wizard by opening the <a href="nbdocs:/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">New 
-  Project wizard</a> and selecting the Enterprise JavaBeans Module from Existing 
-  Sources template from the Enterprise category. 
+  </object>&nbsp; containing an EJB module. You open the New EJB Module wizard 
+  by opening the <a href="nbdocs:/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">New 
+  Project wizard</a> and selecting the EJB Module template from the Enterprise 
+  category. 
 <p>In the Name and Location page, you have to set the following properties:
 <ul>
   <li><b>Project Name. </b>Specifies the display name of the project. This name 
     is also used to create the project folder.</li>
-  <li><b>Project Location. </b>Specifies the folder where you want to store the 
-  project metadata and source code.</li>
+  <li><b>Project Location. </b>Specifies the folder where you want to create the 
+    project folder.</li>
+  <li><b>Project Folder.</b> Displays the location of the project folder, which 
+    contains the primary source package folder and test packages folder for your 
+    project. The project folder also contains your project's Ant build script 
+    and project metadata. You can add additional source folders after you create 
+    the project.</li>
+  <li><b>Add to Enterprise Application.</b> Lets you add the EJB module to any 
+    open enterprise application project.</li>
+  <li><b>Server.</b> Specifies the server to which the EJB module is deployed. 
+    You can only deploy EJB modules to the Sun Java System Application Server 
+    Platform Edition 8.1. You can have multiple remote instances of the SJS Application 
+    Server registered, To register servers, choose Tools <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Server 
+    Manager.</li>
+  <li><b>J2EE Version.</b> Specifies the level of the EJB specification that is 
+    used by the EJB. The IDE only supports J2EE 1.4 EJB modules and automatically 
+    updates the specification number in your module's <tt>ejb-jar.xml</tt> to 
+    1.4. J2EE 1.4 is fully backwards-compatible, so upgrading the specification 
+    level does not change the behaviour of your code.</li>
   <li><b>Set as Main Project.</b> Sets the newly created project as the <a href="../../enterprise/general/ent_app_build.html">main 
     project</a>.</li>
-  <li><b>Server.</b> Specifies the web application's server. Note that J2EE applications cannot
-  be deployed to the Tomcat web server.</li>
-  <li><b>J2EE Specification Level.</b> Specifies the J2EE level against which 
-    your enterprise application will run. The IDE only supports J2EE 1.4 enterprise 
-    beans. </li>
 </ul>
 When you click Finish, the project is created on your computer and opened in the 
 IDE. You can view its logical structure in the Projects window and its file structure 

@@ -23,42 +23,56 @@
     <param name="textFontStyle" value="italic">
     <param name="textFontWeight" value="bold">
     <param name="textColor" value="blue">
-  </object>&nbsp;and choosing Properties. The Compiling Sources page 
-  lets you set up the general compilation classpath for the project and set general 
-  compilation options.
-<p>Enter any compiler options in a space-separated list in the Additional Compiler 
-  Options text field. Use the buttons on the left of the dialog box to add, remove, 
-  and change the order of classpath elements. You can add any of the following: 
+  </object>&nbsp;and choosing Properties. The Libraries page lets you set up the 
+  libraries that the project contains on its classpath.
+<p>You can use the Java Platform combo box to set the specific JDK installation 
+  that the IDE uses to compile and run your project. The IDE adds the selected 
+  platform's libraries to the classpath and uses the platform's executables (such 
+  as <tt>javac</tt> and <tt>java</tt>) to run and build the project. The default 
+  platform for all projects is the platform on which the IDE is running. You can 
+  register additional platforms and attach Javadoc and source files to a platform 
+  by clicking Manage Platforms.
+<p>Each standard EJB module project maintains a separate classpath for compilation, 
+  compiling tests, and running tests. Use the buttons on the left of the dialog 
+  box to add, remove, and change the order of classpath elements. You can add 
+  any of the following: 
 <ul>
-  <li><b>JAR file.</b> A JAR file somewhere on your system.</li>
-  <li><b><a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_libraries.html">Library</a>. </b>A collection of binary 
-    files, source files, and Javadoc files.</li>
+  <li><b>JAR file or folder.</b> A JAR file or folder containing compiled class 
+    files and other resources.</li>
+  <li><b><a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_libraries.html">Library</a>. 
+    </b>A collection of JAR files, source code, and Javadoc that has been registered 
+    in the Library Manager.</li>
     <li><b><a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_dependencies.html">Project</a>.</b> The build output, source 
     files, and Javadoc files of another IDE project.</li>
 </ul>
 <p><b>Notes:</b>
 <ul>
-  <li>If a JAR file is registered as a Java Class Library and has attached source 
+  <li>By default, all libraries on the compilation classpath are packaged with 
+    the EJB JAR file for deployment. If the EJB module is deployed as a stand-alone 
+    module, the IDE includes the JAR files in the EJB module JAR file. If the 
+    EJB module is deployed as part of an enterprise application, the IDE includes 
+    the JAR files in the application EAR file. </li>
+  <li>If a JAR file is registered in the Library Manager and has attached source 
     code and Javadoc documentation, you can just add the JAR file to the classpath 
     and the IDE finds the Javadoc documentation and source code automatically. 
     You should use the Add Library button if you want to add a library that contains 
-    several JAR files. Adding a Java Class Library rather than a regular JAR file 
-    also makes it easier for other developers you share the project with to fix 
-    broken references to Javadoc documentation and source code.</li>
+    several JAR files. Adding a library that is managed in the Library Manager 
+    also makes it easier for other developers with which you share the project 
+    to fix broken references to Javadoc documentation and source code.</li>
   <li>Adding a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-    <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
-    <param name="viewerActivator" value="javax.help.LinkLabel">
-    <param name="viewerStyle" value="javax.help.Popup">
-    <param name="viewerSize" value="400,160">
-    <param name="text" value="free-form project">
-    <param name="textFontSize" value="small">
-    <param name="textFontFamily" value="SansSerif">
-    <param name="textFontStyle" value="italic">
-    <param name="textFontWeight" value="bold">
-    <param name="textColor" value="blue">
-  </object> to the classpath of a standard project does nothing 
-    unless you have declared the free-form project's build outputs in the Output 
-    page of its Project Properties dialog box.</li>
+      <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
+      <param name="viewerActivator" value="javax.help.LinkLabel">
+      <param name="viewerStyle" value="javax.help.Popup">
+      <param name="viewerSize" value="400,160">
+      <param name="text" value="free-form project">
+      <param name="textFontSize" value="small">
+      <param name="textFontFamily" value="SansSerif">
+      <param name="textFontStyle" value="italic">
+      <param name="textFontWeight" value="bold">
+      <param name="textColor" value="blue">
+    </object> to the classpath of a standard project does nothing unless you have 
+    declared the free-form project's build outputs in the Output page of its Project 
+    Properties dialog box.</li>
 </ul>
 <table>
   <tr> 
@@ -67,7 +81,14 @@
   <tr> 
     <td width="23px">&nbsp;</td>
      <td><a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_stand_about.html">About Standard Projects</a><br>
-      <a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_free_about.html">About Free-Form Projects</a> <br>
+      <a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_free_about.html">About 
+      Free-Form Projects</a> <br>
+      <a href="../deploy/build_ejb.html">Building an EJB Module</a> <br>
+      <a href="nbdocs:/org/netbeans/modules/usersguide/javadoc/javadoc_add.html">Adding Javadoc to a Project</a><br>
+      <a href="nbdocs:/org/netbeans/modules/usersguide/debug/debug_source.html">Attaching Source Code to a JAR File</a><br>
+      <a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_classpath.html.html">Managing the Classpath</a><br>
+      <a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_dependencies.html">Creating 
+      Dependencies Between Projects</a><br>
       Standard EJB Module Project Properties Dialog Box:<br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="stand-ejb-properties-sources.html">Sources</a> 
       <br>
