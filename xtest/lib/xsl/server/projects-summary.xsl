@@ -12,7 +12,8 @@
  Microsystems, Inc. All Rights Reserved.
 
 -->
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:java="java">
 
 
 <xsl:include href="../library.xsl"/>
@@ -44,8 +45,15 @@
 <xsl:template name="MakeProjectsTestsSummaryTable">
 	
 	<H1>XTest Overall Results:</H1>	
-	<BR/>
-	<BR/>
+	
+	<P>	
+		<UL>
+			<LI>This page was generated at: <xsl:value-of select="java:util.Date.new()"/></LI>
+			
+		</UL>
+	</P>
+	
+	
 	
 	<!-- for each testing group -->
 	<xsl:variable name="uniqueTestingGroup" select="//ManagedReport[generate-id(.)=generate-id(key('group',./@testingGroup)[1])]"/>
@@ -129,8 +137,9 @@
 		</TABLE>
 		
 	</xsl:for-each>
-	
+	<BR/>
 	<HR width="90%"/>
+
 	<P>
 		<H5><I>Please note, this is a pilot project of XTest, so the layout and functionality of these pages may not be final and can change anytime. If you 
 		are interested in the project, please see details at 
