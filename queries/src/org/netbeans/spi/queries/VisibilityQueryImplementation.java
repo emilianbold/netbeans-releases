@@ -18,11 +18,11 @@ import org.openide.filesystems.FileObject;
 import javax.swing.event.ChangeListener;
 
 /**
- * A query which should typically be provided by a FileSystem implementations.
- *   
  * Determine whether files should be hidden in viewes 
  * presented to the user. This query should be considered 
  * only as a recommendation and there isn't necessary to obey it.   
+ * 
+ * Global lookup is used to find all instances of VisibilityQueryImplementation.  
  *   
  * @see org.netbeans.api.queries.VisibilityQuery
  * @author Radek Matous 
