@@ -62,8 +62,8 @@ public class JspParserImpl implements JspParserAPI {
 // ext/jasper-runtime-5.0.19.jar ext/jasper-compiler-5.0.19.jar ext/commons-logging-api.jar ext/commons-el.jar            
             File files[] = new File[6];
             files[0] = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false);
-            files[1] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.5.4.jar", null, false);
-            files[2] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.5.4.jar", null, false);
+            files[1] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.5.7.jar", null, false);
+            files[2] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.5.7.jar", null, false);
             files[3] = InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false);
             files[4] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false);
             files[5] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-parser-ext.jar", null, false);
