@@ -118,7 +118,18 @@ public class ClassPathSupport {
                     item = Item.createBroken( Item.TYPE_ARTIFACT, pe[i], (String) warMap.get(property));
                 }
                 else {
-                    item = Item.create( (AntArtifact)ret[0], (URI)ret[1], pe[i], (String) warMap.get(property));
+                    //item = Item.create( (AntArtifact)ret[0], (URI)ret[1], pe[i], (String) warMap.get(property));
+                    //fix of issue #55368
+                    AntArtifact artifact = (AntArtifact)ret[0];
+                    URI uri = (URI)ret[1];
+                    File usedFile = antProjectHelper.resolveFile(evaluator.evaluate(pe[i]));
+                    File artifactFile = new File (artifact.getScriptLocation().toURI().resolve(uri).normalize());
+                    if (usedFile.equals(artifactFile)) {
+                        item = Item.create( artifact, uri, pe[i], (String) warMap.get(property) );
+                    }
+                    else {
+                        item = Item.createBroken( Item.TYPE_ARTIFACT, pe[i], (String) warMap.get(property) );
+                    }
                 }
             } else {
                 // Standalone jar or property
