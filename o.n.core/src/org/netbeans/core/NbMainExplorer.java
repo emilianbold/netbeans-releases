@@ -376,10 +376,10 @@ public final class NbMainExplorer extends CloneableTopComponent
             // projects tab
             panel = ProjectsTab.getDefault();
         } else if (rc.equals(ns.repository())) {
-            panel = new RepositoryTab ();
+            panel = RepositoryTab.getDefaultRepositoryTab();
         } else if (rc.equals(ns.environment())) {
             // default tabs
-            panel = new MainTab();
+            panel = MainTab.getDefaultMainTab();
         } else {
             // tabs added by modules
             panel = NbMainExplorer.findModuleTab(rc.getClass(), null);
@@ -673,7 +673,31 @@ public final class NbMainExplorer extends CloneableTopComponent
         * when opening all tabs at once using NbMainExplorer.openRoots()
         */
         private static MainTab lastActivated;
+        
+        private static MainTab DEFAULT;
 
+        public static synchronized MainTab getDefaultMainTab() {
+            if (DEFAULT == null) {
+                DEFAULT = new MainTab();
+                // put a request for later validation
+                // we must do this here, because of ExplorerManager's deserialization.
+                // Root context of ExplorerManager is validated AFTER all other
+                // deserialization, so we must wait for it
+                DEFAULT.scheduleValidation();
+            }
+            
+            return DEFAULT;
+        }
+
+        /** Deserialization of RepositoryTab */
+        public Object readResolve() throws java.io.ObjectStreamException {
+            if (DEFAULT == null) {
+                DEFAULT = this;
+            }
+            getDefaultMainTab().scheduleValidation();
+            return getDefaultMainTab();
+        }
+        
         public void open (Workspace workspace) {
             Workspace realWorkspace = (workspace == null)
                                       ? TopManager.getDefault().getWindowManager().getCurrentWorkspace()
@@ -727,6 +751,8 @@ public final class NbMainExplorer extends CloneableTopComponent
         /** previous task */
         private RequestProcessor.Task previousTask;
 
+        private static RepositoryTab DEFAULT;
+        
         /** attaches itself to as a listener.
         */
         public RepositoryTab () {
@@ -735,7 +761,29 @@ public final class NbMainExplorer extends CloneableTopComponent
                 WeakListener.operation (this, pool)
             );
         }
+        
+        public static synchronized RepositoryTab getDefaultRepositoryTab() {
+            if (DEFAULT == null) {
+                DEFAULT = new RepositoryTab();
+                // put a request for later validation
+                // we must do this here, because of ExplorerManager's deserialization.
+                // Root context of ExplorerManager is validated AFTER all other
+                // deserialization, so we must wait for it
+                DEFAULT.scheduleValidation();
+            }
+            
+            return DEFAULT;
+        }
 
+        /** Deserialization of RepositoryTab */
+        public Object readResolve() throws java.io.ObjectStreamException {
+            if (DEFAULT == null) {
+                DEFAULT = this;
+            }
+            getDefaultRepositoryTab().scheduleValidation();
+            return getDefaultRepositoryTab();
+        }
+        
         /** Object has been recognized by
          * {@link DataLoaderPool#findDataObject}.
          * This allows listeners
