@@ -44,6 +44,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.Dictionary;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.editor.BaseDocument;
@@ -61,7 +62,7 @@ import org.openide.ErrorManager;
 
 public class NbEditorDocument extends GuardedDocument
 implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
-NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
+NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocument.Annotatable {
 
     /** Name of the formatter setting. */
     public static final String FORMATTER = "formatter";
@@ -154,6 +155,10 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
         return Utilities.getEditorUI(j).getExtComponent();
     }
 
+    public JToolBar createToolbar(JEditorPane j) {
+        return Utilities.getEditorUI(j).getToolBarComponent();
+    }
+    
     public Formatter getFormatter() {
         Formatter f = formatter;
         if (f == null) {
