@@ -88,7 +88,7 @@ public class ButtonPopupSwitcherTestHid extends TestCase {
         Point p = new Point(c.getWidth(), c.getHeight());
         SwingUtilities.convertPointToScreen(p, c);
         if (!ButtonPopupSwitcher.isShown()) {
-            ButtonPopupSwitcher.selectItem(items, p.x, p.y);
+            ButtonPopupSwitcher.selectItem(c, items, p.x, p.y);
         }
     }
     

@@ -22,7 +22,7 @@ import java.awt.event.AWTEventListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
-import javax.swing.AbstractButton;
+import javax.swing.JComponent;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
@@ -46,7 +46,7 @@ final class ButtonPopupSwitcher
     private static Popup popup;
     
     /**
-     * Reference to the focus owner when addNotify was called.  This is the
+     * Reference to the focus owner when addNotify was called. This is the
      * component that received the mouse event, so it's what we need to listen
      * on to update the selected cell as the user drags the mouse
      */
@@ -71,14 +71,15 @@ final class ButtonPopupSwitcher
     /**
      * Creates and shows the popup with given <code>items</code>. When user
      * choose an item <code>SwitcherTableItem.Activable.activate()</code> is
-     * called. So what exactly happens depends on the concrete 
+     * called. So what exactly happens depends on the concrete
      * <code>SwitcherTableItem.Activable</code> implementation. A popup appears
      * on <code>x</code>, <code>y</code> coordinates.
      */
-    public static void selectItem(SwitcherTableItem[] items, int x, int y) {
+    public static void selectItem(JComponent owner, SwitcherTableItem[] items,
+            int x, int y) {
         ButtonPopupSwitcher switcher
                 = new ButtonPopupSwitcher(items, x, y);
-        switcher.doSelect();
+        switcher.doSelect(owner);
     }
     
     /** Creates a new instance of TabListPanel */
@@ -90,13 +91,10 @@ final class ButtonPopupSwitcher
         this.y = y + 1;
     }
     
-    private void doSelect() {
-        EventObject eo = EventQueue.getCurrentEvent();
-        if (eo != null && eo.getSource() instanceof Component) {
-            invokingComponent = (Component) eo.getSource();
-            invokingComponent.addMouseListener(this);
-            invokingComponent.addMouseMotionListener(this);
-        }
+    private void doSelect(JComponent owner) {
+        invokingComponent = owner;
+        invokingComponent.addMouseListener(this);
+        invokingComponent.addMouseMotionListener(this);
         pTable.addMouseListener(this);
         pTable.addMouseMotionListener(this);
         
