@@ -403,6 +403,15 @@ public class NonGui extends NbTopManager implements Runnable {
             showSystemInfo();
 
     }
+    
+    /** Lazily loads classes */ // #9951
+    private final Class getKlass(String cls) {
+        try {
+            return Class.forName(cls, false, getClass().getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new NoClassDefFoundError(e.getLocalizedMessage());
+        }
+    }
 
     /** Initialization of the manager.
     */
@@ -424,10 +433,10 @@ public class NonGui extends NbTopManager implements Runnable {
         java.beans.PropertyEditor pe = java.beans.PropertyEditorManager.findEditor(java.lang.Byte.TYPE); // to enforce initialization of registering PE for primitive types
         java.beans.PropertyEditorManager.setEditorSearchPath (
             new String[] { "org.netbeans.beaninfo.editors", "org.openide.explorer.propertysheet.editors" }); // NOI18N
-        java.beans.PropertyEditorManager.registerEditor (String[].class, org.openide.explorer.propertysheet.editors.StringArrayEditor.class);
-        java.beans.PropertyEditorManager.registerEditor (org.openide.src.MethodParameter[].class, org.openide.explorer.propertysheet.editors.MethodParameterArrayEditor.class);
-        java.beans.PropertyEditorManager.registerEditor (org.openide.src.Identifier[].class, org.openide.explorer.propertysheet.editors.IdentifierArrayEditor.class);
-        java.beans.PropertyEditorManager.registerEditor (java.lang.Character.TYPE, org.netbeans.beaninfo.editors.CharEditor.class);
+        java.beans.PropertyEditorManager.registerEditor (getKlass("[Ljava.lang.String;"), getKlass("org.openide.explorer.propertysheet.editors.StringArrayEditor"));
+        java.beans.PropertyEditorManager.registerEditor (getKlass("[Lorg.openide.src.MethodParameter;"), getKlass("org.openide.explorer.propertysheet.editors.MethodParameterArrayEditor"));
+        java.beans.PropertyEditorManager.registerEditor (getKlass("[Lorg.openide.src.Identifier;"), getKlass("org.openide.explorer.propertysheet.editors.IdentifierArrayEditor"));
+        java.beans.PropertyEditorManager.registerEditor (java.lang.Character.TYPE, getKlass("org.netbeans.beaninfo.editors.CharEditor"));
         StartLog.logProgress ("PropertyEditors registered"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
