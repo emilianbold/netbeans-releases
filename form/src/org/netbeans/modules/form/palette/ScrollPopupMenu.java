@@ -20,7 +20,7 @@ import org.openide.awt.*;
 
 /** Hacked JPopupMenu(Plus) - displayed in JScrollPane if too long.
  */
-public class ScrollPopupMenu extends JPopupMenuPlus {
+public class ScrollPopupMenu extends JPopupMenu {
 
     JWindow popWin;
     JScrollPane scrollPane;
@@ -32,7 +32,8 @@ public class ScrollPopupMenu extends JPopupMenuPlus {
     }
 
     public void setVisible(boolean visible) {
-        if (visible == isVisible()) return;
+        if (visible == isVisible())
+            return;
 
         if (visible) {
             if (getInvoker() != null && !(getInvoker() instanceof JMenu)) {
@@ -59,7 +60,7 @@ public class ScrollPopupMenu extends JPopupMenuPlus {
                         new JWindow((Window)comp) :
                         new JWindow(new JFrame());
             popWin.setLocation(posX, posY);
-            
+
             pack();
             popWin.setVisible(true);
         }
