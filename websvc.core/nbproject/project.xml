@@ -42,14 +42,6 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-<dependency>
-    <code-name-base>org.netbeans.modules.java.project</code-name-base>
-    <build-prerequisite/>
-    <compile-dependency/>
-    <run-dependency>
-        <release-version>1</release-version>
-    </run-dependency>
-</dependency>
                 <dependency>
                     <code-name-base>org.openide</code-name-base>
                     <build-prerequisite/>
