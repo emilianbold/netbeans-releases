@@ -43,7 +43,7 @@ public class AboutAction extends CallableSystemAction {
   }
 
   public HelpCtx getHelpCtx() {
-    return new HelpCtx("com.netbeans.developer.docs.Users_Guide.usergd-action", "USERGD-ACTION-TABLE-3");
+    return org.openide.util.HelpCtx.DEFAULT_HELP;
   }
 
   public String getName() {
@@ -54,6 +54,7 @@ public class AboutAction extends CallableSystemAction {
 
 /*
  * Log
+ *  6    Gandalf   1.5         6/22/99  Ian Formanek    employed DEFAULT_HELP
  *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  4    Gandalf   1.3         3/26/99  Ian Formanek    Fixed use of obsoleted 

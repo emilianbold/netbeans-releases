@@ -48,13 +48,14 @@ public class HTMLViewAction extends CallableSystemAction {
 
   /** @return the action's help context */
   public HelpCtx getHelpCtx() {
-    return new HelpCtx("com.netbeans.developer.docs.Users_Guide.usergd-action", "USERGD-ACTION-TABLE-4");
+    return org.openide.util.HelpCtx.DEFAULT_HELP;
   }
 
 }
 
 /*
  * Log
+ *  10   Gandalf   1.9         6/22/99  Ian Formanek    employed DEFAULT_HELP
  *  9    Gandalf   1.8         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  8    Gandalf   1.7         3/26/99  Ian Formanek    Fixed use of obsoleted 

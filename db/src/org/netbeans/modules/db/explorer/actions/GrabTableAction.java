@@ -18,7 +18,6 @@ import java.util.ResourceBundle;
 import org.openide.*;
 import org.openide.util.NbBundle;
 import java.util.*;
-import java.awt.FileDialog;
 import java.io.*;
 import java.sql.Connection;
 import org.openide.nodes.*;

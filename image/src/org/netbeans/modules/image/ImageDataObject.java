@@ -49,7 +49,7 @@ public class ImageDataObject extends MultiDataObject {
   * @return the help context
   */
   public org.openide.util.HelpCtx getHelpCtx () {
-    return new org.openide.util.HelpCtx ("com.netbeans.developer.docs.Users_Guide.usergd-using-div-12", "USERGD-USING-TABLE-2");
+    return org.openide.util.HelpCtx.DEFAULT_HELP;
   }
 
   /** Get a URL for the image.
