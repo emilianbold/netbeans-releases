@@ -275,7 +275,7 @@ public class SelectionModeTest extends NbTestCase {
     private void setSelectionMode (TreeView tree, int mode) {
         try {
             Class c = tree.getClass ();
-            Method m = c.getMethod ("setSelectionMode", new Class[] {Integer.class});
+            Method m = c.getMethod ("setSelectionMode", new Class[] {Integer.TYPE});
             m.invoke (tree, new Object[] {new Integer (mode)});
         } catch (NoSuchMethodException nsme) {
             fail ("The method setSelectionMode can't be called on this object. See enh #11928.");
