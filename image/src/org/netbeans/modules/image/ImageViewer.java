@@ -190,6 +190,7 @@ public class ImageViewer extends CloneableTopComponent {
     private JToolBar createToolBar() {
         // Definition of toolbar.
         JToolBar toolBar = new JToolBar();
+        toolBar.setFloatable (false);
         toolBar.setName (NbBundle.getBundle(ImageViewer.class).getString("ACSN_Toolbar"));
         toolBar.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_Toolbar"));
             JButton outButton = new JButton(SystemAction.get(ZoomOutAction.class));
@@ -220,9 +221,9 @@ public class ImageViewer extends CloneableTopComponent {
         toolBar.addSeparator(new Dimension(2,2));
         toolBar.add(getZoomButton(7,1));
         toolBar.addSeparator(new Dimension(11,2));
-        SystemAction sa = SystemAction.get(CustomZoomAction.class);
-        sa.putValue (Action.SHORT_DESCRIPTION, NbBundle.getBundle(ImageViewer.class).getString("LBL_CustomZoom"));
-        toolBar.add (sa);
+//        SystemAction sa = SystemAction.get(CustomZoomAction.class);
+//        sa.putValue (Action.SHORT_DESCRIPTION, NbBundle.getBundle(ImageViewer.class).getString("LBL_CustomZoom"));
+        toolBar.add (getZoomButton ());
         toolBar.addSeparator(new Dimension(11,2));
         toolBar.add(getGridButton());
         
@@ -534,11 +535,26 @@ public class ImageViewer extends CloneableTopComponent {
         return button;
     }
     
+    private JButton getZoomButton() {
+        // PENDING buttons should have their own icons.
+        JButton button = new JButton(NbBundle.getBundle(CustomZoomAction.class).getString("LBL_XtoY")); // NOI18N
+        button.setToolTipText (NbBundle.getBundle(ImageViewer.class).getString("LBL_CustomZoom"));
+        button.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACS_Zoom_BTN"));
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                CustomZoomAction sa = (CustomZoomAction) SystemAction.get(CustomZoomAction.class);
+                sa.performAction ();
+            }
+        });
+        
+        return button;
+    }
+    
     /** Gets grid button.*/
     private JButton getGridButton() {
         // PENDING buttons should have their own icons.
         final JButton button = new JButton(" # "); // NOI18N
-        button.setToolTipText (NbBundle.getBundle(ImageViewer.class).getString("LBL_ZoomOut"));
+        button.setToolTipText (NbBundle.getBundle(ImageViewer.class).getString("LBL_ShowHideGrid"));
         button.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACS_Grid_BTN"));
         button.setMnemonic(NbBundle.getBundle(ImageViewer.class).getString("ACS_Grid_BTN_Mnem").charAt(0));
         button.addActionListener(new ActionListener() {
