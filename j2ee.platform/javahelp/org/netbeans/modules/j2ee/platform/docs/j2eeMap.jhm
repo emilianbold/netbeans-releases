@@ -9,6 +9,7 @@
 <map version="2.0">
 
 	<mapID target="j2ee_about" url="j2ee_about.html" />
+	<mapID target="tbd" url="tbd.html" />
 
 <!-- Start of web apps help -->
 	<mapID target="intro" url="web/overvw/Intro.html" />
@@ -80,5 +81,20 @@
 	<mapID target="about_web_service" url="web/webservice/about_jwsd.html" />
 	<mapID target="about_web_service_client" url="web/webserviceclient/about_websvc_client.html" />
 <!-- End of web apps help -->
+
+<!-- Start of EJB help -->
+
+    <mapID target="about_entity_beans" url="ejb/general/about_entity_beans.html" />
+    <mapID target="about_msg_driven_beans" url="ejb/general/about_msg_driven_beans.html" />
+    <mapID target="about_session_beans" url="ejb/general/about_session_beans.html" />
+
+    <mapID target="add_ejbql" url="ejb/general/add_ejbql.html" />
+    <mapID target="define_business_method" url="ejb/editing/define_business_method.html" />
+    <mapID target="define_cmp_field" url="ejb/editing/define_cmp_field.html" />
+    <mapID target="define_finder_method" url="ejb/editing/define_finder_method.html" />
+    <mapID target="define_primary_key_field" url="ejb/editing/define_primary_key_field.html" />
+    <mapID target="define_select_method" url="ejb/editing/define_select_method.html" />
+
+<!-- End of EJB help -->
 
 </map>
