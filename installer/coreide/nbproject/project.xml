@@ -5,6 +5,10 @@
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
             <name>NetBeans Installer</name>
+            <properties>
+                <property-file>nbproject/private/private.properties</property-file>
+                <property-file>build.properties</property-file>
+            </properties>
             <folders>
                 <source-folder>
                     <label>src</label>
@@ -17,6 +21,12 @@
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
+                    <source-file>
+                        <location>build.properties</location>
+                    </source-file>                    
+                    <source-file>
+                        <location>ProgrammingNotes.txt</location>
+                    </source-file>                    
                     <source-folder style="packages">
                         <label>src</label>
                         <location>src</location>
@@ -28,6 +38,10 @@
                     <ide-action name="rebuild"/>
                     <ide-action name="run"/>
                     <ide-action name="test"/>
+                    <action>
+                        <label>Compile custom beans</label>
+                        <target>compile</target>
+                    </action>
                 </context-menu>
             </view>
             <ide-actions>
@@ -52,7 +66,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">/usr/local/ismp5/lib/platform.jar:/usr/local/ismp5/lib/product.jar:/usr/local/ismp5/lib/wizard.jar:/usr/local/ismp5/lib/xt.jar:/usr/local/ismp5/ppk/linuxppk.jar:/usr/local/ismp5/ppk/solarisppk.jar:/usr/local/ismp5/ppk/win32ppk.jar</classpath>
+                <classpath mode="compile">${ismp.home}/lib/platform.jar:${ismp.home}/lib/product.jar:${ismp.home}/lib/wizard.jar:${ismp.home}/lib/xt.jar:${ismp.home}/ppk/linuxppk.jar:${ismp.home}/ppk/solarisppk.jar:${ismp.home}/ppk/win32ppk.jar</classpath>
                 <source-level>1.4</source-level>
             </compilation-unit>
         </java-data>

@@ -13,7 +13,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="NetBeans Installer" default="build" basedir=".">
 
-  <property name="ismp.home" location="/usr/local/ismp5"/>
+  <property file="nbproject/private/private.properties"/>  
+  <property file="build.properties" />
+
   <property name="nb.dir" location="build/netbeans"/>
   <property name="ismp.project" value="coreide.xml"/>
   
