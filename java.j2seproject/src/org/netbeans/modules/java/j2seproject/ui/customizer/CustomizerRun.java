@@ -37,6 +37,7 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
         this.j2seProperties = j2seProperties;
         vps = new VisualPropertySupport( j2seProperties );
         vcs = new VisualClasspathSupport(
+            j2seProperties.getProject(),
             jListClasspath,
             jButtonAddJar,
             jButtonAddLibrary,

@@ -14,6 +14,8 @@
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
 import java.awt.Dialog;
+import java.awt.Dimension;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -32,6 +34,8 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+
+import org.openide.NotifyDescriptor;
 
 
 
@@ -73,24 +77,24 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         jLabelName.setText(org.openide.util.NbBundle.getMessage(AntArtifactChooser.class, "LBL_AACH_ProjectName_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
         add(jLabelName, gridBagConstraints);
 
         jTextFieldName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
         add(jTextFieldName, gridBagConstraints);
 
         jLabelJarFiles.setText(org.openide.util.NbBundle.getMessage(AntArtifactChooser.class, "LBL_AACH_ProjectJarFiles_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
         add(jLabelJarFiles, gridBagConstraints);
 
         jScrollPane1.setViewportView(jListArtifacts);
@@ -99,9 +103,9 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
     }//GEN-END:initComponents
@@ -170,7 +174,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
     /** Shows dialog with the artifact chooser 
      * @return null if canceled selected jars if some jars selected
      */
-    public static AntArtifact[] showDialog( String artifactType ) {
+    public static AntArtifact[] showDialog( String artifactType, Project master ) {
         
         JFileChooser chooser = ProjectChooser.projectChooser();
         chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
@@ -179,18 +183,39 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         AntArtifactChooser accessory = new AntArtifactChooser( artifactType, chooser );
         chooser.setAccessory( accessory );
         
+        chooser.setPreferredSize( computePreferredSize( chooser.getPreferredSize() ) );
 
         int option = chooser.showOpenDialog( null ); // Show the chooser
               
         if ( option == JFileChooser.APPROVE_OPTION ) {
+            
+            File dir = chooser.getSelectedFile();
+            dir = FileUtil.normalizeFile (dir);
+            Project selectedProject = accessory.getProject( dir );
 
+            if ( selectedProject == null ) {
+                return null;
+            }
+            
+            if ( selectedProject.getProjectDirectory().equals( master.getProjectDirectory() ) ) {
+                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
+                    NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_RefToItself" ),
+                    NotifyDescriptor.INFORMATION_MESSAGE ) );
+                return null;
+            }
+            
+            if ( ProjectUtils.hasSubprojectCycles( master, selectedProject ) ) {
+                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
+                    NbBundle.getMessage( AntArtifactChooser.class, "MSG_AACH_Cycles" ),
+                    NotifyDescriptor.INFORMATION_MESSAGE ) );
+                return null;
+            }
+            
             DefaultListModel model = (DefaultListModel)accessory.jListArtifacts.getModel();
             
             AntArtifact artifacts[] = new AntArtifact[ model.size() ];
             
-            // XXX Adding references twice
-            
-            // XXX What about adding reference to itself            
+            // XXX Adding references twice            
             for( int i = 0; i < artifacts.length; i++ ) {
                 artifacts[i] = ((ArtifactItem)model.getElementAt( i )).getArtifact();
             }
@@ -204,6 +229,22 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
                 
     }
         
+    private static Dimension computePreferredSize( Dimension original ) {
+        
+        int newHeight = original.width / 3 * 2;
+        
+        if ( original.height < newHeight ) {
+            return new Dimension( original.width, newHeight );
+        }
+        
+        int newWidth = original.height / 2 * 3;
+        if ( original.width < newWidth ) {
+            return new Dimension( newWidth, original.height );
+        }
+        
+        return original;
+    
+    }
     
     private static class ArtifactItem {
         
