@@ -165,21 +165,26 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="WindowManager">
             
-            <folder name="explorer">
-                <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
-                <file name="runtime.wstcref" url="windowmanager/explorer/runtime.wstcref" />
+            <folder name="Editing">
+                <folder name="explorer">
+                    <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
+                    <attr name="runtime.wstcref/properties.wstcref" boolvalue="true" />
+                    <file name="runtime.wstcref" url="windowmanager/Editing/explorer/runtime.wstcref" />
+                </folder>
+                
+                <folder name="output">
+                    <file name="execution.wstcref" url="windowmanager/Editing/output/execution.wstcref" />
+                </folder> 
+                
             </folder>
-
-            <file name="execution.wsmode" url="windowmanager/execution.wsmode" />    
-            <folder name="execution">
-                <file name="execution.wstcref" url="windowmanager/execution/execution.wstcref" />
-            </folder> 
 
         </folder>
         
         <folder name="Components">            
-            <file name="runtime.settings" url="components/runtime.settings" />
-            <file name="execution.settings" url="components/execution.settings" />
+            <file name="runtime.settings" url="components/runtime.settings" >
+            </file>
+            <file name="execution.settings" url="components/execution.settings" >
+            </file>
         </folder>
         
     </folder>
