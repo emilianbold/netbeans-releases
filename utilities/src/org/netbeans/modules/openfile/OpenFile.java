@@ -332,7 +332,7 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
     return null;
   }
   
-  /** Open the file either by calling {@link OpenCookie}, or by
+  /** Open the file either by calling {@link OpenCookie} ({@link ViewCookie}), or by
   * showing it in the Explorer.
   * Uses {@link #find} to figure out what the right file object is.
   * @param f file on local disk
@@ -387,9 +387,11 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
       throw new FileNotFoundException (f.toString ());
     }
   }
-  
+
+  // Addresses and ports of waiting launchers, based on the DO they wait on.  
   private static final Map addresses = new HashMap (); // Map<DataObject, InetAddress>
   private static final Map ports = new HashMap (); // Map<DataObject, Integer>
+  // Listener on all waiting DOs that notices when they are saved (or deleted).
   private static final PropertyChangeListener waitingListener = new PropertyChangeListener () {
     public void propertyChange (PropertyChangeEvent ev) {
       DataObject obj = (DataObject) ev.getSource ();
@@ -405,6 +407,7 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
         }
       }
     }
+    // Notify the launcher that it is done waiting on a DO.
     private void unWait (DataObject obj, byte status) {
       obj.removePropertyChangeListener (waitingListener);
       if (s != null) {
@@ -424,6 +427,11 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
       }
     }
   };
+  /** Register a callback so that the launcher will be notified when the file is modified & saved.
+  * @param obj the object to wait for
+  * @param addr the address to send a message back to
+  * @param port the port to send a message back to
+  */
   public static void waitFor (DataObject obj, InetAddress addr, int port) {
     addresses.put (obj, addr);
     ports.put (obj, new Integer (port));
