@@ -745,6 +745,17 @@ public class RADComponent {
       
       debugChangedValues ();
       getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), old, val);
+      if (RADComponent.this instanceof RADVisualComponent) {
+        if (beanInstance instanceof javax.swing.JComponent) {
+          ((javax.swing.JComponent)beanInstance).repaint ();
+          ((javax.swing.JComponent)beanInstance).revalidate ();
+        } else {
+          java.awt.Container cc = ((java.awt.Component)beanInstance).getParent ();
+          if ((cc != null) && (cc.getParent () != null)) {
+            cc.getParent ().validate ();
+          }
+        }
+      }
     }
 
     /** Test whether the property had a default value.
@@ -939,6 +950,17 @@ public class RADComponent {
       }
       debugChangedValues ();
       getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), old, val);
+      if (RADComponent.this instanceof RADVisualComponent) {
+        if (beanInstance instanceof javax.swing.JComponent) {
+          ((javax.swing.JComponent)beanInstance).repaint ();
+          ((javax.swing.JComponent)beanInstance).revalidate ();
+        } else {
+          java.awt.Container cc = ((java.awt.Component)beanInstance).getParent ();
+          if ((cc != null) && (cc.getParent () != null)) {
+            cc.getParent ().validate ();
+          }
+        }
+      }
     }
 
     /** Test whether the property had a default value.
@@ -1178,6 +1200,9 @@ public class RADComponent {
 
 /*
  * Log
+ *  48   Gandalf   1.47        9/6/99   Ian Formanek    Fixed bug 3252 - 
+ *       FormEditor - Label sometimes forgets to resize itself after font 
+ *       change.
  *  47   Gandalf   1.46        9/6/99   Ian Formanek    
  *  46   Gandalf   1.45        9/2/99   Ian Formanek    Fixed bug 3698 - When 
  *       the event handler is added or modified, the focus is not transfered to 
