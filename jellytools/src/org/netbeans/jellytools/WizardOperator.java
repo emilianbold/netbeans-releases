@@ -13,6 +13,7 @@
 package org.netbeans.jellytools;
 
 import java.lang.reflect.Field;
+import javax.swing.JDialog;
 import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -37,6 +38,14 @@ public class WizardOperator extends NbDialogOperator {
 	Timeouts.initDefault("WizardOperator.WaitWizardStepTimeout", WAIT_TIME);
     }
     
+    
+    /** Generic constructor
+     * @param dialog instance of NbDialog
+     */    
+    public WizardOperator(JDialog dialog) {
+        super(dialog);
+    }
+
     /** Creates a new instance of WizardOperator.
      * It waits for a dialog with given title.
      * @param title  title of a wizard window

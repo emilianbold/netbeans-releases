@@ -47,11 +47,18 @@ public class TreeTableOperator extends JTableOperator {
      * @param contOper container where to find TreeTable
      */
     public TreeTableOperator(ContainerOperator contOper) {
+        this(contOper, 0);
+    }
+    /** Creates new instance for the first TreeTable in container.
+     * @param contOper container where to find TreeTable
+     * @param index int index
+     */
+    public TreeTableOperator(ContainerOperator contOper, int index) {
 	this((JTable)
 	     waitComponent(contOper, 
 			   new TreeTableFinder(ComponentSearcher.
                                                getTrueChooser("Any TreeTable")),
-			   0));
+			   index));
 	copyEnvironment(contOper);
     }
 

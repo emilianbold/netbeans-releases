@@ -60,6 +60,13 @@ public class PropertySheetOperator extends TopComponentOperator {
     private static final String propertiesText = Bundle.getStringTrimmed("org.openide.actions.Bundle", 
                                                                          "Properties");
     
+    /** Generic constructor
+     * @param editor instance of CloneableEditor
+     */    
+    public PropertySheetOperator(JComponent sheet) {
+        super(sheet);
+    }
+    
     /** Waits for TopComponent with "Properties" in its name. */
     public PropertySheetOperator() {
         super(propertiesText);
@@ -117,7 +124,16 @@ public class PropertySheetOperator extends TopComponentOperator {
      * @param contOper where to find
      */
     public PropertySheetOperator(ContainerOperator contOper) {
-        super((JComponent)waitPropertySheet(contOper));
+        this(contOper,0);
+    }
+    
+    /** Waits for non TopComponent PropertySheet in specified ContainerOperator.
+     * It is for example PropertySheet in Options
+     * @param contOper where to find
+     * @param index int index
+     */
+    public PropertySheetOperator(ContainerOperator contOper, int index) {
+        super((JComponent)waitPropertySheet(contOper, index));
         copyEnvironment(contOper);
     }
     
@@ -157,7 +173,7 @@ public class PropertySheetOperator extends TopComponentOperator {
     }
     
     /** Waits for instance of PropertySheet in a container. */
-    private static Component waitPropertySheet(ContainerOperator contOper) {
+    private static Component waitPropertySheet(ContainerOperator contOper, int index) {
         ComponentChooser chooser = new ComponentChooser() {
             public boolean checkComponent(Component comp) {
                 return comp instanceof PropertySheet;
@@ -167,7 +183,7 @@ public class PropertySheetOperator extends TopComponentOperator {
                 return "org.openide.explorer.propertysheet.PropertySheet";
             }
         };
-        return contOper.waitComponent((Container)contOper.getSource(), chooser);
+        return contOper.waitComponent((Container)contOper.getSource(), chooser, index);
     }
     
     /** Performs verification by accessing all sub-components */    
