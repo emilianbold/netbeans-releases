@@ -339,6 +339,9 @@ class BiIconEditor extends PropertyEditorSupport {
             // initialization ......................................
  
             updateIcon();
+            
+            HelpCtx.setHelpIDString(this, BEAN_ICONEDITOR_HELP); 
+            
             Icon i = (Icon)getValue();
             if (i == null) {
                 rbNoPicture.setSelected(true);
@@ -351,7 +354,6 @@ class BiIconEditor extends PropertyEditorSupport {
             rbClasspath.setSelected(true);
             bSelect.setEnabled(true);
             tfName.setText(((BiImageIcon)i).name);
-            HelpCtx.setHelpIDString(this, BEAN_ICONEDITOR_HELP); //NO I18N
         }
         
         void updateIcon() {
