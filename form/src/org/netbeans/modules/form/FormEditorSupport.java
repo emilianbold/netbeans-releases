@@ -53,7 +53,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
      * */
     transient private boolean openOnEditing = false;
 
-    transient private PropertyChangeListener workspacesListener;
+    transient private PropertyChangeListener workspacesListener = null;
 
     private UndoRedo.Manager undoManager;
     private RADComponentNode formRootNode;
@@ -256,12 +256,49 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         return formManager.getFormTopComponent();
     }
 
+    /** Marks the form as modified if it's not yet. Used if changes made 
+     * in form data don't project to the java source file (generated code). */
+    void markFormModified() {
+        if (!formObject.isModified())
+            super.notifyModified();
+    }
+
     // -----------------------------------------------------------------------------
     // Form Loading
 
     protected void notifyClose() {
         super.notifyClose();
-        if (!formLoaded) return;
+        if (formLoaded) closeForm();
+    }
+
+    /** @return true if the form is already loaded, false otherwise */
+    boolean isLoaded() {
+        return formLoaded;
+    }
+
+    boolean supportsAdvancedFeatures() {
+        return saveManager.supportsAdvancedFeatures();
+    }
+
+    /** @return true if the form is opened, false otherwise */
+    public boolean isOpened() {
+        return formLoaded;
+    }
+
+    protected Task reloadDocument() {
+        closeForm();
+        openForm();
+
+        Task docLoadTask = super.reloadDocument();
+        FormManager2 fm = getFormManager();
+        fm.getCodeGenerator().initialize(fm);
+//        fm.fireFormLoaded();
+
+        return docLoadTask;
+    }
+
+    // used when closing or reloading the document
+    private void closeForm() {
         if (workspacesListener != null) {
             TopManager.getDefault().getWindowManager().removePropertyChangeListener(workspacesListener);
         }
@@ -283,33 +320,11 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         formLoaded = false;
     }
 
-    /** @return true if the form is already loaded, false otherwise */
-    boolean isLoaded() {
-        return formLoaded;
-    }
-
-    boolean supportsAdvancedFeatures() {
-        return saveManager.supportsAdvancedFeatures();
-    }
-
-    /** @return true if the form is opened, false otherwise */
-    public boolean isOpened() {
-        return formLoaded;
-    }
-
     /** Loads the DesignForm from the .form file.
      * @return true if the form was correcly loaded, false if any error occured 
      */
     protected boolean loadForm() {
         return loadFormInternal(null);
-    }
-
-    protected Task reloadDocument() {
-        Task docLoadTask = super.reloadDocument();
-        FormManager2 fm = getFormManager();
-        fm.getCodeGenerator().initialize(fm);
-
-        return docLoadTask;
     }
 
     /** Loads the DesignForm from the .form file.
