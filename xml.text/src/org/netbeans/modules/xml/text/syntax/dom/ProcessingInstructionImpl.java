@@ -25,7 +25,7 @@ import org.netbeans.modules.xml.text.syntax.XMLDefaultTokenContext;
  *
  * @author  Petr Kuzel
  */
-public class ProcessingInstructionImpl extends SyntaxNode {
+public final class ProcessingInstructionImpl extends SyntaxNode {
 
     
     /** Creates a new instance of ProcessingInstructionImpl */

@@ -31,9 +31,9 @@ import org.netbeans.editor.*;
  */
 public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
     
-    NamedNodeMap domAttributes;
+    protected NamedNodeMap domAttributes;
     
-    String name;
+    protected String name;
     
     public Tag(XMLSyntaxSupport support, TokenItem from, int to, String name, Collection attribs) {
         super( support, from,to );

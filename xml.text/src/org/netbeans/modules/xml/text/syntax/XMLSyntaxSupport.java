@@ -142,6 +142,20 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
             
             // now item is either XMLSyntax.VALUE or we're in text, or at BOF
             if( id != VALUE && id != TEXT && id != CDATA_SECTION ) {
+
+                // #34453 it may start of element tag or end of start tag (skip attributtes)
+                if( id == XMLDefaultTokenContext.TAG ) {
+                    if( item.getImage().startsWith( "<" ) ) {
+                        return createElement( item );  // TAGO/ETAGO
+                    } else {
+                        do {
+                            item = item.getPrevious();
+                            id = item.getTokenID();
+                        } while( id != XMLDefaultTokenContext.TAG );
+                        return createElement( item );       // TAGC
+                    }
+                }
+
                 return createElement( first );
             } // else ( for VALUE or TEXT ) fall through
         }
