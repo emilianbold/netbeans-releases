@@ -196,9 +196,25 @@ public final class ListeningDICookie extends AbstractDICookie {
     public VirtualMachine getVirtualMachine () throws IOException,
     IllegalConnectorArgumentsException {
         try {
-            return listeningConnector.accept (args);
-        } finally {
-            listeningConnector.stopListening (args);
+            try {
+                listeningConnector.stopListening (args); 
+            } catch (Exception e1) {
+            }
+            listeningConnector.startListening (args);
+            VirtualMachine vm = listeningConnector.accept (args);
+            return vm;
+        } catch (IOException e) {
+            try {
+                listeningConnector.stopListening (args); 
+            } catch (Exception e1) {
+            }
+            throw e;
+        } catch (IllegalConnectorArgumentsException e) {
+            try {
+                listeningConnector.stopListening (args); 
+            } catch (Exception e1) {
+            }
+            throw e;
         }
     }
 }
