@@ -38,6 +38,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  * Startup and shutdown hooks for web project module. It ensures that the
@@ -135,11 +138,15 @@ public class WebProjectModule extends ModuleInstall {
                                 changed = true;
                             }
                             File copy_files = InstalledFileLocator.getDefault().locate("ant/extra/copyfiles.jar", null, false);
-                            assert copy_files != null : "Cannot find ant/extra/copyfiles.jar in installation.";
-                            String copy_files_old = ep.getProperty(COPYFILES_CLASSPATH);
-                            if (copy_files_old == null || !copy_files_old.equals(copy_files.toString())) {
-                                ep.setProperty(COPYFILES_CLASSPATH, copy_files.toString());
-                                changed = true;
+                            if (copy_files == null) {
+                                String msg = NbBundle.getMessage(ProjectWebModule.class,"MSG_CopyFileMissing"); //NOI18N
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                            } else {
+                                String copy_files_old = ep.getProperty(COPYFILES_CLASSPATH);
+                                if (copy_files_old == null || !copy_files_old.equals(copy_files.toString())) {
+                                    ep.setProperty(COPYFILES_CLASSPATH, copy_files.toString());
+                                    changed = true;
+                                }
                             }
                             if (changed) {
                                 PropertyUtils.putGlobalProperties (ep);
