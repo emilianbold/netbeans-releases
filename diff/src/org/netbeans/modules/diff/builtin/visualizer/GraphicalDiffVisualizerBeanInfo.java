@@ -63,7 +63,7 @@ public class GraphicalDiffVisualizerBeanInfo extends SimpleBeanInfo {
             colorChanged.setShortDescription (NbBundle.getMessage(GraphicalDiffVisualizerBeanInfo.class, "HINT_colorChanged"));
             desc = new PropertyDescriptor[] { colorAdded, colorMissing, colorChanged };
         } catch (IntrospectionException ex) {
-            org.openide.TopManager.getDefault().notifyException(ex);
+            org.openide.ErrorManager.getDefault().notify(ex);
             desc = null;
         }
         return desc;

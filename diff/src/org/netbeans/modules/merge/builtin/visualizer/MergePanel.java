@@ -1107,7 +1107,7 @@ public class MergePanel extends javax.swing.JPanel {
         try {
             copy(doc1, line1, line2, doc2, line3);
         } catch (BadLocationException e) {
-            org.openide.TopManager.getDefault().notifyException(e);
+            org.openide.ErrorManager.getDefault().notify(e);
         }
     }
     
@@ -1124,7 +1124,7 @@ public class MergePanel extends javax.swing.JPanel {
         try {
             copy(doc1, line1, line2, doc2, line3);
         } catch (BadLocationException e) {
-            org.openide.TopManager.getDefault().notifyException(e);
+            org.openide.ErrorManager.getDefault().notify(e);
         }
     }
     
@@ -1173,7 +1173,7 @@ public class MergePanel extends javax.swing.JPanel {
         try {
             replace(doc1, line1, line2, doc2, line3, line4);
         } catch (BadLocationException e) {
-            org.openide.TopManager.getDefault().notifyException(e);
+            org.openide.ErrorManager.getDefault().notify(e);
         }
         if (resolvedRightConflictsLineNumbers.contains(conflictLine)) {
             resolvedRightConflictsLineNumbers.remove(conflictLine);
@@ -1204,7 +1204,7 @@ public class MergePanel extends javax.swing.JPanel {
         try {
             replace(doc1, line1, line2, doc2, line3, line4);
         } catch (BadLocationException e) {
-            org.openide.TopManager.getDefault().notifyException(e);
+            org.openide.ErrorManager.getDefault().notify(e);
         }
         if (resolvedLeftConflictsLineNumbers.contains(conflictLine)) {
             resolvedLeftConflictsLineNumbers.remove(conflictLine);
@@ -1564,7 +1564,7 @@ public class MergePanel extends javax.swing.JPanel {
         try {
             doc.insertString(offset, insStr, null);
         } catch (BadLocationException e) {
-            org.openide.TopManager.getDefault().notifyException(e);
+            org.openide.ErrorManager.getDefault().notify(e);
         }
         //initScrollBars();
     }

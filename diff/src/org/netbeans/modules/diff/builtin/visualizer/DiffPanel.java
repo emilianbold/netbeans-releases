@@ -891,7 +891,7 @@ public class DiffPanel extends javax.swing.JPanel {
         try {
             doc.insertString(offset, insStr, null);
         } catch (BadLocationException e) {
-            org.openide.TopManager.getDefault().notifyException(e);
+            org.openide.ErrorManager.getDefault().notify(e);
         }
         //initScrollBars();
     }

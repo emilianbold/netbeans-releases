@@ -63,7 +63,7 @@ public class GraphicalMergeVisualizerBeanInfo extends SimpleBeanInfo {
             colorOtherConflict.setShortDescription (NbBundle.getMessage(GraphicalMergeVisualizerBeanInfo.class, "HINT_colorOtherConflict"));
             desc = new PropertyDescriptor[] { colorUnresolvedConflict, colorResolvedConflict, colorOtherConflict };
         } catch (IntrospectionException ex) {
-            org.openide.TopManager.getDefault().notifyException(ex);
+            org.openide.ErrorManager.getDefault().notify(ex);
             desc = null;
         }
         return desc;

@@ -23,14 +23,13 @@ import java.util.List;
 
 import org.apache.regexp.*;
 
-import org.openide.TopManager;
-//import org.openide.execution.NbClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.DiffProvider;
+import org.openide.ErrorManager;
 
 /**
  * The parser of an external diff utility compatible with Unix diff output.
@@ -166,7 +165,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
             try {
                 pattern = new RE(DIFF_REGEXP);
             } catch (RESyntaxException resex) {
-                throw (IOException) TopManager.getDefault().getErrorManager().annotate(
+                throw (IOException) ErrorManager.getDefault().annotate(
                     new IOException(), resex.getLocalizedMessage());
             }
             //firstText = new StringBuffer();
@@ -200,7 +199,7 @@ public class CmdlineDiffProvider extends DiffProvider implements java.io.Seriali
             setTextOnLastDifference(differences, firstText, secondText);
             return (Difference[]) differences.toArray(new Difference[differences.size()]);
         } catch (IOException ioex) {
-            throw (IOException) TopManager.getDefault().getErrorManager().annotate(ioex,
+            throw (IOException) ErrorManager.getDefault().annotate(ioex,
                     NbBundle.getMessage(CmdlineDiffProvider.class, "runtimeError", cmd));
         }
     }

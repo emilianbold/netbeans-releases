@@ -56,7 +56,7 @@ public class CmdlineDiffProviderBeanInfo extends SimpleBeanInfo {
             diffCommand.setShortDescription (NbBundle.getMessage(CmdlineDiffProviderBeanInfo.class, "HINT_diffCmd"));
             desc = new PropertyDescriptor[] { diffCommand };
         } catch (IntrospectionException ex) {
-            org.openide.TopManager.getDefault().notifyException(ex);
+            org.openide.ErrorManager.getDefault().notify(ex);
             desc = null;
         }
         return desc;

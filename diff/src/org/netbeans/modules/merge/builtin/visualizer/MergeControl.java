@@ -77,7 +77,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
             panel.setSource2(source2.createReader());
             panel.setResultSource(new java.io.StringReader(""));
         } catch (IOException ioex) {
-            org.openide.TopManager.getDefault().notifyException(ioex);
+            org.openide.ErrorManager.getDefault().notify(ioex);
         }
         this.colorUnresolvedConflict = colorUnresolvedConflict;
         this.colorResolvedConflict = colorResolvedConflict;

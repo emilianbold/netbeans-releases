@@ -56,7 +56,6 @@ import javax.swing.undo.CannotUndoException;
 
 import org.openide.awt.UndoRedo;
 import org.openide.actions.*;
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;

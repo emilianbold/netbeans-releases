@@ -25,6 +25,7 @@ import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
 
 import org.netbeans.api.diff.Difference;
+import org.openide.windows.WindowManager;
 
 //import org.netbeans.modules.vcscore.util.Debug;
 //import org.netbeans.modules.vcscore.util.TopComponentCloseListener;
@@ -144,7 +145,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
             setSource1(r1);
             setSource2(r2);
         } catch (IOException ioex) {
-            org.openide.TopManager.getDefault().notifyException(ioex);
+            org.openide.ErrorManager.getDefault().notify(ioex);
         }
         setSource1Title(title1);
         setSource2Title(title2);
@@ -187,7 +188,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     public void open(Workspace workspace) {
         //System.out.println("workspace = "+workspace);
         if (workspace == null) {
-            workspace = org.openide.TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+            workspace = WindowManager.getDefault().getCurrentWorkspace();
         }
         Mode editorMode = getDockingMode(workspace);
         editorMode.dockInto(this);

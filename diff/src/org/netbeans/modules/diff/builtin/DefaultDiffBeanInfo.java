@@ -57,7 +57,7 @@ public class DefaultDiffBeanInfo extends SimpleBeanInfo {
             showDiffSelector.setShortDescription (NbBundle.getMessage(DefaultDiffBeanInfo.class, "HINT_showDiffSelector"));
             desc = new PropertyDescriptor[] { showDiffSelector };
         } catch (IntrospectionException ex) {
-            org.openide.TopManager.getDefault().notifyException(ex);
+            org.openide.ErrorManager.getDefault().notify(ex);
             desc = null;
         }
         return desc;

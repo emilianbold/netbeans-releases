@@ -30,7 +30,6 @@ import javax.swing.JFileChooser;
 
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -46,6 +45,7 @@ import org.openide.util.io.ReaderInputStream;
 import org.netbeans.api.diff.Difference;
 
 import org.netbeans.modules.diff.builtin.Patch;
+import org.openide.DialogDisplayer;
 
 /**
  * Patch Action. It asks for a patch file and applies it to the selected file.
@@ -106,7 +106,7 @@ public class PatchAction extends NodeAction {
                 numDiffs += fileDiffs[i].getDifferences().length;
             }
             if (numDiffs == 0) {
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(PatchAction.class, "MSG_NoDifferences", patch.getName())));
                 return ;
             }
@@ -173,11 +173,11 @@ public class PatchAction extends NodeAction {
                     files += ", ";
                 }
             }
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                 NbBundle.getMessage(PatchAction.class, "MSG_NotFoundFiles", files)));
         }
         if (appliedFiles.size() > 0) {
-            Object notifyResult = TopManager.getDefault().notify(
+            Object notifyResult = DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedSuccessfully"),
                     NotifyDescriptor.YES_NO_OPTION));

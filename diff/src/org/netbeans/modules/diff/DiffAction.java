@@ -21,7 +21,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -39,6 +38,8 @@ import org.openide.windows.TopComponent;
 //import org.netbeans.modules.vcscore.diff.AbstractDiff;
 
 import org.netbeans.api.diff.*;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 
 //import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 //import org.netbeans.modules.diff.cmdline.CmdlineDiffProvider;
@@ -95,7 +96,7 @@ public class DiffAction extends NodeAction {
         Diff diff = Diff.getDefault();
         //System.out.println("dv = "+dv);
         if (diff == null) {
-            TopManager.getDefault().notify(
+            DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message(NbBundle.getMessage(DiffAction.class,
                     "MSG_NoDiffVisualizer")));
             return ;
@@ -107,7 +108,7 @@ public class DiffAction extends NodeAction {
                                  fo2.getNameExt(), fo2.getPackageNameExt('/', '.'),
                                  new InputStreamReader(fo2.getInputStream()), fo1.getMIMEType());
         } catch (IOException ioex) {
-            TopManager.getDefault().notifyException(ioex);
+            ErrorManager.getDefault().notify(ioex);
             return ;
         }
         //System.out.println("tp = "+tp);

@@ -60,7 +60,7 @@ public class TextDiffVisualizerBeanInfo extends SimpleBeanInfo {
             contextNumLines.setShortDescription (NbBundle.getMessage(TextDiffVisualizerBeanInfo.class, "HINT_contextNumLines"));
             desc = new PropertyDescriptor[] { contextMode, contextNumLines };//diffCommand };
         } catch (IntrospectionException ex) {
-            org.openide.TopManager.getDefault().notifyException(ex);
+            org.openide.ErrorManager.getDefault().notify(ex);
             desc = null;
         }
         return desc;

@@ -32,8 +32,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.TabbedPaneUI;
+import org.openide.DialogDisplayer;
 
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FileSystemAction;
 import org.openide.awt.MouseUtils;
@@ -49,6 +49,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.windows.WindowManager;
 
 /**
  * This is a component, that acts as a non modal dialog.
@@ -185,13 +186,13 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         }
         Object ret;
         if (unsavedPanelNames.size() == 1) {
-            ret = TopManager.getDefault().notify(
+            ret = DialogDisplayer.getDefault().notify(
             new NotifyDescriptor.Confirmation(NbBundle.getMessage(MergeDialogComponent.class,
                                                              "SaveFileQuestion",
                                                              unsavedPanelNames.get(0)),
                                               NotifyDescriptor.YES_NO_CANCEL_OPTION));
         } else if (unsavedPanelNames.size() > 1) {
-            ret = TopManager.getDefault().notify(
+            ret = DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Confirmation(NbBundle.getMessage(MergeDialogComponent.class,
                                                                  "SaveFilesQuestion",
                                                                  new Integer(unsavedPanelNames.size())),
@@ -207,7 +208,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
                     sc.save();
                 }
             } catch (java.io.IOException ioEx) {
-                TopManager.getDefault().notify(
+                DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(ioEx.getLocalizedMessage()));
                 return ;
             }
@@ -264,7 +265,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     
     /** @return Preferred size of editor top component  */
     public Dimension getPreferredSize() {
-        Rectangle bounds = org.openide.TopManager.getDefault().getWindowManager().getCurrentWorkspace().getBounds();
+        Rectangle bounds = WindowManager.getDefault().getCurrentWorkspace().getBounds();
         return new Dimension(bounds.width / 2, (int) (bounds.height / 1.25));
     }
     
@@ -310,7 +311,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     public void open(Workspace workspace) {
         //System.out.println("workspace = "+workspace);
         if (workspace == null) {
-            workspace = org.openide.TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+            workspace = WindowManager.getDefault().getCurrentWorkspace();
         }
         Mode mergeMode = getDockingMode(workspace);
         mergeMode.dockInto(this);

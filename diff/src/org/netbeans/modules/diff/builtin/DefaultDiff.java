@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
@@ -40,6 +39,8 @@ import org.netbeans.api.diff.Diff;
 //import org.netbeans.api.diff.DiffWrapperPanel;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.*;
+import org.openide.DialogDisplayer;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -98,7 +99,7 @@ public class DefaultDiff extends Diff implements Serializable {
         try {
             Difference[] diffs = provider.computeDiff(diffInfo.createFirstReader(), diffInfo.createSecondReader());
             if (diffs.length == 0) {
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(DefaultDiff.class, "MSG_NoDifference", name1, name2)));
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(DefaultDiff.class, "MSG_NoDifference", name1, name2)));
                 return null;
             }
             diffInfo.setInitialDiffs(diffs);
@@ -364,7 +365,7 @@ public class DefaultDiff extends Diff implements Serializable {
         public void open(Workspace workspace) {
             //System.out.println("workspace = "+workspace);
             if (workspace == null) {
-                workspace = org.openide.TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+                workspace = WindowManager.getDefault().getCurrentWorkspace();
             }
             Mode editorMode = getDockingMode(workspace);
             editorMode.dockInto(this);

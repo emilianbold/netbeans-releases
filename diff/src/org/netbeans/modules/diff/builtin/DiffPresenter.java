@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.openide.TopManager;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyModel;
 import org.openide.explorer.propertysheet.PropertyPanel;
@@ -140,7 +139,7 @@ public class DiffPresenter extends javax.swing.JPanel {
         PropertyModel model;
         PropertyPanel panel;
         java.awt.GridBagConstraints gridBagConstraints;
-        FileSystem dfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
+        FileSystem dfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
         FileObject services = dfs.findResource("Services");
         DataFolder df = DataFolder.findFolder(services);
         if (diffInfo.isChooseProviders()) {
@@ -234,7 +233,7 @@ public class DiffPresenter extends javax.swing.JPanel {
         try {
             showDiff(defaultProvider, defaultVisualizer);
         } catch (IOException ioex) {
-            org.openide.TopManager.getDefault().notifyException(ioex);
+            org.openide.ErrorManager.getDefault().notify(ioex);
         }
     }
     

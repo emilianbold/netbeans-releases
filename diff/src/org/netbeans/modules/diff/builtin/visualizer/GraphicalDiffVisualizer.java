@@ -21,13 +21,13 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.util.List;
 
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.DiffVisualizer;
+import org.openide.DialogDisplayer;
 
 /**
  * The default graphical visualizer of diffs.
@@ -112,7 +112,7 @@ public class GraphicalDiffVisualizer extends DiffVisualizer implements Serializa
     public Component createView(Difference[] diffs, String name1, String title1, Reader r1,
                                 String name2, String title2, Reader r2, String MIMEType) {
         if (diffs.length == 0) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GraphicalDiffVisualizer.class, "MSG_NoDifference", name1, name2)));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GraphicalDiffVisualizer.class, "MSG_NoDifference", name1, name2)));
             return null;
         }
         DiffComponent diff;
