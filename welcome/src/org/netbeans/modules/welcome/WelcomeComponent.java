@@ -79,11 +79,13 @@ class WelcomeComponent extends TopComponent{
      * from window system. "Welcome" is name of settings file defined in module layer.
      */
     public static WelcomeComponent findComp() {
-        if (component.get() == null) {
+        WelcomeComponent wc = (WelcomeComponent)component.get();
+        if (wc == null) {
             TopComponent tc = WindowManager.getDefault().findTopComponent("Welcome"); // NOI18N
             if (tc != null) {
                 if (tc instanceof WelcomeComponent) {
-                    component = new WeakReference(tc);
+                    wc = (WelcomeComponent)tc;
+                    component = new WeakReference(wc); 
                 } else {
                     //Incorrect settings file?
                     IllegalStateException exc = new IllegalStateException
@@ -92,24 +94,27 @@ class WelcomeComponent extends TopComponent{
                     + " Returned:" + tc.getClass().getName()); // NOI18N
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                     //Fallback to accessor reserved for window system.
-                    WelcomeComponent.createComp();
+                    wc = WelcomeComponent.createComp();
                 }
             } else {
                 //WelcomeComponent cannot be deserialized
                 //Fallback to accessor reserved for window system.
-                WelcomeComponent.createComp();
+                wc = WelcomeComponent.createComp();
             }
-        }
-        return (WelcomeComponent)component.get();
+        }       
+        return wc;
     }
     
     /* Singleton accessor reserved for window system ONLY. Used by window system to create
      * WelcomeComponent instance from settings file when method is given. Use <code>findComp</code>
      * to get correctly deserialized instance of WelcomeComponent. */
     public static WelcomeComponent createComp() {
-        if(component.get() == null)
-            component = new WeakReference(new WelcomeComponent());
-        return (WelcomeComponent)component.get();
+        WelcomeComponent wc = (WelcomeComponent)component.get();
+        if(wc == null) {
+            wc = new WelcomeComponent();
+            component = new WeakReference(wc);
+        }
+        return wc;
     }
     
     /** Overriden to explicitely set persistence type of WelcomeComponent
