@@ -557,9 +557,6 @@ public class AbstractVariable implements ObjectVariable {
                 case '\"':
                     sb.append ("\\\"");
                     break;
-                case '\'':
-                    sb.append ("\\\'");
-                    break;
                 default:
                     sb.append (s.charAt (i));
             }
