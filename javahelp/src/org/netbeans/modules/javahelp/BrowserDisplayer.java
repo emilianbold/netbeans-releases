@@ -28,6 +28,7 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.UIManager;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicButtonUI;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.HTMLDocument;
@@ -176,6 +177,7 @@ public class BrowserDisplayer extends JButton implements ActionListener, ViewAwa
 	setFocusPainted(false);
 	setAlignmentY(getPreferredLabelAlignment());
 	setContentAreaFilled(false);
+        setHorizontalAlignment(SwingConstants.LEFT);
 	setBackground(UIManager.getColor("EditorPane.background"));
 	if (textAttribs != null &&
 	    textAttribs.isDefined(StyleConstants.Foreground)) {
