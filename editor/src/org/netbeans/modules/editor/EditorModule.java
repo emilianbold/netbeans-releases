@@ -13,21 +13,12 @@
 
 package org.netbeans.modules.editor;
 
-import java.io.Writer;
-import java.io.File;
-import java.io.InputStream;
 import java.io.IOException;
-import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
 
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeListener;
-import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.LocaleSupport;
-import org.netbeans.editor.Formatter;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.plain.PlainKit;
@@ -35,12 +26,9 @@ import org.netbeans.modules.editor.java.JCStorage;
 import org.netbeans.modules.editor.java.JCUpdateAction;
 
 import org.openide.modules.ModuleInstall;
-import org.openide.text.IndentEngine;
 import org.openide.TopManager;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 
 import org.openidex.util.Utilities2;
@@ -52,35 +40,14 @@ import org.openidex.util.Utilities2;
 */
 public class EditorModule extends ModuleInstall {
 
-
-    private static final String MIME_PLAIN = "text/plain"; // NOI18N
-    private static final String MIME_JAVA = "text/x-java"; // NOI18N
-    private static final String MIME_HTML = "text/html"; // NOI18N
-
     /** Kit replacements that will be installed into JEditorPane */
     KitInfo[] replacements = new KitInfo[] {
-                                 new KitInfo(MIME_PLAIN, PlainKit.class.getName()),
-                                 new KitInfo(MIME_JAVA, JavaKit.class.getName()),
-                                 new KitInfo(MIME_HTML, HTMLKit.class.getName())
-                             };
-
-    private static SettingsChangeListener settingsListener;
-
-    static {
-        settingsListener = new SettingsChangeListener() {
-                               public void settingsChange(SettingsChangeEvent evt) {
-                                   registerIndents();
-                               }
-                           };
-        Settings.addSettingsChangeListener(settingsListener);
-    }
+        new KitInfo(PlainKit.PLAIN_MIME_TYPE, PlainKit.class.getName()),
+        new KitInfo(JavaKit.JAVA_MIME_TYPE, JavaKit.class.getName()),
+        new KitInfo(HTMLKit.HTML_MIME_TYPE, HTMLKit.class.getName())
+    };
 
     static final long serialVersionUID =-929863607593944237L;
-
-    private static void registerIndents() {
-        IndentEngine.register(MIME_JAVA,
-                              new FilterIndentEngine(Formatter.getFormatter(JavaKit.class)));
-    }
 
     public void installed () {
         try {
@@ -105,9 +72,6 @@ public class EditorModule extends ModuleInstall {
 
         FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
         JCStorage.init(rfs.getRoot());
-
-        // Indentation engines registration
-        registerIndents();
 
         // Preloading of some classes for faster editor opening
         BaseKit.getKit(JavaKit.class).createDefaultDocument();
@@ -164,28 +128,6 @@ public class EditorModule extends ModuleInstall {
         KitInfo(String contentType, String newKitClassName) {
             this.contentType = contentType;
             this.newKitClassName = newKitClassName;
-        }
-
-    }
-
-    static class FilterIndentEngine extends IndentEngine {
-
-        Formatter formatter;
-
-        FilterIndentEngine(Formatter formatter) {
-            this.formatter = formatter;
-        }
-
-        public int indentLine (Document doc, int offset) {
-            return formatter.indentLine(doc, offset);
-        }
-
-        public int indentNewLine (Document doc, int offset) {
-            return formatter.indentNewLine(doc, offset);
-        }
-
-        public Writer createWriter (Document doc, int offset, Writer writer) {
-            return formatter.createWriter(doc, offset, writer);
         }
 
     }
