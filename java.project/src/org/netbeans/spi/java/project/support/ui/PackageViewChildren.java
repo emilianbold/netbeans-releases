@@ -477,28 +477,33 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         
         public Action[] getActions( boolean context ) {
             
-            if ( actions == null ) {                
-                // Copy actions and leave out the PropertiesAction.                
-                Action superActions[] = super.getActions();            
-                ArrayList actionList = new ArrayList( superActions.length );
+            if ( !context ) {
+                if ( actions == null ) {                
+                    // Copy actions and leave out the PropertiesAction.                
+                    Action superActions[] = super.getActions( context );            
+                    ArrayList actionList = new ArrayList( superActions.length );
 
-                for( int i = 0; i < superActions.length; i++ ) {
-                    if ( superActions[ i ] == null && superActions[i + 1] instanceof org.openide.actions.PropertiesAction ) {
-                        i ++;
-                        continue;
+                    for( int i = 0; i < superActions.length; i++ ) {
+                        if ( superActions[ i ] == null && superActions[i + 1] instanceof org.openide.actions.PropertiesAction ) {
+                            i ++;
+                            continue;
+                        }
+                        else if ( superActions[i] instanceof org.openide.actions.PropertiesAction ) {
+                            continue;
+                        }
+                        else {
+                            actionList.add( superActions[i] );  
+                        }
                     }
-                    else if ( superActions[i] instanceof org.openide.actions.PropertiesAction ) {
-                        continue;
-                    }
-                    else {
-                        actionList.add( superActions[i] );  
-                    }
+
+                    actions = new Action[ actionList.size() ];
+                    actionList.toArray( actions );
                 }
-
-                actions = new Action[ actionList.size() ];
-                actionList.toArray( actions );
+                return actions;
             }
-            return actions;            
+            else {
+                return super.getActions( context );
+            }
         }
         
         public boolean canRename() {
