@@ -256,7 +256,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             public boolean canWrite() {
                 return !isReadOnly()
                         && getFormSizePolicy() == GEN_BOUNDS
-                        && getGeneratePosition();
+                        && getGeneratePosition()
+                        && !getGenerateCenter();
             }
         };
 
