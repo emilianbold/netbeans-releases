@@ -238,20 +238,40 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
             return;
         }
 
-        try {
-            if(text.startsWith("[") && text.endsWith("]")) { // NOI18N
-                String string = text.substring(1, text.length() - 1);
+        try { // try to extract RGB values - represented as [r,g,b] or r,g,b
+            int len = text.length();
+            if (len > 0) {
+                int start = -1;
+                int end = -1;
 
-                int index1 = string.indexOf(',');
-                int index2 = string.length() > index1 ? string.indexOf(',', index1 + 1) : -1;
+                char c1 = text.charAt(0);
+                char c2 = text.charAt(len-1);
+                if (c1 == '[' && c2 == ']') {
+                    start = 1;
+                    end = len - 1;
+                }
+                else if (c1 >= '0' && c1 <= '9' && c2 >= '0' && c2 <= '9') {
+                    start = 0;
+                    end = len;
+                }
 
-                if (index1 >= 0 && index2 >= 0) {
-                    int red = Integer.parseInt(string.substring(0, index1));
-                    int green = Integer.parseInt(string.substring(index1 + 1, index2));
-                    int blue = Integer.parseInt(string.substring(index2 + 1));
+                if (start >= 0) {
+                    int index1 = text.indexOf(',');
+                    int index2 = index1 < 0 ? -1 : text.indexOf(',', index1+1);
 
-                    setValue (new SuperColor (null, 0, new Color (red, green, blue)));
-                    return;
+                    if (index1 >= 0 && index2 >= 0) {
+                        int red = Integer.parseInt(text.substring(
+                                                        start, index1));
+                        int green = Integer.parseInt(text.substring(
+                                                          index1 + 1, index2));
+                        int blue = Integer.parseInt(text.substring(
+                                                         index2 + 1, end));
+
+                        setValue(new SuperColor(null,
+                                                0,
+                                                new Color(red, green, blue)));
+                        return;
+                    }
                 }
             }
         } catch(NumberFormatException nfe) {
