@@ -286,12 +286,12 @@ public class VisualReplicator {
 
         if (clone instanceof Component) {
             int restrictions = getDesignRestrictions();
-            if ((restrictions | ATTACH_FAKE_PEERS) != 0) {
+            if ((restrictions & ATTACH_FAKE_PEERS) != 0) {
                 boolean attached = FakePeerSupport.attachFakePeer((Component)clone);
                 if (attached && clone instanceof Container)
                     FakePeerSupport.attachFakePeerRecursively((Container)clone);
             }
-            if ((restrictions | DISABLED_FOCUSING) != 0
+            if ((restrictions & DISABLED_FOCUSING) != 0
                     && clone instanceof JComponent) {
                 ((JComponent)clone).setRequestFocusEnabled(false);
                 ((JComponent)clone).setNextFocusableComponent((JComponent)clone);
