@@ -29,6 +29,8 @@
                       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.examples.WebSampleProjectIterator"/>
                     </file>
+                    <attr boolvalue="true" name="jstl.zip/jsp.zip"/>
+                    <attr boolvalue="true" name="jsp.zip/servlets.zip"/>
                 </folder>
             </folder>
         </folder>
