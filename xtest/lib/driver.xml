@@ -130,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
          <property name="archive.filename2" value="xtr-nb-${xtest.tested.project}-${ide.build}-${xtest.testing.group}-${xtest.tested.type}-${xtest.machine}.zip"/>
          <property name="archive.file2" value="${xtest.results}/${archive.filename2}"/>
          <zip zipfile="${archive.file2}">
-            <zipfileset dir="${xtest.results}/xmlresults" prefix="xmlresults" includes="**/*.xml"/>
+            <fileset dir="${xtest.results} includes="**/xmlresults/*.xml"/>
          </zip>
          <antcall target="ship-results"/>
          <antcall target="ship-nbresults"/>
@@ -139,10 +139,6 @@ Microsystems, Inc. All Rights Reserved.
    <target name="ship-results" if="xtest.ship.results.to">
         <copy overwrite="yes" file="${archive.file}" todir="${xtest.ship.results.to}"/>
         <chmod perm="ugo+rw" file="${xtest.ship.results.to}/${archive.filename}"/>
-        <!-- now just for pilot project -->
-        <!--
-        <copy file="${archive.file}" todir="${xtest.results}/../"/>        
-        -->
    </target>
 
    <target name="ship-nbresults" if="xtest.ship.nbresults.to">
