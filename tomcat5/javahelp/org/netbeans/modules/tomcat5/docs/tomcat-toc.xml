@@ -16,7 +16,7 @@
 
 
 <tocitem text="Servers and Databases">
-<tocitem text="Server Plugins">
+<tocitem text="Servers">
 <tocitem text="Tomcat Server">
 	<tocitem text="About the Tomcat Server" target="tomcat_plugin" />
 	<tocitem text="Setting Up the Tomcat Server">
