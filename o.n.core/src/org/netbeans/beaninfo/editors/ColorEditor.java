@@ -23,7 +23,7 @@ import java.util.ResourceBundle;
 
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.preview.JColorChooser;
+import javax.swing.colorchooser.*;
 import javax.swing.event.*;
 
 import com.netbeans.ide.util.QuickSorter;
@@ -126,7 +126,7 @@ public class ColorEditor implements PropertyEditor {
           super.setColor (c);
         }
       };
-      staticChooser.addChooserPanel (
+/*      staticChooser.addChooserPanel (
         bundle.getString ("CTL_AWTPalette"), 
         new NbColorChooserPanel (AWT_PALETTE, awtColorNames, awtColors)
       );
@@ -138,7 +138,7 @@ public class ColorEditor implements PropertyEditor {
       staticChooser.addChooserPanel (
         bundle.getString ("CTL_SystemPalette"), 
         new NbColorChooserPanel (SYSTEM_PALETTE, systemColorNames, systemColors)
-      );
+      ); */
     }
     return staticChooser;
   }
@@ -325,8 +325,8 @@ public class ColorEditor implements PropertyEditor {
       chooser.setColor ((Color)editor.getValue ());
       chooser.addPropertyChangeListener (listener = new PropertyChangeListener () {
           public void propertyChange (PropertyChangeEvent evt) {
-            if (evt.getPropertyName ().equals (JColorChooser.COLOR_PROPERTY))
-              editor.setValue (NbColorChooser.this.chooser.getColor ());
+//            if (evt.getPropertyName ().equals (JColorChooser.COLOR_PROPERTY))
+//              editor.setValue (NbColorChooser.this.chooser.getColor ());
           }
         }
       );
@@ -377,8 +377,8 @@ public class ColorEditor implements PropertyEditor {
     }
   }
 
-  static class NbColorChooserPanel extends ColorChooserPanel {
-    /** generated Serialized Version UID */
+/*  static class NbColorChooserPanel extends ColorChooserPanel {
+    /** generated Serialized Version UID * /
     static final long serialVersionUID = -2792992315444428631L;
 
     JList list;
@@ -424,13 +424,13 @@ public class ColorEditor implements PropertyEditor {
 
     /**
     * This get called when the panel is added to the chooser.
-    */
+    * /
     public void installChooserPanel() {
     }
 
     /**
     * This get called when the panel is removed from the chooser.
-    */
+    * /
     public void uninstallChooserPanel() {
     }
 
@@ -450,7 +450,7 @@ public class ColorEditor implements PropertyEditor {
       boolean selected, hasFocus;
       int index;
 
-      /** Creates a new NetbeansListCellRenderer */
+      /** Creates a new NetbeansListCellRenderer * /
       public MyListCellRenderer () {
         setOpaque (true);
         setBorder (new EmptyBorder (1, 1, 1, 1));
@@ -458,7 +458,7 @@ public class ColorEditor implements PropertyEditor {
 
       /**
       * @return Standart method returned preferredSize (depends on font size only).
-      */
+      * /
       public Dimension getPreferredSize () {
         try {
           Font font = getFont ();
@@ -498,7 +498,7 @@ public class ColorEditor implements PropertyEditor {
 
       /** This is the only method defined by ListCellRenderer.  We just
       * reconfigure the Jlabel each time we're called.
-      */
+      * /
       public java.awt.Component getListCellRendererComponent (
         JList list,
         Object value,            // value to display
@@ -512,11 +512,13 @@ public class ColorEditor implements PropertyEditor {
         return this;
       }
     }
-  }
+  } */
 }
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/6/99   Ian Formanek    some cotemporarily 
+ *       commented out to compile under JDK 1.2
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  */
