@@ -70,8 +70,6 @@ public class MeasureMenus  {
         suite.addTest(new ToolsMenu("testXmlToolsMenu", "Tools main menu for XML node"));
         suite.addTest(new ToolsMenu("testTxtToolsMenu", "Tools main menu for text node"));
 
-        suite.addTest(new EditorDownButtonPopupMenu("testEditorDownButtonPopupMenu", "Editor Down Button popup"));
-        
         suite.addTest(new SourceEditorPopupMenu("testPopupInTxt", "Plain text Editor popup"));
         suite.addTest(new SourceEditorPopupMenu("testPopupInXml", "XML Editor popup"));
         suite.addTest(new SourceEditorPopupMenu("testPopupOnMethod", "Java Editor Method popup"));
@@ -85,6 +83,8 @@ public class MeasureMenus  {
         
         suite.addTest(new ToolsOptionsNodePopupMenu("testOptionsNodePopupMenu", "Tools-Options node popup"));
 
+        suite.addTest(new EditorDownButtonPopupMenu("testEditorDownButtonPopupMenu", "Editor Down Button popup"));
+        
         
 //TODO        suite.addTest(new WebNodePopupMenu("measureTime", "Web Filesystem node popup"));  
 //TODO        suite.addTest(new WebInfNodePopupMenu("measureTime", "WEB-INF node popup"));  
