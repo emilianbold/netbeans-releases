@@ -158,8 +158,8 @@ final class NbModuleProject implements Project {
                 "javadoc", // NOI18N
             }),
             sourcesHelper.createSources(),
+            new AntArtifactProviderImpl (this, helper, evaluator ()),
             // XXX need, in rough descending order of importance:
-            // AntArtifactProvider - should it run netbeans target, or all-foo/bar?
             // CustomizerProvider - ???
         });
     }
