@@ -502,7 +502,7 @@ public final class OpenProjectList {
                 Project p = (Project)it.next();
                 if ( !p.getProjectDirectory().isValid() ) {
                     remove( p );        // Folder does not exist any more => remove from
-                    result.remove( p ); // both the list and the result
+                    it.remove();        // both the list and the result
                 }
             }
             return result;
