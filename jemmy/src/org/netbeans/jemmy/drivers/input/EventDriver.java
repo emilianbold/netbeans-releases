@@ -45,7 +45,8 @@ public class EventDriver extends SupportiveDriver {
 	this(new Class[] {ComponentOperator.class});
     }
     public void dispatchEvent(Component comp, AWTEvent event) {
-        queueTool.invokeSmoothly(new Dispatcher(comp, event));
+        checkVisibility(comp);
+        QueueTool.processEvent(event);
     }
     protected void checkVisibility(Component component) {
 	if(!component.isVisible()) {

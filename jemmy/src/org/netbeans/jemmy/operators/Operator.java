@@ -571,7 +571,17 @@ public abstract class Operator extends Object
 	producer.setTimeouts(getTimeouts().cloneThis());
 	producer.getTimeouts().setTimeout("ActionProducer.MaxActionTime", wholeTime);
 	try {
-	    return(producer.produceAction(param));
+            Object result = producer.produceAction(param);
+            Throwable exception = producer.getException();
+            if(exception != null) {
+                if(exception instanceof JemmyException) {
+                    throw((JemmyException)exception);
+                } else {
+                    throw(new JemmyException("Exception during " + action.getDescription(),
+                                             exception));
+                }
+            }
+	    return(result);
 	} catch(InterruptedException e) {
 	    throw(new JemmyException("Interrupted!", e));
 	}

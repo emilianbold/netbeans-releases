@@ -43,6 +43,7 @@ public class ActionProducer extends Thread
     private Timeouts timeouts;
     private Waiter waiter;
     private TestOut output;
+    private Throwable exception;
 
     /**
      * Creates a producer for an action.
@@ -55,6 +56,7 @@ public class ActionProducer extends Thread
 	setTimeouts(JemmyProperties.getProperties().getTimeouts());
 	setOutput(JemmyProperties.getProperties().getOutput());
 	finished = false;
+        exception = null;
     }
 
     /**
@@ -71,6 +73,7 @@ public class ActionProducer extends Thread
 	setTimeouts(JemmyProperties.getProperties().getTimeouts());
 	setOutput(JemmyProperties.getProperties().getOutput());
 	finished = false;
+        exception = null;
     }
 
     /**
@@ -83,6 +86,7 @@ public class ActionProducer extends Thread
 	setTimeouts(JemmyProperties.getProperties().getTimeouts());
 	setOutput(JemmyProperties.getProperties().getOutput());
 	finished = false;
+        exception = null;
     }
 
     /**
@@ -98,6 +102,7 @@ public class ActionProducer extends Thread
 	setTimeouts(JemmyProperties.getProperties().getTimeouts());
 	setOutput(JemmyProperties.getProperties().getOutput());
 	finished = false;
+        exception = null;
     }
 
     static {
@@ -134,6 +139,10 @@ public class ActionProducer extends Thread
     public void setOutput(TestOut out) {
 	output = out;
 	waiter.setOutput(output);
+    }
+
+    public Throwable getException() {
+        return(exception);
     }
 
     /**
@@ -248,6 +257,7 @@ public class ActionProducer extends Thread
 	try {
 	    result = launchAction(parameter);
 	} catch(Throwable e) {
+            exception = e;
 	    output.printStackTrace(e);
 	}
 	synchronized(this) {

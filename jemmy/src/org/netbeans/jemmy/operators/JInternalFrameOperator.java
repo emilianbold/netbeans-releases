@@ -1007,7 +1007,7 @@ public class JInternalFrameOperator extends JComponentOperator
 		    frame = io.getInternalFrame();
 		}
 		if(frame.getTitle() != null) {
-		    return(comparator.equals(((JInternalFrame)frame).getTitle(),
+		    return(comparator.equals(frame.getTitle(),
 					     label));
 		}
 	    }
@@ -1072,13 +1072,21 @@ public class JInternalFrameOperator extends JComponentOperator
 	}
     }
 
-    public static class JInternalFrameFinder extends Finder {
+    public static class JInternalFrameFinder implements ComponentChooser {
+        ComponentChooser sf = null;
 	public JInternalFrameFinder(ComponentChooser sf) {
-            super(JInternalFrame.class, sf);
+            this.sf = sf;
 	}
 	public JInternalFrameFinder() {
-            super(JInternalFrame.class);
+            this(ComponentSearcher.getTrueChooser("JInternalFrame or JInternalFrame.JDesktopIcon"));
 	}
+        public boolean checkComponent(Component comp) {
+            return((comp instanceof JInternalFrame || comp instanceof JInternalFrame.JDesktopIcon) &&
+                   sf.checkComponent(comp));
+        }
+        public String getDescription() {
+            return(sf.getDescription());
+        }
     }
 
 }

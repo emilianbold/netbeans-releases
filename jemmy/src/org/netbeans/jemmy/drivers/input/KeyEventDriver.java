@@ -39,32 +39,50 @@ public class KeyEventDriver extends EventDriver implements KeyDriver {
 	super();
     }
     public void pressKey(ComponentOperator oper, int keyCode, int modifiers) {
-	dispatchEvent(oper.getSource(),
-		      new KeyEvent(oper.getSource(), 
+        pressKey(findNativeParent(oper.getSource()), keyCode, modifiers);
+    }
+    public void releaseKey(ComponentOperator oper, int keyCode, int modifiers) {
+        releaseKey(findNativeParent(oper.getSource()), keyCode, modifiers);
+    }
+    public void pushKey(ComponentOperator oper, int keyCode, int modifiers, Timeout pushTime) {
+        Component nativeContainer = findNativeParent(oper.getSource());
+	pressKey(nativeContainer, keyCode, modifiers);
+	pushTime.sleep();
+	releaseKey(nativeContainer, keyCode, modifiers);
+    }
+    public void typeKey(ComponentOperator oper, int keyCode, char keyChar, int modifiers, Timeout pushTime) {
+        Component nativeContainer = findNativeParent(oper.getSource());
+	pressKey(nativeContainer, keyCode, modifiers);
+	pushTime.sleep();
+	dispatchEvent(nativeContainer,
+		      new KeyEvent(nativeContainer, 
+				   KeyEvent.KEY_TYPED, 
+				   System.currentTimeMillis(), 
+				   modifiers, KeyEvent.VK_UNDEFINED, keyChar));
+	releaseKey(nativeContainer, keyCode, modifiers);
+    }
+    private void pressKey(Component nativeContainer, int keyCode, int modifiers) {
+	dispatchEvent(nativeContainer,
+		      new KeyEvent(nativeContainer, 
 				   KeyEvent.KEY_PRESSED, 
 				   System.currentTimeMillis(), 
 				   modifiers, keyCode));
     }
-    public void releaseKey(ComponentOperator oper, int keyCode, int modifiers) {
-	dispatchEvent(oper.getSource(),
-		      new KeyEvent(oper.getSource(), 
+    private void releaseKey(Component nativeContainer, int keyCode, int modifiers) {
+	dispatchEvent(nativeContainer,
+		      new KeyEvent(nativeContainer, 
 				   KeyEvent.KEY_RELEASED, 
 				   System.currentTimeMillis(), 
 				   modifiers, keyCode));
     }
-    public void pushKey(ComponentOperator oper, int keyCode, int modifiers, Timeout pushTime) {
-	pressKey(oper, keyCode, modifiers);
-	pushTime.sleep();
-	releaseKey(oper, keyCode, modifiers);
-    }
-    public void typeKey(ComponentOperator oper, int keyCode, char keyChar, int modifiers, Timeout pushTime) {
-	pressKey(oper, keyCode, modifiers);
-	pushTime.sleep();
-	dispatchEvent(oper.getSource(),
-		      new KeyEvent(oper.getSource(), 
-				   KeyEvent.KEY_TYPED, 
-				   System.currentTimeMillis(), 
-				   modifiers, KeyEvent.VK_UNDEFINED, keyChar));
-	releaseKey(oper, keyCode, modifiers);
+    private Component findNativeParent(Component source) {
+        Component nativeOne = source;
+        while(nativeOne != null) {
+            if(!nativeOne.isLightweight()) {
+                return(nativeOne);
+            }
+            nativeOne = nativeOne.getParent();
+        }
+        return(source);
     }
 }

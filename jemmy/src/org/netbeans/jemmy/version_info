@@ -1,0 +1,59 @@
+Manifest-version: 1.0
+Main-Class: org.netbeans.jemmy.JemmyProperties
+Jemmy-MajorVersion: 2.1
+Jemmy-MinorVersion: 0
+Jemmy-Build: @BUILD_NUMBER@
+
+Name: org/netbeans/jemmy
+Implementation-Version: 02/11/05-22:34:18
+
+Name: org/netbeans/jemmy/drivers
+Implementation-Version: 02/11/05-19:46:30
+
+Name: org/netbeans/jemmy/drivers/text
+Implementation-Version: 02/11/05-19:46:33
+
+Name: org/netbeans/jemmy/drivers/buttons
+Implementation-Version: 02/11/05-19:46:45
+
+Name: org/netbeans/jemmy/drivers/windows
+Implementation-Version: 02/11/05-19:47:00
+
+Name: org/netbeans/jemmy/drivers/input
+Implementation-Version: 02/11/05-19:47:07
+
+Name: org/netbeans/jemmy/drivers/trees
+Implementation-Version: 02/11/05-19:47:11
+
+Name: org/netbeans/jemmy/drivers/focus
+Implementation-Version: 02/09/06-17:48:33
+
+Name: org/netbeans/jemmy/drivers/scrolling
+Implementation-Version: 02/11/05-19:47:23
+
+Name: org/netbeans/jemmy/drivers/lists
+Implementation-Version: 02/11/05-19:47:27
+
+Name: org/netbeans/jemmy/drivers/tables
+Implementation-Version: 02/11/05-19:47:40
+
+Name: org/netbeans/jemmy/drivers/menus
+Implementation-Version: 02/11/05-19:47:43
+
+Name: org/netbeans/jemmy/demo
+Implementation-Version: 02/11/05-19:46:03
+
+Name: org/netbeans/jemmy/explorer
+Implementation-Version: 02/11/05-19:45:57
+
+Name: org/netbeans/jemmy/operators
+Implementation-Version: 02/11/05-19:46:15
+
+Name: org/netbeans/jemmy/util
+Implementation-Version: 02/11/05-20:31:34
+
+Name: org/netbeans/jemmy/accessibility
+Implementation-Version: 02/07/29-16:41:19
+
+Name: org/netbeans/jemmy/image
+Implementation-Version: 02/11/05-18:42:59

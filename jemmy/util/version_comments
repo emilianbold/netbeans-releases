@@ -611,109 +611,76 @@ DefaultWindowDriver.java
 
 #VERSION 2.0.3
 
-26251: 
-        QueueTool: 
-                new methods invokeSmoothly(*). 
-                They perform an action directly if executed in event dispatching thread, 
-                otherwise invoke invokeAndWait(*). 
-        EventDriver: 
-                uses QueueTool.invokeSmoothly(*) for event dispatching. 
-                It makes possible to create bigger transactions including event dispatching. 
-        RobotDriver.java: 
-                Does not wait for the event queue emptying if executed in event dispatching thread. 
-        JTreeMouseDriver.java, JListMouseDriver.java, JTableMouseDriver.java: 
-                Click point calculation performed in the same InvocationEvent as events dispatching. 
-        Operator.java: 
-                Uses QueueTool.invokeSmoothly(*) for mapping 
-        JTreeOperator.java, JListOperator.java, JTableOperator.java: 
-                Row calculation performed in the same InvocationEvent as events dispatching. 
+26251:
 
-ChoiceDriver.java: 
-        Changes for 1.4 Behavior of java.awt.Choise is a little bit different for 1.4. 
+        QueueTool:
+                new methods invokeSmoothly(*).
+                They perform an action directly if executed in event dispatching thread,
+                otherwise invoke invokeAndWait(*).
 
+        EventDriver:
+                uses QueueTool.invokeSmoothly(*) for event dispatching.
+                It makes possible to create bigger transactions including
+                event dispatching.
+
+        RobotDriver.java:
+                Does not wait for the event queue emptying being executed
+                in event dispatching thread.
+	
+        JTreeMouseDriver.java, JListMouseDriver.java, JTableMouseDriver.java:
+        	Click point calculation performed in the same InvocationEvent as events dispatching.
+
+        Operator.java:
+                Uses QueueTool.invokeSmoothly(*) for mapping
+	
+        JTreeOperator.java, JListOperator.java, JTableOperator.java:
+                Row calculation performed in the same InvocationEvent as events dispatching.
+
+ChoiceDriver.java:
+	Changes for 1.4
+        Behavior of java.awt.Choise is a little bit different for 1.4.
+	
 Documentation: 
-        New document describing operator environment. 
-        Plans page has been updated. 
-        Some javadoc for classes in "drivers" subpackage. 
+        new document describing operator environment.
+        plans page has been updated.
 
+Some javadoc for classes in "drivers" subpackage.
 
-#VERSION 2.0.4
+#VERSION 2.0.3.queue-branch
 
-27140 fixed partially: one file (QueueJMenuDriver) is on queue-branch only.
+New EventQueue using technique. See http://jemmy.netbeans.org/queue.html for more info.
+
+Post-verification added to some operators.
+
+        Files:
+        src/org/netbeans/jemmy/operators/AbstractButtonOperator.java
+        src/org/netbeans/jemmy/operators/JListOperator.java
+        src/org/netbeans/jemmy/operators/JTabbedPaneOperator.java
+        src/org/netbeans/jemmy/operators/ListOperator.java
+        src/org/netbeans/jemmy/operators/CheckboxOperator.java
+        src/org/netbeans/jemmy/operators/ChoiceOperator.java
+        src/org/netbeans/jemmy/operators/WindowOperator.java
+
+src/org/netbeans/jemmy/operators/WindowOperator.java
+	isFocused() works as (getFocusOwner() != null) for java older than 1.4
+	isActive() - as isShowing()
+
+src/org/netbeans/jemmy/TestOut.java
+	No in after print(String) method
+
+#VERSION 2.0.3.queue-branch.1
+
+26907: KeyEvent are posted to first native container.
 Files:
-src/org/netbeans/jemmy/operators/ContainerOperator.java
-src/org/netbeans/jemmy/operators/JProgressBarOperator.java
+        src/org/netbeans/jemmy/drivers/input/KeyEventDriver.java
+	
+27152: 
+Files:
+src/org/netbeans/jemmy/drivers/menus/DefaultJMenuDriver.java
+src/org/netbeans/jemmy/drivers/menus/QueueJMenuDriver.java
 
-25018 fix:
-src/org/netbeans/jemmy/operators/Operator.java
-	init visualizer depending on OS:
-	Linux - new MouseVisualizer(MouseVisualizer.TOP, 0.5, 10, false)
-	solaris - new MouseVisualizer()
-	others - new DefaultVisualizer()
-src/org/netbeans/jemmy/util/DefaultVisualizer.java
-        now uses isFocused() method
-src/org/netbeans/jemmy/util/MouseVisualizer.java
+25018 bugfix propogated on branch.
 
-Samples up-to-dating:
-www/samples/ActionsSample.java
-www/samples/FindComponentsSample.java
-www/samples/TableActionsSample.java
-www/samples/TreeActionsSample.java
-www/samples/QueueUsingSample.java
-www/samples/MyTest.java
-www/samples/RunnerTest.java
-
-
-
-#VERSION 2.0.5
-
-Propogated changes from queue-branch (27152 fix):
-        src/org/netbeans/jemmy/drivers/menus/DefaultJMenuDriver.java
-
-27160:
-        src/org/netbeans/jemmy/operators/ComponentOperator.java
-        src/org/netbeans/jemmy/operators/ContainerOperator.java
-        src/org/netbeans/jemmy/operators/JColorChooserOperator.java
-        src/org/netbeans/jemmy/operators/JComboBoxOperator.java
-        src/org/netbeans/jemmy/operators/JMenuOperator.java
-        src/org/netbeans/jemmy/operators/JProgressBarOperator.java
-        src/org/netbeans/jemmy/operators/JTextComponentOperator.java
-        src/org/netbeans/jemmy/operators/JTableOperator.java
-        src/org/netbeans/jemmy/operators/JTreeOperator.java
-        src/org/netbeans/jemmy/operators/TextAreaOperator.java
-        src/org/netbeans/jemmy/operators/TextFieldOperator.java
-        src/org/netbeans/jemmy/operators/TextComponentOperator.java
-        src/org/netbeans/jemmy/util/DefaultVisualizer.java
-        src/org/netbeans/jemmy/EventDispatcher.java
-
-26408:
-        src/org/netbeans/jemmy/operators/ComponentOperator.java
-
-
-24313:  showMenuItems(*) in all menu operators, closeSubmenus() in JMenuBarOperator:
-        src/org/netbeans/jemmy/operators/JMenuBarOperator.java
-        src/org/netbeans/jemmy/operators/JMenuOperator.java
-        src/org/netbeans/jemmy/operators/JPopupMenuOperator.java
-
-
-26050: NoSuchPathException is thrown
-        src/org/netbeans/jemmy/operators/JTreeOperator.java
-
-
-27846:
-        src/org/netbeans/jemmy/util/DefaultVisualizer.java
-        
-
-src/org/netbeans/jemmy/operators/JFileChooserOperator.java:
-        JFileChooserOperator.findFileIndex waits for a file.
-        Earlier it tried to find file.
-
-Wait for popup having right invoker. JPopupMenu should have 
-"invoker" property equal either to component on which it was invoked 
-or it's subcomponent/supercomponent.
-        src/org/netbeans/jemmy/operators/JPopupMenuOperator.java
-
-IndexOutOfBoundsException of TreeModel.getChild() is ignored.
-This exception can be thrown if subnodes was deleted during
-path finding.
-        src/org/netbeans/jemmy/operators/JTreeOperator.java
+27140:
+Files:
+src/org/netbeans/jemmy/drivers/menus/QueueJMenuDriver.java

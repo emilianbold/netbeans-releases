@@ -17,23 +17,28 @@
   <property name="testtimeouts" value="testsuite/jemmy.timeouts"/>
   <property name="testresultdir" value="testsuite/run"/>
   <property name="testrundir" value="run"/>
+  <property name="queue" value="on"/>
   <property name="robot" value="off"/>
+  <property name="shortcut" value="off"/>
 
   <target name="compile">
-    <copy file="${util}/version" tofile="${src}/org/netbeans/jemmy/version_info"/>
+    <tstamp>
+      <format property="buildnumber" pattern="yyyyMMdd"/>
+    </tstamp>
+    <filter token="BUILD_NUMBER" value="${buildnumber}"/>
     <mkdir dir="${build}"/>
     <javac srcdir="${src}" destdir="${build}" excludesfile="${excludes}"/>
     <copy file="${src}/org/netbeans/jemmy/debug.timeouts" todir="${build}/org/netbeans/jemmy"/>
+    <copy file="${src}/org/netbeans/jemmy/version_info" tofile="${build}/org/netbeans/jemmy/version_info" filtering="on"/>
   </target>
 
   <target name="api" depends="compile">
     <mkdir dir="${javadoc}"/>
-    <javadoc packagenames="${package},${package}.util,${package}.explorer,${package}.operators,${package}.demo,${package}.drivers,${package}.drivers.buttons,${package}.drivers.input,${package}.drivers.lists,${package}.drivers.scrolling,${package}.drivers.tables,${package}.drivers.text,${package}.drivers.trees" 
+    <javadoc packagenames="${package},${package}.util,${package}.explorer,${package}.operators,${package}.demo,${package}.drivers,${package}.drivers.buttons,${package}.drivers.input,${package}.drivers.lists,${package}.drivers.scrolling,${package}.drivers.tables,${package}.drivers.text,${package}.drivers.trees,${package}.image" 
      sourcepath="${src}" destdir="${javadoc}" Protected="yes" Windowtitle="Jemmy API"/>
   </target>
 
   <target name="jar" depends="compile">
-    <copy file="${src}/org/netbeans/jemmy/version_info" tofile="${build}/org/netbeans/jemmy/version_info"/>
     <jar jarfile="${jar}" basedir="${build}" manifest="${build}/org/netbeans/jemmy/version_info"/>
   </target>
 
@@ -85,7 +90,9 @@
            timeouts="${testtimeouts}" 
            resultdir="${testresultdir}" 
            rundir="${testrundir}" 
-           robotdispatching="${robot}"/>
+           robotdispatching="${robot}"
+           shortcutevents="${shortcut}"
+           usequeue="${queue}"/>
   </target>
 
   <target name="compiletest" depends="compile">
