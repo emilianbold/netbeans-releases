@@ -101,7 +101,7 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
         getCustomPane ().setLayout (new BorderLayout());
         getCustomPane ().add(ep, BorderLayout.CENTER);
         ep.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_FileSelectorExplorerPanel"));
-        ep.getAccessibleContext ().setAccessibleName ("ACSN_FileSelectorExplorerPanel");
+        ep.getAccessibleContext ().setAccessibleName (bundle.getString ("ACSN_FileSelectorExplorerPanel"));
         manager = ep.getExplorerManager ();
 
 
@@ -168,7 +168,7 @@ final class FileSelector extends CoronaDialog implements PropertyChangeListener 
                         manager.setRootContext(o);
                     }
                 });
-                combo.getAccessibleContext().setAccessibleDescription("ACSD_FileSelectorComboBox");
+                combo.getAccessibleContext().setAccessibleDescription(bundle.getString ("ACSD_FileSelectorComboBox"));
                 manager.setSelectedNodes (new Node[] { roots[0] });
 
                 // North - "Create In" // NOI18N
