@@ -89,4 +89,15 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
     </target>
     
+    <target name="updatekeys" depends="buildtests">
+        <property name="parentdir" location=".."/>
+        <java classname="org.netbeans.jellytools.CollectBundleKeys" >
+            <arg value="${parentdir}/src/org/netbeans/jellytools"/> 
+            <arg value="${parentdir}/test/unit/src/org/netbeans/jellytools/BundleKeysTest.properties"/> 
+            <classpath>
+                <pathelement location="${parentdir}/test/lib/test.jar"/>
+            </classpath>
+        </java>
+    </target>
+
 </project>
