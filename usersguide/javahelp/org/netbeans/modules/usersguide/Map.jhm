@@ -557,6 +557,11 @@
 <mapID target="internation.custom" url="internationalize/replacingformat.html" />
 <mapID target="internation.singlefile" url="internationalize/autoinsert.html" />
 <mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
+<!-- John please provide improved mapping if needed -->
+<mapID target="i18n.pe.bundlestring" url="internationalize/replacingformat.html" />
+<mapID target="i18n.pe.replacestring" url="internationalize/replacingformat.html" />
+<mapID target="i18n.pe.testregexp" url="internationalize/replacingformat.html" />
+<mapID target="i18n.pe.i18nregexp" url="internationalize/replacingformat.html" />
 
 
 <mapID target="ant.building" url="ant/building.html" />
