@@ -89,7 +89,7 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation, AntP
             if (path.equals(list[i])) {
                 return true;
             } else {
-                if (reverse ? list[i].startsWith(path + '/') : path.startsWith(list[i] + '/')) {
+                if (reverse ? list[i].startsWith(path + File.separatorChar) : path.startsWith(list[i] + File.separatorChar)) {
                     return true;
                 }
             }
