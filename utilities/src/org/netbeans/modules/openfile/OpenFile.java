@@ -268,7 +268,7 @@ class OpenFile extends Object {
     }
     // Now try to go through the package name piece by piece and get the right parent directory.
     if (pkg == null) {
-      pkg = ""; // assume default package
+      pkg = ""; // assume default package // NOI18N
     }
     String prefix = pkg.replace ('.', File.separatorChar);
     File dir = f.getParentFile ();
@@ -424,7 +424,7 @@ class OpenFile extends Object {
         new Object[] { okButton, cancelButton }, // options
         okButton,                // initial
         DialogDescriptor.DEFAULT_ALIGN, // align
-        new HelpCtx (OpenFile.class.getName () + ".dialog"), // help
+        new HelpCtx (OpenFile.class.getName () + ".dialog"), // help // NOI18N
         new ActionListener () { // listener
           public void actionPerformed (ActionEvent evt) {
             if (evt.getSource () == okButton) {
@@ -459,6 +459,7 @@ class OpenFile extends Object {
 
 /*
  * Log
+ *  30   Gandalf   1.29        1/13/00  Jesse Glick     NOI18N
  *  29   Gandalf   1.28        1/12/00  Jesse Glick     I18N.
  *  28   Gandalf   1.27        1/7/00   Jesse Glick     -line option for line 
  *       numbers.
