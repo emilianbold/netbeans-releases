@@ -472,7 +472,7 @@ public abstract class NbTopManager {
         doingExit = true;
         // save all open files
         try {
-            if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog(null) ) {
+            if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
                 
                 final WindowSystem windowSystem = (WindowSystem)Lookup.getDefault().lookup(WindowSystem.class);
                 
@@ -548,14 +548,6 @@ public abstract class NbTopManager {
         }
     }
 
-    /** Shows exit dialog for activated File system nodes
-    * after unmounting filesystem(s)
-    * @return result of dialog (mount or unmount)
-    */    
-    public static boolean showExitDialog (Node[] activatedNodes) {
-        return ExitDialog.showDialog(activatedNodes);
-    }
-    
     /** Get the module subsystem. */
     public abstract ModuleSystem getModuleSystem();
 

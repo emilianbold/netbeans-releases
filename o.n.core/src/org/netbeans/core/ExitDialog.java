@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -70,21 +70,6 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         draw ();
     }
     
-    /** Constructs new dlg for unsaved files in filesystems marked 
-     * for unmount.
-    */
-    public ExitDialog (Node[] activatedNodes) {
-        setLayout (new java.awt.BorderLayout ());
-
-        listModel = new DefaultListModel();
-        Iterator iter = getModifiedActSet (activatedNodes).iterator();
-        while (iter.hasNext()) {
-            DataObject obj = (DataObject) iter.next();
-            listModel.addElement(obj);
-        }
-        draw ();
-    }
-
     /** Constructs rest of dialog.
     */
     private void draw () {
@@ -196,55 +181,18 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         exitDialog.dispose();
     }
 
-    /** Opens the ExitDialog for unsaved files in filesystems marked 
-     * for unmount and blocks until it's closed. If dialog doesm't
-     * exists it creates new one. Returns true if the IDE should be closed.
-     */
-    public static boolean showDialog(Node[] activatedNodes) {
-        return innerShowDialog(activatedNodes);
-    }
-    
     /** Opens the ExitDialog and blocks until it's closed. If dialog doesm't
      * exists it creates new one. Returns true if the IDE should be closed.
      */
     public static boolean showDialog() {
-        return innerShowDialog(null);        
+        return innerShowDialog();
     }
 
-    /** Returns modified set of DataObjects in filesystems marked 
-     * for unmount.
+    /**
+     * Opens the ExitDialog.
      */
-    private static java.util.Set getModifiedActSet (Node[] activatedNodes) {
-        Iterator iter = DataObject.getRegistry ().getModifiedSet ().iterator();
-        java.util.Set set = new java.util.HashSet();
-        while (iter.hasNext()) {
-            DataObject obj = (DataObject) iter.next();
-            try {
-                FileSystem fs = obj.getPrimaryFile().getFileSystem();
-                for (int i=0;i<activatedNodes.length;i++) {
-                    DataFolder df = (DataFolder)activatedNodes[i].getCookie(DataFolder.class);
-                    if (df != null)
-                        if (df.getPrimaryFile().getFileSystem().equals(fs)) {
-                            set.add(obj);
-                            break;
-                        }
-                }
-            } catch (FileStateInvalidException fe) {
-            }
-        }
-        return set;
-    }
-
-
-    /** Opens the ExitDialog for activated nodes or for
-     * whole repository.
-     */
-    private static boolean innerShowDialog(Node[] activatedNodes) {
-        java.util.Set set = null;
-        if (activatedNodes != null)
-            set = getModifiedActSet (activatedNodes);
-        else
-            set = org.openide.loaders.DataObject.getRegistry ().getModifiedSet ();
+    private static boolean innerShowDialog() {
+        java.util.Set set = org.openide.loaders.DataObject.getRegistry ().getModifiedSet ();
         if (!set.isEmpty()) {
 
             // XXX(-ttran) caching this dialog is fatal.  If the user
@@ -274,11 +222,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                                   buttonSaveAll,
                                   buttonDiscardAll,
                               };
-                ExitDialog exitComponent = null;
-                if (activatedNodes != null)
-                    exitComponent = new ExitDialog (activatedNodes);
-                else
-                    exitComponent = new ExitDialog ();
+                ExitDialog exitComponent = new ExitDialog ();
                 DialogDescriptor exitDlgDescriptor = new DialogDescriptor (
                                                          exitComponent,                                                   // inside component
                                                          bundle.getString("CTL_ExitTitle"), // title
