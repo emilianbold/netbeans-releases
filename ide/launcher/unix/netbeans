@@ -28,8 +28,8 @@ done
 
 progdir=`dirname "$PRG"`
 
-if [ -f $progdir/../etc/netbeans.conf ] ; then
-    . $progdir/../etc/netbeans.conf
+if [ -f "$progdir"/../etc/netbeans.conf ] ; then
+    . "$progdir"/../etc/netbeans.conf
 fi
 
 if [ -f /etc/netbeans.conf ] ; then
@@ -52,17 +52,28 @@ if [ ! -z "$netbeans_jdkhome" ] ; then
     jdkhomeswitch="--jdkhome \"$netbeans_jdkhome\""
 fi
 
-osxappnameswitch=
 case "`uname`" in
-    Darwin*) osxappnameswitch="-J-Dcom.apple.mrj.application.apple.menu.about.name=NetBeans" ;;
+    Darwin*)
+        "$progdir"/../platform4/lib/nbexec \
+            $jdkhomeswitch \
+            -J-Dcom.apple.mrj.application.apple.menu.about.name=NetBeans \
+            -J-Xdock:name=NetBeans \
+            "-J-Xdock:icon=$progdir/../nb4.0/netbeans.icns" \
+            --branding nb \
+            --clusters "$netbeans_clusters" \
+            --userdir "${netbeans_default_userdir}" \
+            -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
+            ${netbeans_default_options} \
+            "$@"
+        ;;
+    *)
+        "$progdir"/../platform4/lib/nbexec \
+            $jdkhomeswitch \
+            --branding nb \
+            --clusters "$netbeans_clusters" \
+            --userdir "${netbeans_default_userdir}" \
+            -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
+            ${netbeans_default_options} \
+            "$@"
+        ;;
 esac
-
-eval "$progdir"/../platform4/lib/nbexec \
-    $jdkhomeswitch \
-    --branding nb \
-    --clusters "$netbeans_clusters" \
-    --userdir "${netbeans_default_userdir}" \
-    $osxappnameswitch \
-    -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
-    ${netbeans_default_options} \
-    "$@"

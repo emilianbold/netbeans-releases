@@ -77,10 +77,12 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
     <copy todir="${netbeans.dest.dir}">
       <fileset dir="release">
         <exclude name="netbeans.png"/>
+        <exclude name="netbeans.icns"/>
         <exclude name="shortcuts.pdf"/>
       </fileset>
     </copy>
     <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/netbeans.png"/>
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/netbeans.icns"/>
     <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/shortcuts.pdf"/>
   </target>
   
