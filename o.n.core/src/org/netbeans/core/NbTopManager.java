@@ -211,22 +211,28 @@ public abstract class NbTopManager {
         return defaultTopManager != null;
     }
     
-    private static synchronized NbTopManager getNbTopManager () {
-        if (defaultTopManager == null) {
-
-            String className = System.getProperty(
-                                   "org.openide.TopManager", // NOI18N
-                                   "org.netbeans.core.Plain" // NOI18N
-                               );
-
-            try {
-                Class c = Class.forName(className);
-                defaultTopManager = (NbTopManager)c.newInstance();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                throw new IllegalStateException();
+    private static NbTopManager getNbTopManager () {
+        boolean doInit = false;
+        synchronized(NbTopManager.class) {
+            if (defaultTopManager == null) {
+    
+                String className = System.getProperty(
+                                       "org.openide.TopManager", // NOI18N
+                                       "org.netbeans.core.Plain" // NOI18N
+                                   );
+    
+                try {
+                    Class c = Class.forName(className);
+                    defaultTopManager = (NbTopManager)c.newInstance();
+                    doInit = true;
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    throw new IllegalStateException();
+                }
+    
             }
-
+        }
+        if (doInit) {
             // late initialization of the manager if needed
             if (defaultTopManager instanceof Runnable) {
                 ((Runnable)defaultTopManager).run ();

@@ -274,7 +274,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../core/ide" target="netbeans"/>
   </target>
-  <target name="all-core/settings" depends="all-openide,all-openide/loaders">
+  <target name="all-core/settings" depends="all-openide,all-openide/loaders,all-core">
     <echo message="Building module core/settings..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">

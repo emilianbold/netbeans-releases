@@ -19,6 +19,7 @@ import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.LookupEvent;
+import org.netbeans.core.NbTopManager;
 
 /** Manager providing ModuleInfo of all modules presented in the system.
  * @author  Jan Pokorsky
@@ -58,7 +59,8 @@ final class ModuleInfoManager {
     private Lookup.Result getModulesResult() {
         synchronized (this) {
             if (modulesResult == null) {
-                modulesResult = Lookup.getDefault().
+                Lookup lookup = NbTopManager.get().getModuleSystem().getManager().getModuleLookup();
+                modulesResult = lookup.
                     lookup(new Lookup.Template(ModuleInfo.class));
                 modulesResult.addLookupListener(new LookupListener() {
                     public void resultChanged(LookupEvent ev) {
