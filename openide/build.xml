@@ -154,10 +154,15 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/openide/util/TaskListener$*.class"/>
     </jar>
   </target>
-  
-  <target name="jars" depends="libs,compile,13javac-workaround" description="Create JAR files.">
-    <mkdir dir="netbeans/lib"/>
+
+  <target name="vers-prep">
+    <property file="openide-spec-vers.properties"/>
+    <filter token="SPEC_VERS_SUBST" value="${org.openide.specification.version}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+  </target>
+  
+  <target name="jars" depends="libs,compile,13javac-workaround,vers-prep" description="Create JAR files.">
+    <mkdir dir="netbeans/lib"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/lib/openide.jar"
             manifest="manifest-subst.mf"
@@ -201,10 +206,8 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="libs" depends="lib-util,lib-fs,lib-nodes" />
   
-  <target name="lib-util" depends="compile,13javac-workaround">
+  <target name="lib-util" depends="compile,13javac-workaround,vers-prep">
 	<mkdir dir="netbeans/lib" />
-        
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="openide-util.mf" tofile="openide-util-subst.mf" filtering="on"/>
         
         <!-- include nearly whole org.openide.util, plus some important stuff around -->
@@ -248,10 +251,8 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
   </target>        
   
-  <target name="lib-fs" depends="compile,13javac-workaround">
+  <target name="lib-fs" depends="compile,13javac-workaround,vers-prep">
 	<mkdir dir="netbeans/lib" />
-        
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="openide-fs.mf" tofile="openide-fs-subst.mf" filtering="on"/>
         
   	<jar jarfile="netbeans/lib/openide-fs.jar"
@@ -268,10 +269,8 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
   </target>        
              	
-  <target name="lib-nodes" depends="compile,13javac-workaround">
+  <target name="lib-nodes" depends="compile,13javac-workaround,vers-prep">
 	<mkdir dir="netbeans/lib" />
-        
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="openide-nodes.mf" tofile="openide-nodes-subst.mf" filtering="on"/>
         
   	<jar jarfile="netbeans/lib/openide-nodes.jar"
