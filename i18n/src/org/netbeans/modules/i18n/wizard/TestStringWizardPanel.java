@@ -42,7 +42,7 @@ import javax.swing.JTextField;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
-import javax.swing.AbstractCellEditor;
+// import javax.swing.AbstractCellEditor; // Add back when supported jdk1.3 and higher.
 
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nString;
