@@ -708,6 +708,10 @@ public final class ModeImpl implements Comparable, Mode, FrameTypeListener, Comp
                 setBounds(rect);
             } else {
                 //Try to set normal bounds for JInternalFrame
+                //Bugfix #35322: We need to set mode bounds to some valid value
+                //to avoid set bounds from dockInto from not current workspace.
+                //As mode will be maximized correct bounds will be set to mode.
+                setBounds(rect);
                 final Rectangle rLocal = rect;
                 Mutex.EVENT.readAccess(new Runnable() {
                     public void run() {
