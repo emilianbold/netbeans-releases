@@ -63,10 +63,11 @@ Microsystems, Inc. All Rights Reserved.
         <h2>Content</h2>
         <ul>
             <xsl:for-each select="/apis/module" >
-                <li>
+            	<xsl:sort select="@name" />
                 <xsl:choose>
                     <xsl:when test="api" >
-                        <a href="#def-api-{@name}"><xsl:value-of select="@name"/></a> -
+                       <li>
+                           <a href="#def-api-{@name}"><xsl:value-of select="@name"/></a> -
                             <!-- XXX the following is crap; e.g. messes up descs of Dialogs API, I/O API, ... -->
                             <!-- Should use e.g.:
                             <answer id="arch-what">
@@ -75,17 +76,30 @@ Microsystems, Inc. All Rights Reserved.
                             </answer>
                             -->
                             <xsl:value-of select="substring-before(description, '.')" disable-output-escaping="yes"/>.
-                        
+                        </li>
                     </xsl:when>
                     <xsl:otherwise>
+                            <!-- will be covered later -->
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:for-each>
+            <xsl:for-each select="/apis/module" >
+                <xsl:sort select="api" order="descending" />
+            	<xsl:sort select="@name" />
+                <xsl:choose>
+                    <xsl:when test="api" >
+                            <!-- covered before -->
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <li>
                             <xsl:variable name="where" select="substring-before(@target, '/')"/>
                             <b><a href="{$where}/index.html"><xsl:value-of select="$where"/></a></b>
                             - no API description provided
                             (see <a href="http://openide.netbeans.org/tutorial/api.html">how to do it</a>)
+                        </li>
                     </xsl:otherwise>
                 </xsl:choose>
-                </li>
-            </xsl:for-each>
+             </xsl:for-each>
         </ul>
     </xsl:template>
 
