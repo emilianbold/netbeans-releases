@@ -143,9 +143,13 @@ class ComponentDragger
             if (metacomp != null) {
                 RADVisualContainer parentCont = metacomp.getParentContainer();
                 if (parentCont != targetMetaContainer)
-//                    layoutSupport.removeComponent(parentCont.getIndexOf(metacomp));
-//                else
                     parentCont.remove(metacomp);
+                if (newConstraints.get(i) == null) {
+                    LayoutConstraints originalConstr =
+                        metacomp.getLayoutConstraints(
+                            layoutSupport.getLayoutDelegate().getClass());
+                    newConstraints.set(i, originalConstr);
+                }
 
                 changedContainers.add(parentCont);
 //                metacomp.resetConstraintsProperties();
