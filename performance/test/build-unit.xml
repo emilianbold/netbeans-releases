@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 
     
     <!-- Imports defaults for Performance testing. -->
-    <import file="../performancetestutilities/build-performance-tests.xml"/>
+    <import file="../performancetestutilities/dist/build-performance-tests.xml"/>
 
     <!-- ========= -->
     <!-- Compilers -->

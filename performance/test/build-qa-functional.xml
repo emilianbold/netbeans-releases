@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 <project name="QA performance tests" basedir="." default="all">
 
     <!-- Imports defaults for Performance testing. -->
-    <import file="../performancetestutilities/build-performance-tests.xml"/>
+    <import file="../performancetestutilities/dist/build-performance-tests.xml"/>
     
     <!-- ==================== -->
     <!-- Setting command line -->
