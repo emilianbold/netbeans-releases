@@ -18,6 +18,7 @@ import java.beans.*;
 
 import org.netbeans.core.ui.SwingBrowser;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Swing HTML Browser support.
@@ -28,57 +29,6 @@ import org.openide.util.NbBundle;
  */
 public class SwingBrowserBeanInfo extends SimpleBeanInfo {
 
-
-    // Bean descriptor 
-    private static BeanDescriptor beanDescriptor = null /*lazy*/; 
-
-    private static BeanDescriptor getBdescriptor(){
-        if(beanDescriptor == null){
-            beanDescriptor = new BeanDescriptor  (SwingBrowser.class);
-            beanDescriptor.setDisplayName (NbBundle.getMessage (SwingBrowser.class, "CTL_SwingBrowser"));
-            beanDescriptor.setShortDescription (NbBundle.getMessage (SwingBrowser.class, "HINT_SwingBrowser"));
-        }
-        return beanDescriptor;
-    }
-
-    // Property array 
-    private static PropertyDescriptor[] properties = null /*lazy*/; 
-
-    private static PropertyDescriptor[] getPdescriptor(){
-        if(properties == null){
-            properties = new PropertyDescriptor[1];
-    
-            try {
-                properties[0] = new PropertyDescriptor ("name", SwingBrowser.class, "getName", null); // NOI18N
-            }
-            catch( IntrospectionException e) {}
-        }
-        return properties;
-    }
-
-    // EventSet array
-    private static EventSetDescriptor[] eventSets = null /*lazy*/; 
-
-    private static EventSetDescriptor[] getEdescriptor(){
-        if(eventSets == null){
-            eventSets = new EventSetDescriptor[1];
-    
-            try {
-                eventSets[0] = new EventSetDescriptor (
-                    SwingBrowser.class, 
-                    "propertyChangeListener", // NOI18N
-                    PropertyChangeListener.class, 
-                    new String[] {"propertyChange"}, // NOI18N
-                    "addPropertyChangeListener", // NOI18N
-                    "removePropertyChangeListener" // NOI18N
-                );   // NOI18N
-            }
-            catch( IntrospectionException e) {}
-        }
-        return eventSets;
-    }
-
-
     /**
      * Gets the bean's <code>BeanDescriptor</code>s.
      * 
@@ -87,8 +37,10 @@ public class SwingBrowserBeanInfo extends SimpleBeanInfo {
      * information should be obtained by automatic analysis.
      */
     public BeanDescriptor getBeanDescriptor() {
-	//return beanDescriptor;
-	return getBdescriptor();
+        BeanDescriptor beanDescriptor = new BeanDescriptor  (SwingBrowser.class);
+        beanDescriptor.setDisplayName (NbBundle.getMessage (SwingBrowser.class, "CTL_SwingBrowser"));
+        beanDescriptor.setShortDescription (NbBundle.getMessage (SwingBrowser.class, "HINT_SwingBrowser"));
+        return beanDescriptor;
     }
 
     /**
@@ -104,8 +56,13 @@ public class SwingBrowserBeanInfo extends SimpleBeanInfo {
      * if a given PropertyDescriptor is an IndexedPropertyDescriptor.
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
-        //return properties;
-	return getPdescriptor();
+        try {
+            return new PropertyDescriptor[] {
+                new PropertyDescriptor ("name", SwingBrowser.class, "getName", null) // NOI18N
+            };
+        } catch( IntrospectionException e) {
+            return null;
+        }
     }
 
     /**
@@ -116,15 +73,26 @@ public class SwingBrowserBeanInfo extends SimpleBeanInfo {
      * should be obtained by automatic analysis.
      */
     public EventSetDescriptor[] getEventSetDescriptors() {
-        //return eventSets;
-	return getEdescriptor();
+        try {
+            return new EventSetDescriptor[] {
+                new EventSetDescriptor (SwingBrowser.class, 
+                        "propertyChangeListener", // NOI18N
+                        PropertyChangeListener.class, 
+                        new String[] {"propertyChange"}, // NOI18N
+                        "addPropertyChangeListener", // NOI18N
+                        "removePropertyChangeListener" // NOI18N
+                )   // NOI18N
+            };
+        }
+        catch( IntrospectionException e) {
+            return null;
+        }
     }
 
     /**
     * Returns the internal browser icon. 
     */
     public Image getIcon (int type) {
-        return loadImage("/org/openide/resources/html/htmlView.gif"); // NOI18N
+        return Utilities.loadImage("/org/openide/resources/html/htmlView.gif"); // NOI18N
     }
 }
-
