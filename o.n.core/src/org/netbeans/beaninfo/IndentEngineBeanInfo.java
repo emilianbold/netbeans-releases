@@ -21,27 +21,22 @@ import java.util.ResourceBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.text.IndentEngine;
+import org.openide.util.Utilities;
 
 /** Object that provides beaninfo for all indentation engines.
 *
 * @author Jaroslav Tulach
 */
 public class IndentEngineBeanInfo extends SimpleBeanInfo {
-    private static BeanDescriptor descr;
-    private static Image icon;
-    private static Image icon32;
 
-    static {
-        descr = new BeanDescriptor (org.openide.text.IndentEngine.class);
+    public BeanDescriptor getBeanDescriptor () {
+        BeanDescriptor descr = new BeanDescriptor (org.openide.text.IndentEngine.class);
         ResourceBundle bundle = NbBundle.getBundle(IndentEngineBeanInfo.class);
         descr.setDisplayName (bundle.getString ("LAB_IndentEngine")); // NOI18N
         descr.setShortDescription (bundle.getString ("HINT_IndentEngine")); // NOI18N
         descr.setValue ("helpID", "editing.indentation"); // NOI18N
-        
         descr.setValue("global", Boolean.TRUE); // NOI18N
-    }
-
-    public BeanDescriptor getBeanDescriptor () {
+        
         return descr;
     }
 
@@ -55,33 +50,13 @@ public class IndentEngineBeanInfo extends SimpleBeanInfo {
         }
     }
 
-    /* Provides the JarFileSystem's icon */
+    /**
+    * Return the icon
+    */
     public Image getIcon(int type) {
-        if (icon == null) {
-            icon = loadImage("/org/netbeans/core/resources/indentEngines.gif"); // NOI18N
-            icon32 = loadImage("/org/netbeans/core/resources/indentEngines32.gif"); // NOI18N
-        }
-
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
-            return icon;
+            return Utilities.loadImage("/org/netbeans/core/resources/indentEngines.gif"); // NOI18N
         else
-            return icon32;
+            return Utilities.loadImage("/org/netbeans/core/resources/indentEngines.gif"); // NOI18N
     }
-
 }
-
-
-/*
- * Log
- *  5    Gandalf   1.4         1/13/00  Jaroslav Tulach I18N
- *  4    Gandalf   1.3         11/5/99  Jesse Glick     Context help jumbo 
- *       patch.
- *  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  2    Gandalf   1.1         10/1/99  Jesse Glick     Cleanup of service type 
- *       name presentation.
- *  1    Gandalf   1.0         9/10/99  Jaroslav Tulach 
- * $
- * Beta Change History:
- *  0    Tuborg    0.11        --/--/98 Jaroslav Tulach added hidden property
- */
