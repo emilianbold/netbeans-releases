@@ -22,14 +22,16 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="Web/Import" boolvalue="true"/>
 
             <folder name="Web">
-            <!-- Add template for the J2SE project -->
-            <file name="emptyWeb.xml">
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.project.ui.wizards.NewWebProjectWizardIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.wizards.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/emptyProject.html"/>
-            </file>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/web.html"/>
+                <!-- Add template for the J2SE project -->
+                <file name="emptyWeb.xml">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.project.ui.wizards.NewWebProjectWizardIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/emptyProject.html"/>
+                </file>
             </folder>
             <folder name="Import">
             <file name="importWeb.xml">
