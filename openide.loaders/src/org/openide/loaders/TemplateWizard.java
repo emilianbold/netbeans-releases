@@ -172,8 +172,7 @@ public class TemplateWizard extends WizardDescriptor {
         if (template != obj) {
             template = obj;
         }
-        setTitle(NbBundle.getMessage(TemplateWizard.class, "CTL_TemplateTitle2",
-        	obj.getNodeDelegate().getDisplayName()));
+
         if (old != template) {
             Iterator it;
             if (
