@@ -13,9 +13,16 @@
 
 package com.netbeans.enterprise.modules.db;
 
-import java.io.*;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+
+import org.openide.*;
+import org.openide.filesystems.*;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.InstanceDataObject;
 import org.openide.modules.*;
 import org.openide.TopManager;
+import org.openide.util.NbBundle;
 
 /**
 * DB module.
@@ -23,13 +30,38 @@ import org.openide.TopManager;
 */
 public class DatabaseModule extends Object implements ModuleInstall 
 {
-	public void installed() {
+	private ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
+	
+	public void installed() 
+	{
+		TopManager tm = TopManager.getDefault();
+   		System.out.println("Installing database module");
+		
+		try {
+			FileSystem rfs = tm.getRepository().getDefaultFileSystem();
+    		FileObject rootFolder = rfs.getRoot();
+    		FileObject databaseFileObject = rootFolder.getFileObject("Database");
+    		System.out.println("databaseFileObject = "+databaseFileObject);
+    		if (databaseFileObject == null) {
+    			databaseFileObject = rootFolder.createFolder("Database");
+    			FileObject adaptorsFileObject = databaseFileObject.createFolder("Adaptors");
+	    		System.out.println("adaptorsFileObject created = "+adaptorsFileObject);
+    			InstanceDataObject.create(DataFolder.findFolder(adaptorsFileObject), "DefaultAdaptor", com.netbeans.ddl.adaptors.DefaultAdaptor.class);
+    	    }
+		} catch (LinkageError ex) {
+			String msg = MessageFormat.format(bundle.getString("FMT_CLASSNOTFOUND"), new String[] {ex.getMessage()});
+			if (tm != null) tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+		} catch (Exception ex) {
+			String msg = MessageFormat.format(bundle.getString("FMT_EXCEPTIONINSTALL"), new String[] {ex.getMessage()});
+			if (tm != null) tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+		}
 	}
 
 	public void restored() {
 	}
 
 	public void uninstalled() {
+   		System.out.println("Uninstalling database module");
 	}
 
 	public boolean closing() {
@@ -39,6 +71,8 @@ public class DatabaseModule extends Object implements ModuleInstall
 
 /*
 * <<Log>>
+*  5    Gandalf   1.4         9/27/99  Slavek Psenicka new Database/Adaptors 
+*       folder
 *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
 *  3    Gandalf   1.2         5/21/99  Slavek Psenicka new version
