@@ -201,6 +201,14 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   * @return true if the form was correcly loaded, false if any error occured 
   */
   protected boolean loadForm () {
+    return loadFormInternal (null);
+  }
+
+  /** Loads the DesignForm from the .form file. 
+  * @param formTopComponent the top component that the formManager should be initialized with - used during deserialization of workspaces
+  * @return true if the form was correcly loaded, false if any error occured 
+  */
+  protected boolean loadFormInternal (FormTopComponent formTopComponent) {
     PersistenceManager loadManager = null;
     for (Iterator it = PersistenceManager.getManagers (); it.hasNext (); ) {
       PersistenceManager man = (PersistenceManager)it.next ();
@@ -240,6 +248,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       if (formManager == null) {
         return false;
         // [PENDING] - solve the failure
+      }
+      if (formTopComponent != null) {
+        formManager.initFormTopComponent (formTopComponent);
       }
       formManager.initialize ();
       
@@ -327,6 +338,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  28   Gandalf   1.27        8/6/99   Ian Formanek    loadFormInternal
  *  27   Gandalf   1.26        8/1/99   Ian Formanek    Fixed potential problem 
  *       with closing forms which were not loaded
  *  26   Gandalf   1.25        7/27/99  Ian Formanek    Fixed bug 2638 - Undo in
