@@ -227,7 +227,9 @@ static final long serialVersionUID =6829522922370124627L;
   public void edit () {
     String urlString = getURLString ();
     if (urlString == null) return;
-    NotifyDescriptor.InputLine urlLine = new NotifyDescriptor.InputLine ("URL:", "Edit URL");
+    NotifyDescriptor.InputLine urlLine = new NotifyDescriptor.InputLine (
+      NbBundle.getBundle (URLDataObject.class).getString("CTL_URL") , 
+      NbBundle.getBundle (URLDataObject.class).getString("CTL_EditURL")); 
     urlLine.setInputText (urlString);
     TopManager.getDefault ().notify (urlLine);
     if (urlLine.getValue () == NotifyDescriptor.OK_OPTION) 
@@ -264,6 +266,7 @@ static final long serialVersionUID =6829522922370124627L;
 
 /*
  * Log
+ *  16   Gandalf   1.15        1/12/00  Ian Formanek    I18N
  *  15   Gandalf   1.14        1/5/00   Ian Formanek    NOI18N
  *  14   Gandalf   1.13        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
