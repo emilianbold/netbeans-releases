@@ -21,6 +21,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.StringTokenizer;
 import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -43,6 +46,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
@@ -113,16 +117,46 @@ public class PhysicalView {
         return nodes;
     }
    
+    static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
         
+        EventListenerList ell = new EventListenerList();        
+        
+        public VisibilityQueryDataFilter() {
+            VisibilityQuery.getDefault().addChangeListener( this );
+        }
+                
+        public boolean acceptDataObject(DataObject obj) {                
+            FileObject fo = obj.getPrimaryFile();                
+            return VisibilityQuery.getDefault().isVisible( fo );
+        }
+        
+        public void stateChanged( ChangeEvent e) {            
+            Object[] listeners = ell.getListenerList();     
+            ChangeEvent event = null;
+            for (int i = listeners.length-2; i>=0; i-=2) {
+                if (listeners[i] == ChangeListener.class) {             
+                    if ( event == null) {
+                        event = new ChangeEvent( this );
+                    }
+                    ((ChangeListener)listeners[i+1]).stateChanged( event );
+                }
+            }
+        }        
+    
+        public void addChangeListener( ChangeListener listener ) {
+            ell.add( ChangeListener.class, listener );
+        }        
+                        
+        public void removeChangeListener( ChangeListener listener ) {
+            ell.remove( ChangeListener.class, listener );
+        }
+        
+    }
+    
     static final class GroupNode extends FilterNode implements PropertyChangeListener {
         
-        private static final DataFilter VISIBILITY_QUERY_FILTER = new DataFilter() {
-            public boolean acceptDataObject(DataObject obj) {                
-                FileObject fo = obj.getPrimaryFile();                
-                return  VisibilityQuery.getDefault().isVisible( fo );
-            }
-        };
-
+        private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
+        
         static final String GROUP_NAME_PATTERN = NbBundle.getMessage(
             PhysicalView.class, "FMT_PhysicalView_GroupName" ); // NOI18N
 

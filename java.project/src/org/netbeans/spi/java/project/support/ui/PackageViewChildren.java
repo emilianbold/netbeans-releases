@@ -29,6 +29,9 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.ErrorManager;
@@ -40,6 +43,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -353,12 +357,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         private static final boolean TRUNCATE_PACKAGE_NAMES =
             Boolean.getBoolean("org.netbeans.spi.java.project.support.ui.packageView.TRUNCATE_PACKAGE_NAMES"); // NOI18N
 
-        private static final DataFilter NO_FOLDERS_FILTER = new DataFilter() {
-            public boolean acceptDataObject(DataObject obj) {                
-                FileObject fo = obj.getPrimaryFile();                
-                return  VisibilityQuery.getDefault().isVisible( fo ) && !(obj instanceof DataFolder);
-            }
-        };
+        private static final DataFilter NO_FOLDERS_FILTER = new NoFoldersDataFilter();
         
         private static final Image PACKAGE = Utilities.loadImage("org/netbeans/spi/java/project/support/ui/package.gif"); // NOI18N
         private static final Image PACKAGE_EMPTY = Utilities.loadImage("org/netbeans/spi/java/project/support/ui/packageEmpty.gif"); // NOI18N
@@ -526,5 +525,40 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         
     }
     
+    static final class NoFoldersDataFilter implements ChangeListener, ChangeableDataFilter {
+        
+        EventListenerList ell = new EventListenerList();        
+        
+        public NoFoldersDataFilter() {
+            VisibilityQuery.getDefault().addChangeListener( this );
+        }
+                
+        public boolean acceptDataObject(DataObject obj) {                
+            FileObject fo = obj.getPrimaryFile();                
+            return  VisibilityQuery.getDefault().isVisible( fo ) && !(obj instanceof DataFolder);
+        }
+        
+        public void stateChanged( ChangeEvent e) {            
+            Object[] listeners = ell.getListenerList();     
+            ChangeEvent event = null;
+            for (int i = listeners.length-2; i>=0; i-=2) {
+                if (listeners[i] == ChangeListener.class) {             
+                    if ( event == null) {
+                        event = new ChangeEvent( this );
+                    }
+                    ((ChangeListener)listeners[i+1]).stateChanged( event );
+                }
+            }
+        }        
+    
+        public void addChangeListener( ChangeListener listener ) {
+            ell.add( ChangeListener.class, listener );
+        }        
+                        
+        public void removeChangeListener( ChangeListener listener ) {
+            ell.remove( ChangeListener.class, listener );
+        }
+        
+    }
     
 }
