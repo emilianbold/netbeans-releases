@@ -69,17 +69,15 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         FileObject guessFO;
         String webPages = ""; //NOI18N
         String libraries = ""; //NOI18N
-        File javaRoot = null;
+        File javaRoots [] = null;
         
-        guessFO = guessDocBase(fo);
+        guessFO = FileSearchUtility.guessDocBase(fo);
         if (guessFO != null)
             webPages = FileUtil.toFile(guessFO).getPath();
-        guessFO = guessLibrariesFolder(fo);
+        guessFO = FileSearchUtility.guessLibrariesFolder(fo);
         if (guessFO != null)
             libraries = FileUtil.toFile(guessFO).getPath();
-        guessFO = guessJavaRoot(fo);
-        if (guessFO != null)
-            javaRoot = FileUtil.toFile(guessFO);
+        javaRoots = FileSearchUtility.guessJavaRootsAsFiles(fo);
         
         //set the locations only if they weren't set before
         if (jTextFieldWebPages.getText().trim().equals(""))
@@ -87,99 +85,10 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         if (jTextFieldLibraries.getText().trim().equals(""))
             jTextFieldLibraries.setText(libraries);
         
-        if (((FolderList) this.sourcePanel).getFiles().length == 0 && javaRoot != null)
-            ((FolderList) this.sourcePanel).setFiles(new File[] {javaRoot});
+        if (((FolderList) this.sourcePanel).getFiles().length == 0 && javaRoots.length > 0)
+            ((FolderList) this.sourcePanel).setFiles(javaRoots);
     }
-    
-    private FileObject guessDocBase (FileObject dir) {
-        Enumeration ch = dir.getChildren (true);
-        while (ch.hasMoreElements ()) {
-            FileObject f = (FileObject) ch.nextElement ();
-            if (f.isFolder () && f.getName ().equals ("WEB-INF")) {
-                final FileObject webXmlFO = f.getFileObject ("web.xml");
-                if (webXmlFO != null && webXmlFO.isData()) {
-                    return f.getParent();
-                }
-            }
-        }
-        return null;
-    }
-    
-    private FileObject guessLibrariesFolder (FileObject dir) {
-        FileObject docBase = guessDocBase (dir);
-        if (docBase != null) {
-            FileObject lib = docBase.getFileObject ("WEB-INF/lib"); //NOI18N
-            if (lib != null) {
-                return lib;
-            }
-        }
-        Enumeration ch = dir.getChildren (true);
-        while (ch.hasMoreElements ()) {
-            FileObject f = (FileObject) ch.nextElement ();
-            if (f.getExt ().equals ("jar")) { //NOI18N
-                return f.getParent ();
-            }
-        }
-        return null;
-    }
-    
-    private FileObject guessJavaRoot (FileObject dir) {
-        Enumeration ch = dir.getChildren (true);
-        try {
-            while (ch.hasMoreElements ()) {
-                FileObject f = (FileObject) ch.nextElement ();
-                if (f.getExt ().equals ("java")) { //NOI18N
-                    String pckg = guessPackageName (f);
-                    String pkgPath = f.getParent ().getPath (); 
-                    if (pckg != null && pkgPath.endsWith (pckg.replace ('.', '/'))) {
-                        String rootName = pkgPath.substring (0, pkgPath.length () - pckg.length ());
-                        return f.getFileSystem ().findResource (rootName);
-                    }
-                }
-            }
-        } catch (FileStateInvalidException fsie) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, fsie);
-        }
-        FileObject docBase = guessDocBase (dir);
-        if (docBase != null) {
-            FileObject classes = docBase.getFileObject ("WEB-INF/classes"); //NOI18N
-            if (classes != null) {
-                return classes;
-            }
-        }
-        return null;
-    }
-    
-    private String guessPackageName (FileObject f) {
-        java.io.Reader r = null;
-        try {
-            r = new BufferedReader (new InputStreamReader (f.getInputStream (), "utf-8")); // NOI18N
-            StringBuffer sb = new StringBuffer ();
-            final char[] BUFFER = new char[4096];
-            int len;
-
-            for (;;) {
-                len = r.read (BUFFER);
-                if (len == -1) break;
-                sb.append (BUFFER, 0, len);
-            }
-            int idx = sb.indexOf ("package"); // NOI18N
-            if (idx >= 0) {
-                int idx2 = sb.indexOf (";", idx);  // NOI18N
-                if (idx2 >= 0) {
-                    return sb.substring (idx + "package".length (), idx2).trim ();
-                }
-            }
-        } catch (java.io.IOException ioe) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
-        } finally {
-            try { if (r != null) r.close (); } catch (java.io.IOException ioe) { // ignore this 
-            }
-        }
-        // AB: fix for #56167: assume the class in the default package
-        return "";
-    }
-    
+        
     public void propertyChange(PropertyChangeEvent evt) {
         if (FolderList.PROP_FILES.equals(evt.getPropertyName())) {
             this.dataChanged();

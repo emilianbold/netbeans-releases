@@ -643,7 +643,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                 }
 
                 if (fo != null && !locationComputed)
-                    if (!containsWebInf(fo) && !locationModified)
+                    if (!FileSearchUtility.containsWebInf(fo) && !locationModified)
                         projectLocationTextField.setText(moduleFolder);
                     else
                         computeLocation();
@@ -674,16 +674,6 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         folder.append(projectNameTextField.getText().trim());
         projectLocationTextField.setText(folder.toString());
         locationComputed = true;
-    }
-    
-    private boolean containsWebInf(FileObject dir) {
-        FileObject[] ch = dir.getChildren();
-        for (int i = 0; i < ch.length; i++)
-            if (ch[i].isFolder())
-                if (ch[i].getName().equals("WEB-INF")) //NOI18N
-                    return true;
-    
-        return false;
     }
     
     /** Help context where to find more about the paste type action.

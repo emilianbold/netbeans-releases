@@ -109,7 +109,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         FileObject docBase;
         FileObject libFolder;
         if (docBaseName == null || docBaseName.equals("")) //NOI18N
-            docBase = guessDocBase(wmFO);
+            docBase = FileSearchUtility.guessDocBase(wmFO);
         else {
             File f = new File(docBaseName);
             docBase = FileUtil.toFileObject(f);
@@ -121,7 +121,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 //            javaRoot = FileUtil.toFileObject(f);
 //        }
         if (libName == null || libName.equals("")) //NOI18N
-            libFolder = guessLibrariesFolder(wmFO);
+            libFolder = FileSearchUtility.guessLibrariesFolder(wmFO);
         else {
             File f = new File(libName);
             libFolder = FileUtil.toFileObject(f);
@@ -230,94 +230,6 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
 
-    private FileObject guessDocBase (FileObject dir) {
-        Enumeration ch = dir.getChildren (true);
-        while (ch.hasMoreElements ()) {
-            FileObject f = (FileObject) ch.nextElement ();
-            if (f.isFolder () && f.getName ().equals ("WEB-INF")) {
-                final FileObject webXmlFO = f.getFileObject ("web.xml");
-                if (webXmlFO != null && webXmlFO.isData()) {
-                    return f.getParent();
-                }
-            }
-        }
-        return null;
-    }
-    
-    private FileObject guessLibrariesFolder (FileObject dir) {
-        FileObject docBase = guessDocBase (dir);
-        if (docBase != null) {
-            FileObject lib = docBase.getFileObject ("WEB-INF/lib"); //NOI18N
-            if (lib != null) {
-                return lib;
-            }
-        }
-        Enumeration ch = dir.getChildren (true);
-        while (ch.hasMoreElements ()) {
-            FileObject f = (FileObject) ch.nextElement ();
-            if (f.getExt ().equals ("jar")) { //NOI18N
-                return f.getParent ();
-            }
-        }
-        return null;
-    }
-    
-    private FileObject guessJavaRoot (FileObject dir) {
-        Enumeration ch = dir.getChildren (true);
-        try {
-            while (ch.hasMoreElements ()) {
-                FileObject f = (FileObject) ch.nextElement ();
-                if (f.getExt ().equals ("java")) { //NOI18N
-                    String pckg = guessPackageName (f);
-                    String pkgPath = f.getParent ().getPath (); 
-                    if (pckg != null && pkgPath.endsWith (pckg.replace ('.', '/'))) {
-                        String rootName = pkgPath.substring (0, pkgPath.length () - pckg.length ());
-                        return f.getFileSystem ().findResource (rootName);
-                    }
-                }
-            }
-        } catch (FileStateInvalidException fsie) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, fsie);
-        }
-        FileObject docBase = guessDocBase (dir);
-        if (docBase != null) {
-            FileObject classes = docBase.getFileObject ("WEB-INF/classes"); //NOI18N
-            if (classes != null) {
-                return classes;
-            }
-        }
-        return null;
-    }
-    
-    private String guessPackageName (FileObject f) {
-        java.io.Reader r = null;
-        try {
-            r = new BufferedReader (new InputStreamReader (f.getInputStream (), "utf-8")); // NOI18N
-            StringBuffer sb = new StringBuffer ();
-            final char[] BUFFER = new char[4096];
-            int len;
-
-            for (;;) {
-                len = r.read (BUFFER);
-                if (len == -1) break;
-                sb.append (BUFFER, 0, len);
-            }
-            int idx = sb.indexOf ("package"); // NOI18N
-            if (idx >= 0) {
-                int idx2 = sb.indexOf (";", idx);  // NOI18N
-                if (idx2 >= 0) {
-                    return sb.substring (idx + "package".length (), idx2).trim ();
-                }
-            }
-        } catch (java.io.IOException ioe) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
-        } finally {
-            try { if (r != null) r.close (); } catch (java.io.IOException ioe) { // ignore this 
-            }
-        }
-        return null;
-    }
-    
     public final class ThePanel implements WizardDescriptor.ValidatingPanel {
 
         private ImportLocationVisual panel;
@@ -382,14 +294,6 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             moduleLoc = panel.moduleLocationTextField.getText().trim();
         }
 
-        //use it as a project root iff it is not sources or document root
-        public boolean isSuitableProjectRoot (FileObject dir) {
-            FileObject docRoot = guessDocBase (dir);
-            FileObject srcRoot = guessJavaRoot (dir);
-            return (docRoot == null || FileUtil.isParentOf (dir, docRoot))
-                && (srcRoot == null || FileUtil.isParentOf (dir, srcRoot));
-        }
-    
         public void validate() throws WizardValidationException {
             File dirF = new File(panel.projectLocationTextField.getText());
             if (!new File(dirF, GeneratedFilesHelper.BUILD_XML_PATH).exists()) {
