@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -582,7 +582,7 @@ class JavaCodeGenerator extends CodeGenerator {
     private void regenerateVariables() {
         if (!initialized || !canGenerate)
             return;
-        
+
         IndentEngine indentEngine = IndentEngine.find(
             formModel.getFormEditorSupport().getDocument());
 
@@ -671,7 +671,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 initCodeWriter.write("\n"); // NOI18N
             }
 
-            // hack for properties that can't be set until all children 
+            // hack for properties that can't be set until all children
             // are added to the container
             List postProps;
             if (containerDependentProperties != null
@@ -776,7 +776,7 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(preCode);
             initCodeWriter.write("\n"); // NOI18N
         }
-        if (!comp.hasHiddenState() 
+        if (!comp.hasHiddenState()
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType))) {
             // not serialized
             RADProperty[] props = comp.getAllBeanProperties();
@@ -1078,7 +1078,7 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(varName);
             initCodeWriter.write(".printStackTrace();\n"); // NOI18N
             initCodeWriter.write("}"); // NOI18N
-                        
+
         }
         initCodeWriter.write("\n"); // NOI18N
     }
@@ -1124,7 +1124,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 sec.setBottom(buffer.getBuffer().substring(i2));
 
                 codeWriter.close();
-            } 
+            }
             catch (javax.swing.text.BadLocationException e) {
                 return false;
             }
@@ -1282,7 +1282,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 sec.setName(getEventSectionName(newHandlerName));
 
                 codeWriter.close();
-            } 
+            }
             catch (java.beans.PropertyVetoException e) {
                 return false;
             }
@@ -1303,7 +1303,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    /** 
+    /**
      * Returns whether the specified event handler is empty (with no user
      * code). Empty handlers can be deleted without user confirmation.
      * @return true if the event handler exists and is empty
@@ -1509,7 +1509,9 @@ class JavaCodeGenerator extends CodeGenerator {
             }
             while (c != '\n' && i < codeLength);
 
-            if (code.charAt(lineStart) == '\n') { // the line is empty
+            if ((i-1 == lineStart && code.charAt(lineStart) == '\n')
+                || (i-2 == lineStart && code.charAt(lineStart) == '\r')) {
+                // the line is empty
                 if (!lastLineEmpty) {
                     buffer.append("\n");
                     lastLineEmpty = true;
@@ -1540,9 +1542,16 @@ class JavaCodeGenerator extends CodeGenerator {
             }
 
             // calculate line end
-            if (endingSpace < 0)
-                lineEnd = c == '\n' ? i-1 : i;
-            else
+            if (endingSpace < 0) {
+                if (c == '\n')
+                    if (code.charAt(i-2) == '\r')
+                        lineEnd = i-2; // \r\n at the end of the line
+                    else
+                        lineEnd = i-1; // \n at the end of the line
+                else
+                    lineEnd = i; // end of whole code string
+            }
+            else // skip spaces at the end of the line
                 lineEnd = endingSpace;
 
             // write the line
