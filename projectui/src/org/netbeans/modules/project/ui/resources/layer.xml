@@ -515,11 +515,18 @@ Microsystems, Inc. All Rights Reserved.
         <file name="S-F6.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
 	</file>
-              
-        <!-- XXX Conflicts with XSLT transformation -->         
+                     
         <file name="A-F6.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
 	</file> 
+        
+        <file name="S-F6.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+	</file>
+        
+        <file name="CS-F5.shadow">
+            <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugSingle.instance"/>
+	</file>
         
         <file name="C-F6.shadow">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestSingle.instance"/>
