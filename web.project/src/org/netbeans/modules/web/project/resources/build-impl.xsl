@@ -512,12 +512,13 @@ is divided into following sections:
                 </xsl:variable>
 
                 <target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
+                    <property name="config_target" location="${{web.docbase.dir}}/WEB-INF/wsdl"/>
                     <copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
                         tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
                         <filterset>
                             <!-- replace token with reference to WSDL file in source tree, not build tree, since the
                                  the file probably has not have been copied to the build tree yet. -->
-                            <filter token="CONFIG_ABSOLUTE_PATH" value="${{basedir}}/${{web.docbase.dir}}/WEB-INF/wsdl"/>
+                            <filter token="CONFIG_ABSOLUTE_PATH" value="${{config_target}}"/>
                         </filterset>
                     </copy>
                     <wscompile
@@ -539,17 +540,17 @@ is divided into following sections:
             </target>
 
             <target name="-pre-compile">
-				<xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
-					<xsl:attribute name="depends">
-						<xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
-							<xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-							<xsl:variable name="wsname2">
-								<xsl:value-of select="webproject2:web-service-client-name"/>
-							</xsl:variable>
-							<xsl:value-of select="webproject2:web-service-client-name"/><xsl:text>_client_wscompile</xsl:text>
-						</xsl:for-each>
-					</xsl:attribute>
-				</xsl:if>
+                <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
+                    <xsl:attribute name="depends">
+                        <xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
+                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                            <xsl:variable name="wsname2">
+                                <xsl:value-of select="webproject2:web-service-client-name"/>
+                            </xsl:variable>
+                            <xsl:value-of select="webproject2:web-service-client-name"/><xsl:text>_client_wscompile</xsl:text>
+                        </xsl:for-each>
+                    </xsl:attribute>
+                </xsl:if>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
