@@ -45,8 +45,8 @@ and double-click the index.jsp node. The JSP file opens in the Source Editor. </
  
  <li>To make the JSP page display the retrieved data in a table, replace the
  content between the default <tt>&lt;body&gt;</tt> tags by pasting or typing
- the following code into the body: </li>
-<pre>           &lt;table border=1&gt;
+ the following code into the body:
+<blockquote> <pre>           &lt;table border=1&gt;
 	     &lt;tr&gt;
 		&lt;th&gt;First&lt;/th&gt;&lt;th&gt;Last&lt;/th&gt;
 	     &lt;/tr&gt;
@@ -56,7 +56,7 @@ and double-click the index.jsp node. The JSP file opens in the Source Editor. </
 		    &lt;td&gt;&lt;c:out value="${row.l_name}" /&gt;&lt;/td&gt;
 		&lt;/tr&gt;
 	     &lt;/c:forEach&gt;
-	   &lt;/table&gt;</pre>
+	   &lt;/table&gt;</pre></blockquote>
 </li>
 <li>Modify the JSP file to enable the selection of database records. 
 Make sure to specify the same JNDI name as specified in the data source above. 
