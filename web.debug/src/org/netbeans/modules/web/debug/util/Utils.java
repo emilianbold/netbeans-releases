@@ -16,6 +16,7 @@ package org.netbeans.modules.web.debug.util;
 import java.util.*;
 
 import java.io.*;
+import java.net.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
@@ -30,20 +31,18 @@ import org.openide.windows.TopComponent;
 
 import org.openide.filesystems.Repository;
 
-//import org.netbeans.modules.web.core.jsploader.*;
 import org.netbeans.modules.web.debug.Context;
 
 import org.netbeans.modules.web.api.webmodule.*;
 import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
+
 import org.netbeans.api.project.*;
 
-import java.net.*;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 
-import java.net.*;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 
 /**
  *
@@ -133,10 +132,13 @@ public class Utils {
                 }
             }
         }
-        return url.toString();
+        return (url == null) ? null : url.toString();
     }
     
     public static String getServletClass(String jspUrl) {
+        if (jspUrl == null) {
+            return null;
+        }
         URI jspUri = URI.create(jspUrl);
 
 
