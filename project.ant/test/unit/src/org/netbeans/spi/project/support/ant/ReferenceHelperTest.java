@@ -153,7 +153,7 @@ public class ReferenceHelperTest extends NbTestCase {
         // query which says that these two files are collocated. Hidden it
         // similarly as it is done for SampleCVSCollocationQueryImpl
         // in META-INF/services.
-        assertFalse("projdir and separate cannot be collocated",
+        assertFalse("" + projdir + " and " + sepprojdir + " cannot be collocated",
             CollocationQuery.areCollocated(FileUtil.toFile(projdir), FileUtil.toFile(sepprojdir)));
         seph = ProjectGenerator.createProject(sepprojdir, "test");
         setCodeNameOfTestProject(seph, "proj3");
