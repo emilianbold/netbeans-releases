@@ -684,10 +684,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <arch answers="arch/arch-openide-editor.xml" output="javadoc/OpenAPIs/arch/openide-editor.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
     <arch answers="arch/arch-openide-propertysheet.xml" output="javadoc/OpenAPIs/arch/openide-propertysheet.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
     <replace dir="javadoc/OpenAPIs">
-      <include name="**/doc-files/*.html"/>
-      <include name="**/package-summary.html"/>
-      <include name="apichanges.html"/>
-      <include name="arch/*.html"/>
+      <include name="**/*.html"/>
       <replacefilter token="@JDK@" value="${jdk-docs-location}"/>
       <replacefilter token="@OPENIDE/EXECUTION@" value="${execution-docs-location}"/>
       <replacefilter token="@OPENIDE/IO@" value="${io-docs-location}"/>

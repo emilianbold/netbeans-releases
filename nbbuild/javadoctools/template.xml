@@ -152,10 +152,7 @@ cause it to fail.
     
     <target name="javadoc-stage-replace" depends="javadoc-stage-main,javadoc-stage-apichanges,javadoc-stage-arch" unless="javadoc.up.to.date">
         <replace dir="${javadoc.out.dir}">
-            <include name="**/doc-files/*.html"/>
-            <include name="**/package-summary.html"/>
-            <include name="apichanges.html"/>
-            <include name="architecture-summary.html"/>
+            <include name="**/*.html"/>
             <replacefilter token="@JDK@" value="${javadoc.docs.jdk}"/>
             <replacefilter token="@OPENIDE@" value="${javadoc.docs.openide}"/>
             <replacefilter token="@OPENIDE/IO@" value="${javadoc.docs.openide/io}"/>
