@@ -76,10 +76,11 @@ public class PlatformUiSupport {
      * @param sourceLevel source level
      */
     public static void storePlatform (EditableProperties props, UpdateHelper helper, String platformDisplayName, SpecificationVersion sourceLevel) {
-        JavaPlatform platform = getPlatform(platformDisplayName);
-        String platformAntName = (String) platform.getProperties().get("platform.ant.name");    //NOI18N        
+        JavaPlatform platform = getPlatform(platformDisplayName);                
         //null means active broken (unresolved) platform, no need to do anything
-        if (platformAntName != null) {
+        if (platform != null) {
+            String platformAntName = (String) platform.getProperties().get("platform.ant.name");    //NOI18N        
+            assert platformAntName != null;
             props.put(J2SEProjectProperties.JAVA_PLATFORM, platformAntName);
             Element root = helper.getPrimaryConfigurationData(true);
             boolean defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName().equals(platformDisplayName);        
