@@ -1,16 +1,7 @@
 package golden;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbTestCase;
-
-import java.io.PrintWriter;
-import java.io.File;
-import java.io.IOException;
-import java.util.StringTokenizer;
-import java.io.FileOutputStream;
 
 /** Example of golden file approach.
  * Next to this GoldenTest1.java file there should exist GoldenTest1.pass file
