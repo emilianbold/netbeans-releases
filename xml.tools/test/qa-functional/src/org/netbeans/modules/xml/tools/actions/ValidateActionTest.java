@@ -40,11 +40,11 @@ public class ValidateActionTest extends AbstractCheckTest {
         performAction("MissingClosingTag.xml", new int[] {7});
     }
     
-    //!!!
-    //    public void testMissingRootElement() throws Exception {
-    //        performAction("MissingRootElement.xml");
-    //    }
-    
+    /** Validates document without root element */
+    public void testMissingRootElement() throws Exception {
+        performAction("MissingRootElement.xml", new int[] {-1});
+    }
+
     // *** Not valid but well-formed (DTD) ***
     
     /** Validates document with undeclared element */
