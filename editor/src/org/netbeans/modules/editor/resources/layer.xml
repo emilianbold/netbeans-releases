@@ -214,7 +214,10 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="bookmark-toggle"/>
                         <attr name="bookmark-toggle/bookmark-next" boolvalue="true"/>
                         <file name="bookmark-next"/>
-                        <attr name="bookmark-next/Separator3.instance" boolvalue="true"/>
+			<attr name="bookmark-toggle/bookmark-next" boolvalue="true"/>
+			<file name="bookmark-previous"/>
+			<attr name="bookmark-next/bookmark-previous" boolvalue="true"/>
+                        <attr name="bookmark-previous/Separator3.instance" boolvalue="true"/>
                         <file name="Separator3.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         </file>
