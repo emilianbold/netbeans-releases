@@ -13,14 +13,10 @@
 
 package org.netbeans.jellytools;
 
-import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
-
 import java.lang.reflect.InvocationTargetException;
-
 import javax.swing.table.JTableHeader;
-
 import javax.swing.tree.TreePath;
 
 import org.netbeans.core.projects.SettingChildren.FileStateProperty;
@@ -28,18 +24,13 @@ import org.netbeans.core.projects.SettingChildren.FileStateProperty;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OptionsViewAction;
 
-import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
-
-import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 /**
@@ -164,6 +155,7 @@ public class OptionsOperator extends NbFrameOperator {
         }
         int result = treeTable().tree().getRowForPath(path);
         treeTable().scrollToCell(result, 0);
+        new EventTool().waitNoEvent(500);
         return(result);
     }
 
