@@ -749,6 +749,10 @@ the ${netbeans.dest}/bin/ directory.
     <ant dir="." target="build-nozip"/>
   </target>
 
+  <target name="nozip-check" 
+          depends="build-nozip,sanity-check" 
+	  description="Build the IDE and run a sanity check but do not create a final ZIP file."/>
+
   <target name="tryme" depends="init,maybe-build-nozip"
           description="Try running the IDE interactively (build it first if needed).">
     <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/runide.exe" failonerror="yes">
