@@ -642,11 +642,22 @@
   
   
   <tocitem text="JUnit Module"><!--QUESTION(tm) : now that junit is built in should this title change? should this section live elsewhere in the TOC?-->
-    <tocitem text="About" target="junit_about"></tocitem>
+    <tocitem text="About the JUnit Module" target="junit_about"></tocitem>
+    <tocitem text="Working with JUnit" target="junit_overview"></tocitem>
+    <tocitem text="JUnit Tasks: Quick Reference" target="junit_quickref"></tocitem>
     <tocitem text="Test Generation" target="junit_creatingtests"></tocitem>
     <tocitem text="Working with Tests" target="junit_runningtests"></tocitem>
-    <tocitem text="JUnit Module Settings" target="junit_configuringsettings"></tocitem>
+    <tocitem text="Configuring JUnit Module Settings" target="junit_configuringsettings"></tocitem>
   </tocitem>
+  
+<!--from JUnit TOC
+    <tocitem text="JUnit Module Commands">
+      <tocitem target="org.netbeans.modules.junit.TestsActions" text="About"></tocitem>
+      <tocitem target="org.netbeans.modules.junit.CreateTestAction" text="Create Tests"></tocitem>
+      <tocitem target="org.netbeans.modules.junit.RunTestAction" text="Execute Test"></tocitem>
+      <tocitem target="org.netbeans.modules.junit.OpenTestAction" text="Open Test"></tocitem>      
+    </tocitem>
+-->
   
 </tocitem>
 </toc>
