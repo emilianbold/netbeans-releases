@@ -90,7 +90,7 @@ public class PatchByteCodeTest extends NbTestCase {
             Sample.class.getName (),
             "Sample.class",
             "java.lang.Throwable", 
-            new String[] { "org.openide.nodes.Node$Cookie", "java.util.RandomAccess" }
+            new String[] { "org.openide.nodes.Node$Cookie", "java.lang.Cloneable" }
         );
         
         assertEquals ("Super class is throwable", Throwable.class, c.getSuperclass());
@@ -100,7 +100,7 @@ public class PatchByteCodeTest extends NbTestCase {
         
         Object obj = c.newInstance ();
         assertTrue ("Is instance of Cookie", obj instanceof org.openide.nodes.Node.Cookie);
-        assertTrue ("Is instance of RandomAccess", obj instanceof java.util.RandomAccess);
+        assertTrue ("Is instance of Cloneable", obj instanceof Cloneable);
     }
     
     
