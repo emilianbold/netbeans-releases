@@ -483,6 +483,7 @@ public class ComponentInspector extends TopComponent
             if (!ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()))
                 return;
 
+            setActivatedNodes(getExplorerManager().getSelectedNodes());
             timer.start();
         }
 
