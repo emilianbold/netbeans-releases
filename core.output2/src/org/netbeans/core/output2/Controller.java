@@ -1202,7 +1202,12 @@ public class Controller { //XXX public only for debug access to logging code
             OutWriter out = io.out();
             try {
                 if (out != null) {
-                    return out.line(line);
+                    String s = out.line(line);
+                    //#46892 - newlines should not be appended to returned strings
+                    if (s.endsWith("\n")) { //NOI18N
+                        s = s.substring(0, s.length()-1);
+                    }
+                    return s;
                 }
             } catch (IOException ioe) {
                 IOException nue = new IOException ("Could not fetch line " + line + " on " + io.getName()); //NOI18N
