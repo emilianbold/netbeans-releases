@@ -32,8 +32,6 @@ Microsystems, Inc. All Rights Reserved.
     <filter token="SERVLET24_SPEC_VERS_SUBST" value="${web.servletapi24.specification.version}"/>
     <filter token="JSPPARSER_SPEC_VERS_SUBST" value="${web.jspparser.specification.version}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <property name="web.implementation.version" value="${buildnumber}"/>
-    <filter token="WEB_BUILD_NUMBER_SUBST"  value="${web.implementation.version}"/>
   </target>
 
   <target name="compile" depends="init">
