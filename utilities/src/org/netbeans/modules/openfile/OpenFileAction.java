@@ -54,29 +54,3 @@ public class OpenFileAction extends CallableSystemAction {
     }
 
 }
-
-/*
- * Log
- *  12   Gandalf-post-FCS1.10.1.0    2/25/00  Jesse Glick     Can handle multiple 
- *       files selected in chooser.
- *  11   Gandalf   1.10        1/12/00  Jesse Glick     I18N.
- *  10   Gandalf   1.9         1/7/00   Jesse Glick     -line option for line 
- *       numbers.
- *  9    Gandalf   1.8         11/5/99  Jesse Glick     Context help jumbo 
- *       patch.
- *  8    Gandalf   1.7         11/2/99  Jesse Glick     Commented out testing 
- *       code.
- *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  6    Gandalf   1.5         8/18/99  Jesse Glick     Compilation error.
- *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  4    Gandalf   1.3         7/10/99  Jesse Glick     Open File module moved 
- *       to core.
- *  3    Gandalf   1.2         7/10/99  Jesse Glick     Splitting server from 
- *       opening functionality, etc.
- *  2    Gandalf   1.1         7/10/99  Jesse Glick     Sundry clean-ups (mostly
- *       bundle usage).
- *  1    Gandalf   1.0         6/25/99  Jesse Glick     
- * $
- */

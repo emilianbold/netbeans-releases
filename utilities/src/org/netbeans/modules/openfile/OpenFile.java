@@ -42,6 +42,8 @@ import org.openide.util.NbBundle;
 */
 class OpenFile extends Object {
 
+    static final String PACKAGE = "package";
+    
     /** Open the file either by calling {@link OpenCookie} ({@link ViewCookie}), or by
     * showing it in the Explorer.
     * Uses {@link #find} to figure out what the right file object is.
@@ -202,16 +204,21 @@ class OpenFile extends Object {
             // Try to find the package name and then infer a directory to mount.
             BufferedReader rd = null;
             try {
-                rd = new BufferedReader (new InputStreamReader (new FileInputStream (f)));
-scan:
-                while (true) {
+                int pckgPos; // found package position
+
+                rd = new BufferedReader(new InputStreamReader(new SourceInputStream(new FileInputStream(f))));
+                while (!packageKnown) {
                     String line = rd.readLine ();
                     if (line == null) {
                         packageKnown = true; // i.e. valid termination of search, default pkg
                         break;
                     }
-                    // Will not handle package statements broken across lines, oh well.
-                    if (line.indexOf ("package") == -1) continue; // NOI18N
+
+                    t(line); // test what line has SourceInputStream produced
+
+                    pckgPos = line.indexOf(PACKAGE);
+                    if (pckgPos == -1) continue;
+
                     StringTokenizer tok = new StringTokenizer (line, " \t;"); // NOI18N
                     boolean gotPackage = false;
                     while (tok.hasMoreTokens ()) {
@@ -240,19 +247,19 @@ scan:
                             if (ok) {
                                 pkg = theTok;
                                 packageKnown = true;
-                                break scan;
+                                break;
                             } else {
                                 // Keep on looking for valid package statement.
                                 gotPackage = false;
                                 continue;
                             }
-                        } else if (theTok.equals ("package")) { // NOI18N
+                        } else if (theTok.equals (PACKAGE)) {
                             gotPackage = true;
                         } else if (theTok.equals ("{")) { // NOI18N
                             // Most likely we can stop if hit opening brace of class def.
                             // Usually people leave spaces around it.
                             packageKnown = true; // valid end of search, default pkg
-                            break scan;
+                            break;
                         }
                     }
                 }
@@ -359,6 +366,7 @@ scan:
             String guessed = (String) pkgs.elementAt (pkgLevel);
             Object yesOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountYes"));
             Object noOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountNo"));
+            Object cancelOption = new JButton(SettingsBeanInfo.getString("LBL_cancelButton"));
             Object result = TopManager.getDefault ().notify (new NotifyDescriptor
                             ("".equals (guessed) ? // NOI18N
                              SettingsBeanInfo.getString ("MSG_quickMountDefault", f.getName ()) :
@@ -366,7 +374,7 @@ scan:
                              SettingsBeanInfo.getString ("LBL_quickMountTitle"), // title
                              NotifyDescriptor.YES_NO_OPTION, // optionType
                              NotifyDescriptor.QUESTION_MESSAGE, // messageType
-                             new Object[] { yesOption, noOption }, // options
+                             new Object[] { yesOption, noOption, cancelOption }, // options
                              yesOption // initialValue
                             ));
             if (result.equals (yesOption)) {
@@ -480,66 +488,160 @@ scan:
         }
     }
 
-}
+    /** Filtered input stream for Java sources - it simply excludes
+      * comments and some useless whitespaces from the original stream.
+      */
+    public static class SourceInputStream extends FilterInputStream
+    {
+        private int preRead = -1;
+        private boolean inString = false;
+        private boolean backslashLast = false;
+        private boolean separatorLast = false;
+        static private final char separators[] = { '.' }; // dot is enough here...
+        static private final char whitespaces[] = { ' ', '\t', '\r', '\n' };
+        
+        public SourceInputStream(InputStream in) {
+            super(in);
+        }
+        
+        public int read() throws IOException {
+            byte[] data = {-1};
+            doRead(data, 0, 1);
+            return data[0];               
+        }
+        
+        public int read(byte[] b) throws IOException {
+            return doRead(b, 0, b.length);
+        }
+        
+        public int read(byte[] b, int off, int len) throws IOException {
+            return doRead(b, off, len);
+        }
 
-/*
- * Log
- *  32   Gandalf   1.31        1/15/00  Jesse Glick     Somewhat nicer 
- *       select-mount-point dialog (icons etc.). Also can close quickie dialog 
- *       to cancel whole open.
- *  31   Gandalf   1.30        1/15/00  Jesse Glick     #5271 - opening multiple
- *       files at once which share a new mount point.
- *  30   Gandalf   1.29        1/13/00  Jesse Glick     NOI18N
- *  29   Gandalf   1.28        1/12/00  Jesse Glick     I18N.
- *  28   Gandalf   1.27        1/7/00   Jesse Glick     -line option for line 
- *       numbers.
- *  27   Gandalf   1.26        1/6/00   Jan Jancura     Icon removed from 
- *       NotifyDesc.
- *  26   Gandalf   1.25        1/4/00   Jesse Glick     Friendlier mount 
- *       dialogs.
- *  25   Gandalf   1.24        11/10/99 Jesse Glick     Fixed race condition in 
- *       mount dialog.
- *  24   Gandalf   1.23        11/2/99  Jesse Glick     Commented out testing 
- *       code.
- *  23   Gandalf   1.22        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  22   Gandalf   1.21        10/10/99 Petr Hamernik   console debug messages 
- *       removed.
- *  21   Gandalf   1.20        8/27/99  Jesse Glick     Fixed #3628--opening a 
- *       file which was just created on disk can fail.
- *  20   Gandalf   1.19        8/17/99  Jesse Glick     Changed handling of 
- *       return status code to be more immediate and simplified. Fixes #2420 and
- *       #3297.
- *  19   Gandalf   1.18        7/29/99  Ian Formanek    Improved appearance
- *  18   Gandalf   1.17        7/19/99  Jesse Glick     Fixed mount dialog to 
- *       use DialogDescriptor, not WizardDescriptor.
- *  17   Gandalf   1.16        7/10/99  Jesse Glick     Open File module moved 
- *       to core.
- *  16   Gandalf   1.15        7/10/99  Jesse Glick     Tweaks.
- *  15   Gandalf   1.14        7/10/99  Jesse Glick     Mount-point dialog 
- *       works.
- *  14   Gandalf   1.13        7/10/99  Jesse Glick     Changing the mounting 
- *       algorithm.
- *  13   Gandalf   1.12        7/10/99  Jesse Glick     Splitting server from 
- *       opening functionality, etc.
- *  12   Gandalf   1.11        7/10/99  Jesse Glick     Sundry clean-ups (mostly
- *       bundle usage).
- *  11   Gandalf   1.10        6/26/99  Jesse Glick     
- *  10   Gandalf   1.9         6/25/99  Jesse Glick     Installing Open File 
- *       menu item in File menu.
- *  9    Gandalf   1.8         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  8    Gandalf   1.7         5/25/99  Jesse Glick     Comments.
- *  7    Gandalf   1.6         5/25/99  Jesse Glick     Added -wait.
- *  6    Gandalf   1.5         5/25/99  Jaroslav Tulach Waits for notification 
- *       that the open command succeeded.
- *  5    Gandalf   1.4         5/22/99  Jesse Glick     Licenses.
- *  4    Gandalf   1.3         5/22/99  Jesse Glick     Handling options, and 
- *       doc.
- *  3    Gandalf   1.2         5/22/99  Jesse Glick     Support for opening 
- *       archive files, and also better display for root folders.
- *  2    Gandalf   1.1         5/22/99  Jesse Glick     If Java file does not 
- *       exist in mounted fs, tries to mount it in the correct package.
- *  1    Gandalf   1.0         5/19/99  Jesse Glick     
- * $
- */
+        /** Read bytes from the input stream and filter them. */
+        private int doRead(byte[] data, int pos, int len) throws IOException {
+            int numRead = 0,
+                c;
+            
+            while (numRead < len) {
+                if (preRead != -1) {
+                    c = preRead;
+                    preRead = -1;
+                }
+                else {
+                    c = in.read();
+                    if (c == -1) // end of stream reached
+                        return numRead > 0 ? numRead : -1;
+                }
+                
+                if (c == '/' && !inString) { // a comment could start here
+                    preRead = in.read();
+                    if (preRead != '*' && preRead != '/') { // it's not a comment
+                        data[pos++] = (byte) c;
+                        numRead++;
+                        if (preRead == -1) // end of stream reached
+                            return numRead;
+                    }
+                    else { // we have run into the comment - skip it
+                        if (preRead == '*') { // comment started with /*
+                            preRead = -1;
+                            do {
+                                c = moveToChar('*');
+                                if (c == 0) {
+                                    c = in.read();
+                                    if (c == '*') preRead = c;
+                                }
+                            } while (c != '/' && c != -1);
+                        }
+                        else { // comment started with //
+                            preRead = -1;
+                            c = moveToChar('\n');
+                            if (c == 0) preRead = '\n';
+                        }
+                        if (c == -1) return -1;   // end of stream reached
+                    }
+                }
+                else { // normal valid character
+                    if (!inString) { // not inside a string " ... "
+                        if (isWhitespace(c)) { // reduce some whitespaces
+                            while (true) {
+                                preRead = in.read();
+                                if (preRead == -1) // end of stream reached
+                                    return numRead > 0 ? numRead : -1;
+
+                                if (isSeparator(preRead)) {
+                                    c = preRead;
+                                    preRead = -1;
+                                    break;
+                                }
+                                else if (!isWhitespace(preRead)) {
+                                    if (separatorLast) {
+                                        c = preRead;
+                                        preRead = -1;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (c == '\"' || c == '\'') {
+                            inString = true;
+                            separatorLast = false;
+                        }
+                        else separatorLast = isSeparator(c);
+                    }
+                    else { // we are just in a string
+                        if (c == '\"' || c == '\'') {
+                            if (!backslashLast)
+                                inString = false;
+                            else backslashLast = false;
+                        }
+                        else backslashLast = (c == '\\');
+                    }
+
+                    data[pos++] = (byte) c;
+                    numRead++;
+                }
+            }
+            return numRead;
+        }
+        
+        private int moveToChar(int c) throws IOException {
+            int cc;
+            if (preRead != -1) {
+                cc = preRead;
+                preRead = -1;
+             }
+             else cc = in.read();
+             
+             while (cc != -1 && cc != c) {
+                 cc = in.read();
+             }
+             
+             return cc == -1 ? -1 : 0;
+        }
+
+        static private boolean isSeparator(int c) {
+            for (int i=0; i < separators.length; i++) {
+                if (c == separators[i]) return true;
+            }
+            return false;
+        }
+
+        static private boolean isWhitespace(int c) {
+            for (int i=0; i < whitespaces.length; i++) {
+                if (c == whitespaces[i]) return true;
+            }
+            return false;
+        }
+    }
+
+
+    /** For debugging purposes only. */
+    static final boolean TRACE = false;
+    /** For debugging purposes only. */
+    static void t(String str) {
+        if (TRACE)
+            System.out.println("OpenFile> "+str);
+    }
+}
