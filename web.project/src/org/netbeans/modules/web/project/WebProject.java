@@ -52,6 +52,8 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
@@ -162,6 +164,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
             fileBuilt,
+            new RecommendedTemplatesImpl(),
             sourcesHelper.createSources()
         });
     }
@@ -456,4 +459,33 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
 
     }
     
+    private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
+        
+        // List of primarily supported templates
+        
+        private static final String[] TYPES = new String[] { 
+            "templateType_Web",         // NOI18N
+            "templateType_Java",        // NOI18N
+            "templateType_JavaBeans",   // NOI18N
+            "templateType_Ant",         // NOI18N
+            "templateType_XML",         // NOI18N
+            "templateType_Other",       // NOI18N
+        };
+        
+        private static final String[] PRIVILEGED_NAMES = new String[] {
+            "Templates/Classes/Class.java",
+            "Templates/JSP_Servlet/JSP.jsp",
+            "Templates/JSP_Servlet/Servlet.java",
+            "Templates/JSP_Servlet/ServletListener.java",
+        };
+        
+        public String[] getRecommendedTypes() {
+            return TYPES;
+        }
+        
+        public String[] getPrivilegedTemplates() {
+            return PRIVILEGED_NAMES;
+        }
+        
+    }
 }
