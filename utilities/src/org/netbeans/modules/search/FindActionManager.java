@@ -129,7 +129,9 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
         if ((window != null)
                 && checkIsApplicableOnWindow(window)
                 && activatedOnWindows.add(window)) {
-            window.getActionMap().put(getFindActionMapKey(), performer);
+            window.getActionMap().put(
+                    getFindActionMapKey(),
+                    performer.createContextAwareInstance(window.getLookup()));
             //System.out.println("added mapping for window " + window.getDisplayName());
         }
     }
