@@ -176,19 +176,19 @@ Microsystems, Inc. All Rights Reserved.
 	    </file>
             <attr name="Separator1.instance/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
-            <attr name="org-netbeans-core-actions-GlobalPropertiesAction.instance/org-netbeans-core-actions-EditorViewAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-EditorViewAction.instance"/>
-            <attr name="org-netbeans-core-actions-EditorViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true"/>
-            <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
-            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/org-netbeans-core-actions-ViewRuntimeTabAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
-            <attr name="org-netbeans-core-actions-ViewRuntimeTabAction.instance/org-netbeans-core-actions-ViewFilesystemsTabAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-GlobalPropertiesAction.instance/org-netbeans-core-actions-ViewFilesystemsTabAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
-            <attr name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance/oldRootsStart.txt" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance/org-netbeans-core-actions-ViewRuntimeTabAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
+            <attr name="org-netbeans-core-actions-ViewRuntimeTabAction.instance/oldRootsStart.txt" boolvalue="true" />
             <file name="oldRootsStart.txt"/>
             <!-- #22758 Just a placeholder for old roots menu items -->
             <attr name="oldRootsStart.txt/oldRootsEnd.txt" boolvalue="true" />
             <file name="oldRootsEnd.txt"/>
+            <attr name="oldRootsEnd.txt/org-netbeans-core-actions-EditorViewAction.instance" boolvalue="true" />            
+            <file name="org-netbeans-core-actions-EditorViewAction.instance"/>
+            <attr name="org-netbeans-core-actions-EditorViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true"/>
+            <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
         </folder>
         
         <attr name="View/Tools" boolvalue="true" />
@@ -376,7 +376,7 @@ Microsystems, Inc. All Rights Reserved.
 	</file>
 
         <file name="C-2.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.ExplorerViewAction"/>
+	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.ViewFilesystemsTabAction"/>
 	</file>
 
         <file name="C-1.instance">

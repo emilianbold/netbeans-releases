@@ -44,9 +44,9 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Menu">
 
         <folder name="View">
-            <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-output-OutputWindowAction.instance/org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance" />
-            <attr name="org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance/org-netbeans-core-actions-ExecutionViewAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance/org-netbeans-core-execution-ExecutionViewAction.instance" boolvalue="true" />
         </folder>
 
         <attr name="Build/Debug" boolvalue="true" />

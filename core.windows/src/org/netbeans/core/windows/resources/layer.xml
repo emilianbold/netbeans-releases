@@ -50,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="org-netbeans-core-actions-HTMLViewAction.instance/Separator2.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-javadoc-search-IndexOverviewAction.instance/Separator2.instance" boolvalue="true" />
             <file name="Separator2.instance">
         	<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
