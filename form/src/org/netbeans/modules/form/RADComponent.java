@@ -725,7 +725,7 @@ public class RADComponent {
       // FormPropertyEditor is one of the advanced features that must be supported bu the 
       // persistence manager to be available
       if (!getFormManager ().getFormEditorSupport ().supportsAdvancedFeatures ()) {
-        return super.getPropertyEditor ();
+        return findDefaultEditor (desc);
       }
       // the property editor cannot be reused as it is not reentrant !!! [IAN]
       PropertyEditor defaultEditor = findDefaultEditor (desc);
@@ -896,7 +896,7 @@ public class RADComponent {
       // FormPropertyEditor is one of the advanced features that must be supported bu the 
       // persistence manager to be available
       if (!getFormManager ().getFormEditorSupport ().supportsAdvancedFeatures ()) {
-        return super.getPropertyEditor ();
+        return findDefaultIndexedEditor (desc);
       }
 
       // the property editor cannot be reused as it is not reentrant !!! [IAN]
@@ -1066,6 +1066,9 @@ public class RADComponent {
 
 /*
  * Log
+ *  34   Gandalf   1.33        7/28/99  Ian Formanek    Fixed problem with 
+ *       explicite editors when the Tuborg format is preserved (i.e. the 
+ *       advanced features not used)
  *  33   Gandalf   1.32        7/25/99  Ian Formanek    Variables management 
  *       moved to RADComponent
  *  32   Gandalf   1.31        7/23/99  Ian Formanek    Fixed firing property 
