@@ -267,11 +267,11 @@ public class Benchmark extends Assert implements Test {
         System.gc();
         System.gc();
         try {
-            Thread.sleep( 300 );
+            Thread.sleep( 500 );
         } catch( InterruptedException exc ) {}
         System.gc();
         try {
-            Thread.sleep( 2000 );
+            Thread.sleep( 300 );
         } catch( InterruptedException exc ) {}
     }
 
