@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target name="unit-compiler" depends="compile_performance_testutilities">
+    <target name="unit-compiler">
         <buildTests srcDir="unit/src" compileexcludes="**/data/**">
             <classpath refid="jemmy.and.jelly.path"/>
         </buildTests>

@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="Template For Performance Test build scripts" basedir="." default="jar">
+
+    <!-- Imports jemmy.and.jelly.path and default qa-functional-compiler and
+         runidetest executor -->
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
+    
+    <!-- Root folders -->
+    <property name="nball.dir" location="../../../../nb_all"/>
+    <property name="nbextra.dir" location="../../../../nbextra"/>
+    <property name="nbextra.qa.performance.dist.dir" location="${nbextra.dir}/qa/performance/dist"/>
+    <property name="performance.testutilities.dir" location="${nball.dir}/performance/performancetestutilities"/>
+    <property name="performance.testutilities.dist.dir" location="${performance.testutilities.dir}/dist"/>
+    <property name="performance.testutilities.dist.jar" location="${performance.testutilities.dist.dir}/performance-test-utilities.jar"/>
+    
+    <!-- path reference used in both compiler and executor -->
+    <path id="jemmy.and.jelly.path">
+        <pathelement location="${nball.dir}/jemmy/builds/jemmy.jar"/>
+        <pathelement location="${nball.dir}/jellytools/builds/jelly2-nb.jar"/>
+    </path>
+    
+    <!-- path reference used in both compiler and executor -->
+    <path id="performance.testutilities.path">
+        <pathelement location="${performance.testutilities.dist.jar}"/>
+    </path>
+    
+    <!-- compilation classpath -->
+    <path id="compiletest.classpath">        
+        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+        
+        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
+        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-java-editor.jar"/>
+        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
+        <pathelement location="${editor/plain.dir}/${nb.modules.dir}/org-netbeans-modules-editor-plain.jar"/>
+        
+        <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
+        
+        <pathelement location="${web/jspsyntax.dir}/${nb.modules.dir}/org-netbeans-modules-web-core-syntax.jar"/>
+        
+        <pathelement location="${xml/text-edit.dir}/${nb.modules.dir}/xml-text-edit.jar"/>
+                
+        <pathelement location="${nball.dir}/xtest/lib/junit.jar"/>
+        <pathelement location="${nball.dir}/xtest/lib/nbjunit.jar"/>
+        <pathelement location="${nball.dir}/xtest/lib/nbjunit-ide.jar"/>
+    </path>
+    
+    
+    <!-- ========= -->
+    <!-- Utils     -->
+    <!-- ========= -->
+
+    <!-- Replace original netbeans.conf with released netbeans.conf -->
+    <target name="copy_released_ide_cfg_file">
+        <move file="${netbeans.dest.dir}/etc/netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf.original" />
+        <copy file="${performance.testutilities.dist.dir}/netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
+    </target>
+
+    <!-- Replace released netbeans.conf with original netbeans.conf -->
+    <target name="copy_original_ide_cfg_file">
+        <move file="${netbeans.dest.dir}/etc/netbeans.conf.original" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
+    </target>
+
+    <!-- Copy and unzip project JEdit from close source path, will be used for Performance tests -->
+    <target name="copy_unzip_jedit_project">
+        <unzip src="${nbextra.dir}/qa/projectized/jEdit41.zip" dest="${xtest.tmpdir}/"/>
+    </target>
+    
+    <!-- Copy and unzip project PerformanceTestFolderData from close source path, will be used for Performance tests -->
+    <target name="copy_unzip_test_folder_project">
+        <unzip src="${nbextra.dir}/qa/projectized/PerformanceTestFoldersData.zip" dest="${xtest.tmpdir}/"/>
+    </target>
+    
+    <!-- Compile Performance Test Utilitites library, it's neccessary for performance tests (UI esponsiveness as well as Start up) -->
+    <target name="compile_performance_testutilities">
+        <ant antfile="${performance.testutilities.dir}/build.xml" target="jar"/>
+    </target>
+    
+        
+</project>

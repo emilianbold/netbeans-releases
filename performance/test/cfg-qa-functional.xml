@@ -361,11 +361,11 @@ Microsystems, Inc. All Rights Reserved.
     
     
     <!-- Scan Classpath test bag -->    
-<!--    <testbag testattribs="measure_ui or measure_scan" prio="100" -->
-    <testbag testattribs="measure_scan" prio="100"
+    <testbag testattribs="measure_ui or measure_scan" prio="100"
                  executor="ide_performance_scan" name="Measure Classpath Scan and time to create new projects" >
 	<testset dir="qa-functional/src">
 	    <patternset>
+	    
 		<include name="gui/scanclasspath/ScanClasspath.class"/>
 	    </patternset>
 	</testset>

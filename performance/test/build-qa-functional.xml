@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     <!-- Overrides default qa-functional-compiler because we need something 
          more on classpath -->
-    <target name="qa-functional-compiler" depends="compile_performance_testutilities">
+    <target name="qa-functional-compiler">
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
             <classpath>
                 <path refid="compiletest.classpath"/>
