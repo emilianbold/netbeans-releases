@@ -24,11 +24,14 @@ import java.io.UnsupportedEncodingException;
 public class XMLReporter implements Reporter {
     /** Creates new XMLReporter writing results to <CODE>System.out</CODE> */
     public XMLReporter() {
-         this( new PrintWriter( System.out ) );
+        this( new PrintWriter( System.out ) );
+        indent( 0, "<?xml version='1.0' encoding='" +
+                         System.getProperty( "file.encoding" ) + "'?>", 0 );
     }
 
     public XMLReporter( OutputStream stream, String encoding ) throws UnsupportedEncodingException {
         this( new PrintWriter( new OutputStreamWriter( stream, encoding ) ) );
+        indent( 0, "<?xml version='1.0' encoding='" + encoding + "'?>", 0 );
     }
     
     /** Creates new XMLReporter writinf results to given stream */
@@ -46,7 +49,6 @@ public class XMLReporter implements Reporter {
     }
 
     public void flush() {
-        indent( 0, "<?xml version='1.0'?>", 0 );
         printResults();
         writer.flush();
     }
@@ -166,8 +168,8 @@ public class XMLReporter implements Reporter {
     
     private void indent( int preChange, String text, int postChange ) {
         actIndent += preChange;
-        writer.print( "\n                                ".substring(0, 1+actIndent) );
-        writer.print( text );
+        writer.print( "                                ".substring(0, actIndent) );
+        writer.println( text );        
         actIndent += postChange;
     }
     
