@@ -138,7 +138,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-core-actions-ModuleHelpAction$ShortcutsOnly.instance/submit-feedback-link.url" boolvalue="true"/>
             <!-- [PENDING] this is none too useful... (some bug is filed to this effect) -->
             <file name="submit-feedback-link.url">
-                <![CDATA[http://www.netbeans.org/contact.html]]>
+                <![CDATA[http://www.netbeans.org/about/os/contact.html]]>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
             </file>
