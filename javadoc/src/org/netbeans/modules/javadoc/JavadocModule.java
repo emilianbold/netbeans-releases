@@ -168,8 +168,9 @@ public class JavadocModule extends ModuleInstall {
 
     // create instance of the action
     SystemAction a = SystemAction.get (actionClass);
-
+  
     map.addActionForKeyStroke (str, a);
+    a.setEnabled( true );
   }
 
   /** Dynamicaly invokes a method
@@ -284,6 +285,8 @@ public class JavadocModule extends ModuleInstall {
 
 /* 
  * Log
+ *  19   Gandalf   1.18        10/27/99 Petr Hrebejk    Bug fixes & back button 
+ *       in Javadoc Quickview
  *  18   Gandalf   1.17        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  17   Gandalf   1.16        10/7/99  Petr Hrebejk    Module Externalization 

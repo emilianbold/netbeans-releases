@@ -119,6 +119,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
   static private final String STR_EXCEPTION = bundle.getString( "JDK12_EXCEPTION" );
   static private final String STR_CONSTRUCTOR = bundle.getString( "JDK12_CONSTRUCTOR" );
   static private final String STR_METHOD = bundle.getString( "JDK12_METHOD" );
+  static private final String STR_ERROR = bundle.getString( "JDK12_ERROR" );
   static private final String STR_VARIABLE = bundle.getString( "JDK12_VARIABLE" );
   static private final String STR_STATIC = bundle.getString( "JDK12_STATIC" );
   static private final String STR_DASH = bundle.getString( "JDK12_DASH" );
@@ -226,6 +227,8 @@ class SearchThreadJdk12 extends IndexSearchThread {
           currentDii.setIconIndex( DocSearchIcons.ICON_INTERFACE );
         else if ( token.equals( STR_EXCEPTION ) )
           currentDii.setIconIndex( DocSearchIcons.ICON_EXCEPTION );
+        else if ( token.equals( STR_ERROR ) )
+          currentDii.setIconIndex( DocSearchIcons.ICON_ERROR );
         else if ( token.equals( STR_PACKAGE ) )
           currentDii.setIconIndex( DocSearchIcons.ICON_PACKAGE );
         else if ( token.equals( STR_CONSTRUCTOR ) )
@@ -260,6 +263,8 @@ class SearchThreadJdk12 extends IndexSearchThread {
 
 /*
  * Log
+ *  12   Gandalf   1.11        10/27/99 Petr Hrebejk    Bug fixes & back button 
+ *       in Javadoc Quickview
  *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  10   Gandalf   1.9         9/16/99  Petr Hrebejk    Fix of errorneous 

@@ -26,12 +26,14 @@ class DocSearchIcons extends Object {
   public static final int ICON_CLASS = ICON_PACKAGE + 1 ;
   public static final int ICON_INTERFACE = ICON_CLASS + 1;
   public static final int ICON_EXCEPTION = ICON_INTERFACE + 1;
-  public static final int ICON_CONSTRUCTOR = ICON_EXCEPTION + 1;
+  public static final int ICON_ERROR = ICON_EXCEPTION + 1;
+  public static final int ICON_CONSTRUCTOR = ICON_ERROR + 1;
   public static final int ICON_METHOD = ICON_CONSTRUCTOR + 1;
   public static final int ICON_METHOD_ST = ICON_METHOD + 1;
   public static final int ICON_VARIABLE = ICON_METHOD_ST + 1;
   public static final int ICON_VARIABLE_ST = ICON_VARIABLE + 1;
-  public static final int ICON_WAIT = ICON_VARIABLE_ST + 1;
+  public static final int ICON_NOT_FOUND = ICON_VARIABLE_ST + 1;
+  public static final int ICON_WAIT = ICON_NOT_FOUND + 1;
   
   private static ImageIcon[] icons = new ImageIcon[ ICON_WAIT + 1 ];
 
@@ -42,11 +44,13 @@ class DocSearchIcons extends Object {
       icons[ ICON_CLASS ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/class.gif"));
       icons[ ICON_INTERFACE ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/interface.gif"));
       icons[ ICON_EXCEPTION ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/exception.gif"));
+      icons[ ICON_ERROR ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/error.gif"));
       icons[ ICON_CONSTRUCTOR ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/constructorPublic.gif"));
       icons[ ICON_METHOD ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/methodPublic.gif"));
       icons[ ICON_METHOD_ST ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/methodStPublic.gif"));
       icons[ ICON_VARIABLE ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/variablePublic.gif"));
       icons[ ICON_VARIABLE_ST ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/variableStPublic.gif"));
+      icons[ ICON_NOT_FOUND ] = new ImageIcon (DocSearchIcons.class.getResource ("/com/netbeans/developer/modules/javadoc/resources/notFound.gif"));
       icons[ ICON_WAIT ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/wait.gif"));
     } 
     catch (Throwable w) {
@@ -62,6 +66,8 @@ class DocSearchIcons extends Object {
 
 /* 
  * Log
+ *  8    Gandalf   1.7         10/27/99 Petr Hrebejk    Bug fixes & back button 
+ *       in Javadoc Quickview
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         8/13/99  Petr Hrebejk    Exception icopn added & 
