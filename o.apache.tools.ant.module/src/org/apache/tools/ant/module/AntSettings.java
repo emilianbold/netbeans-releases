@@ -66,7 +66,7 @@ public class AntSettings extends SystemOption {
         setCompiler (AntCompilerSupport.NoCompiler.NO_COMPILER);
         Executor exec = Executor.find (AntExecutor.class);
         if (exec == null)
-            exec = Executor.getDefault();
+            exec = new AntExecutor();
         setExecutor (exec);
     }
 
@@ -130,7 +130,13 @@ public class AntSettings extends SystemOption {
     /** @return CompilerType */
     public CompilerType getCompiler() {
         CompilerType.Handle compilerType = (CompilerType.Handle) getProperty (PROP_COMPILER);
-        return (CompilerType) compilerType.getServiceType ();
+        CompilerType c = (CompilerType) compilerType.getServiceType ();
+        if (c != null) {
+            return c;
+        } else {
+            // #15256
+            return AntCompilerSupport.NoCompiler.NO_COMPILER;
+        }
     }
 
     /** Uses given CompilerType */
@@ -141,7 +147,12 @@ public class AntSettings extends SystemOption {
     /** @return Executor */
     public Executor getExecutor() {
         ServiceType.Handle serviceType = (ServiceType.Handle) getProperty(PROP_EXECUTOR);
-        return (Executor) serviceType.getServiceType();
+        Executor e = (Executor) serviceType.getServiceType();
+        if (e != null) {
+            return e;
+        } else {
+            return new AntExecutor();
+        }
     }
 
     /** sets an executor */
