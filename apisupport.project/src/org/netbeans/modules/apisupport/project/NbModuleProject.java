@@ -360,7 +360,7 @@ final class NbModuleProject implements Project {
         
         private URL getModuleJarUrl() {
             if (moduleJarUrl == null) {
-                //String moduleJarDir = helper.evaluate("module.jar.dir");
+                String moduleJarDir = helper.evaluate("module.jar.dir");
                 if (moduleJarDir == null) {
                     moduleJarDir = "modules";
                 }
