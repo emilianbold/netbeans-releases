@@ -36,6 +36,9 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * active filter
      */
     private Filter filter;
+    /** the amount of time the test was executing for
+     */
+    private long time;
     
     
     /**
@@ -121,7 +124,48 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         }
     }
 
+	/**
+	 * Runs the bare test sequence.
+	 * @exception Throwable if any exception is thrown
+	 */
+	public void runBare() throws Throwable {
+		setUp();
+        long now = System.currentTimeMillis ();
+		try {
+			runTest();
+		}
+		finally {
+            long last = System.currentTimeMillis () - now;
+            if (last < 1) {
+                last = 1;
+            }
+            this.time = last;
+			tearDown();
+		}
+	}
     
+    /** Parses the test name to find out whether it encodes a number. The
+     * testSomeName1343 represents nubmer 1343.
+     * @return the number
+     * @exception may throw AssertionFailedError if the number is not found in the test name
+     */
+    protected final int getTestNumber () {
+        try {
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile ("test[a-zA-Z]*([0-9]+)").matcher (getName ());
+            assertTrue ("Name does not contain numbers: " + getName (), m.find ());
+            return Integer.valueOf (m.group (1)).intValue ();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail ("Name: " + getName () + " does not represent number");
+            return 0;
+        }
+    }
+    
+    
+
+    final long getExecutionTime () {
+        return time;
+    }
     
     // additional asserts !!!!
 

@@ -101,4 +101,91 @@ public class NbTestSuite extends TestSuite implements NbTest {
             return null;
         }
         
+        
+    /** Factory method to create a special execution suite that not only
+     * executes the tests but also measures the times each execution took.
+     * It then compares the times and files if the difference is too big.
+     * Test tests can be executed more times to eliminate the effect
+     * of GC and hotspot compiler.
+     *
+     * @param clazz the class to create tests for (from methods starting with test)
+     * @param slowness this must be true: slowness * min < max
+     * @param repeat number of times to repeat the test
+     */
+    public static NbTestSuite speedSuite (Class clazz, int slowness, int repeat) {
+        return new SpeedSuite (clazz, repeat, slowness);
+    }
+        
+    /** Allows enhanced execution and comparition of speed of a set of 
+     * tests.
+     */
+    private static final class SpeedSuite extends NbTestSuite {
+        /** number of repeats to try, if there is a failure */
+        private int repeat;
+        /** the maximum difference between the slowest and fastest test */
+        private int slowness;
+        
+        public SpeedSuite (Class clazz, int repeat, int slowness) {
+            super (clazz);
+            this.repeat = repeat;
+            this.slowness = slowness;
+        }
+        
+        public void run (junit.framework.TestResult result) {
+            StringBuffer error = new StringBuffer ();
+            for (int i = 0; i < repeat; i++) {
+                super.run(result);
+                
+                error.setLength (0);
+                
+                if (!result.wasSuccessful ()) {
+                    // if there was a failure, end the test
+                    return;
+                }
+                
+                {
+                    Enumeration en = tests ();
+                    while (en.hasMoreElements ()) {
+                        Object t = en.nextElement ();
+                        if (t instanceof NbTestCase) {
+                            NbTestCase test = (NbTestCase)t;
+                            error.append ("Test "); error.append (test.getName ());
+                            error.append (" took "); error.append (test.getExecutionTime ());
+                            error.append (" ms\n");
+                        } else {
+                            error.append ("Test "); error.append (t); 
+                            error.append (" is not NbTestCase");
+                        }
+                         
+                    }
+                }
+
+                long min = Long.MAX_VALUE;
+                long max = Long.MIN_VALUE;
+
+                {
+                    Enumeration en = tests ();
+                    while (en.hasMoreElements ()) {
+                        Object t = en.nextElement ();
+                        if (t instanceof NbTestCase) {
+                            long l = ((NbTestCase)t).getExecutionTime ();
+                            if (l > max) max = l;
+                            if (l < min) min = l;
+                        }
+                    }
+                }
+
+                System.err.println(error.toString ());
+
+                if (max <= min * slowness) {
+                    // ok
+                    return;
+                }
+            }
+            
+            result.addFailure (this, new junit.framework.AssertionFailedError (
+                "Too big differences in execution times of tests:\n" + error.toString ()
+            ));
+        }
+    }        
 }
