@@ -257,6 +257,40 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Two methods added to ContextProvider.</summary>
+        <date day="8" month="6" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Compatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                ContextProvider.getImports () method added to support better evaluation of expressions.
+                ContextProvider.getLineNumber (annotaion) method added to fix stepping through modified files.
+            </p>
+        </description>
+    </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>ContextProvider and EngineContextProvider has been changed from interfaces to abstract classes.</summary>
+        <date day="8" month="6" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility>
+            <p>
+                Incompatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                ContextProvider and EngineContextProvider has been changed from interfaces to abstract classes. 
+                This was done to support future changes in these classes.
+            </p>
+        </description>
+    </change>
 
 </changes>
 
