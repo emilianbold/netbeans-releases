@@ -35,7 +35,7 @@ public class LoggerFactory {
     
     // used level
     // TODO: mkrauskopf: this have to be customized (e.g. with a system property)
-    private static final Level LEVEL = Level.INFO;
+    private static Level LEVEL = Level.INFO;
     
     // TOTO: mkrauskopf - enhance this
     private static final int MAX_LEVEL_LENGTH = Level.WARNING.getName().length();
@@ -43,6 +43,15 @@ public class LoggerFactory {
     /** Returns factory instance. */
     public static LoggerFactory getDefault() {
         return factory;
+    }
+    
+    static {
+        try {
+            LEVEL = Level.parse(
+                    System.getProperty("projectimport.logging.level")); // NOI18N
+        } catch (IllegalArgumentException iae) {
+            // use default level - INFO
+        }
     }
     
     /**
