@@ -152,7 +152,8 @@ public final class DesktopImpl {
         if (constraint == BorderLayout.WEST || constraint == BorderLayout.SOUTH) {
             redefineBorderForSouthBar();
         }
-        layeredPane.invalidate();
+        // #45033 fix - invalidate isn't enough, revalidate is correct
+        layeredPane.revalidate();
     }
     
     public void removeSlidingView (SlidingView view) {
@@ -167,10 +168,8 @@ public final class DesktopImpl {
             redefineBorderForSouthBar();
         }
         checkCurSlide();
-        layeredPane.invalidate();
-//        System.out.println("removeSlidingViewrevalidating");
-//        layeredPane.repaint();
-///        System.out.println("removeSlidingViewrepaining");
+        // #45033 fix - invalidate isn't enough, revalidate is correct
+        layeredPane.revalidate();
     }
     
     private void checkCurSlide() {
