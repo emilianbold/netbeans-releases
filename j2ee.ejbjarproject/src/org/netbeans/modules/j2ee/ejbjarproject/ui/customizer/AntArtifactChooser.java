@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -176,7 +177,7 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
     /** Shows dialog with the artifact chooser 
      * @return null if canceled selected jars if some jars selected
      */
-    public static ArtifactItem[] showDialog( String artifactType, Project master ) {
+    public static ArtifactItem[] showDialog( String artifactType, Project master, Component parent ) {
         
         JFileChooser chooser = ProjectChooser.projectChooser();
         chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
@@ -187,7 +188,7 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
         chooser.setPreferredSize( new Dimension( 650, 380 ) );
         chooser.setCurrentDirectory (FoldersListSettings.getDefault().getLastUsedArtifactFolder());
 
-        int option = chooser.showOpenDialog( null ); // Show the chooser
+        int option = chooser.showOpenDialog( parent ); // Show the chooser
               
         if ( option == JFileChooser.APPROVE_OPTION ) {
 

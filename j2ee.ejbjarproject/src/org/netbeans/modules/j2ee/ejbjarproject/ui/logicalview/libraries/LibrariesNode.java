@@ -530,7 +530,7 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project);
+            AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project, null);
                 if ( artifactItems != null ) {
                     addArtifacts( artifactItems );
                 }

@@ -184,7 +184,7 @@ public class WarIncludesUi {
                 dlg.dispose();
             }
             else if ( source == addAntArtifact ) { 
-                AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project);
+                AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project, list.getParent());
                 if (artifactItems != null) {
                     WarIncludesUiSupport.addArtifacts(artifactItems, listModel);
                 }
