@@ -32,6 +32,7 @@ import org.netbeans.swing.popupswitcher.SwitcherTable;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Utilities;
+import org.openide.windows.WindowManager;
 
 /**
  * Represents Popup for "Keyboard document switching" which is shown after
@@ -233,7 +234,8 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
         if (!isShown()) {
             Toolkit.getDefaultToolkit().addAWTEventListener(this,
                     AWTEvent.KEY_EVENT_MASK);
-            popup = PopupFactory.getSharedInstance().getPopup(null, pTable, x, y);
+            popup = PopupFactory.getSharedInstance().getPopup(
+                    WindowManager.getDefault().getMainWindow(), pTable, x, y);
             popup.show();
             shown = true;
         }
