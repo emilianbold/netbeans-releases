@@ -110,6 +110,8 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_PanelOptionsVisual"));
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_PanelOptionsVisual"));
         setAsMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("LBL_setAsMainCheckBox"));
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
