@@ -3,15 +3,11 @@ package gui;
 import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.NewTemplateAction;
-import org.netbeans.jellytools.modules.form.FormEditorOperator;
 import org.netbeans.jellytools.nodes.FolderNode;
-import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
-
 
 import org.netbeans.junit.NbTestSuite;
 import org.openide.actions.SaveAllAction;
@@ -90,20 +86,13 @@ public class BeansTemplates extends JellyTestCase {
         tlso.selectLocation(sampleDir);
         tlso.finish();
         
-        new EventTool().waitNoEvent(1500);
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator eo = new EditorOperator(ewo, NAME_JAVA_BEAN);
-        new EventTool().waitNoEvent(500);
-        eo.select(9,12);
-        new EventTool().waitNoEvent(500);
-        new DeleteAction().perform();
-        new DeleteAction().perform();
-        eo.select(1,5);
-        new EventTool().waitNoEvent(500);
-        new DeleteAction().perform();
-        new EventTool().waitNoEvent(500);
-        ref(eo.getText());
+        writeResult(NAME_JAVA_BEAN);
         compareReferenceFiles();
+    }
+    
+    private void writeResult(String name) {
+        new EventTool().waitNoEvent(500);
+        ref(Utilities.unify(Utilities.getAsString(name+".java")));
     }
     
     public void testBeanInfo() {
@@ -126,9 +115,7 @@ public class BeansTemplates extends JellyTestCase {
         tlso.selectLocation(sampleDir);
         tlso.finish();
         
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator eo = new EditorOperator(ewo, NAME_BEAN_INFO);
-        ref(eo.getText());
+        writeResult(NAME_BEAN_INFO);
         compareReferenceFiles();
     }
     
@@ -152,9 +139,7 @@ public class BeansTemplates extends JellyTestCase {
         tlso.selectLocation(sampleDir);
         tlso.finish();
         
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator eo = new EditorOperator(ewo, NAME_BEAN_INFO_NO_ICON);
-        ref(eo.getText());
+        writeResult(NAME_BEAN_INFO_NO_ICON);
         compareReferenceFiles();
     }
     
@@ -180,23 +165,7 @@ public class BeansTemplates extends JellyTestCase {
         tlso.selectLocation(sampleDir);
         tlso.finish();
         
-        FormEditorOperator feo = new FormEditorOperator();
-        feo.close();
-
-        explorerOperator = new ExplorerOperator();
-        explorerOperator.selectPageFilesystems();        
-        repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
-        JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_CUSTOMIZER); // NOI18N
-        javaNode.performPopupActionNoBlock(Bundle.getString("org.openide.actions.Bundle", "Edit"));
-        new EventTool().waitNoEvent(100);
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        ewo.getEditor();
-        EditorOperator eo = new EditorOperator(ewo, NAME_CUSTOMIZER);
-        eo.select(1,10);
-        new EventTool().waitNoEvent(500);
-        new DeleteAction().performAPI(eo);
-        new EventTool().waitNoEvent(500);
-        ref(eo.getText());
+        writeResult(NAME_CUSTOMIZER);
         compareReferenceFiles();
     }
     
@@ -219,21 +188,8 @@ public class BeansTemplates extends JellyTestCase {
         tlso.tree().setComparator(comparator);
         tlso.selectLocation(sampleDir);
         tlso.finish();
-        new EventTool().waitNoEvent(500);
-        
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        ewo.getEditor();
-        EditorOperator eo = new EditorOperator(ewo, NAME_PROPERTY_EDITOR);
-        eo.select(1,5);
-        new EventTool().waitNoEvent(500);
-        new DeleteAction().performAPI(eo);
-//        new EventTool().waitNoEvent(5000);
-        
-        eo.select(4,7);
-        new EventTool().waitNoEvent(500);
-        new DeleteAction().performAPI(eo);
-        new EventTool().waitNoEvent(500);
-        ref(eo.getText());
+
+        writeResult(NAME_PROPERTY_EDITOR);
         compareReferenceFiles();
     }
     

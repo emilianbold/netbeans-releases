@@ -9,7 +9,10 @@ package gui;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.text.StyledDocument;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.junit.AssertionFailedErrorException;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.LocalFileSystem;
@@ -58,4 +61,42 @@ public class Utilities {
         } catch (java.io.IOException e) {
         }
     }
+    
+    /** Removes time and author's name
+     * @param result
+     * @return
+     *
+     */
+    public static String unify(String result) {
+        int left=result.indexOf("* Created on");
+        int right;
+        if (left>=0) {
+            right=result.indexOf('\n',left);
+            result=result.substring(0,left+"* Created on".length())+result.substring(right);
+        }
+        
+        if (left>=0) {
+            left=result.indexOf("@author");
+            right=result.indexOf('\n',left);
+            result=result.substring(0,left+"@author".length())+result.substring(right);
+        }
+        return result;
+    }
+    
+    public static String getAsString(String file) {
+        String result;
+        try {
+            FileObject testFile = Repository.getDefault().findResource(file);
+            DataObject DO = DataObject.find(testFile);
+            
+            EditorCookie ec=(EditorCookie)(DO.getCookie(EditorCookie.class));
+            StyledDocument doc=ec.openDocument();
+            result=doc.getText(0, doc.getLength());
+            //            result=Common.unify(result);
+        } catch (Exception e){
+            throw new AssertionFailedErrorException(e);
+        }
+        return result;
+    }
+    
 }
