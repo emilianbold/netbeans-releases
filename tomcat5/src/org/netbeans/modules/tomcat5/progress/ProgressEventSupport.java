@@ -17,6 +17,8 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
+import org.netbeans.modules.tomcat5.TomcatFactory;
+import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 
 /** 
@@ -79,6 +81,9 @@ public class ProgressEventSupport {
 
     /** Report event to any registered listeners. */
     public void fireHandleProgressEvent (TargetModuleID targetModuleID, DeploymentStatus sCode) {
+        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            TomcatFactory.getEM ().log ("progress event from "+obj+" status "+sCode); // NOI18N
+        }
         ProgressEvent evt = new ProgressEvent (obj, targetModuleID, sCode);
         status = sCode;
         tmID = targetModuleID;
