@@ -22,8 +22,10 @@ import java.net.*;
 import java.util.*;
 
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.execution.NbfsStreamHandlerFactory;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 
 /** Handler & connection cribbed from NbResourceStreamHandler.
@@ -54,6 +56,8 @@ final class NbDocsStreamHandler extends URLStreamHandler {
      * used to handle nbdocs: requests
      */    
     private static Reference docsLoader = null; // Reference<ClassLoader>
+    
+    private static Lookup.Result classLoaderQuery = Lookup.getDefault().lookup(new Lookup.Template(ClassLoader.class));
 
     /** @return the classloader used to resolve
      * nbdocs: requests
@@ -67,14 +71,11 @@ final class NbDocsStreamHandler extends URLStreamHandler {
             l = null;
         }
         if (l == null) {
-            l = new URLClassLoader(getDocsURLs(), TopManager.getDefault().systemClassLoader());
+            l = new URLClassLoader(getDocsURLs(), (ClassLoader)classLoaderQuery.allInstances().iterator().next());
             if (! addedTmSysLoaderListener) {
-                TopManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent ev) {
-                        // XXX this is not an official property name...
-                        if ("systemClassLoader".equals(ev.getPropertyName())) { // NOI18N
-                            docsLoader = null;
-                        }
+                classLoaderQuery.addLookupListener(new LookupListener() {
+                    public void resultChanged(LookupEvent e) {
+                        docsLoader = null;
                     }
                 });
                 addedTmSysLoaderListener = true;

@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.openide.debugger.Debugger;
+//import org.openide.debugger.Debugger;
 import org.openide.execution.Executor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -32,10 +32,10 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
 import org.openide.ServiceType;
-import org.openide.TopManager;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 
+import org.netbeans.core.NbTopManager;
 import org.netbeans.core.xml.FileEntityResolver;
 import org.netbeans.performance.Benchmark;
 
@@ -98,7 +98,7 @@ public class FolderLookupBenchmark extends Benchmark {
     public FolderLookupBenchmark(java.lang.String testName) {
         super(testName);
 
-        System.err.println("TopManager="+TopManager.getDefault()); // TEMP
+        System.err.println("TopManager="+NbTopManager.get()); // TEMP
         System.err.println("Lookup="+Lookup.getDefault()); // TEMP
     }
     
@@ -118,7 +118,10 @@ public class FolderLookupBenchmark extends Benchmark {
         List systems = new ArrayList(layerResources.length);
         
         for(int i = 0; i < layerResources.length; i++) {
-            URL url = TopManager.getDefault().currentClassLoader().getResource(layerResources[i]);
+            // XXX
+//            URL url = TopManager.getDefault().currentClassLoader().getResource(layerResources[i]);
+            ClassLoader cl = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            URL url = cl.getResource(layerResources[i]);
             
             systems.add(new XMLFileSystem(url));
         }

@@ -32,7 +32,6 @@ import javax.swing.JTextField;
 
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 import org.openide.util.NbBundle;
 
 import org.netbeans.core.TopLogging;

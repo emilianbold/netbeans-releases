@@ -20,7 +20,6 @@ import java.io.*;
 import java.text.MessageFormat;
 
 import org.openide.compiler.*;
-import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.loaders.*;

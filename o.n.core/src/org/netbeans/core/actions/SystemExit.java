@@ -13,7 +13,6 @@
 
 package org.netbeans.core.actions;
 
-import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.NbBundle;
@@ -57,8 +56,8 @@ public class SystemExit extends CallableSystemAction implements Runnable {
         RequestProcessor.getDefault().post(this);
     }
 
-    /* Performs the exit (by calling TopManager).*/
+    /* Performs the exit (by calling LifecycleManager).*/
     public void run() {
-        org.openide.TopManager.getDefault().exit();
+        org.openide.LifecycleManager.getDefault().exit();
     }
 }

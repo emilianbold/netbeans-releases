@@ -15,6 +15,8 @@ package org.netbeans.core;
 
 import java.io.*;
 import java.util.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.openide.*;
 import org.openide.loaders.DataFilter;
@@ -22,6 +24,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -32,68 +35,57 @@ import org.openide.util.WeakListener;
 
 import org.netbeans.core.windows.nodes.WorkspacePoolContext;
 import org.netbeans.core.modules.ManifestSection;
+import org.netbeans.core.ui.MountNode;
+import org.openide.loaders.RepositoryNodeFactory;
 
 /** Important places in the system.
 *
 * @author Jaroslav Tulach
 */
-public final class NbPlaces extends Object implements Places, Places.Nodes, Places.Folders {
-    /** default */
-    private static NbPlaces places;
+public final class NbPlaces extends Object {
     
     /** A node to return if ProjectDesktop node == null */
     private static final Node EMPTY_PROJECT_DESKTOP_NODE = new AbstractNode( Children.LEAF );
     
+    private final List listeners = new ArrayList(); // List<ChangeListener>
+    
     /** No instance outside this class.
     */
-    public NbPlaces() {
+    private NbPlaces() {
     }
+    
+    private static NbPlaces DEFAULT;
     
     /** Getter for default instance.
      */
-    public static Places getDefault () {
-        return (Places)org.openide.util.Lookup.getDefault ().lookup (Places.class);
+    public static synchronized NbPlaces getDefault() {
+        if (DEFAULT == null) {
+            DEFAULT = new NbPlaces();
+        }
+        return DEFAULT;
     }
-
-    /** Interesting places for nodes.
-    * @return object that holds "node places"
-    */
-    public Places.Nodes nodes () {
-        return this;
+    
+    public void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
     }
-
-    /** Interesting places for data objects.
-    * @return interface that provides access to data objects' places
-    */
-    public Places.Folders folders () {
-        return this;
+    
+    public void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
     }
-
-    /** Repository node.
-    */
-    public Node repository () {
-        return DataSystem.getDataSystem ();
-    }
-
-    /** Repository node with given DataFilter. */
-    public Node repository(DataFilter f) {
-        return DataSystem.getDataSystem (f);
-    }
-
-    /**
-     * Implements <code>org.openide.Places.Nodes interface method.
-     * <em>Note: This method is no longer supported.</em>
-     * @param f the requested filter
-     * @return empty node */ 
-    public Node packages (DataFilter f) {
-        //return PackageChildren.createNode (f);
-        return Node.EMPTY;
-    }
-
-    /** Node with all installed loaders.
-    */
-    public Node loaderPool () {
-        return LoaderPoolNode.getLoaderPoolNode ();
+    
+    private void fireChange() {
+        ChangeListener[] l;
+        synchronized (listeners) {
+            l = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+        }
+        ChangeEvent ev = new ChangeEvent(this);
+        for (int i = 0; i < l.length; i++) {
+            l[i].stateChanged(ev);
+        }
     }
 
     /** Environment node. Place for all transient information about
@@ -109,18 +101,6 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
         return EnvironmentNode.find (ManifestSection.NodeSection.TYPE_SESSION); 
     }
 
-    /** Control panel
-    */
-    public Node controlPanel () {
-        return ControlPanelNode.getDefault ();
-    }
-
-    /** Project Settings.
-    */
-    public Node project () {
-        return ControlPanelNode.getProjectSettings ();
-    }
-
     /** Node with all workspaces */
     public Node workspaces () {
         return WorkspacePoolContext.getDefault ();
@@ -128,14 +108,13 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
 
     /** Repository settings */
     public Node repositorySettings () {
-        return new org.netbeans.core.ui.MountNode ();
+        return new MountNode ();
     }
 
     /** Workspace node for current project. This node can change when project changes.
     */
     public Node projectDesktop () {
-        Node pn = NbProjectOperation.getProjectDesktop ();
-        return pn == null ? EMPTY_PROJECT_DESKTOP_NODE : pn;
+        return workplace().getNodeDelegate();
     }
 
     /** Root nodes.
@@ -195,8 +174,8 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
      /** Getter for project workplace. A folder that is presented to the
      * user as project desktop.
      */
-     public DataFolder workplace () {
-         return (DataFolder) TopManager.getDefault().getPlaces().nodes().projectDesktop().getCookie(DataFolder.class);
+    public DataFolder workplace() {
+         return findSessionFolder("Workplace"); // NOI18N
      }
      
      /**
@@ -204,9 +183,9 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
      * folders go first (sorted by name) followed by the rest of objects sorted
      * by name.
      */
-     public static synchronized DataFolder findSessionFolder (String name) {
+     public synchronized DataFolder findSessionFolder (String name) {
         try {
-            FileSystem fs = NbTopManager.get ().getRepository().getDefaultFileSystem ();
+            FileSystem fs = Repository.getDefault().getDefaultFileSystem ();
             FileObject fo = fs.findResource(name);
             if (fo == null) {
                 // resource not found, try to create new folder
@@ -221,8 +200,14 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
         }
     }
     
+     /** Create new children of some type of master nodes.
+      * @param name name of the node section to recognize
+      */
+     public Children createChildren(String name) {
+         return new Ch(name);
+     }
     
-    final static class Ch extends Children.Keys 
+    private final class Ch extends Children.Keys 
     implements LookupListener, NodeListener {
         /** result */
         private Lookup.Result result;
@@ -257,7 +242,7 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
 
         /** Static method to compute a Lookup.Result from a template.
          */
-        private static Lookup.Result re (String n) {
+        private Lookup.Result re (String n) {
             Lookup.Template t = new Lookup.Template (ManifestSection.NodeSection.class);
             return Lookup.getDefault ().lookup (t);
         }
@@ -272,7 +257,7 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
             
             if (ManifestSection.NodeSection.TYPE_ROOTS.equals (sectionName)) {
                 // notify that the set of nodes has changed (probably)
-                NbTopManager.get ().firePropertyChange (TopManager.PROP_PLACES, null, null);
+                NbPlaces.this.fireChange();
             }
         }
 

@@ -26,7 +26,6 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 
 /** A custom editor for Properties.
  *
@@ -83,7 +82,8 @@ public class PropertiesCustomEditor extends JPanel
             NotifyDescriptor.Confirmation nd = new NotifyDescriptor.Confirmation(
                     NbBundle.getBundle(PropertiesCustomEditor.class).getString("MSG_PropertiesComments")
                 );
-            if ( !TopManager.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
+            if ( !org.openide.DialogDisplayer.getDefault().notify( nd )
+            .equals( NotifyDescriptor.YES_OPTION ) ) {
                 throw new IllegalStateException();
             }
         }

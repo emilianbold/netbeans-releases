@@ -53,7 +53,7 @@ public class ListViewTest extends NbTestCase {
      * 3. Shift-Click another node by java.awt.Robot
      */
     public void testNodeSelectionByRobot() throws Exception {
-        TopManager.getDefault();
+//        TopManager.getDefault();
         final Children c = new Children.Array();
         Node n = new AbstractNode (c);
         final PListView lv = new PListView();
@@ -99,7 +99,7 @@ public class ListViewTest extends NbTestCase {
      * Removes selected node by calling destroy
      */
     public void testDestroySelectedNodes() throws Exception {
-        TopManager.getDefault();
+//        TopManager.getDefault();
         final Children c = new Children.Array();
         Node n = new AbstractNode (c);
         final PListView lv = new PListView();
@@ -129,7 +129,7 @@ public class ListViewTest extends NbTestCase {
      * Removes selected node by calling Children.Array.remove
      */
     public void testRemoveAndAddNodes() throws Exception {
-        TopManager.getDefault();
+//        TopManager.getDefault();
         final Children c = new Children.Array();
         Node n = new AbstractNode (c);
         final PListView lv = new PListView();
@@ -165,7 +165,7 @@ public class ListViewTest extends NbTestCase {
      * and replace with the other one (several times).
      */
     public void testNodeAddingAndRemoving() throws Exception {
-        TopManager.getDefault();
+//        TopManager.getDefault();
         final Children c = new Children.Array();
         Node n = new AbstractNode (c);
         final PListView lv = new PListView();

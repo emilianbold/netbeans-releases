@@ -22,7 +22,6 @@ import java.util.StringTokenizer;
 
 import javax.swing.*;
 import javax.swing.border.*;
-import org.openide.explorer.propertysheet.editors.StringArrayCustomizable;
 import org.openide.loaders.ExtensionList;
 
 //import org.openide.util.HelpCtx;

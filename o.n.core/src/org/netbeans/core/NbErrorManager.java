@@ -23,7 +23,6 @@ import java.util.*;
 import org.xml.sax.SAXParseException;
 
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.util.NbBundle;
 
 /** This is the implementation of the famous exception manager.

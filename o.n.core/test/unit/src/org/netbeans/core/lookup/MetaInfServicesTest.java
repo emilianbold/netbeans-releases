@@ -17,7 +17,6 @@ import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 import org.netbeans.core.NbTopManager;
 import org.netbeans.core.modules.*;
-import org.openide.TopManager;
 import org.openide.util.*;
 import java.io.File;
 import java.util.*;
@@ -54,7 +53,6 @@ public class MetaInfServicesTest extends NbTestCase {
         //Thread.dumpStack();
         clearWorkDir();
         // Load Plain.
-        TopManager.getDefault();
         // Make a couple of modules.
         mgr = NbTopManager.get().getModuleSystem().getManager();
         try {
@@ -119,7 +117,8 @@ public class MetaInfServicesTest extends NbTestCase {
      */
     public void testEverything() throws Exception {
         twiddle(m1, TWIDDLE_ENABLE);
-        Class xface = TopManager.getDefault().systemClassLoader().loadClass("org.foo.Interface");
+        ClassLoader systemClassLoader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+        Class xface = systemClassLoader.loadClass("org.foo.Interface");
         Lookup.Result r = Lookup.getDefault().lookup(new Lookup.Template(xface));
         List instances = new ArrayList(r.allInstances());
         // Expect to get Impl1 from first JAR.
@@ -155,7 +154,8 @@ public class MetaInfServicesTest extends NbTestCase {
         // not really important: assertTrue(!l.gotSomething());
         instances = new ArrayList(r.allInstances());
         assertEquals(0, instances.size());
-        Class xface2 = TopManager.getDefault().systemClassLoader().loadClass("org.foo.Interface");
+        systemClassLoader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+        Class xface2 = systemClassLoader.loadClass("org.foo.Interface");
         assertTrue(xface != xface2);
         Lookup.Result r2 = Lookup.getDefault().lookup(new Lookup.Template(xface2));
         instances = new ArrayList(r2.allInstances());

@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
 
-import org.openide.TopManager;
 import org.openide.actions.NewTemplateAction;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataFilter;
@@ -33,6 +32,7 @@ import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
+import org.openide.loaders.RepositoryNodeFactory;
 
 /** Data system encapsulates logical structure of more file systems.
 * It also allows filtering of content of DataFolders
@@ -70,13 +70,13 @@ implements RepositoryListener, NewTemplateAction.Cookie {
     * @param filter the filter to use
     */
     private DataSystem(Children ch, DataFilter filter) {
-        this (ch, NbTopManager.get ().getRepository (), filter);
+        this (ch, Repository.getDefault(), filter);
     }
 
     // delegate Index cookie to Filesystems Settings for convenience
     public Node.Cookie getCookie(Class clazz) {
         if (clazz == Index.class) {
-            return TopManager.getDefault ().getPlaces().nodes().repositorySettings().getCookie(clazz);
+            return NbPlaces.getDefault().repositorySettings().getCookie(clazz);
         } else {
             return super.getCookie(clazz);
         }
@@ -198,9 +198,10 @@ implements RepositoryListener, NewTemplateAction.Cookie {
     public Component getCustomizer () {
         NbMainExplorer.SettingsTab nb = new NbMainExplorer.SettingsTab ();
         nb.getExplorerManager ().setRootContext (
-          TopManager.getDefault ().getPlaces().nodes().repositorySettings()
+            NbPlaces.getDefault().repositorySettings()
         );
-        nb.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(DataSystem.class).getString("ACSD_DataSystemCustomizer"));
+        nb.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getBundle(DataSystem.class).getString("ACSD_DataSystemCustomizer"));
         return nb;
     }
 
@@ -283,7 +284,13 @@ implements RepositoryListener, NewTemplateAction.Cookie {
             return getDataSystem (filter);
         }
     }
+    
+    public static final class NbRepositoryNodeFactory extends RepositoryNodeFactory {
+        
+        public Node repository(DataFilter f) {
+            return DataSystem.getDataSystem(f == DataFilter.ALL ? null : f);
+        }
+        
+    }
 
 }
-
-

@@ -27,6 +27,7 @@ import javax.swing.event.*;
 import javax.swing.*;
 
 import org.openide.*;
+import org.openide.awt.StatusDisplayer;
 
 // we depend on NetBeans editor stuff
 import org.netbeans.editor.*;
@@ -131,7 +132,7 @@ public class XMLKit extends UniKit {
          * Uniform way of reporting problem while action executing #15589
          */
         protected void problem(String reason) {
-            if (reason != null) TopManager.getDefault().setStatusText("Cannot proceed: " + reason);
+            if (reason != null) StatusDisplayer.getDefault().setStatusText("Cannot proceed: " + reason);
             new Panel().getToolkit().beep();
         }
     }

@@ -104,19 +104,15 @@ public class DataObjectPanel extends JPanel {
                             return dataFilter.acceptDataObject(obj);
                         }
                     };
-                    rootNode = TopManager.getDefault().getPlaces().
-                    nodes().repository(dFilter);
+                    rootNode = RepositoryNodeFactory.getDefault().repository(dFilter);
                 } else {
-                    rootNode = TopManager.getDefault().getPlaces().
-                    nodes().repository(dataFilter);
+                    rootNode = RepositoryNodeFactory.getDefault().repository(dataFilter);
                 }
             } else {
                 if (folderFilter != null) {
-                    rootNode = TopManager.getDefault().getPlaces().
-                    nodes().repository(folderFilter);
+                    rootNode = RepositoryNodeFactory.getDefault().repository(folderFilter);
                 } else {
-                    rootNode = TopManager.getDefault().getPlaces().
-                    nodes().repository();
+                    rootNode = RepositoryNodeFactory.getDefault().repository(DataFilter.ALL);
                 }
             }
         }

@@ -16,6 +16,8 @@ package org.netbeans.core.ui;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.io.*;
+import org.netbeans.core.LoaderPoolNode;
+import org.netbeans.core.NbPlaces;
 
 import org.openide.*;
 import org.openide.actions.*;
@@ -27,6 +29,7 @@ import org.openide.options.*;
 import org.openide.nodes.*;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.util.actions.*;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -65,8 +68,7 @@ public final class UINodes extends Object {
     * @return environment node
     */
     public static Node createEnvironmentNode () {
-        Places.Nodes ns = TopManager.getDefault ().getPlaces ().nodes ();
-        Node environmentNode = ns.environment ().cloneNode ();
+        Node environmentNode = NbPlaces.getDefault().environment ().cloneNode ();
         environmentNode.setShortDescription (bundle.getString ("CTL_Environment_Hint"));
         return environmentNode;
     }
@@ -75,8 +77,7 @@ public final class UINodes extends Object {
     * @return session settings node
     */
     public static Node createSessionNode () {
-        Places.Nodes ns = TopManager.getDefault ().getPlaces ().nodes ();
-        Node sessionNode = ns.session ().cloneNode ();
+        Node sessionNode = NbPlaces.getDefault().session ().cloneNode ();
         sessionNode.setShortDescription (bundle.getString ("CTL_Session_Settings_Hint"));
         return sessionNode;
     }
@@ -86,7 +87,7 @@ public final class UINodes extends Object {
     */
     public static Node createFileSystems () {
         return new MountNode (
-            org.netbeans.core.NbPlaces.findSessionFolder ("Mount") // NOI18N
+            NbPlaces.getDefault().findSessionFolder ("Mount") // NOI18N
         );
     }
 
@@ -180,12 +181,6 @@ public final class UINodes extends Object {
         }
     }
 
-    /** Getter for folders.
-    */
-    private static Places.Folders fs () {
-        return TopManager.getDefault ().getPlaces ().folders ();
-    }
-
     /** Node representing templates folder */
     private static class TemplatesNode extends IconSubstituteNode {
         /** generated Serialized Version UID */
@@ -194,7 +189,7 @@ public final class UINodes extends Object {
         private static SystemAction[] staticActions;
 
         public TemplatesNode () {
-            this (fs ().templates ().getNodeDelegate ());
+            this (NbPlaces.getDefault().templates ().getNodeDelegate ());
         }
 
         public TemplatesNode(Node ref) {
@@ -229,7 +224,7 @@ public final class UINodes extends Object {
         private static SystemAction[] staticActions;
 
         public StartupNode() {
-            super (fs ().startup ().getNodeDelegate (), startupIconURL, startupIcon32URL);
+            super (NbPlaces.getDefault().startup ().getNodeDelegate (), startupIconURL, startupIcon32URL);
             super.setDisplayName(bundle.getString("CTL_Startup_name"));
             super.setShortDescription(bundle.getString("CTL_Startup_hint"));
         }
@@ -262,7 +257,7 @@ public final class UINodes extends Object {
         private static SystemAction[] staticActions;
 
         public ObjectTypesNode() {
-            this (TopManager.getDefault ().getPlaces ().nodes ().loaderPool ());
+            this (LoaderPoolNode.getLoaderPoolNode());
         }
 
         public ObjectTypesNode(Node ref) {

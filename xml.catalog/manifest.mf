@@ -7,8 +7,11 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Public-Packages: 
  org.netbeans.modules.xml.catalog.spi.**,
  org.netbeans.modules.xml.catalog.settings.*
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.19
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.14
 OpenIDE-Module-Module-Dependencies: 
  org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@,
- org.netbeans.modules.xml.core/1 = @BUILD_NUMBER_SUBST@
+ org.netbeans.modules.xml.core/1 = @BUILD_NUMBER_SUBST@,
+ org.openide.deprecated > 1.0
+OpenIDE-Module-Requires: org.openide.TopManager
 Class-Path: ext/resolver-1_1_nb.jar
+

@@ -25,6 +25,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /** The node for the actions pool folder representation.
@@ -43,7 +44,7 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
     private static final Node.PropertySet[] NO_PROPERTIES = new Node.PropertySet[0];
 
     public ActionsPoolNode () {
-        this (NbTopManager.getDefault ().getPlaces ().folders ().actions ());
+        this (NbPlaces.getDefault().actions ());
     }
 
     /** Constructs this node with given node to filter.

@@ -20,11 +20,11 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
 
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 
 import org.xml.sax.Attributes;
@@ -634,11 +634,7 @@ final class XMLSettingsSupport {
         
         /** try to load class from system and current classloader. */
         private Class loadClass(String clazz) throws ClassNotFoundException {
-            try {
-                return TopManager.getDefault().systemClassLoader().loadClass(clazz);
-            } catch (ClassNotFoundException ex) {
-                return TopManager.getDefault().currentClassLoader().loadClass(clazz);
-            }
+            return ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass(clazz);
         }
         
         /** get class name of instance */

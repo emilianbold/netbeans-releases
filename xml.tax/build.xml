@@ -47,9 +47,8 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Compiling TAX module classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>        
-                <fileset dir="${nbroot}/openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
+                <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
+                <pathelement location="${nbroot}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
                 <pathelement location="${lib_root}/src"/>
                 <pathelement location="${api_root}/src/"/>
             </classpath>

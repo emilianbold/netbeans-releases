@@ -60,7 +60,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
@@ -68,7 +67,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListener;
 
-import org.netbeans.core.projects.SessionManager;
 import org.netbeans.core.execution.ExecutionEngine;
 import org.netbeans.core.execution.ExecutionEvent;
 import org.netbeans.core.execution.ExecutionListener;
@@ -345,7 +343,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                                                          exitComponent                                                    // Action Listener
                                                      );
                 exitDlgDescriptor.setAdditionalOptions (new Object[] {NotifyDescriptor.CANCEL_OPTION});
-                exitDialog = TopManager.getDefault ().createDialog (exitDlgDescriptor);
+                exitDialog = org.openide.DialogDisplayer.getDefault ().createDialog (exitDlgDescriptor);
             }
 
             result = false;
@@ -463,7 +461,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                 }
             });
 
-            dialog[0] = TopManager.getDefault().createDialog(dd);
+            dialog[0] = org.openide.DialogDisplayer.getDefault().createDialog(dd);
             
             dialog[0].addWindowListener(new java.awt.event.WindowAdapter() {
                 public void windowOpened(java.awt.event.WindowEvent evt) {

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,6 +16,8 @@ package org.netbeans.core;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
@@ -23,22 +25,27 @@ import org.openide.filesystems.FileSystem;
 import org.netbeans.core.modules.ModuleSystem;
 import org.netbeans.core.projects.ModuleLayeredFileSystem;
 import org.netbeans.core.xml.NbSAXParserFactoryImpl;
+import org.openide.awt.StatusDisplayer;
 
 /** Default implementation of TopManager that is used when 
 * the system is used without initialization.
 *
 * @author Jaroslav Tulach
 */
-public class Plain extends NbTopManager implements Runnable {
+public class Plain extends NbTopManager implements Runnable, ChangeListener {
     
     static {
         NbSAXParserFactoryImpl.install();
     }
+    
+    private final StatusDisplayer status;
 
-  /** Creates new Plain. */
-  public Plain() {
-      if (Boolean.getBoolean("org.netbeans.core.Plain.CULPRIT")) Thread.dumpStack(); // NOI18N
-  }
+    /** Creates new Plain. */
+    public Plain() {
+        if (Boolean.getBoolean("org.netbeans.core.Plain.CULPRIT")) Thread.dumpStack(); // NOI18N
+        status = StatusDisplayer.getDefault();
+        status.addChangeListener(this);
+    }
   
     private ModuleSystem moduleSystem;
   
@@ -77,14 +84,10 @@ public class Plain extends NbTopManager implements Runnable {
     return new Object();
   }
   
-    protected void setStatusTextImpl(String text) {
-        System.out.println(text);
-    }
-    
     /** Create the module system. Subclasses may override. */
     protected ModuleSystem createModuleSystem() throws IOException {
         String userDir = System.getProperty("modules.dir"); // NOI18N
-        FileSystem fs = getRepository().getDefaultFileSystem();
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         return new ModuleSystem(fs, userDir == null ? null : new File(userDir), null);
     }
   
@@ -97,9 +100,8 @@ public class Plain extends NbTopManager implements Runnable {
             notifyException(ioe);
             return;
         }
-        fireSystemClassLoaderChange();
         moduleSystem.loadBootModules();
-        if (!getRepository().getDefaultFileSystem().isReadOnly()) {
+        if (!Repository.getDefault().getDefaultFileSystem().isReadOnly()) {
             moduleSystem.readList();
             moduleSystem.scanForNewAndRestore();
             LoaderPoolNode.installationFinished();
@@ -114,14 +116,8 @@ public class Plain extends NbTopManager implements Runnable {
         return moduleSystem;
     }
   
-/* JST: not needed anymore.
-  static class ClassLoaderFinder extends SecurityManager implements org.openide.util.NbBundle.ClassLoaderFinder {
-
-    public ClassLoader find() {
-      Class[] classes = getClassContext();
-      return classes[Math.min(4, classes.length - 1)].getClassLoader();
+    public void stateChanged(ChangeEvent e) {
+        System.out.println(status.getStatusText());
     }
-  }
-*/
-
+    
 }

@@ -31,7 +31,6 @@ import org.netbeans.modules.xml.spi.model.EmptyQuery;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
-import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
@@ -40,6 +39,7 @@ import org.openide.util.Task;
 import org.openide.util.enum.QueueEnumeration;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
+import org.openide.awt.StatusDisplayer;
 
 /**
  * Manages grammar to text editor association. It is able to
@@ -207,7 +207,7 @@ class GrammarManager implements DocumentListener {
      */
     private void notifyProgress(Task loader, String msg) {
         if (this.loader != loader) return;
-        TopManager.getDefault().setStatusText(msg);
+        StatusDisplayer.getDefault().setStatusText(msg);
     }
 
     /**

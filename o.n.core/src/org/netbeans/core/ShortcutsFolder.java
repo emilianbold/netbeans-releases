@@ -25,6 +25,7 @@ import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 
@@ -98,7 +99,7 @@ final class ShortcutsFolder extends FolderInstance {
             map.put (stroke, action);
         }
         
-        Keymap globalMap = TopManager.getDefault ().getGlobalKeymap ();
+        Keymap globalMap = (Keymap)Lookup.getDefault().lookup(Keymap.class);
         globalMap.removeBindings();
         // globalMap is synchronized
         if (globalMap instanceof NbKeymap) {
@@ -145,7 +146,7 @@ final class ShortcutsFolder extends FolderInstance {
      * It is used in ShortcutsPanel.
      */
     static String getKeyStrokeName (KeyStroke stroke) {
-        Keymap map = TopManager.getDefault ().getGlobalKeymap ();
+        Keymap map = (Keymap)Lookup.getDefault().lookup(Keymap.class);
         Action action = map.getAction (stroke);
         if (action instanceof SystemAction) {
             String name = ((SystemAction)action).getName ();
@@ -165,7 +166,7 @@ final class ShortcutsFolder extends FolderInstance {
         String name = Utilities.replaceString (action.getName (), "&", ""); // remove mnemonics marker // NOI18N
         name = Utilities.replaceString (name, "...", ""); // remove trailing "..." // NOI18N
 
-        Keymap map = TopManager.getDefault ().getGlobalKeymap ();
+        Keymap map = (Keymap)Lookup.getDefault().lookup(Keymap.class);
         KeyStroke[] strokes = map.getKeyStrokesForAction(action);
 
         if (strokes.length > 0) {
@@ -235,7 +236,8 @@ final class ShortcutsFolder extends FolderInstance {
     private static void transformOldFiles() {
         // used to be installCurrentBindings
         try {
-            org.openide.filesystems.FileSystem systemFS = TopManager.getDefault().getRepository().getDefaultFileSystem ();
+            org.openide.filesystems.FileSystem systemFS
+                = Repository.getDefault().getDefaultFileSystem ();
 
             boolean defaultsUsed = false;
             HashMap moduleKeyFiles = new HashMap (11);
@@ -301,8 +303,8 @@ final class ShortcutsFolder extends FolderInstance {
      * the shortcuts folder.
      */
     public static void installBindings (HashMap strokesMap) throws IOException { 
-        FileObject fo = TopManager.getDefault().getRepository().
-            getDefaultFileSystem().getRoot().getFileObject(SHORTCUTS_FOLDER);
+        FileObject fo = Repository.getDefault().getDefaultFileSystem()
+                .getRoot().getFileObject(SHORTCUTS_FOLDER);
         DataFolder f = DataFolder.findFolder(fo);
         for (Iterator it = strokesMap.keySet().iterator(); it.hasNext (); ) {
             KeyStroke key = (KeyStroke)it.next ();
@@ -367,7 +369,8 @@ final class ShortcutsFolder extends FolderInstance {
                 act = nl.item (i).getAttributes ().getNamedItem (ATTR_BINDING_ACTION).getNodeValue ();
 
                 KeyStroke stroke = Utilities.stringToKey (key);
-                SystemAction action = SystemAction.get (Class.forName(act, true, TopManager.getDefault ().systemClassLoader ()));
+                SystemAction action = SystemAction.get (
+                    Class.forName(act, true, (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)));
                 map.put (stroke, action);
 	    } catch (ClassNotFoundException cnfe) {
 		if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
@@ -382,7 +385,7 @@ final class ShortcutsFolder extends FolderInstance {
      */
     public static void initShortcuts() {
         transformOldFiles();
-        DataFolder f = NbPlaces.findSessionFolder(SHORTCUTS_FOLDER);
+        DataFolder f = NbPlaces.getDefault().findSessionFolder(SHORTCUTS_FOLDER);
         shortcutsFolder = new ShortcutsFolder(f);
         shortcutsFolder.recreate();
     }
@@ -400,8 +403,8 @@ final class ShortcutsFolder extends FolderInstance {
      * @param List changes - the elements of the List are ChangeRequests
      */
     public static void applyChanges(java.util.List changes) {
-        FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem ().
-            getRoot().getFileObject(SHORTCUTS_FOLDER);
+        FileObject fo = Repository.getDefault().getDefaultFileSystem()
+            .getRoot().getFileObject(SHORTCUTS_FOLDER);
         DataFolder f = DataFolder.findFolder(fo);
         Iterator it = changes.listIterator();
         while (it.hasNext()) {

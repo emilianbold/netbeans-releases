@@ -21,7 +21,6 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.loaders.ExtensionList;
 import org.openide.util.enum.ArrayEnumeration;
 import org.openide.util.NbBundle;
-import org.openide.explorer.propertysheet.editors.*;
 import org.openide.nodes.Node;
 
 /** Property editor for {@link ExtensionList}s.
@@ -31,7 +30,7 @@ import org.openide.nodes.Node;
 * @author Jaroslav Tulach
 * @version 0.11 November 11, 1997
 */
-public class ExtensionListEditor extends Object implements PropertyEditor, StringArrayCustomizable,
+public class ExtensionListEditor extends Object implements PropertyEditor,
         ExPropertyEditor {
     /** value to edit */
     private ExtensionList value;

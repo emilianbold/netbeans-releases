@@ -41,9 +41,8 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../external">
           <include name="*.jar"/>
         </fileset>
-        <fileset dir="${nb_root}/openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
+        <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
+        <pathelement location="${nb_root}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
       </classpath>
     </javac>
   </target>

@@ -14,6 +14,7 @@
 package org.netbeans.core;
 
 import java.util.*;
+import java.util.Observable;
 import javax.swing.event.*;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
@@ -23,7 +24,7 @@ import javax.swing.text.Keymap;
 *
 * @author Dafe Simonek
 */
-public final class NbKeymap implements Keymap {
+public final class NbKeymap extends Observable implements Keymap {
     /** Name of this keymap */
     String name;
     /** Parent keymap */
@@ -56,7 +57,8 @@ public final class NbKeymap implements Keymap {
 
     public void setDefaultAction(Action a) {
         defaultAction = a;
-        fireChangeEvent(new ChangeEvent(this));
+        setChanged();
+        notifyObservers();
     }
 
     public String getName() {
@@ -143,7 +145,8 @@ public final class NbKeymap implements Keymap {
             bindings.put(key, a);
             actions = null;
         }
-        fireChangeEvent(new ChangeEvent(this));
+        setChanged();
+        notifyObservers();
     }
 
     void addActionForKeyStrokeMap(HashMap map) {
@@ -154,7 +157,8 @@ public final class NbKeymap implements Keymap {
             }
             actions = null;
         }
-        fireChangeEvent(new ChangeEvent(this));
+        setChanged();
+        notifyObservers();
     }
 
     public void removeKeyStrokeBinding(KeyStroke key) {
@@ -162,7 +166,8 @@ public final class NbKeymap implements Keymap {
             bindings.remove(key);
             actions = null;
         }
-        fireChangeEvent(new ChangeEvent(this));
+        setChanged();
+        notifyObservers();
     }
 
     public void removeBindings() {
@@ -170,7 +175,8 @@ public final class NbKeymap implements Keymap {
             bindings.clear();
             actions = null;
         }
-        fireChangeEvent(new ChangeEvent(this));
+        setChanged();
+        notifyObservers();
     }
 
     public Keymap getResolveParent() {
@@ -179,17 +185,14 @@ public final class NbKeymap implements Keymap {
 
     public void setResolveParent(Keymap parent) {
         this.parent = parent;
-        fireChangeEvent(new ChangeEvent(this));
+        setChanged();
+        notifyObservers();
     }
 
     /** Returns string representation - can be looong.
     */
     public String toString() {
         return "Keymap[" + name + "]" + bindings; // NOI18N
-    }
-
-    void fireChangeEvent (final ChangeEvent che) {
-        NbTopManager.get ().firePropertyChange (NbTopManager.PROP_GLOBAL_KEYMAP, null, null);
     }
 
 }

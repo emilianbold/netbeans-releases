@@ -18,7 +18,6 @@ import java.util.ResourceBundle;
 import org.openide.nodes.*;
 import org.openide.actions.*;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;

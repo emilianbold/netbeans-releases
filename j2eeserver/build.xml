@@ -163,9 +163,9 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" excludes="org/netbeans/modules/j2ee/deployment/model/**,org/netbeans/modules/j2ee/deployment/support/**">
       <classpath>
         <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
-        <fileset dir="${nbroot}/openide/netbeans/lib">
-                <include name="openide*.jar"/>
-        </fileset>
+        <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
+        <pathelement location="${nbroot}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+        <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <pathelement location="${jdkhome}/lib/tools.jar"/>
         <!-- orion_ea requires logger !!!
         <pathelement location="${nbroot}/logger/netbeans/lib/ext/logger.jar"/>

@@ -28,8 +28,8 @@ import java.util.jar.*;
 import org.w3c.dom.*;
 import org.apache.xml.serialize.*;
 
+import org.netbeans.core.NbTopManager;
 import org.netbeans.performance.Benchmark;
-import org.openide.TopManager;
 import org.openide.xml.XMLUtil;
 
 // initial run (04-sep-02) with empty dummy modules under JDK 1.4.1rc:
@@ -552,7 +552,7 @@ public class ModuleInitTest extends Benchmark {
     
     public static final class Main {
         public static void main(String[] x) {
-            TopManager.getDefault();
+            NbTopManager.get();
             if (Boolean.getBoolean("log")) {
                 Runtime r = Runtime.getRuntime();
                 r.gc();

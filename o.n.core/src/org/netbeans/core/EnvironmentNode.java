@@ -65,13 +65,13 @@ final class EnvironmentNode extends AbstractNode {
                         Node n = (Node)types.get (name);
                         if (n == null) {
                             if (ManifestSection.NodeSection.TYPE_ROOTS.equals(name)) {
-                                n = new EnvironmentNode (name, new NbPlaces.Ch (name));
+                                n = new EnvironmentNode (name, NbPlaces.getDefault().createChildren(name));
                             } else {
                                 DataFolder folder = null;
                                 if (ManifestSection.NodeSection.TYPE_ENVIRONMENT.equals(name)) {
-                                    folder = NbPlaces.findSessionFolder("UI/Runtime"); // NOI18N
+                                    folder = NbPlaces.getDefault().findSessionFolder("UI/Runtime"); // NOI18N
                                 } else {
-                                    folder = NbPlaces.findSessionFolder("UI/Services"); // NOI18N
+                                    folder = NbPlaces.getDefault().findSessionFolder("UI/Services"); // NOI18N
                                 }
                                 n = new PersistentLookupNode(name, folder);
                             }

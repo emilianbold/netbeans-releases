@@ -13,7 +13,6 @@
 
 package org.netbeans.core.actions;
 
-import org.openide.TopManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.windows.*;
 import org.openide.util.HelpCtx;
@@ -25,7 +24,7 @@ import org.netbeans.core.IDESettings;
 import org.openide.windows.WindowManager;
 
 /** Activates last opened HTML browser or opens a HTML Browser on the home URL 
- *  specified in IDESettings using TopManager.showUrl().
+ *  specified in IDESettings using HtmlBrowser.URLDisplayer.showURL().
 *
 * @author Ian Formanek
 */
@@ -41,10 +40,8 @@ public class HTMLViewAction extends CallableSystemAction {
     }
 
     public void performAction() {
-        TopManager tm = TopManager.getDefault();
-        tm.setStatusText (NbBundle.getBundle(HTMLViewAction.class).
-            getString("CTL_OpeningBrowser")
-        );
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+            NbBundle.getBundle(HTMLViewAction.class).getString("CTL_OpeningBrowser"));
         try {
             boolean notFound = true;
             
@@ -78,8 +75,8 @@ public class HTMLViewAction extends CallableSystemAction {
                 }
             }
             if (notFound) {
-                tm.showUrl (new java.net.URL (
-                    HtmlBrowser.getHomePage ()
+                HtmlBrowser.URLDisplayer.getDefault().showURL(
+                    new java.net.URL(HtmlBrowser.getHomePage ()
                 ));
             }
         } catch (java.net.MalformedURLException e) {
@@ -87,16 +84,17 @@ public class HTMLViewAction extends CallableSystemAction {
               startsWith ("http://") // NOI18N
             ) {
                 try {
-                    tm.showUrl (new java.net.URL (
-                        "http://" + HtmlBrowser.getHomePage () // NOI18N
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(
+                        new java.net.URL("http://" + HtmlBrowser.getHomePage () // NOI18N
                     ));
                 } catch (java.net.MalformedURLException e1) {
-                    tm.showUrl (IDESettings.getRealHomeURL ());
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(
+                        IDESettings.getRealHomeURL ());
                 }
             } else
-                tm.showUrl (IDESettings.getRealHomeURL ());
+                HtmlBrowser.URLDisplayer.getDefault().showURL(IDESettings.getRealHomeURL ());
         }
-        tm.setStatusText (""); // NOI18N
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText (""); // NOI18N
     }
 
     public String getName() {

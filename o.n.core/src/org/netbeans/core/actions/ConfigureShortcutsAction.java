@@ -14,7 +14,6 @@
 package org.netbeans.core.actions;
 
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -40,7 +39,7 @@ public class ConfigureShortcutsAction extends org.openide.util.actions.CallableS
             null,
             null
         );
-        TopManager.getDefault ().createDialog (dd).show ();
+        org.openide.DialogDisplayer.getDefault ().createDialog (dd).show ();
         se.flushChanges();
     }
 

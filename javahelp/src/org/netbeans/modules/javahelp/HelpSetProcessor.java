@@ -26,9 +26,9 @@ import org.xml.sax.SAXException;
 import javax.help.HelpSet;
 import javax.help.HelpSetException;
 
-import org.openide.TopManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.XMLDataObject;
+import org.openide.util.Lookup;
 
 /** An XML processor for help set references.
  * Provides an instance of javax.swing.HelpSet.
@@ -118,7 +118,7 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
                 Boolean.valueOf(mergeS).booleanValue();
                 // Make sure nbdocs: protocol is ready:
                 Object ignore = NbDocsStreamHandler.class;
-                hs = new HelpSet(TopManager.getDefault().systemClassLoader(), new URL(url));
+                hs = new HelpSet(((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)), new URL(url));
                 hs.setKeyData(HELPSET_MERGE_CONTEXT, HELPSET_MERGE_ATTR, merge ? Boolean.TRUE : Boolean.FALSE);
                 BPMChanger.invoke(BPMChanger.INC_VALUE);
             } catch (SAXException saxe) {

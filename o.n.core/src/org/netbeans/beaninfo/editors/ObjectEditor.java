@@ -17,7 +17,6 @@ import java.beans.*;
 import java.awt.Component;
 import java.util.*;
 
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
@@ -122,7 +121,7 @@ implements ExPropertyEditor, PropertyChangeListener {
     protected synchronized Node root () {
         if (root == null) {
             root = new org.netbeans.core.ui.LookupNode (
-                org.netbeans.core.NbPlaces.findSessionFolder ("/Services") // NOI18N
+                org.netbeans.core.NbPlaces.getDefault().findSessionFolder ("/Services") // NOI18N
             ); 
         }
         return root;

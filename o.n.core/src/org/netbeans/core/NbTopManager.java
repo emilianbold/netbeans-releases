@@ -24,9 +24,12 @@ import java.util.Enumeration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.text.MessageFormat;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.text.Keymap;
 import javax.swing.border.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.openide.util.datatransfer.ExClipboard;
 import org.openide.*;
@@ -34,19 +37,16 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.loaders.*;
 import org.openide.actions.*;
 import org.openide.cookies.SaveCookie;
-import org.openide.cookies.ProjectCookie;
-import org.openide.debugger.Debugger;
-import org.openide.debugger.DebuggerNotFoundException;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
-import org.openide.options.ControlPanel;
 import org.openide.windows.WindowManager;
 import org.openide.windows.OutputWriter;
 import org.openide.windows.InputOutput;
 import org.openide.windows.TopComponent;
+import org.openide.windows.IOProvider;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.util.*;
@@ -58,16 +58,20 @@ import org.netbeans.core.actions.*;
 import org.netbeans.core.output.OutputTabTerm;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.execution.TopSecurityManager;
+import org.netbeans.core.modules.Module;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleManager;
 import org.netbeans.core.modules.ModuleSystem;
+import org.netbeans.core.projects.TrivialProjectManager;
 import org.netbeans.core.windows.util.WindowUtils;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.lookup.InstanceContent;
 
 /** This class is a TopManager for Corona environment.
 *
 * @author Ales Novak, Jaroslav Tulach, Ian Formanek, Petr Hamernik, Jan Jancura, Jesse Glick
 */
-public abstract class NbTopManager extends TopManager {
+public abstract class NbTopManager /*extends TopManager*/ {
     /* masks to define the interactivity level */
 
     /** initialize the main window?
@@ -88,14 +92,6 @@ public abstract class NbTopManager extends TopManager {
     public static final int IL_ALL = 0xffff;
 
 
-    /** property for status text */
-    public static final String PROP_STATUS_TEXT = "statusText"; // NOI18N
-    
-    /** property for system class loader */
-    public static final String PROP_SYSTEM_CLASS_LOADER = "systemClassLoader"; // NOI18N
-    /** property for current class loader */
-    public static final String PROP_CURRENT_CLASS_LOADER = "currentClassLoader"; // NOI18N
-
     /** stores main shortcut context*/
     private Keymap shortcutContext;
 
@@ -110,15 +106,6 @@ public abstract class NbTopManager extends TopManager {
     /** error manager */
     private static ErrorManager defaultErrorManager;
 
-    /** WWW browser window. */
-    private HtmlBrowser.BrowserComponent htmlViewer;
-
-    /** ProjectOperation main variable */
-    static NbProjectOperation projectOperation;
-
-    /** support for listeners */
-    private PropertyChangeSupport change = new PropertyChangeSupport (this);
-
     /** repository */
     private Repository defaultRepository;
 
@@ -128,28 +115,18 @@ public abstract class NbTopManager extends TopManager {
     /** status text */
     private String statusText = " "; // NOI18N
 
-    /** the debugger listener listening on adding/removing debugger*/
-    private static LookupListener debuggerLsnr = null;
-    /** the lookup query finding all registered debuggers */
-    private static Lookup.Result debuggerLkpRes = null;
-    
     /** initializes properties about builds etc. */
     static {
+        org.openide.filesystems.FileObject fo = null;
         // Set up module-versioning properties, which logger prints.
-        Package p = Package.getPackage ("org.openide"); // NOI18N
+        // The package here must be one which exists only in openide.jar, not openide-deprecated.jar:
+        Object ignoreme = FileSystem.class;
+        Package p = Package.getPackage ("org.openide.filesystems"); // NOI18N
         
-        putSystemProperty ("org.openide.specification.version", p.getSpecificationVersion (), "3.12"); // NOI18N
+        putSystemProperty ("org.openide.specification.version", p.getSpecificationVersion (), "3.14"); // NOI18N
         putSystemProperty ("org.openide.version", p.getImplementationVersion (), "OwnBuild"); // NOI18N
         putSystemProperty ("org.openide.major.version", p.getSpecificationTitle (), "IDE/1"); // NOI18N
         putSystemProperty ("netbeans.buildnumber", p.getImplementationVersion (), "OwnBuild"); // NOI18N
-        
-        if (System.getProperties ().get ("org.openide.util.Lookup") == null) { // NOI18N
-          // update the top manager to our main if it has not been provided yet
-          System.getProperties().put (
-            "org.openide.util.Lookup", // NOI18N
-            "org.netbeans.core.NbTopManager$Lkp" // NOI18N
-          );
-        }
         
         // Enforce JDK 1.3+ since we would not work without it.
         if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.3")) < 0) { // NOI18N
@@ -218,13 +195,53 @@ public abstract class NbTopManager extends TopManager {
     public NbTopManager() {
         instanceContent = new InstanceContent ();
         instanceLookup = new AbstractLookup (instanceContent);
-        register (ClassLoaderConvertor.CLASSLOADER, ClassLoaderConvertor.CLASSLOADER);
+        if (!(Lookup.getDefault() instanceof Lkp)) {
+            throw new ClassCastException("Wrong Lookup impl found: " + Lookup.getDefault());
+        }
     }
 
     /** Getter for instance of this manager.
     */
     public static NbTopManager get () {
-        return (NbTopManager)TopManager.getDefault ();
+//        return (NbTopManager)TopManager.getDefault ();
+        return getNbTopManager();
+    }
+        
+    private static NbTopManager defaultTopManager; 
+    
+    public static synchronized boolean isInitialized () {
+        return defaultTopManager != null;
+    }
+    
+    private static /*synchronized*/ NbTopManager getNbTopManager () {
+        // synchronization check
+        if (defaultTopManager != null) {
+            return defaultTopManager;
+        }
+
+        // XXX double check like it was in TopManager, otherwise led to deadlock at
+        // start, needs to be revised.
+        synchronized(NbTopManager.class) {
+            String className = System.getProperty(
+                                   "org.openide.TopManager", // NOI18N
+                                   "org.netbeans.core.Plain" // NOI18N
+                               );
+
+            try {
+                Class c = Class.forName(className);
+                defaultTopManager = (NbTopManager)c.newInstance();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                throw new IllegalStateException();
+            }
+
+            // late initialization of the manager if needed
+            if (defaultTopManager instanceof Runnable) {
+                ((Runnable)defaultTopManager).run ();
+            }
+
+            return defaultTopManager;
+        }
     }
 
     /** Test method to check whether some level of interactivity is enabled.
@@ -292,11 +309,12 @@ public abstract class NbTopManager extends TopManager {
 
     /** Shows a specified HelpCtx in IDE's help window.
     * @param helpCtx thehelp to be shown
+     * @deprecated Better to use org.netbeans.api.javahelp.Help
     */
     public void showHelp(HelpCtx helpCtx) {
         // Awkward but should work.
         try {
-            Class c = systemClassLoader().loadClass("org.netbeans.api.javahelp.Help"); // NOI18N
+            Class c = ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass("org.netbeans.api.javahelp.Help"); // NOI18N
             Object o = Lookup.getDefault().lookup(c);
             if (o != null) {
                 Method m = c.getMethod("showHelp", new Class[] {HelpCtx.class}); // NOI18N
@@ -307,28 +325,31 @@ public abstract class NbTopManager extends TopManager {
             // ignore - maybe javahelp module is not installed, not so strange
         } catch (Exception e) {
             // potentially more serious
-            getErrorManager().notify(ErrorManager.INFORMATIONAL, e);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         // Did not work.
         Toolkit.getDefaultToolkit().beep();
     }
 
-    /** Provides support for www documents.
-    * @param url Url of WWW document to be showen.
-    */
-    public void showUrl (URL url) {
-        if (htmlViewer == null) htmlViewer = new NbBrowser ();
-
-	((NbBrowser)htmlViewer).showUrl (url);
+    public static final class NbURLDisplayer extends HtmlBrowser.URLDisplayer {
+        /** WWW browser window. */
+        HtmlBrowser.BrowserComponent htmlViewer;
+        public void showURL(URL u) {
+            if (htmlViewer == null) htmlViewer = new NbBrowser ();
+            ((NbBrowser)htmlViewer).showUrl(u);
+        }
     }
 
     private static WindowManager wmgr = null;
+    private static final Object windowManagerLock = new String("NbTopManager.windowManagerLock"); // NOI18N
     /** @return a window manager impl or null */
-    private static synchronized WindowManager getDefaultWindowManager() {
-        if (wmgr == null) {
-            wmgr = (WindowManager)Lookup.getDefault().lookup(WindowManager.class);
+    private static WindowManager getDefaultWindowManager() {
+        synchronized (windowManagerLock) {
+            if (wmgr == null) {
+                wmgr = (WindowManager)Lookup.getDefault().lookup(WindowManager.class);
+            }
+            return wmgr;
         }
-        return wmgr;
     }
     /** @return the main window from the window manager impl or null */
     static Frame getMainWindow() {
@@ -354,6 +375,8 @@ public abstract class NbTopManager extends TopManager {
         }
     }
 
+    public static final class NbDialogDisplayer extends DialogDisplayer {
+
     /** Creates new dialog.
     */
     public Dialog createDialog (final DialogDescriptor d) {
@@ -370,20 +393,7 @@ public abstract class NbTopManager extends TopManager {
             }
         });
     }
-
-    /** Opens specified project. Asks to save the previously opened project.
-    * @exception IOException if error occurs accessing the project
-    * @exception UserCancelException if the selection is interrupted by the user
-    */
-    public void openProject (ProjectCookie project) throws IOException, UserCancelException {
-        if (ExitDialog.showDialog (null, true)) {
-            NbProjectOperation.setOpeningProject (project);
-        }
-        else {
-            throw new UserCancelException ();
-        }
-    }
-
+    
     /** Notifies user by a dialog.
     * @param descriptor description that contains needed informations
     * @return the option that has been choosen in the notification
@@ -431,64 +441,52 @@ public abstract class NbTopManager extends TopManager {
             });
     }
 
-    /** Shows specified text in MainWindow's status line.
-    * @param text the text to be shown
-    */
-    public final void setStatusText(String text) {
-        if (text == null || text.length () == 0) {
-            text = " "; // NOI18N
-        }
-        if (text.equals(statusText)) return;
-        String old = statusText;
-        statusText = text;
-        setStatusTextImpl(text);
-        firePropertyChange (PROP_STATUS_TEXT, old, text);
-    }
-    protected abstract void setStatusTextImpl(String text);
-
-    /** Getter for status text.
-    */
-    public String getStatusText () {
-        return statusText;
     }
 
-    /** Returns currently installed debugger or throws
-    *  DebuggerException (when no debugger is installed)
-    * @return currently installed  debugger.
+    /** Opens specified project. Asks to save the previously opened project.
+    * @exception IOException if error occurs accessing the project
+    * @exception UserCancelException if the selection is interrupted by the user
     */
-    public Debugger getDebugger () throws DebuggerNotFoundException {
-        Iterator it = getDebuggerResult().allInstances().iterator();
-        if (it.hasNext()) return (Debugger) it.next();
-        throw new DebuggerNotFoundException();
-    }
-    
-    /** get the lookup query finding all registered debuggers */
-    private synchronized Lookup.Result getDebuggerResult() {
-        if (debuggerLkpRes == null) {
-            debuggerLkpRes = Lookup.getDefault().lookup(new Lookup.Template(Debugger.class));
-        }
-        return debuggerLkpRes;
-    }
-    
-    /** fire property change PROP_DEBUGGER */
-    private void fireDebuggerChange() {
-        firePropertyChange (PROP_DEBUGGER, null, null);
-    }
-    
-    /** initialize listening on adding/removing debugger. */
-    private void initDebuggerListener() {
-        Lookup.Result res;
-        synchronized (this) {
-            if (debuggerLsnr != null) return;
-            res = getDebuggerResult();
-            debuggerLsnr = new LookupListener() {
-                public void resultChanged(LookupEvent ev) {
-                    fireDebuggerChange();
+//    public void openProject (ProjectCookie project) throws IOException, UserCancelException {
+//        if (ExitDialog.showDialog (null, true)) {
+//            NbProjectOperation.setOpeningProject (project);
+//        }
+//        else {
+//            throw new UserCancelException ();
+//        }
+//    } 
+
+
+    public static final class NbStatusDisplayer extends org.openide.awt.StatusDisplayer {
+        private List listeners = null;
+        private String text = ""; // NOI18N
+        public void setStatusText(String text) {
+            ChangeListener[] _listeners;
+            synchronized (this) {
+                this.text = text;
+                if (listeners == null || listeners.isEmpty()) {
+                    _listeners = null;
+                } else {
+                    _listeners = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
                 }
-            };
-            res.addLookupListener(debuggerLsnr);
+            }
+            if (_listeners != null) {
+                ChangeEvent e = new ChangeEvent(this);
+                for (int i = 0; i < _listeners.length; i++) {
+                    _listeners[i].stateChanged(e);
+                }
+            }
         }
-        res.allClasses();
+        public synchronized String getStatusText() {
+            return text;
+        }
+        public synchronized void addChangeListener(ChangeListener l) {
+            if (listeners == null) listeners = new ArrayList();
+            listeners.add(l);
+        }
+        public synchronized void removeChangeListener(ChangeListener l) {
+            listeners.remove(l);
+        }
     }
 
     /** Print output writer.
@@ -505,6 +503,15 @@ public abstract class NbTopManager extends TopManager {
     public InputOutput getIO(String name, boolean newIO) {
         return OutputTabTerm.getIO (name, newIO);
     }
+    
+    public static final class NbIOProvider extends IOProvider {
+        public InputOutput getIO(String name, boolean newIO) {
+            return NbTopManager.get().getIO(name, newIO);
+        }
+        public OutputWriter getStdOut() {
+            return NbTopManager.get().getStdOut();
+        }
+    }
 
     /** saves all opened objects */
     public void saveAll () {
@@ -516,7 +523,7 @@ public abstract class NbTopManager extends TopManager {
                 dobj = modifs[i];
                 SaveCookie sc = (SaveCookie)dobj.getCookie(SaveCookie.class);
                 if (sc != null) {
-                    TopManager.getDefault().setStatusText (
+                    org.openide.awt.StatusDisplayer.getDefault().setStatusText (
                         java.text.MessageFormat.format (
                             NbBundle.getBundle (NbTopManager.class).getString ("CTL_FMT_SavingMessage"),
                             new Object[] { dobj.getName () }
@@ -538,10 +545,10 @@ public abstract class NbTopManager extends TopManager {
                             new Object[] { ((DataObject)ee.next()).getPrimaryFile().getName() }
                         )
                     );
-            TopManager.getDefault ().notify (descriptor);
+            org.openide.DialogDisplayer.getDefault().notify (descriptor);
         }
         // notify user that everything is done
-        TopManager.getDefault().setStatusText(
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
             NbBundle.getBundle (NbTopManager.class).getString ("MSG_AllSaved"));
     }
 
@@ -560,8 +567,21 @@ public abstract class NbTopManager extends TopManager {
                     // hide windows explicitly, they are of no use during exit process
                     WindowUtils.hideAllFrames();
                     try {
-                        // save project
-                        NbProjectOperation.storeLastProject ();
+                        try {
+                            LoaderPoolNode.store();
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                        }
+                        // save project, if applicable
+                        try {
+                            ((TrivialProjectManager)Lookup.getDefault().lookup(TrivialProjectManager.class)).store();
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                        }
+                        // save window system, [PENDING] remove this after the winsys will
+                        // persist its state automaticaly
+                        ((WindowManagerImpl)getDefaultWindowManager()).persistenceManager ().writeXML ();
+                        org.netbeans.core.projects.XMLSettingsHandler.saveOptions();
                         org.netbeans.core.projects.SessionManager.getDefault().close();
                     } catch (ThreadDeath td) {
                         throw td;
@@ -579,6 +599,15 @@ public abstract class NbTopManager extends TopManager {
             }
         }
     }
+    
+    public static final class NbLifecycleManager extends LifecycleManager {
+        public void saveAll() {
+            NbTopManager.get().saveAll();
+        }
+        public void exit() {
+            NbTopManager.get().exit();
+        }
+    }
 
     /** Shows exit dialog for activated File system nodes
     * after unmounting filesystem(s)
@@ -590,63 +619,6 @@ public abstract class NbTopManager extends TopManager {
     
     /** Get the module subsystem. */
     public abstract ModuleSystem getModuleSystem();
-
-    /** Obtains current up-to system classloader
-    */
-    public ClassLoader systemClassLoader () {
-        ModuleSystem ms = getModuleSystem();
-        if (ms != null) {
-            // #16265: do not go straight to ModuleManager
-            return ms.getSystemClassLoader();
-        } else {
-            // This can be called very early: if lookup asks for ClassLoader.
-            // For now, just give the startup classloader.
-            //System.err.println("Warning: giving out bogus systemClassLoader for now");
-            //Thread.dumpStack();
-            return NbTopManager.class.getClassLoader();
-        }
-    }
-    // Access from ModuleSystem and from subclasses when moduleSystem is created:
-    public final void fireSystemClassLoaderChange() {
-        //System.err.println("change: systemClassLoader -> " + systemClassLoader());
-        firePropertyChange(PROP_SYSTEM_CLASS_LOADER, null, null);
-        Lkp.systemClassLoaderChanged(); // #26245
-    }
-
-    /** Obtains current up-to data te classloader
-    */
-    public ClassLoader currentClassLoader () {
-        ClassLoader l = ClassLoaderSupport.currentClassLoader ();
-        if (l == null) {
-            System.err.println("SHOULD NEVER HAPPEN: currentClassLoader==null"); // NOI18N
-            l = systemClassLoader ();
-        }
-        return l;
-    }
-    // Access from ClassLoaderSupport:
-    final void fireCurrentClassLoaderChange() {
-        //System.err.println("change: currentClassLoader");
-        firePropertyChange(PROP_CURRENT_CLASS_LOADER, null, null);
-    }
-
-
-
-    /** Add listener */
-    public void addPropertyChangeListener (PropertyChangeListener l) {
-        initDebuggerListener();
-        change.addPropertyChangeListener (l);
-    }
-
-    /** Removes the listener */
-    public void removePropertyChangeListener (PropertyChangeListener l) {
-        change.removePropertyChangeListener (l);
-    }
-
-    /** Fires property change
-    */
-    public void firePropertyChange (String p, Object o, Object n) {
-        change.firePropertyChange (p, o, n);
-    }
 
     /** Someone running NonGuiMain might want to set this to true.
      * This variable is read from CompilationEngineImpl to determine
@@ -733,7 +705,7 @@ public abstract class NbTopManager extends TopManager {
                 ((IDESettings)IDESettings.findObject (IDESettings.class, true)).removePropertyChangeListener (idePCL);
                 idePCL = null;
             }
-            NbTopManager.get ().htmlViewer = null;
+            ((NbURLDisplayer)HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = null;
             return super.closeLast ();
         }
 
@@ -767,7 +739,7 @@ public abstract class NbTopManager extends TopManager {
         public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal (in);
             setListener ();
-            NbTopManager.get ().htmlViewer = this;
+            ((NbURLDisplayer)HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = this;
         }
 
         /**
@@ -783,7 +755,7 @@ public abstract class NbTopManager extends TopManager {
                         String name = evt.getPropertyName ();
                         if (name == null) return;
                         if (name.equals (IDESettings.PROP_WWWBROWSER)) {
-                            NbTopManager.get ().htmlViewer = null;
+                            ((NbURLDisplayer)HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = null;
                             if (idePCL != null) {
                                 ((IDESettings)IDESettings.findObject (IDESettings.class, true))
                                 .removePropertyChangeListener (idePCL);
@@ -795,7 +767,7 @@ public abstract class NbTopManager extends TopManager {
                 ((IDESettings)IDESettings.findObject (IDESettings.class, true)).addPropertyChangeListener (idePCL);
             }
             catch (Exception ex) {
-                NbTopManager.get ().notifyException (ex);
+                ErrorManager.getDefault().notify(ex);
             }
         }
     }
@@ -807,71 +779,58 @@ public abstract class NbTopManager extends TopManager {
         private Task initTask;
         /** thread that initialized the task and has to recieve good results */
         private Thread initThread;
+        /** currently effective ClassLoader */
+        private static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         
         /** Initialize the lookup to delegate to NbTopManager.
         */
         public Lkp () {
             super (new Lookup[] {
                        // #14722: pay attention also to META-INF/services/class.Name resources:
-                       createMetaInfServicesLookup(false),
+                       createMetaInfServicesLookup(),
+                       Lookups.singleton(classLoader),
                    });
         }
-        
-        /** @param modules if true, use module classloader, else not */
-        private static Lookup createMetaInfServicesLookup(boolean modules) {
+                
+        private static Lookup createMetaInfServicesLookup() {
             //System.err.println("cMISL: modules=" + modules);
             try {
                 // XXX consider just making this a public class!
+                // or making Lookups.metaInfServices(ClassLoader) static utility method
                 Class clazz = Class.forName("org.openide.util.MetaInfServicesLookup"); // NOI18N
                 Constructor c = clazz.getDeclaredConstructor(new Class[] {ClassLoader.class});
                 c.setAccessible(true);
-                ClassLoader loader;
-                if (modules) {
-                    loader = get().getModuleSystem().getManager().getClassLoader();
-                } else {
-                    loader = Lkp.class.getClassLoader();
-                }
-                return (Lookup)c.newInstance(new Object[] {loader});
+                return (Lookup)c.newInstance(new Object[] {classLoader});
             } catch (Exception e) {
                 e.printStackTrace();
                 return Lookup.EMPTY;
             }
         }
         
-        private static final class ConvertorListener
-                implements PropertyChangeListener {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt == null || ModuleManager.PROP_ENABLED_MODULES.equals(evt.getPropertyName())) {
-                    //System.err.println("modules changed; changing metaInfServicesLookup");
-                    // Time to refresh META-INF/services/ lookup; modules turned on or off.
-                    Lookup lookup = Lookup.getDefault();
-                    if (lookup instanceof Lkp) {
-                        Lkp lkp = (Lkp)lookup;
-                        Lookup[] old = lkp.getLookups();
-                        Lookup[] nue = (Lookup[])old.clone();
-                        nue[0] = createMetaInfServicesLookup(true);
-                        lkp.setLookups(nue);
-                        //System.err.println("lookups: " + java.util.Arrays.asList(nue));
-                    }
-                    /* just testing:
-                    {
-                        try {
-                            Class c = get().systemClassLoader().loadClass("org.foo.Interface");
-                            System.err.println("org.foo.Interface: " + Lookup.getDefault().lookup(new Lookup.Template(c)).allInstances());
-                        } catch (Exception e) {
-                            System.err.println(e.toString());
-                        }
-                    }
-                    */
-                }
-            }
-        }
-        
         /** Called when a system classloader changes.
          */
-        public static final void systemClassLoaderChanged () {
-            NbTopManager.get ().unregister (ClassLoaderConvertor.CLASSLOADER, ClassLoaderConvertor.CLASSLOADER);
-            NbTopManager.get ().register (ClassLoaderConvertor.CLASSLOADER, ClassLoaderConvertor.CLASSLOADER);
+        public static final void systemClassLoaderChanged (ClassLoader nue) {
+            if (classLoader != nue) {
+                classLoader = nue;
+                Lkp l = (Lkp)Lookup.getDefault();
+                Lookup[] delegates = l.getLookups();
+                Lookup[] newDelegates = (Lookup[])delegates.clone();
+                // Replace classloader.
+                newDelegates[0] = createMetaInfServicesLookup();
+                newDelegates[1] = Lookups.singleton(classLoader);
+                l.setLookups(newDelegates);
+            }
+        }
+
+        /** Called when modules are about to be turned on.
+         */
+        public static final void moduleClassLoadersUp() {
+            Lkp l = (Lkp)Lookup.getDefault();
+            Lookup[] newDelegates = null;
+            Lookup[] delegates = l.getLookups();
+            newDelegates = (Lookup[])delegates.clone();
+            newDelegates[0] = createMetaInfServicesLookup();
+            l.setLookups(newDelegates);
         }
 
         /** When all module classes are accessible thru systemClassLoader, this
@@ -912,7 +871,8 @@ public abstract class NbTopManager extends TopManager {
             
         final void doInitializeLookup () {
             //System.err.println("doInitializeLookup");
-            FileObject services = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Services");
+            FileObject services = Repository.getDefault().getDefaultFileSystem()
+                    .findResource("Services");
             Lookup nue;
             if (services != null) {
                 StartLog.logProgress("Got Services folder"); // NOI18N
@@ -925,25 +885,18 @@ public abstract class NbTopManager extends TopManager {
 
             // extend the lookup
             Lookup[] arr = new Lookup[] {
-                getLookups()[0], // metaInfServicesLookup; still keep classpath one till later...
+                getLookups()[0], // metaInfServicesLookup
+                getLookups()[1], // ClassLoader lookup
+                // XXX figure out how to put this ahead of MetaInfServicesLookup (for NonGuiMain):
                 NbTopManager.get ().getInstanceLookup (),
                 nue,
-                NbTopManager.get().getModuleSystem().getManager().getModuleLookup(),
+                NbTopManager.get().getModuleSystem().getManager().getModuleLookup()
             };
             StartLog.logProgress ("prepared other Lookups"); // NOI18N
 
             setLookups (arr);
             StartLog.logProgress ("Lookups set"); // NOI18N
 
-            // Also listen for changes in modules, as META-INF/services/ would change:
-            ModuleManager mgr = get().getModuleSystem().getManager();
-            ConvertorListener l = new ConvertorListener();
-            mgr.addPropertyChangeListener(l);
-            if (!mgr.getEnabledModules().isEmpty()) {
-                // Ready now.
-                l.propertyChange(null);
-            }
-            
 	    //StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
             
             synchronized (this) {
@@ -965,32 +918,14 @@ public abstract class NbTopManager extends TopManager {
                 t.waitFinished();
             }
             
+            // Force module system to be initialize by looking up ModuleInfo.
+            // Good for unit tests, etc.
+            if (templ.getType() == ModuleInfo.class || templ.getType() == Module.class) {
+                get();
+            }
+            
             super.beforeLookup(templ);
         }
     }
     
-    
-    /** Special item for system class loader (which is dynamic).
-     */
-    private final static class ClassLoaderConvertor
-    implements InstanceContent.Convertor {
-        public static final ClassLoaderConvertor CLASSLOADER = new ClassLoaderConvertor ();
-        
-        public Object convert(Object obj) {
-            return NbTopManager.get ().systemClassLoader();
-        }
-        
-        public String displayName(Object obj) {
-            return id (obj);
-        }
-        
-        public String id(Object obj) {
-            return "TM[systemClassLoader"; // NOI18N
-        }
-        
-        public Class type(Object obj) {
-            return ClassLoader.class;
-        }
-        
-    } // end of ClassLoaderConvertor
 }

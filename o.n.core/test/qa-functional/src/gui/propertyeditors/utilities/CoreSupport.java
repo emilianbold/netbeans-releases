@@ -32,7 +32,7 @@ import org.netbeans.junit.NbTestCase;
 // ide imports
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.TopManager;
+import org.openide.filesystems.Repository;
 
 /** Utilities for core tests. From this class extends supports for each testsuite.
  *
@@ -53,7 +53,7 @@ public class CoreSupport {
      * @return finded file object or null
      */
     public static FileObject findFileObject(String _package, String _name, String _extension) {
-        FileObject f = TopManager.getDefault().getRepository().find(_package, _name, _extension);
+        FileObject f = Repository.getDefault().find(_package, _name, _extension);
         return f;
     }
     

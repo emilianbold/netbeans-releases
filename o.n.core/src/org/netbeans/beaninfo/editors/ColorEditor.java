@@ -46,7 +46,6 @@ import javax.swing.ListCellRenderer;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.HelpCtx;

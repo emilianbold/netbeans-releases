@@ -33,10 +33,8 @@ import javax.swing.JButton;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-import org.openide.TopManager;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
-import org.openide.Places;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
@@ -143,9 +141,7 @@ class DataFolderPanel extends TopComponent implements
     /** Creates node that displays all packages.
     */
     private Node createPackagesNode () {
-        return ((Places)Lookup.getDefault ().lookup( Places.class )).nodes ().repository(
-                   this
-               );
+        return RepositoryNodeFactory.getDefault().repository(this);
     }
 
     /** This method is called from within the constructor to

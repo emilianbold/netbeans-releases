@@ -25,7 +25,6 @@ import org.xml.sax.SAXException;
 import org.w3c.dom.DocumentType;
 
 
-import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.*;

@@ -29,7 +29,6 @@ import javax.swing.SwingUtilities;
 
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -389,7 +388,7 @@ public class IDESettings extends SystemOption {
         if (old != s) {
             new Thread () {
                     public void run () {
-                        TopManager.getDefault ().notify
+                        DialogDisplayer.getDefault ().notify
                             (new NotifyDescriptor.Message
                                 (Main.getString ("MSG_must_restart_IDE_for_show_file_extensions"),
                                  NotifyDescriptor.WARNING_MESSAGE));

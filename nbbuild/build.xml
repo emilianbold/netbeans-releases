@@ -133,15 +133,27 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building Open APIs..."/>
     <ant dir="../openide" target="netbeans"/>
   </target>
-  <target name="all-core" depends="all-openide">
+  <target name="all-openide/deprecated" depends="all-openide,all-java/srcmodel">
+    <echo message="Building openide/deprecated..."/>
+    <ant dir="../openide/deprecated" target="netbeans"/>
+  </target>
+  <target name="all-core/deprecated" depends="all-openide/deprecated,all-core">
+    <echo message="Building core/deprecated..."/>
+    <ant dir="../core/deprecated" target="netbeans"/>
+  </target>
+  <target name="all-java/srcmodel" depends="all-openide">
+    <echo message="Building java/srcmodel..."/>
+    <ant dir="../java/srcmodel" target="netbeans"/>
+  </target>
+  <target name="all-core" depends="all-openide,all-openide/deprecated">
     <echo message="Building IDE core implementation..."/>
     <ant dir="../core" target="netbeans"/>
   </target>
-  <target name="all-core/javahelp" depends="all-openide">
+  <target name="all-core/javahelp" depends="all-openide,all-openide/deprecated">
     <echo message="Building module core/javahelp..."/>
     <ant dir="../core/javahelp" target="netbeans"/>
   </target>
-  <target name="all-core/compiler" depends="all-openide,all-core">
+  <target name="all-core/compiler" depends="all-openide,all-core,all-openide/deprecated">
     <echo message="Building module core/compiler..."/>
     <ant dir="../core/compiler" target="netbeans"/>
   </target>
@@ -171,7 +183,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
   <!-- And the modules: -->
-  <target name="all-ant" depends="all-openide,all-core/javahelp">
+  <target name="all-ant" depends="all-openide,all-core/javahelp,all-openide/deprecated">
     <echo message="Building module ant..."/>
     <ant dir="../ant" target="netbeans"/>
   </target>
@@ -179,7 +191,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module ant/docs..."/>
     <ant dir="../ant/docs" target="netbeans"/>
   </target>
-  <target name="all-apisupport" depends="all-openide,all-core,all-core/javahelp,all-jarpackager,all-apisupport/lite,all-java/api">
+  <target name="all-apisupport" depends="all-openide,all-core,all-core/javahelp,all-jarpackager,all-apisupport/lite,all-java/api,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module apisupport..."/>
     <ant dir="../apisupport" target="netbeans"/>
   </target>
@@ -188,23 +200,23 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../apisupport/ant" target="netbeans"/>
   </target>
   <!-- #27098: MakeParserDB requires several modules to have been successfully built: -->
-  <target name="all-apisupport/apidocs" depends="all-openide,all-apisupport,all-core,all-classfile,all-java,all-java/api,all-editor">
+  <target name="all-apisupport/apidocs" depends="all-openide,all-apisupport,all-core,all-classfile,all-java,all-java/api,all-editor,all-java/srcmodel,all-openide/deprecated,all-core/deprecated">
     <echo message="Building module apisupport/apidocs..."/>
     <ant dir="../apisupport/apidocs" target="netbeans"/>
   </target>
-  <target name="all-apisupport/lite" depends="all-openide,all-core,all-jarpackager">
+  <target name="all-apisupport/lite" depends="all-openide,all-core,all-jarpackager,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module apisupport lite..."/>
     <ant dir="../apisupport/lite" target="netbeans"/>
   </target>
-  <target name="all-applet" depends="all-openide,all-debuggercore">
+  <target name="all-applet" depends="all-openide,all-debuggercore,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module applet..."/>
     <ant dir="../applet" target="netbeans"/>
   </target>
-  <target name="all-autoupdate" depends="all-openide,all-core">
+  <target name="all-autoupdate" depends="all-openide,all-core,all-openide/deprecated">
     <echo message="Building module autoupdate..."/>
     <ant dir="../autoupdate" target="netbeans"/>
   </target>
-  <target name="all-beans" depends="all-openide,all-java">
+  <target name="all-beans" depends="all-openide,all-java,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module beans..."/>
     <ant dir="../beans" target="netbeans"/>
   </target>
@@ -216,7 +228,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module classclosure..."/>
     <ant dir="../classclosure" target="netbeans"/>
   </target>
-  <target name="all-clazz" depends="all-openide,all-classfile">
+  <target name="all-clazz" depends="all-openide,all-classfile,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module clazz..."/>
     <ant dir="../clazz" target="netbeans"/>
   </target>
@@ -224,11 +236,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module db..."/>
     <ant dir="../db" target="netbeans"/>
   </target>
-  <target name="all-debuggercore" depends="all-openide">
+  <target name="all-debuggercore" depends="all-openide,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module debuggercore..."/>
     <ant dir="../debuggercore" target="netbeans"/>
   </target>
-  <target name="all-debuggerjpda" depends="all-openide,all-debuggercore">
+  <target name="all-debuggerjpda" depends="all-openide,all-debuggercore,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module debuggerjpda..."/>
     <ant dir="../debuggerjpda" target="netbeans"/>
   </target>
@@ -237,15 +249,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../debuggertools" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-editor" depends="all-openide,all-core">
+  <target name="all-editor" depends="all-openide,all-core,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module editor..."/>
     <ant dir="../editor" target="netbeans"/>
   </target>
-  <target name="all-diff" depends="all-openide,all-editor">
+  <target name="all-diff" depends="all-openide,all-editor,all-openide/deprecated">
     <echo message="Building module diff..."/>
     <ant dir="../diff" target="netbeans"/>
   </target>
-  <target name="all-extbrowser" depends="all-openide,all-httpserver">
+  <target name="all-extbrowser" depends="all-openide,all-httpserver,all-openide/deprecated">
     <echo message="Building module extbrowser..."/>
     <ant dir="../extbrowser" target="netbeans"/>
   </target>
@@ -254,7 +266,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../extbrowser/webclient" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-form" depends="all-openide,all-java,all-core">
+  <target name="all-form" depends="all-openide,all-java,all-core,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module form..."/>
     <ant dir="../form" target="netbeans"/>
   </target>
@@ -262,11 +274,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module freestylebrowser..."/>
     <ant dir="../freestylebrowser" target="netbeans"/>
   </target>
-  <target name="all-html" depends="all-openide">
+  <target name="all-html" depends="all-openide,all-openide/deprecated">
     <echo message="Building module html..."/>
     <ant dir="../html" target="netbeans"/>
   </target>
-  <target name="all-httpserver" depends="all-openide, all-httpserver/servletapi">
+  <target name="all-httpserver" depends="all-openide, all-httpserver/servletapi,all-openide/deprecated">
     <echo message="Building module httpserver..."/>
     <ant dir="../httpserver" target="netbeans"/>
   </target>
@@ -274,7 +286,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module httpserver/servletapi..."/>
     <ant dir="../httpserver/servletapi" target="netbeans"/>
   </target>
-  <target name="all-i18n" depends="all-openide,all-core,all-properties,all-form">
+  <target name="all-i18n" depends="all-openide,all-core,all-properties,all-form,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module i18n..."/>
     <ant dir="../i18n" target="netbeans"/>
   </target>
@@ -286,7 +298,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module icebrowser..."/>
     <ant dir="../icebrowser" target="netbeans"/>
   </target>
-  <target name="all-image" depends="all-openide">
+  <target name="all-image" depends="all-openide,all-openide/deprecated">
     <echo message="Building module image..."/>
     <ant dir="../image" target="netbeans"/>
   </target>
@@ -294,7 +306,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module innertesters..."/>
     <ant dir="../innertesters" target="netbeans"/>
   </target>
-  <target name="all-j2eeserver" depends="all-openide,all-jarpackager,all-debuggercore,all-debuggerjpda">
+  <target name="all-j2eeserver" depends="all-openide,all-jarpackager,all-debuggercore,all-debuggerjpda,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module j2eeserver..."/>
     <ant dir="../j2eeserver" target="netbeans"/>
   </target>
@@ -302,11 +314,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module junit..."/>
     <ant dir="../junit" target="netbeans"/>
   </target>
-  <target name="all-jarpackager" depends="all-openide">
+  <target name="all-jarpackager" depends="all-openide,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module jarpackager..."/>
     <ant dir="../jarpackager" target="netbeans"/>
   </target>
-  <target name="all-java" depends="all-openide,all-java/api,all-classfile">
+  <target name="all-java" depends="all-openide,all-java/api,all-classfile,all-java/srcmodel,all-openide/deprecated">
     <echo message="Building module java..."/>
     <ant dir="../java" target="netbeans"/>
   </target>
@@ -314,7 +326,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building Java support APIs.."/>
     <ant dir="../java/api" target="netbeans"/>
   </target>
-  <target name="all-javadoc" depends="all-openide,all-java">
+  <target name="all-javadoc" depends="all-openide,all-java,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module javadoc..."/>
     <ant dir="../javadoc" target="netbeans"/>
   </target>
@@ -332,7 +344,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module jini..."/>
     <ant dir="../jini" target="netbeans"/>
   </target>
-  <target name="all-jndi" depends="all-openide,all-openidex">
+  <target name="all-jndi" depends="all-openide,all-openidex,all-openide/deprecated">
     <echo message="Building module jndi..."/>
     <ant dir="../jndi" target="netbeans"/>
   </target>
@@ -376,15 +388,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module objectbrowser..."/>
     <ant dir="../objectbrowser" target="netbeans"/>
   </target>
-  <target name="all-openidex" depends="all-openide">
+  <target name="all-openidex" depends="all-openide,all-openide/deprecated">
     <echo message="Building module openidex..."/>
     <ant dir="../openidex" target="netbeans"/>
   </target>
-  <target name="all-projects" depends="all-openide,all-core">
+  <target name="all-projects" depends="all-openide,all-core,all-openide/deprecated">
     <echo message="Building module projects..."/>
     <ant dir="../projects" target="netbeans"/>
   </target>
-  <target name="all-properties" depends="all-openide,all-editor">
+  <target name="all-properties" depends="all-openide,all-editor,all-openide/deprecated">
     <echo message="Building module properties..."/>
     <ant dir="../properties" target="netbeans"/>
   </target>
@@ -392,7 +404,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module remotefs..."/>
     <ant dir="../remotefs" target="netbeans"/>
   </target>
-  <target name="all-rmi" depends="all-openide,all-java,all-debuggercore">
+  <target name="all-rmi" depends="all-openide,all-java,all-debuggercore,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module rmi..."/>
     <ant dir="../rmi" target="netbeans"/>
   </target>
@@ -401,7 +413,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../schema2beans" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-scripting" depends="all-openide,all-openidex,all-core">
+  <target name="all-scripting" depends="all-openide,all-openidex,all-core,all-openide/deprecated">
     <echo message="Building module scripting..."/>
     <ant dir="../scripting" target="netbeans"/>
   </target>
@@ -421,7 +433,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module testtools..."/>
     <ant dir="../testtools" target="netbeans"/>
   </target>
-  <target name="all-text" depends="all-openide">
+  <target name="all-text" depends="all-openide,all-openide/deprecated">
     <echo message="Building module text..."/>
     <ant dir="../text" target="netbeans"/>
   </target>
@@ -429,7 +441,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tomcatint/tomcat32..."/>
     <ant dir="../tomcatint/tomcat32" target="netbeans"/>
   </target>
-  <target name="all-tomcatint/tomcat40" depends="all-openide,all-web/core,all-schema2beans">
+  <target name="all-tomcatint/tomcat40" depends="all-openide,all-web/core,all-schema2beans,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module tomcatint/tomcat40..."/>
     <ant dir="../tomcatint/tomcat40" target="netbeans"/>
   </target>
@@ -445,7 +457,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module usersguide..."/>
     <ant dir="../usersguide" target="netbeans"/>
   </target>
-  <target name="all-utilities" depends="all-openide,all-openidex,all-core/settings">
+  <target name="all-utilities" depends="all-openide,all-openidex,all-core/settings,all-openide/deprecated">
     <echo message="Building module utilities..."/>
     <ant dir="../utilities" target="netbeans"/>
   </target>
@@ -457,17 +469,17 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module vcscvs compat..."/>
     <ant dir="../vcscvs/compat" target="netbeans"/>
   </target>
-  <target name="all-vcsgeneric" depends="all-openide,all-openidex,all-vcscore,all-diff">
+  <target name="all-vcsgeneric" depends="all-openide,all-openidex,all-vcscore,all-diff,all-openide/deprecated">
     <echo message="Building module vcsgeneric..."/>
     <ant dir="../vcsgeneric" target="netbeans"/>
   </target>
 
-  <target name="all-vcsgeneric/profiles/cvsprofiles" depends="all-vcsgeneric">
+  <target name="all-vcsgeneric/profiles/cvsprofiles" depends="all-vcsgeneric,all-openide/deprecated">
     <echo message="Building module vcsgeneric/profiles/cvsprofiles"/>
     <ant dir="../vcsgeneric/profiles/cvsprofiles" target="netbeans"/>
   </target>
 
-  <target name="all-vcsgeneric/profiles/pvcs" depends="all-vcsgeneric">
+  <target name="all-vcsgeneric/profiles/pvcs" depends="all-vcsgeneric,all-openide/deprecated">
     <echo message="Building module vcsgeneric/profiles/pvcs"/>
     <ant dir="../vcsgeneric/profiles/pvcs" target="netbeans"/>
   </target>
@@ -478,11 +490,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
   <!-- XXX check editor dependecy -->
-  <target name="all-vcscore" depends="all-openide,all-openidex,all-editor">
+  <target name="all-vcscore" depends="all-openide,all-openidex,all-editor,all-openide/deprecated">
     <echo message="Building module vcscore..."/>
     <ant dir="../vcscore" target="netbeans"/>
   </target>
-  <target name="all-javacvs" depends="all-openide,all-openidex,all-vcscore, all-diff">
+  <target name="all-javacvs" depends="all-openide,all-openidex,all-vcscore, all-diff,all-openide/deprecated">
     <echo message="Building module javacvs..."/>
     <ant dir="../javacvs" target="netbeans"/>
   </target>
@@ -494,15 +506,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../web/servletapi23" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api">
+  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
   </target>
-  <target name="all-web/jspparser" depends="all-web/core,all-web/servletapi23">
+  <target name="all-web/jspparser" depends="all-web/core,all-web/servletapi23,all-openide/deprecated">
     <echo message="Building module web/jspparser..."/>
     <ant dir="../web/jspparser" target="netbeans"/>
   </target>
-  <target name="all-web/jspsyntax" depends="all-web/core,all-xml/text-edit">
+  <target name="all-web/jspsyntax" depends="all-web/core,all-xml/text-edit,all-openide/deprecated">
     <echo message="Building module web/jspsyntax..."/>
     <ant dir="../web/jspsyntax" target="netbeans"/>
   </target>
@@ -546,7 +558,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
   <!-- XXX illegal dependence on core! -->
-  <target name="all-ui/welcome" depends="all-openide,all-core,all-utilities">
+  <target name="all-ui/welcome" depends="all-openide,all-core,all-utilities,all-openide/deprecated">
     <echo message="Building module ui/welcome..."/>
     <ant dir="../ui/welcome" target="netbeans"/>
   </target>
@@ -576,22 +588,22 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../xml/api" target="netbeans"/>
   </target>
 
-  <target name="all-xml/tax" depends="all-openide, all-xml/api">
+  <target name="all-xml/tax" depends="all-openide, all-xml/api,all-openide/deprecated">
       <echo message="Building module xml/tax..."/>
       <ant dir="../xml/tax" target="netbeans"/>
   </target>
 
-  <target name="all-xml/core" depends="all-openide, all-openidex, all-xml/api, all-xml/tax">
+  <target name="all-xml/core" depends="all-openide, all-openidex, all-xml/api, all-xml/tax,all-openide/deprecated">
       <echo message="Building module xml/core..."/>
       <ant dir="../xml/core" target="netbeans"/>
   </target>
 
-  <target name="all-xml/catalog" depends="all-openide, all-xml/api, all-xml/core">
+  <target name="all-xml/catalog" depends="all-openide, all-xml/api, all-xml/core,all-openide/deprecated">
       <echo message="Building module xml/catalog..."/>
       <ant dir="../xml/catalog" target="netbeans"/>
   </target>
 
-  <target name="all-xml/tools" depends="all-openide, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core">
+  <target name="all-xml/tools" depends="all-openide, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core,all-openide/deprecated,all-java/srcmodel">
       <echo message="Building module xml/tools..."/>
       <ant dir="../xml/tools" target="netbeans"/>
   </target>
@@ -601,17 +613,17 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../xml/text-edit" target="netbeans"/>
   </target>
 
-  <target name="all-xml/tree-edit" depends="all-openide, all-openidex, all-xml/api, all-xml/tax, all-xml/core">
+  <target name="all-xml/tree-edit" depends="all-openide, all-openidex, all-xml/api, all-xml/tax, all-xml/core,all-openide/deprecated">
       <echo message="Building module xml/tree-edit..."/>
       <ant dir="../xml/tree-edit" target="netbeans"/>
   </target>
 
-  <target name="all-xml/css" depends="all-openide, all-editor, all-xml/api">
+  <target name="all-xml/css" depends="all-openide, all-editor, all-xml/api,all-openide/deprecated">
       <echo message="Building module xml/css..."/>
       <ant dir="../xml/css" target="netbeans"/>
   </target>
 
-  <target name="all-xml/xsl" depends="all-openide, all-httpserver/servletapi, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core">
+  <target name="all-xml/xsl" depends="all-openide, all-httpserver/servletapi, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core,all-openide/deprecated">
       <echo message="Building module xml/xsl..."/>
       <ant dir="../xml/xsl" target="netbeans"/>
   </target>

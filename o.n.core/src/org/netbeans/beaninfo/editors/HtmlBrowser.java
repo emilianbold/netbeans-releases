@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;

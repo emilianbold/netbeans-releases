@@ -48,9 +48,9 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Compiling XML tools module classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>        
-                <fileset dir="${nbroot}/openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
+                <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
+                <pathelement location="${nbroot}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+                <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
                 <fileset dir="${nbroot}/core/external">
                     <include name="xml-apis*.jar"/>
                 </fileset>

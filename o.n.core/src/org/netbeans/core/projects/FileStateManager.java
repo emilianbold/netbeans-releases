@@ -13,7 +13,6 @@
 
 package org.netbeans.core.projects;
 
-import org.openide.TopManager;
 import org.openide.filesystems.*;
 import org.openide.util.WeakListener;
 

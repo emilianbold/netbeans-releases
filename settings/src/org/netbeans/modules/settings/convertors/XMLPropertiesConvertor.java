@@ -26,6 +26,7 @@ import org.netbeans.spi.settings.Convertor;
 import org.netbeans.spi.settings.Saver;
 
 import org.netbeans.modules.settings.Env;
+import org.openide.util.Lookup;
 
 /** Implementation of xml properties format described by
  * /org/netbeans/modules/settings/resources/properties.dtd
@@ -209,7 +210,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
             }
             instanceClass = (String) name;
         }
-        return org.openide.TopManager.getDefault().systemClassLoader().loadClass(instanceClass);
+        return ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass(instanceClass);
     }
     
     private void readSetting(java.io.Reader input, Object inst) throws IOException {

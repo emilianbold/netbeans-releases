@@ -13,6 +13,9 @@
 
 package org.netbeans.beaninfo.editors;
 
+
+import org.openide.util.Lookup;
+
 /** A property editor for Class.
 * @author   Jan Jancura
 */
@@ -57,7 +60,8 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
     */
     public void setAsText(String text) throws java.lang.IllegalArgumentException {
         try {
-            setValue (org.openide.TopManager.getDefault ().systemClassLoader ().loadClass (text));
+            ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            setValue (loader.loadClass (text));
         } catch (ClassNotFoundException e) {
             // ignore
         }

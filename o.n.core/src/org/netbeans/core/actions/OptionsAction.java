@@ -32,7 +32,6 @@ import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
-import org.openide.TopManager;
 import org.openide.nodes.*;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.propertysheet.PropertySheetView;
@@ -51,6 +50,7 @@ import org.openide.cookies.InstanceCookie;
 import org.netbeans.core.projects.SettingChildren;
 import org.netbeans.core.projects.SessionManager;
 import org.netbeans.core.NbMainExplorer;
+import org.netbeans.core.NbPlaces;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.PersistenceManager;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -73,7 +73,8 @@ public class OptionsAction extends CallableSystemAction {
 
     /** Shows options panel. */
     public void performAction () {
-        TopManager.getDefault().setStatusText(NbBundle.getBundle(OptionsAction.class).getString("MSG_Preparing_options"));
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+            NbBundle.getBundle(OptionsAction.class).getString("MSG_Preparing_options"));
         OptionsPanel singleton = OptionsPanel.singleton();
         singleton.prepareNodes ();
                 
@@ -109,7 +110,7 @@ public class OptionsAction extends CallableSystemAction {
                 optionPanel.requestFocus();
                 optionPanel.requestDefaultFocus();
                 
-                TopManager.getDefault ().setStatusText (""); // NOI18N
+                org.openide.awt.StatusDisplayer.getDefault ().setStatusText (""); // NOI18N
             }
         });
     }
@@ -248,7 +249,8 @@ public class OptionsAction extends CallableSystemAction {
             gridBagConstraints.insets.left = 5;
             help.addActionListener (new ActionListener () {
                 public void actionPerformed (ActionEvent e) {
-                    TopManager.getDefault ().showHelp (OptionsPanel.this.getHelpCtx ());
+                    org.netbeans.core.NbTopManager.get().showHelp (
+                            OptionsPanel.this.getHelpCtx ());
                 }
             });
             add (help, gridBagConstraints);
@@ -517,8 +519,8 @@ public class OptionsAction extends CallableSystemAction {
         private static class OptionsFilterNode extends FilterNode {
             public OptionsFilterNode () {
                 super (
-                    TopManager.getDefault().getPlaces().nodes().session(),
-                    new SettingChildren (TopManager.getDefault().getPlaces().nodes().session())
+                    NbPlaces.getDefault().session(),
+                    new SettingChildren (NbPlaces.getDefault().session())
                 );
             }
             public HelpCtx getHelpCtx () {

@@ -29,9 +29,9 @@ Microsystems, Inc. All Rights Reserved.
       <exclude name="org/netbeans/modules/i18n/form/"/>
       <classpath>
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+        <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <pathelement location="../core/netbeans/lib/core.jar"/>
         <pathelement location="../properties/netbeans/modules/properties.jar"/>
         <fileset dir="../core/external">
@@ -43,9 +43,8 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/netbeans/modules/i18n/form/"/>
       <classpath>
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
         <pathelement location="../properties/netbeans/modules/properties.jar"/>
         <pathelement location="../form/netbeans/modules/form.jar"/>
         <pathelement location="../java/netbeans/modules/java.jar"/>

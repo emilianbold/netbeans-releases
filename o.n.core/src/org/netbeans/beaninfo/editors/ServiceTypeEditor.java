@@ -17,10 +17,12 @@ import java.beans.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
-import org.openide.TopManager;
+import org.openide.filesystems.Repository;
 import org.openide.ServiceType;
 import org.openide.execution.Executor;
 import org.openide.explorer.propertysheet.*;
+import org.openide.util.Lookup;
+
 
 /** Support for property editor for Executor.
 *
@@ -99,7 +101,9 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
      */
     private void updateTags () {
         java.util.LinkedList names = new java.util.LinkedList ();
-        Enumeration ee = TopManager.getDefault ().getServices ().services (clazz);
+        ServiceType.Registry registry = (ServiceType.Registry)Lookup.getDefault ()
+                .lookup (ServiceType.Registry.class);
+        Enumeration ee = registry.services (clazz);
         while (ee.hasMoreElements()) {
             ServiceType e = (ServiceType) ee.nextElement();
             names.add(e.getName());
@@ -142,7 +146,9 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
         if (none != null && none.getName ().equals (text))
             setValue (none);
         else {
-            Enumeration en = TopManager.getDefault ().getServices ().services (clazz);
+            ServiceType.Registry registry = (ServiceType.Registry)Lookup.getDefault ()
+                    .lookup (ServiceType.Registry.class);
+            Enumeration en = registry.services (clazz);
             while (en.hasMoreElements ()) {
                 ServiceType t = (ServiceType)en.nextElement ();
                 if (text.equals (t.getName ())) {

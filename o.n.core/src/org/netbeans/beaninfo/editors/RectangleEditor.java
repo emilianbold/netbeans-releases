@@ -16,7 +16,6 @@ package org.netbeans.beaninfo.editors;
 import java.awt.Rectangle;
 import java.util.ResourceBundle;
 
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
@@ -44,14 +43,17 @@ public class RectangleEditor extends ArrayOfIntSupport {
     */
     void setValues(int[] val) {
         if ((val[0] < 0) || (val[1] < 0) || (val[2] < 0) || (val[3] < 0)) {
-            //TopManager.getDefault().notify(...) cannot be called synchronous, because when error dialog is displayed
+            //DialogDisplayer.getDefault().notify(...) cannot be called synchronous, because when error dialog is displayed
             //PropertyEditor lost focus and setValues() method is called. After closing error dialog is focus returned
             //to PropertyEditor and setValues() method is called again.
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                                                       public void run() {
-                                                           TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_NegativeSize"), NotifyDescriptor.ERROR_MESSAGE));
-                                                       }
-                                                   });
+                   public void run() {
+                       org.openide.DialogDisplayer.getDefault().notify(
+                           new NotifyDescriptor.Message(
+                               bundle.getString("CTL_NegativeSize"),
+                               NotifyDescriptor.ERROR_MESSAGE));
+                   }
+               });
         }
         else
             setValue(new Rectangle(val[0], val[1], val[2], val[3]));

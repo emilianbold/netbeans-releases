@@ -65,11 +65,11 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
     </target>
 
-    <target name="netbeans" depends="jars,release">
+    <target name="netbeans" depends="jars,release" description="Build everything.">
         <genlist targetname="nbm" outputfiledir="../../nbbuild/netbeans"/>
     </target>
 
-    <target name="nbm" depends="netbeans">
+    <target name="nbm" depends="netbeans" description="Build NBM.">
         <makenbm file="javahelp-api.nbm"
                  topdir="."
                  module="netbeans/modules/autoload/javahelp-api.jar"
@@ -94,11 +94,11 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </copy>
     </target>
-    <target name="test" depends="test-build">
+    <target name="test" depends="test-build" description="Try reloading.">
         <nbinstaller module="reload/javahelp-api.jar" action="reinstall"/>
     </target>
 
-    <target name="clean">
+    <target name="clean" description="Clean build products.">
         <delete>
             <fileset dir="src">
                 <include name="**/*.class"/>

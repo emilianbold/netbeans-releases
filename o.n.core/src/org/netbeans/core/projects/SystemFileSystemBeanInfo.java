@@ -16,7 +16,6 @@ package org.netbeans.core.projects;
 import java.awt.Image;
 import java.beans.*;
 
-import org.openide.TopManager;
 import org.openide.util.Utilities;
 import org.openide.ErrorManager;
 

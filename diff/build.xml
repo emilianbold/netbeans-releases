@@ -37,9 +37,8 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement location="../editor/netbeans/modules/ext/nb-editor.jar"/>
 	<pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
-        <fileset dir="${nbroot}/openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
         <fileset dir="${nbroot}/core/external">
           <include name="regexp*.jar"/>
         </fileset>

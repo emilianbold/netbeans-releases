@@ -16,7 +16,6 @@ package org.netbeans.core;
 import java.net.Authenticator;
 import java.util.ResourceBundle;
 
-import org.openide.TopManager;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
@@ -39,7 +38,7 @@ class NbAuthenticator extends java.net.Authenticator {
         DialogDescriptor dd = new DialogDescriptor( passwordPanel, host );
         dd.setHelpCtx (new HelpCtx (NbAuthenticator.class.getName () + ".getPasswordAuthentication")); // NOI18N
         passwordPanel.setPrompt( getRequestingPrompt() );
-        java.awt.Dialog dialog = TopManager.getDefault().createDialog( dd );
+        java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog( dd );
         dialog.show ();
 
         if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) )

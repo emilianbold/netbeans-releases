@@ -40,6 +40,7 @@ import org.openide.windows.*;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.util.RequestProcessor;
@@ -53,9 +54,11 @@ import org.openide.util.Utilities;
 import org.netbeans.core.actions.*;
 import org.netbeans.core.projects.ModuleLayeredFileSystem;
 import org.netbeans.core.perftool.StartLog;
+import org.netbeans.core.projects.TrivialProjectManager;
 import org.netbeans.core.modules.ModuleSystem;
 import org.netbeans.core.execution.ExecutionSettings;
 import org.netbeans.core.execution.TopSecurityManager;
+import org.openide.awt.StatusDisplayer;
 
 /** This class is a TopManager for Corona environment.
 *
@@ -170,9 +173,6 @@ public class NonGui extends NbTopManager implements Runnable {
         getUserDir ();
         return systemDir;
     }
-
-    /** Subclasses will do better. */
-    protected void setStatusTextImpl(String text) {}
 
     /** Everything is interactive */
     public boolean isInteractive (int il) {
@@ -348,29 +348,37 @@ public class NonGui extends NbTopManager implements Runnable {
 
         // Initialize beans - [PENDING - better place for this ?]
         //                    [PENDING - can PropertyEditorManager garbage collect ?]
-        java.beans.Introspector.setBeanInfoSearchPath (new String[] {
-                    "org.netbeans.beaninfo", // NOI18N
-                    "org.netbeans.beaninfo.awt", // NOI18N
-                    "org.netbeans.beaninfo.swing", // NOI18N
-                    "sun.beans.infos" // NOI18N
-                });
-        java.beans.PropertyEditor pe = java.beans.PropertyEditorManager.findEditor(java.lang.Byte.TYPE); // to enforce initialization of registering PE for primitive types
-        java.beans.PropertyEditorManager.setEditorSearchPath (
-            new String[] { "org.netbeans.beaninfo.editors", "org.openide.explorer.propertysheet.editors" }); // NOI18N
-        java.beans.PropertyEditorManager.registerEditor (getKlass("[Ljava.lang.String;"), getKlass("org.openide.explorer.propertysheet.editors.StringArrayEditor"));
-        java.beans.PropertyEditorManager.registerEditor (getKlass("[Lorg.openide.src.MethodParameter;"), getKlass("org.openide.explorer.propertysheet.editors.MethodParameterArrayEditor"));
-        java.beans.PropertyEditorManager.registerEditor (getKlass("[Lorg.openide.src.Identifier;"), getKlass("org.openide.explorer.propertysheet.editors.IdentifierArrayEditor"));
-        java.beans.PropertyEditorManager.registerEditor (java.lang.Character.TYPE, getKlass("org.netbeans.beaninfo.editors.CharEditor"));
+        String[] sysbisp = Introspector.getBeanInfoSearchPath();
+        String[] nbbisp = new String[] {
+            "org.netbeans.beaninfo", // NOI18N
+            "org.netbeans.beaninfo.awt", // NOI18N
+            "org.netbeans.beaninfo.swing", // NOI18N
+        };
+        String[] allbisp = new String[sysbisp.length + nbbisp.length];
+        System.arraycopy(nbbisp, 0, allbisp, 0, nbbisp.length);
+        System.arraycopy(sysbisp, 0, allbisp, nbbisp.length, sysbisp.length);
+        Introspector.setBeanInfoSearchPath(allbisp);
+        String[] syspesp = PropertyEditorManager.getEditorSearchPath();
+        String[] nbpesp = new String[] {
+            "org.netbeans.beaninfo.editors", // NOI18N
+            "org.openide.explorer.propertysheet.editors", // NOI18N
+        };
+        String[] allpesp = new String[syspesp.length + nbpesp.length];
+        System.arraycopy(nbpesp, 0, allpesp, 0, nbpesp.length);
+        System.arraycopy(syspesp, 0, allpesp, nbpesp.length, syspesp.length);
+        PropertyEditorManager.setEditorSearchPath(allpesp);
+        PropertyEditorManager.registerEditor (java.lang.Character.TYPE, getKlass("org.netbeans.beaninfo.editors.CharEditor"));
+        PropertyEditorManager.registerEditor(getKlass("[Ljava.lang.String;"), getKlass("org.netbeans.beaninfo.editors.StringArrayEditor")); // NOI18N
         StartLog.logProgress ("PropertyEditors registered"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
 
-        setStatusText (getString("MSG_IDEInit"));
+        StatusDisplayer.getDefault().setStatusText (getString("MSG_IDEInit"));
 
 
         // -----------------------------------------------------------------------------------------------------
         // 7. Initialize FileSystems
-        getRepository ();
+        Repository.getDefault();
         StartLog.logProgress ("Repository initialized"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
@@ -440,7 +448,7 @@ public class NonGui extends NbTopManager implements Runnable {
         {
     	    StartLog.logStart ("Modules initialization"); // NOI18N
 
-            FileSystem sfs = getRepository().getDefaultFileSystem();
+            FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
             getUserDir();
             File moduleDirHome = new File(homeDir, DIR_MODULES);
             File moduleDirUser;
@@ -450,15 +458,14 @@ public class NonGui extends NbTopManager implements Runnable {
                 moduleDirUser = new File(userDir, DIR_MODULES);
             }
             try {
-                moduleSystem = new ModuleSystem(getRepository().getDefaultFileSystem(), moduleDirHome, moduleDirUser);
+                moduleSystem = new ModuleSystem(Repository.getDefault().getDefaultFileSystem(), moduleDirHome, moduleDirUser);
             } catch (IOException ioe) {
                 // System will be screwed up.
                 IllegalStateException ise = new IllegalStateException("Module system cannot be created"); // NOI18N
-                getErrorManager().annotate(ise, ioe);
+                ErrorManager.getDefault().annotate(ise, ioe);
                 throw ise;
             }
     	    StartLog.logProgress ("ModuleSystem created"); // NOI18N
-            fireSystemClassLoaderChange();
 
             moduleSystem.loadBootModules();
             moduleSystem.readList();
@@ -476,9 +483,14 @@ public class NonGui extends NbTopManager implements Runnable {
         // -----------------------------------------------------------------------------------------------------
         // 10. Initialization of project (because it can change loader pool and it influences main window menu)
         try {
-            NbProjectOperation.openOrCreateProject ();
+            LoaderPoolNode.load();
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+        }
+        try {
+            ((TrivialProjectManager)Lookup.getDefault().lookup(TrivialProjectManager.class)).load();
         } catch (IOException e) {
-            getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+            ErrorManager.getDefault().notify (ErrorManager.INFORMATIONAL, e);
         }
         StartLog.logProgress ("Project opened"); // NOI18N
         Main.incrementSplashProgressBar(10);
@@ -565,8 +577,9 @@ public class NonGui extends NbTopManager implements Runnable {
         Main.incrementSplashProgressBar();
 
         // run classes int Startup folder
-        
-        startFolder (getDefault ().getPlaces ().folders ().startup ());
+
+        // Could be places = NbPlaces.getDefault();
+        startFolder(NbPlaces.getDefault().startup ());
         StartLog.logProgress ("StartFolder content started"); // NOI18N
         Main.incrementSplashProgressBar();
     }

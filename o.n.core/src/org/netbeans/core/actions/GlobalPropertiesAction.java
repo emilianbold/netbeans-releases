@@ -13,7 +13,6 @@
 
 package org.netbeans.core.actions;
 
-import org.openide.TopManager;
 import org.openide.windows.TopComponent;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;

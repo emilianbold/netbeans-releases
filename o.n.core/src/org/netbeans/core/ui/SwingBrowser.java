@@ -16,7 +16,6 @@ package org.netbeans.core.ui;
 import java.beans.*;
 import java.lang.reflect.Constructor;
 
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
@@ -61,7 +60,7 @@ public class SwingBrowser implements HtmlBrowser.Factory, java.io.Serializable {
             return (HtmlBrowser.Impl)con.newInstance (new Object [] {});
         }
         catch (Exception ex) {
-            TopManager.getDefault ().notify (
+            org.openide.DialogDisplayer.getDefault ().notify (
                 new NotifyDescriptor.Message (NbBundle.getMessage (SwingBrowser.class, "MSG_cannot_create_browser"))
             );
             return null;

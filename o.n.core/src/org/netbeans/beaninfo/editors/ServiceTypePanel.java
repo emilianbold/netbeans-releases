@@ -23,6 +23,7 @@ import org.openide.explorer.*;
 import org.openide.execution.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /** Service type panel for viewing, selecting and configuring
 * of executors and other services.
@@ -162,7 +163,9 @@ public class ServiceTypePanel extends ExplorerPanel {
     private List nodes () {
         services = new ArrayList (20);
         List l = new LinkedList ();
-        Enumeration en = TopManager.getDefault ().getServices ().services (clazz);
+        ServiceType.Registry registry = (ServiceType.Registry)Lookup.getDefault ()
+                .lookup (ServiceType.Registry.class);
+        Enumeration en = registry.services (clazz);
         while (en.hasMoreElements ()) {
             try {
                 Object service = en.nextElement ();

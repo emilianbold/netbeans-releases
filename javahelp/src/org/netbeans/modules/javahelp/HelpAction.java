@@ -18,10 +18,10 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.api.javahelp.Help;
+import org.openide.awt.StatusDisplayer;
 
 /**
  * Shows help for the currently focused component
@@ -140,8 +140,8 @@ public class HelpAction extends SystemAction
             help = findHelpCtx();
         }
         
-        TopManager.getDefault().setStatusText(NbBundle.getMessage(HelpAction.class, "CTL_OpeningHelp"));
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(HelpAction.class, "CTL_OpeningHelp"));
         h.showHelp (help);
-        TopManager.getDefault ().setStatusText (""); // NOI18N
+        StatusDisplayer.getDefault ().setStatusText (""); // NOI18N
     }
 }

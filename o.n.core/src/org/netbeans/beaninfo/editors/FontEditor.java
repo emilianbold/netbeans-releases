@@ -24,7 +24,6 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.HelpCtx;

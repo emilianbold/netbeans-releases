@@ -22,7 +22,6 @@ import org.netbeans.core.windows.MiniStatusBar;
 
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
-import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 

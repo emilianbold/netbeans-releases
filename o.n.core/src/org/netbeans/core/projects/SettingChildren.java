@@ -14,7 +14,6 @@
 package org.netbeans.core.projects;
 
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.InstanceCookie;
 import org.openide.nodes.*;
@@ -174,7 +173,7 @@ public final class SettingChildren extends FilterNode.Children {
                                     NbBundle.getMessage (SettingChildren.class, "MSG_ask_remove_above_defined_files"), // NOI18N
                                     NotifyDescriptor.YES_NO_OPTION);
 
-                                Object answer = TopManager.getDefault ().notify (nd);
+                                Object answer = org.openide.DialogDisplayer.getDefault ().notify (nd);
                                 if (answer.equals (NotifyDescriptor.NO_OPTION))
                                     go = false;
 

@@ -92,6 +92,9 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
+        <!-- XXX -->
+        <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/>
+        <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <fileset dir="external">
           <include name="junit*.jar"/>
         </fileset>

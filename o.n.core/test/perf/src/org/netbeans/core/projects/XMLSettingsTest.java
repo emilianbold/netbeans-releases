@@ -18,9 +18,9 @@ import java.util.*;
 
 import org.netbeans.performance.Benchmark;
 
-import org.openide.TopManager;
 import org.openide.loaders.*;
 
+import org.netbeans.core.NbTopManager;
 import org.netbeans.core.projects.FixedFileSystem;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.Repository;
@@ -98,7 +98,7 @@ public class XMLSettingsTest extends Benchmark {
     private DataFolder[] folders;
     protected void setUp() throws Exception {
         System.setProperty("netbeans.suppress.sysprop.warning", "true");
-        TopManager.getDefault();
+        NbTopManager.get();
         int count = getIterationCount();
         int[] x = (int[])getArgument();
         int unmodified = x[0];

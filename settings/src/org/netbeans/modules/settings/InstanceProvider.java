@@ -233,8 +233,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
             if (name == null) {
                 return instanceCreate().getClass();
             } else {
-                return org.openide.TopManager.getDefault().
-                    systemClassLoader().loadClass(name);
+                return ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass(name);
             }
         }
 

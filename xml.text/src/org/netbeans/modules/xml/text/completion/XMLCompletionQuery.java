@@ -44,7 +44,6 @@ import org.netbeans.modules.xml.api.model.*;
 
 import javax.swing.Icon;
 import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
-import org.openide.TopManager;
 
 /**
  * Consults grammar and presents list of possible choices

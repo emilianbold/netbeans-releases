@@ -21,7 +21,6 @@ import java.util.Enumeration;
 import java.util.Properties;
 
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 
 
 /** A property editor for Properties class.

@@ -69,7 +69,7 @@ public class SelectionModeTest extends NbTestCase {
         if (prepared)
             return ;
         
-        TopManager.getDefault ();
+//        TopManager.getDefault ();
         
         // create tree:
         // root +--- parent_one +--- one1

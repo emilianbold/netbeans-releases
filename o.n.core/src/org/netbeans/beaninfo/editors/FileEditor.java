@@ -30,7 +30,6 @@ import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
 
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;

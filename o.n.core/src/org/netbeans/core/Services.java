@@ -31,8 +31,8 @@ import org.openide.util.Lookup.Result;
 import org.openide.util.Lookup.Template;
 
 import org.netbeans.beaninfo.editors.ExecutorEditor;
-import org.netbeans.beaninfo.editors.CompilerTypeEditor;
-import org.netbeans.beaninfo.editors.DebuggerTypeEditor;
+//import org.netbeans.beaninfo.editors.CompilerTypeEditor;
+//import org.netbeans.beaninfo.editors.DebuggerTypeEditor;
 
 /** Works with all service types.
 *
@@ -61,18 +61,18 @@ public final class Services extends ServiceType.Registry implements LookupListen
     
     private static void fillMap(Map map) {
         map.put(ExecutorEditor.NO_EXECUTOR.getName(), ExecutorEditor.NO_EXECUTOR);
-        map.put(CompilerTypeEditor.NO_COMPILER.getName(), CompilerTypeEditor.NO_COMPILER);
-        map.put(DebuggerTypeEditor.NO_DEBUGGER.getName(), DebuggerTypeEditor.NO_DEBUGGER);
+//        map.put(CompilerTypeEditor.NO_COMPILER.getName(), CompilerTypeEditor.NO_COMPILER);
+//        map.put(DebuggerTypeEditor.NO_DEBUGGER.getName(), DebuggerTypeEditor.NO_DEBUGGER);
     }
     
     /** Override to specially look up no-op services. */
     public ServiceType find (Class clazz) {
         if (clazz == ExecutorEditor.NoExecutor.class)
             return ExecutorEditor.NO_EXECUTOR;
-        else if (clazz == CompilerTypeEditor.NoCompiler.class)
-            return CompilerTypeEditor.NO_COMPILER;
-        else if (clazz == DebuggerTypeEditor.NoDebugger.class)
-            return DebuggerTypeEditor.NO_DEBUGGER;
+//        else if (clazz == CompilerTypeEditor.NoCompiler.class)
+//            return CompilerTypeEditor.NO_COMPILER;
+//        else if (clazz == DebuggerTypeEditor.NoDebugger.class)
+//            return DebuggerTypeEditor.NO_DEBUGGER;
         else if (clazz == null)
             return null;
         else
@@ -144,7 +144,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
         arr = ensureSingleness(arr);
         
         HashMap services = new HashMap(20); // <service type, DataObject>
-        searchServices(NbPlaces.findSessionFolder("Services").getPrimaryFile(), services); // NOI18N
+        searchServices(NbPlaces.getDefault().findSessionFolder("Services").getPrimaryFile(), services); // NOI18N
         
         // storing services
         HashMap order = new HashMap(10); // <parent folder, <file>>
@@ -223,7 +223,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
             java.beans.BeanInfo info = org.openide.util.Utilities.getBeanInfo(stype);
             String folder = org.openide.util.Utilities.getShortClassName(stype);
 
-            DataFolder dfServices = NbPlaces.findSessionFolder("Services"); // NOI18N
+            DataFolder dfServices = NbPlaces.getDefault().findSessionFolder("Services"); // NOI18N
             DataFolder dfTarget = DataFolder.create(dfServices, folder);
             
             return InstanceDataObject.create(dfTarget, null, st, null);

@@ -24,18 +24,17 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.openide.filesystems.*;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.InstanceSupport;
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.enum.ArrayEnumeration;
 import org.openide.util.*;
-import org.openide.util.io.NbMarshalledObject;
-import org.openide.util.io.SafeException;
+import org.openide.util.io.*;
 import org.openide.actions.ReorderAction;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
@@ -566,6 +565,42 @@ public final class LoaderPoolNode extends AbstractNode {
         if (deserExc != null) {
             throw new SafeException (deserExc);
         }
+    }
+    
+    // I/O with loaders.ser; moved from NbProjectOperation:
+    public static void store() throws IOException {
+        FileObject ser = getLoaderPoolStorage(true);
+        FileLock lock = ser.lock();
+        try {
+            ObjectOutputStream oos = new NbObjectOutputStream(ser.getOutputStream(lock));
+            try {
+                NbObjectOutputStream.writeSafely(oos, getNbLoaderPool());
+            } finally {
+                oos.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+    }
+    public static void load() throws IOException {
+        FileObject ser = getLoaderPoolStorage(false);
+        if (ser != null) {
+            ObjectInputStream ois = new NbObjectInputStream(ser.getInputStream());
+            try {
+                NbObjectInputStream.readSafely(ois);
+            } finally {
+                ois.close();
+            }
+        }
+    }
+    private static final String LOADER_POOL_NAME = "loaders.ser"; // NOI18N
+    public static FileObject getLoaderPoolStorage(boolean create) throws IOException {
+        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+        FileObject fo = sfs.findResource(LOADER_POOL_NAME);
+        if (fo == null && create) {
+            fo = sfs.getRoot().createData(LOADER_POOL_NAME);
+        }
+        return fo;
     }
 
 
