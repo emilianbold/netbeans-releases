@@ -48,8 +48,9 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private File projectFolder = null;
     private File lastChosenFile = null;
     private boolean isSeparateClasspath = true;
-    private List/*<ProjectModel.CompilationUnitKey>*/ compUnitsKeys;
     private boolean ignoreEvent;
+    private static String JAVA_SOURCES_CLASSPATH 
+            = org.openide.util.NbBundle.getMessage(WebClasspathPanel.class, "LBL_JAVA_SOURCE_CLASSPATH");
     //private ProjectModel model;
     
     /** Creates new form ClasspathPanel */
@@ -61,6 +62,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         initComponents();
         jTextArea1.setBackground(getBackground());
         listModel = new DefaultListModel();
+        listModel.add(0,JAVA_SOURCES_CLASSPATH);
         classpath.setModel(listModel);
         if (!isWizard) {
             jTextArea1.setText(org.openide.util.NbBundle.getMessage(WebClasspathPanel.class, "LBL_ClasspathPanel_Explanation"));
@@ -198,6 +200,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         moveDown.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/freeform/ui/Bundle").getString("AD_ClasspathPanel_moveDown"));
 
         jTextArea1.setEditable(false);
+        jTextArea1.setForeground(new java.awt.Color(0, 0, 0));
         jTextArea1.setLineWrap(true);
         jTextArea1.setText(org.openide.util.NbBundle.getMessage(WebClasspathPanel.class, "MSG_ClasspathPanel_jTextArea"));
         jTextArea1.setWrapStyleWord(true);
@@ -254,9 +257,9 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
 
     private void updateButtons() {
         int indices[] = classpath.getSelectedIndices();
-        removeClasspath.setEnabled(listModel.getSize() > 0 && indices.length != 0);
-        moveUp.setEnabled(indices.length > 0 && indices[0] != 0);
-        moveDown.setEnabled(indices.length > 0 && indices[indices.length - 1] != listModel.getSize() - 1);
+        removeClasspath.setEnabled(listModel.getSize() > 0 && indices.length != 0 && indices[0] != 0);
+        moveUp.setEnabled(indices.length > 0 && indices[0] > 1);
+        moveDown.setEnabled(indices.length > 0 && indices[indices.length - 1] != listModel.getSize() - 1 && indices[0] != 0);
     }
     
     private void removeClasspathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeClasspathActionPerformed
@@ -302,7 +305,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
     public String getClasspath(){
         StringBuffer sf = new StringBuffer();
         
-        for (int i = 0; i < listModel.getSize(); i++){
+        for (int i = 1; i < listModel.getSize(); i++){
             sf.append(listModel.get(i));
             if (i < listModel.getSize()-1)
                 sf.append(File.pathSeparatorChar);
@@ -313,7 +316,9 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private void setClasspath(String classpath){
         if (classpath == null)
             return;
-        StringTokenizer ts = new StringTokenizer(classpath, "" + File.pathSeparatorChar );
+        StringTokenizer ts = new StringTokenizer(classpath, "" + File.pathSeparatorChar ); //NOI18N
+        listModel.clear();
+        listModel.addElement(JAVA_SOURCES_CLASSPATH);
         while (ts.hasMoreTokens()){
             listModel.addElement(ts.nextToken());
         }
