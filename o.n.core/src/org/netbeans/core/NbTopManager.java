@@ -379,32 +379,14 @@ public abstract class NbTopManager extends TopManager {
     public Dialog createDialog (final DialogDescriptor d) {
         return (Dialog)Mutex.EVENT.readAccess (new Mutex.Action () {
             public Object run () {
-                // if there is some modal dialog active, sets it as a parent
-                // of created dialog
+                // if a modal dialog active use it as parent
+                // otherwise use null Frame
                 if (NbPresenter.currentModalDialog != null) {
                     return new NbDialog(d, NbPresenter.currentModalDialog);
                 }
-                // if there is some active top component and has focus, set its frame as
-                // an owner of created dialog, or set main window otherwise
-                TopComponent curTc = TopComponent.getRegistry().getActivated();
-                Frame mainWindow = TopManager.getDefault().getWindowManager().getMainWindow();
-                Frame owner = null;
-                // Beware - main window is always set as a parent for non-modal
-                // dialogs, because they sometims tend to live longer that currently
-                // active top components (find dialog in editor is good example)
-                if ((curTc != null) && d.isModal() &&
-                        (SwingUtilities.findFocusOwner(curTc) != null)) {
-                    // try to find top component's parent frame
-                    Component comp = SwingUtilities.windowForComponent(curTc);
-                    while ((comp != null) && !(comp instanceof Frame)) {
-                        comp = comp.getParent();
-                    }
-                    owner = (Frame)comp;
+                else {
+                    return new NbDialog(d, (Frame) null);
                 }
-                if (owner == null) {
-                    owner = mainWindow;
-                }
-                return new NbDialog(d, owner);
             }
         });
     }
@@ -522,32 +504,31 @@ public abstract class NbTopManager extends TopManager {
                     while ((win != null) && (!(win instanceof Window))) win = win.getParent ();
                     if (win != null) focusOwner = ((Window)win).getFocusOwner ();
 
-                    // set different owner if some modal dialog now active
+                    // if a modal dialog is active use it as parent
+                    // otherwise use null Frame
+                    
                     NbPresenter presenter = null;
                     if (descriptor instanceof DialogDescriptor) {
                         if (NbPresenter.currentModalDialog != null) {
                             presenter = new NbDialog((DialogDescriptor) descriptor, NbPresenter.currentModalDialog);
                         } else {
-                            presenter = new NbDialog
-                                ((DialogDescriptor) descriptor,
-                                 TopManager.getDefault().getWindowManager().getMainWindow());
+                            presenter = new NbDialog((DialogDescriptor) descriptor, (Frame) null);
                         }
                     } else {
                         if (NbPresenter.currentModalDialog != null) {
                             presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
                         } else {
-                            presenter = new NbPresenter
-                                (descriptor,
-                                 TopManager.getDefault().getWindowManager().getMainWindow(),
-                                 true);
+                            presenter = new NbPresenter(descriptor, (Frame) null, true);
                         }
                     }
-                    
+
                     //Bugfix #8551
                     presenter.getRootPane().requestDefaultFocus();
                     presenter.setVisible(true);
 
-                    if (focusOwner != null) { // if the focusOwner is null (meaning that MainWindow was focused before), the focus will be back on main window
+                    // dialog is gone, restore the focus
+                    
+                    if (focusOwner != null) {
                         win.requestFocus ();
                         comp.requestFocus ();
                         focusOwner.requestFocus ();
