@@ -168,6 +168,9 @@
 <mapID target="beans.adding" url="beans/adding.html" />
 <mapID target="beans.glossary_serialized" url="beans/glossary_serialized.html" />
 <mapID target="beans.csh.serialize" url="pending.html" />
+<mapID target="beans.settings" url="beans/settings.html" />
+<mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="beans/settings.html" />
+
 
 <mapID target="jsp.jsp_jump" url="jsp/jsp_jump.html" />
 <mapID target="jsp.jsp_create" url="jsp/jsp_create.html" />
@@ -554,6 +557,7 @@
 <mapID target="ant.ident" url="ant/ident.html" />
 <mapID target="ant.project" url="ant/exec-proj.html" />
 <mapID target="ant.target" url="ant/exec-targ.html" />
+<mapID target="ant.shortcut" url="ant/shortcut.html" />
 <mapID target="ant.editing" url="ant/editing.html" />
 <mapID target="ant.props" url="ant/ant-props.html" />
 <mapID target="ant.advance" url="ant/adv-comp-exec.html" />
@@ -562,6 +566,8 @@
 <mapID target="ant.running" url="ant/running.html" />
 <mapID target="ant.settings" url="ant/settings.html" />
 <mapID target="ant.custom-tasks" url="ant/custom-tasks.html" />
+<mapID target="ant.tasks-classpath" url="ant/tasks-classpath.html" />
+<mapID target="ant.createtask" url="ant/createtask.html" />
 <mapID target="ant.sampleclasscode" url="ant/exp-classpath.html" />
 
 <mapID target="configure" url="configure/configure.html" />
@@ -598,7 +604,7 @@
 <!--CSH-->
 
 <mapID target="org.netbeans.modules.i18n.I18nOptions" url="internationalize/custominter.html" />
-<mapID target="ant.wizard.shortcut" url="ant/exec-targ.html" />
+<mapID target="ant.wizard.shortcut" url="ant/shortcut.html" />
 <mapID target="ant.wizard.properties" url="ant/ant-props.html" />
 
 <mapID target="org.netbeans.core.services.CompilerTypes" url="compile/options_jump.html" />
@@ -729,7 +735,6 @@
 
    <mapID target="org.netbeans.core.actions.SettingsAction" url="project/project_settings.html" />
 
-   <mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="configure/configure_options.html" />
    <mapID target="org.netbeans.beaninfo.editors.BeanEditor" url="pending.html" />
 
 
@@ -1183,7 +1188,8 @@
    <mapID target="org.apache.tools.ant.module.custom-tasks" url="ant/custom-tasks.html" />
    <mapID target="org.apache.tools.ant.module.adv-comp-exec" url="ant/comp-project.html" />
    <mapID target="org.apache.tools.ant.module.settings" url="ant/settings.html" />
-   <mapID target="org.apache.tools.ant.module.node-manip" url="ant/editing.html" />
+   <mapID target="org.apache.tools.ant.module.node-manip" url="ant/add-task.html" />
+   <mapID target="org.netbeans.beaninfo.editors.PropertiesCustomEditor" url="ant/ant-props.html" />
   
 
 <!--from j2eeserver module-->
@@ -1230,7 +1236,6 @@
    <mapID target="org.netbeans.beaninfo.editors.PointCustomEditor" url="pending.html" /> 
    <mapID target="org.netbeans.beaninfo.editors.RectangleCustomEditor" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.StringCustomEditor" url="pending.html" />
-   <mapID target="org.netbeans.beaninfo.editors.PropertiesCustomEditor" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.CustomTableModelEditor" url="pending.html" /> 
    <mapID target="org.netbeans.beaninfo.editors.DimensionCustomEditor" url="pending.html" /> 
    <mapID target="org.netbeans.core.MainWindow" url="pending.html" />

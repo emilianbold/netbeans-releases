@@ -341,6 +341,7 @@
     <tocitem text="Generating BeanInfo" target="beans.beaninfo.generating" />
     <tocitem text="BeanInfo Editor Dialog Box" target="beans.beaninfo.nodes" />
     <tocitem text="Generating Get and Set Methods" target="beans.getset" />
+    <tocitem text="Configuring Generation of Get and Set Methods" target="beans.settings" />
     <tocitem text="Customizing a Bean" target="beans.customizing" />
     <tocitem text="Making a Bean a Container" target="beans.container" />
     <tocitem text="Setting a Bean's Icon" target="beans.icon" />
@@ -401,9 +402,9 @@
 
 <tocitem text="Editing Resource Bundles" target="propfiles.editbundles">
   <tocitem text="Setting Properties Files" target="propfiles.intro">
-    <tocitem text="Creating a .properties File" target="propfiles.creating" />
+    <tocitem text="Creating a Properties File" target="propfiles.creating" />
     <tocitem text="Adding a Property" target="propfiles.adding" />
-    <tocitem text="Modifying a .properties File" target="propfiles.modifying" />
+    <tocitem text="Modifying a Properties File" target="propfiles.modifying" />
     <tocitem text="Removing a Property" target="propfiles.removing" />
     <tocitem text="Adding and Removing a Locale" target="propfiles.addlocale" />
     <tocitem text="Editing a Locale" target="propfiles.editlocale" />
@@ -482,13 +483,17 @@
 <tocitem text="Building With Ant" target="ant.building">
   <tocitem text="Ant Project Files" target="ant.ident" />
   <tocitem text="Creating an Ant Project" target="ant.project" />
-  <tocitem text="Editing Ant Scripts" target="ant.editing" />
-  <tocitem text="Setting Properties in Ant Scripts" target="ant.props" />
-  <tocitem text="Running Ant Scripts" target="ant.running" />
+  <tocitem text="Editing an Ant Script" target="ant.editing" />
+  <tocitem text="Setting Properties in an Ant Script" target="ant.props" />
+  <tocitem text="Running an Ant Script" target="ant.running" />
   <tocitem text="Executing a Target" target="ant.target" />
-  <tocitem text="Compiling Files With Ant" target="ant.compwith" />
+  <tocitem text="Creating a Shortcut to a Target" target="ant.shortcut" />
+  <tocitem text="Using Indirect Ant Compilation" target="ant.compwith" />
   <tocitem text="Compiling Projects With Ant" target="ant.compproject" />
-  <tocitem text="Creating Custom Ant Tasks" target="ant.custom-tasks" />
+  <tocitem text="Using Custom Ant Tasks" target="ant.custom-tasks" >
+    <tocitem text="Creating a Custom Ant Task" target="ant.createtask" />
+    <tocitem text="Ant Classpath and Custom Tasks" target="ant.tasks-classpath" />
+  </tocitem>
   <tocitem text="Configuring Ant Settings" target="ant.settings" />
 </tocitem>
 
