@@ -47,6 +47,12 @@ public final class ServerRegistry implements java.io.Serializable {
         //    return (ServerRegistry) Lookup.getDefault().lookup(ServerRegistry.class);
     }
 
+    /** Utility method that returns true if the ServerRegistry was initialized
+     * during the current IDE session and false otherwise.
+     */
+    public synchronized static boolean wasInitialized () {
+        return instance != null && instance.servers != null && instance.instances != null;
+    }
     private transient Map servers = null;
     private transient Map instances = null;
     private transient Collection pluginListeners = new HashSet();

@@ -32,19 +32,21 @@ public class Install extends org.openide.modules.ModuleInstall {
     }
     
     public void close() {
-        Collection instances = ServerRegistry.getInstance().getInstances();
-        String title = NbBundle.getMessage(Install.class, "LBL_ShutDownServers");
-        
-        DeployProgressMonitor ui = new DeployProgressMonitor(title, true, false);
-        for (Iterator i=instances.iterator(); i.hasNext();) {
-            ServerInstance inst = (ServerInstance) i.next();
-            java.util.Set targets = inst.getTargetsStartedByIde();
-            for (Iterator j=targets.iterator(); j.hasNext();) {
-                ServerTarget target = (ServerTarget) j.next();
-                target.stop(ui);
-            }
-            if (inst.startedByIde()) {
-                inst.stop(ui);
+        if (ServerRegistry.wasInitialized ()) {
+            Collection instances = ServerRegistry.getInstance().getInstances();
+            String title = NbBundle.getMessage(Install.class, "LBL_ShutDownServers");
+
+            DeployProgressMonitor ui = new DeployProgressMonitor(title, true, false);
+            for (Iterator i=instances.iterator(); i.hasNext();) {
+                ServerInstance inst = (ServerInstance) i.next();
+                java.util.Set targets = inst.getTargetsStartedByIde();
+                for (Iterator j=targets.iterator(); j.hasNext();) {
+                    ServerTarget target = (ServerTarget) j.next();
+                    target.stop(ui);
+                }
+                if (inst.startedByIde()) {
+                    inst.stop(ui);
+                }
             }
         }
     }
