@@ -122,8 +122,6 @@ public class Preprocess extends MatchingTask {
         return s;
     }
     
-    /** Executes the task.
-     */
     public void execute () throws BuildException {
         if (src == null || dest == null) {
             throw new BuildException ("src and dest must be specified");
