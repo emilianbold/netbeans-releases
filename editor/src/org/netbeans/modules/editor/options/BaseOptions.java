@@ -358,23 +358,6 @@ public class BaseOptions extends OptionSupport {
             list.remove( 0 ); //remove kit class name
         }
 
-        /* Patch for the older projects, where the ExtKit actions
-         * were not added to the map so we need to add them manually.
-         */
-        if (getKitClass() == BaseKit.class) {
-            int i;
-            for (i = list.size() - 1; i >= 0; i--) {
-                MultiKeyBinding mkb = (MultiKeyBinding)list.get(i);
-                if (ExtKit.completionShowAction.equals(mkb.actionName)) {
-                    break;
-                }
-            }
-            
-            if (i < 0) {
-                list.addAll(Arrays.asList(ExtSettingsDefaults.defaultExtKeyBindings));
-            }
-        }
-        
         setSettingValue(SettingsNames.KEY_BINDING_LIST, list, KEY_BINDING_LIST_PROP);
     }
 
