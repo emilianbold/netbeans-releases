@@ -102,6 +102,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
     <target name="runidetest" depends="set_classpath">
+	<property name="xtest.extra.jars" value="${java.home}/../src.zip"/>
         <ant dir="." antfile="${xtest.module_harness.antfile}" target="test">
            <property name="xtest.exectype" value="ide"/>
         </ant>
