@@ -22,6 +22,7 @@ import javax.swing.AbstractAction;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 
@@ -35,6 +36,7 @@ public class PreviousTabAction extends AbstractAction {
     
     /** Creates a new instance of PreviouesTabAction */
     public PreviousTabAction() {
+        putValue(NAME, NbBundle.getMessage(PreviousTabAction.class, "CTL_PreviousTabAction"));
     }
 
     
