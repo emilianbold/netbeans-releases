@@ -49,8 +49,6 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
     transient URL               baseURL;
     // Root file object for the mounted filesystem
     transient HTTPFileObject    rootFileObject;
-    // Flags whether this filesystem's contents has been walked or not
-    transient boolean           isRootInitialized;
             
     /**
      *	Constructs a <code>HTTPFileSystem</code> file system bean.
@@ -168,9 +166,6 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
                 
             }
             rootFileObject = new HTTPFileObject( "/", this );   //NO I18N
-
-            // Flag this file sytem as needing its contents scanned
-            isRootInitialized = false;
 
             // Give listeners a chance to reject the URL
             fireVetoableChange( PROP_URL, oldURL != null ? oldURL.toExternalForm( ) : null, url );

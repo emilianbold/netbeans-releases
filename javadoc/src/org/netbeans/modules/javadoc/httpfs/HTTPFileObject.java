@@ -19,6 +19,7 @@
 package org.netbeans.modules.javadoc.httpfs;
 
 import java.io.*;
+import java.net.URL;
 import java.net.HttpURLConnection;
 import java.util.*;
 import javax.swing.text.html.*;
@@ -32,20 +33,20 @@ import org.openide.filesystems.*;
  *
  *	@since 1.0
  */
-class HTTPFileObject extends FileObject {
+class HTTPFileObject extends FileObject implements Runnable {
     
     private static final long serialVersionUID = 200104;
 
-	// File system that owns this file
+    // File system that owns this file
     transient private HTTPFileSystem    parentFileSystem;
     // Path of this file under the URL of the file system.
-    String                              uriStem;
+    private String                      uriStem;
     // Directory object that contains this file
     transient private HTTPFileObject    parentFileObject;
     // Child file objects of this file if it is a directory
     transient private Hashtable         childFileObjects;
     // URL to this file
-    private transient java.net.URL      fileURL;
+    transient private URL               fileURL;
     // The file name part of this file
     transient private String            fullFileName;
     // The first part of this file's file name
@@ -64,6 +65,8 @@ class HTTPFileObject extends FileObject {
     transient private Hashtable         fileAttributes;
     // Flags whether this folder's contents were read yet
     transient private boolean           areFolderContentsKnown;
+    // List of listeners for this file object
+    transient private Vector            listeners;
         
     /**
      *	Constructs a <code>HTTPFileObject</code> with the path and file systems
@@ -101,8 +104,8 @@ class HTTPFileObject extends FileObject {
      *	@since 1.0
      */
     private void initialize(
-        String			uriStem,
-        HTTPFileSystem	parentFileSystem
+        String          uriStem,
+        HTTPFileSystem  parentFileSystem
     ) {
 
         try {
@@ -115,6 +118,7 @@ class HTTPFileObject extends FileObject {
             this.fileURL = new java.net.URL( parentFileSystem.baseURL, "." + uriStem );//NOI18N
             this.fileAttributes = new Hashtable( 0 );
             this.areFolderContentsKnown = true;
+            this.listeners = new Vector( );
 
             // If this is not a root file object,
             if( !isRoot( ) ) {
@@ -162,7 +166,9 @@ class HTTPFileObject extends FileObject {
                 this.fullFileName = "";     //NOI18N
                 this.fileName = "";         //NOI18N
                 this.fileExtension = "";    //NOI18N
-                areFolderContentsKnown = false;
+
+                // Start reading the items in the root directory in the background
+                new Thread( this ).start( );
 
             }
 
@@ -182,7 +188,7 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    private void writeObject(ObjectOutputStream out) throws IOException {
 
         // Write out the name of the filesystem and this file
         out.writeObject( parentFileSystem.getSystemName( ) );
@@ -198,7 +204,7 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
 
         // Name of the parent filesystem when it was saved
         String fileSystemName;
@@ -636,7 +642,7 @@ class HTTPFileObject extends FileObject {
      */
     public FileObject[] getChildren( ) {
         
-        return (FileObject[])getChildFileObjects( ).values( ).toArray( new FileObject[ 0 ] );        
+        return (FileObject[])getChildFileObjects( true ).values( ).toArray( new FileObject[ 0 ] );        
     }
     
     
@@ -667,7 +673,7 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    public java.io.InputStream getInputStream() throws java.io.FileNotFoundException {
+    public InputStream getInputStream() throws FileNotFoundException {
         
         try {
             return new HTTPFileInputStream( getFileConnection( ) );
@@ -685,7 +691,7 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    public java.io.OutputStream getOutputStream(FileLock lock) throws IOException {        
+    public OutputStream getOutputStream(FileLock lock) throws IOException {        
         throw new IOException( );        
     }
     
@@ -699,8 +705,10 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    public void addFileChangeListener(org.openide.filesystems.FileChangeListener listener) {        
-        // File system is read-only - ignore this call        
+    public void addFileChangeListener(FileChangeListener listener) {        
+
+        listeners.add( listener );
+
     }
     
     
@@ -713,9 +721,10 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    public void removeFileChangeListener(org.openide.filesystems.FileChangeListener listener) {
-        
-        // File system is read-only - ignore this call        
+    public void removeFileChangeListener(FileChangeListener listener) {
+
+        listeners.remove( listener );
+
     }
     
     
@@ -727,10 +736,25 @@ class HTTPFileObject extends FileObject {
      *	@since 1.0
      */
     private synchronized void addChild( HTTPFileObject newChildFileObject ) {        
-        
+
         childFileObjects.put( newChildFileObject.getNameExt( ), newChildFileObject );
         newChildFileObject.parentFileObject = this;
-        
+
+        // Notify any listeners that this item has been added
+        if( !listeners.isEmpty( ) ) {
+
+            if( newChildFileObject.isData( ) ) {
+
+                fireFileDataCreatedEvent( listeners.elements( ), new FileEvent( this, newChildFileObject, true ) );
+
+            } else {
+
+                fireFileFolderCreatedEvent( listeners.elements( ), new FileEvent( this, newChildFileObject, true ) );
+
+            }
+
+        }
+
     }
     
     
@@ -742,7 +766,7 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    private synchronized void addChild( String newChildFileName ) {        
+    private void addChild( String newChildFileName ) {        
         addChild( new HTTPFileObject( newChildFileName, parentFileSystem ) );        
     }
     
@@ -756,13 +780,13 @@ class HTTPFileObject extends FileObject {
      *
      *  @since 1.0
      */
-    private synchronized boolean addOptionalChild( String newChildFileName ) {        
+    private boolean addOptionalChild( String newChildFileName ) {        
         // Connection to the web server for this file
-        HttpURLConnection	fileConnection;
+        HttpURLConnection   fileConnection;
         // New file object
-        HTTPFileObject		childFileObject;
+        HTTPFileObject      childFileObject;
         // Flags whether the file was added or not
-        boolean				wasFileAdded;
+        boolean             wasFileAdded;
         
         
         fileConnection = null;
@@ -811,33 +835,63 @@ class HTTPFileObject extends FileObject {
      */
     HTTPFileObject child( String fullFileName ) {
         
-        return (HTTPFileObject)getChildFileObjects( ).get( fullFileName );        
+        return child( fullFileName, true );
+
     }
 	
-	
-	synchronized private Hashtable getChildFileObjects( ) {
-		
-        // If this is a directory that has not been read yet,
-        if( !areFolderContentsKnown ) {
-            
-            // If this is the root file object,
-            if( isRoot( ) ) {
-                
-                // Read the root's contents
-                readRootContents( );
 
-			// If the root file objects has been initialized
-            } else if( parentFileSystem.isRootInitialized ) {
-                
-                // Read the list of files in this package directory
-                readPackageContents( );
-                
-            }
-            
-        }
-		return childFileObjects;
+    /**
+     *	Returns a file within this directory with the passed name, or "null" if the
+     *	file doesn't exist.  May or may not read the package contents if not yet
+     *  read.
+     *
+     *	@param fullFileName The full name of the file to return.
+     *  @param readPackageContents Flag to specify whether the package contents
+     *      should be read if not know.
+     *
+     *	@since 1.0
+     */
+    private HTTPFileObject child( String fullFileName, boolean readPackageContents ) {
+        
+        return (HTTPFileObject)getChildFileObjects( readPackageContents ).get( fullFileName );
+
+    }
+
+
+    /**
+     *  Returns the Hashtable that contains all of the child FileObjects.  This
+     *  provides synchronized access to the methods that read the contents of the
+     *  folder.
+     *
+     *  @param readPackageContents Flags whether this package's contents should be
+     *      read if unknown.
+     *
+     *  @since 1.0
+     */
+    synchronized private Hashtable getChildFileObjects( boolean readPackageContents ) {
 		
-	}
+        // If this is a directory that has not been read yet and the root object has been initialized,
+        if( !areFolderContentsKnown && readPackageContents ) {
+            
+            // Read the list of files in this package directory
+            readPackageContents( );
+                
+        }
+        return childFileObjects;
+
+    }
+    
+    
+    /**
+     *  Called to initialize the root file object in the background.
+     *
+     *  @since 1.0
+     */
+    public void run( ) {
+        
+        readRootContents( );
+        
+    }
     
     
     /**
@@ -862,7 +916,7 @@ class HTTPFileObject extends FileObject {
         // Add the standard files for a Javadoc directory structre
         if( addOptionalChild( "/package-list" ) ) { //NO I18N
 
-            packageFile = child( "package-list" );       //NO I18N
+            packageFile = child( "package-list", false );       //NO I18N
             addChild( "/allclasses-frame.html" );        //NO I18N
             addOptionalChild( "/deprecated-list.html" ); //NO I18N
             addOptionalChild( "/help-doc.html" );        //NO I18N
@@ -922,8 +976,6 @@ class HTTPFileObject extends FileObject {
             }
 
         }
-        parentFileSystem.isRootInitialized = true;
-        areFolderContentsKnown = true;
 
     }
     
@@ -955,7 +1007,7 @@ class HTTPFileObject extends FileObject {
             packagePart = (String)packageParser.nextElement( );
             
             // Find its directory object
-            if( packageDirectory.child( packagePart ) == null ) {
+            if( packageDirectory.child( packagePart, false ) == null ) {
                 
                 packageDirectory.addChild( packageDirectory.uriStem + packagePart + "/" );  //NOI18N
             }
