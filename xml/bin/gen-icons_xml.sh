@@ -90,14 +90,27 @@ Microsystems, Inc. All Rights Reserved.
         echo "        <screen-shot name=\"$NAME\"/>" >> $DATA
         echo "        <usage>" >> $DATA
 
-        for usage in `grep -r -l "$NAME\""   ../ | grep -v ".form$" | grep -v CVS | grep -v "~$" | grep -v ".#" | grep -v "/www/" | grep -v "/javahelp/" | grep -v "/testbed/" | grep -v "TODO.xml" | grep -v "build.xml" | grep -v "/test/"`; do
+        ###
+        # Full Name with optional extension.
+        FULL_NAME=`echo $file | awk '{A=$0; sub("src/", "", A); sub(".gif$", "", A); print A;}'`
+        for usage in `grep -r -l "$FULL_NAME[.gif]*\"" ../ | grep -v ".form$" | grep -v CVS | grep -v "~$" | grep -v ".#" | grep -v "/www/" | grep -v "/javahelp/" | grep -v "/testbed/" | grep -v "TODO.xml" | grep -v "build.xml" | grep -v "/test/"`; do
             echo " - $usage"
             REF_FILE=`basename $usage`
             echo "            <source name=\"$REF_FILE\" file=\"$usage\"/>" >> $DATA
         done
 
+        ###
+        # Just Name with extension.
+        for usage in `grep -r -l "\"$NAME\""    ../ | grep -v ".form$" | grep -v CVS | grep -v "~$" | grep -v ".#" | grep -v "/www/" | grep -v "/javahelp/" | grep -v "/testbed/" | grep -v "TODO.xml" | grep -v "build.xml" | grep -v "/test/"`; do
+            echo " - $usage"
+            REF_FILE=`basename $usage`
+            echo "            <source name=\"$REF_FILE\" file=\"$usage\"/>" >> $DATA
+        done
+
+        ###
+        # Just Name without extension.
         NO_EXT=`basename $file .gif`
-        for usage in `grep -r -l "$NO_EXT\"" ../ | grep -v ".form$" | grep -v CVS | grep -v "~$" | grep -v ".#" | grep -v "/www/" | grep -v "/javahelp/" | grep -v "/testbed/" | grep -v "TODO.xml" | grep -v "build.xml" | grep -v "/test/"`; do
+        for usage in `grep -r -l "\"$NO_EXT\""  ../ | grep -v ".form$" | grep -v CVS | grep -v "~$" | grep -v ".#" | grep -v "/www/" | grep -v "/javahelp/" | grep -v "/testbed/" | grep -v "TODO.xml" | grep -v "build.xml" | grep -v "/test/"`; do
             echo " - $usage"
             REF_FILE=`basename $usage`
             echo "            <source name=\"$REF_FILE\" file=\"$usage\"/>" >> $DATA
@@ -108,7 +121,7 @@ Microsystems, Inc. All Rights Reserved.
 
 
         if [ "$GENERATE" == "true" ]; then
-            echo "$KEY=\"It is used for \"" >> $DESC_FILE
+            echo "$KEY=\"This icon is used with ... for ...\"" >> $DESC_FILE
         fi
 
     done
