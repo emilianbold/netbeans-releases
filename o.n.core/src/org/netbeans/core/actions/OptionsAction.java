@@ -30,6 +30,7 @@ import javax.swing.tree.TreePath;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Mutex;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.ActionPerformer;
@@ -56,6 +57,8 @@ import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.PersistenceManager;
 import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.WorkspaceImpl;
+import org.netbeans.core.windows.frames.WindowTypesManager;
 
 /** Action that opens explorer view which displays global
 * options of the IDE.
@@ -76,35 +79,48 @@ public class OptionsAction extends CallableSystemAction {
         OptionsPanel singleton = OptionsPanel.singleton();
         singleton.prepareNodes ();
         TopManager.getDefault ().setStatusText (""); // NOI18N
-        
-        
+                
         // dock Options into its mode if needed
-        Workspace w = WindowManager.getDefault().getCurrentWorkspace();
+        final Workspace w = WindowManager.getDefault().getCurrentWorkspace();
         
         ModeImpl m = (ModeImpl) w.findMode(singleton);
+        boolean center = false;
         if (m == null) {
             m = (ModeImpl) w.createMode(OptionsPanel.MODE_NAME,
                                         singleton.getName(),
                                         null);
+            //Center only new window
+            center = true;
         }
-        m.dockInto(singleton);
-        m.requestFocus();
         
-        if (EventQueue.isDispatchThread()) {
-            singleton.open();
-            singleton.requestFocus();
-            singleton.requestDefaultFocus();
-        }
-        else {
-            final OptionsPanel optionPanel = singleton;
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    optionPanel.open();
-                    optionPanel.requestFocus();
-                    optionPanel.requestDefaultFocus();
+        final OptionsPanel optionPanel = singleton;
+        final ModeImpl mo = m;
+        final boolean centerLoc = center;
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                //Center only TOP_FRAME
+                if ((centerLoc) && 
+                    WindowTypesManager.getDefaultFrame().equals(WindowTypesManager.TOP_FRAME)) {
+                    //Initialize gui to get correct preferred size
+                    ((WorkspaceImpl) w).addToShownTcs(optionPanel);
+                    Rectangle r = new Rectangle();
+                    Dimension d = optionPanel.getPreferredSize();
+                    //Center rectangle at screen
+                    Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+                    r.x = (size.width / 2) - (d.width / 2);
+                    r.y = (size.height / 2) - (d.height / 2);
+                    r.width = d.width;
+                    r.height = d.height;
+                    mo.setBounds(r);
                 }
-            });
-        }
+                mo.dockInto(optionPanel);
+                mo.requestFocus();
+
+                optionPanel.open();
+                optionPanel.requestFocus();
+                optionPanel.requestDefaultFocus();
+            }
+        });
     }
 
     /** URL to this action.
@@ -226,7 +242,6 @@ public class OptionsAction extends CallableSystemAction {
             close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (OptionsAction.class, "ACSD_close_button"));
             help.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (OptionsAction.class, "ACSD_help_button"));
             
-
             return view;
         }
 
