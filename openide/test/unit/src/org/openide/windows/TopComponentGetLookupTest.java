@@ -218,6 +218,9 @@ public class TopComponentGetLookupTest extends NbTestCase {
         assertEquals ("One node there", 1, top.getActivatedNodes ().length);
         assertEquals ("n2", n2, top.getActivatedNodes ()[0]);
         
+//MK - here it changes twice.. because the setAtivatedNodes is trigger on inner TC, then lookup of MVTC contains old activated node..
+        // at this monent the merged lookup contains both items.. later it gets synchronized by setting the activated nodes on the MVTC as well..
+        // then it contains only the one correct node..
         listener.check ("Node changed", 1);
         
         Collection addedByTCLookup = res.allInstances();
@@ -233,7 +236,6 @@ public class TopComponentGetLookupTest extends NbTestCase {
         content.remove (n2);
         assertEquals ("After the n2.getLookup stops to return itself, there is no change", 
             addedByTCLookup, res.allInstances ());
-        
         // this could be commented out if necessary:
         listener.check ("And nothing is fired", 0);
         
@@ -291,8 +293,8 @@ public class TopComponentGetLookupTest extends NbTestCase {
         
         top.setActivatedNodes (new N[0]);
         assertEquals("The nodes are empty", 0, top.getActivatedNodes ().length);
-        listener.checkAtLeast ("There should be no change, but there is one now, improve if possible", 1);
-
+        listener.checkAtLeast ("There should be no change, but there is one now, improve if possible", checkAtLeastCount());
+        
         cnt.queries = 0;
         ic.add (obj);
         ic.add (ac);
@@ -324,19 +326,31 @@ public class TopComponentGetLookupTest extends NbTestCase {
         java.util.Collection res;
         
         res = lookup.lookup (nodeTemplate).allInstances ();
-        assertEquals ("FilterNode is the only node there", 
-            Collections.singletonList(node), res
-        );
+        
+        assertEquals("just one returned", res.size(), 1);
+        assertEquals("node is node", node, res.iterator().next());
+        //MK - the above 2 tests should test the same..
+//        assertEquals ("FilterNode is the only node there", 
+//            Collections.singletonList(node), res
+//        );
 
         res = lookup.lookup (saveTemplate).allInstances ();
-        assertEquals ("SaveCookie is there only once", 
-            Collections.singletonList(ny), res
-        );
+        
+        assertEquals("just one returned", res.size(), 1);
+        assertEquals("node is node", ny, res.iterator().next());
+        //MK - the above 2 tests should test the same..
+//        assertEquals ("SaveCookie is there only once", 
+//            Collections.singletonList(ny), res
+//        );
 
         res = lookup.lookup (nodeTemplate).allInstances ();
-        assertEquals ("FilterNode is still the only node there", 
-            Collections.singletonList(node), res
-        );
+        
+        assertEquals("just one returned", res.size(), 1);
+        assertEquals("node is node", node, res.iterator().next());
+        //MK - the above 2 tests should test the same..
+//        assertEquals ("FilterNode is still the only node there", 
+//            Collections.singletonList(node), res
+//        );
     }
 
     public void testActionMapIsTakenFromComponentAndAlsoFromFocusedOne () {
@@ -422,8 +436,12 @@ public class TopComponentGetLookupTest extends NbTestCase {
         top.setActivatedNodes (new Node[] { Node.EMPTY });
         assertEquals ("Map remains the same", map, res.allInstances().toArray()[0]);
         
-        l.checkAtLeast ("There should be no change, but alas there is one right now", 1);
+        l.checkAtLeast ("There should be no change, but alas there is one right now", checkAtLeastCount());
         
+    }
+    
+    protected int checkAtLeastCount() {
+        return 1;
     }
     
     /**
@@ -585,7 +603,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
 
     /** Overides some methods so it is not necessary to use the data object.
      */
-    private static final class N extends AbstractNode {
+    protected static final class N extends AbstractNode {
         private Node.Cookie[] cookies = {
             new OpenCookie() { public void open() {} },
             new EditCookie() { public void edit() {} },
