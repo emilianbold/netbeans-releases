@@ -34,7 +34,6 @@
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/JUnitFolder.html"/>
             <attr name="templateType_JUnit" boolvalue="true"/>
             
-            <!--
             <file name="EmptyJUnitTest.java" url="templates/SimpleJUnitTest.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
@@ -61,7 +60,6 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
                 <attr name="templateType_JUnit" boolvalue="true"/>
             </file>
-            -->
             
         </folder>
     </folder>

@@ -29,11 +29,9 @@ Microsystems, Inc. All Rights Reserved.
     <path id="cp">
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-      <!--
       <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
       <pathelement location="${projects/projectuiapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectuiapi.jar"/>
       <pathelement location="${java/project.dir}/${nb.modules.dir}/org-netbeans-modules-java-project.jar"/>
-      -->
       <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
       <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
       <pathelement location="${ant.dir}/${nb.modules.dir}/org-apache-tools-ant-module.jar"/>
