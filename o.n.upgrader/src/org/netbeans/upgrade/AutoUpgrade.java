@@ -61,8 +61,7 @@ public final class AutoUpgrade {
     
     // the order of VERSION_TO_CHECK here defines the precedence of imports
     // the first one will be choosen for import
-    final static private List VERSION_TO_CHECK = Arrays.asList (new String[] { "4.0beta2", "3.6" });
-    final static private String USER_DIR_PREFIX = ".netbeans"; // NOI18N
+    final static private List VERSION_TO_CHECK = Arrays.asList (new String[] { ".netbeans/4.0beta2", ".netbeans/3.6", "jstudio_6me_user" });
     
     static private File checkPrevious (String[] version) {
         boolean exists;
@@ -78,13 +77,10 @@ public final class AutoUpgrade {
             String ver;
             while (it.hasNext () && sourceFolder == null) {
                 ver = (String) it.next ();
-                sourceFolder = new File (
-                    new File (userHomeFile.getAbsolutePath (), USER_DIR_PREFIX),
-                    ver
-                );
+                sourceFolder = new File (userHomeFile.getAbsolutePath (), ver);
                 
                 if (sourceFolder.isDirectory ()) {
-                    version[0] = ver;
+                    version[0] = sourceFolder.getName();
                     break;
                 }
                 sourceFolder = null;
@@ -122,11 +118,11 @@ public final class AutoUpgrade {
     throws java.io.IOException, java.beans.PropertyVetoException {
         
         
-        if ("3.6".equals (oldVersion)) {
+        if ("3.6".equals (oldVersion) || "jstudio_6me_user".equals (oldVersion)) { // NOI18N
             File userdir = new File(System.getProperty ("netbeans.user", "")); // NOI18N
 
             Reader r = new InputStreamReader (
-                AutoUpgrade.class.getResourceAsStream ("copy3.6"), // NOI18N
+                AutoUpgrade.class.getResourceAsStream ("copy"+oldVersion), // NOI18N
                 "utf-8"
             );
             java.util.Set includeExclude = IncludeExclude.create (r);
