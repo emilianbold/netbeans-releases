@@ -49,6 +49,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -159,8 +160,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
     Document doc;
     
     private static void fail(Throwable t) {
-        if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
-            t.printStackTrace();
+        ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, t);
     }
     
     /** Creates new form ComponentsEditorPanel
