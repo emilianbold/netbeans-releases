@@ -177,7 +177,7 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </property>
         
-        <property name="coverage.test.path" value=""/>
+        <property name="coverage.lib.path" value=""/>
         
         <!-- ide classpath - ant and junit -->
         <property name="xtest.ide.path" refid="xtest.ide.path">
@@ -185,7 +185,7 @@ Microsystems, Inc. All Rights Reserved.
                 <fileset dir="${xtest.userdir}/xtest/lib/ext">
                     <include name="*.jar"/>
                 </fileset>
-                <pathelement path="${coverage.test.path}"/>
+                <pathelement path="${coverage.lib.path}"/>
             </classpath>
         </property>
         

@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="test_init">
 
         <!-- Needed for running code-mode tests with Clover (see build-clover.xml): -->
-        <property name="coverage.test.path" value=""/>
+        <property name="coverage.lib.path" value=""/>
                         
         <pathdef useid="_jvmplugin.test.basepath">
             <path>
@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement path="${xtest.home}/lib/xtest-junit-testrunner.jar"/>
                 <pathelement path="${xtest.plugin.home}/lib/xtest-jvm-plugin.jar"/>
                 <pathelement location="${xtest.tests.dir}"/>
-                <pathelement path="${coverage.test.path}"/>
+                <pathelement path="${coverage.lib.path}"/>
             </path>
         </pathdef>    
         
@@ -53,13 +53,14 @@ Microsystems, Inc. All Rights Reserved.
         <property name="_jvmplugin.test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
         <!-- END -->
         
+        <property name="coverage.jvm.args" value=""/>
         <property name="xtest.jvm.args" value=""/>
         <property name="junit.properties.file" value=""/>
 
         <property name="xtest.testrunner.mode" value="testsuite"/>        
 
         <!-- run the tests -->        
-        <jvmTestRunner workDir="${xtest.workdir}/sys"  jdkHome="${jdkhome}" jvmArgs="${xtest.jvm.args}"
+        <jvmTestRunner workDir="${xtest.workdir}/sys"  jdkHome="${jdkhome}" jvmArgs="${xtest.jvm.args} ${coverage.jvm.args}"
             enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}"
             testMode="${xtest.testrunner.mode}"  timeout="${xtest.timeout}">
             <classpath  refid="_jvmplugin.test.classpath"/>

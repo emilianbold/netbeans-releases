@@ -84,7 +84,7 @@ ant -f build-clover.xml -Dclover.home=${clover.home} report.html.unix]]></echo>
 
     <target name="runtests" depends="check.for.clover.home" description="Run tests using Clover instrumentation.">
         <!-- Test path used for code-mode tests; see instrument target for ide-mode tests and manual testing: -->
-        <property name="coverage.test.path" value="${clover.jar}"/>
+        <property name="coverage.lib.path" value="${clover.jar}"/>
         <ant dir="." target="cleanresults"/>
         <ant dir="." target="runtests"/>
     </target>
