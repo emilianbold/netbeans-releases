@@ -131,8 +131,8 @@ public class AddComponents_SWING extends JellyTestCase {
         // try compile created source file and check compile errors
         formnode.compile();
         
-        log("All components from Component Palette : " + categoryName_1 + " - were added to " + fileName);
-        log("All components from Component Palette : " + categoryName_2 + " - were added to " + fileName);
+        log("First 15 components from Component Palette : " + categoryName_1 + " - were added to " + fileName);
+        log("All rest components from Component Palette : " + categoryName_1 + " - were added to " + fileName);
         
         // close form editor window
         log("Try to close Form Editor window ");
