@@ -22,7 +22,8 @@ Microsystems, Inc. All Rights Reserved.
 
 <h1>Connecting Help in NetBeans: From Help Set Installation to Hooking up Context-Sensitive Help</h1>
 
-<p>This document is designed to help NetBeans module writers with correctly setting 
+<p>This document is designed to help NetBeans module writers with installing
+help into the IDE and correctly setting 
   up context-sensitive help for their modules. The document covers the following 
   topics:</p>
 
@@ -75,13 +76,12 @@ Microsystems, Inc. All Rights Reserved.
 <p>The IDE's architecture enables you to:</p>
 <ul>
   <li> Create separate help sets and associate them with given modules.</li>
-  <li> Specify the order in which the help set is displayed in the help window 
-    (after the user chooses Help | Contents - the merged help sets view) relative 
-    to another installed help set</li>
+  <li> Specify the order in which the help sets are merged, which can affect 
+the order in which topics appear within the table of contents.</li>
   <li> Associate an IDE component with a specific help topic by means of a help 
     ID for the component. When the user presses F1 or a Help button on the component, 
     the help is displayed in the JavaHelp viewer.</li>
-  <li>Create separate a separate menu item for the help set</li>  
+  <li>Create a separate menu item for the help set</li>  
 </ul>
 <p>In order to take advantage of these help features, a NetBeans module writer 
   must be aware of different aspects of the NetBeans help system, specifically: 
