@@ -74,7 +74,7 @@ public class AnnotationTypesFolder extends FolderInstance{
                 AnnotationType type;
                 for (Iterator it = AnnotationTypes.getTypes().getAnnotationTypeNames(); it.hasNext(); ) {
                     type = AnnotationTypes.getTypes().getType((String)it.next());
-                    if ( ((FileObject)type.getProp(AnnotationType.PROP_FILE)).equals(fe.getFile()) ) {
+                    if ( type != null && ((FileObject)type.getProp(AnnotationType.PROP_FILE)).equals(fe.getFile()) ) {
                         AnnotationTypes.getTypes().removeType(type.getName());
                         break;
                     }

@@ -162,7 +162,7 @@ public class AnnotationTypesNode extends AbstractNode {
             for( ; types.hasNext(); ) {
                 String name = (String)types.next();
                 AnnotationType type = AnnotationTypes.getTypes().getType(name);
-                if (!type.isVisible())
+                if (type == null || !type.isVisible())
                     continue;
                 try {
                     list.add(new AnnotationTypesSubnode(type));
