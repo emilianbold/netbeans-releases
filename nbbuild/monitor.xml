@@ -20,7 +20,7 @@ To implement:
 - XML syntax check and validation for files with DTD (RFE in IssueZilla?)
 - //NOI18N check (who knows most about this?)
 - common Czenglish mistakes in bundles (pkeegan would know best)
-- newlines: text files should have proper line endings acc. to platform
+- newlines: text files should have proper line endings acc. to platform, and end in linefeed, no tabs
 - JavaHelp sanity: targets exist in various modules
 - use of NbBundle.getBundle(getClass()) etc.
 - use of netbeans.debug.exceptions (change to ErrorManager)
