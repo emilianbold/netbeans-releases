@@ -270,7 +270,19 @@ public final class NbMainExplorer extends CloneableTopComponent
   /** Creates a top component dedicated to exploration of 
   * specified node, which will serve as root context */
   private ExplorerTab createTC (Node rc) {
-    MainTab panel = new MainTab();
+    // switch according to the type of the root context
+    MainTab panel = null;
+    Places.Nodes ns = TopManager.getDefault().getPlaces().nodes();
+    if (rc.equals(NbProjectOperation.getProjectDesktop())) {
+      // projects tab
+      panel = new ProjectsTab();
+    } else if (rc.equals(ns.repository()) || rc.equals(ns.environment())) {
+      // default tabs
+      panel = new MainTab();
+    } else {
+      // tabs added by modules
+      panel = new ModuleTab();
+    }
     panel.setRootContext(rc);
     rootsToTCs().put(rc, panel);
     return panel;
@@ -438,14 +450,19 @@ public final class NbMainExplorer extends CloneableTopComponent
     public void performCommand (Object context) {
       if (!valid) {
         valid = true;
-        Node rc = getExplorerManager().getRootContext();
-        initializeWithRootContext(rc);
-        // add itself to the map of main explorer's top
-        // components and nodes
-        NbMainExplorer explorer = NbMainExplorer.getExplorer();
-        explorer.prevRoots().add(rc);
-        explorer.rootsToTCs().put(rc, this);
+        validateRootContext();
       }
+    }
+    
+    /** Validates root context of this top component after deserialization.
+    * It is guaranteed that this method is called at a time when
+    * getExplorerManager().getRootContext() call will return valid result.
+    * Subclasses can override this method and peform further validation
+    * or even set new root context instead of deserialized one.<br>
+    * Default implementation just initializes top component with standard
+    * deserialized root context. */
+    protected void validateRootContext () {
+      initializeWithRootContext(getExplorerManager().getRootContext());
     }
     
     private PropertyChangeListener rcListener () {
@@ -498,8 +515,9 @@ public final class NbMainExplorer extends CloneableTopComponent
   } // end of ExplorerTab inner class
   
   /** Tab of main explorer. Tries to dock itself to main explorer mode
-  * before opening, if it's not docked already. */
-  public static final class MainTab extends ExplorerTab {
+  * before opening, if it's not docked already.
+  * Also deserialization is enhanced in contrast to superclass */
+  public static class MainTab extends ExplorerTab {
     static final long serialVersionUID =4233454980309064344L;
     
     /** Holds main tab which was last activated. 
@@ -533,10 +551,61 @@ public final class NbMainExplorer extends CloneableTopComponent
       lastActivated = this;
     }
     
+    /** Registers root context in main explorer in addition to superclass'
+    * version */
+    protected void validateRootContext () {
+      super.validateRootContext();
+      registerRootContext(getExplorerManager().getRootContext());
+    }
+
+    /* Add given root context and this top component 
+    * to the map of main explorer's top components and nodes */
+    protected void registerRootContext (Node rc) {
+      NbMainExplorer explorer = NbMainExplorer.getExplorer();
+      explorer.prevRoots().add(rc);
+      explorer.rootsToTCs().put(rc, this);
+    }
+    
   } // end of MainTab inner class
+
+  /** Special class for projects tab in main explorer */
+  public static class ProjectsTab extends MainTab {
+    static final long serialVersionUID =-8178367548546385799L;
+    
+    /** Exchanges deserialized root context to projects root context
+    * to keep the uniquennes. */
+    protected void validateRootContext () {
+      Node projectsRc = NbProjectOperation.getProjectDesktop();
+      setRootContext(projectsRc);
+      registerRootContext(projectsRc);
+    }
+    
+  } // end of ProjectsTab inner class
   
-  /** Tab of main explorer. Tries to dock itself to main explorer mode
-  * before opening, if it's not docked already. */
+  /** Special class for tabs added by modules to the main explorer */
+  public static class ModuleTab extends MainTab {
+    static final long serialVersionUID =8089827754534653731L;
+    
+    /** Throws deserialized root context and sets proper node found 
+    * in roots set as new root context for this top component.
+    * The reason for such construction is to keep the uniquennes of
+    * root context node after deserialization. */
+    protected void validateRootContext () {
+      // find proper node
+      Class nodeClass = getExplorerManager().getRootContext().getClass();
+      Node[] roots = TopManager.getDefault().getPlaces().nodes().roots();
+      for (int i = 0; i < roots.length; i++) {
+        if (nodeClass.equals(roots[i].getClass())) {
+          setRootContext(roots[i]);
+          registerRootContext(roots[i]);
+          break;
+        }
+      }
+    }
+    
+  } // end of ProjectsTab inner class
+  
+  /** Top component for project ang global settings. */
   public static class SettingsTab extends ExplorerTab {
     static final long serialVersionUID =9087127908986061114L;
    
@@ -587,6 +656,8 @@ public final class NbMainExplorer extends CloneableTopComponent
 
 /*
 * Log
+*  48   Gandalf   1.47        12/23/99 David Simonek   special tabs for projects
+*       and module tabs
 *  47   Gandalf   1.46        12/21/99 David Simonek   minor fixes
 *  46   Gandalf   1.45        12/17/99 David Simonek   #4886
 *  45   Gandalf   1.44        12/3/99  David Simonek   
