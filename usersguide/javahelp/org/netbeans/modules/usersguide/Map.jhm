@@ -1215,6 +1215,7 @@
    <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JCommitCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
    <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JUpdateCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
    <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JDiffCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.diff.PatchAction" url="vcs-nb/vcs_diffs.html" />
    <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JStatusCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
    <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JLogCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
    <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JAnnotateCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
