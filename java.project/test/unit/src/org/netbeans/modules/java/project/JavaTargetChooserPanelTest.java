@@ -29,11 +29,9 @@ public class JavaTargetChooserPanelTest extends NbTestCase {
         super (testName);
     }
     
-    protected void tearDown () throws Exception {
-        // clean up test folders
-        if (root != null) {
-            root.delete ();
-        }
+    protected void setUp () throws Exception {
+        super.setUp ();
+        clearWorkDir ();
     }
     
     public static junit.framework.Test suite () {
