@@ -14,8 +14,7 @@
 package org.netbeans.beaninfo.editors;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.beans.*;
 import java.util.Vector;
 import java.util.Enumeration;
@@ -223,15 +222,16 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
             c.insets = new Insets (5, 5, 0, 0);
             c.gridwidth = GridBagConstraints.REMAINDER;
-            /* Enter should invoke default button
-            tfSize.addActionListener (new ActionListener () {
-                                          public void actionPerformed (ActionEvent e) {
-                                              setValue ();
-                                          }
-                                      });
-             */
-            tfSize.addFocusListener (new java.awt.event.FocusAdapter () {
-                                         public void focusLost (java.awt.event.FocusEvent evt) {
+            
+            tfSize.addKeyListener( new KeyAdapter() {
+                                    public void keyPressed(KeyEvent e) {
+                                        if ( e.getKeyCode() == KeyEvent.VK_ENTER )
+                                            setValue ();
+                                    }
+                                });
+            
+            tfSize.addFocusListener (new FocusAdapter () {
+                                         public void focusLost (FocusEvent evt) {
                                              setValue ();
                                          }
                                      });
