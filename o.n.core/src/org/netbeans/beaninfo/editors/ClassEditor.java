@@ -15,7 +15,6 @@ package com.netbeans.developer.editors;
 
 /** A property editor for Class.
 * @author   Jan Jancura
-* @version  0.10, Dec 9 1997
 */
 public class ClassEditor extends java.beans.PropertyEditorSupport {
 
@@ -56,15 +55,17 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
   */
   public void setAsText(String text) throws java.lang.IllegalArgumentException {
     try {
-      setValue (Class.forName (text));
+      setValue (org.openide.TopManager.getDefault ().systemClassLoader ().loadClass (text));
     } catch (ClassNotFoundException e) {
-      throw new java.lang.IllegalArgumentException ();
+      // ignore
     }
   }
 }
 
 /*
  * Log
+ *  2    Gandalf   1.1         6/22/99  Ian Formanek    Changed loading class 
+ *       and throwing exception if it fails
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  */
