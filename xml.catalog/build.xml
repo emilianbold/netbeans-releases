@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
           <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
           <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
           <pathelement location="${xml/api.dir}/${nb.modules.dir}/org-netbeans-api-xml.jar"/>
-          <pathelement location="${xml/core.dir}/${nb.modules/autoload.dir}/xml-core.jar"/>
+          <pathelement location="${xml/core.dir}/${nb.modules.dir}/org-netbeans-modules-xml-core.jar"/>
           <fileset dir="${nb_all}/xml/external">
             <include name="resolver*.jar"/>
           </fileset>

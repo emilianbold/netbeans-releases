@@ -3,14 +3,6 @@ OpenIDE-Module: org.netbeans.modules.xml.core/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/core/resources/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/xml/core/CoreModuleInstall.class
 OpenIDE-Module-Layer: org/netbeans/modules/xml/core/resources/mf-layer.xml
-OpenIDE-Module-Specification-Version: ${xml.core.spec.version}
-OpenIDE-Module-Implementation-Version: ${xml.common.impl.version}
-OpenIDE-Module-Build-Version: ${buildnumber}
-OpenIDE-Module-Public-Packages: -
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.37
-OpenIDE-Module-Module-Dependencies: 
- org.netbeans.api.xml/1 > ${xml.api.spec.version},
- org.openide.io > 1.0
 OpenIDE-Module-Requires: org.openide.windows.IOProvider
 
 Name: org/netbeans/modules/xml/core/XMLDataLoader.class
@@ -21,4 +13,3 @@ OpenIDE-Module-Class: Loader
 
 Name: org/netbeans/modules/xml/core/EntityDataLoader.class
 OpenIDE-Module-Class: Loader
-

@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
          <pathelement location="${lib_root}/src"/>
          <pathelement location="${xml/api.dir}/${nb.modules.dir}/org-netbeans-api-xml.jar"/>
-         <pathelement location="${xml/core.dir}/${nb.modules/autoload.dir}/xml-core.jar"/>
+         <pathelement location="${xml/core.dir}/${nb.modules.dir}/org-netbeans-modules-xml-core.jar"/>
       </path>
     </target>
 

@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
           <pathelement location="${xml/api.dir}/${nb.modules.dir}/org-netbeans-api-xml.jar"/>
           <pathelement location="${xml/tax.dir}/${nb.modules/autoload.dir}/xml-tax.jar"/>
           <pathelement location="${xml/tax.dir}/${nb.modules/autoload.dir}/ext/tax.jar"/>
-          <pathelement location="${xml/core.dir}/${nb.modules/autoload.dir}/xml-core.jar"/>
+          <pathelement location="${xml/core.dir}/${nb.modules.dir}/org-netbeans-modules-xml-core.jar"/>
           <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
         </path>
     </target>
