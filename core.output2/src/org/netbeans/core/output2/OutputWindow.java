@@ -65,6 +65,9 @@ public class OutputWindow extends AbstractOutputWindow {
         this.controller = controller;
         setDisplayName (NbBundle.getMessage(OutputWindow.class, "LBL_OUTPUT")); //NOI18N
         setIcon(Utilities.loadImage(ICON_RESOURCE)); // NOI18N
+         // special title for sliding mode
+        // XXX - please rewrite to regular API when available - see issue #55955
+        putClientProperty("SlidingName", getDisplayName()); //NOI18N 
     }
     
     public static synchronized OutputWindow findDefault() {
