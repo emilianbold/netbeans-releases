@@ -27,6 +27,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.src.nodes.SourceChildren;
 import org.openide.text.*;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
 import org.openide.windows.WindowManager;
 import org.openide.windows.Workspace;
 import org.openide.windows.TopComponent;
@@ -320,10 +321,12 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     return loadFormInternal (null);
   }
   
-  protected void reloadDocument() {
-    super.reloadDocument ();
+  protected Task reloadDocument() {
+    Task docLoadTask = super.reloadDocument ();
     FormManager2 fm = getFormManager ();
     fm.getCodeGenerator ().initialize (fm);
+
+    return docLoadTask;
   }
   
   /** Loads the DesignForm from the .form file. 
@@ -481,6 +484,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  46   Jaga      1.44.1.0    4/14/00  Miloslav Metelka reloadDocument() 
+ *       signature change
  *  45   Gandalf   1.44        1/18/00  Pavel Buzek     #4348
  *  44   Gandalf   1.43        1/12/00  Pavel Buzek     I18N
  *  43   Gandalf   1.42        1/9/00   Pavel Buzek     
