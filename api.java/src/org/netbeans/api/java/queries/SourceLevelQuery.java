@@ -19,7 +19,7 @@ import org.openide.util.Lookup;
 
 /**
  * Returns source level of the given Java source file if it is known.
- * @see org.netbeans.api.java.queries.SourceLevelQueryImplementation
+ * @see org.netbeans.spi.java.queries.SourceLevelQueryImplementation
  * @author David Konecny
  * @since org.netbeans.api.java/1 1.5
  */

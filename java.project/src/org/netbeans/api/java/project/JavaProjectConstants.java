@@ -36,13 +36,13 @@ public class JavaProjectConstants {
 
     /**
      * Standard command for running Javadoc on a project.
-     * @see ActionProvider
+     * @see org.netbeans.spi.project.ActionProvider
      */
     public static final String COMMAND_JAVADOC = "javadoc"; // NOI18N
     
     /** 
      * Standard command for reloading a class in a foreign VM and continuing debugging.
-     * @see ActionProvider
+     * @see org.netbeans.spi.project.ActionProvider
      */
     public static final String COMMAND_DEBUG_FIX = "debug.fix"; // NOI18N
     

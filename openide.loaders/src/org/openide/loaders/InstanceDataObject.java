@@ -864,7 +864,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
      * methods are used to write out the resulting files, and the name to
      * use is taken from the *display name* of the current file, as this is
      * what the user is accustomed to seeing (for ServiceType's especially).
-     * @see "#16278"
+     * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=16278">Issue #16278</a>
      */
     protected DataObject handleCopy(DataFolder df) throws IOException {
         try {

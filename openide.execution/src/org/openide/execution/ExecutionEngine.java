@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,26 +18,23 @@ import java.security.CodeSource;
 
 import org.openide.windows.InputOutput;
 
-/** Engine providing the environment necessary to invoke executors.
-* May perform tasks such as setting up thread groups, etc.
-* Modules should not implement this class.
-* <P>
-*
-* @author Jaroslav Tulach, Ales Novak
-*/
+/**
+ * Engine providing the environment necessary to run long-lived processes.
+ * May perform tasks such as setting up thread groups, etc.
+ * Modules should not implement this class.
+ * @author Jaroslav Tulach, Ales Novak
+ */
 public abstract class ExecutionEngine extends Object {
-    /** Prepare the environment for an <code>Executor</code> and start it.
-    * Is typically called from
-    * {@link Executor#execute}.
-    *
-    * @param name a name of the new process
-    * @param run a runnable to execute
-    * @param io an InputOuptut
-    *
-    * @return an executor task that can control the execution
-    */
-    public abstract ExecutorTask execute(String name, Runnable run, InputOutput io);
 
+    /**
+     * Run some task in the execution engine.
+     * @param name a name of the new process
+     * @param run a runnable to execute
+     * @param io an I/O handle to automatically redirect system I/O streams in the dynamic scope of the task to,
+     *           or null if no such redirection is required
+     * @return an executor task that can control the execution
+     */
+    public abstract ExecutorTask execute(String name, Runnable run, InputOutput io);
 
     /** Trap accesses to
      * Users that want to link their classes with the IDE should do this through

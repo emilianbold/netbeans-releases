@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -129,9 +129,9 @@ public abstract class JavaPlatform {
     public abstract Collection getInstallFolders();
 
     /**
-     * Returns FileObject of platform tool executable.
-     * @param String toolName the tool platform independent tool name.
-     * @return FileObject representing the tool executable or null, if the tool can not be found.
+     * Gets the platform tool executable.
+     * @param toolName the tool platform independent tool name.
+     * @return file representing the tool executable, or null if the tool can not be found
      */
     public abstract FileObject findTool (String toolName);
 

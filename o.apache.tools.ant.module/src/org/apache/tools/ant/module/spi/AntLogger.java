@@ -69,17 +69,15 @@ import java.io.File;
  * patterns such as <samp>/path/to/File.java:34: some message</samp>. It may also
  * handle sequences of messages logged within a task in the format
  * </p>
- * <pre>
- * &nbsp;/path/to/File.java:34: you cannot throw a bogus exception here
+ * <pre>&nbsp;/path/to/File.java:34: you cannot throw a bogus exception here
  * &nbsp;        throw new Exception("bogus!");
- * &nbsp;                            ^
- * </pre>
+ * &nbsp;                            ^</pre>
  * <p>
  * by linking to the column number indicated by the caret (<samp>^</samp>).
  * </p>
  * </div>
  * @author Jesse Glick
- * @see "#42525"
+ * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=42525">Issue #42525</a>
  * @since org.apache.tools.ant.module/3 3.12
  */
 public abstract class AntLogger {

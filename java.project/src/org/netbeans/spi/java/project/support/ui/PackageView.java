@@ -32,7 +32,7 @@ public class PackageView {
      * @param root the root folder of a Java source tree (corresponds to default package)
      * @return children to display packages and files in those packages
      * @throws IllegalArgumentException if the supplied file object is not a folder
-     * @deprecated better use the {@link createPackageView(SourceGroup)} method.
+     * @deprecated better use the {@link #createPackageView(SourceGroup)} method.
      */
     public static Children createPackageView(FileObject root) throws IllegalArgumentException {
         return new PackageViewChildren( root );
@@ -51,10 +51,10 @@ public class PackageView {
      * @param rootNode the node which should contain the object
      * @param object object to find
      * @return node which represents given object or null if no node was found
-     * @throws IllegalArgumentException if the supplied node is not a SourcveGroup root 
-     *         node created by the {@link createPackageView(SourceGroup)} method.
+     * @throws IllegalArgumentException if the supplied node is not a source group root
+     *         node created by the {@link #createPackageView(SourceGroup)} method.
      */
-    public static Node findPath( Node rootNode, Object object ) {
+    public static Node findPath(Node rootNode, Object object) throws IllegalArgumentException {
         
         PackageRootNode.PathFinder pf = (PackageRootNode.PathFinder)rootNode.getLookup().lookup( PackageRootNode.PathFinder.class );
         

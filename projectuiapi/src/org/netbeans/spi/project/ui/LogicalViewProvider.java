@@ -19,7 +19,6 @@ import org.openide.nodes.Node;
  * Ability for a {@link org.netbeans.api.project.Project} to supply
  * a logical view of itself.
  * @see org.netbeans.api.project.Project#getLookup
- * @see org.netbeans.spi.project.ui.support.LogicalViews#physicalView
  * @author Jesse Glick
  */
 public interface LogicalViewProvider {
@@ -60,7 +59,7 @@ public interface LogicalViewProvider {
     * }  
     * </pre>  
     * @param root a root node from {@link #createLogicalView}  
-    * @param target a target cookie, such as a {@link DataObject}  
+    * @param target a target cookie, such as a {@link org.openide.loaders.DataObject}
     * @return a subnode with that cookie, or null  
     */
     Node findPath(Node root, Object target);

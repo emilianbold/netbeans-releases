@@ -53,7 +53,7 @@ public abstract class AntArtifact {
      * <p>
      * Particular type identifiers should be agreed upon between
      * providers and clients.
-     * For example, {@link JavaProjectConstants.ARTIFACT_TYPE_JAR}
+     * For example, <a href="@JAVA/PROJECT@/org/netbeans/api/java/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
      * is defined for JAR outputs.
      * Others may be defined as needed; for example, tag library JARs,
      * WARs, EJB JARs, deployment descriptor fragments, etc.
@@ -71,7 +71,7 @@ public abstract class AntArtifact {
     
     /**
      * Get the name of the Ant target that is able to produce this artifact.
-     * E.g. <samp>jar</samp> would be conventional for {@link #TYPE_JAR} artifacts.
+     * E.g. <samp>jar</samp> would be conventional for JAR artifacts.
      * @return an Ant target name
      */
     public abstract String getTargetName();

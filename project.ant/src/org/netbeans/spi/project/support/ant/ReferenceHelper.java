@@ -419,7 +419,7 @@ public final class ReferenceHelper {
      * If the reference does not exist, nothing is done.
      * <p>
      * Acquires write access.
-     * @param fileName file reference as created by 
+     * @param fileReference file reference as created by 
      *    {@link #createForeignFileReference(File, String)}
      * @return true if the reference was actually removed; otherwise false
      */
@@ -950,7 +950,7 @@ public final class ReferenceHelper {
         
         /**
          * Get the type of the foreign project's build artifact.
-         * For example, {@link AntArtifact#TYPE_JAR}.
+         * For example, <a href="@JAVA/PROJECT@/org/netbeans/api/java/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>.
          * @return the artifact type
          */
         public String getArtifactType() {

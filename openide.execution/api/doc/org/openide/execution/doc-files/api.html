@@ -1,15 +1,15 @@
 <!--
-   -                 Sun Public License Notice
-   - 
-   - The contents of this file are subject to the Sun Public License
-   - Version 1.0 (the "License"). You may not use this file except in
-   - compliance with the License. A copy of the License is available at
-   - http://www.sun.com/
-   - 
-   - The Original Code is NetBeans. The Initial Developer of the Original
-   - Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
-   - Microsystems, Inc. All Rights Reserved.
-  -->
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 
 <html>
 <head>
@@ -26,324 +26,22 @@ See the
 
 <a href="../package-summary.html"><code>org.openide.execution</code></a>
 
-package, especially
-
-<a href="../Executor.html"><code>Executor</code></a>.
+package.
 
 <h1>Contents</h1>
 
 <ul>
-
-<li><a href="#invoke">Invoking an Executor</a>
-
-<li><a href="#create">Creating an Executor</a>
-<ul>
-<li><a href="#process-executor">Implementing an external executor</a>
-<li><a href="#thread-executor">Implementing an internal executor</a>
-<li><a href="#executor">Implementing <code>Executor</code> directly</a>
-</ul>
-
-<li><a href="#advanced">Advanced Usage</a>
-<ul>
-<li><a href="#formats">Formats, Process Descriptors, and Class Paths</a>
 <li><a href="#io">Managing I/O</a>
-<li><a href="#desc-thread-executor">Description of <code>ThreadExecutor</code></a>
-<li><a href="#desc-process-executor">Description of <code>ProcessExecutor</code></a>
 </ul>
 
 </ul>
 
 <h1>Execution API</h1>
 
-The Execution API controls the execution of user-level classes. The
-system may have several different types of executors simultaneously
-installed.
-
-<h2><a name="invoke">Invoking an Executor</a></h2>
-
-<p>Invoking an executor is fairly straightforward. First, an
-
-<a href="../Executor.html"><code>Executor</code></a>
-
-must be obtained appropriate to the class to be executed. There are
-several ways to do this:
-
-<ul>
-
-<li>Look for a registered executors in the system's services registry. The
-
-<a href="@OPENIDE@/org/openide/doc-files/services-api.html#use-find">Services API</a>
-
-describes several ways to do this generically for all service
-types; to look specifically for executors, you may use the
-convenience methods
-
-<a href="../Executor.html#getDefault()"><code>Executor.getDefault()</code></a>,
-
-<a href="../Executor.html#executors()"><code>Executor.executors()</code></a>,
-
-<a href="../Executor.html#find(java.lang.Class)"><code>Executor.find(Class)</code></a>,
-
-or
-
-<a href="../Executor.html#find(java.lang.String)"><code>Executor.find(String)</code></a>.
-
-<li>Create a new executor from a specific implementation. The API
-provides two public implementations which may be used, both of which
-assume a standalone Java class (i.e. containing a
-
-<code>public static main(String[])</code>
-
-method): an
-
-<a href="../ThreadExecutor.html#ThreadExecutor()">internal executor</a>,
-
-which runs the class in a separate thread(group) in the same VM as the
-IDE; and an
-
-<a href="../ProcessExecutor.html#ProcessExecutor()">external executor</a>,
-
-which runs the class in a separate Java process, and may be configured
-to use a specific VM, class path, etc.
-
-<p>The external executor provides a measure of safety against VM
-crashes, and permits a few Java security-related operations; the
-internal executor is able to run with less overhead, and to make calls
-into classes in the IDE itself.
-
-<li>The preferred approach, though, is to use
-
-<a href="../../loaders/ExecutionSupport.html#getExecutor(org.openide.loaders.MultiDataObject.Entry)"><code>ExecutionSupport.getExecutor(...)</code></a>,
-
-which permits data loaders to specify a particular executor to use on
-a class (actually, the data object containing it). For example, a data
-loader designed to look for servlets could mark the data objects it
-creates to use a special executor that would run the servlets in a
-web-server-like container. Users can also configure this selection.
-
-</ul>
-
-Now
-
-<a href="../ExecInfo.html#ExecInfo(java.lang.String)"><code>new ExecInfo(String)</code></a>
-
-and
-
-<a href="../Executor.html#execute(org.openide.execution.ExecInfo)"><code>Executor.execute(ExecInfo)</code></a>
-
-may be called to actually run the class (specified by its Java class
-name). An argument list may be supplied with
-
-<a href="../ExecInfo.html#ExecInfo(java.lang.String, java.lang.String[])"><code>new ExecInfo(...)</code></a>.
-
-Note that
-
-<a href="../../loaders/ExecutionSupport.html#getArguments(org.openide.loaders.MultiDataObject.Entry)"><code>ExecutionSupport.getArguments(MultiDataObject.Entry)</code></a>
-
-may be used to get default arguments for the class, which the user may
-set appropriately.
-
-<p>The returned
-
-<a href="../ExecutorTask.html"><code>ExecutorTask</code></a>
-
-permits limited control over the resulting execution, namely stopping
-the task, waiting for it to finish, and examining its exit status.
-
-<p>If the <code>ExecutorTask</code> object is not needed, you may even
-leave the job of finding an appropriate executor and running it
-properly to the <code>ExecCookie</code>, invoking it with
-
-<a href="../../cookies/ExecCookie.html#start()"><code>ExecCookie.start()</code></a>.
-
-This cookie may be obtained by a call to
-
-<a href="@OPENIDE@/org/openide/loaders/DataObject.html#getCookie(java.lang.Class)"><code>DataObject.getCookie(Class)</code></a>
-
-or
-
-<a href="@OPENIDE@/org/openide/nodes/Node.html#getCookie(java.lang.Class)"><code>Node.getCookie(Class)</code></a>,
-
-as appropriate.
-
-<p>Even more conveniently, just given a set of data objects or
-nodes,
-
-<a href="../../actions/ExecuteAction.html#execute(org.openide.loaders.DataObject[], boolean)"><code>ExecuteAction.execute(DataObject[],boolean)</code></a>
-
-and
-
-<a href="../../actions/ExecuteAction.html#execute(org.openide.nodes.Node[], boolean)"><code>ExecuteAction.execute(Node[],boolean)</code></a>
-
-may be used to find the cookie and execute the objects, compiling
-first if requested.
-
-<h2><a name="create">Creating an Executor</a></h2>
-
-First of all, the required superclass <code>Executor</code> is
-actually a subclass of
-
-<a href="@OPENIDE@/org/openide/ServiceType.html"><code>ServiceType</code></a>,
-
-meaning that you should refer to the
-
-<a href="@OPENIDE@/org/openide/doc-files/services-api.html#create">Services API</a>
-
-for general information about configurability, persistence,
-installation, and so on. The remainder of this section will only
-describe how to handle the one abstract method in
-<code>Executor</code>.
-
-<h3><a name="process-executor">Implementing an external executor</a></h3>
-
-The majority of people who wish to provide their own execution
-support will want to do so by creating an external executor, as
-e.g. for RMI, applets, etc. Such execution will be similar in
-behavior to regular <b>External&nbsp;Execution</b> in the IDE,
-which looks for a <code>main</code> method and starts it using the
-Java launcher. To make an external executor, you will need to
-subclass
-
-<a href="../ProcessExecutor.html"><code>ProcessExecutor</code></a>.
-
-<p>You probably only need to override one method:
-
-<a href="../ProcessExecutor.html#createProcess(org.openide.execution.ExecInfo)"><code>ProcessExecutor.createProcess(ExecInfo)</code></a>.
-
-This method returns an actual system process (already running)
-which the executor should control. While you could create this
-process yourself using <code>Runtime.exec</code>, conventionally
-external executors just keep a template for the command to
-be run, as a Bean property accessible via
-
-<a href="../ProcessExecutor.html#getExternalExecutor()"><code>ProcessExecutor.getExternalExecutor()</code></a>.
-
-<p>For some uses it will suffice simply to provide a different
-default value for this property, i.e. set a different value in the
-constructor for the executor. You may do this if the possible
-commands to start the process do not involve any extra
-substitutable tags beyond what is provided by default: the class
-name (fully-qualified and dot-separated); a list of user-set
-application arguments; the path to the JDK; and various standard
-classpath components.
-
-<p>In this case, just create a default
-
-<a href="../NbProcessDescriptor.html"><code>NbProcessDescriptor</code></a>.
-
-Its constructor lets you specify the process name itself; a list of
-process arguments (separated by spaces and possibly quoted); and
-optionally a user-visible paragraph explaining what the arguments
-are for, to be used in the custom property editor. Both the process
-name and the list of arguments may have substitutable tags in them,
-which are enclosed by curly braces and whose standard names (sans
-braces) are given in the <code>TAG_<i>XXX</i></code> constants in
-
-<a href="../ProcessExecutor.Format.html"><code>ProcessExecutor.Format</code></a>.
-
-You will not need to override <code>createProcess</code>.
-
-<p>However, in many cases these default tags will not suffice for
-your use. For example, in the case of an RMI-specific executor, the
-application might need to be started with an argument giving the
-registry port number. It is inappropriate to modify the
-<code>NbProcessDescriptor</code> to include this information on
-every run because the same executor may be shared by many classes,
-each of which might use its own port number. Also, complex values
-should be shown for UI purposes as separate configurable properties
-on the executor's property sheet (as determined by its
-BeanInfo). So in such cases, you need to create your own format for
-the process command.
-
-<p>Doing this need not be very difficult. You should still set a
-proper default value for the executor command by creating an
-<code>NbProcessDescriptor</code> with your desired command
-format. The difference is that you may use new tags according to
-your needs. Now you will need to create a command format, probably
-by subclassing
-
-<a href="../ProcessExecutor.Format.html"><code>ProcessExecutor.Format</code></a>.
-
-Your format class should have a constructor specifying at least as
-much as the super constructor, and then contain some additional
-information concerning values for the new tags. In the constructor,
-use
-
-<a href="@OPENIDE@/org/openide/util/MapFormat.html#getMap()"><code>MapFormat.getMap()</code></a>
-
-to retrieve the map from tags to their values (which will already
-have <code>ProcessExecutor.Format</code>'s standard tags for the
-class name, class path, etc.) and add your own tags and matching
-string values to the map.
-
-<p>Finally, override <code>createProcess</code>. Your
-implementation should call
-
-<a href="../NbProcessDescriptor.html#exec(java.text.Format)"><code>NbProcessDescriptor.exec(Format)</code></a>
-
-on the external command template from your Bean property.
-
-(Or use one of the overloads of this method if you wish to pass in
-environment variables to the created process, or as of JDK 1.3
-release version an alternate working directory.) You can just
-create a new instance of your format to pass to this method, which
-will mean providing it with all requisite data to substitute the
-tags with.
-
-<p>Some executors will be able to supply such additional data via
-special means, e.g. a tag representing a registry port might get
-its value automatically from a list of free registry ports in the
-system. In other cases, the executor must be configured by the user
-to provide values for these tags, so you should make Bean
-properties for such values and call their getters when constructing
-the format. The advantage of doing this over including such values
-directly into the template string is that you can provide a
-pleasant property editor for such properties in your BeanInfo, and
-have the executor do the work of constructing the correct string to
-pass from this, rather than the user.
-
-<h3><a name="thread-executor">Implementing an internal executor</a></h3>
-
-Some executors should be run internally to the IDE. This might be
-because you wish to take advantage of reduced startup times for the
-execution (and are willing to risk freezing the IDE due to bad user
-code), or because the code being run should modify or have access
-to the IDE via the APIs. In this case, you should subclass
-
-<a href="../ThreadExecutor.html"><code>ThreadExecutor</code></a>.
-
-Doing so is rather simpler than for external execution in general,
-since there is no process to be configured; you should override
-these two methods:
-
-<ol>
-
-<li><a href="../ThreadExecutor.html#checkClass(java.lang.Class)"><code>ThreadExecutor.checkClass(Class)</code></a>
-
-should examine the <code>Class</code> object already created for
-the specified class name and ensure that is satisfies the
-executor's requirements. Note that this assumes that you are
-executing an actual Java class and that the class to be executed is
-in fact the same as the class name produced in the
-<code>ExecInfo</code>; otherwise you will need to directly extend
-<code>Executor</code> and implement more customized logic.
-
-<p>If the class is appropriate, just return; otherwise you may
-throw an <code>IOException</code> preferably detailing the reasons
-for the failure, as explained in more detail
-
-<a href="#executor">below</a>.
-
-<li><a href="../ThreadExecutor.html#executeClass(java.lang.Class, java.lang.String[])"><code>ThreadExecutor.executeClass(...)</code></a>
-
-should simply do whatever you like with the class to execute it. In
-the case of regular internal execution, this just means finding the
-<code>main</code> method via Java Reflection, and running it with the
-supplied arguments. Note that within the scope of this method, all I/O
-via the standard system streams automatically gets redirected to a tab
-in the Output Window; so if you receive any exceptions (such as within
-an <code>InvocationTargetException</code>), you may simply print the
-stack trace.
+<p>
+The Execution API controls the execution of long-lived processes.
+XXX need new documentation for this module!
+</p>
 
 <p><code>ThreadDeath</code> may be thrown by the execution engine if
 the process is manually stopped (by the user or via its
@@ -352,29 +50,8 @@ print its stack trace. Also, the executed code within this method may
 invoke <code>System.exit</code> to end the application, without
 shutting down the IDE.
 
-</ol>
-
-<h3><a name="executor">Implementing <code>Executor</code> directly</a></h3>
-
-You may directly implement
-
-<a href="../Executor.html"><code>Executor</code></a>,
-
-which will serve as the primary class and be referred to by other
-parts of the system. Normally you will want to subclass an existing
-executor in the APIs, since this is much more convenient. However,
-you may nevertheless directly subclass
-<code>Executor</code>. Besides considerations common to all service
-types, there is one method you must implement and one you can
-override:
-
-<ol>
-
-<li><a href="../Executor.html#needsIO()"><code>Executor.needsIO()</code></a>
-
-may be overridden to return <code>false</code> if you are sure that
-the executed process will not try to use the system input, output,
-and error streams (or if it should not need to). A class running in
+<p>
+A class running in
 an external process whose output you wish to capture should
 generally have its streams redirected to the Output Window, e.g. by
 using
@@ -396,117 +73,19 @@ and then
 
 and so on. Now you can just copy characters from one stream to the
 other.
+</p>
 
-<p>Some executors, such as for servlets (perhaps), already have
-alternate input, output, and logging facilities, so you should
-indicate that I/O is not necessary, to save a little overhead.
-
-<p>Currently this method is actually only informational in
-<code>Executor</code>, though if defined on a subclass of
-
-<a href="../ProcessExecutor.html"><code>ProcessExecutor</code></a>
-
-or
-
-<a href="../ThreadExecutor.html"><code>ThreadExecutor</code></a>
-
-it will have an effect.
-
-<p>For "internal" executors that run the process in the same VM,
-the IDE can take care of redirecting the input and output of the
-process to the Output Window for you; see
-
-<a href="#io">Managing I/O</a>
-
-for details.
-
-<li><a href="../Executor.html#execute(org.openide.execution.ExecInfo)"><code>Executor.execute(ExecInfo)</code></a>
-
-must be implemented to actually do the work of the executor.
-
-<p>The
-
-<a href="../ExecInfo.html"><code>ExecInfo</code></a>
-
-it is passed will contain the class name to start, as well as a list
-of arguments - for normal execution styles these arguments should be
-passed to the
-
-<code>main(String[])</code>
-
-method; for other executors they may have a different interpretation
-(e.g. a servlet executor could interpret them as "name=value" pairs
-and pass them to
-
-<a href="http://java.sun.com/products/servlet/2.1/html/api-reference.fm.html#175"><code>ServletConfig</code></a>).
-
-<p>This method should start the process asynchronously and must return a
-
-<a href="../ExecutorTask.html"><code>ExecutorTask</code></a>
-
-object as soon as the process has started running. If you are doing
-something very simple as the task of the execution, i.e. it is not
-a long-running process and/or you wish to explicitly manage its
-progress, you may simply implement <code>ExecutorTask</code>
-yourself. However, generally it is better to let the execution
-engine create a task for you, so that it can be handled
-consistently by the system; for details, see
-
-<a href="#io">Managing I/O</a>
-
-which discusses how the system-supplied task will behave.
-
-<p>You may throw an <code>IOException</code> from this method to
-indicate that the class is not suitable to be run at all. For
-example, it may not implement a required interface, not be the
-right type of object, an external command might not have been
-found, etc. If such an exception is thrown, the user will be
-prompted to select an alternate executor for the class, under the
-assumption that this choice was simply incorrect. Please provide a
-
-<a href="@JDK@/java/lang/Throwable.html#getLocalizedMessage()">localized message</a>
-
-for the exception distinct from the
-
-<a href="@JDK@/java/lang/Throwable.html#getMessage()">detail message</a>
-
-in order to ensure that the specifics of the failure are suitable
-for presentation to an inexperienced user. <em>Note</em> that
+<p>
+<em>Note</em> that
 exceptions or errors occurring during the actual execution of the
 process, once it has been successfully started, should be handled
 within the scope of the <code>ExecutorTask</code> and normally this
 just means printing the stack trace to the Output Window via an
 <code>InputOutput</code> handle.
+</p>
 
-</ol>
-
-<h2><a name="advanced">Advanced Usage</a></h2>
-
-While moderately sophisticated external and internal executor
-implementations are possible using the information provided above,
-there are several more fine-grained capabilities of the execution
-system which you can control if you need to. These include management
-of the I/O streams used by executed applications (especially relevant
-to internal execution), and abstract handling of command templates
-(relevant to external execution). This section will discuss these
-capabilities, and also provide an overview of how
-<code>ProcessExecutor</code> and <code>ThreadExecutor</code> are
-implemented, in terms of their use of the Execution API; neither of
-these executors use any capabilities not publically accessible via the
-API, but the details are not obvious and may be helpful to anyone
-directly implementing <code>Executor</code>.
-
-<h3><a name="formats">Formats, Process Descriptors, and Class Paths</a></h3>
-
-External execution can make use of a system of templates for
-describing the command which should be run. This also applies to
-external compilation, debugging, and anything else which needs to
-describe system commands or tools with arguments. The three main
-classes involved are:
-
-<ol>
-
-<li><a href="../NbProcessDescriptor.html"><code>NbProcessDescriptor</code></a>
+<p>
+<a href="../NbProcessDescriptor.html"><code>NbProcessDescriptor</code></a>
 
 is an object representing the abstract command template. This class
 has a standard custom property editor which should be familiar to
@@ -533,8 +112,10 @@ any substitutions; but
 applies a (textual) format to the command name and arguments list
 before invoking <code>Runtime.exec</code>. The format can in principle
 be any format you like.
+</p>
 
-<li><a href="../NbClassPath.html"><code>NbClassPath</code></a>
+<p>
+<a href="../NbClassPath.html"><code>NbClassPath</code></a>
 
 is an object used to represent a classpath, which is of course
 frequently used in Java-related applications, though implementors of
@@ -542,87 +123,7 @@ executors unrelated to Java development will probably ignore it. Its
 main purpose is that it also has a custom property editor, making
 it convenient to use as a Bean property on service types such as
 executors.
-
-<p>Static methods in this class retrieve the four standard classpath
-components: the plain system classpath (i.e. IDE startup classpath);
-the boot class path of the VM (usually not included explicitly in
-commands); the IDE library path, including any dynamically-loaded
-components such as modules; and a path corresponding to the current
-Repository. For the last, you can specify a filesystem capability
-(such as compilation, debugging, or execution) which should be used to
-filter filesystems in the Repository according to whether the user
-intended them to be used for the purpose at hand (for example, JDK
-sources should not be used during compilation).
-
-<li><a href="../ProcessExecutor.Format.html"><code>ProcessExecutor.Format</code></a>
-
-and along similar lines,
-
-<a href="@OPENIDE/COMPILER@/org/openide/compiler/ExternalCompilerGroup.Format.html"><code>ExternalCompilerGroup.Format</code></a>
-
-(as well as analogous classes in the standard debugger implementation)
-
-provide standard <code>Format</code> implementations suitable for
-passing as an argument to <code>NbProcessDescriptor.exec</code>. These
-implementations are useful for two reasons:
-
-<ul>
-
-<li>They extend
-
-<a href="@OPENIDE@/org/openide/util/MapFormat.html"><code>MapFormat</code></a>,
-
-a highly flexible <code>Format</code> implementation which permits
-substitution by named keys (and is also normally used to implement
-substitution of special tokens in file templates). Use of
-<code>MapFormat</code> allows templates such as:
-
-<br><code>-classpath {repository}{:}{extradir}</code>
-
-<br>to be substituted correctly if values are supplied for the
-keys. This is more pleasant for a user than
-e.g. <code>MessageFormat</code>.
-
-<li>The default implementations already include in the substitution
-map a number of keys, such as for classpath components, the class name
-to execute and arguments (or list of files to compile), the path to
-the Java installation, and so on.
-
-</ul>
-
-Customizing these formats is easy. Just extend <code>MapFormat</code>
-or one of the more specialized formats just mentioned, passing in any
-required arguments to the superclass constructor; then use
-
-<a href="@OPENIDE@/org/openide/util/MapFormat.html#getMap()"><code>MapFormat.getMap()</code></a>
-
-to retrieve the key-value mapping and modify it with any additional
-keys you like (do not include the delimiters of the tokens, by default
-curly braces, in the keys themselves).
-
-<a href="@OPENIDE@/org/openide/util/MapFormat.html#processKey(java.lang.String)"><code>MapFormat.processKey(String)</code></a>
-
-and other advanced features of <code>MapFormat</code> may be used to
-give greater flexibility.
-
-</ol>
-
-To recap, these three objects are typically brought together as
-follows: in the implementation of
-
-<a href="../ProcessExecutor.html#execute(org.openide.execution.ExecInfo)"><code>ProcessExecutor.execute(ExecInfo)</code></a>
-
-(or
-
-<a href="@OPENIDE/COMPILER@/org/openide/compiler/ExternalCompilerGroup.html#createProcess(org.openide.execution.NbProcessDescriptor, java.lang.String[])"><code>ExternalCompilerGroup.createProcess(...)</code></a>),
-
-create a new instance of the desired format (usually your own
-subclass); pass it as arguments <code>NbClassPath</code> objects
-corresponding to the relevant classpaths, the invocation-specific data
-(class name plus arguments, or list of files), and whatever extra
-values may be needed for custom substitution keys; and finally pass
-the created format to the <code>NbProcessDescriptor</code> (usually a
-Bean property) to actually start the process.
+</p>
 
 <h3><a name="io">Managing I/O</a></h3>
 
@@ -723,7 +224,7 @@ supplied runnable; it will all be handled. Runnable-spawned code which
 is destined for other thread groups will not be handled, however; for
 example,
 
-<a href="@OPENIDE@/org/openide/util/RequestProcessor.html#postRequest(java.lang.Runnable)"><code>RequestProcessor.postRequest(Runnable)</code></a>
+<a href="@OPENIDE@/org/openide/util/RequestProcessor.html#post(java.lang.Runnable)"><code>RequestProcessor.post(Runnable)</code></a>
 
 will execute code in the IDE's main thread group, not the one created
 by the execution engine.
@@ -830,124 +331,6 @@ Such code can still call
 to explicitly exit the IDE.
 
 </ol>
-
-<h3><a name="desc-thread-executor">Description of <code>ThreadExecutor</code></a></h3>
-
-The standard <code>ThreadExecutor</code> implements internal
-execution, by default looking for a <code>public static void
-main</code> method in the executed class, though this may be
-overridden in subclasses. There are two interesting aspects to its
-implementation: handling of thrown exceptions; and its use of
-synchronization to ensure that both forms of I/O management described
-above will apply simultaneously.
-
-<p>There are several places in <code>ThreadExecutor</code> that
-exceptions may be thrown, and they must be handled differently. First,
-exceptions (or errors) may be throws during the main
-<code>execute</code> method itself. To these may be added anything
-thrown by the runnable passed to the execution engine during its setup
-phase, when it is setting up I/O management and attempting to load the
-specified class. All of these throwables may be divided into four
-groups:
-
-<ol>
-
-<li><code>ThreadDeath</code> may be caught, but attention is paid to
-where it is caught. If the thread is about to exit anyway due to
-something being caught, then nothing additional is done. If the thread
-might have continued otherwise after the catch block, it is rethrown
-to make sure that it causes a prompt termination of the process.
-
-<li>Other errors are simply rethrown. If thrown inside the runnable
-passed to the execution engine, they are automatically transmitted to
-the <code>execute</code> method instead.
-
-<li><code>IOException</code>s are rethrown, as they are declared in
-<code>execute</code>.
-
-<li>Other exceptions are wrapped in
-
-<a href="@OPENIDE@/org/openide/util/io/FoldingIOException.html#FoldingIOException(java.lang.Throwable)"><code>new FoldingIOException(Throwable)</code></a>.
-
-</ol>
-
-Note that the overridable <code>checkClass</code> method may throw
-<code>IOException</code>s, and should do so if the class is found to
-be unsuited to the desired style of execution. Such exceptions, since
-they will be (re-)thrown from <code>execute</code>, may provide a
-localized detail message which will inform the user of the nature of
-the problem politely; the user will be given the opportunity to
-reconfigure the object's executor. Throwables (other than
-<code>ThreadDeath</code>) inside <code>executeClass</code>, on the
-other hand, indicate a failure in user application code, and so they
-are printed to standard error as stack traces - and these stack traces
-will go to the Output Window because of I/O redirection.
-
-<p><code>ThreadExecutor</code> makes use of both forms of I/O
-management provided by the execution engine; dynamic-scope handling
-primarily to trap I/O calls made by IDE code as well as exit handling
-from user code; and (quasi-)lexical handling for the user code, which
-might spawn new thread groups or use existing thread groups in the VM
-(such as the AWT event thread). So, most of the work performed by
-<code>execute</code> except for some redirection of throwables is
-handled by a <code>Runnable</code> passed to
-<code>ExecutionEngine.execute</code>; this provides dynamic
-handling. The runnable also loads the user class to be executed (and
-transitively, its dependencies in the Repository which are not loaded
-in the IDE itself) using a magic <code>NbClassLoader</code>; this
-provides lexical handling.
-
-<p>The trick is to get the two forms of I/O handling to agree on a
-single <code>InputOutput</code> instance, since they should both have
-the same effect. The <code>InputOutput</code> is provided by the
-execution engine, not the executor, and is only available using
-<code>ExecutorTask.getInputOutput</code> on the task returned by the
-execution engine. Clearly this is too late to pass to e.g. a
-constructor for the runnable. So, a special trick is used which other
-implementors of executors may find helpful:
-
-<ol>
-
-<li>The runnable is constructed with no assigned I/O. It has a
-synchronized <code>run</code> method.
-
-<li>While synchronizing on the runnable, it is passed to the execution
-engine, which tries to start to run it but blocks on the monitor.
-
-<li>Meanwhile, the task is returned anyway; <code>execute</code>
-obtains the desired <code>InputOutput</code> and passes it to the
-runnable using a designated access method.
-
-<li><code>execute</code> waits on the runnable, permitting it to start
-running.
-
-<li>The runnable uses the <code>InputOutput</code> which it now has to
-load classes using a new <code>NbClassLoader</code>.
-
-<li>The runnable continues to load the user class and check it for
-appropriateness, storing up any exceptions for later. When it has been
-checked, the runnable notifies <code>execute</code> via its monitor to
-resume, at which point <code>execute</code> looks for any exceptions
-and rethrows them, or else it returns the task it got from the
-execution engine.
-
-<li>Now independently of the executor, the runnable actually runs the
-user class to completion.
-
-</ol>
-
-<h3><a name="desc-process-executor">Description of <code>ProcessExecutor</code></a></h3>
-
-In some respects <code>ProcessExecutor</code> shares some
-implementation style with <code>ThreadExecutor</code> (above). In
-particular, it uses a very similar technique for exception handling,
-and the same strategy of a synchronized runnable to make the execution
-engine's <code>InputOutput</code> available to the runnable
-itself. Unlike <code>ThreadExecutor</code>, however, it has no need to
-make an <code>NbClassLoader</code> (since no classes of the user
-application are loaded in the same VM); rather it uses the I/O streams
-from the <code>InputOutput</code> directly and pairs them off with
-those of the external process.
 
 <p>Each of the three I/O streams from the generated process (created
 by <code>createProcess</code> which is described in detail above) are

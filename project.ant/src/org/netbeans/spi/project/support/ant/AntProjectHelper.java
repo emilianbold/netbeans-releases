@@ -685,7 +685,7 @@ public final class AntProjectHelper {
     }
     
     /**
-     * Create an implementation of {@link FileBuiltQuery} that works with files
+     * Create an implementation of {@link org.netbeans.api.queries.FileBuiltQuery} that works with files
      * within the project based on simple glob pattern mappings.
      * <p>
      * It is intended to be
@@ -699,7 +699,7 @@ public final class AntProjectHelper {
      * A file is considered out of date if there is no file represented by the
      * matching target pattern (which has the same format), or the target file is older
      * than the source file, or the source file is modified as per
-     * {@link DataObject#isModified}.
+     * {@link org.openide.loaders.DataObject#isModified}.
      * An attempt is made to fire changes from the status object whenever the result
      * should change from one call to the next.
      * <p>
@@ -720,7 +720,7 @@ public final class AntProjectHelper {
      * <li><samp>${test.build.classes.dir}/*.class</samp>
      * </ol>
      * </div>
-     * @param a property evaluator to interpret the patterns with
+     * @param eval a property evaluator to interpret the patterns with
      * @param from a list of glob patterns for source files
      * @param to a matching list of glob patterns for built files
      * @return a query implementation
@@ -740,7 +740,7 @@ public final class AntProjectHelper {
     /**
      * Create a basic implementation of {@link AntArtifact} which assumes everything of interest
      * is in a fixed location under a standard Ant-based project.
-     * @param type the type of artifact, e.g. {@link AntArtifact#TYPE_JAR}
+     * @param type the type of artifact, e.g. <a href="@JAVA/PROJECT@/org/netbeans/api/java/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
      * @param locationProperty an Ant property name giving the project-relative
      *                         location of the artifact, e.g. <samp>dist.jar</samp>
      * @param eval a way to evaluate the location property (e.g. {@link #getStandardPropertyEvaluator})
@@ -777,7 +777,7 @@ public final class AntProjectHelper {
      * A file or directory inside some build directory will be listed as not sharable.
      * A file or directory matching neither the source list nor the build directory list
      * will be treated as of unknown status, but in practice such a file should never
-     * have been passed to this implementation anyway - {@link SharabilityQuery} will
+     * have been passed to this implementation anyway - {@link org.netbeans.api.queries.SharabilityQuery} will
      * normally only call an implementation in project lookup if the file is owned by
      * that project.
      * </p>
@@ -812,8 +812,8 @@ public final class AntProjectHelper {
      * project directory). If they refer to locations inside the project directory,
      * including them does nothing but is harmless - since the project directory itself
      * is always treated as sharable. If they refer to external locations, you will
-     * need to also make sure that {@link FileOwnerQuery} actually maps files in those
-     * directories to this project, or else {@link SharabilityQuery} will never find
+     * need to also make sure that {@link org.netbeans.api.queries.FileOwnerQuery} actually maps files in those
+     * directories to this project, or else {@link org.netbeans.api.queries.SharabilityQuery} will never find
      * this implementation in your project lookup and may return <code>UNKNOWN</code>.
      * </p>
      * </div>

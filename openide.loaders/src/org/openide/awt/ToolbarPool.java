@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -150,12 +150,13 @@ public final class ToolbarPool extends JComponent implements Accessible {
         return preferredIconSize;
     }
 
-    /** Sets preferred size of icons used by toolbar buttons.
-     * @param preferred size of toolbar icons in pixels. 2 values are now
-     * supported: 16 and 24
+    /**
+     * Sets preferred size of icons used by toolbar buttons.
+     * @param preferredIconSize size of toolbar icons in pixels; currently one of 16 or 24
+     * @throws IllegalArgumentException if an unsupported size is given
      * @since 4.15
      */
-    public void setPreferredIconSize (int preferredIconSize) {
+    public void setPreferredIconSize (int preferredIconSize) throws IllegalArgumentException {
         if ((preferredIconSize != 16) && (preferredIconSize != 24)) {
             throw new IllegalArgumentException("Unsupported argument value:" + preferredIconSize);  //NOI18N
         }

@@ -62,7 +62,7 @@ import org.openide.filesystems.FileObject;
  * <li><p>The <b>Javadoc&nbsp;Index&nbsp;Search</b> feature and <b>View&nbsp;&#8594;
  * Documentation&nbsp;Indices</b> submenu should operate on open Javadoc paths,
  * meaning that Javadoc corresponding to registered compile and boot classpaths
- * (according to {@link JavadocForBinaryQuery}).</p></li>
+ * (according to {@link org.netbeans.api.java.queries.JavadocForBinaryQuery}).</p></li>
  * <li><p>Stack trace hyperlinking can use the global list of source paths
  * to find sources, in case no more specific information about their origin is
  * available. The same would be true of debugging: if the debugger cannot find

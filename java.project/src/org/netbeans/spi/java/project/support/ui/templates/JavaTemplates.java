@@ -33,12 +33,12 @@ public class JavaTemplates {
      * Create a Java-oriented target chooser suitable for templates which are Java
      * sources or otherwise intended to reside in a Java package.
      * The user is prompted to choose a package location for the new file and a (base) name.
-     * @param template the file to use as a template (see {@link org.openide.loaders.DataObject#createFromTemplate})
+     * @param project the project which the template will be created in
      * @param folders a list of possible Java package roots to create the new file in (must be nonempty)
-     * @return a wizard panel(s) prompting the user to choose a name and package
+     * @return a wizard panel prompting the user to choose a name and package
      * @throws IllegalArgumentException if folders is empty
      */
-    public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders) {       
+    public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders) throws IllegalArgumentException {
         return createPackageChooser(project, folders, null);
     }
     
@@ -48,13 +48,13 @@ public class JavaTemplates {
      * The user is prompted to choose a package location for the new file and a (base) name.
      * Resulting panel can be decorated with additional panel. Which will
      * be placed below the standard package chooser.
-     * @param template the file to use as a template (see {@link org.openide.loaders.DataObject#createFromTemplate})
+     * @param project the project which the template will be created in
      * @param folders a list of possible Java package roots to create the new file in (must be nonempty)
      * @param bottomPanel panel which should be placed underneth the default chooser
-     * @return a wizard panel(s) prompting the user to choose a name and package
+     * @return a wizard panel prompting the user to choose a name and package
      * @throws IllegalArgumentException if folders is empty
      */
-    public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel ) {
+    public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel) throws IllegalArgumentException {
         if (folders.length == 0) {
             throw new IllegalArgumentException("No folders selected"); // NOI18N
         }
