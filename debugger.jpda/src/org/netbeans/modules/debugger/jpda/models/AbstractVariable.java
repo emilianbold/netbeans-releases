@@ -63,7 +63,9 @@ public class AbstractVariable implements Variable {
         this.model = model;
         this.value = value;
         try {
-            this.genericType = getTypeDescription(new PushbackReader(new StringReader(genericSignature), 1));
+            if (genericSignature != null) {
+                this.genericType = getTypeDescription(new PushbackReader(new StringReader(genericSignature), 1));
+            }
         } catch (IOException e) {
             /// invalid signature
         }
