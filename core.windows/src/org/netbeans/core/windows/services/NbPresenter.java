@@ -437,10 +437,10 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         
         Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getFocusOwner ();
 
+        boolean dontShowHelp = ( descriptor instanceof WizardDescriptor && ( Boolean.FALSE.equals (((WizardDescriptor)descriptor).getProperty ("WizardPanel_helpDisplayed")) )); // NOI18N
         boolean helpButtonShown =
-            stdHelpButton.isShowing() || ( 
-                    descriptor instanceof WizardDescriptor && ( ! Boolean.FALSE.equals (((WizardDescriptor)descriptor).getProperty ("WizardPanel_helpDisplayed")) ) // NOI18N
-                );
+            stdHelpButton.isShowing() || ( descriptor instanceof WizardDescriptor && !dontShowHelp );
+        
         
         uninitializeButtons();
         
@@ -538,7 +538,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         
         // Automatically add a help button if needed.
         
-        if (currentHelp != null || helpButtonShown) {
+        if (!dontShowHelp && (currentHelp != null || helpButtonShown)) {
             if (currentPrimaryButtons == null) currentPrimaryButtons = new Component[] { };
             Component[] cPB2 = new Component[currentPrimaryButtons.length + 1];
             if (isAqua) { //NOI18N
