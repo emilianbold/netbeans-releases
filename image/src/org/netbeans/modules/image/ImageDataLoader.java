@@ -7,13 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.image;
-
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,9 +24,7 @@ import org.openide.loaders.UniFileLoader;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
-
 import java.util.Iterator;
- 
 
 /** 
  * Data loader which recognizes image files.
@@ -48,6 +44,7 @@ public class ImageDataLoader extends UniFileLoader {
         
         // List of recognized extensions.
         ExtensionList ext = new ExtensionList();
+        // XXX should use MIME types instead...
         ext.addExtension("jpg"); // NOI18N
         ext.addExtension("jpeg"); // NOI18N
         ext.addExtension("jpe"); // NOI18N
