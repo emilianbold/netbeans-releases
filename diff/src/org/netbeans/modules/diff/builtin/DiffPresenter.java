@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.diff.builtin;
 
-import java.awt.Component;
+import java.awt.*;
 //import java.awt.event.ItemEvent;
 //import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -43,6 +43,9 @@ import org.openide.windows.TopComponent;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.*;
 import org.openide.loaders.InstanceDataObject;
+import org.openide.util.NbBundle;
+
+import javax.swing.*;
 
 /**
  * This panel is to be used as a wrapper for diff visualizers.
@@ -56,12 +59,37 @@ public class DiffPresenter extends javax.swing.JPanel {
     private DiffPresenter.Info diffInfo;
     private DiffProvider defaultProvider;
     private DiffVisualizer defaultVisualizer;
-    private PropertyChangeSupport propSupport;
-    
-    /** Creates new form DiffPresenter */
+    private JPanel progressPanel;
+
+    /**
+     * Creates <i>just computing diff</i> presenter. The mode
+     * is left on {@link #initWithDiffInfo} call.
+     */
+    public DiffPresenter() {
+        progressPanel = new JPanel(new BorderLayout());
+        JLabel progressLabel = new JLabel();
+        JProgressBar progress = new JProgressBar();
+
+        progress.setIndeterminate(true);
+        String label = NbBundle.getMessage(DiffPresenter.class, "diff.prog");
+        progressLabel.setText(label);
+        progressPanel.add(progress, BorderLayout.CENTER);
+        progressPanel.add(progressLabel, BorderLayout.LINE_START);
+        add(progressPanel);
+    }
+
+    /** Creates new DiffPresenter with given content. */
     public DiffPresenter(DiffPresenter.Info diffInfo) {
+        initWithDiffInfo(diffInfo);
+    }
+
+    /** Seta actual diff content. Can be called just once. */
+    public final void initWithDiffInfo(DiffPresenter.Info diffInfo) {
+        assert this.diffInfo == null;
         this.diffInfo = diffInfo;
-        propSupport = new PropertyChangeSupport(this);
+        if (progressPanel != null) {
+            remove(progressPanel);
+        }
         initComponents();
         initMyComponents();
         providerLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_Provider_Mnemonic").charAt(0));  // NOI18N
@@ -69,7 +97,7 @@ public class DiffPresenter extends javax.swing.JPanel {
         providerLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_ProviderA11yDesc"));  // NOI18N
         visualizerLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_VisualizerA11yDesc"));  // NOI18N
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
