@@ -14,6 +14,7 @@
 package org.netbeans.modules.extbrowser;
 
 import java.beans.*;
+import org.openide.ErrorManager;
 
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -29,6 +30,13 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
     public static final String PROP_DESCRIPTION = "description"; // NOI18N
     public static final String PROP_BROWSER_EXECUTABLE = "browserExecutable"; // NOI18N
     public static final String PROP_START_IF_NOT_RUNNING = "startIfNotRunning"; // NOI18N
+    
+    /** Logger for extbrowser module. */
+    private static ErrorManager err = ErrorManager.getDefault ().getInstance ("org.netbeans.modules.extbrowser");   // NOI18N
+    
+    public static ErrorManager getEM () {
+        return err;
+    }
     
     /** command that executes the browser. Used in an old version. */
     private String executable;

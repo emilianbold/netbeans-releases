@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,8 +38,6 @@ import org.openide.util.RequestProcessor;
  * @version 1.0
  */
 public class UnixBrowserImpl extends ExtBrowserImpl {
-    
-    private static boolean debug = false;
     
     /** windowID of servicing window (-1 if there is no assocciated window) */
     private transient int     currWinID = -1;
@@ -193,16 +191,6 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             URL old = this.url;
             this.url = url;
             pcs.firePropertyChange (PROP_URL, old, url);
-            // browser works on displaying, clear the message now
-            RequestProcessor.getDefault ().post (
-                new Runnable () {
-                    public void run () {
-                        StatusDisplayer.getDefault ().setStatusText (""); // NOI18N
-                    }
-                },
-                2000,
-                Thread.MIN_PRIORITY
-            );
         }
         catch (java.io.IOException ex) {
             // occurs when executable is not found or not executable
@@ -213,16 +201,15 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             );
         }
         catch (InterruptedException ex) {
-            System.out.println(ex.getMessage ());
-            ex.printStackTrace ();
+            if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                ExtWebBrowser.getEM ().notify (ErrorManager.INFORMATIONAL, ex);
+            }
         }
         catch (NumberFormatException ex) {
-            System.out.println(ex.getMessage ());
-            ex.printStackTrace ();
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
         }
         catch (java.lang.Exception ex) {
-            System.out.println(ex.getMessage ());
-            ex.printStackTrace ();
+            ErrorManager.getDefault ().notify (ex);
         }
     }
     
@@ -239,7 +226,9 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     }
     
     private void setWindowID (int winID) {
-        if (debug) System.out.println("setWindowID to "+Integer.toHexString (winID));   // NOI18N
+        if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "setWindowID to "+Integer.toHexString (winID));   // NOI18Nex);
+        }
         currWinID = winID;
     }
     
@@ -274,10 +263,12 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             return null;
         }
         catch (java.io.IOException ex) {
-            ex.printStackTrace ();
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
         }
         catch (InterruptedException ex) {
-            ex.printStackTrace ();
+            if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                ExtWebBrowser.getEM ().notify (ErrorManager.INFORMATIONAL, ex);
+            }
         }
         return null;
     }
@@ -381,12 +372,12 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 }
             }
             catch (java.io.IOException ex) {
-                System.out.println(ex.getMessage ());
-                ex.printStackTrace ();
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
             }
             catch (InterruptedException ex) {
-                System.out.println(ex.getMessage ());
-                ex.printStackTrace ();
+                if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                    ExtWebBrowser.getEM ().notify (ErrorManager.INFORMATIONAL, ex);
+                }
             }
             // maybe not started & initialized yet
         }
