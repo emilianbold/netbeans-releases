@@ -193,7 +193,11 @@ public class AppletSupport {
                 if (workAround6193279) {
                     File f = FileUtil.toFile(html);
                     try {
-                        url = new URL ("file",null,f.getAbsolutePath());
+                        String path = f.getAbsolutePath();
+                        if (File.separatorChar != '/') {    //NOI18N
+                            path = path.replace(File.separatorChar,'/');   //NOI18N
+                        }
+                        url = new URL ("file",null,path);
                     } catch (MalformedURLException e) {
                         ErrorManager.getDefault().notify(e);
                     }
