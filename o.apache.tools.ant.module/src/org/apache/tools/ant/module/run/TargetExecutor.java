@@ -47,6 +47,7 @@ public class TargetExecutor implements Runnable {
     
     private AntProjectCookie pcookie;
     private InputOutput io;
+    private OutputStream outputStream;
     private boolean ok = false;
     private int verbosity = AntSettings.getDefault ().getVerbosity ();
     private Properties properties = (Properties) AntSettings.getDefault ().getProperties ().clone ();
@@ -86,7 +87,7 @@ public class TargetExecutor implements Runnable {
     }
 
     public ExecutorTask execute () throws IOException {
-        return execute(null);
+        return execute((String)null);
     }
   
     /** Start it going. */
@@ -163,15 +164,25 @@ public class TargetExecutor implements Runnable {
             //System.err.println("execute #3: " + this);
         }
         //System.err.println("execute #5: " + this);
-        WrapperExecutorTask wrapper = new WrapperExecutorTask (task);
+        WrapperExecutorTask wrapper = new WrapperExecutorTask (task, io);
         RequestProcessor.getDefault().post(wrapper);
         return wrapper;
     }
+    
+    public ExecutorTask execute(OutputStream outputStream) throws IOException {
+        this.outputStream = outputStream;
+        ExecutorTask task = TopManager.getDefault().getExecutionEngine().execute(
+            NbBundle.getMessage(TargetExecutor.class, "LABEL_execution_name"), this, InputOutput.NULL);
+        return new WrapperExecutorTask(task, null);
+    }
+    
     private class WrapperExecutorTask extends ExecutorTask {
         private ExecutorTask task;
-        public WrapperExecutorTask (ExecutorTask task) {
+        private InputOutput inputOutput;
+        public WrapperExecutorTask (ExecutorTask task, InputOutput inputOutput) {
             super (new WrapperRunnable (task));
             this.task = task;
+            this.inputOutput = inputOutput;
         }
         public void stop () {
             task.stop ();
@@ -180,7 +191,7 @@ public class TargetExecutor implements Runnable {
             return task.result () + (ok ? 0 : 1);
         }
         public InputOutput getInputOutput () {
-            return io;
+            return inputOutput;
         }
     }
     private static class WrapperRunnable implements Runnable {
@@ -196,11 +207,13 @@ public class TargetExecutor implements Runnable {
     /** Call execute(), not this method directly!
      */
     synchronized public void run () {
-        //System.out.println("run #1: " + this); // NOI18N
-        io.setFocusTaken (true);
-        io.setErrVisible (false);
-        // Generally more annoying than helpful:
-        io.setErrSeparated (false);
+        if (outputStream == null) {
+            //System.out.println("run #1: " + this); // NOI18N
+            io.setFocusTaken (true);
+            io.setErrVisible (false);
+            // Generally more annoying than helpful:
+            io.setErrSeparated (false);
+        }
         
         if (AntSettings.getDefault ().getSaveAll ()) {
             TopManager.getDefault ().saveAll ();
@@ -213,9 +226,14 @@ public class TargetExecutor implements Runnable {
         Project project = null;
 
         //PrintStream out = new PrintStream (new OutputWriterOutputStream (io.getOut ()));
-        PrintStream err = new PrintStream (new OutputWriterOutputStream (io.getErr ()));
+        PrintStream err;
+        if (outputStream == null) {
+            err = new PrintStream (new OutputWriterOutputStream (io.getErr ()));
+        } else {
+            err = new PrintStream (outputStream);
+        }
         PrintStream out = err; // at least for now...
-    
+        
         // first use the ProjectHelper to create the project object
         // from the given build file.
         BuildLogger logger;
@@ -249,7 +267,7 @@ public class TargetExecutor implements Runnable {
                 Map.Entry entry = (Map.Entry) it.next ();
                 project.setUserProperty ((String) entry.getKey (), (String) entry.getValue ());
             }
-            logger = new NetBeansLogger ();
+            logger = new NetBeansLogger (outputStream==null);
             logger.setMessageOutputLevel (verbosity);
             logger.setOutputPrintStream (out);
             logger.setErrorPrintStream (err);
@@ -307,7 +325,9 @@ public class TargetExecutor implements Runnable {
             logger.buildFinished (new BuildEvent (project));
             ok = true;
         } catch (ThreadDeath td) {
-            TopManager.getDefault ().setStatusText (NbBundle.getMessage (TargetExecutor.class, "MSG_target_failed_status"));
+            if (outputStream == null) {
+                TopManager.getDefault ().setStatusText (NbBundle.getMessage (TargetExecutor.class, "MSG_target_failed_status"));
+            }
             // don't throw ThreadDeath, just return. ThreadDeath sometimes 
             // generated when killing process in Execution Window
             //throw td;

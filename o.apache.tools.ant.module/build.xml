@@ -262,7 +262,7 @@ After that you should be done!
         <delete dir="AntAPIs"/>
         <mkdir dir="AntAPIs"/>
         <javadoc destdir="AntAPIs"
-             packagenames="org.netbeans.api.*,org.netbeans.spi.*,org.apache.tools.ant.module.api.*"
+             packagenames="org.netbeans.api.*,org.netbeans.spi.*,org.apache.tools.ant.module.api.*,org.apache.tools.ant.module.spi.*"
              doctitle="NetBeans module ant APIs"
              use="true"
              splitindex="true"
