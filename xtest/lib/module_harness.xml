@@ -490,8 +490,7 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="${compile.srcdir.parsed}" 
                deprecation="${build.compiler.deprecation}"
                debug="${build.compiler.debug}"
-               excludes="${compile.excludes}"
-               fork="true">
+               excludes="${compile.excludes}">
             <classpath>
            	<pathelement path="${junit.path}"/>
     		<pathelement path="${xerces.path}"/>
