@@ -68,14 +68,18 @@ public class OptionsAction extends CallableSystemAction {
         // dock Options into its mode if needed
         Workspace w = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
         
-        Mode m = w.findMode(singleton);
+        ModeImpl m = (ModeImpl) w.findMode(singleton);
         if (m == null) {
-            m = w.createMode(OptionsPanel.MODE_NAME, singleton.getName(), null);
+            m = (ModeImpl) w.createMode(OptionsPanel.MODE_NAME,
+                                        singleton.getName(),
+                                        null);
         }
         m.dockInto(singleton);
-
+        m.requestFocus();
+        
         if (EventQueue.isDispatchThread()) {
             singleton.open();
+            singleton.requestFocus();
             singleton.requestDefaultFocus();
         }
         else {
@@ -83,6 +87,7 @@ public class OptionsAction extends CallableSystemAction {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     optionPanel.open();
+                    optionPanel.requestFocus();
                     optionPanel.requestDefaultFocus();
                 }
             });
