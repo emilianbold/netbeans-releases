@@ -53,6 +53,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
     public static final String PRIMARY_KEY = "pcolumn"; //NOI18N
     public static final String INDEXED_COLUMN = "icolumn"; //NOI18N
     public static final String FOREIGN_COLUMN = "fcolumn"; //NOI18N
+    public static final String FOREIGN_KEY = "fcolumn"; //NOI18N
     public static final String EXPORTED_KEY = "ekey"; //NOI18N
     public static final String IMPORTED_KEY = "fkey"; //NOI18N
     public static final String PROCEDURE = "procedure"; //NOI18N
