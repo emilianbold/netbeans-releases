@@ -158,49 +158,9 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     private void readConfig(XMLDataObject xml) throws IOException {
         Parser parser = xml.createParser();
         
-        parser.setEntityResolver(new EntityResolver() {
-            public InputSource resolveEntity(String pubid, String sysid) {
-                return new InputSource(new java.io.ByteArrayInputStream(new byte[0]));
-            }
-        });
 
-        HandlerBase handler = new HandlerBase() {
-            private ToolbarRow currentRow = null;
-            
-            public void startElement(String name, AttributeList amap) throws SAXException {
-                if (TAG_ROW.equals(name)) {
-                    currentRow = new ToolbarRow(ToolbarConfiguration.this);
-                    addRow(currentRow);
-                }
-                else if (currentRow != null && TAG_TOOLBAR.equals(name)) {
-                    String tbname = amap.getValue(ATT_TOOLBAR_NAME);
-                    if (tbname == null || tbname.equals("")) // NOI18N
-                        return;
-
-                    String  posStr = amap.getValue(ATT_TOOLBAR_POSITION);
-                    Integer pos = null;
-                    if (posStr != null)
-                        pos = new Integer(posStr);
-                    
-                    String visStr = amap.getValue(ATT_TOOLBAR_VISIBLE);
-                    Boolean vis;
-                    if (visStr != null)
-                        vis = Boolean.valueOf(visStr);
-                    else
-                        vis = Boolean.TRUE;
-                        
-                    addToolbar(currentRow, checkToolbarConstraints (tbname, pos, vis));
-                }
-            }
-                    
-            public void endElement(String name) throws SAXException {
-                if (TAG_ROW.equals(name)) {
-                    currentRow = null;
-                }
-            }
-        };
-
-        //parser.setErrorHandler(listener);
+        ToolbarParser handler = new ToolbarParser();
+        parser.setEntityResolver(handler);
         parser.setDocumentHandler(handler);
             
         try {
@@ -213,6 +173,45 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         checkToolbarRows();
     }
     
+    private class ToolbarParser extends HandlerBase implements EntityResolver {
+        private ToolbarRow currentRow = null;
+        
+        public void startElement(String name, AttributeList amap) throws SAXException {
+            if (TAG_ROW.equals(name)) {
+                currentRow = new ToolbarRow(ToolbarConfiguration.this);
+                addRow(currentRow);
+            }
+            else if (currentRow != null && TAG_TOOLBAR.equals(name)) {
+                String tbname = amap.getValue(ATT_TOOLBAR_NAME);
+                if (tbname == null || tbname.equals("")) // NOI18N
+                    return;
+                
+                String  posStr = amap.getValue(ATT_TOOLBAR_POSITION);
+                Integer pos = null;
+                if (posStr != null)
+                    pos = new Integer(posStr);
+                
+                String visStr = amap.getValue(ATT_TOOLBAR_VISIBLE);
+                Boolean vis;
+                if (visStr != null)
+                    vis = Boolean.valueOf(visStr);
+                else
+                    vis = Boolean.TRUE;
+                
+                addToolbar(currentRow, checkToolbarConstraints (tbname, pos, vis));
+            }
+        }
+        
+        public void endElement(String name) throws SAXException {
+            if (TAG_ROW.equals(name)) {
+                currentRow = null;
+            }
+        }
+        
+        public InputSource resolveEntity(String pubid, String sysid) {
+            return new InputSource(new java.io.ByteArrayInputStream(new byte[0]));
+        }
+    };
     /** Clean all the configuration parameters.
      */
     private void initInstance () {
@@ -990,7 +989,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         WritableToolbarConfiguration wtc = new WritableToolbarConfiguration (toolbarRows, invisibleToolbars);
         final StringBuffer sb = new StringBuffer ("<?xml version=\"1.0\"?>\n\n"); // NOI18N
         sb.append ("<!DOCTYPE ").append (TAG_CONFIG).append (" PUBLIC \""). // NOI18N
-        append (TOOLBAR_DTD_PUBLIC_ID).append ("\" \"" + TOOLBAR_DTD_WEB + "\">\n\n").append (wtc.toString()); // NOI18N
+        append (TOOLBAR_DTD_PUBLIC_ID).append ("\" \"").append (TOOLBAR_DTD_WEB).append ("\">\n\n").append (wtc.toString()); // NOI18N
 
         final FileObject tbFO = NbPlaces.getDefault().toolbars().getPrimaryFile();
         final FileSystem tbFS = tbFO.getFileSystem();
