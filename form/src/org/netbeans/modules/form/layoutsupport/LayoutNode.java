@@ -79,7 +79,12 @@ public class LayoutNode extends AbstractNode implements FormLayoutCookie
         Class customizerClass = layoutSupport.getCustomizerClass();
         if (customizerClass == null)
             return null;
-        
+
+        RADVisualContainer container = layoutSupport.getContainer();
+        FormDesigner designer = container.getFormModel().getFormDesigner();
+        if (!designer.isInDesignedTree(container))
+            designer.setTopDesignContainer(container);
+
         Object customizer;
         try {
             customizer = customizerClass.newInstance();
