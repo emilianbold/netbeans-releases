@@ -577,10 +577,10 @@ public abstract class NbTopManager extends TopManager {
     public void exit (int retValue) {
         // save all open files
         if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
-            // save project
-            NbProjectOperation.storeLastProject ();
-
             if (ModuleInstaller.exit ()) {
+                // save project
+                NbProjectOperation.storeLastProject ();
+
                 Runtime.getRuntime().exit ( retValue );
             }
         }
