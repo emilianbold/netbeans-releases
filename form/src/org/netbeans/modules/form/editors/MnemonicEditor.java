@@ -27,7 +27,13 @@ public class MnemonicEditor extends PropertyEditorSupport implements EnhancedPro
      * the single char or by creating unicode escape.
      */
     public String getAsText () {
-        char value = (char)(((Integer)getValue()).intValue());
+        Object ovalue = getValue();
+        char value = (char)0;
+        
+        if (java.lang.Character.class.isInstance(ovalue))
+            value = ((Character)ovalue).charValue();
+        else if (java.lang.Integer.class.isInstance(ovalue))
+            value = (char)(((Integer)ovalue).intValue());
         
         if (value == 0) return "";
         
@@ -58,7 +64,7 @@ public class MnemonicEditor extends PropertyEditorSupport implements EnhancedPro
      */
     public void setAsText(String text) throws IllegalArgumentException {
         if (text.length() < 1) {
-            setValue(new Character((char)0));
+            setValue(new Integer(0));
             return;
         }
         
