@@ -187,6 +187,7 @@ class MultiViewTopComponentLookup extends Lookup {
     }
     
     /**
+     * A proxy ActionMap that delegates to the original one, used because of #47991
      * non private because of tests..
      */
     static class LookupProxyActionMap extends ActionMap  {
