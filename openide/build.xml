@@ -189,8 +189,37 @@ Microsystems, Inc. All Rights Reserved.
       	   <exclude name="org/openide/filesystems/**" />
            <exclude name="org/openide/util/**"/>
            <exclude name="org/openide/nodes/**"/>
+           <exclude name="org/openide/explorer/**"/>
+           <exclude name="org/openide/resources/propertysheet/**"/>
+
+           <exclude name="org/openide/resources/defaultNode.gif"/>
+           <exclude name="org/openide/resources/actions/paste.gif"/>
+           <exclude name="org/openide/resources/actions/copy.gif"/>
+           <exclude name="org/openide/resources/actions/delete.gif"/>   
+           <exclude name="org/openide/resources/actions/cut.gif"/>   
+           <exclude name="org/openide/resources/actions/properties.gif"/>   
+
            <exclude name="org/openide/cookies/**"/>
-           
+           <exclude name="org/openide/actions/ActionConstants*"/>
+           <exclude name="org/openide/actions/Bundle*"/>
+           <exclude name="org/openide/actions/CopyAction*"/>
+           <exclude name="org/openide/actions/DeleteAction*"/>
+           <exclude name="org/openide/actions/CutAction*"/>
+           <exclude name="org/openide/actions/PasteAction*"/>
+           <exclude name="org/openide/actions/PopupAction*"/>
+           <exclude name="org/openide/actions/PropertiesAction*"/>
+           <exclude name="org/openide/actions/CustomizeAction*"/>
+           <exclude name="org/openide/awt/ToolbarToggleButton*"/>
+           <exclude name="org/openide/awt/ToolbarButton*"/>
+           <exclude name="org/openide/awt/EnabledButtonModel*"/>
+           <exclude name="org/openide/awt/SplittedPanel*"/>
+           <exclude name="org/openide/awt/Bundle*"/>
+           <exclude name="org/openide/awt/JInlineMenu*"/>
+           <exclude name="org/openide/awt/Actions*"/>  
+           <exclude name="org/openide/awt/JMenuPlus*"/>
+           <exclude name="org/openide/awt/JPopupMenuUtils*"/> 
+           <exclude name="org/openide/awt/MouseUtils*"/>
+
            <!-- Part of openide-util.jar -->
            <exclude name="org/openide/ErrorManager*class"/> 
       </fileset>
@@ -198,6 +227,11 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src">
            <!-- But include all localized resources -->
            <include name="org/openide/**/*_*" />
+
+           <!-- Include also editors package (it is not part of explorer library) -->
+           <include name="org/openide/explorer/propertysheet/editors/*.class"/>
+           <exclude name="org/openide/explorer/propertysheet/editors/Enhanced*.class"/>
+
       </fileset>
     </locjar>
     
@@ -220,7 +254,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <!-- Build separate libraries for the IDE -->
   
-  <target name="libs" depends="lib-util,lib-fs,lib-nodes" />
+  <target name="libs" depends="lib-util,lib-fs,lib-nodes,lib-explorer" />
   
   <target name="lib-util" depends="compile,13javac-workaround,vers-prep">
 	<mkdir dir="netbeans/lib" />
@@ -300,6 +334,55 @@ Microsystems, Inc. All Rights Reserved.
                   <!-- exclude localized resources, they are part of openide.jar -->
                   <exclude name="org/openide/nodes/*_*" />
                   <exclude name="org/openide/cookies/*_*" />
+             </fileset>
+        </jar>
+  </target>        
+
+  <target name="lib-explorer" depends="compile,13javac-workaround,vers-prep">
+	<mkdir dir="netbeans/lib" />
+        <copy file="openide-explorer.mf" tofile="openide-explorer-subst.mf" filtering="on"/>
+        
+  	<jar jarfile="netbeans/lib/openide-explorer.jar"
+	     manifest="openide-explorer-subst.mf"
+	     compress="false">
+             <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
+                  <include name="org/openide/explorer/*"/>
+                  <include name="org/openide/explorer/propertysheet/*"/>
+                  <include name="org/openide/explorer/propertysheet/editors/Enhanced*.class"/>
+                  <include name="org/openide/explorer/view/*"/>
+                  <include name="org/openide/actions/Bundle*"/>
+                  <include name="org/openide/actions/ActionConstants*"/>
+                  <include name="org/openide/actions/CutAction*"/>
+                  <include name="org/openide/actions/CopyAction*"/>
+                  <include name="org/openide/actions/PasteAction*"/>
+                  <include name="org/openide/actions/CustomizeAction*"/>
+                  <include name="org/openide/actions/PopupAction*"/>
+                  <include name="org/openide/actions/PropertiesAction*"/>
+                  <include name="org/openide/actions/DeleteAction*"/>
+                  <include name="org/openide/resources/propertysheet/*"/>
+                  <include name="org/openide/resources/defaultNode.gif"/>
+                  <include name="org/openide/resources/actions/paste.gif"/>
+                  <include name="org/openide/resources/actions/copy.gif"/>
+                  <include name="org/openide/resources/actions/delete.gif"/>   
+                  <include name="org/openide/resources/actions/cut.gif"/>   
+                  <include name="org/openide/resources/actions/properties.gif"/>   
+                  <include name="org/openide/awt/Actions*"/>
+                  <include name="org/openide/awt/JMenuPlus*"/>
+                  <include name="org/openide/awt/JPopupMenuUtils*"/>
+                  <include name="org/openide/awt/MouseUtils*class" />
+                  <include name="org/openide/awt/ToolbarToggleButton*class"/>
+                  <include name="org/openide/awt/ToolbarButton*class"/>
+                  <include name="org/openide/awt/EnabledButtonModel*"/>
+                  <include name="org/openide/awt/SplittedPanel*"/>
+                  <include name="org/openide/awt/Bundle*"/>
+                  <include name="org/openide/awt/JInlineMenu*"/>
+                  <include name="org/openide/windows/TopComponent$Registry.class" />
+                  
+                  <!-- exclude localized resources, they are part of openide.jar -->
+                  <exclude name="org/openide/explorer/*_*" />
+                  <exclude name="org/openide/explorer/propertysheet/*_*" />
+                  <exclude name="org/openide/explorer/propertysheet/editors/*_*" />
+                  <exclude name="org/openide/explorer/view/*_*" />
              </fileset>
         </jar>
   </target>        
