@@ -25,7 +25,7 @@ import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 *
 * @author  Ian Formanek
 */
-public class RADConnectionPropertyEditor extends Object implements PropertyEditor, FormAwareEditor, XMLPropertyEditor {
+public class RADConnectionPropertyEditor extends Object implements PropertyEditor, FormAwareEditor, XMLPropertyEditor, NamedPropertyEditor {
 
   protected PropertyChangeSupport support;
   private Class propertyType;
@@ -116,6 +116,13 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
     support.removePropertyChangeListener (propertyChangeListener);
   }
 
+// ------------------------------------------
+// NamedPropertyEditor implementation
+  
+  /** @return display name of the property editor */
+  public String getDisplayName() {
+    return FormEditor.getFormBundle ().getString ("CTL_RADConn_DisplayName");
+  }
 
   public static class RADConnectionDesignValue implements FormDesignValue, java.io.Serializable {
     public final static int TYPE_PROPERTY = 0;
