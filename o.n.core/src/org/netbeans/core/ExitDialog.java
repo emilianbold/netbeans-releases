@@ -22,6 +22,7 @@ import java.awt.event.ActionListener;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.image.BufferedImage;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Rectangle;
@@ -42,6 +43,7 @@ import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
+import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
@@ -359,16 +361,23 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
         cons.weightx = 1.0D;
         cons.fill = GridBagConstraints.HORIZONTAL;
         cons.insets = new Insets(11, 11, 0, 12);
+
+        JLabel label = new JLabel(NbBundle.getBundle(ExitDialog.class)
+            .getString("LAB_PendingTasks"));
+        label.setDisplayedMnemonic(NbBundle.getBundle(ExitDialog.class)
+            .getString("LAB_PendingTasksMnem").charAt(0));
         
-        panel.add(new JLabel(NbBundle.getBundle(ExitDialog.class)
-            .getString("LAB_PendingTasks")), cons);
+        panel.add(label, cons);
         
         cons.gridy = 1;
         cons.weighty = 1.0D;
         cons.fill = GridBagConstraints.BOTH;
         cons.insets = new Insets(7, 11, 0, 12);
+
+        ListView view = new ListView();
+        label.setLabelFor(view);
         
-        panel.add(new org.openide.explorer.view.ListView(), cons);
+        panel.add(view, cons);
         
         cons.gridy = 2;
         cons.weighty = 0.0D;
@@ -409,24 +418,18 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
             }
         });
 
-        // XXX Ulgy trick to get no default button for dialog.
-        JButton dummyButton = new JButton();
-        Dimension zeroDim = new Dimension(0, 0);
-        dummyButton.setMinimumSize(zeroDim);
-        dummyButton.setPreferredSize(zeroDim);
-        dummyButton.setMaximumSize(zeroDim);
-
         final JButton exitOption = new JButton(
             NbBundle.getBundle(ExitDialog.class).getString("LAB_EndTasks"));
         exitOption.setMnemonic(NbBundle.getBundle(ExitDialog.class).
             getString("LAB_EndTasksMnem").charAt(0));
+        // No default button.
+        exitOption.setDefaultCapable(false);
         
         DialogDescriptor dd = new DialogDescriptor(
             panel,
             NbBundle.getBundle(ExitDialog.class).getString("CTL_PendingTitle"),
             true, // modal
             new Object[] {
-                dummyButton,
                 exitOption,
                 DialogDescriptor.CANCEL_OPTION
             },
@@ -542,9 +545,9 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
     /** Node representing pending action task. */
     private static class PendingActionNode extends AbstractNode {
 
-        /** Icon resource retrieved from action if it is 
+        /** Icon retrieved from action if it is 
          * of <code>SystemAction</code> instance. */
-        private String iconResource;
+        private Icon icon;
         
         /** Creates node for action. */
         public PendingActionNode(Action action) {
@@ -555,31 +558,24 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
             setDisplayName(actionName + " " // NOI18N
                 + NbBundle.getBundle(ExitDialog.class)
                     .getString("CTL_ActionInProgress"));
-
-            // XXX Is there a better way how to retrieve the action icon?
+            
             if(action instanceof SystemAction) {
-                try {
-                    java.lang.reflect.Method method = SystemAction.class
-                        .getDeclaredMethod("iconResource", new Class[0]);
-                    method.setAccessible(true);
-                    
-                    String iconResource = (String)method.invoke(action, new Object[0]);
-                    
-                    if(iconResource != null) {
-                        this.iconResource = iconResource;
-                    }
-                } catch(IllegalAccessException iae) {
-                } catch(java.lang.reflect.InvocationTargetException ite) {
-                } catch(NoSuchMethodException nme) {
-                } catch(SecurityException se) {
-                }
+                this.icon = ((SystemAction)action).getIcon();
             }
         }
 
         /** Overrides superclass method. */
         public Image getIcon(int type) {
-            if(iconResource != null) {
-                return Utilities.loadImage(iconResource);
+            if(icon != null) {
+                Image im = new BufferedImage(
+                    icon.getIconWidth(),
+                    icon.getIconHeight(),
+                    BufferedImage.TYPE_INT_ARGB
+                );
+
+                icon.paintIcon(null, im.getGraphics(), 0, 0);
+                
+                return im;
             } else {
                 return super.getIcon(type);
             }
@@ -617,6 +613,20 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
             
             setBorder(BorderFactory.createEtchedBorder());
             setForeground(UIManager.getColor("Label.foreground")); // NOI18N
+            
+            getAccessibleContext().setAccessibleName(
+                NbBundle.getBundle(ExitDialog.class)
+                .getString("ACC_InfiniteProgressName"));
+            getAccessibleContext().setAccessibleDescription(
+                NbBundle.getBundle(ExitDialog.class)
+                .getString("ACC_InfiniteProgressDesc"));
+        }
+        
+        /** Indicates whether the component can receive focus. Overrides 
+         * superclass method.
+         * @return <code>true</code> */
+        public boolean isFocusTraversable() {
+            return true;
         }
         
         /** Overrides superclass method. Adds starting of timer. */
@@ -662,6 +672,14 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
                 if(i % gapIndex != index) {
                     g.fillRect(pos, 0, cellWidth, rect.height);
                 }
+            }
+            
+            if(hasFocus()) {
+                Color oldColor = g.getColor();
+                g.setColor(UIManager.getColor("Button.focus")); // NOI18N
+                
+                g.drawRect(rect.x + 2, rect.y + 2, rect.width - 5, rect.height - 5);
+                g.setColor(oldColor);
             }
         }
     } // End of class InfiniteProgress.
