@@ -422,7 +422,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module innertesters..."/>
     <ant dir="../innertesters" target="netbeans"/>
   </target>
-  <target name="all-j2eeserver" depends="build-platform,all-debuggercore,all-debuggerjpda,all-java/srcmodel,all-j2eeserver/j2eeapis,all-projects/projectapi,build-schema2beans/anttask,all-xml/api">
+  <target name="all-j2eeserver" depends="build-platform,all-j2eeserver/j2eeapis,all-projects/projectapi,build-schema2beans/anttask,all-xml/api">
     <echo message="Building module j2eeserver..."/>
     <ant dir="../j2eeserver" target="netbeans"/>
   </target>

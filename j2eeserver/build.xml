@@ -31,8 +31,6 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="external">
           <include name="*.jar"/>
       </fileset>
-      <!-- PENDING required by debugger type, perhaps could be removed -->
-      <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/> 
     </path>
   </target>
   

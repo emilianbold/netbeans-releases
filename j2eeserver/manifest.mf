@@ -14,7 +14,6 @@ OpenIDE-Module-Module-Dependencies: org.openide.io > 1.0,
  org.netbeans.libs.j2eeeditor/1,
  org.netbeans.modules.settings/1,
  org.netbeans.modules.j2eeapis/1
-OpenIDE-Module-Requires: org.openide.execution.ExecutionEngine
 
 Name: org/netbeans/modules/j2ee/deployment/config/ConfigDataLoader.class
 OpenIDE-Module-Class: Loader
