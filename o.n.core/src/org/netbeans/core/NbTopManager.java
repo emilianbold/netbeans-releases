@@ -100,9 +100,9 @@ public abstract class NbTopManager /*extends TopManager*/ {
         putSystemProperty ("org.openide.major.version", p.getSpecificationTitle (), "IDE/1"); // NOI18N
         putSystemProperty ("netbeans.buildnumber", p.getImplementationVersion (), "OwnBuild"); // NOI18N
         
-        // Enforce JDK 1.3+ since we would not work without it.
-        if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.3")) < 0) { // NOI18N
-            System.err.println("The IDE requires JDK 1.3 or higher to run."); // XXX I18N?
+        // Enforce JDK 1.4+ since we would not work without it.
+        if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.4")) < 0) { // NOI18N
+            System.err.println("The IDE requires JDK 1.4 or higher to run."); // XXX I18N?
             TopSecurityManager.exit(1);
         }
 

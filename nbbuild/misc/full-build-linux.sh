@@ -24,19 +24,33 @@
 # sources=/space/src/nb_all
 # a full NB source checkout (cvs co standard ide xtest jemmy jellytools)
 #
-# nbjdk=/opt/java/j2se/1.3
-# JDK 1.3 installation directory. (Full JDK, not just JRE.)
-# YOU MUST TEST WITH 1.3 TO ENSURE YOU ARE NOT USING 1.4-SPECIFIC CALLS
+# nbjdk=/opt/java/j2se/1.4
+# JDK 1.4 installation directory. (Full JDK, not just JRE.)
 #
 # nbtestjdk=/opt/java/j2se/1.4
 # JDK installation directory for use when running (but not building!) test suites.
 # By default, same as nbjdk. However you may wish to run tests with a
-# different VM. jglick has had problems with the validation test suite
-# under JDK 1.3 with the embedded X server - the JRE sends invalid X requests
-# and kills the tests prematurely. JDK 1.4 is fine.
+# different VM.
 #
 # ant=/opt/ant-1.4.1/bin/ant
 # Ant 1.4.1 installation directory. 1.5.x is not yet officially supported.
+# If you want to build Javadoc (e.g. ../user.build.properties contains moduleconfig=stable-with-apisupport),
+# use a version of Ant 1.4.1 that does *not* include Crimson in its lib/ dir (it has a bug that interacts with Ant 1.4).
+# Anyway Crimson is bundled in JDK 1.4 so you must in that case set the boot classpath
+# to include Xerces and use it. E.g.
+# ant=/opt/ant-1.4.1/bin/ant-with-xerces
+# ---%<--- /opt/ant-1.4.1/bin/ant-with-xerces
+# #!/bin/sh
+# export ANT_OPTS="-Djavax.xml.parsers.SAXParserFactory=org.apache.xerces.jaxp.SAXParserFactoryImpl $ANT_OPTS"
+# export CLASSPATH=/space/src/nb_all/core/external/xml-apis-1.0b2.jar:/space/src/nb_all/core/external/xerces-2.0.2.jar
+# exec /space/ant14/bin/ant "$@"
+# ---%<---
+# where /opt/ant-1.4.1/lib/ contains just ant.jar and optional.jar.
+# YOU MUST TEST WITH 1.4.1 IF EDITING BUILD SCRIPTS
+#
+# testant=/opt/ant-1.4.1/bin/ant
+# Ant 1.4.1 installation directory for use with XTest. 1.5.x is not yet officially supported.
+# By default, same as ant. However the hacked 1.4.1 without Crimson above will not work with XTest.
 # YOU MUST TEST WITH 1.4.1 IF EDITING BUILD SCRIPTS
 #
 # doclean=no
@@ -58,9 +72,6 @@
 #
 # nbclasspath=
 # NB bundles all its own libs, so normally this can be left blank.
-# If you want to build Javadoc (e.g. ../user.build.properties contains moduleconfig=stable-with-apisupport), use:
-# $sources/libs/external/xalan-2.3.1.jar:$sources/core/external/xml-apis-1.0b2.jar:$sources/core/external/xerces-2.0.2.jar:.../ant14/lib/optional.jar
-# and use a version of Ant 1.4.1 that does *not* include Crimson in its lib/ dir (it has a bug that interacts with Ant 1.4).
 #
 # mozbrowser=mozilla
 # display test results automatically in Netscape or Mozilla
@@ -98,11 +109,16 @@ then
     ant=ant
 fi
 
+if [ -z "$testant" ]
+then
+    testant="$ant"
+fi
+
 if [ "$override" != yes ]
 then
-    if $nbjdk/bin/java -version 2>&1 | fgrep -q -v 1.3
+    if $nbjdk/bin/java -version 2>&1 | fgrep -q -v 1.4
     then
-        echo "You need to set the variable 'nbjdk' to a JDK 1.3 installation" 1>&2
+        echo "You need to set the variable 'nbjdk' to a JDK 1.4 installation" 1>&2
         exit 2
     fi
     if $ant -version 2>&1 | fgrep -q -v 1.4
@@ -187,41 +203,41 @@ function browse() {
 
 if [ $testedmodule != none ]
 then
+    testantcmd="nice $testant -emacs $scramblerflag -Djdkhome=$nbtestjdk"
     if [ $doclean = yes ]
     then
         echo "----------CLEANING AND BUILDING TESTS----------" 1>&2
-        $antcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb realclean
+        $testantcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb realclean
         if [ $testedmodule = full ]
         then
-            $antcmd -f $sources/xtest/instance/build.xml realclean
+            $testantcmd -f $sources/xtest/instance/build.xml realclean
         elif [ $testedmodule != validate ]
         then
-            $antcmd -f $sources/$testedmodule/test/build.xml realclean
+            $testantcmd -f $sources/$testedmodule/test/build.xml realclean
         fi
-        $antcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb buildtests
+        $testantcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb buildtests
         if [ $testedmodule = full ]
         then
-            $antcmd -f $sources/xtest/instance/build.xml buildtests
+            $testantcmd -f $sources/xtest/instance/build.xml buildtests
         elif [ $testedmodule != validate ]
         then
-            $antcmd -f $sources/$testedmodule/test/build.xml buildtests
+            $testantcmd -f $sources/$testedmodule/test/build.xml buildtests
         fi
     fi
-    export JAVA_HOME=$nbtestjdk
-    export PATH=$nbtestjdk/bin:$PATH
     echo "----------RUNNING TESTS----------" 1>&2
     # Always run validation suite.
-    $antcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb runtests
+    # XXX this will soon become part of regular build step
+    $testantcmd -f $sources/xtest/instance/build.xml -Dxtest.config=commit-validation-nb runtests
     browse $sources/xtest/instance/results/index.html
     if [ $testedmodule = full ]
     then
         # Run full developer test suite.
-        $antcmd -f $sources/xtest/instance/build.xml runtests
+        $testantcmd -f $sources/xtest/instance/build.xml runtests
         browse $sources/xtest/instance/results/index.html
     elif [ $testedmodule != validate ]
     then
         # Run full suite for one module.
-        $antcmd -f $sources/$testedmodule/test/build.xml runtests
+        $testantcmd -f $sources/$testedmodule/test/build.xml runtests
         browse $sources/$testedmodule/test/results/index.html
     fi
 fi

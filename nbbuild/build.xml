@@ -33,8 +33,16 @@ ToDo:
   <!-- To make people happy who want to do `ant clean all': -->
   <target name="all" depends="build,sanity-check" description="Build the IDE and run a sanity check."/>
 
+  <target name="check-for-jdk-1.4">
+    <available property="have-jdk-1.4" classname="java.lang.CharSequence"/>
+  </target>
+  <target name="assure-jdk-1.4" depends="check-for-jdk-1.4" unless="have-jdk-1.4">
+    <fail>You need JDK 1.4 or higher to build NetBeans.</fail>
+  </target>
+
   <target name="bootstrap"
-          description="Bootstrap NetBeans-specific Ant extensions.">
+          description="Bootstrap NetBeans-specific Ant extensions."
+          depends="assure-jdk-1.4">
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
     <ant dir="external" target="unscramble"/>
     <ant dir="../core/external" target="unscramble"/>

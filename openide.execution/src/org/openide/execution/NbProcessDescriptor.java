@@ -115,8 +115,7 @@ public final class NbProcessDescriptor extends Object implements java.io.Seriali
 
     /** Executes the process with arguments formatted by the provided
     * format. Also the envp properties are passed to the executed process,
-    * and a working directory may be supplied (this requires JDK 1.3 to
-    * work correctly).
+    * and a working directory may be supplied.
     *
     * @param format format to be applied to arguments, process and envp supplied by user. It can be <code>null</code> if no formatting should be done.
     * @param envp list of properties to be applied to the process, or <code>null</code> to leave unspecified
@@ -130,8 +129,7 @@ public final class NbProcessDescriptor extends Object implements java.io.Seriali
     
     /** Executes the process with arguments, processName and envp formatted by the provided
     * format. Also the envp properties are passed to the executed process,
-    * and a working directory may be supplied (this requires JDK 1.3 to
-    * work correctly). Optionally the environment variables of the IDE may
+    * and a working directory may be supplied. Optionally the environment variables of the IDE may
     * be appended to (replaced when there is overlap) instead of specifying
     * all of the environment variables from scratch. This requires the IDE's
     * launcher to translate environment variables to system properties prefixed

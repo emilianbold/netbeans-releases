@@ -138,7 +138,8 @@ cause it to fail.
     <target name="javadoc-stage-apichanges" depends="javadoc-init,javadoc-check-timestamps" unless="javadoc.up.to.date">
         <ant dir="../../libs/external" target="unscramble"/>
         <xmlvalidate file="${javadoc.apichanges}" failonerror="true"/>
-        <echo message="in=${javadoc.apichanges} out=${javadoc.out.dir}/apichanges.html style=apichanges.xsl           =param name=javadoc-url-base expression=http://www.netbeans.org/download/dev/javadoc/${javadoc.name}" />
+        <echo message="in=${javadoc.apichanges} out=${javadoc.out.dir}/apichanges.html style=apichanges.xsl param name=javadoc-url-base expression=http://www.netbeans.org/download/dev/javadoc/${javadoc.name}"/>
+        <!-- XXX does not work with Crimson + Ant 1.4: -->
         <style in="${javadoc.apichanges}" out="${javadoc.out.dir}/apichanges.html" style="apichanges.xsl">
             <param name="javadoc-url-base" expression="http://www.netbeans.org/download/dev/javadoc/${javadoc.name}"/>
         </style>

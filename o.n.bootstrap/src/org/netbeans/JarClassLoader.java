@@ -294,13 +294,7 @@ public class JarClassLoader extends ProxyClassLoader {
             if (!jff.isInstance(factory)) throw new ClassCastException(factory.getClass().getName());
             Field fileCacheF = jff.getDeclaredField("fileCache"); // NOI18N
             fileCacheF.setAccessible(true);
-            if (Modifier.isStatic(fileCacheF.getModifiers())) {
-                // JDK 1.3.1 or 1.4 seems to have it static.
-                fileCache = (HashMap)fileCacheF.get(null);
-            } else {
-                // But in 1.3.0 it appears to be an instance var.
-                fileCache = (HashMap)fileCacheF.get(factory);
-            }
+            fileCache = (HashMap)fileCacheF.get(null);
             log("Workaround for JDK #4646668 active as part of IZ #21114");
         } catch (Exception e) {
             JarClassLoader.annotate(e, 0, "Workaround for JDK #4646668 as part of IZ #21114 failed", null, null, null);
@@ -359,7 +353,7 @@ public class JarClassLoader extends ProxyClassLoader {
         JarFile src;
         
         public JarSource(JarFile file) throws MalformedURLException {
-            super(fileToURL(new File(file.getName())));
+            super(new File(file.getName()).toURI().toURL());
             src = file;
         }
 
@@ -381,7 +375,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 if (ze != null)
                     System.err.println("Loading " + name + " from " + src.getName()); // NOI18N
             }
-            return ze == null ? null : new URL("jar:" + fileToURL(new File(src.getName())).toExternalForm() + "!/" + ze.getName()); // NOI18N
+            return ze == null ? null : new URL("jar:" + new File(src.getName()).toURI() + "!/" + ze.getName()); // NOI18N
         }
         
         protected byte[] readClass(String name, String path) throws IOException {
@@ -406,13 +400,13 @@ public class JarClassLoader extends ProxyClassLoader {
         File dir;
         
         public DirSource(File file) throws MalformedURLException {
-            super(fileToURL(file));
+            super(file.toURI().toURL());
             dir = file;
         }
 
         protected URL doGetResource(String name) throws MalformedURLException {
             File resFile = new File(dir, name);
-            return resFile.exists() ? fileToURL(resFile) : null;
+            return resFile.exists() ? resFile.toURI().toURL() : null;
         }
         
         protected byte[] readClass(String name, String path) throws IOException {
@@ -429,16 +423,6 @@ public class JarClassLoader extends ProxyClassLoader {
             return data;
         }
         
-    }
-    
-    /**
-     * Convert a file to a URL as safely as possible.
-     * <strong>Should be overridden in subclasses.</strong>
-     * @see #27330
-     * @see org.openide.util.Utilities#toURL
-     */
-    protected URL fileToURL(File f) throws MalformedURLException {
-        return f.toURL();
     }
     
     //

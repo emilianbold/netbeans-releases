@@ -97,7 +97,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
                     // OK, try file.
                     File f = InstalledFileLocator.getDefault().locate("docs/" + resource, null, true); // NOI18N
                     if (f != null) {
-                        target = Utilities.toURL(f);
+                        target = f.toURI().toURL();
                     } else {
                         IOException ioe = new IOException("cannot connect to " + url + ": " + mre);
                         Installer.err.annotate(ioe, NbBundle.getMessage(NbDocsStreamHandler.class, "EXC_nbdocs_cannot_connect", url));

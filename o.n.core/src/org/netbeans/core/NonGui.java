@@ -59,22 +59,6 @@ import org.netbeans.core.modules.ModuleSystem;
 */
 public class NonGui extends NbTopManager implements Runnable {
     
-    static {
-        // #27330: installation in directory with hash marks
-        // But #29935: first prime it so it need do no more class loading later
-        try {
-            Utilities.toURL(new File("").getAbsoluteFile()); // NOI18N
-        } catch (MalformedURLException mfue) {
-            // should not happen
-            mfue.printStackTrace();
-        }
-        org.netbeans.Main.setURLConvertor(new org.netbeans.Main.URLConvertor() {
-            public URL toURL(File f) throws MalformedURLException {
-                return Utilities.toURL(f);
-            }
-        });
-    }
-
     /** directory for modules */
     static final String DIR_MODULES = "modules"; // NOI18N
     
@@ -410,7 +394,7 @@ public class NonGui extends NbTopManager implements Runnable {
                             try {
                                 // #30502: don't forget locale variants!
                                 List urls = new ArrayList();
-                                urls.add(Utilities.toURL(coreide));
+                                urls.add(coreide.toURI().toURL());
                                 File localeDir = new File(coreide.getParentFile(), "locale"); // NOI18N
                                 if (localeDir.isDirectory()) {
                                     Iterator it = NbBundle.getLocalizingSuffixes();
@@ -418,7 +402,7 @@ public class NonGui extends NbTopManager implements Runnable {
                                         String suffix = (String)it.next();
                                         File v = new File(localeDir, "core-ide" + suffix + ".jar"); // NOI18N
                                         if (v.isFile()) {
-                                            urls.add(Utilities.toURL(v));
+                                            urls.add(v.toURI().toURL());
                                         }
                                     }
                                 }
@@ -559,6 +543,7 @@ public class NonGui extends NbTopManager implements Runnable {
         // set security manager
         SecurityManager secman = new TopSecurityManager();
 
+        /* Disabled until there is an IBM JDK 1.4 known to display the same bug:
         // XXX(-trung) workaround for IBM JDK 1.3 Linux bug in
         // java.net.URLClassLoader.findClass().  The IBM implementation of this
         // method is not reentrant. The problem happens when findClass()
@@ -575,6 +560,7 @@ public class NonGui extends NbTopManager implements Runnable {
         catch (RuntimeException ex) {
             // ignore
         }
+        */
         
         System.setSecurityManager(secman);
 

@@ -173,24 +173,6 @@ final class XMLSettingsSupport {
             }
         }
         
-        protected Object resolveObject(Object obj) throws IOException {
-            Object o = super.resolveObject(obj);
-            // #30305 - prevent JDK 1.3.x bug in deserialization of URL
-            if (System.getProperty("java.version").startsWith("1.3")) {
-                if (o instanceof java.net.URL) {
-                    java.net.URL u = (java.net.URL)o;
-                    try {
-                        // The URL.query and URL.path are empty after deserialization.
-                        // Recreating URL instance is easy way how to workaround it.
-                        o = new java.net.URL(u.getProtocol(), u.getHost(), u.getPort(), u.getFile());
-                    } catch (java.net.MalformedURLException ex) {
-                        // should not happen. can be ignored. original object is returned in this case
-                    }
-                }
-            }
-            return o;
-        }
-
         /** use Utilities.translate to try to upgrade to new setting's class.
          * If the old class exists the origin descriptor is used and upgrade is
          * postponed to readResolve;

@@ -42,26 +42,13 @@ Microsystems, Inc. All Rights Reserved.
     </path>
   </target>
 
-  <target name="init-14">
-    <available property="jdk14" classname="java.lang.CharSequence" />
-  </target>
-  
   <target name="compile-regular" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <exclude name="org/openide/**/*14.java"/>
       <bootclasspath refid="openide-boot-cp"/>
       <classpath refid="openide-cp"/>
     </javac>
   </target>
 
-  <target name="compile-14" if="jdk14" >
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <include name="org/openide/**/*14.java"/>
-      <bootclasspath refid="openide-boot-cp"/>
-      <!-- As needed: <classpath refid="openide-cp"/> -->
-    </javac>
-  </target>
-  
   <target name="compile-compat" depends="compile-regular">
     <javac srcdir="compat/src" destdir="compat/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <bootclasspath refid="openide-boot-cp"/>
@@ -73,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
     
-  <target name="compile" depends="init-14,13javac-workaround,compile-regular,compile-14,patchsuper"
+  <target name="compile" depends="13javac-workaround,compile-regular,patchsuper"
           description="Compile all source files but do not package them."/>
   
 
@@ -834,7 +821,7 @@ Included in JDK 1.3, else you may need to download it separately."/>
     <nbinstaller action="reinstall" module="examplemodulereload/globalactions-test/globalactions.jar"/>
   </target>
 
-  <target name="example-explservlet-reload-build" description="Build explservlet for testing purposes. Requires JDK 1.4.">
+  <target name="example-explservlet-reload-build" description="Build explservlet for testing purposes.">
     <javac srcdir="api/examples" destdir="api/examples">
       <include name="org/netbeans/examples/modules/explservlet/"/>
       <classpath>
