@@ -87,11 +87,10 @@ can provide customized UI.
 -->
 <answer id="arch-usecases">
 
-<h4>Use case 1 : Deployment API Compliant Server Plugin</h4>
+<usecase id="deployment-api-compliant-server" name="Deployment API Compliant Server Plugin">
 A server that supports Deployment API can be integrated in IDE so that J2EE 
 modules could be deployed to it from IDE. It will not support incremental
 deployment, start/stop server or JSP compilation.
-
 <p><i>
 In order to do this the plugin needs needs add the server classes that 
 implement Deployment API to classpath and to provide a 
@@ -103,30 +102,31 @@ register a
 factory class</a> from Deployment API. No additional implementation 
 should be needed.
 </i></p>
+</usecase>
 
-<h4>Use Case 2: Plugin for Server that does not support Deployment API</h4>
+
+<usecase id="deployment-api-non-complient-server" name="Plugin for Server that does not support Deployment API">
 If a J2EE server does not support Deployment API still needs to be possible 
 to implement a server plugin for it. 
-
 <p><i>
 In this case the plugin needs to implement the Deployment API interfaces (
 <a href="http://java.sun.com/j2ee/1.4/docs/api/javax/enterprise/deploy/spi/factories/DeploymentFactory.html">
 DeploymentFactory</a>, 
 <a href="http://java.sun.com/j2ee/1.4/docs/api/javax/enterprise/deploy/spi/DeploymentManager.html">
-DeploymentManager</a>) and delegate to whtever interface the specific J2EE server provides.
-An example of this is the Tomcat5 plugin implemented in <code>tomcatint/tomcat5</code>code>
+DeploymentManager</a>) and delegate to whetever interface the specific J2EE server provides.
+An example of this is the Tomcat5 plugin implemented in 
+<a href="http://www.netbeans.org/source/browse/tomcatint/tomcat5/">tomcatint/tomcat5</a>
 module, although it only supports deployment of web modules and it also supports
 some optional interfaces defined by J2EE Server Module in addition to the Deployment API.
 </i></p>
+</usecase>
 
-<h4>Use Case 3 : Server Plugin that implements optional APIs</h4>
-
+<usecase id="plugin-with-optional-apis" name="Server Plugin that implements optional APIs">
 In practice plugins will likely want to provide tighter integration with IDE 
 that is specified in Deployment API.
 They can choose to provide any or all of the optional parts of plugin API:
 incremental deployment, JSP compilation, start/stop/debug server support and/or 
 customized UI for server management.
-
 <p><i>
 In order to do this plugin needs to implement the additional interfaces
 and register their instances in module 
@@ -188,9 +188,9 @@ OptionalDeploymentManagerFactory</a>.
 <a href="org/netbeans/modules/j2ee/deployment/plugins/api/ServerProgress.html">ServerProgress</a>
 </li>
 </ul>
+</usecase>
 
-<h4>Use Case 4 : Devmodule integration</h4>
-
+<usecase id="devmodule-integration" name="Devmodule integration" >
 Implemetors of J2EE module support (web module, EJB module, J2EE Application, etc.) 
 need to be able to provide UI to deploy or debug their modules on any J2EE server 
 that has a corresponding plugin and supports given type of J2EE module. 
@@ -222,14 +222,14 @@ and to a
 <a href="org/netbeans/modules/j2ee/deployment/devmodules/api/JSPServletFinder.html">JSPServletFinder</a>.
 The SPI package contains utility classes for implementation of J2eeModule and J2eeModuleContainer.
 </p>
+</usecase>
 
-
-<h4>Use Case 5 : Customization of Server Registry UI</h4>
-
+<usecase id="customization-of-server-registry-ui" name="Customization of Server Registry UI" >
 Some products (JSC) requested to make it possible to replace the whole server 
 registry UI.
-
 <p><i>Not supported in current version.</i></p>
+</usecase>
+
 
 </answer>
 <!--         
