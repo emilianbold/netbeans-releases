@@ -49,11 +49,11 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all,full,apps" name="TestApplication">
         <testset dir="qa-functional/src">
             <patternset>
-		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
-                <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testDoWhile" />
-                <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTwoBrackets" />
-                <exclude name="org/netbeans/test/editor/app/tests/IndentationPerformer.class/testTernary" />
-                <exclude name="org/netbeans/test/editor/app/tests/CompletionPerformer.class" />
+		<include name="org/netbeans/test/java/editor/app/tests/*Performer.class"/>
+                <exclude name="org/netbeans/test/java/editor/app/tests/IndentationPerformer.class/testDoWhile" />
+                <exclude name="org/netbeans/test/java/editor/app/tests/IndentationPerformer.class/testTwoBrackets" />
+                <exclude name="org/netbeans/test/java/editor/app/tests/IndentationPerformer.class/testTernary" />
+                <exclude name="org/netbeans/test/java/editor/app/tests/CompletionPerformer.class" />
             </patternset>
         </testset>
     </testbag>
@@ -62,12 +62,12 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all,full,completion" name="Completion-Validation" compiler="qa-functional-compiler-completion" >
         <testset dir="qa-functional/src">
             <patternset>
-		<include name="org/netbeans/test/editor/completion/*Performer.class"/>
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testcomplexunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15*" />
+		<include name="org/netbeans/test/java/editor/completion/*Performer.class"/>
+		<exclude name="org/netbeans/test/java/editor/completion/*Performer.class/testcomplexsorted" />
+		<exclude name="org/netbeans/test/java/editor/completion/*Performer.class/testcomplexunsorted" />
+		<exclude name="org/netbeans/test/java/editor/completion/*Performer.class/testequalSignIunsorted" />
+		<exclude name="org/netbeans/test/java/editor/completion/*Performer.class/testequalSignIsorted" />
+		<exclude name="org/netbeans/test/java/editor/completion/*Performer.class/testjdk15*" />
             </patternset>
         </testset>
     </testbag>
@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all,completion-15" name="JDK1.5 Completion" compiler="qa-functional-compiler-completion">
         <testset dir="qa-functional/src">
             <patternset>
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15*" />
+		<include name="org/netbeans/test/java/editor/completion/*Performer.class/testjdk15*" />
             </patternset>
         </testset>
     </testbag>
