@@ -118,9 +118,14 @@ public final class PropertiesDataObject extends MultiDataObject {
         if (cookiesInitialized) {
             return;
         }
+        
+        // Necessary to set flag before add cookieSet method, cause
+        // it fires property event change and some Cookie action in its
+        // enable method could call initCookieSet again. 
+        cookiesInitialized = true;
+        
         super.getCookieSet().add(new PropertiesOpen(this));
         super.getCookieSet().add(((PropertiesFileEntry)getPrimaryEntry()).getPropertiesEditor());
-        cookiesInitialized = true;
     }
     
     /** Returns the support object for JTable-editing. Should be used by all subentries as well */

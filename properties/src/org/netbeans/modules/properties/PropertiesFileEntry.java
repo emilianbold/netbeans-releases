@@ -120,8 +120,13 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         if(cookiesInitialized) {
             return;
         }
-        super.getCookieSet().add(new PropertiesEditorSupport(this));
+        
+        // Necessary to set flag before add cookieSet method, cause
+        // it fires property event change and some Cookie action in its
+        // enable method could call initCookieSet again. 
         cookiesInitialized = true;
+        
+        super.getCookieSet().add(new PropertiesEditorSupport(this));
     }
     
     /** Creates a node delegate for this entry. */
