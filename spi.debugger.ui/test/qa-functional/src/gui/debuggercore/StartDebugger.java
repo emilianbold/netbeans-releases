@@ -64,7 +64,7 @@ public class StartDebugger extends JellyTestCase {
     }
     
     public void testRunInDebugger() {
-        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction("Set as Main Project");
@@ -86,7 +86,7 @@ public class StartDebugger extends JellyTestCase {
     }
     
     public void testRunDebuggerStepInto() {
-        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction("Set as Main Project");
@@ -112,7 +112,7 @@ public class StartDebugger extends JellyTestCase {
     }
     
     public void testRunDebuggerRunToCursor() {
-        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction("Set as Main Project");

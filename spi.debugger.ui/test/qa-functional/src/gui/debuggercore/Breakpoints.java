@@ -81,7 +81,7 @@ public class Breakpoints extends JellyTestCase {
     }
 
     public void testLineBreakpoint() {
-        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction("Set as Main Project");
@@ -227,7 +227,7 @@ public class Breakpoints extends JellyTestCase {
     }
 
     public void testMethodBreakpoint() {
-        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction("Set as Main Project");
@@ -292,7 +292,7 @@ public class Breakpoints extends JellyTestCase {
     }
     
     public void testClassBreakpoint() {
-        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction("Set as Main Project");
@@ -371,7 +371,7 @@ public class Breakpoints extends JellyTestCase {
     }
     
     public void testVariableAccessBreakpoint() {
-        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction("Set as Main Project");
@@ -438,7 +438,7 @@ public class Breakpoints extends JellyTestCase {
     }
     
     public void testVariableModificationBreakpoint() {
-        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction("Set as Main Project");

@@ -82,7 +82,7 @@ public class LocalVariables extends JellyTestCase {
     
     public void testLocalVariablesPresence() {
         
-        TopComponentOperator projectsTabOper = new TopComponentOperator(Utilities.projectsTitle);
+        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
 
         JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
