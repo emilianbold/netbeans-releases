@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.jar.JarFile;
 
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
@@ -63,6 +65,8 @@ public class DatabaseOption extends SystemOption {
         drivers = new Vector();
         connections = new Vector();
         debugMode = false;
+        
+        deleteAdaptorsFolder();
     }
 
     /** Returns vector of registered drivers */
@@ -252,6 +256,16 @@ public class DatabaseOption extends SystemOption {
             } catch (IOException exc) {
                 //PENDING
             }
+        }
+    }
+    
+    private void deleteAdaptorsFolder() {    
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Database"); //NOI18N
+        try {
+            if (fo != null)
+                fo.delete();
+        } catch (IOException exc) {
+            //delete action failed - ignore
         }
     }
 }
