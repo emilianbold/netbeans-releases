@@ -412,8 +412,14 @@ public final class LoaderPoolNode extends AbstractNode {
         Map oldInstallAfters = installAfters;
         installBefores = (Map) ois.readObject ();
         installAfters = (Map) ois.readObject ();
-        installBefores.putAll(oldInstallBefores);
-        installAfters.putAll(oldInstallAfters);
+        boolean changedInstallBefores = !installBefores.equals(oldInstallBefores);
+        if (changedInstallBefores) {
+            installBefores.putAll(oldInstallBefores);
+        }
+        boolean changedInstallAfters = !installAfters.equals(oldInstallAfters);
+        if (changedInstallAfters) {
+            installAfters.putAll(oldInstallAfters);
+        }
 
         HashSet classes = new HashSet ();
         LinkedList l = new LinkedList ();
@@ -546,18 +552,20 @@ public final class LoaderPoolNode extends AbstractNode {
         // now (and the pool resorted just in case).
 
         Iterator it = loaders.iterator ();
-        boolean readded = false;
+        // #28126: if the set of loaders has not changed, but the
+        // ordering attrs on a loader has, resort.
+        boolean resort = changedInstallBefores || changedInstallAfters;
         while (it.hasNext ()) {
             DataLoader loader = (DataLoader)it.next ();
             if (!classes.contains (loader.getClass ())) {
                 l.add (loader);
-                readded = true;
+                resort = true;
             }
         }
         if (l.size() > new HashSet(l).size()) throw new IllegalStateException("Duplicates in " + l); // NOI18N
 
         loaders = l;
-        if (readded)
+        if (resort)
             resort ();
         else
             update ();
