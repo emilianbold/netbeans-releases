@@ -505,6 +505,7 @@ public class Editor extends javax.swing.JFrame {
     private Vector     recentFiles;
     private int        maxRecent;
     private JSeparator recentSeparator;
+    private int        separatorIndex;
     
     private String[] getOpenedFiles() {
         ArrayList opened = new ArrayList();
@@ -563,24 +564,27 @@ public class Editor extends javax.swing.JFrame {
         
         if (recentFiles.size() >= maxRecent) {
             while (recentFiles.size() >= maxRecent) {
-                removeFromRecent(0);
+                removeFromRecent(recentFiles.size() - 1);
             }
         }
         
-        recentFiles.add(fileToAdd);
+        recentFiles.add(0, fileToAdd);
         
-        JMenuItem newItem = new JMenuItem(generateMenuItemName(recentFiles.size(), fileToAdd));
+        JMenuItem newItem = new JMenuItem(generateMenuItemName(1, fileToAdd));
 	
 	if (recentFiles.size() == 1) {
 	    recentSeparator = new JSeparator();
 	    fileMenu.add(recentSeparator);
+	    separatorIndex = fileMenu.getMenuComponentCount();
 	}
 
         newItem.addActionListener(impl);
 
-        fileMenu.add(newItem);
+        fileMenu.insert(newItem, separatorIndex);
         fileToMenu.put(fileToAdd, newItem);
         menuToFile.put(newItem, fileToAdd);
+	
+	correctItemNumbers();
     }
 
     private void correctItemNumbers() {
@@ -615,6 +619,7 @@ public class Editor extends javax.swing.JFrame {
 	if (recentFiles.size() == 0) {
 	    fileMenu.remove(recentSeparator);
 	    recentSeparator = null;
+	    separatorIndex = -1;
 	}
     }
     
@@ -648,8 +653,8 @@ public class Editor extends javax.swing.JFrame {
         this.safeSave  = Boolean.valueOf(safeSaveString).booleanValue();
         this.createBackups = Boolean.valueOf(createBackupsString).booleanValue();
 
-        for (int cntr = 0; cntr < recentFiles.length; cntr++) {
-            addToRecent(recentFiles[cntr]);
+        for (int cntr = recentFiles.length; cntr > 0; cntr--) {
+            addToRecent(recentFiles[cntr - 1]);
         }
 
         for (int cntr = 0; cntr < openedFiles.length; cntr++) {
