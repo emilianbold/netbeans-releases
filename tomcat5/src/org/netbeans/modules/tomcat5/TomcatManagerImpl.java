@@ -96,18 +96,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
      * of conetx configuration data.
      */
     public void install (Target t, File wmfile, File deplPlan) {
-        String path = deplPlan.getAbsolutePath ();
-        String ctxPath = null;
-        try {
-            if (!deplPlan.exists ()) {
-                // try fallback to WEB-INF/context.xml
-                deplPlan = new File (new File (wmfile, "WEB-INF"), "context.xml"); // NOI18N
-            }
-            ctxPath = deplPlan.toURL ().toExternalForm ();
-        }
-        catch (java.net.MalformedURLException e) {
-            ctxPath = "file:"+path; // NOI18N
-        }
+        // WAR file
         String docBase = null;
         try {
             docBase = wmfile.toURL ().toExternalForm ();
@@ -122,21 +111,36 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
             // WAR file
             docBase = "jar:"+docBase+"!/"; // NOI18N
         }
-        command = "install?config="+ctxPath+"&war="+docBase; // NOI18N
-        cmdType = CommandType.DISTRIBUTE;
-        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
-        
+        // config or path
+        String ctxPath = null;
         try {
-            FileInputStream in = new FileInputStream (deplPlan);
-            Context ctx = Context.createGraph (in);
-            tmId = new TomcatModule (t, ctx.getAttributeValue ("path")); // NOI18N
+            if (!deplPlan.exists ()) {
+                if (wmfile.isDirectory ()) {
+                    ctxPath = "/"+wmfile.getName ();    // NOI18N
+                }
+                else {
+                    ctxPath = "/"+wmfile.getName ().substring (0, wmfile.getName ().lastIndexOf ('.'));    // NOI18N
+                }
+                command = "install?path="+ctxPath; // NOI18N
+            }
+            else {
+                FileInputStream in = new FileInputStream (deplPlan);
+                Context ctx = Context.createGraph (in);
+                tmId = new TomcatModule (t, ctx.getAttributeValue ("path")); // NOI18N
+                command = "install?config="+ctxPath; // NOI18N
+            }
+            
+            // call the command
+            command = command+"&war="+docBase; // NOI18N
+            cmdType = CommandType.DISTRIBUTE;
+            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+            
             rp ().post (this, 0, Thread.NORM_PRIORITY);
         }
         catch (java.io.FileNotFoundException fnfe) {
-            // XXX : workaround because server registry doesn't check for returned status
-            rp ().post (new TomcatManagerImpl.Failure (fnfe.getLocalizedMessage ()), 100);
-            // pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, fnfe.getLocalizedMessage (), StateType.FAILED)); // PENDING
+            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, fnfe.getLocalizedMessage (), StateType.FAILED)); // PENDING
         }
+        
     }
     
     void remove (TomcatModule tmId) {
@@ -325,16 +329,5 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
         }
 
     }
-    
-    private class Failure implements Runnable {
-        
-        private String msg;
-        
-        private Failure (String msg) {
-        }
-        
-        public void run () {
-            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, msg, StateType.FAILED)); // PENDING
-        }
-    }
+
 }
