@@ -44,7 +44,7 @@ public class TransformationActionTest extends JXTest {
         
         // fill in the TransformationDialog and execute transformation
         dialog.cboXSLTScript().clearText();
-        dialog.cboXSLTScript().typeText("../styles/doc2html.xsl");
+        dialog.cboXSLTScript().enterText("../styles/doc2html.xsl");
         dialog.cboOutput().clearText();
         dialog.cboOutput().typeText("../out/document.html");
         dialog.cboJComboBox().selectItem(dialog.ITEM_DONOTHING);
