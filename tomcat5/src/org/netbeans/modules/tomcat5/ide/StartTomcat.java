@@ -230,7 +230,6 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
                     StateType.COMPLETED));
             return;
         }
-        
         if (base == null) {
             base = home;
         }
@@ -376,11 +375,10 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
             baseDir = new File(System.getProperty("netbeans.user")+System.getProperty("file.separator")+baseDir);
             targetFolder = new File(System.getProperty("netbeans.user"));
 
-        }
-        else {
+        } else {
             targetFolder = baseDir.getParentFile ();
-
         }
+        
         try {
             
             if (targetFolder == null) {
@@ -389,6 +387,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
             }
             File baseDirFO = new File (targetFolder, baseDir.getName ());
             baseDirFO.mkdir ();
+                        
             // create directories
             String [] subdirs = new String [] { 
                 "conf",   // NOI18N
@@ -440,10 +439,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
             for (int i = 0; i<files.length; i++) {
                 // get folder from, to, name and ext
                 int slash = files[i].lastIndexOf ('/');
-                int dot = files[i].lastIndexOf ('.');
                 String sfolder = files[i].substring (0, slash);
-                String sname = files[i].substring (slash+1, dot);
-                String sext = files[i].substring (dot+1);
                 File fromDir = new File (homeDir, sfolder); // NOI18N
                 File toDir = new File (baseDir, sfolder); // NOI18N
 
