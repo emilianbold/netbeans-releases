@@ -279,14 +279,3 @@ public class NbEditorUI extends ExtEditorUI {
     }
 
 }
-
-/*
- * Log
- *  5    Jaga      1.4         4/3/00   Miloslav Metelka no performer clearing
- *  4    Jaga      1.3         3/27/00  Miloslav Metelka checking focus surviving
- *  3    Jaga      1.2         3/24/00  Miloslav Metelka 
- *  2    Jaga      1.1         3/21/00  Miloslav Metelka 
- *  1    Jaga      1.0         3/15/00  Miloslav Metelka 
- * $
- */
-

@@ -194,26 +194,3 @@ NbDocument.Printable, NbDocument.CustomEditor {
     }
 
 }
-
-/*
- * Log
- *  15   Jaga      1.12.1.0.1.03/15/00  Miloslav Metelka Structural change
- *  14   Gandalf-post-FCS1.12.1.0    3/8/00   Miloslav Metelka 
- *  13   Gandalf   1.12        1/13/00  Miloslav Metelka Localization
- *  12   Gandalf   1.11        11/14/99 Miloslav Metelka 
- *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  10   Gandalf   1.9         9/10/99  Miloslav Metelka 
- *  9    Gandalf   1.8         8/27/99  Miloslav Metelka 
- *  8    Gandalf   1.7         7/9/99   Miloslav Metelka 
- *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  6    Gandalf   1.5         5/7/99   Miloslav Metelka improved setChar.Attr.()
- *  5    Gandalf   1.4         5/5/99   Miloslav Metelka 
- *  4    Gandalf   1.3         4/22/99  Miloslav Metelka 
- *  3    Gandalf   1.2         4/8/99   Miloslav Metelka 
- *  2    Gandalf   1.1         3/23/99  Miloslav Metelka 
- *  1    Gandalf   1.0         3/18/99  Miloslav Metelka 
- * $
- */
-

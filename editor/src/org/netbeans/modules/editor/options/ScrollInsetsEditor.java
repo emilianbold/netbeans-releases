@@ -124,9 +124,3 @@ public class ScrollInsetsEditor extends java.beans.PropertyEditorSupport {
 
 
 }
-
-/*
- * Log
- *  1    Gandalf-post-FCS1.0         3/10/00  Petr Nejedly    initial revision
- * $
- */

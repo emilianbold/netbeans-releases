@@ -170,10 +170,3 @@ public class NbEditorUtilities {
     }
 
 }
-
-/*
- * Log
- *  1    Jaga      1.0         3/15/00  Miloslav Metelka 
- * $
- */
-

@@ -35,7 +35,7 @@ import org.netbeans.editor.SettingsNames;
  * to identify default coloring.
  *
  * @author  Petr Nejedly
- * @version 1
+ * @version 1.0
  */
 public class ColoringArrayEditorPanel extends javax.swing.JPanel {
 

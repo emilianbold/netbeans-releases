@@ -127,23 +127,3 @@ public class ColoringEditor extends PropertyEditorSupport {
     }
 
 }
-
-/*
- * Log
- *  12   Gandalf   1.11        1/13/00  Miloslav Metelka Localization
- *  11   Gandalf   1.10        1/11/00  Petr Nejedly    ScrollPane, distribution
- *       of changes
- *  10   Gandalf   1.9         12/28/99 Miloslav Metelka 
- *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  8    Gandalf   1.7         8/17/99  Miloslav Metelka 
- *  7    Gandalf   1.6         7/26/99  Miloslav Metelka 
- *  6    Gandalf   1.5         7/21/99  Miloslav Metelka 
- *  5    Gandalf   1.4         7/20/99  Miloslav Metelka 
- *  4    Gandalf   1.3         7/9/99   Ales Novak      NullPointerException
- *  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.
- *  2    Gandalf   1.1         7/3/99   Ian Formanek    Changed package 
- *       statement to make it compilable
- *  1    Gandalf   1.0         6/30/99  Ales Novak      
- * $
- */

@@ -47,12 +47,3 @@ public class NbLocalizer implements LocaleSupport.Localizer {
     }
 
 }
-
-/*
- * Log
- *  2    Gandalf   1.1         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  1    Gandalf   1.0         9/30/99  Miloslav Metelka 
- * $
- */
-

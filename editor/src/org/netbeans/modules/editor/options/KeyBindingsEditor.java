@@ -98,9 +98,3 @@ public class KeyBindingsEditor extends PropertyEditorSupport {
     }
 
 }
-
-/*
- * Log
- *  1    Gandalf-post-FCS1.0         2/28/00  Petr Nejedly    initial revision
- * $
- */

@@ -319,26 +319,3 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
     }
 }
-
-/*
-* Log
-*  14   Gandalf-post-FCS1.11.1.1    3/10/00  Petr Nejedly    Added support for 
-*       percentual scroll-jump insets
-*  13   Gandalf-post-FCS1.11.1.0    2/28/00  Petr Nejedly    Redesign of 
-*       ColoringEditor
-*  12   Gandalf   1.11        1/13/00  Miloslav Metelka Localization
-*  11   Gandalf   1.10        12/28/99 Miloslav Metelka 
-*  10   Gandalf   1.9         11/16/99 Miloslav Metelka throwing of 
-*       IllegalArgumentException
-*  9    Gandalf   1.8         11/14/99 Miloslav Metelka 
-*  8    Gandalf   1.7         11/11/99 Miloslav Metelka 
-*  7    Gandalf   1.6         11/5/99  Jesse Glick     Context help jumbo patch.
-*  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  5    Gandalf   1.4         9/15/99  Miloslav Metelka 
-*  4    Gandalf   1.3         8/27/99  Miloslav Metelka 
-*  3    Gandalf   1.2         8/17/99  Miloslav Metelka 
-*  2    Gandalf   1.1         7/29/99  Miloslav Metelka 
-*  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
-* $
-*/

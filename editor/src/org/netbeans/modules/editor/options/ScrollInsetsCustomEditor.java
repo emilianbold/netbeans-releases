@@ -231,11 +231,3 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
     // End of variables declaration//GEN-END:variables
 
 }
-
-
-/*
- * Log
- *  2    Gandalf-post-FCS1.1         3/23/00  Petr Nejedly    Added mising labels
- *  1    Gandalf-post-FCS1.0         3/10/00  Petr Nejedly    initial revision
- * $
- */

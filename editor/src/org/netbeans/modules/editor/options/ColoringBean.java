@@ -62,21 +62,3 @@ public class ColoringBean implements java.io.Serializable {
     }
 
 }
-
-
-/*
- * Log
- *  8    Gandalf   1.7         1/11/00  Petr Nejedly    ScrollPane, distribution
- *       of changes
- *  7    Gandalf   1.6         12/29/99 Petr Jiricka    Submitting changes done 
- *       by Mila (fixing compilation errors)
- *  6    Gandalf   1.5         12/28/99 Miloslav Metelka 
- *  5    Gandalf   1.4         11/27/99 Patrik Knakal   
- *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  3    Gandalf   1.2         7/20/99  Miloslav Metelka 
- *  2    Gandalf   1.1         7/3/99   Ian Formanek    Changed package 
- *       statement to make it compilable
- *  1    Gandalf   1.0         6/30/99  Ales Novak      
- * $
- */
