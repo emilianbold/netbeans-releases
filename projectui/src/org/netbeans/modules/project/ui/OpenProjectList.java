@@ -636,11 +636,22 @@ public final class OpenProjectList {
         
         private int getIndex( Project p ) {
             
+            URL pURL;
+            try {
+                if ( p == null || p.getProjectDirectory() == null ) {
+                    return -1;
+                }
+                pURL = p.getProjectDirectory().getURL();                
+            }
+            catch( FileStateInvalidException e ) {
+                return -1;
+            }
+            
             int i = 0;
             
             for( Iterator it = recentProjects.iterator(); it.hasNext(); i++) {
-                Project p2 = ((ProjectReference)it.next()).getProject();
-                if ( compareProjects( p, p2 ) ) {
+                URL p2URL = ((ProjectReference)it.next()).getURL();
+                if ( pURL.equals( p2URL ) ) {
                     return i;
                 }
             }
