@@ -145,5 +145,24 @@ public class IdeInternalExecutionTask extends Task {
             
             return permissions;
         }
+        
+        /** This has to be here because classes cannot be found if modules like
+         * xtest, jemmy, jellytools are installed and that's why loaded by a
+         * different classloader.
+         */
+        protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            if (name.startsWith("org.netbeans.jemmy") || name.startsWith("org.netbeans.jellytools") || // NOI18N
+                name.startsWith("org.netbeans.junit")) { // NOI18N
+                //System.out.println("CLASSNAME="+name);
+                // Do not proxy to parent!
+                Class c = findLoadedClass(name);
+                if (c != null) return c;
+                c = findClass(name);
+                if (resolve) resolveClass(c);
+                return c;
+            } else {
+                return super.loadClass(name, resolve);
+            }
+        }
     }
 }
