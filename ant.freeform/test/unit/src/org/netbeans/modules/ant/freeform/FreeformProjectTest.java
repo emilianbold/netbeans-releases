@@ -15,13 +15,10 @@ package org.netbeans.modules.ant.freeform;
 
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-
 
 // XXX testAuxiliaryConfiguration
 // XXX testCacheProvider
 // XXX testSubprojectProvider
-// XXX testLogicalViewItems
 // XXX testAntArtifact
 
 /**
@@ -35,15 +32,11 @@ public class FreeformProjectTest extends TestBase {
         super(name);
     }
     
-    public void testPropertyEvaluation() throws Exception {
-        PropertyEvaluator eval = simple.evaluator();
-        assertEquals("right src.dir", "src", eval.getProperty("src.dir"));
-    }
-    
     public void testProjectInformation() throws Exception {
         ProjectInformation info = ProjectUtils.getInformation(simple);
         assertEquals("correct name", "Simple_Freeform_Project", info.getName());
         assertEquals("same display name", "Simple Freeform Project", info.getDisplayName());
+        // XXX test changes
     }
     
 }

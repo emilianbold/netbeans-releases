@@ -13,31 +13,19 @@
 
 package org.netbeans.modules.ant.freeform;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.ant.freeform.ui.ProjectCustomizerProvider;
 import org.netbeans.modules.ant.freeform.ui.View;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -56,48 +44,12 @@ public final class FreeformProject implements Project {
     
     public FreeformProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
-        eval = new PropertyEvaluatorProxy();
+        eval = new FreeformEvaluator(this);
         lookup = initLookup();
     }
     
     public AntProjectHelper helper() {
         return helper;
-    }
-    
-    private PropertyEvaluator initEval() throws IOException {
-        PropertyProvider preprovider = helper.getStockPropertyPreprovider();
-        List/*<PropertyProvider>*/ defs = new ArrayList();
-        Element genldata = helper.getPrimaryConfigurationData(true);
-        Element properties = Util.findElement(genldata, "properties", FreeformProjectType.NS_GENERAL); // NOI18N
-        if (properties != null) {
-            List/*<Element>*/ props = Util.findSubElements(properties);
-            Iterator it = props.iterator();
-            while (it.hasNext()) {
-                Element e = (Element)it.next();
-                if (e.getLocalName().equals("property")) { // NOI18N
-                    defs.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap(e.getAttribute("name"), Util.findText(e))));
-                } else {
-                    assert e.getLocalName().equals("property-file") : e;
-                    String fname = Util.findText(e);
-                    if (fname.indexOf("${") != -1) {
-                        throw new IOException("XXX not yet implemented");
-                    }
-                    FileObject propfile = helper.resolveFileObject(fname);
-                    if (propfile != null) {
-                        // XXX need to listen to changes in this file too
-                        Properties p = new Properties();
-                        InputStream is = propfile.getInputStream();
-                        try {
-                            p.load(is);
-                        } finally {
-                            is.close();
-                        }
-                        defs.add(PropertyUtils.fixedPropertyProvider(p));
-                    }
-                }
-            }
-        }
-        return PropertyUtils.sequentialPropertyEvaluator(preprovider, (PropertyProvider[]) defs.toArray(new PropertyProvider[defs.size()]));
     }
     
     private Lookup initLookup() throws IOException {
@@ -180,76 +132,6 @@ public final class FreeformProject implements Project {
         }
         
     }
-    
-    /**
-     * XXX: this is HOTFIX to refresh properties after the project creation.
-     */
-    private final class PropertyEvaluatorProxy implements PropertyEvaluator, AntProjectListener {
-        
-        private PropertyEvaluator delegate;
-        private final List/*<ChangeListener>*/ listeners = new ArrayList();
-        
-        public PropertyEvaluatorProxy() throws IOException {
-            init();
-            helper().addAntProjectListener(this);
-        }
-        
-        private void init() throws IOException {
-            delegate = initEval();
-            if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                Util.err.log("properties for " + getProjectDirectory() + ": " + delegate.getProperties());
-            }
-        }
-        
-        public String getProperty(String prop) {
-            return delegate.getProperty(prop);
-        }
-
-        public String evaluate(String text) {
-            return delegate.evaluate(text);
-        }
-
-        public Map/*<String,String>*/ getProperties() {
-            return delegate.getProperties();
-        }
-
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            listeners.add(listener);
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            listeners.remove(listener);
-        }
-        
-        private void fireChange() {
-            PropertyChangeListener[] _listeners;
-            synchronized (this) {
-                if (listeners.isEmpty()) {
-                    return;
-                }
-                _listeners = (PropertyChangeListener[])listeners.toArray(new PropertyChangeListener[listeners.size()]);
-            }
-            PropertyChangeEvent ev = new PropertyChangeEvent(this, null, null, null);
-            for (int i = 0; i < _listeners.length; i++) {
-                _listeners[i].propertyChange(ev);
-            }
-        }
-        
-        public void configurationXmlChanged(AntProjectEvent ev) {
-            try {
-                init();
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
-            }
-            fireChange();
-        }
-        
-        public void propertiesChanged(AntProjectEvent ev) {
-            // ignore
-        }
-        
-    }
-    
     
     private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates {
         
