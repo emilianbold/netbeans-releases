@@ -180,6 +180,8 @@ final class ResourceWizardPanel extends JPanel {
         descTextArea.setLineWrap(true);
         descTextArea.setText(getPanelDescription());
         descTextArea.setWrapStyleWord(true);
+        descTextArea.setDisabledTextColor(new JLabel().getForeground());
+        descTextArea.setEnabled(false);
         descTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
