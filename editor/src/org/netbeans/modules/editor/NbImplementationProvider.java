@@ -41,12 +41,6 @@ public class NbImplementationProvider extends ImplementationProvider {
         return NbBundle.getBundle(localizer);
     }
 
-    public boolean isPasteEnabled() {
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        Transferable clipData = clipboard.getContents(clipboard);
-        return ((clipData != null) && (clipData.isDataFlavorSupported(DataFlavor.stringFlavor)));
-    }
-
     public Action getToggleBreakpointAction() {
         try {
             ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
