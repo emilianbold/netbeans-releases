@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.tomcat5;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -47,7 +48,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
     /** Returns shared RequestProcessor. */
     private static synchronized RequestProcessor rp () {
         if (rp == null) {
-            rp = new RequestProcessor ("Tomcat management", 1);
+            rp = new RequestProcessor ("Tomcat management", 1); // NOI18N
         }
         return rp;
     }
@@ -57,6 +58,9 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
     
     /** Command that is executed on running server. */
     private String command;
+    
+    /** InputStream of application data. */
+    private InputStream istream;
     
     private TomcatManager tm;
     
@@ -68,6 +72,13 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
     }
 
     public void deploy (Target t, InputStream is, InputStream deplPlan) {
+        Context ctx = Context.createGraph (deplPlan);
+        String ctxPath = ctx.getAttributeValue ("path");   // NOI18N
+        tmId = new TomcatModule (t, ctxPath);
+        
+        command = "deploy?path="+ctxPath; // NOI18N
+        istream = is;
+        rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
     
     /** Deploys WAR file or directory to Tomcat using deplPlan as source 
@@ -85,7 +96,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
         String docBase = null;
         try {
             docBase = wmfile.toURL ().toExternalForm ();
-            if (docBase.endsWith ("/")) {
+            if (docBase.endsWith ("/")) { // NOI18N
                 docBase = docBase.substring (0, docBase.length ()-1);
             }
         }
@@ -94,15 +105,14 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
         }
         if (wmfile.isFile ()) {
             // WAR file
-            docBase = "jar:"+docBase+"!/";
+            docBase = "jar:"+docBase+"!/"; // NOI18N
         }
-        command = "install?context="+ctxPath+"&war="+docBase;
+        command = "install?context="+ctxPath+"&war="+docBase; // NOI18N
         
         try {
             FileInputStream in = new FileInputStream (deplPlan);
             Context ctx = Context.createGraph (in);
-System.out.println("context root = "+ctx.getAttributeValue ("path"));
-            tmId = new TomcatModule (t, ctx.getAttributeValue ("path"));
+            tmId = new TomcatModule (t, ctx.getAttributeValue ("path")); // NOI18N
         }
         catch (java.io.FileNotFoundException fnfe) {
             throw new RuntimeException (fnfe);
@@ -112,7 +122,7 @@ System.out.println("context root = "+ctx.getAttributeValue ("path"));
     
     void remove (TomcatModule tmId) {
         this.tmId = tmId;
-        command = "remove?path="+tmId.getPath ();
+        command = "remove?path="+tmId.getPath (); // NOI18N
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
     
@@ -139,7 +149,7 @@ System.out.println("context root = "+ctx.getAttributeValue ("path"));
     /** JSR88 method. */
     public void cancel () 
     throws OperationUnsupportedException {
-        throw new OperationUnsupportedException ("cancel not supported in Tomcat deployment");
+        throw new OperationUnsupportedException ("cancel not supported in Tomcat deployment"); // NOI18N
     }
     
     /** JSR88 method. */
@@ -149,7 +159,7 @@ System.out.println("context root = "+ctx.getAttributeValue ("path"));
     
     /** JSR88 method. */
     public void stop () throws OperationUnsupportedException {
-        throw new OperationUnsupportedException ("stop not supported in Tomcat deployment");
+        throw new OperationUnsupportedException ("stop not supported in Tomcat deployment"); // NOI18N
     }
     
     /** JSR88 method. */
@@ -171,7 +181,7 @@ System.out.println("context root = "+ctx.getAttributeValue ("path"));
     }
     
     /** Executes one management task. */
-    public void run () {
+    public synchronized void run () {
         TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, command);
         System.out.println(tm.getUri () + command);
         fireProgressEvent (new ProgressEvent (this, tmId, null)); // PENDING
@@ -190,48 +200,46 @@ System.out.println("context root = "+ctx.getAttributeValue ("path"));
             hconn.setAllowUserInteraction(false);
             hconn.setDoInput(true);
             hconn.setUseCaches(false);
-//            if (istream != null) {
-//                hconn.setDoOutput(true);
-//                hconn.setRequestMethod("PUT");
-//                if (contentType != null) {
-//                    hconn.setRequestProperty("Content-Type", contentType);
-//                }
+            if (istream != null) {
+                hconn.setDoOutput(true);
+                hconn.setRequestMethod("PUT");   // NOI18N
+                hconn.setRequestProperty("Content-Type", "application/octet-stream");   // NOI18N
 //                if (contentLength >= 0) {
-//                    hconn.setRequestProperty("Content-Length",
+//                    hconn.setRequestProperty("Content-Length",   // NOI18N
 //                                             "" + contentLength);
 //                }
-//            } else {
+            } else {
                 hconn.setDoOutput(false);
-                hconn.setRequestMethod("GET");
-//            }
-            hconn.setRequestProperty("User-Agent",
-                                     "NetBeansIDE-Tomcat-Manager/1.0");
+                hconn.setRequestMethod("GET"); // NOI18N
+            }
+            hconn.setRequestProperty("User-Agent", // NOI18N
+                                     "NetBeansIDE-Tomcat-Manager/1.0"); // NOI18N
 
             // Set up an authorization header with our credentials
             String input = tm.getUsername () + ":" + tm.getPassword ();
             String output = new String(Base64.encode(input.getBytes()));
-            hconn.setRequestProperty("Authorization",
-                                     "Basic " + output);  // PENDING
+            hconn.setRequestProperty("Authorization", // NOI18N
+                                     "Basic " + output); // NOI18N
 
             // Establish the connection with the server
             hconn.connect();
 
             // Send the request data (if any)
-//            if (istream != null) {
-//                BufferedOutputStream ostream =
-//                    new BufferedOutputStream(hconn.getOutputStream(), 1024);
-//                byte buffer[] = new byte[1024];
-//                while (true) {
-//                    int n = istream.read(buffer);
-//                    if (n < 0) {
-//                        break;
-//                    }
-//                    ostream.write(buffer, 0, n);
-//                }
-//                ostream.flush();
-//                ostream.close();
-//                istream.close();
-//            }
+            if (istream != null) {
+                BufferedOutputStream ostream =
+                    new BufferedOutputStream(hconn.getOutputStream(), 1024);
+                byte buffer[] = new byte[1024];
+                while (true) {
+                    int n = istream.read(buffer);
+                    if (n < 0) {
+                        break;
+                    }
+                    ostream.write(buffer, 0, n);
+                }
+                ostream.flush();
+                ostream.close();
+                istream.close();
+            }
 
             // Process the response message
             reader = new InputStreamReader(hconn.getInputStream());
@@ -248,7 +256,7 @@ System.out.println("context root = "+ctx.getAttributeValue ("path"));
                     // PENDING : fireProgressEvent
                     TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, line);
                     if (first) {
-                        if (!line.startsWith("OK -")) {
+                        if (!line.startsWith("OK -")) { // NOI18N
                             error = line;
                         }
                         first = false;
@@ -277,14 +285,14 @@ System.out.println("context root = "+ctx.getAttributeValue ("path"));
                 }
                 reader = null;
             }
-//            if (istream != null) {
-//                try {
-//                    istream.close();
-//                } catch (Throwable u) {
-//                    ;
-//                }
-//                istream = null;
-//            }
+            if (istream != null) {
+                try {
+                    istream.close();
+                } catch (Throwable u) {
+                    ;
+                }
+                istream = null;
+            }
         }
 
     }

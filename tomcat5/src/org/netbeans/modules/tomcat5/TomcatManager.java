@@ -58,25 +58,48 @@ public class TomcatManager implements DeploymentManager {
     /** Password used for connecting. */
     private String password;
     
-    /** Creates a new instance of TomcatManager */
-    public TomcatManager (boolean connected, String uri, String uname, String passwd) {
+    /** CATALINA_HOME of disconnected TomcatManager. */
+    private String catalinaHome;
+    /** CATALINA_BASE of disconnected TomcatManager. */
+    private String catalinaBase;
+    
+    /** Creates an instance of connected TomcatManager */
+    public TomcatManager (String uri, String uname, String passwd) {
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("Creating TomcatManager uri="+uri+", uname="+uname+(connected?" (connected)":" (disconnected)"));
+            TomcatFactory.getEM ().log ("Creating connected TomcatManager uri="+uri+", uname="+uname);
         }
-        this.connected = connected;
+        this.connected = true;
         this.uri = uri;
         username = uname;
         password = passwd;
     }
     
-    public String getUri () {
-        return uri;
+    /** Creates an instance of disconnected TomcatManager */
+    public TomcatManager (String catHome, String catBase) {
+        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            TomcatFactory.getEM ().log ("Creating discconnected TomcatManager home="+catHome+", base="+catBase);
+        }
+        this.connected = false;
+        this.catalinaHome = catHome;
+        this.catalinaBase = catBase;
     }
     
+    /** Returns URI.
+     */
+    public String getUri () {
+        return connected? uri: catalinaHome+"@"+catalinaBase;   // NOI18N
+    }
+    
+    /** Returns username.
+     * @return uri or <CODE>null</CODE> when not connected.
+     */
     public String getUsername () {
         return username;
     }
     
+    /** Returns password.
+     * @return uri or <CODE>null</CODE> when not connected.
+     */
     public String getPassword () {
         return password;
     }
@@ -236,14 +259,15 @@ public class TomcatManager implements DeploymentManager {
         return impl;
     }
     
-    public ProgressObject distribute (Target[] targets, InputStream moduleArchive, InputStream deplPlan) 
+    public ProgressObject distribute (Target[] targets, InputStream is, InputStream deplPlan) 
     throws IllegalStateException {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.distribute called on disconnected instance");   // NOI18N
         }
         
-        // PENDING 
-        return null;
+        TomcatManagerImpl impl = new TomcatManagerImpl (this);
+        impl.deploy (targets[0], is, deplPlan);
+        return impl;
     }
     
     public ProgressObject distribute (Target[] targets, File moduleArchive, File deplPlan) 
@@ -257,7 +281,8 @@ public class TomcatManager implements DeploymentManager {
         return impl;
     }
     
-    private boolean isConnected () {
+    /** Connected / disconnected status. */
+    public boolean isConnected () {
         return connected;
     }
 }

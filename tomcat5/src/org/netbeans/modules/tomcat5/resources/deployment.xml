@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     <!--
     The disconnected-string element contains the String parameter to DeploymentFactory.getDisconnectedDeploymentManager()
     -->
-    <disconnected-string></disconnected-string>
+    <disconnected-string>tomcat:jakarta-tomcat-5.0.1</disconnected-string>
     
     <!--
     The finder-ui must be a class-name for a dialog that is shown when the Find Server action
@@ -48,7 +48,9 @@ Microsystems, Inc. All Rights Reserved.
     -->
     <jsp-compilation-class></jsp-compilation-class>
 
+    <start-server>org.netbeans.modules.tomcat5.ide.StartTomcat</start-server>
+    
     <!--
-    incremental-deploy?, inplace-deploy?, start-server?, jsr77-ejb-shortcut?)>
+    incremental-deploy?, inplace-deploy?, start-server?)>
     -->
 </netbeans-deployment>

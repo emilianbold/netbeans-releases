@@ -58,7 +58,7 @@ public class TomcatFactory implements DeploymentFactory {
         if (!handlesURI (uri)) {
             throw new DeploymentManagerCreationException ("Invalid URI");
         }
-        return new TomcatManager (true, uri.substring (tomcatUriPrefix.length ()), uname, passwd);
+        return new TomcatManager (uri.substring (tomcatUriPrefix.length ()), uname, passwd);
     }
     
     public DeploymentManager getDisconnectedDeploymentManager(String uri) 
@@ -66,7 +66,9 @@ public class TomcatFactory implements DeploymentFactory {
         if (!handlesURI (uri)) {
             throw new DeploymentManagerCreationException ("Invalid URI");
         }
-        return new TomcatManager (false, uri.substring (tomcatUriPrefix.length ()), null, null);
+        // PENDING parse to get home and base dirs
+        
+        return new TomcatManager (uri.substring (tomcatUriPrefix.length ()), null);    // PENDING
     }
     
     public String getDisplayName() {

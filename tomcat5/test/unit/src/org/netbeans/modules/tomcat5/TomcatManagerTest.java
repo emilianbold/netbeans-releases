@@ -14,6 +14,7 @@
 package org.netbeans.modules.tomcat5;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -213,11 +214,58 @@ public class TomcatManagerTest extends TestCase {
 //        fail ("The test case is empty.");
 //    }
 //    
+    
+    /** Test for deployment and undeployment of web module. */
+    public void testDeploymentOfWar () {
+        java.io.File webapp  = new java.io.File (datadir, "sample.war");
+        java.io.File context = new java.io.File (datadir, "samplewar.xml");
+        System.out.println("testDistribute (deploy) of "+webapp+" using "+context);
+        ProgressObject po;
+        try {
+            po = tm.distribute (
+                tm.getTargets (), 
+                new FileInputStream (webapp), 
+                new FileInputStream (context)
+            );
+        } catch (java.io.FileNotFoundException fnfe) {
+            fail ("Cannot find testing data: "+fnfe.getMessage ());
+            return;
+        }
+        try {
+            Thread.sleep (5000);
+        }
+        catch (InterruptedException ie) {
+            // do nothing
+        }
+        try {
+            checkResponse (new URL("http://localhost:8080/samplewar/index.jsp"));
+        } catch (Exception e) {
+            fail (e.getMessage ());
+        }
+        TargetModuleID [] tmIDs = po.getResultTargetModuleIDs ();
+        assertTrue ("There should be one result target module", tmIDs != null && tmIDs.length == 1);
+
+        ProgressObject po2 = tm.undeploy (tmIDs);
+        try {
+            Thread.sleep (5000);
+        }
+        catch (InterruptedException ie) {
+            // do nothing
+        }
+        try {
+            checkResponse (new URL("http://localhost:8080/samplewar/index.jsp"));
+            fail ("deployed application is still accessible");
+        } catch (Exception e) {
+            // OK
+            System.out.println("correctly thrown exception: "+e.getMessage ());
+        }
+    }
+    
     /** Test for deployment and undeployment of web module. */
     public void testDeploymentOfDirectory () {
         java.io.File webapp  = new java.io.File (datadir, "sampleweb");
         java.io.File context = new java.io.File (datadir, "sampleweb.xml");
-        System.out.println("testDistribute of "+webapp+" using "+context);
+        System.out.println("testDistribute of (install) "+webapp+" using "+context);
         ProgressObject po = tm.distribute (tm.getTargets (), webapp, context);
         try {
             Thread.sleep (5000);
@@ -232,7 +280,6 @@ public class TomcatManagerTest extends TestCase {
         }
         TargetModuleID [] tmIDs = po.getResultTargetModuleIDs ();
         assertTrue ("There should be one result target module", tmIDs != null && tmIDs.length == 1);
-
         ProgressObject po2 = tm.undeploy (tmIDs);
         try {
             Thread.sleep (5000);
