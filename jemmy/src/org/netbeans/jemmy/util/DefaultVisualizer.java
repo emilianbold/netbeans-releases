@@ -150,6 +150,9 @@ public class DefaultVisualizer implements ComponentVisualizer {
 		winOper.setVisualizer(new EmptyVisualizer());
 		activate(winOper);
 	    }
+            if(internalFrame && compOper instanceof JInternalFrameOperator) {
+                initInternalFrame((JInternalFrameOperator)compOper);
+            }
 	    Container[] conts = compOper.getContainers();
 	    for(int i = conts.length - 1; i >=0 ; i--) {
 		if       (internalFrame && conts[i] instanceof JInternalFrame) {

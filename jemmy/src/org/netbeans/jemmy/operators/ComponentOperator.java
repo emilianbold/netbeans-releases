@@ -551,6 +551,7 @@ public class ComponentOperator extends Operator
      * @see #clickMouse(int, int, int, int, int, boolean)
      */
     public void clickForPopup(int x, int y, int mouseButton) {
+	makeComponentVisible();
 	clickMouse(x, y, 1, mouseButton, 0, true);
     }
 
