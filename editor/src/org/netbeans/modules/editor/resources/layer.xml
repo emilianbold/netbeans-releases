@@ -93,7 +93,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
             </file>
             <file name="EditorsAllOptions.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.options.AllOptionsNode.getDefault" />
+                <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.options.AllOptionsNode" />
                 <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
             </file>
         </folder>

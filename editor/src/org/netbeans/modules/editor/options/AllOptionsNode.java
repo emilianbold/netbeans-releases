@@ -44,6 +44,11 @@ import org.netbeans.editor.BaseKit;
 import org.openide.NotifyDescriptor;
 import javax.swing.SwingUtilities;
 import java.text.MessageFormat;
+import org.netbeans.modules.editor.options.MIMEOptionNode;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.util.WeakListener;
 
 
 /** Node representing the Editor Settings main node.
@@ -54,23 +59,9 @@ import java.text.MessageFormat;
 
 public class AllOptionsNode extends FilterNode {
     
-    private static AllOptionsNode instance;
-    
     /** Creates new AllOptionsNode as BeanNode with Children.Array */
-    private AllOptionsNode() throws IntrospectionException {
+    public AllOptionsNode() throws IntrospectionException {
         super(new BeanNode(AllOptionsFolder.getDefault()), new EditorSubnodes());
-    }
-    
-    /** Gets the default instance of this singleton */
-    public static synchronized AllOptionsNode getDefault(){
-        if (instance==null){
-            try{
-                instance = new AllOptionsNode();
-            }catch(IntrospectionException ie){
-                ie.printStackTrace();
-            }
-        }
-        return instance;
     }
     
     /** Gets display name of all options node from bundle */
@@ -79,10 +70,53 @@ public class AllOptionsNode extends FilterNode {
     }
     
     /** Class representing subnodes of Editor Settings node.*/
-    private static class EditorSubnodes extends Children.Array {
+    private static class EditorSubnodes extends Children.Keys {
+
+        /** Listens to changes on the Modules folder */
+        private FileChangeListener moduleRegListener;
+        
+        /** Constructor.*/
+        EditorSubnodes() {
+            super();
+        }        
+        
+        private void mySetKeys() {
+            setKeys(computeMyKeys());
+        }
+        
+        /** Called to notify that the children has lost all of its references to
+         * its nodes associated to keys and that the keys could be cleared without
+         * affecting any nodes (because nobody listens to that nodes). 
+         * Overrides superclass method. */
+        protected void removeNotify () {
+            setKeys(new ArrayList());
+        }
+        
+        /** Called to notify that the children has been asked for children
+         * after and that they should set its keys. Overrides superclass method. */
+        protected void addNotify() {
+            mySetKeys();
+            
+            // listener
+            if(moduleRegListener == null) {
+                moduleRegListener = new FileChangeAdapter() {
+                    public void fileChanged(FileEvent fe){
+                        mySetKeys();
+                    }
+                };
+                
+                FileObject moduleRegistry = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Modules");
+                
+                if (moduleRegistry !=null){ //NOI18N
+                    moduleRegistry.addFileChangeListener(
+                    WeakListener.fileChange(moduleRegListener, moduleRegistry ));
+                }
+            }
+        }
+       
         
         /** Initialize the collection with results of parsing of all installed MIME type directories */
-        protected java.util.Collection initCollection() {
+        private java.util.Collection computeMyKeys() {
             List list = new ArrayList();
             FileObject mainFolderFO = TopManager.getDefault().getRepository().getDefaultFileSystem().
             findResource(AllOptionsFolder.FOLDER+"/text"); //NOI18N
@@ -107,9 +141,10 @@ public class AllOptionsNode extends FilterNode {
                     
                     InstanceCookie ic = (InstanceCookie)optionDO.getCookie(InstanceCookie.class);
                     if (ic == null) continue;
+                    
                     BaseOptions bo = AllOptionsFolder.getDefault().getBO(ic);
                     if (bo == null) continue;
-                    list.add(bo.getMimeNode());
+                    list.add(bo.getClass());
                 }catch(DataObjectNotFoundException donf){
                     donf.printStackTrace();
                 }
@@ -130,7 +165,7 @@ public class AllOptionsNode extends FilterNode {
                 BaseOptions bo = (BaseOptions) sos[i];
                 if (!list.contains(bo.getMimeNode())){
                     if (BaseKit.getKit(bo.getKitClass()).getContentType() != null){
-                        list.add(bo.getMimeNode());
+                        list.add(bo.getClass());
                         processInitializers(bo, false);
                     }else{
                         final String kitClazz = bo.getKitClass().toString();
@@ -158,7 +193,7 @@ public class AllOptionsNode extends FilterNode {
         
         /** Updates MIME option initializer. Loads user's settings stored in XML
          *  files and updates Setting's initializers via reset method */
-        private synchronized void processInitializers(BaseOptions bo, boolean remove) {
+        private void processInitializers(BaseOptions bo, boolean remove) {
             
             Settings.Initializer si = bo.getSettingsInitializer();
             // Remove the old one
@@ -173,6 +208,26 @@ public class AllOptionsNode extends FilterNode {
         /* Reset the settings so that the new initializers take effect
          * or the old are removed. */
             Settings.reset();
+        }
+        
+        /** Create nodes for a given key.
+         * @param key the key
+         * @return child nodes for this key or null if there should be no
+         *   nodes for this key
+         */
+        protected Node[] createNodes(Object key) {
+            if(key == null)
+                return null;
+
+            if(!(key instanceof Class))
+                return null;            
+            
+            BaseOptions baseOptions
+            = (BaseOptions)BaseOptions.findObject((Class)key, true);
+            
+            if (baseOptions == null) return null;
+            
+            return new Node[] {baseOptions.getMimeNode()};                
         }
         
     }
