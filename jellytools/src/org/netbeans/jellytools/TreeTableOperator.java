@@ -14,15 +14,26 @@
 package org.netbeans.jellytools;
 
 import java.awt.Component;
+import java.awt.Point;
 
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTree;
 
+import javax.swing.tree.TreePath;
+
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.Timeout;
 
+import org.netbeans.jemmy.drivers.DriverManager;
+import org.netbeans.jemmy.drivers.MouseDriver;
+import org.netbeans.jemmy.drivers.SupportiveDriver;
+
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JScrollPaneOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
@@ -73,13 +84,19 @@ public class TreeTableOperator extends JTableOperator {
             JTree jTree = (JTree)getCellRenderer(0, 0).getTableCellRendererComponent((JTable)this.getSource(), value, false, false, 0, 0);
             // Need to set EmptyVisualizer because found JTree doesn't have any parent Container
             // and calling makeComponentVisible() throws NPE
-            _tree = new JTreeOperator(jTree);
+//            _tree = new JTreeOperator(jTree);
+            _tree = new RenderedTreeOperator(this, jTree);
             _tree.setVisualizer(new EmptyVisualizer());
         }
         // Everytime make parent container visible because tree has EmptyVisualizer
         // and it is need for example for popup menu operations on JTree
         makeComponentVisible();
         return _tree;
+    }
+    
+    static {
+        System.out.println("HERE!");
+        DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, new RenderedMouseDriver(), RenderedTreeOperator.class);
     }
 
     static class TreeTableFinder implements ComponentChooser {
@@ -99,6 +116,81 @@ public class TreeTableOperator extends JTableOperator {
 	public String getDescription() {
 	    return(subFinder.getDescription());
 	}
+    }
+    
+    public static class RenderedMouseDriver extends SupportiveDriver implements MouseDriver {
+        public RenderedMouseDriver() {
+            super(new Class[] {RenderedTreeOperator.class});
+        }
+        public void pressMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers) {
+            checkSupported(oper);
+            ComponentOperator realOper = ((RenderedTreeOperator)oper).getRealOperator();
+            DriverManager.getMouseDriver(realOper).pressMouse(realOper, x, y, mouseButton, modifiers);
+        }
+        public void releaseMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers) {
+            checkSupported(oper);
+            ComponentOperator realOper = ((RenderedTreeOperator)oper).getRealOperator();
+            DriverManager.getMouseDriver(realOper).releaseMouse(realOper, x, y, mouseButton, modifiers);
+        }
+        public void clickMouse(ComponentOperator oper, int x, int y, int clickCount, int mouseButton, 
+                		   int modifiers, Timeout mouseClick) {
+            checkSupported(oper);
+            ComponentOperator realOper = ((RenderedTreeOperator)oper).getRealOperator();
+            DriverManager.getMouseDriver(realOper).clickMouse(realOper, x, y, clickCount, mouseButton, modifiers, mouseClick);
+        }
+        public void moveMouse(ComponentOperator oper, int x, int y) {
+            checkSupported(oper);
+            ComponentOperator realOper = ((RenderedTreeOperator)oper).getRealOperator();
+            DriverManager.getMouseDriver(realOper).moveMouse(realOper, x, y);
+        }
+        public void dragMouse(ComponentOperator oper, int x, int y, int mouseButton, int modifiers) {
+            checkSupported(oper);
+            ComponentOperator realOper = ((RenderedTreeOperator)oper).getRealOperator();
+            DriverManager.getMouseDriver(realOper).dragMouse(realOper, x, y, mouseButton, modifiers);
+        }
+        public void dragNDrop(ComponentOperator oper, int start_x, int start_y, int end_x, int end_y, 
+                		  int mouseButton, int modifiers, Timeout before, Timeout after) {
+            checkSupported(oper);
+            ComponentOperator realOper = ((RenderedTreeOperator)oper).getRealOperator();
+            DriverManager.getMouseDriver(realOper).dragNDrop(realOper, start_x, start_y, end_x, end_y, 
+                mouseButton, modifiers, before, after);
+        }
+        public void enterMouse(ComponentOperator oper){
+            checkSupported(oper);
+            ComponentOperator realOper = ((RenderedTreeOperator)oper).getRealOperator();
+            DriverManager.getMouseDriver(realOper).enterMouse(realOper);
+        }
+        public void exitMouse(ComponentOperator oper) {
+            checkSupported(oper);
+            ComponentOperator realOper = ((RenderedTreeOperator)oper).getRealOperator();
+            DriverManager.getMouseDriver(realOper).exitMouse(realOper);
+        }
+    }
+    
+    public static class RenderedTreeOperator extends JTreeOperator {
+        TreeTableOperator oper;
+        public RenderedTreeOperator(TreeTableOperator oper, JTree tree) {
+            super(tree);
+            this.oper = oper;
+        }
+        public ComponentOperator getRealOperator() {
+            return(oper);
+        }
+        public JPopupMenu callPopupOnPaths(TreePath[] paths, int mouseButton) {
+            oper.makeComponentVisible();
+            for(int i = 0; i < paths.length; i++) {
+                if(paths[i].getParentPath() != null) {
+                    expandPath(paths[i].getParentPath());
+                }
+            }
+            selectPaths(paths);
+            scrollToPath(paths[paths.length - 1]);
+            Point point = getPointToClick(paths[paths.length - 1]);
+            return(JPopupMenuOperator.callPopup(oper.getSource(), 
+                                                (int)point.getX(), 
+                                                (int)point.getY(), 
+                                                mouseButton));
+        }
     }
     
     /** Performs verification by accessing all sub-components */    
