@@ -425,7 +425,8 @@ public class ProxyClassLoader extends ClassLoader {
      * #38368: Warn that the default package should not be used.
      */
     private static void printDefaultPackageWarning(String name) {
-        if (! DO_NOT_WARN_DEFAULT_PACKAGE) {
+        // #42201 - commons-logging lib tries to read its config from this file, ignore
+        if (! DO_NOT_WARN_DEFAULT_PACKAGE && !"commons-logging.properties".equals(name)) { // NOI18N
             System.err.println("You are trying to access file: " + name + " from the default package."); // NOI18N
             System.err.println("Please see http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/classpath.html#default_package"); // NOI18N
         }
