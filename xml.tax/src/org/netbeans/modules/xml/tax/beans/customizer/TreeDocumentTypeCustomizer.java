@@ -156,10 +156,10 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
 
         nameLabel = new javax.swing.JLabel();
         nameField = new javax.swing.JTextField();
-        systemLabel = new javax.swing.JLabel();
-        systemField = new javax.swing.JTextField();
         publicLabel = new javax.swing.JLabel();
         publicField = new javax.swing.JTextField();
+        systemLabel = new javax.swing.JLabel();
+        systemField = new javax.swing.JTextField();
         fillPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -168,8 +168,8 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
         nameLabel.setLabelFor(nameField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(nameLabel, gridBagConstraints);
 
         nameField.setColumns(23);
@@ -188,18 +188,49 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.weightx = 1.0;
         add(nameField, gridBagConstraints);
+
+        publicLabel.setText(Util.getString ("PROP_xmlPublicID"));
+        publicLabel.setLabelFor(publicField);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(publicLabel, gridBagConstraints);
+
+        publicField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                publicFieldActionPerformed(evt);
+            }
+        });
+
+        publicField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                publicFieldFocusLost(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.weightx = 1.0;
+        add(publicField, gridBagConstraints);
 
         systemLabel.setText(Util.getString ("PROP_xmlSystemID"));
         systemLabel.setLabelFor(systemField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(systemLabel, gridBagConstraints);
 
         systemField.addActionListener(new java.awt.event.ActionListener() {
@@ -216,41 +247,12 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.weightx = 1.0;
         add(systemField, gridBagConstraints);
-
-        publicLabel.setText(Util.getString ("PROP_xmlPublicID"));
-        publicLabel.setLabelFor(publicField);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(publicLabel, gridBagConstraints);
-
-        publicField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                publicFieldActionPerformed(evt);
-            }
-        });
-
-        publicField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                publicFieldFocusLost(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
-        add(publicField, gridBagConstraints);
 
         fillPanel.setPreferredSize(new java.awt.Dimension(0, 0));
         fillPanel.setMinimumSize(new java.awt.Dimension(0, 0));
