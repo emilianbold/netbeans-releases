@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
 	  rootDir="src"/>
   </target>
 
-  <target name="compile" depends="dd2beansgen">
+  <target name="compile" depends="dd2beansgen,init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
