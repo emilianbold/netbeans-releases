@@ -78,12 +78,12 @@ public class Install extends ModuleInstall {
                 (String[])paths.toArray(new String[0]));
         }
         
-        // XXX #37543
+        // XXX #37534
         ExecutionViewAction.installExecutionListener();
     }
     
     public void uninstalled() {
-        // XXX #37543
+        // XXX #37534
         ExecutionViewAction.uninstallExecutionListener();
 
         showPendingTasks();
