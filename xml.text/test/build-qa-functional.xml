@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
             ${editor.dir}/${nb.modules.dir}/editor.jar:
             ${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
 
-    <echo message="FFFFFFFFFFFFFFFFFFFFFFFF ${test.qa-functional.cp.extra}">
+    <!--<echo message="FFFFFFFFFFFFFFFFFFFFFFFF ${test.qa-functional.cp.extra}"/>-->
     
     <target name="qa-functional-compiler" depends="init,init-cp">
          <ant antfile="build.xml" dir="../../test" target="build-xml-lib"/>
