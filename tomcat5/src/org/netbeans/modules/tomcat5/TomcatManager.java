@@ -302,12 +302,12 @@ public class TomcatManager implements DeploymentManager {
     
     public TargetModuleID[] getNonRunningModules (ModuleType moduleType, Target[] targetList) 
     throws TargetException, IllegalStateException {
-        return modules (ENUM_RUNNING, moduleType, targetList);
+        return modules (ENUM_NONRUNNING, moduleType, targetList);
     }
     
     public TargetModuleID[] getRunningModules (ModuleType moduleType, Target[] targetList) 
     throws TargetException, IllegalStateException {
-        return modules (ENUM_NONRUNNING, moduleType, targetList);
+        return modules (ENUM_RUNNING, moduleType, targetList);
     }
     
     /** Utility method that retrieve the list of J2EE application modules 

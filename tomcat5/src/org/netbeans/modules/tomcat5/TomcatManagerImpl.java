@@ -217,11 +217,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     String tag = ltok.nextToken ();
                     String path = line.substring (ctx.length () + s.length () + tag.length () + 3);
                     if ("running".equals (s)
-                    &&  state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_RUNNING) {
+                    &&  (state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_RUNNING)) {
                         modules.add (new TomcatModule (t, ctx));
                     }
                     if ("stopped".equals (s)
-                    &&  state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_NONRUNNING) {
+                    &&  (state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_NONRUNNING)) {
                         modules.add (new TomcatModule (t, ctx));
                     }
                 }
