@@ -518,13 +518,35 @@ public final class XNIBuilder implements TreeBuilder {
             char delimiter;
             
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeStreamBuilderXercesImpl: going to inspect:\n" + idtd);
-            
-            final String DOCTYPE = "<!DOCTYPE";
-            int pos = idtd.indexOf (DOCTYPE);
-            if (pos == -1) {
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TreeStreamBuilderXercesImpl: no DOCTYPE detected.");
 
-                return;
+            // find out DOCTYPE declaration
+            // #23197 eliminate doctypes in comment (simple aproximation)
+            
+            final String DOCTYPE = "<!DOCTYPE";                                 // NOI18N
+            int pos = -1;
+DOCTYPE_LOOP:
+            while (true) {
+                pos = idtd.indexOf (DOCTYPE, ++pos);
+                if (pos == -1) {
+                    Util.THIS.debug ("XNIBuilder: no DOCTYPE detected.");       // NOI18N
+                    return;
+                } else {
+                    int comment = -1;
+                    while (true) {
+                        comment = idtd.indexOf("<!--", ++comment);                // NOI18N
+                        if (comment != -1 && comment < pos) {
+                            if (idtd.indexOf("-->", comment) > pos) {           // NOI18N
+                                // it is commented out, try another
+                                break;
+                            } else {
+                                // commentd ends before, but it does not proof anything
+                                continue;
+                            }
+                        } else {
+                            break DOCTYPE_LOOP;
+                        }
+                    }
+                }
             }
             
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\nlast index = " + pos);

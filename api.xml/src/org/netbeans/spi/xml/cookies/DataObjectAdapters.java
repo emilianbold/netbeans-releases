@@ -137,7 +137,7 @@ public final class DataObjectAdapters {
      * @throws SAXException if a parser cannot be created which satisfies the requested configuration.
      */
     private static XMLReader newXMLReader () throws ParserConfigurationException, SAXException {
-        SAXParser parser = getSAXParserFactory().newSAXParser();
+        SAXParser parser = getSAXParserFactory().newSAXParser();  //!!! it is expensive!
         return parser.getXMLReader();
     }
     
