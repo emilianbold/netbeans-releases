@@ -910,5 +910,17 @@
    <mapID target="org.netbeans.core.ui.NewTemplateWizard1" url="pending.html" />
    <mapID target="org.openide.text.CloneableEditor" url="pending.html" />
    <mapID target="org.openide.actions.ClassNamePanel" url="pending.html" />
-</map>
 
+   <!-- From Ant module. -->
+   <mapID target="org.apache.tools.ant.module.HOMEID" url="ant/index.html"/>
+   <mapID target="org.apache.tools.ant.module.identifying-project" url="ant/ident.html"/>
+   <mapID target="org.apache.tools.ant.module.executing-project" url="ant/exec-proj.html"/>
+   <mapID target="org.apache.tools.ant.module.executing-target" url="ant/exec-targ.html"/>
+   <mapID target="org.apache.tools.ant.module.credits" url="ant/credits.html"/>
+   <mapID target="org.apache.tools.ant.module.custom-tasks" url="ant/custom-tasks.html"/>
+   <mapID target="org.apache.tools.ant.module.adv-comp-exec" url="ant/adv-comp-exec.html"/>
+   <mapID target="org.apache.tools.ant.module.settings" url="ant/settings.html"/>
+   <mapID target="org.apache.tools.ant.module.node-manip" url="ant/node-manip.html"/>
+
+
+</map>

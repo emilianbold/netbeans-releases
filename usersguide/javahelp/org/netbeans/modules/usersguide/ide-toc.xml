@@ -387,6 +387,19 @@
   <tocitem text="Adding Parameters" target="internation.addparams" />
 </tocitem>
 
+<!-- ADDED from ant module: -->
+<tocitem target="org.apache.tools.ant.module.HOMEID">Using Ant to Build
+  <tocitem target="org.apache.tools.ant.module.identifying-project">Identifying a Project</tocitem>
+  <tocitem target="org.apache.tools.ant.module.executing-project">Executing a Project</tocitem>
+  <tocitem target="org.apache.tools.ant.module.executing-target">Executing a Target</tocitem>
+  <tocitem target="org.apache.tools.ant.module.node-manip">Editing in the Explorer</tocitem>
+  <!-- [PENDING] break this up into 3 sub-pages: -->
+  <tocitem target="org.apache.tools.ant.module.adv-comp-exec">Advanced Compilation and Execution</tocitem>
+  <tocitem target="org.apache.tools.ant.module.settings">Configuring Settings</tocitem>
+  <tocitem target="org.apache.tools.ant.module.custom-tasks">Custom Tasks</tocitem>
+  <tocitem target="org.apache.tools.ant.module.credits">Credits and Legal</tocitem>
+</tocitem>
+
 <tocitem text="Configuring the IDE" target="configure" >
     <tocitem text="Configuring Menus" target="configure.menu" >
       <tocitem text="Customizing the Display of Commands in a Menu" target="configure.menucommands" />
