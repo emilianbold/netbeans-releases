@@ -20,6 +20,7 @@ import java.util.*;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -167,16 +168,18 @@ public class JPDAStart extends Task {
                             }
 
                             debug("Creating source path");
-                            ClassPath sessionSourcePath = (classpath == null) ? null : createSourceClassPath(classpath);
+                            ClassPath sessionSourcePath = (classpath == null) ? null : createSourceClassPath(getProject(), classpath);
                             if (sourcepath != null) {
-                                sessionSourcePath = appendPath(sessionSourcePath, sourcepath);
+                                sessionSourcePath = appendPath(getProject(), sessionSourcePath, sourcepath);
                             }
 //                            ClassPath bootcp = (bootclasspath == null) ? null : createSourceClassPath(bootclasspath);
 
                             debug("Creating cookie");
                             ListeningDICookie ldic = ListeningDICookie.create(lc, args);
+                            debug("Cookie created");
                             final DebuggerInfo di = DebuggerInfo.create(ListeningDICookie.ID, new Object [] { ldic, sessionSourcePath });
 
+                            debug("Debugger info created");
                             DebuggerManager.getDebuggerManager().startDebugging(di);
                             debug("Debugger started");
                         }
@@ -215,14 +218,22 @@ public class JPDAStart extends Task {
      * the sources were not found are omitted.
      *
      */
-    public static ClassPath createSourceClassPath(Path path) {
+    public static ClassPath createSourceClassPath(Project project, Path path) {
         String[] paths = path.list();
         List l = new ArrayList();
         List exist = new ArrayList();
         for (int i=0; i<paths.length; i++) {
             URL u = null;
             try {
-                u = new File(paths[i]).toURI().toURL();
+                File f = FileUtil.normalizeFile(project.resolveFile(paths[i]));
+                if (!isValid(f, project)) {
+                    continue;
+                }
+                if (paths[i].toLowerCase().endsWith(".jar")) {
+                    u = new URL("jar:" + f.toURI() + "!/");
+                } else {
+                    u = f.toURI().toURL();
+                }
             } catch (MalformedURLException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
                 continue;
@@ -249,14 +260,17 @@ public class JPDAStart extends Task {
      *
      * @param cp classpath; can be null
      */
-    public static ClassPath appendPath(ClassPath cp, Path path) {
+    public static ClassPath appendPath(Project project, ClassPath cp, Path path) {
         String[] paths = path.list();
         List l = new ArrayList();
-        List exist = new ArrayList();
         for (int i=0; i<paths.length; i++) {
             URL u = null;
             try {
-                u = new File(paths[i]).toURI().toURL();
+                File f = FileUtil.normalizeFile(project.resolveFile(paths[i]));
+                if (!isValid(f, project)) {
+                    continue;
+                }
+                u = f.toURI().toURL();
             } catch (MalformedURLException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
                 continue;
@@ -269,5 +283,12 @@ public class JPDAStart extends Task {
             return ClassPathSupport.createClassPath(l);
         }
     }
-    
+
+    private static boolean isValid(File f, Project project) {
+        if (f.getPath().indexOf("${") != -1 && !f.exists()) { // NOI18N
+            project.log("Classpath item "+f+" will be ignored.", Project.MSG_VERBOSE); // NOI18N
+            return false;
+        }
+        return true;
+    }
 }
