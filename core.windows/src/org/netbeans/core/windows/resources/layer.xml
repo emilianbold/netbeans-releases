@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
     -->
     <folder name="Windows2">
         <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        <file name="WindowManager.wswmgr" url="nbres:/org/netbeans/core/windows/resources/windowmanager/windowmanager.wswmgr"/>
+        <file name="WindowManager.wswmgr" url="nbresloc:/org/netbeans/core/windows/resources/windowmanager/windowmanager.wswmgr"/>
     </folder>
 
     <folder name="Windows2Local">
