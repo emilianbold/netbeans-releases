@@ -106,6 +106,10 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
     /** Gets editor support for this entry.
      * @return <code>PropertiesEditorSupport</code> instance for this entry */
     protected PropertiesEditorSupport getPropertiesEditor() {
+        // Hack to ensure open support is created.
+        // PENDING has to be made finer.
+        getDataObject().getCookie(PropertiesOpen.class);
+        
         if(editorSupport == null) {
             synchronized(this) {
                 if(editorSupport == null)
