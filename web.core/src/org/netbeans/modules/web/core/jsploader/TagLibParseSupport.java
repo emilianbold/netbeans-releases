@@ -75,7 +75,12 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
     
     private Object parseResultLock = new Object();
     private Object openInfoLock = new Object();
-
+    
+    /** Holds a strong reference to the parsing 'successful' data during an editor 
+     * pane is opened for a JSP corresponding to this support. 
+     */
+    private Object parseResultSuccessfulRefStrongReference = null;
+    
     /** Creates new TagLibParseSupport 
      * @param jspFile the resource to parse
      */
@@ -170,6 +175,9 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
             synchronized (openedLock) {
                 openedLock.notifyAll();
             }
+        } else {
+            //clean the stronref to the parsing data when the editor is closed
+            parseResultSuccessfulRefStrongReference = null;
         }
     }
   
@@ -270,6 +278,10 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                 parseResultRef = new SoftReference(locResult);
                 if (locResult.isParsingSuccess()) {
                     parseResultSuccessfulRef = new SoftReference(locResult);
+                    //hold a reference to the parsing data until last editor pane is closed
+                    //motivation: the editor doesn't always hold a strogref to this object
+                    //so the SoftRef is sometime cleaned even if there is an editor pane opened.
+                    parseResultSuccessfulRefStrongReference = locResult;
                 }
                 PageInfo pageInfo = locResult.getPageInfo();
                 if (pageInfo == null) return;
