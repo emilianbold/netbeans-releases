@@ -69,6 +69,8 @@ public class Common {
     
     static public final String CLASS_STRING		= "String";	// NOI18N
     static public final String CLASS_BOOLEAN		= "Boolean";	// NOI18N
+
+    static public final String GENERATED_TAG = "generated";
     
     
     public static boolean isSequenceOr(int type) {
