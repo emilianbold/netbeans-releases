@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
     <folder name="Shortcuts">
-        <file name="A-I[org.netbeans.modules.i18n.InsertI18nStringAction].instance" />
+        <file name="CA-I[org.netbeans.modules.i18n.InsertI18nStringAction].instance" />
     </folder>
 
     <folder name="Actions">
