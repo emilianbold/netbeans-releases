@@ -114,6 +114,10 @@ public class IOManager {
             task.schedule (500);
     }
 
+    void closeStream () {
+        debuggerOut.close ();
+    }
+
     void close () {
         debuggerIO.closeInputOutput ();
     }

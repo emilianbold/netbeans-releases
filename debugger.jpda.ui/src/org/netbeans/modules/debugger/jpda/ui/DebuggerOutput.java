@@ -198,6 +198,7 @@ PropertyChangeListener {
                     );
                 e.printStackTrace ();
             }
+            ioManager.closeStream ();
         } else
         if (debugger.getState () == JPDADebugger.STATE_STOPPED) {
             //DebuggerEngine engine = debugger.getEngine ();
