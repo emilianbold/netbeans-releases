@@ -117,7 +117,11 @@ public class OptionsAction extends CallableSystemAction {
 
             SplittedPanel split = new SplittedPanel();
             PropertySheetView propertyView = new PropertySheetView();
+            
+            split.setSplitPosition(SplittedPanel.SECOND_PREFERRED);
+            view.setPreferredSize(new Dimension(500, 450));
             split.add(view, SplittedPanel.ADD_LEFT);
+            propertyView.setPreferredSize(new Dimension(300, 450));
             split.add(propertyView, SplittedPanel.ADD_RIGHT);
 
             setLayout (new java.awt.GridBagLayout ());
@@ -248,7 +252,7 @@ public class OptionsAction extends CallableSystemAction {
                             // set preferred colunm sizes
                             setTableColumnPreferredWidth (0, 20);
                             for (int i = 1; i < set.length; i++)
-                                setTableColumnPreferredWidth (i, 150);
+                                setTableColumnPreferredWidth (i, 50);
                         }
                     });
 
