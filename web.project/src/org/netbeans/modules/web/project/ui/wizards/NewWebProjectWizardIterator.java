@@ -36,6 +36,7 @@ import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.openide.util.NbBundle;
 
@@ -84,10 +85,17 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
         
         FileObject dir = FileUtil.toFileObject(dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
-        
+
         Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
-        
+        wiz.putProperty(WizardProperties.NAME, null); // reset project name
+
+        // save last project location
+        dirF = (dirF != null) ? dirF.getParentFile() : null;
+        if (dirF != null && dirF.exists()) {
+            ProjectChooser.setProjectsFolder (dirF);
+        }
+
         resultSet.add(dir);
         
         // Returning set of FileObject of project diretory. 

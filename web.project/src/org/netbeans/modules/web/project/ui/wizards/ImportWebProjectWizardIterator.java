@@ -52,6 +52,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.netbeans.modules.web.project.Utils;
+import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
 /**
@@ -132,7 +133,11 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         if (wm != null) //should not be null
             wm.setContextPath(contextPath);
 
-        // Returning set of DataObject of project diretory. 
+        Integer index = (Integer) wiz.getProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX);
+        FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
+        wiz.putProperty(WizardProperties.NAME, null); // reset project name
+
+        // Returning set of DataObject of project diretory.
         // Project will be open and set as main
         return Collections.singleton(DataObject.find(dir));
     }

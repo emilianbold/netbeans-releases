@@ -251,36 +251,19 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }
 
     void store(WizardDescriptor d) {
-        String name = projectNameTextField.getText().trim();
-        
         d.putProperty(WizardProperties.PROJECT_DIR, new File(createdFolderTextField.getText().trim()));
-        d.putProperty(WizardProperties.NAME, name);
-        
-        File projectsDir = new File(this.projectLocationTextField.getText());
-        if (projectsDir.isDirectory()) {
-            ProjectChooser.setProjectsFolder (projectsDir);
-        }
+        d.putProperty(WizardProperties.NAME, projectNameTextField.getText().trim());
     }
         
     void read (WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty(WizardProperties.PROJECT_DIR);
-        if (projectLocation == null || projectLocation.getParentFile() == null)
+        if (projectLocation == null || projectLocation.getParentFile() == null) {
             projectLocation = ProjectChooser.getProjectsFolder();
-        else
+        } else {
             projectLocation = projectLocation.getParentFile();
-        
-        projectLocationTextField.setText(projectLocation.getAbsolutePath());
-        
-        String projectName = (String) settings.getProperty(WizardProperties.NAME);
-        if (projectName == null) {
-            int baseCount = FoldersListSettings.getDefault().getNewProjectCount() + 1;
-            String formater = getBundleResource("LBL_NPW1_DefaultProjectName");
-            while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null)
-                baseCount++;
-            settings.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
         }
-        
-        projectNameTextField.setText(projectName);                
+        projectLocationTextField.setText(projectLocation.getAbsolutePath());
+        projectNameTextField.setText(getProjectName(settings, projectLocation));
         projectNameTextField.selectAll();
     }
 
@@ -294,10 +277,17 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     protected javax.swing.JTextField projectNameTextField;
     // End of variables declaration//GEN-END:variables
 
-    private String validFreeProjectName(final File parentFolder, final String formater, final int index) {
-        String name = MessageFormat.format(formater, new Object[] {new Integer (index)});                
-        File file = new File(parentFolder, name);
-        return file.exists() ? null : name;
+    public static String getProjectName(WizardDescriptor wizardDescriptor, File projectLocation) {
+        String projectName = (String) wizardDescriptor.getProperty(WizardProperties.NAME);
+        if (projectName == null || projectName.equals("")) {   //NOI18N
+            int index = FoldersListSettings.getDefault().getNewProjectCount() + 1;
+            String formater = getBundleResource("LBL_NPW1_DefaultProjectName"); //NOI18N
+            do {
+                projectName = MessageFormat.format(formater, new Object[]{new Integer(index++)});
+            } while (new File(projectLocation, projectName).exists());
+            wizardDescriptor.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(index));
+        }
+        return projectName;
     }
 
     // Implementation of DocumentListener --------------------------------------

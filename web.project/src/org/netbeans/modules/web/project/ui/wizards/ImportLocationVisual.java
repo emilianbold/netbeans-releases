@@ -101,27 +101,10 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
 
     }
     
-    void read (WizardDescriptor settings) {
-        this.wizardDescriptor = settings;
-        
-        String projectName = null;
-        File projectLocation = (File) settings.getProperty(WizardProperties.PROJECT_DIR);
-        if (projectLocation == null) {
-            projectLocation = ProjectChooser.getProjectsFolder();                
-            int index = FoldersListSettings.getDefault().getNewProjectCount();
-            String formater = NbBundle.getMessage(ImportLocationVisual.class, "LBL_NPW1_DefaultProjectName"); //NOI18N
-            File file;
-            do {
-                index++;                            
-                projectName = MessageFormat.format(formater, new Object[] {new Integer (index)});                
-                file = new File(projectLocation, projectName);                
-            } while (file.exists());                                
-            settings.putProperty (NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(index));                        
-        } else
-            projectName = (String) settings.getProperty(WizardProperties.NAME);
-
-        projectNameTextField.setText (projectName);                
-        jTextFieldContextPath.setText("/" + projectNameTextField.getText().replace(' ', '_'));
+    void read(WizardDescriptor settings) {
+        wizardDescriptor = settings;
+        projectNameTextField.setText(PanelProjectLocationVisual.getProjectName(wizardDescriptor,
+                ProjectChooser.getProjectsFolder()));
         moduleLocationTextField.selectAll();
     }
 
@@ -129,33 +112,31 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         File srcRoot = null;
         String srcPath = moduleLocationTextField.getText();
         if (srcPath.length() > 0) {
-            srcRoot = FileUtil.normalizeFile(new File(srcPath));           
+            srcRoot = FileUtil.normalizeFile(new File(srcPath));
         }
         settings.putProperty (WizardProperties.SOURCE_ROOT, srcRoot);
-        settings.putProperty (WizardProperties.NAME, projectNameTextField.getText());
-        
+        settings.putProperty (WizardProperties.NAME, projectNameTextField.getText().trim());
+
         File projectsDir;
-        if (projectLocationTextField.getText().trim().length() == 0)
+        if (projectLocationTextField.getText().trim().length() == 0) {
             projectsDir = ProjectChooser.getProjectsFolder();
-        else
+        } else {
             projectsDir = new File(projectLocationTextField.getText());
-        settings.putProperty (WizardProperties.PROJECT_DIR, projectsDir);        
-        projectsDir = projectsDir.getParentFile();
-        if (projectsDir != null && projectsDir.isDirectory())
-            ProjectChooser.setProjectsFolder (projectsDir);
-        
+        }
+        settings.putProperty (WizardProperties.PROJECT_DIR, projectsDir);
+
         String contextPath = jTextFieldContextPath.getText().trim();
         if (!contextPath.startsWith("/")) //NOI18N
             contextPath = "/" + contextPath; //NOI18N
         settings.putProperty(WizardProperties.CONTEXT_PATH, contextPath);
     }
-    
+
     boolean valid (WizardDescriptor settings) {
         if (projectNameTextField.getText().trim().length() == 0) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class, "MSG_ProvideProjectName"));
             return false; // Display name not specified
         }
-        
+
         File projectLocation;
         if (locationComputed)
             projectLocation = ProjectChooser.getProjectsFolder();
@@ -166,7 +147,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class,"MSG_ProjectLocationRO")); //NOI18N
             return false;
         }
-        
+
         File destFolder = new File(projectLocationTextField.getText());
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
@@ -177,19 +158,19 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                     file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_NetBeansProject");
                 }
                 else if ("build".equals(childName)) {    //NOI18N
-                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_BuildFolder");                                        
+                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_BuildFolder");
                 }
                 else if ("WEB-INF".equals(childName)) {    //NOI18N
                     file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_WebInfFolder");
                 }
                 else if ("dist".equals(childName)) {   //NOI18N
-                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_DistFolder");                    
+                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_DistFolder");
                 }
 //                else if ("build.xml".equals(childName)) {   //NOI18N
-//                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildXML");                    
+//                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildXML");
 //                }
                 else if ("manifest.mf".equals(childName)) { //NOI18N
-                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_Manifest");                    
+                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_Manifest");
                 }
                 if (file != null) {
                     String format = NbBundle.getMessage (ImportLocationVisual.class,"MSG_ProjectFolderInvalid");
@@ -198,23 +179,23 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                 }
             }
         }
-        
+
         String fileName = moduleLocationTextField.getText();
         if (fileName.length()==0) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
             return false;
         }
-        File f = new File (fileName);        
+        File f = new File (fileName);
         if (!f.isDirectory() || !f.canRead()) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class,"MSG_IllegalSources"));
             return false;
         }
-        
+
         wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
         return true;
     }
 
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
