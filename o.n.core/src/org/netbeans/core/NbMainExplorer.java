@@ -267,12 +267,12 @@ public final class NbMainExplorer extends CloneableTopComponent
     LinkedList result = new LinkedList();
     // repository goes first
     result.add(ns.repository());
-    // roots added by modules (javadoc etc...)
-    result.addAll(Arrays.asList(ns.roots()));
     // projects tab (only if projects module is installed)
     if (NbProjectOperation.hasProjectDesktop()) {
       result.add(NbProjectOperation.getProjectDesktop());
     }
+    // roots added by modules (javadoc etc...)
+    result.addAll(Arrays.asList(ns.roots()));
     // runtime
     result.add(ns.environment());
     
@@ -789,6 +789,8 @@ public final class NbMainExplorer extends CloneableTopComponent
 
 /*
 * Log
+*  51   Gandalf   1.50        1/11/00  David Simonek   projects tab now second 
+*       tab in main explorer
 *  50   Gandalf   1.49        1/9/00   David Simonek   modified initialization 
 *       of the WindowManagerImpl
 *  49   Gandalf   1.48        1/5/00   Jaroslav Tulach Newly created objects are
