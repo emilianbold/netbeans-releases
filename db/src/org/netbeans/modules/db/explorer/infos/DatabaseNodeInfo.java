@@ -13,14 +13,15 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.io.InputStream;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.beans.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.*;
+import java.lang.ref.WeakReference;
+import java.io.InputStream;
+import java.io.IOException;
 import java.sql.*;
+import java.text.MessageFormat;
+import java.util.*;
 
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.adaptors.*;
@@ -78,13 +79,17 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 
     private static Map gtab = null;
     private static final String gtabfile = "org/netbeans/modules/db/resources/explorer.plist";
+    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
 
     public static Map getGlobalNodeInfo()
     {
         if (gtab == null) try {
                 ClassLoader cl = DatabaseNodeInfo.class.getClassLoader();
                 InputStream stream = cl.getResourceAsStream(gtabfile);
-                if (stream == null) throw new Exception("unable to open stream "+gtabfile);
+                if (stream == null) {
+                    String message = MessageFormat.format(bundle.getString("EXC_UnableToOpenStream"), new String[] {gtabfile}); // NOI18N
+                    throw new Exception(message);
+                }
                 PListReader reader = new PListReader(stream);
                 gtab = reader.getData();
                 stream.close();

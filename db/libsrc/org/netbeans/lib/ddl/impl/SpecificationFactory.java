@@ -14,13 +14,18 @@
 package org.netbeans.lib.ddl.impl;
 
 import java.sql.*;
-import java.util.Set;
-import java.util.HashMap;
-import java.util.Vector;
 import java.net.URL;
 import java.io.InputStream;
-import java.util.Iterator;
+import java.text.MessageFormat;
 import java.text.ParseException;
+import java.util.Iterator;
+import java.util.HashMap;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.Vector;
+
+import org.openide.util.NbBundle;
+
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 
@@ -60,6 +65,8 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     /** Debug information
     */
     private boolean debug = false;
+    
+    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
 
     /** Constructor.
     * Reads a bunch of specification files and prepares sfiles array. Files should
@@ -77,8 +84,10 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
             if (fileDB == null) {
                 ClassLoader cl = getClass().getClassLoader();
                 InputStream stream = cl.getResourceAsStream(dbFile);
-                if (stream == null)
-                    throw new Exception("unable to open stream " + dbFile);
+                if (stream == null) {
+                    String message = MessageFormat.format(bundle.getString("EXC_UnableToOpenStream"), new String[] {dbFile}); // NOI18N
+                    throw new Exception(message);
+                }
                 parser = new SpecificationParser(stream);
                 dbSpecs = parser.getData();
                 stream.close();
@@ -97,8 +106,10 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
             if (fileDrv == null) {
                 ClassLoader cl = getClass().getClassLoader();
                 InputStream stream = cl.getResourceAsStream(drvFile);
-                if (stream == null)
-                    throw new Exception("unable to open stream " + drvFile);
+                if (stream == null) {
+                    String message = MessageFormat.format(bundle.getString("EXC_UnableToOpenStream"), new String[] {drvFile}); // NOI18N
+                    throw new Exception(message);
+                }
                 parser = new SpecificationParser(stream);
                 drvSpecs = parser.getData();
                 stream.close();
