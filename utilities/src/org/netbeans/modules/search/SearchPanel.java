@@ -152,6 +152,9 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         for (it = orderedSearchTypePanels.iterator(); it.hasNext(); ) {
             tabbedPane.add((Component) it.next());
         }
+        
+        //prevents bug #43843 ("AIOOBE after push button Modify Search")
+        tabbedPane.setSelectedIndex(0);
 
         tabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
