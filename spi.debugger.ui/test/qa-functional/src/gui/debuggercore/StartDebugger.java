@@ -196,7 +196,8 @@ public class StartDebugger extends JellyTestCase {
         
         OutputWindowOperator outputWindowOperator = new OutputWindowOperator();
         outputWindowOperator.selectPage("DebuggerTestApplication");
-        String stringAddress = outputWindowOperator.getText().substring(outputWindowOperator.getText().indexOf("Listening"), outputWindowOperator.getText().indexOf("\n"));
+        String stringAddress = outputWindowOperator.getText().substring(outputWindowOperator.getText().indexOf("Listening"), 
+            outputWindowOperator.getText().indexOf("\n"));
         stringAddress = stringAddress.substring(stringAddress.indexOf(":") + 1).trim();
         try {
             attachAddress = Integer.parseInt(stringAddress);
