@@ -704,7 +704,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../debuggerjpda/ant" target="netbeans"/>
   </target>
-  <target name="all-editor" depends="init,all-java/srcmodel,all-java/api,all-java/javacore,all-editor/lib,all-editor/fold,all-editor/util">
+  <target name="all-editor" depends="init,all-java/srcmodel,all-java/api,all-java/javacore,all-projects/projectapi,all-editor/lib,all-editor/fold,all-editor/util">
     <echo message="Building module editor..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
