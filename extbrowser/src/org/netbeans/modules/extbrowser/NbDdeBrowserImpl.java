@@ -175,7 +175,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             }
         
             nativeRunnable.url = url;
-            nativeThread.run();
+            nativeThread.run ();    // PENDING: should be nativeThread.start ();
             // PENDING: add this timeout to browser properties
             nativeThread.join(10000);
             if (nativeThread.isAlive()) {
@@ -275,7 +275,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                         if (winBrowserFactory.getExecutable() != null
                         &&  !winBrowserFactory.getExecutable().equals("")) { // NOI18N
                             b = winBrowserFactory.getExecutable();
-                            System.out.println("b = "+b);
+                            // System.out.println("b = "+b);
                         }
                         else {
                             b = (winBrowserFactory.getDDEServer()!=null)?
@@ -285,6 +285,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
 
                         // start it
                         if (b != null) {
+                            // check quoted path
                             if (b.charAt(0) == '"') {
                                 int from, to;
                                 from = b.indexOf('"'); to = b.indexOf('"', from+1);
@@ -294,6 +295,11 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                                 StringTokenizer st = new StringTokenizer(b);
                                 b = st.nextToken();
                             }
+                            // start IE with -nohome
+                            if (ExtBrowserSettings.IEXPLORE.equals (getDDEServerName ())) {
+                                b += " -nohome";    // NOI18N
+                            }
+                            
                             setStatusMessage(bundle.getString("MSG_Running_command")+b);
                             Runtime.getRuntime().exec(b);
                             // wait for browser start
