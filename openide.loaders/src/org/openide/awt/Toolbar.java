@@ -486,17 +486,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             }
 
             // invalidate the toolbar, trigger proper relayout
-            // toolbars can affect layout of whole frame, we need to
-            // force repaint of frame (unfortunately)
             Toolbar.this.invalidate ();
-            Container parent = Toolbar.this.getParent ();
-            while ((parent != null) && !(parent instanceof Frame)) {
-                parent = parent.getParent();
-            }
-            if (parent != null) {
-                parent.validate();
-                parent.repaint();
-            }
             return Toolbar.this;
         }
 
