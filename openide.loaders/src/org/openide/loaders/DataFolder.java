@@ -84,6 +84,11 @@ implements Serializable, DataObject.Container {
     private DataTransferSupport dataTransferSupport = new Paste ();
     
     /** Create a data folder from a folder file object.
+
+    * @deprecated This method should not be used in client code.
+    * If you are searching for a <code>DataFolder</code> for
+    * a FileObject use {@link DataFolder#findFolder} factory method.
+    *
     * @param fo file folder to work on
     * @exception DataObjectExistsException if there is one already
     * @exception IllegalArgumentException if <code>fo</code> is not folder
@@ -94,6 +99,7 @@ implements Serializable, DataObject.Container {
     }
 
     /** Create a data folder from a folder file object.
+    *
     * @param fo file folder to work on
     * @param loader data loader for this data object
     * @exception DataObjectExistsException if there is one already
