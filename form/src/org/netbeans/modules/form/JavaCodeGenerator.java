@@ -28,12 +28,9 @@ import org.netbeans.modules.form.editors.CustomCodeEditor;
 import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 
-import java.awt.Dimension;
-import java.awt.Point;
+import java.awt.*;
 import java.beans.*;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -531,7 +528,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 });
             }
         }
-        else if (java.awt.Component.class.isAssignableFrom(
+        else if (Component.class.isAssignableFrom(
                                               component.getBeanClass()))
         {
             propList.add(new PropertySupport.ReadOnly(
@@ -800,9 +797,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
             // hack for properties that can't be set until all children 
             // are added to the container
-            List postProps;
+            java.util.List postProps;
             if (containerDependentProperties != null
-                && (postProps = (List)containerDependentProperties.get(comp))
+                && (postProps = (java.util.List)containerDependentProperties.get(comp))
                     != null)
             {
                 for (Iterator it = postProps.iterator(); it.hasNext(); ) {
@@ -1006,9 +1003,9 @@ class JavaCodeGenerator extends CodeGenerator {
                     else {
                         // hack for properties that can't be set until all
                         // children are added to the container
-                        List propList;
+                        java.util.List propList;
                         if (containerDependentProperties != null) {
-                            propList = (List) containerDependentProperties.get(comp);
+                            propList = (java.util.List) containerDependentProperties.get(comp);
                         }
                         else {
                             containerDependentProperties = new HashMap();
@@ -1080,9 +1077,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
         // hack for properties that can't be set until all children 
         // are added to the container
-        List postProps;
+        java.util.List postProps;
         if (containerDependentProperties != null
-            && (postProps = (List)containerDependentProperties.get(container))
+            && (postProps = (java.util.List)containerDependentProperties.get(container))
                 != null)
         {
             for (Iterator it = postProps.iterator(); it.hasNext(); ) {
@@ -2046,10 +2043,10 @@ class JavaCodeGenerator extends CodeGenerator {
                         }
                         if (serFile != null) {
                             FileLock lock = null;
-                            java.io.ObjectOutputStream oos = null;
+                            ObjectOutputStream oos = null;
                             try {
                                 lock = serFile.lock();
-                                oos = new java.io.ObjectOutputStream(serFile.getOutputStream(lock));
+                                oos = new OOS(serFile.getOutputStream(lock));
                                 if (comp instanceof RADVisualContainer) {
                                     // [PENDING - remove temporarily the subcomponents]
                                 }
@@ -2084,6 +2081,28 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
     // }}}
+
+    // hacked ObjectOutputStream - to replace special values used by property
+    // editors (like SuperColor from ColorEditor or NbImageIcon from IconEditor)
+    private static class OOS extends ObjectOutputStream {
+        OOS(OutputStream out) throws IOException {
+            super(out);
+            enableReplaceObject(true);
+        }
+
+        protected Object replaceObject(Object obj) throws IOException {
+            if (obj.getClass().getName().startsWith("org.netbeans.") // NOI18N
+                || obj.getClass().getName().startsWith("org.openide.")) // NOI18N
+            {
+                if (obj instanceof java.awt.Color)
+                    return new java.awt.Color(((java.awt.Color)obj).getRGB());
+                if (obj instanceof javax.swing.ImageIcon)
+                    return new javax.swing.ImageIcon(
+                        ((javax.swing.ImageIcon)obj).getImage());
+            }
+            return obj;
+        }
+    }
 
     //
     // {{{ CodeGenerateEditor
@@ -2148,7 +2167,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
         public PropertyEditor getPropertyEditor() {
             return new PropertyEditorSupport() {
-                public java.awt.Component getCustomEditor() {
+                public Component getCustomEditor() {
                     return new CustomCodeEditor(CodePropertySupportRW.this);
                 }
 
