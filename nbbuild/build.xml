@@ -622,7 +622,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module utilities..."/>
     <ant dir="../utilities" target="netbeans"/>
   </target>
-  <target name="all-utilities/group" depends="all-openide,all-openidex,all-core/settings,all-openide/compiler">
+  <target name="all-utilities/group" depends="all-openide,all-openidex,all-core/settings">
     <echo message="Building module utilities/group..."/>
     <ant dir="../utilities/group" target="netbeans"/>
   </target>
