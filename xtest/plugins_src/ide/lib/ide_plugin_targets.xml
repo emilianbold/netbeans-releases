@@ -211,8 +211,6 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dtestrunner.workdir=&quot;${xtest.workdir}/sys&quot;
 -J-Dtestrunner.timeout=${xtest.timeout} 
 
--J-Dtestrunner.propertyfiles=&quot;${_ideplugin.test.propertyfile}&quot;
-
 -J-Dwork.dir=&quot;${xtest.workdir}/sys&quot;
 -J-Dxtest.workdir=&quot;${xtest.workdir}&quot;
 -J-Dxtest.data=&quot;${xtest.data}&quot;
@@ -244,6 +242,7 @@ removed !!!!
               failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
               enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
 	    	  <arg line="--clusters ..\..\ide4;..\..\nb4.0 ${args}"/>
+             <syspropertyfile file="${_ideplugin.test.propertyfile}"/>
         </ideTestRunner>
         
         <ideTestRunner dir="${core.dir}/${nb.bin.dir}" executable="sh"  workdir="${xtest.workdir}/sys"
@@ -251,6 +250,7 @@ removed !!!!
               failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
               enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
             <arg line="./nbexec --clusters ../../ide4:../../nb4.0 ${args}"/>
+            <syspropertyfile file="${_ideplugin.test.propertyfile}"/>
         </ideTestRunner>    
         
         

@@ -8,7 +8,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,6 +26,10 @@ import org.apache.tools.ant.types.*;
 import org.netbeans.xtest.testrunner.*;
 import org.apache.tools.ant.taskdefs.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author mb115822
@@ -56,6 +60,9 @@ protected ExecuteWatchdog watchdog;
     
     // debug port to which debugger is connected. When 0 - debugging is not started
     protected int debugPort = 0;    
+    
+    // system properties arraylist 
+    private ArrayList sysProperties = new ArrayList();
     
     /**
      * Create IdeWatchdog to kill a IDE     
@@ -119,7 +126,13 @@ protected ExecuteWatchdog watchdog;
         if (debugPort > 0) {
             String suspendArg = debugSuspend ? "y" : "n";
             arg.append(" -J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,server=y,suspend="+suspendArg+",address="+debugPort);
-        }        
+        }
+        // add userdata.properties to system properties
+        Iterator i  = sysProperties.iterator();
+        while (i.hasNext()) {
+            Environment.Variable var = (Environment.Variable)i.next();
+            arg.append(" \"-J-D"+var.getKey()+"="+var.getValue()+"\"");
+        }
         return arg.toString();
     }    
     
@@ -139,6 +152,26 @@ protected ExecuteWatchdog watchdog;
         }
     }
     
+    // sys property file
+    /**
+     * Add a nested syspropertyfile element. This might be useful to tranfer
+     * Ant properties from file to the testcases.
+     */
+    public void addConfiguredSysPropertyFile(FileVariable  fileVariable) throws IOException {
+        log("Adding sys property file "+fileVariable.file,Project.MSG_DEBUG);
+        Properties props = new Properties();
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileVariable.file));
+        props.load(bis);
+        bis.close();
+        Iterator iter = props.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry)iter.next();
+            Environment.Variable var = new Environment.Variable();
+            var.setKey((String)entry.getKey());
+            var.setValue((String)entry.getValue());
+            sysProperties.add(var);    
+        }
+    }
         
     
     
@@ -199,6 +232,12 @@ protected ExecuteWatchdog watchdog;
         log("IdeTestRunner Input values:",logLevel);
         log("  timeout = "+ideTimeout,logLevel);        
         log("Using work dir: "+workDir.getPath(),logLevel);
+        // sys properties
+        Iterator i  = sysProperties.iterator();
+        while (i.hasNext()) {
+            Environment.Variable var = (Environment.Variable)i.next();
+            log("Using system property (key=value): "+var.getKey()+"="+var.getValue(),logLevel);
+        } 
         // test mode
         if (testMode != null) {
             log("Using test mode: "+testMode,logLevel);
@@ -225,6 +264,20 @@ protected ExecuteWatchdog watchdog;
         } else {
             return null;
         } 
-    }    
+    }
     
+    /////////////////////////
+    ///////// inner classes
+    /////////////////////////
+    
+    /**
+     * Nested 'syspropertyfile' element. It has only one attribute, file.
+     */
+    public static class FileVariable  {
+        private File file;
+          
+        public void setFile(java.io.File file) {
+            this.file = file;
+        }
+    }
 }
