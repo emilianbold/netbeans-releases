@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
 ]]>
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.properties.Bundle"/>
-                <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/properties/TemplateHelp.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/properties/TemplateHelp.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/properties/propertiesObject.gif"/>
             </file>
         </folder>
