@@ -21,6 +21,8 @@ import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 
 import org.netbeans.lib.ddl.impl.CreateView;
 import org.netbeans.lib.ddl.impl.Specification;
@@ -110,8 +112,11 @@ public class AddViewDialog {
                                 dialog.dispose();
                             }
                         } catch (CommandNotSupportedException e) {
+                            TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                         } catch (DDLException e) {
+                            TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                         } catch (Exception e) {
+                            TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                         }
                     }
                 }
