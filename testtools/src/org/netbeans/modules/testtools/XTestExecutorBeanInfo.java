@@ -95,7 +95,7 @@ public class XTestExecutorBeanInfo extends SimpleBeanInfo {
 
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage ("org/apache/tools/ant/module/resources/AntIcon.gif");
+            return Utilities.loadImage ("org/netbeans/modules/testtools/XTestIcon.gif");
         } else {
             return null;
         }

@@ -74,7 +74,7 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
     }
 
     protected Node createNodeDelegate() {
-        return new AntProjectNode(this);
+        return new XTestNode(this);
     }
 
     /** Helper method. Adds save cookie to the data object. */
@@ -146,4 +146,17 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
             super(entry, CleanResults.class);
         }
     }
+    
+    public static class XTestNode extends AntProjectNode {
+            public XTestNode (DataObject obj) {
+                super(obj);
+            }
+            public void setIconBase(String base) {
+                if (base.indexOf("Error")>=0) 
+                    super.setIconBase("org/netbeans/modules/testtools/XTestIconError");
+                else
+                    super.setIconBase("org/netbeans/modules/testtools/XTestIcon");
+            }
+    }
+    
 }

@@ -20,7 +20,6 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
     <folder name="Mount">
         <folder name="Javadoc">
             <file name="org-netbeans-modules-testtools-jemmy-javadoc.xml">
-                <!-- attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/testtools/someIcon.gif"/ -->
 	      <![CDATA[
 		<!DOCTYPE Javadoc PUBLIC "-//NetBeans IDE//DTD JavadocLibrary//EN" "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
 		<Javadoc>
@@ -139,6 +138,7 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
           <file name="org-netbeans-modules-testtools-XTestCompiler.settings">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
               <attr name="template" boolvalue="true"/>
+              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/testtools/XTestIcon.gif"/>
               <![CDATA[
                   <?xml version="1.0"?>
                   <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
@@ -156,6 +156,7 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
           <file name="org-netbeans-modules-testtools-XTestExecutor.settings">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
               <attr name="template" boolvalue="true"/>
+              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/testtools/XTestIcon.gif"/>
               <![CDATA[
                   <?xml version="1.0"?>
                   <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
@@ -176,6 +177,7 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
     <folder name="CompilerType">
         <file name="org-netbeans-modules-testtools-XTestCompiler.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/testtools/XTestIcon.gif"/>
             <![CDATA[
                 <?xml version="1.0"?>
                 <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
@@ -192,6 +194,7 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
     <folder name="Executor">
         <file name="org-netbeans-modules-testtools-XTestExecutor.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/testtools/XTestIcon.gif"/>
             <![CDATA[
                 <?xml version="1.0"?>
                 <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">

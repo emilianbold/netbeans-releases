@@ -40,7 +40,7 @@ import org.openide.nodes.Node;
 public class XTestDataLoader extends UniFileLoader {
 
     public XTestDataLoader () {
-        super (org.netbeans.modules.testtools.XTestDataObject.class);
+        super (XTestDataObject.class);
     }
 
     protected String defaultDisplayName () {
