@@ -603,163 +603,167 @@ public class BeanProp implements BaseProperty {
      *	added or just mixed.
      */
     public void setValue(Object[] value) {
-	if (Common.isVetoable(this.type) && useVetoEvents()) {
-	    this.raiseVetoableEvent(value, 0, OP_SETTER_SETARRAY);
+        if (Common.isVetoable(this.type) && useVetoEvents()) {
+            this.raiseVetoableEvent(value, 0, OP_SETTER_SETARRAY);
 	    
-	    //	If we reach this point, no exception has been raised,
-	    //	and the change can happen.
-	}
+            //	If we reach this point, no exception has been raised,
+            //	and the change can happen.
+        }
 	
-	//
-	//	Remove deleted element, add the new ones then sort the new array.
-	//
-	DOMBinding b;
-	int newSize = 0;
-	int size = this.bindingsSize();
-	boolean found;
-	boolean	skipNew[] = null;
-	int i, j;
-	boolean changed = false; // track of any change
-	Object oldValue = null;
+        //
+        //	Remove deleted element, add the new ones then sort the new array.
+        //
+        DOMBinding b;
+        int newSize = 0;
+        int size = this.bindingsSize();
+        boolean found;
+        boolean	skipNew[] = null;
+        int i, j;
+        boolean changed = false; // track of any change
+        Object oldValue = null;
 	
-	if (useEvents()) {
-	    oldValue = Array.newInstance(this.propClass, size);
-	}
+        if (useEvents()) {
+            oldValue = Array.newInstance(this.propClass, size);
+        }
 	
-	//	Do not send any event while updating the array
-	this.eventMgr.delay();
+        //	Do not send any event while updating the array
+        this.eventMgr.delay();
 	
-	if (value != null) {
-	    newSize = value.length;
-	    skipNew = new boolean[newSize];
-	    //	Remove all unused elements
-	    Arrays.fill(skipNew, false);
-	}
+        if (value != null) {
+            newSize = value.length;
+            skipNew = new boolean[newSize];
+            //	Remove all unused elements
+            Arrays.fill(skipNew, false);
+        }
 	
-	//  Mark the original position of the DOM nodes
-	for (i=0; i<size; i++) {
-	    DOMBinding d = (DOMBinding)this.bindings.get(i);
-	    if (d != null)
-		d.posDOM = i;
-	}
+        //  Mark the original position of the DOM nodes
+        for (i=0; i<size; i++) {
+            DOMBinding d = (DOMBinding)this.bindings.get(i);
+            if (d != null)
+                d.posDOM = i;
+        }
 	
-	for (i=0; i<size; i++) {
-	    found = false;
-	    Object o = this.getValue(i);
-	    if (o == null)
-		continue;
+        for (i=0; i<size; i++) {
+            found = false;
+            Object o = this.getValue(i);
+            if (o == null)
+                continue;
 	    
-	    //	Do a complete loop search for same object ref
-	    for (j=0; j<newSize; j++)
-		if (!skipNew[j]) {
-		    if (value[j] == null)
-			continue;
-		    if (o == value[j]) {
-			found = true;
-			break;
-		    }
-		}
+            //	Do a complete loop search for same object ref
+            for (j=0; j<newSize; j++)
+                if (!skipNew[j]) {
+                    if (value[j] == null)
+                        continue;
+                    if (o == value[j]) {
+                        found = true;
+                        break;
+                    }
+                }
 	    
-	    //	Go now for same object content
-	    if (!found) {
-		for (j=0; j<newSize; j++)
-		    if (!skipNew[j]) {
-			if (value[j] == null)
-			    continue;
-			if (o.equals(value[j])) {
-			    found = true;
-			    break;
-			}
-		    }
-	    }
+            //	Go now for same object content
+            if (!found) {
+                for (j=0; j<newSize; j++)
+                    if (!skipNew[j]) {
+                        if (value[j] == null)
+                            continue;
+                        if (o.equals(value[j])) {
+                            found = true;
+                            break;
+                        }
+                    }
+            }
 	    
-	    if (!found) {
-		//  No more in the new list - remove it
-		if (useEvents()) {
-		    if (Common.isBean(this.type))
-			Array.set(oldValue, i, ((BaseBean)o).clone());
-		    else
-			Array.set(oldValue, i, o);
+            if (!found) {
+                //  No more in the new list - remove it
+                if (useEvents()) {
+                    if (Common.isBean(this.type))
+                        Array.set(oldValue, i, ((BaseBean)o).clone());
+                    else
+                        Array.set(oldValue, i, o);
 		    
-		    changed = true;
-		}
-		this.removeElement(i, false);
-	    }
-	    else {
-		//  Also in the original list - skip this one
-		if (useEvents()) {
-		    Array.set(oldValue, i, o);
-		    if (i != j)
-			changed = true;
-		}
-		skipNew[j] = true;
-		b = (DOMBinding)this.bindings.get(i);
-		//  Will live at position j
-		b.pos = j;
-	    }
-	}
+                    changed = true;
+                }
+                this.removeElement(i, false);
+            }
+            else {
+                //  Also in the original list - skip this one
+                if (useEvents()) {
+                    Array.set(oldValue, i, o);
+                    if (i != j)
+                        changed = true;
+                }
+                skipNew[j] = true;
+                b = (DOMBinding)this.bindings.get(i);
+                //  Will live at position j
+                b.pos = j;
+            }
+        }
 	
-	//  Add the new ones
-	for (i=0; i<newSize; i++)
-	    if (!skipNew[i]) {
-		if (value[i] != null) {
-		    //	Add value
-		    int idx = this.setElement(0, value[i], true);
-		    b = (DOMBinding)this.bindings.get(idx);
-		    //	Should live at position i
-		    b.pos = i;
-		}
-	    }
+        //  Add the new ones
+        for (i=0; i<newSize; i++)
+            if (!skipNew[i]) {
+                if (value[i] != null) {
+                    //	Add value
+                    int idx = this.setElement(0, value[i], true);
+                    b = (DOMBinding)this.bindings.get(idx);
+                    //	Should live at position i
+                    b.pos = i;
+                    // currently located at position idx in the DOM
+                    b.posDOM = idx;
+                    changed = true;
+                }
+            }
 	
-	//  Sort the final array to match the parameter elements order
-	ArrayList newBindings = new ArrayList(newSize);
-	for (i=0; i<newSize; i++)
-	    newBindings.add(null);
-	newBindings.ensureCapacity(newSize+1);
-	size = this.bindingsSize();
-	for (i=0; i<size; i++) {
-	    b = (DOMBinding)this.bindings.get(i);
-	    if (b != null)
-		newBindings.set(b.pos, b);
-	}
-	//  This should match the parameter order
-	this.bindings = newBindings;
+        //  Sort the final array to match the parameter elements order
+        ArrayList newBindings = new ArrayList(newSize);
+        for (i=0; i<newSize; i++)
+            newBindings.add(null);
+        newBindings.ensureCapacity(newSize+1);
+        size = this.bindingsSize();
+        for (i=0; i<size; i++) {
+            b = (DOMBinding)this.bindings.get(i);
+            if (b != null) {
+                newBindings.set(b.pos, b);
+            }
+        }
+        //  This should match the parameter order
+        this.bindings = newBindings;
 	
-	if (changed && this.bean.binding != null) {
-	    //	Also trigger an event for the whole indexed property
-	    PropertyChangeEvent e = this.createEvent(this.bean.binding,
-	    oldValue, value, null);
-	    this.notifyInternal(e, true);
-	}
+        if (changed && this.bean.binding != null) {
+            //	Also trigger an event for the whole indexed property
+            PropertyChangeEvent e = this.createEvent(this.bean.binding,
+                                                     oldValue, value, null);
+            this.notifyInternal(e, true);
+        }
 	
-	//
-	//  We have now to reorder the DOM nodes
-	//
-	if (changed) {
-	    for (i=0; i<newSize; i++) {
-		DOMBinding d1 = (DOMBinding)this.bindings.get(i);
-		if (d1 == null)
-		    continue;
+        //
+        //  We have now to reorder the DOM nodes
+        //
+        if (changed) {
+            for (i=0; i<newSize; i++) {
+                DOMBinding d1 = (DOMBinding)this.bindings.get(i);
+                if (d1 == null)
+                    continue;
 		
-		DOMBinding db = null;
-		
-		//  Do we have anyone before us (more left than us)
-		int min = d1.posDOM;
-		for (j=i+1; j<newSize; j++) {
-		    DOMBinding d2 = (DOMBinding)this.bindings.get(j);
-		    if (d2.posDOM < min) {
-			min = d2.posDOM;
-			db = d2;
-		    }
-		}
-		//  If found one, insert before as re-order from the left
-		if (db != null)
-		    d1.moveBefore(this, db.getNode());
-	    }
-	}
+                DOMBinding db = null;
+
+                //  Do we have anyone before us (more left than us)
+                int min = d1.posDOM;
+                for (j=i+1; j<newSize; j++) {
+                    DOMBinding d2 = (DOMBinding)this.bindings.get(j);
+                    if (d2.posDOM < min) {
+                        min = d2.posDOM;
+                        db = d2;
+                    }
+                }
+                //  If found one, insert before as re-order from the left
+                if (db != null)
+                    d1.moveBefore(this, db.getNode());
+            }
+        }
 	
-	//  If anything changed, fire the events now
-	this.eventMgr.fireEvents();
+        //  If anything changed, fire the events now
+        this.eventMgr.fireEvents();
     }
     
     /**
