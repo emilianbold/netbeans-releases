@@ -245,7 +245,21 @@ final class Services extends ServiceType.Registry {
     */
     public final void add (ManifestSection.ServiceSection section) 
     throws InstantiationException {
-      Object key = key (section.getServiceType ());
+
+      ServiceType stype;
+      
+      try {
+        stype = section.getServiceType();
+      } catch (InstantiationException e) {
+        if (e.getMessage().indexOf("java.lang.RuntimeException: Platform") >= 0) {
+          ///// [PENDING] hack
+          return;
+        } else {
+          throw e;
+        }
+      }
+      
+      Object key = key (stype);
 
       if (map == null) {
         map = new HashMap (11);
@@ -497,12 +511,15 @@ final class Services extends ServiceType.Registry {
     */
     public void add(ManifestSection.ServiceSection section) 
     throws InstantiationException {
-//!!!!!!!!! more executors of the same class
+
+      ServiceType s = section.getServiceType ();
+
+      //!!!!!!!!! more executors of the same class
       if (section.isDefault () || this.section == null) {
         this.section = section;
+        def = s;
       }
       
-      ServiceType s = section.getServiceType ();
 
 //System.out.println("Into: " + this + " adding: " +s.getName ());
 
@@ -669,6 +686,8 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  12   Gandalf   1.11        11/10/99 Ales Novak      InstanceLevel.add - 
+*       default is properly handled
 *  11   Gandalf   1.10        10/29/99 Jesse Glick     Added "(no compiler)" 
 *       etc. to service type selection panel.
 *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
