@@ -5,7 +5,7 @@ OpenIDE-Module-Specification-Version: 2.6
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/apache/tools/ant/module/AntModule.class
 OpenIDE-Module-Layer: org/apache/tools/ant/module/resources/AntModuleLayer.xml
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.31
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.35
 OpenIDE-Module-Package-Dependencies: [org.apache.tools.ant.Location], [org.apache.xerces.parsers.DOMParser]
 X-Comment-2: Cf. AntActionInstance, new XXX(Action) constructors
 OpenIDE-Module-Java-Dependencies: Java > 1.3
