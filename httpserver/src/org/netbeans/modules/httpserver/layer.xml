@@ -14,21 +14,6 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
-  <folder name="Menu">
-    <folder name="Tools">
-      <folder name="HttpServer">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.httpserver.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/httpserver/httpServerSettings.gif"/>
-        <file name="StartHttpServer.instance">
-          <attr name="instanceClass" stringvalue="org.netbeans.modules.httpserver.StartHttpServerAction"/>
-        </file>
-        <file name="StopHttpServer.instance">
-          <attr name="instanceClass" stringvalue="org.netbeans.modules.httpserver.StopHttpServerAction"/>
-        </file>
-      </folder> <!-- HTTPServer -->
-    </folder> <!-- Tools -->
-  </folder> <!-- Menu -->
-  
     <folder name="Services">
         <file name="org-netbeans-modules-httpserver-HttpServerSettings.settings" url="httpserver.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.httpserver.Bundle"/>
@@ -37,6 +22,11 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
   <folder name="UI">
+    <folder name="Runtime">
+      <file name="org-netbeans-modules-httpserver-HttpServerSettings.instance">
+        <attr name="instanceClass" stringvalue="org.netbeans.modules.httpserver.HttpServerNode"/>
+      </file>
+    </folder> <!-- Runtime -->
     <folder name="Services">
       <folder name="IDEConfiguration">
         <folder name="ServerAndExternalToolSettings">
