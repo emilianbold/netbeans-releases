@@ -20,7 +20,7 @@ import java.beans.PropertyChangeListener;
 import org.openide.actions.FindAction;
 import org.openide.text.CloneableEditor;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.RequestProcessor;
+import org.openide.util.Mutex;
 import org.openide.windows.TopComponent;
 
 
@@ -82,7 +82,22 @@ public class FindActionManager implements PropertyChangeListener {
     public void unhook() {
         setHookListener(null);
         performer = null;
-        someoneActivated();
+        
+        /*
+         * We just need to run method 'someoneActivated' in the AWT event
+         * dispatching thread. We use Mutex.EVENT for this task.
+         * 
+         * We use Mutex.Action rather than Runnable. The reason is that
+         * Runnable could be run asynchronously which is undesirable during
+         * uninstallation (we do not want any instance/class from this module to
+         * be in use by the time ModuleInstall.uninstalled() returns).
+         */
+        Mutex.EVENT.readAccess(new Mutex.Action() {
+            public Object run() {
+                someoneActivated();
+                return null;
+            }
+        });
         findAction = null;
         // hook();
         // TopComponent.getRegistry().removePropertyChangeListener(this);
@@ -138,14 +153,7 @@ public class FindActionManager implements PropertyChangeListener {
         
         if(TopComponent.Registry.PROP_CURRENT_NODES.equals(propName)  ||
            TopComponent.Registry.PROP_ACTIVATED.equals(propName)) {
-            // PREVENT deadlock
-            // do not depend on locking order of
-            // CookieSet[.add/remove()] and TopComponent[.attach()].
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    someoneActivated();
-                }
-            });
+                someoneActivated();
         }
     }
 
