@@ -4787,9 +4787,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         "JInternalFrameFormInfo", // NOI18N
         "JAppletFormInfo", // NOI18N
         "FrameFormInfo", // NOI18N
-        "PanelFormInfo", // NOI18N
+        "AppletFormInfo", // NOI18N
         "DialogFormInfo", // NOI18N
-        "AppletFormInfo" }; // NOI18N
+        "PanelFormInfo" }; // NOI18N
 
     private static Class getClassForKnownFormInfo(String infoName) {
         if (infoName == null)
@@ -4810,11 +4810,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
         else if (defaultFormInfoNames[5].equals(shortName))
             return java.awt.Frame.class;
         else if (defaultFormInfoNames[6].equals(shortName))
-            return java.awt.Panel.class;
+            return java.applet.Applet.class;
         else if (defaultFormInfoNames[7].equals(shortName))
             return java.awt.Dialog.class;
         else if (defaultFormInfoNames[8].equals(shortName))
-            return java.applet.Applet.class;
+            return java.awt.Panel.class;
 
         return null;
     }
@@ -4834,12 +4834,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
             shortName = defaultFormInfoNames[4];
         else if (java.awt.Frame.class.isAssignableFrom(formType))
             shortName = defaultFormInfoNames[5];
-        else if (java.awt.Panel.class.isAssignableFrom(formType))
+        else if (java.applet.Applet.class.isAssignableFrom(formType))
             shortName = defaultFormInfoNames[6];
         else if (java.awt.Dialog.class.isAssignableFrom(formType))
             shortName = defaultFormInfoNames[7];
-        else if (java.applet.Applet.class.isAssignableFrom(formType))
-            shortName = defaultFormInfoNames[7];
+        else if (java.awt.Panel.class.isAssignableFrom(formType))
+            shortName = defaultFormInfoNames[8];
         else return null;
 
         return "org.netbeans.modules.form.forminfo." + shortName; // NOI18N
