@@ -121,6 +121,18 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
          // this idiom will be used for many other enterprise resources 
          String resourceRefName = getUniqueName(getWebApp(), "ResourceRef", "ResRefName", //NOI18N
                                                ref.getResRefName());
+         // see if jdbc resource has already been used in the app
+         // this change requested by Ludo
+         if (javax.sql.DataSource.class.getName().equals(ref.getResType())) {
+             WebApp wa = getWebApp();
+             ResourceRef[] refs = wa.getResourceRef();
+             for (int i=0; i < refs.length; i++) {
+                 if (javax.sql.DataSource.class.getName().equals(refs[i].getResType()) &&
+                     ref.getDefaultDescription().equals(refs[i].getDefaultDescription())) {
+                     return refs[i].getResRefName();
+                 }
+             }
+         }
          ref.setResRefName(resourceRefName);
          bb.addValue("ResourceRef", ref);
          writeDD(bb);
