@@ -117,8 +117,8 @@ public class CustomizerJar extends JPanel implements HelpCtx.Provider {
         add(jCheckBoxCommpress, gridBagConstraints);
         jCheckBoxCommpress.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("AD_jCheckBoxCompress"));
 
+        excludeMessage.setLabelFor(jTextFieldExcludes);
         org.openide.awt.Mnemonics.setLocalizedText(excludeMessage, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_ExcludeMessage_JLabel"));
-        excludeMessage.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
