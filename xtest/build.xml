@@ -94,7 +94,8 @@ Microsystems, Inc. All Rights Reserved.
     <target name="runtestsfromdist">
         <ant antfile="build.xml" target="runtests">
             <property name="xtest.basedir" value="dist"/>
-            <property name="xtest.code.classpath" value="ide"/>
+            <property name="xtest.code.classpath" value="ide"/>            
+            <property name="distexec" value="true"/>
             <property name="netbeans.home" location="${netbeans.home}"/>
         </ant>
     </target>
