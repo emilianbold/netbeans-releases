@@ -329,8 +329,9 @@ public final class IntrospectedInfo implements Serializable {
                          (name.equals ("taskname") && type.equals ("java.lang.String")) || // NOI18N
                          (name.equals ("description") && type.equals ("java.lang.String")))) { // NOI18N
                         // IntrospectionHelper is supposed to exclude such things, but I guess not.
-                        // "description" may be OK to actually show on nodes, but since it is common // NOI18N
-                        // to all tasks it should not be stored as such.
+                        // Or it excludes location & taskType.
+                        // description may be OK to actually show on nodes, but since it is common
+                        // to all tasks it should not be stored as such. Ditto taskname.
                         continue;
                     }
                     info.attrs.put (name, type);
