@@ -276,4 +276,20 @@ public class ConnectionNode extends DatabaseNode /*implements InstanceCookie*/ {
             //e.printStackTrace();
         }
     }
+    
+    /**
+    * Can be destroyed only if connection is closed.
+    */
+    public boolean canDestroy() {
+        Connection con = getInfo().getConnection();
+        try {
+            if (con == null || con.isClosed())
+                return true;
+            else
+                return false;
+        } catch (SQLException exc) {
+            return true;
+        }
+    }
+
 }
