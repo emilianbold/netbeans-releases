@@ -119,22 +119,22 @@ public class CallStackNodeModel implements NodeModel {
             ((TreeModelListener) v.get (i)).treeNodeChanged (parent);
     }
 
-    public static String getLanguage (Session s, CallStackFrame sf) {
-        String language = s.getCurrentLanguage ();
-        List l = sf.getAvailableStrata ();
-        int i, k = l.size ();
-        for (i = 0; i < k; i++)
-            if (language.equals (l.get (i)))
-                return language;
-        return sf.getDefaultStratum ();
-    }
+//    public static String getLanguage (Session s, CallStackFrame sf) {
+//        String language = s.getCurrentLanguage ();
+//        List l = sf.getAvailableStrata ();
+//        int i, k = l.size ();
+//        for (i = 0; i < k; i++)
+//            if (language.equals (l.get (i)))
+//                return language;
+//        return sf.getDefaultStratum ();
+//    }
 
     public static String getCSFName (
         Session s, 
         CallStackFrame sf,
         boolean l
     ) {
-        String language = getLanguage (s, sf);
+        String language = sf.getDefaultStratum ();
         int ln = sf.getLineNumber (language);
         String fileName = l ? 
             sf.getClassName () :
