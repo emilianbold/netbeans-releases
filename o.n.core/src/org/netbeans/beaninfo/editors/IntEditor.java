@@ -209,6 +209,18 @@ public class IntEditor extends ExPropertyEditorSupport {
         return v;
     }
     
+    //issue 34037 - make setValue calls with illegal values fail-fast
+    public void setValue (Object value) {
+        if ((value instanceof Integer) || (value == null)) {
+            super.setValue (value);
+        } else {
+            throw new IllegalArgumentException (
+                "Argument to IntEditor.setValue() must be Integer, but was " + //NOI18N
+                (value == null ? "null" : value.getClass().getName() + "(=" +  //NOI18N
+                value.toString() + ")")); //NOI18N
+        }
+    }
+    
     public String[] getTags() {
         return keys;
     }
