@@ -54,6 +54,8 @@ public class LabeledTextFieldDialog
             // Title
 
             label = new JLabel(lab);
+            label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableNewNameA11yDesc"));  // NOI18N
+            label.setDisplayedMnemonic(bundle.getString("RecreateTableNewName_Mnemonic").charAt(0));  // NOI18N
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
@@ -69,12 +71,16 @@ public class LabeledTextFieldDialog
             con.gridy = 0;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             field = new JTextField(35);
+            field.getAccessibleContext().setAccessibleName(bundle.getString("ACS_RecreateTableNewNameTextFieldA11yName"));  // NOI18N
+            field.setToolTipText(bundle.getString("ACS_RecreateTableNewNameTextFieldA11yDesc"));  // NOI18N
+            label.setLabelFor(field);
             layout.setConstraints(field, con);
             pane.add(field);
 
             // Descr.
 
             JLabel desc = new JLabel(bundle.getString("RecreateTableRenameNotes")); // NOI18N
+            desc.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableRenameNotesA11yDesc"));  // NOI18N
             con.anchor = GridBagConstraints.WEST;
             con.gridx = 0;
             con.gridy = 2;
@@ -90,6 +96,11 @@ public class LabeledTextFieldDialog
             notesarea.setWrapStyleWord(true);
             notesarea.setFont(label.getFont());
             notesarea.setBackground(label.getBackground()); // grey
+            notesarea.setEnabled(false);
+            notesarea.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
+            notesarea.getAccessibleContext().setAccessibleName(bundle.getString("ACS_RecreateTableTableScriptTextAreaA11yName"));  // NOI18N
+            notesarea.setToolTipText(bundle.getString("ACS_RecreateTableTableScriptTextAreaA11yDesc"));  // NOI18N
+            desc.setLabelFor(notesarea);
             con.weightx = 1.0;
             con.weighty = 1.0;
             con.gridwidth = 2;
@@ -104,6 +115,8 @@ public class LabeledTextFieldDialog
             
             // edit button
             edButton = new JButton(bundle.getString("EditCommand")); // NOI18N
+            edButton.setMnemonic(bundle.getString("EditCommand_Mnemonic").charAt(0));  // NOI18N
+            edButton.setToolTipText(bundle.getString("ACS_EditCommandA11yDesc"));  // NOI18N
             con.fill = GridBagConstraints.WEST;
             con.weighty = 0.0;
             con.weightx = 0.0;
@@ -117,7 +130,10 @@ public class LabeledTextFieldDialog
                     if(edButton.getText().startsWith(bundle.getString("EditCommand"))) { // NOI18N
                         // set to edit 
                         edButton.setText(bundle.getString("ReloadCommand")); // NOI18N
+                        edButton.setMnemonic(bundle.getString("ReloadCommand_Mnemonic").charAt(0));  // NOI18N
+                        edButton.setToolTipText(bundle.getString("ACS_ReloadCommandA11yDesc"));  // NOI18N
                         notesarea.setEditable( true );
+                        notesarea.setEnabled(true);
                         notesarea.setBackground(field.getBackground()); // white
                         notesarea.requestFocus();
                         field.setEditable( false );
@@ -125,8 +141,12 @@ public class LabeledTextFieldDialog
                     } else {
                         // reload script from file
                         edButton.setText(bundle.getString("EditCommand")); // NOI18N
+                        edButton.setMnemonic(bundle.getString("EditCommand_Mnemonic").charAt(0));  // NOI18N
+                        edButton.setToolTipText(bundle.getString("ACS_EditCommandA11yDesc"));  // NOI18N
                         notesarea.setText(original_notes);
                         notesarea.setEditable( false );
+                        notesarea.setEnabled(false);
+                        notesarea.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
                         field.setEditable( true );
                         field.setBackground(notesarea.getBackground()); // grey
                         notesarea.setBackground(label.getBackground()); // white
