@@ -101,6 +101,7 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     
     public void componentShowing() {
         editor.componentShowing();
+        dObj.setActiveMultiViewElement(this);
     }
     
     public javax.swing.Action[] getActions() {
@@ -124,7 +125,6 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     public void setMultiViewCallback(MultiViewElementCallback callback) {
         observer=callback;
         if (dObj!=null) {
-            dObj.setActiveMultiViewElement(this);
             XmlMultiViewEditorSupport support = dObj.getEditorSupport();
             if (support!=null) {
                 if (support.getMVTC()==null) {
