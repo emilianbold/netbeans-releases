@@ -1079,7 +1079,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     
     private final class ToolbarXP extends JPanel {
         /** Width of grip */
-        static final int WIDTH = 6;
+        static final int WIDTH = 7;
         /** Minimum size. */
         Dimension dim;
         /** Maximum size. */
@@ -1094,8 +1094,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         
         public void paintComponent (Graphics g) {
             super.paintComponent(g);
-            int x = 2;
-            for (int i=3; i < getHeight()-3; i+=4) {
+            int x = 3;
+            for (int i=4; i < getHeight()-4; i+=4) {
                 //first draw the rectangular highlight below each dot
                 g.setColor(UIManager.getColor("controlLtHighlight")); //NOI18N
                 g.fillRect(x + 1, i + 1, 2, 2);
@@ -1182,7 +1182,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         /** Horizontal gaps. */
         static final int HGAP = 1;
         /** Vertical gaps. */
-        static final int VGAP = 1;
+        static final int VGAP = 2;
         /** Step between two grip elements. */
         static final int STEP = 1;
         /** Width of grip element. */
