@@ -15,13 +15,13 @@ public class testReplaceMatchCase {
     /** Creates a new instance of testReplaceMatchCase */
     public testReplaceMatchCase() {
         /**
-         * testCase1
+         * testcase1
          * testcaSe2
          * Testcase3
          * testCase4
          * teStCase5
          * testcase6
-         * testCase7
+         * TestCase7
          * testcasE8
          */
     }
