@@ -539,12 +539,10 @@ public final class LibrariesNode extends AbstractNode {
         private void addArtifacts (AntArtifactChooser.ArtifactItem[] artifactItems) {
             EjbJarProjectClassPathExtender cpExtender = (EjbJarProjectClassPathExtender) project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
             if (cpExtender != null) {
-                for (int i=0; i<artifactItems.length;i++) {
-                    try {
-                        cpExtender.addAntArtifact(classPathId, artifactItems[i].getArtifact(), artifactItems[i].getArtifactURI(), includedLibrariesElement );
-                    } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                    }
+                try {
+                    cpExtender.addAntArtifacts(classPathId, artifactItems, includedLibrariesElement );                    
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
                 }
             }
             else {
@@ -590,12 +588,10 @@ public final class LibrariesNode extends AbstractNode {
         private void addLibraries (Library[] libraries) {
             EjbJarProjectClassPathExtender cpExtender = (EjbJarProjectClassPathExtender) project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
             if (cpExtender != null) {
-                for (int i=0; i<libraries.length;i++) {
-                    try {
-                        cpExtender.addLibrary(classPathId, libraries[i], includedLibrariesElement);
-                    } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                    }
+                try {
+                    cpExtender.addLibraries(classPathId, libraries, includedLibrariesElement);
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
                 }
             }
             else {
@@ -641,14 +637,16 @@ public final class LibrariesNode extends AbstractNode {
         private void addJarFiles (File[] files) {
             EjbJarProjectClassPathExtender cpExtender = (EjbJarProjectClassPathExtender) project.getLookup().lookup(EjbJarProjectClassPathExtender.class);
             if (cpExtender != null) {
-                for (int i=0; i<files.length;i++) {
-                    try {
-                        FileObject fo = FileUtil.toFileObject (files[i]);
-                        assert fo != null : files[i];
-                        cpExtender.addArchiveFile(classPathId, fo, includedLibrariesElement);
-                    } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                    }
+                FileObject[] fileObjects = new FileObject[files.length];
+                for (int i = 0; i < files.length; i++) {
+                    FileObject fo = FileUtil.toFileObject (files[i]);
+                    assert fo != null : files[i];
+                    fileObjects[i] = fo;
+                }
+                try {
+                    cpExtender.addArchiveFiles(classPathId, fileObjects, includedLibrariesElement);                    
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
                 }
             }
             else {

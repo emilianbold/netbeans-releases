@@ -60,11 +60,11 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender 
     }
 
     public boolean addLibrary(final Library library) throws IOException {
-        return addLibrary(DEFAULT_CLASS_PATH, library, DEFAULT_INCLUDED_LIBS_ELEMENT);
+        return addLibraries(DEFAULT_CLASS_PATH, new Library[] { library }, DEFAULT_INCLUDED_LIBS_ELEMENT);
     }
     
-    public boolean addLibrary(final String classPathId, final Library library, final String includedLibrariesElement) throws IOException {
-        assert library != null : "Parameter cannot be null";       //NOI18N
+    public boolean addLibraries(final String classPathId, final Library[] libraries, final String includedLibrariesElement) throws IOException {
+        assert libraries != null : "Parameter cannot be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction () {
@@ -72,10 +72,16 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender 
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathId);
                             List resources = cs.itemsList( raw, includedLibrariesElement );
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( library, null, includedLibrariesElement != null );
-                            if (!resources.contains(item)) {
-                                resources.add (item);
-                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES );                                
+                            boolean added = false;
+                            for (int i = 0; i < libraries.length; i++) {
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( libraries[i], null, includedLibrariesElement != null );
+                                if (!resources.contains(item)) { 
+                                    resources.add (item);
+                                    added = true;
+                                }
+                            }
+                            if (added) {
+                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), includedLibrariesElement );                                
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
                                 props.setProperty(classPathId, itemRefs);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -98,27 +104,32 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender 
     }
 
     public boolean addArchiveFile(final FileObject archiveFile) throws IOException {
-        return addArchiveFile(DEFAULT_CLASS_PATH, archiveFile, DEFAULT_INCLUDED_LIBS_ELEMENT);
+        return addArchiveFiles(DEFAULT_CLASS_PATH, new FileObject[] { archiveFile }, DEFAULT_INCLUDED_LIBS_ELEMENT);
     }
 
-    public boolean addArchiveFile(final String classPathId, final FileObject archiveFile, final String includedLibrariesElement) throws IOException {
-        assert archiveFile != null : "Parameter cannot be null";       //NOI18N
+    public boolean addArchiveFiles(final String classPathId, final FileObject[] archiveFiles, final String includedLibrariesElement) throws IOException {
+        assert archiveFiles != null : "Parameter cannot be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction () {
                         public Object run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathId);                            
-                            List resources = cs.itemsList( raw, includedLibrariesElement );                                                        
-                            File f = FileUtil.toFile (archiveFile);
-                            if (f == null ) {
-                                throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
+                            List resources = cs.itemsList( raw, includedLibrariesElement );
+                            boolean added = false;
+                            for (int i = 0; i < archiveFiles.length; i++) {
+                                File f = FileUtil.toFile (archiveFiles[i]);
+                                if (f == null ) {
+                                    throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
+                                }
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null, includedLibrariesElement != null );
+                                if (!resources.contains(item)) {
+                                    resources.add (item);
+                                    added = true;
+                                }
                             }
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null, includedLibrariesElement != null );
-
-                            if (!resources.contains(item)) {
-                                resources.add (item);
-                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES );
+                            if (added) {
+                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), includedLibrariesElement );
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
                                 props.setProperty(classPathId, itemRefs);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -140,12 +151,14 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender 
         }
     }
     
-    public boolean addAntArtifact (AntArtifact artifact, URI artifactElement) throws IOException {
-        return addAntArtifact(DEFAULT_CLASS_PATH, artifact, artifactElement, DEFAULT_INCLUDED_LIBS_ELEMENT);
+    // TODO: AB: AntArtifactItem should not be in LibrariesChooser
+    
+    public boolean addAntArtifact(AntArtifact artifact, URI artifactElement) throws IOException {
+        return addAntArtifacts(DEFAULT_CLASS_PATH, new AntArtifactChooser.ArtifactItem[] { new AntArtifactChooser.ArtifactItem(artifact, artifactElement) }, DEFAULT_INCLUDED_LIBS_ELEMENT);
     }
 
-    public boolean addAntArtifact(final String classPathId, final AntArtifact artifact, final URI artifactElement, final String includedLibrariesElement) throws IOException {
-        assert artifact != null : "Parameter cannot be null";       //NOI18N
+    public boolean addAntArtifacts(final String classPathId, final AntArtifactChooser.ArtifactItem[] artifactItems, final String includedLibrariesElement) throws IOException {
+        assert artifactItems != null : "Parameter cannot be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction () {
@@ -153,10 +166,16 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender 
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty (classPathId);
                             List resources = cs.itemsList( raw, includedLibrariesElement );
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( artifact, artifactElement, null, includedLibrariesElement != null );                            
-                            if (!resources.contains(item)) {
-                                resources.add (item);
-                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES );                                
+                            boolean added = false;
+                            for (int i = 0; i < artifactItems.length; i++) {
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( artifactItems[i].getArtifact(), artifactItems[i].getArtifactURI(), null, includedLibrariesElement != null );                            
+                                if (!resources.contains(item)) {
+                                    resources.add (item);
+                                    added = true;
+                                }
+                            }
+                            if (added) {
+                                String itemRefs[] = cs.encodeToStrings( resources.iterator(), includedLibrariesElement );                                
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                                 props.setProperty (classPathId, itemRefs);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);

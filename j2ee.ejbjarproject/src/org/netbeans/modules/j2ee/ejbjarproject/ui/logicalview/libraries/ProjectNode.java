@@ -260,51 +260,38 @@ class ProjectNode extends AbstractNode {
             return props.getProperty (classPathId) != null;
         }
 
-        public void remove() {
-            ProjectManager.mutex().writeAccess ( new Runnable () {
-               public void run() {
-                   // Different implementation than j2seproject's one, because
-                   // ewe need to remove the project entry from project.xml
+        public Project remove() {
+            // The caller has write access to ProjectManager
+            // and ensures the project will be saved.
+            
+            boolean removed = false;
+            EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            String raw = props.getProperty (classPathId);
+            List resources = cs.itemsList(raw, includedLibrariesElement);
+            for (Iterator i = resources.iterator(); i.hasNext();) {
+                ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
+                if (entryId.equals(EjbJarProjectProperties.getAntPropertyName(item.getReference()))) {
+                    i.remove();
+                    removed = true;
+                }
+            }
+            if (removed) {
+                String[] itemRefs = cs.encodeToStrings(resources.iterator(), includedLibrariesElement);
+                props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                props.setProperty(classPathId, itemRefs);
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
 
-                   final Project project = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
+                String ref = "${" + entryId + "}"; //NOI18N
+                if (!RemoveClassPathRootAction.isReferenced (new EditableProperties[] {
+                        props,
+                        helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH)}, ref)) {
+                    refHelper.destroyReference (ref);
+                }
 
-                   ProjectManager.mutex().writeAccess ( new Runnable () {
-                       public void run() {
-                            try {
-                                boolean removed = false;
-                                EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                String raw = props.getProperty (classPathId);
-                                List resources = cs.itemsList(raw, includedLibrariesElement);
-                                for (Iterator i = resources.iterator(); i.hasNext();) {
-                                    ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
-                                    if (entryId.equals(EjbJarProjectProperties.getAntPropertyName(item.getReference()))) {
-                                        i.remove();
-                                        removed = true;
-                                    }
-                                }
-                                if (removed) {
-                                    String[] itemRefs = cs.encodeToStrings(resources.iterator(), includedLibrariesElement);
-                                    props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-                                    props.setProperty(classPathId, itemRefs);
-                                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                                    
-                                    String ref = "${" + entryId + "}"; //NOI18N
-                                    if (!RemoveClassPathRootAction.isReferenced (new EditableProperties[] {
-                                        props,
-                                        helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH)}, ref)) {
-                                        refHelper.destroyReference (ref);
-                                    }
-                                    
-                                    ProjectManager.getDefault().saveProject(project);
-                                }
-                            }
-                            catch (IOException ioe) {
-                                ErrorManager.getDefault().notify(ioe);
-                            }
-                       }
-                   });
-               }
-           });
+                return FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
+            } else {
+                return null;
+            }
         }
     }
 }

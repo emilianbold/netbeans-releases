@@ -591,8 +591,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     libFolder = helper.resolveFileObject(libFolderName);
                     if (cpExt != null) {
                         FileObject libs [] = libFolder.getChildren ();
-                        for (int i = 0; i < libs.length; i++)
-                            cpExt.addArchiveFile(EjbJarProjectProperties.JAVAC_CLASSPATH, libs[i], ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
+                        cpExt.addArchiveFiles(EjbJarProjectProperties.JAVAC_CLASSPATH, libs, ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
                         libFolder.addFileChangeListener (EjbJarProject.this);
                     }
                     else
