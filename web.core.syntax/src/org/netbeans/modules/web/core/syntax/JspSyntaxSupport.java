@@ -1537,35 +1537,33 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
      */ 
     public int[] findMatchingBlock(int offset, boolean simpleSearch)
 	throws BadLocationException {
-	    /* TODO - jsp tag matching
-	     */
+            
 	    int [] r_value = null;
 	    
 	    TokenItem token = getItemAtOrBefore ((offset<getDocument().getLength())?offset+1:offset);
 	    if (token != null){
-		if (token.getTokenContextPath().contains(HTMLTokenContext.contextPath)
-			&& token.getImage().charAt(0) != '>'){
+		if (token.getTokenContextPath().contains(HTMLTokenContext.contextPath)){
 		    r_value = getContentLanguageSyntaxSupport().findMatchingBlock(offset, simpleSearch);
 		}
-		else {		    		    
-		    if (token.getTokenContextPath().contains(JspTagTokenContext.contextPath)
-			    && token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID){
+		else {
+                    // Is it matching of scriptlet delimiters?
+                    if (token.getTokenContextPath().contains(JspTagTokenContext.contextPath)
+                        && token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID){
+			  return findMatchingScripletDelimiter (token);
+		    }
+                    // Try to match the tags. 
+		    if (token.getTokenContextPath().contains(JspTagTokenContext.contextPath)){
 			return findMatchingTag (token);
 		    }
 		    else {
-			if (token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID){
-			    return findMatchingScripletDelimiter (token);
-			}
-			else{
-			    if (isScriptingOrContentToken (token)) {
-				useCustomBracketFinder = false;
-			    }
-			    else {
-				useCustomBracketFinder = true;
-			    }
-			    r_value =  super.findMatchingBlock (offset, simpleSearch);
-			}
-		    }
+                        if (isScriptingOrContentToken (token)) {
+                            useCustomBracketFinder = false;
+                        }
+                        else {
+                            useCustomBracketFinder = true;
+                        }
+                        r_value =  super.findMatchingBlock (offset, simpleSearch);
+                    }
 		}
 	    }
 	    
@@ -1576,12 +1574,16 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
 	if (token.getImage().charAt(0) == '<'){
 	    do{
 		token = token.getNext();
-	    } while (token != null && token.getTokenID().getNumericID() != JspTagTokenContext.SYMBOL2_ID);
+	    } while (token != null 
+                && !(token.getTokenContextPath().contains(JspTagTokenContext.contextPath) 
+                    &&token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID));
 	}
 	else {
 	    do{
 		token = token.getPrevious();
-	    } while (token != null && token.getTokenID().getNumericID() != JspTagTokenContext.SYMBOL2_ID);
+	    } while (token != null 
+                && !(token.getTokenContextPath().contains(JspTagTokenContext.contextPath) 
+                    &&token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID));
 	}
 	if (token != null){
 	    return new int [] {token.getOffset(), token.getOffset() + token.getImage().length()};
@@ -1591,7 +1593,40 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     private int[] findMatchingTag (TokenItem token){
 	// TODO - replanning to the other thread. Now it's in awt thread
-	if (token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID){
+        // if the curret is after jsp tag ( after the char '>' ), ship inside the tag
+        if (token != null && token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID
+            && token.getImage().charAt(token.getImage().length()-1) == '>')
+            token = token.getPrevious();
+        boolean isInside = false;  // flag, whether the curret is somewhere in a jsp tag
+        if (token != null 
+            && ((token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID && token.getImage().trim().length() > 0)
+            || (token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID && token.getImage().charAt(0)=='<'))){
+                if (token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID) // the starting of the jsp tag
+                    // we are somewhere at beginning of the jsp tag. Find out the token with the jsp tag. 
+                    while (token !=null 
+                        && !(token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID
+                                && token.getImage().trim().length() > 0))
+                        token = token.getNext();    // move at the jsp tag
+                isInside = true; // the curret is somewhere in '<jsptag' or '</jsptag' 
+        }
+        else { 
+            // find out whether the curret is inside a jsp tag
+            if (token != null 
+                && !(token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID && token.getImage().trim().length() > 0)){
+                token = token.getPrevious();
+                //try to find the beginning of the tag. 
+                while (token!=null 
+                    && !(token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID
+                        && token.getImage().trim().length() > 0)  // this is hack, because a whitspaces are returned are with TAG_ID
+                    && !(token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID 
+                        && token.getImage().charAt(token.getImage().length()-1) == '>'))
+                    token = token.getPrevious();
+                if (token!=null && token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID)
+                    isInside = true;
+            }
+        }
+        // Now we have the begining of the tag and we can start with the finding opposit tag. 
+	if (token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID && isInside){
 
 	    int start; // possition where the matched tag starts
 	    int end;   // possition where the matched tag ends

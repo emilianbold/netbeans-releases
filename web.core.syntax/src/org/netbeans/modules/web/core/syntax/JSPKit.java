@@ -13,16 +13,23 @@
 
 package org.netbeans.modules.web.core.syntax;
 
+import java.awt.event.ActionEvent;
 import java.beans.*;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.*;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
+import org.netbeans.editor.TokenItem;
+import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.Completion;
 import org.netbeans.editor.ext.ExtEditorUI;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.editor.ext.html.HTMLTokenContext;
+import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.ErrorManager;
 import org.openide.cookies.*;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
@@ -54,7 +61,7 @@ public class JSPKit extends NbEditorKit {
     private static final long serialVersionUID = 8933974837050367142L;
 
     public static final boolean debug = false;
-
+    
     /** Default constructor */
     public JSPKit() {
         super();
@@ -90,8 +97,12 @@ public class JSPKit extends NbEditorKit {
 
     protected Action[] createActions() {
         Action[] javaActions = new Action[] {
-                                   new JavaKit.JavaDocShowAction()                                   
+                                   new JavaKit.JavaDocShowAction(),
+                                   // the jsp editor has own action for switching beetween matching blocks
+                                   new MatchBraceAction(ExtKit.matchBraceAction, false),
+                                   new MatchBraceAction(ExtKit.selectionMatchBraceAction, true)
                                };
+                               
         return TextAction.augmentList(super.createActions(), javaActions);
     }
 
@@ -227,6 +238,94 @@ public class JSPKit extends NbEditorKit {
     
     public Formatter createFormatter() {        
         return new JspFormatter(this.getClass());	
+        
     }
     
+    /** Implementation of MatchBraceAction, whic move the cursor in the matched block.
+     */
+    public static class MatchBraceAction extends ExtKit.MatchBraceAction {
+
+        private boolean select; // whether the text between matched blocks should be selected
+        public MatchBraceAction(String name, boolean select) {
+            super(name, select);
+            this.select = select;
+        }
+
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (target != null) {
+                try {
+
+                    Caret caret = target.getCaret();
+                    BaseDocument doc = Utilities.getDocument(target);
+                    int dotPos = caret.getDot();
+                    ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
+                    
+                    TokenItem token = sup.getTokenChain(dotPos-1, dotPos);
+                    /*if (token != null && token.getTokenContextPath().contains(JspTagTokenContext.contextPath)
+			    && token.getTokenID().getNumericID() != JspTagTokenContext.TAG_ID)
+                        token = token.getPrevious();*/
+                    if (token != null && token.getTokenContextPath().contains(JspTagTokenContext.contextPath)
+			    /*&& token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID*/){
+                        boolean isScriptletDelimiter = token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID;        
+                            
+                        if (dotPos > 0) {
+                            int[] matchBlk = sup.findMatchingBlock(dotPos - 1, false);
+                            if (matchBlk != null) {
+                                dotPos = matchBlk[0];
+                                if (!isScriptletDelimiter){
+                                    // Find out, where the opossite close/open tag ends. 
+                                    token = sup.getTokenChain(dotPos, dotPos+1);
+                                    while (token != null 
+                                        && !(token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID 
+                                            && token.getTokenContextPath().contains(JspTagTokenContext.contextPath))) {
+                                        token = token.getNext();
+                                    }
+                                    if (select) {
+                                        caret.moveDot(token.getOffset()+token.getImage().length());
+                                    } else {
+                                        caret.setDot(token.getOffset()+token.getImage().length());
+                                    }
+                                }
+                                else{
+                                    if (select) {
+                                        caret.moveDot(matchBlk[1]);
+                                    } else {
+                                        caret.setDot(matchBlk[1]);
+                                    }
+                                }
+                            }
+                        }
+                        }
+                        else{
+                            BaseKit kit = null;
+                            try {
+                                if (token != null && token.getTokenContextPath().contains(HTMLTokenContext.contextPath)){
+                                    kit = getKit (getClass().forName("org.netbeans.modules.editor.html.HTMLKit"));      //NOI18N
+                                }
+                                else{
+                                    if (token != null && token.getTokenContextPath().contains(JavaTokenContext.contextPath)){
+                                        kit = getKit (getClass().forName("org.netbeans.modules.editor.java.JavaKit"));  //NOI18N
+                                    }
+                                }
+                            } catch (java.lang.ClassNotFoundException e){
+                                kit = null;
+                                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                            }
+                            if (kit != null){
+                                Action action = kit.getActionByName(select ? ExtKit.selectionMatchBraceAction : ExtKit.matchBraceAction);
+                                if (action != null && action instanceof ExtKit.MatchBraceAction){
+                                    ((ExtKit.MatchBraceAction)action).actionPerformed(evt, target);
+                                    return;
+                                }
+                            }
+                            super.actionPerformed(evt, target);
+                        }
+                        
+                    }
+                    catch (BadLocationException e) {
+                    target.getToolkit().beep();
+                }
+            }
+        }
+    }
 }
