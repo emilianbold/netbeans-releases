@@ -1,0 +1,17 @@
+public class Hello {
+    public static void main(String[] args) {
+        int x = 0;
+        for (int cntr = 0; cntr < 100; cntr++)
+            while (x == x)
+                if (x > x)
+                    if (x < x)
+                        x = x;
+                    else
+                        x = x;
+                else
+                    if (x < x)
+                        x = x;
+                    else
+                        x = x;
+    }
+}

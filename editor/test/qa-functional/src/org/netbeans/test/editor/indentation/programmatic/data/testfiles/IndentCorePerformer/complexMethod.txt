@@ -1,0 +1,15 @@
+public class X {
+public void XXX(String greeting) {
+Thread newThread = new Thread() {
+public void run() {
+if (this.getClass() == X.this.getClass())
+Runnable toRun = new Runnable() {
+public void run() {
+if (this.getClass() == X.this.getClass())
+System.err.println("Hello.\n");
+}
+}
+}
+}
+}
+}

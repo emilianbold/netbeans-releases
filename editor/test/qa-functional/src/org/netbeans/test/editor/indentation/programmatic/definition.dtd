@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+    Typical usage:
+
+    <?xml version="1.0"?>
+
+    <!DOCTYPE definition SYSTEM "definition.dtd">
+
+    <definition>
+    ...
+    </definition>
+-->
+
+<!ELEMENT definition (test-case)*>
+
+<!ELEMENT fail (reason)?>
+<!ATTLIST fail
+    supposed-to-fail (true|false) #REQUIRED
+  >
+
+<!ELEMENT indentation-properties (property)*>
+
+<!ELEMENT property EMPTY>
+<!ATTLIST property
+    name CDATA #REQUIRED
+    value CDATA #REQUIRED
+  >
+
+<!ELEMENT reason (#PCDATA)>
+
+<!ELEMENT test-case (text,indentation-properties,fail)>
+<!ATTLIST test-case
+    name CDATA #REQUIRED
+  >
+
+<!ELEMENT text EMPTY>
+<!ATTLIST text
+    location CDATA #REQUIRED
+    mime-type CDATA #REQUIRED
+  >

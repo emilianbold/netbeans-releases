@@ -29,6 +29,14 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+
+    <testbag testattribs="all" name="indentation-programmatic">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/test/editor/indentation/programmatic/*Performer.class"/>
+            </patternset>
+        </testset>
+    </testbag>
     
     <resultsprocessor name="qa-functional" antfile="build.xml" target="test_report" default="true"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>

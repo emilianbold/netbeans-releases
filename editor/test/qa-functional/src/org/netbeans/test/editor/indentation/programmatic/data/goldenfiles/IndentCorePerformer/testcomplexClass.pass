@@ -1,0 +1,19 @@
+public class X {
+    public static final int X = 0;
+    
+    private static final int YYY() {
+        int b = 0;
+        
+        b++;
+        return b;
+    }
+    
+    public static class Y {
+        public static final void ZZ() {
+            int a = 0;
+            
+            if (a == 0) {
+            }
+        }
+    }
+}

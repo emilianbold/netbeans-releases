@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE definition SYSTEM "definition.dtd">
+
+<!-- Created by Jan Lahoda on March 16, 2002, 5:32 PM -->
+
+<definition>
+
+    <test-case name="wholeClass">
+        <text location="data/testfiles/IndentCorePerformer/wholeClass.txt" mime-type="text/x-java"/>
+        <indentation-properties>
+            <!--Default settings: -->
+<!--            <property name="spacesPerTab" value="11" />
+            <property name="expandTabs" value="true" />
+            <property name="javaFormatSpaceBeforeParenthesis" value="true" />
+            <property name="javaFormatLeadingStarInComment" value="true" />
+            <property name="javaFormatNewlineBeforeBrace" value="true" />-->
+        </indentation-properties>
+        <fail supposed-to-fail="false">
+            <reason>
+            </reason>
+        </fail>
+    </test-case>
+
+    <test-case name="complexMethod">
+        <text location="data/testfiles/IndentCorePerformer/complexMethod.txt" mime-type="text/x-java"/>
+        <indentation-properties>
+            <!--Default settings: -->
+        </indentation-properties>
+        <fail supposed-to-fail="false">
+            <reason>
+            </reason>
+        </fail>
+    </test-case>
+    
+    <test-case name="complexClass">
+        <text location="data/testfiles/IndentCorePerformer/complexClass.txt" mime-type="text/x-java"/>
+        <indentation-properties>
+            <!--Default settings: -->
+        </indentation-properties>
+        <fail supposed-to-fail="false">
+            <reason>
+            </reason>
+        </fail>
+    </test-case>
+
+    <test-case name="wholeMethod">
+        <text location="data/testfiles/IndentCorePerformer/wholeMethod.txt" mime-type="text/x-java"/>
+        <indentation-properties>
+            <!--Default settings: -->
+        </indentation-properties>
+        <fail supposed-to-fail="false">
+            <reason>
+            </reason>
+        </fail>
+    </test-case>
+
+    <test-case name="Engine">
+        <text location="data/testfiles/IndentCorePerformer/Engine.txt" mime-type="text/x-java"/>
+        <indentation-properties>
+            <!--Default settings: -->
+        </indentation-properties>
+        <fail supposed-to-fail="false">
+            <reason>
+            </reason>
+        </fail>
+    </test-case>
+
+</definition>
+
