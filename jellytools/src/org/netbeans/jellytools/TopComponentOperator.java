@@ -77,7 +77,8 @@ public class TopComponentOperator extends JComponentOperator {
         JemmyProperties.getCurrentTimeouts().initDefault("EventDispatcher.RobotAutoDelay", 0);
         DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, 
         new MouseRobotDriver(JemmyProperties.getCurrentTimeouts().create("EventDispatcher.RobotAutoDelay"), 
-                             new Class[] {TopComponentOperator.class}));
+//                                     new Class[] {TopComponentOperator.class}));
+                             new String[] {TopComponentOperator.class.getName()}));
     }
     
     /** Waits for index-th TopComponent with given name in specified container.
