@@ -62,7 +62,6 @@ class EjbJarActionProvider implements ActionProvider {
         COMMAND_RUN_SINGLE, 
         COMMAND_DEBUG, 
         J2eeProjectConstants.COMMAND_REDEPLOY,
-        J2eeProjectConstants.COMMAND_DEPLOY,
         COMMAND_DEBUG_SINGLE, 
         JavaProjectConstants.COMMAND_JAVADOC, 
         COMMAND_TEST, 
@@ -92,7 +91,6 @@ class EjbJarActionProvider implements ActionProvider {
         commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
         commands.put(COMMAND_RUN_SINGLE, new String[] {"run"}); // NOI18N
         commands.put(J2eeProjectConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
-        commands.put(J2eeProjectConstants.COMMAND_DEPLOY, new String[] {"run"}); // NOI18N
         commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
         commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
