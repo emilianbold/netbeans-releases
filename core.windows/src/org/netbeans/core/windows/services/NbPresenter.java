@@ -628,6 +628,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
             JButton b = (JButton)descriptor.getValue ();
             if (b.isVisible() && b.isEnabled () && b.isDefaultCapable ()) {
                 getRootPane ().setDefaultButton (b);
+                return ;
             }
         } else {
             // ??? unset default button if descriptor.getValue() is null
