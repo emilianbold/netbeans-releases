@@ -106,7 +106,7 @@ public final class Parameter extends Field {
             signature = method.getDescriptor();
             assert signature.charAt(0) == '(';
             isig = 1;  // skip '('
-            ivar = 0;
+            ivar = method.isStatic() ? 0 : 1; // skip "this" variable in the case of an instance method
 	    Code code = method.getCode();
             localVars = code != null ? 
 		code.getLocalVariableTable() : 
