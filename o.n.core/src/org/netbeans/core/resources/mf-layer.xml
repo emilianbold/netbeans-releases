@@ -554,6 +554,13 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="SystemFileSystem.layer" stringvalue="project"/>
     </folder>
 
+    <folder name="MIMEResolver">
+      <attr name="hidden" boolvalue="true" />
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/mime.gif" />        
+      <attr name="SystemFileSystem.layer" stringvalue="project"/>
+    </folder>
+
     <folder name="Hidden">
       <attr name="hidden" boolvalue="true" />
 
@@ -657,6 +664,12 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
             </file>
 
+            <file name="MIMEResolver.shadow">
+<![CDATA[Services/MIMEResolver
+SystemFileSystem
+]]>
+            </file>
+
         </folder>
 
         <folder name="ServerAndExternalToolSettings">
@@ -727,13 +740,6 @@ SystemFileSystem
 ]]>
         </file>
 
-    </folder>
-
-
-    <!-- Add pretty name and icon -->
-    <folder name="MIMEResolver">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/mime.gif" />        
     </folder>
 
   </folder>

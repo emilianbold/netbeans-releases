@@ -173,16 +173,15 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.openfile.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/openfile/openFile.gif"/>
                 </file>
-            </folder>
-            <folder name="System">
-                <!-- Bookmarks Node -->
-                <file name="org-netbeans-modules-url-BookmarksNode.instance"/>
-
                 <!-- PDF Settings -->
                 <file name="org-netbeans-modules-pdf-PDFSettings.settings" url="../pdf/PDF.settings">
                     <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.pdf.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/pdf/PDFDataIcon.gif"/>
                 </file>
+            </folder>
+            <folder name="System">
+                <!-- Bookmarks Node -->
+                <file name="org-netbeans-modules-url-BookmarksNode.instance"/>
             </folder>
         </folder>
 
