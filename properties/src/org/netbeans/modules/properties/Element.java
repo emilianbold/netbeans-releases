@@ -380,8 +380,11 @@ public abstract class Element extends Object implements Serializable {
         public void setValue(String newValue) {
             String oldValue = value.getValue();
             if (!oldValue.equals(newValue)) {
-                // Reprint key as well for the case it's alone yet and doesn't have seprator (= : or whitespace)
-                key.print();
+                
+                if(oldValue.equals("")) // NOI18N
+                    // Reprint key for the case it's alone yet and doesn't have seprator after (= : or whitespace).
+                    key.print();
+                
                 value.setValue(newValue);
                 getParent().itemChanged(this);
                 this.firePropertyChange(PROP_ITEM_VALUE, oldValue, newValue);
