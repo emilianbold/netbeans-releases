@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,15 +15,17 @@ package org.netbeans.modules.ant.grammar;
 
 import java.beans.FeatureDescriptor;
 import java.util.Enumeration;
-import org.netbeans.modules.xml.api.model.*;
+import org.netbeans.modules.xml.api.model.GrammarEnvironment;
+import org.netbeans.modules.xml.api.model.GrammarQuery;
+import org.netbeans.modules.xml.api.model.GrammarQueryManager;
+import org.openide.util.Enumerations;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
 
 /**
- * Provide Ant grammar. It must be consistently registered at layer.
- *
- * @author  Petr Kuzel
+ * Provides the Ant grammar for any documents whose root elements matches a standard pattern.
+ * See also ant/src/.../resources/mime-resolver.xml.
+ * @author Petr Kuzel, Jesse Glick
  */
 public final class AntGrammarQueryProvider extends GrammarQueryManager {
     
@@ -35,8 +37,8 @@ public final class AntGrammarQueryProvider extends GrammarQueryManager {
                 Element root = (Element) next;                
                 // XXX should also check for any root <project> in NS "antlib:org.apache.tools.ant"
                 // (but no NS support in HintContext impl anyway: #38340)
-                if ("project".equals(root.getNodeName()) && root.getAttributeNode("default") != null) { // NOI18N
-                    return org.openide.util.Enumerations.singleton (next);
+                if ("project".equals(root.getNodeName()) && (root.getAttributeNode("default") != null || root.getAttributeNode("basedir") != null)) { // NOI18N
+                    return Enumerations.singleton (next);
                 }
             }
         }

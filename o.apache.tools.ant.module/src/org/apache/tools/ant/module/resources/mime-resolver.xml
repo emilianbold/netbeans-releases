@@ -28,6 +28,16 @@ Microsystems, Inc. All Rights Reserved.
             </xml-rule>
         </resolver>
     </file>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-ant+xml">
+            <xml-rule>
+                <element name="project">
+                    <attr name="basedir"/>
+                </element>
+            </xml-rule>
+        </resolver>
+    </file>
     <!-- Ant 1.6 defines antlib:org.apache.tools.ant as the master namespace: -->
     <file>
         <ext name="xml"/>
