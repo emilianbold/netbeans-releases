@@ -75,7 +75,7 @@ public class J2SEProjectGenerator {
         ep.setProperty("dist.dir", "dist");
         ep.setProperty("dist.jar", "${dist.dir}/" + codename + ".jar");
         ep.setProperty("javac.classpath", Arrays.asList(new String[]{""}));
-        ep.setProperty("run.classpath", Arrays.asList(new String[]{"${javac.classpath}","${build.classes.dir}"}));
+        ep.setProperty("run.classpath", Arrays.asList(new String[]{"${javac.classpath}:","${build.classes.dir}"}));
         ep.setProperty("debug.classpath", Arrays.asList(new String[]{"${run.classpath}"}));
         ep.setProperty("application.args", "");
         ep.setProperty("jar.compress", "false");
@@ -83,8 +83,8 @@ public class J2SEProjectGenerator {
         ep.setProperty("javac.source", "1.4");
         ep.setProperty("javac.debug", "true");
         ep.setProperty("javac.deprecation", "false");
-        ep.setProperty("javac.test.classpath", Arrays.asList(new String[]{"${javac.classpath}","${build.classes.dir}","${libs.junit.classpath}"}));
-        ep.setProperty("run.test.classpath", Arrays.asList(new String[]{"${javac.test.classpath}","${build.test.classes.dir}"}));
+        ep.setProperty("javac.test.classpath", Arrays.asList(new String[]{"${javac.classpath}:","${build.classes.dir}:","${libs.junit.classpath}"}));
+        ep.setProperty("run.test.classpath", Arrays.asList(new String[]{"${javac.test.classpath}:","${build.test.classes.dir}"}));
         ep.setProperty("debug.test.classpath", Arrays.asList(new String[]{"${run.test.classpath}"}));
         ep.setProperty("src.dir", "src");
         ep.setProperty("test.src.dir", "test");
