@@ -14,6 +14,7 @@
 package org.netbeans.core.windows.view;
 
 
+import java.awt.Dimension;
 import org.netbeans.core.windows.*;
 import org.netbeans.core.windows.model.ModelElement;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
@@ -948,6 +949,18 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     // XXX PENDING This is just for the cases split modes doesn't have a separated
     // opposite ones, so they keep the bounds for them. Revise.
     private void updateSeparateBoundsForView(ViewElement view) {
+        if (view.getComponent() instanceof JComponent) {
+            // when updating the views after resizing the split, do
+            // set the preffered size accordingly to prevent jumping splits
+            // in SplitView.updateAwtHierarchy() 
+            // is basically a workaround, the problem should be fixed by reimplementing the 
+            // splits without using the JSplitPane
+            // #45186 for more details
+            JComponent comp = (JComponent)view.getComponent();
+            Dimension dim = new Dimension(comp.getSize());
+            comp.setPreferredSize(dim);
+            comp.putClientProperty("lastAvailableSpace", dim); //NOI18N
+        }
         if(view instanceof ModeView) {
             ModeView mv = (ModeView)view;
             ModeAccessor ma = (ModeAccessor)hierarchy.getAccessorForView(mv);
