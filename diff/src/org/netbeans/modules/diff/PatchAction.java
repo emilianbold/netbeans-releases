@@ -61,6 +61,12 @@ import org.openide.DialogDescriptor;
  * @author  Martin Entlicher
  */
 public class PatchAction extends NodeAction {
+    
+    /**
+     * For patch application use an encoding, that is able to convert all bytes
+     * to characters so that there is no loss in the file content.
+     */
+    private static final String PATCHING_IO_ENCODING = "ISO-8859-1"; // NOI18N
 
     /** Creates a new instance of PatchAction */
     public PatchAction() {
@@ -103,7 +109,7 @@ public class PatchAction extends NodeAction {
             if (patch == null) return ;
             Patch.FileDifferences[] fileDiffs;
             try {
-                fileDiffs = Patch.parse(new FileReader(patch));
+                fileDiffs = Patch.parse(new InputStreamReader(new FileInputStream(patch), PATCHING_IO_ENCODING));
             } catch (IOException ioex) {
                 ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
                     NbBundle.getMessage(PatchAction.class, "EXC_PatchParsingFailed", ioex.getLocalizedMessage())));
@@ -260,7 +266,7 @@ public class PatchAction extends NodeAction {
         InputStream in = null;
         OutputStream out = null;
         try {
-            Reader patched = Patch.apply(diffs, new InputStreamReader(fo.getInputStream()));
+            Reader patched = Patch.apply(diffs, new InputStreamReader(fo.getInputStream(), PATCHING_IO_ENCODING));
             FileUtil.copy(in = new ReaderInputStream(patched), out = new FileOutputStream(tmp));
         } catch (IOException ioex) {
 //            ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
