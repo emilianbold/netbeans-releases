@@ -23,6 +23,7 @@ import org.openide.cookies.FilterCookie;
 import org.openide.src.*;
 import org.openide.src.nodes.ClassChildren;
 import org.openide.src.nodes.ElementNodeFactory;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;
 
 /** Implements children for basic source code patterns
@@ -33,17 +34,14 @@ public class PatternChildren extends ClassChildren {
 
     private boolean wri = true;
 
-    private MethodElementListener methodListener = new MethodElementListener();
-    private FieldElementListener fieldListener = new FieldElementListener();
-    private ClassElementListener classListener = new ClassElementListener();
-    private StyleChangeListener  styleListener = new StyleChangeListener();
+    private Listener elementListener = new Listener();
     
-    private PropertyChangeListener weakMethodListener = WeakListener.propertyChange( methodListener, null);
+    private PropertyChangeListener weakMethodListener = WeakListener.propertyChange( elementListener, null);
     // = new WeakListener.PropertyChange( methodListener );
-    private PropertyChangeListener weakFieldListener = WeakListener.propertyChange( fieldListener, null);
-    private PropertyChangeListener weakClassListener = WeakListener.propertyChange( classListener, null);
+    private PropertyChangeListener weakFieldListener = WeakListener.propertyChange( elementListener, null);
+    private PropertyChangeListener weakClassListener = WeakListener.propertyChange( elementListener, null);
     // = new WeakListener.PropertyChange( fieldListener );
-    private PropertyChangeListener weakStyleListener = WeakListener.propertyChange( styleListener, PropertyActionSettings.getDefault());
+    private PropertyChangeListener weakStyleListener = WeakListener.propertyChange( elementListener, PropertyActionSettings.getDefault());
     
     static {
         Integer i = new Integer (PatternFilter.METHOD | PatternFilter.PROPERTY |
@@ -219,47 +217,22 @@ public class PatternChildren extends ClassChildren {
      * track changes in 
      */
 
-    final class MethodElementListener implements PropertyChangeListener {
+    final class Listener implements PropertyChangeListener, Runnable {
         public void propertyChange ( PropertyChangeEvent e ) {
             if( e.getSource() instanceof org.netbeans.modules.java.JavaDataObject ) //ignore
                 return;
-            refreshKeys(PatternFilter.ALL);
-            //patternAnalyser.analyzeAll();
-        }
-    }
-
-    /** The listener of method changes temporary used in PatternAnalyser to
-     * track changes in 
-     */
-
-    final class FieldElementListener implements PropertyChangeListener {
-        public void propertyChange ( PropertyChangeEvent e ) {
-            if( e.getSource() instanceof org.netbeans.modules.java.JavaDataObject ) //ignore
+            if(PropertyActionSettings.getDefault() == e.getSource() &&
+                !PropertyActionSettings.PROP_STYLE.equals(e.getPropertyName()) ) {
                 return;
+            }
+            RequestProcessor.getDefault().post(this);
+        }
+        
+        public void run() {
             refreshKeys(PatternFilter.ALL);
-            //reassignFieldListener();
-            //patternAnalyser.resolveFields();
         }
     }
 
-    final class ClassElementListener implements PropertyChangeListener {
-        public void propertyChange ( PropertyChangeEvent e ) {
-            if( e.getSource() instanceof org.netbeans.modules.java.JavaDataObject ) //ignore
-                return;
-            refreshKeys(PatternFilter.ALL);
-            //reassignFieldListener();
-            //patternAnalyser.resolveFields();
-        }
-    }
-
-    final class StyleChangeListener implements PropertyChangeListener {
-        public void propertyChange ( PropertyChangeEvent e ) {
-            if( !PropertyActionSettings.PROP_STYLE.equals(e.getPropertyName()) ) //ignore
-                return;            
-            refreshKeys(PatternFilter.ALL);
-        }
-    }
-    
     private static final class PatternComparator implements Comparator {
 
         public int compare( Object a, Object b ) {
@@ -271,24 +244,3 @@ public class PatternChildren extends ClassChildren {
         }
     }
 }
-
-/*
- * Log
- *  11   Gandalf   1.10        1/15/00  Petr Hrebejk    BugFix 5386, 5385, 5393 
- *       and new WeakListener implementation
- *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  9    Gandalf   1.8         7/28/99  Petr Hrebejk    Property Mode change fix
- *  8    Gandalf   1.7         7/26/99  Petr Hrebejk    Better implementation of
- *       patterns resolving
- *  7    Gandalf   1.6         7/21/99  Petr Hrebejk    Debug messages removed
- *  6    Gandalf   1.5         7/21/99  Petr Hrebejk    
- *  5    Gandalf   1.4         7/21/99  Petr Hamernik   some filter bugfix
- *  4    Gandalf   1.3         7/20/99  Petr Hrebejk    
- *  3    Gandalf   1.2         7/3/99   Ian Formanek    Overriden method 
- *       refreshKeys to provide access to classes in thes package and make it 
- *       compilable
- *  2    Gandalf   1.1         7/1/99   Jan Jancura     Object Browser support
- *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
- * $ 
- */ 
