@@ -384,7 +384,6 @@ final class BrokenDataShadow extends MultiDataObject {
         /** Class for original filesystem name property of broken link
         */
         private final class FileSystemProperty extends PropertySupport.ReadWrite {
-            private java.beans.PropertyChangeSupport supp;
             
             public FileSystemProperty () {
                 super (
@@ -423,7 +422,7 @@ final class BrokenDataShadow extends MultiDataObject {
         }
         
         
-        private final class FileSystemPropertyEditor 
+        private static final class FileSystemPropertyEditor 
         implements java.beans.PropertyEditor {
             private java.beans.PropertyChangeSupport supp;
             private String origFSName;
