@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
-import java.lang.reflect.InvocationTargetException;
 import org.openide.nodes.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -26,11 +25,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.ErrorManager;
-import org.openide.util.RequestProcessor;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
 import org.netbeans.modules.j2ee.deployment.impl.*;
-import org.netbeans.modules.j2ee.deployment.impl.ui.FilterXNode;
-import java.awt.Component;
 import java.util.*;
 
 /**
@@ -50,7 +46,6 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
     
     public ServerRegistryNode() {
         super(new ServerChildren());
-        long t0 = System.currentTimeMillis();
         setName("");//NOI18N
         String msg = NbBundle.getBundle(ServerRegistryNode.class).getString("SERVER_REGISTRY_NODE");//NOI18N
         setDisplayName(msg);
