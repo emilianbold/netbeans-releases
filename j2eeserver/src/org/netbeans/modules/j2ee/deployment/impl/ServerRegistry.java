@@ -545,4 +545,15 @@ public final class ServerRegistry implements java.io.Serializable {
 	Set configNames = (Set) configNamesByType.get(type);
 	return (configNames != null && configNames.contains(name));
     }
+    
+    public ServerInstance getInstanceOrDefault(String uri) {
+        ServerInstance instance = getServerInstance(uri);
+        if (instance == null) {
+            instance = getDefaultInstance().getServerInstance();
+        }
+        if (instance != null)
+            return instance;
+        throw new RuntimeException(NbBundle.getMessage(ServerRegistry.class, "MSG_NoServerInstances", uri));
+    }
+
 }
