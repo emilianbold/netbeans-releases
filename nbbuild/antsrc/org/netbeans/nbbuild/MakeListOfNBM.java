@@ -96,9 +96,9 @@ public class MakeListOfNBM extends Task {
                 
                 String include[] = ds.getIncludedFiles();
                 for( int j=0; j < include.length; j++ ){
-                    if (include[j].equals("Info/info.xml") || 
-			include[j].startsWith("main/") || 
-			include[j].startsWith("netbeans/update_tracking/")) 
+                    if (include[j].equals("Info" + File.separatorChar + "info.xml") || 
+			include[j].startsWith("main" + File.separatorChar) || 
+			include[j].startsWith("netbeans" + File.separatorChar + "update_tracking" + File.separatorChar)) 
 			    continue;
 
                     try {
