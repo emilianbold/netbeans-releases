@@ -1433,7 +1433,7 @@ public class RADComponent {
       }
 
       public boolean supportsCustomEditor () {
-        return true;
+        return formManager.getFormEditorSupport ().supportsAdvancedFeatures ();
       }
       
       public java.awt.Component getCustomEditor () {
@@ -1455,6 +1455,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  73   Gandalf   1.72        1/13/00  Pavel Buzek     enable EventEditor only 
+ *       for forms that support advanced features
  *  72   Gandalf   1.71        1/13/00  Pavel Buzek     setText() added to 
  *       EventEditor (it did not work with forms that do not support advanced 
  *       features)
