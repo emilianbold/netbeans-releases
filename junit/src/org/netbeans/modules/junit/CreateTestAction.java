@@ -47,6 +47,8 @@ import org.openide.src.ClassElement;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
 
 
 /** Action sensitive to some cookie that does something useful.
@@ -209,8 +211,16 @@ public class CreateTestAction extends CookieAction {
                      NotifyDescriptor.INFORMATION_MESSAGE);
             }
                         
+        } else if (results.getCreated().size()==1) {
+            // created exactly one class, highlight it in the explorer
+            // and open it in the editor
+            DataObject dobj = (DataObject)results.getCreated().iterator().next();
+            EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+            if (ec != null) {
+                System.err.println("EDITING !!!!!!!");
+                ec.open();
+            }
         }
-
 
     }
     
@@ -339,11 +349,11 @@ public class CreateTestAction extends CookieAction {
 
         for (int i=0; i < classSources.length; i++) {
             ClassElement classSource = classSources[i];
-            if (classSource == null) {
+            if (classSource == null || classSource.isInner()) {
                 continue;
             }
 
-            if (!skipNonTestable || TestCreator.isClassTestable(foSource, classSource)) {
+            if (!skipNonTestable || TestCreator.isClassTestable(foSource, classSource)) {             
                 // find the test class, if it exists or create one from active template
                 DataObject doTarget = getTestClass(testClassPath, TestUtil.getTestClassFullName(classSource), doTestT);
 
