@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,47 +8,46 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE helpset PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN" "http://java.sun.com/products/javahelp/helpset_2_0.dtd">
-
 <helpset version="2.0">
-  <title>IDE Help</title>
-  <maps>
-    <homeID>org.netbeans.api.javahelp.MASTER_ID</homeID>
-    <mapref location="masterHelpMap.jhm"/>
-  </maps>
-  <view mergetype="javax.help.UniteAppendMerge">
-    <name>TOC</name>
-    <label>Contents</label>
-    <type>javax.help.TOCView</type>
-    <data>masterHelpToc.xml</data>
-  </view>
-  <view mergetype="javax.help.SortMerge">
-    <name>Index</name>
-    <label>Index</label>
-    <type>javax.help.IndexView</type>
-  </view>
-  <view>
-    <name>Search</name>
-    <label>Search</label>
-    <type>javax.help.SearchView</type>
-  </view>
-  <!--
-  <view>
-    <name>Favorites</name>
-    <label>Favorites</label>
-    <type>javax.help.FavoritesView</type>
-  </view> -->
-  	<presentation default="true" displayviews="true" displayviewimages="false">
-                <name>main window</name>
-		<toolbar>
-			<helpaction image="helpviewer_back">javax.help.BackAction</helpaction>
-			<helpaction image="helpviewer_forward">javax.help.ForwardAction</helpaction>
-			<helpaction image="helpviewer_print">javax.help.PrintAction</helpaction>
-			<helpaction image="helpviewer_page-setup">javax.help.PrintSetupAction</helpaction>
-		</toolbar>
-	</presentation>
+    <title>IDE Help</title>
+    <maps>
+        <homeID>org.netbeans.api.javahelp.MASTER_ID</homeID>
+        <mapref location="masterHelpMap.jhm"/>
+    </maps>
+    <view mergetype="javax.help.UniteAppendMerge">
+        <name>TOC</name>
+        <label>Contents</label>
+        <type>javax.help.TOCView</type>
+        <data>masterHelpToc.xml</data>
+    </view>
+    <view mergetype="javax.help.SortMerge">
+        <name>Index</name>
+        <label>Index</label>
+        <type>javax.help.IndexView</type>
+    </view>
+    <view>
+        <name>Search</name>
+        <label>Search</label>
+        <type>javax.help.SearchView</type>
+    </view>
+    <!--
+    <view>
+        <name>Favorites</name>
+        <label>Favorites</label>
+        <type>javax.help.FavoritesView</type>
+    </view>
+    -->
+    <presentation default="true" displayviews="true" displayviewimages="false">
+        <name>main window</name>
+        <toolbar>
+            <helpaction image="helpviewer_back">javax.help.BackAction</helpaction>
+            <helpaction image="helpviewer_forward">javax.help.ForwardAction</helpaction>
+            <helpaction image="helpviewer_print">javax.help.PrintAction</helpaction>
+            <helpaction image="helpviewer_page-setup">javax.help.PrintSetupAction</helpaction>
+        </toolbar>
+    </presentation>
 </helpset>

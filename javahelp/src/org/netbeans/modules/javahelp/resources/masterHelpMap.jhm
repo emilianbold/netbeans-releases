@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?>
+<?xml version='1.0' encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,10 +8,9 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
 <map version="2.0">
     <mapID target="org.netbeans.api.javahelp.MASTER_ID" url="masterHelpPage.html"/>
@@ -22,4 +21,4 @@ Microsystems, Inc. All Rights Reserved.
     <mapID target="helpviewer_book-open" url="helpviewer_book-open.png"/>
     <mapID target="helpviewer_topic" url="helpviewer_topic.png"/>
     <mapID target="helpviewer_book-closed" url="helpviewer_book-closed.png"/>
-    </map>
+</map>
