@@ -125,7 +125,6 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 	} else {
 	    statefilePath = instDirPath + File.separator + STATE_FILE_NAME;
 	}
-        statefilePath = instDirPath + File.separator + STATE_FILE_NAME;
         logEvent(this, Log.DBG,"statefilePath: "+ statefilePath);
         //Set JDK selected in JDKSearchPanel. It will be used to run AS Installer.
         jdkDirPath = Util.getJdkHome();
@@ -240,20 +239,13 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 			script.delete();
 			logEvent(this, Log.DBG,"Deleted file: " + script.getAbsolutePath());
 		    }
-		    String installerName = null;
-		    if (Util.isWindowsOS()) {
-			//installerName = AS_EXEC_NAME_WINDOWS;
-		    } else if (Util.isLinuxOS()) {
-			//installerName = AS_EXEC_NAME_LINUX;
-		    } 
-		    else if (Util.isSunOS()) {
-			String arch = (String) System.getProperty("os.arch");
-			if (arch.startsWith("sparc")) {
-			    //installerName = AS_EXEC_NAME_SPARC;
-			} else {
-			    //installerName = AS_EXEC_NAME_X86;
-			}
+		    File statefile = new File(statefilePath);
+		    if (statefile.exists()) {
+			statefile.delete();
+			logEvent(this, Log.DBG,"Deleted file: " + statefile.getAbsolutePath());
 		    }
+                    
+		    String installerName = findASInstaller();
 		    if (installerName != null) {
 			File installer = new File(instDirPath, installerName);
 			if (installer.exists()) {
@@ -266,7 +258,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             removeAppserverFromAddRemovePrograms();
             cleanAppserverStartMenu();
 
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
             logEvent(this, Log.DBG, ex);
         }
