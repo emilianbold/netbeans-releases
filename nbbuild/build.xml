@@ -3308,7 +3308,20 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
   <target name="all-commitValidation" description="dummy target for build error recognition facility"/>
   
-  <target name="commit-verification" depends="all-verification,check-files-layout" />
+  <target 
+    name="commit-verification" 
+    description="Compares result of a build with golden files verifying various aspects of the exported interfaces"
+    depends="
+    all-verification,
+    check-files-layout,
+    check-public-packages,
+    check-modules,
+    check-dependencies,
+    check-implementation-dependencies,
+    check-cluster-dependencies,
+    check-cluster-implementation-dependencies"
+  />
+  
   <target name="all-verification" >
     <echo message="Runs verification tests to check the IDE before commit" />
   </target>
@@ -3382,9 +3395,204 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </zip>
   </target>
   
+  <target name="generate-golden-files" depends="init,bootstrap" >
+    <property name="golden.files.dir" location="build/generated" />
+    
+    <mkdir dir="${golden.files.dir}" />
+    
+    <taskdef name="deps" classname="org.netbeans.nbbuild.ModuleDependencies" classpath="nbantext.jar"/>
+    
+    <deps>
+      <input name="platform" >
+        <jars dir="${netbeans.dest.dir}" >
+          <include name="${nb.cluster.platform.dir}/**/*.jar" />
+        </jars>
+      </input>
+      <input name="ide" >
+        <jars dir="${netbeans.dest.dir}" >
+          <include name="${nb.cluster.ide.dir}/**/*.jar" />
+        </jars>
+      </input>
+      <input name="j2ee" >
+        <jars dir="${netbeans.dest.dir}" >
+          <include name="${nb.cluster.j2ee.dir}/**/*.jar" />
+        </jars>
+      </input>
+      <input name="nb" >
+        <jars dir="${netbeans.dest.dir}" >
+          <include name="${nb.cluster.nb.dir}/**/*.jar" />
+        </jars>
+      </input>
+      
+      <output type="group-dependencies" file="${golden.files.dir}/cluster-deps.txt" />
+      <output type="group-implementation-dependencies" file="${golden.files.dir}/cluster-impl-deps.txt" />
+      <output type="modules" file="${golden.files.dir}/modules.txt" />
+      <output type="dependencies" file="${golden.files.dir}/deps.txt" />
+      <output type="implementation-dependencies" file="${golden.files.dir}/impl-deps.txt" />
+      <output type="public-packages" file="${golden.files.dir}/public-packages.txt" />
+    </deps>
+  </target>
+  
+  <target name="check-public-packages" depends="generate-golden-files" >
+    <property name="check.public.packages.template" location="../ide/golden/public-packages.txt" />
+    <property name="check.public.packages.generated" location="${golden.files.dir}/public-packages.txt" />
+  
+    <condition property="check-public-packages-are-they-the-same" >
+        <filesmatch file1="${check.public.packages.template}" file2="${check.public.packages.generated}" />
+    </condition>
+    
+    
+    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
+      <arg value="-u" />
+      <arg value="${check.public.packages.template}" />
+      <arg value="${check.public.packages.generated}" />
+    </exec>
+    
+    <fail unless="check-public-packages-are-they-the-same" >!
+    *** Public packages has changed! ***
+    
+    Differences were found while comparing file 
+    ${check.public.packages.template} 
+    with 
+    ${check.public.packages.generated}
+    
+    This means that the set of public packages changed since the previously known one.
+    Some packages may have been added, some of them may have been removed 
+    Either by changing manifest of a module or by adding or removing a class file
+    from a module package.
+    
+    
+    Changing the packages may or may not be ok. It means that an api of 
+    whole product changes and as such it is subject to review. If you passed
+    your review and want to change the list of public packages, then please
+    update the golden file at 
+    ${check.public.packages.template}
+    and run the test once again. 
+    
+    Read more about the Verification Framework:
+    http://openide.netbeans.org/proposals/arch/clusters.html#verify
+    
+    Look at for information about reviews:
+    http://openide.netbeans.org/tutorial/review-steps.html
+    
+    Check the page about APIs:
+    http://openide.netbeans.org/tutorial/api-design.html#api
+    </fail>
+  </target>
+
+  <target name="check-modules" depends="generate-golden-files" >
+    <property name="check.modules.template" location="../ide/golden/modules.txt" />
+    <property name="check.modules.generated" location="${golden.files.dir}/modules.txt" />
+  
+    <condition property="check-modules-are-they-the-same" >
+        <filesmatch file1="${check.modules.template}" file2="${check.modules.generated}" />
+    </condition>
+    
+    
+    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
+      <arg value="-u" />
+      <arg value="${check.modules.template}" />
+      <arg value="${check.modules.generated}" />
+    </exec>
+    
+    <fail unless="check-modules-are-they-the-same" >!
+    *** List of modules has changed! ***
+    
+    Differences were found while comparing file 
+    ${check.modules.template} 
+    with 
+    ${check.modules.generated}
+    
+    This means that the set of modules changed since the previously known one.
+    Adding or removing a module significatly affects the set of APIs the
+    product offers and as such is subject to review. If you passed
+    your review and want to change the list of modules, then please
+    update the golden file at 
+    ${check.modules.template}
+    and run the test once again. 
+    
+    Read more about the Verification Framework:
+    http://openide.netbeans.org/proposals/arch/clusters.html#verify
+    
+    Look at for information about reviews:
+    http://openide.netbeans.org/tutorial/review-steps.html
+    
+    Check the page about APIs:
+    http://openide.netbeans.org/tutorial/api-design.html#api
+    </fail>
+  </target>
+
+  <target name="check-dependencies" depends="generate-golden-files" >
+    <antcall target="check-dependencies-subroutine" >
+        <param name="check.dependencies.template" location="../ide/golden/deps.txt" />
+        <param name="check.dependencies.generated" location="${golden.files.dir}/deps.txt" />
+    </antcall>
+  </target>
+  
+  <target name="check-implementation-dependencies" depends="generate-golden-files" >
+    <antcall target="check-dependencies-subroutine" >
+        <param name="check.dependencies.template" location="../ide/golden/impl-deps.txt" />
+        <param name="check.dependencies.generated" location="${golden.files.dir}/impl-deps.txt" />
+    </antcall>
+  </target>
+
+  <target name="check-cluster-dependencies" depends="generate-golden-files" >
+    <antcall target="check-dependencies-subroutine" >
+        <param name="check.dependencies.template" location="../ide/golden/cluster-deps.txt" />
+        <param name="check.dependencies.generated" location="${golden.files.dir}/cluster-deps.txt" />
+    </antcall>
+  </target>
+  
+  <target name="check-cluster-implementation-dependencies" depends="generate-golden-files" >
+    <antcall target="check-dependencies-subroutine" >
+        <param name="check.dependencies.template" location="../ide/golden/cluster-impl-deps.txt" />
+        <param name="check.dependencies.generated" location="${golden.files.dir}/cluster-impl-deps.txt" />
+    </antcall>
+  </target>
+    
+  <target name="check-dependencies-subroutine" >
+    <condition property="check-dependencies-are-they-the-same" >
+        <filesmatch file1="${check.dependencies.template}" file2="${check.dependencies.generated}" />
+    </condition>
+    
+    
+    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
+      <arg value="-u" />
+      <arg value="${check.dependencies.template}" />
+      <arg value="${check.dependencies.generated}" />
+    </exec>
+    
+    <fail unless="check-dependencies-are-they-the-same" >!
+    *** List of dependencies has changed! ***
+    
+    Differences were found while comparing file 
+    ${check.dependencies.template} 
+    with 
+    ${check.dependencies.generated}
+    
+    This means that the set of dependencies changed since the previously known one.
+    Adding a dependency can restrict the ways how a final product can be assembled
+    and as such it forms an important aspect of API and is subject to review. 
+    If you passed your review or you are sure you want to change the 
+    list of dependencies, then please update the golden file at 
+    ${check.dependencies.template}
+    and run the test once again. 
+    
+    Read more about the Verification Framework:
+    http://openide.netbeans.org/proposals/arch/clusters.html#verify
+    
+    Look at for information about reviews:
+    http://openide.netbeans.org/tutorial/review-steps.html
+    
+    Check the page about APIs and dependencies being important:
+    http://openide.netbeans.org/tutorial/api-design.html#api
+    </fail>
+  </target>
+    
+    
   <target name="check-files-layout" >
     <property name="check.files.layout.template" location="../ide/golden/files-layout.txt" />
-    <property name="check.files.layout.generated" location="build/files-layout.txt" />
+    <property name="check.files.layout.generated" location="build/generated/files-layout.txt" />
   
     <property name="check-file-layout-root" location="${netbeans.dest.dir}" />
     <fileset id="check-file-layout" dir="${check-file-layout-root}" casesensitive="yes" >
@@ -3397,14 +3605,14 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <pathconvert property="check-file-layout" refid="check-file-layout" dirsep="/" pathsep=",">
         <map from="${check-file-layout-root}${file.separator}" to="" />
     </pathconvert>
-    <mkdir dir="build" />
+    <mkdir dir="build/generated" />
     <echo message="${check-file-layout}" file="${check.files.layout.generated}" />
     <replace file="${check.files.layout.generated}" token=",">
         <replacevalue><![CDATA[
 ]]></replacevalue>
     </replace>
     <replace file="${check.files.layout.generated}" token="\" value="/" />
-    <condition property="are-they-the-same" >
+    <condition property="check-files-are-they-the-same" >
         <filesmatch file1="${check.files.layout.template}" file2="${check.files.layout.generated}" />
     </condition>
     
@@ -3415,7 +3623,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg value="${check.files.layout.generated}" />
     </exec>
     
-    <fail unless="are-they-the-same" >!
+    <fail unless="check-files-are-they-the-same" >!
     *** Layout of files has changed! ***
     
     Differences were found while comparing file build/files-layout.txt with 
