@@ -616,7 +616,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       </fileset>
     </copy>
   </target>
-  <target name="open-apis" depends="open-apis-check-timestamps,open-apis-maybe-skip" if="open-apis-force-rebuild"
+  <target name="open-apis" depends="init,open-apis-check-timestamps,open-apis-maybe-skip" if="open-apis-force-rebuild"
           description="Create Open API documentation.">
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
     <tstamp/>
