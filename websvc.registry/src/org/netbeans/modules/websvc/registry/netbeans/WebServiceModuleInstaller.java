@@ -33,114 +33,149 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
  *  the registry on module startup and saving any changes on module shutdown.
  */
 public class WebServiceModuleInstaller extends ModuleInstall {
-	
-	private static ExtensionClassLoader specialLoader = null;
-	private static boolean registryInstalled = false;
-	
-	private PersistenceManagerInterface pmi = null;
-	
-	public void restored() {
-		restoreds();
-		
-		if(registryInstalled) {
-			try {
-				PersistenceManagerInterface persistenceManager = (PersistenceManagerInterface) 
-					specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
-				persistenceManager.load(specialLoader);
-			} catch(Exception ex) {
-				ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-			}
-		}
-	}
-
-	public void close() {
-		if(registryInstalled) {
-			try {
-				PersistenceManagerInterface persistenceManager =(PersistenceManagerInterface)
-					specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
-				persistenceManager.save(specialLoader);
-			} catch(Exception ex) {
-				ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-			} finally {
-			}
-		}
-	}
-	
-	public void uninstalled() {
-		close();
-	}
-
-	public static void restoreds() {
-		if(specialLoader == null) {
-			try {
-				specialLoader = new ExtensionClassLoader(new Empty().getClass().getClassLoader());
-				updatesSecialLoader(specialLoader);
-			} catch(Exception ex) {
-				ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-			}
-		}
-	}
-
-	public static ClassLoader getExtensionClassLoader() {
-		return specialLoader;
-	}
-
-	public static void updatesSecialLoader(ExtensionClassLoader loader) throws Exception {
-		try {
-                        String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs ();
-                        J2eePlatform platform = null;
-                        for (int i = 0; i < serverInstanceIDs.length; i++) {
-                            J2eePlatform p = Deployment.getDefault().getJ2eePlatform (serverInstanceIDs [i]);
-                            if (p!= null && p.isToolSupported ("wscompile")) {
-                                platform = p;
-                                break;
-                            }
-                        }
-			File f1 = platform == null ? null : platform.getPlatformRoots () [0];
-			if(f1 != null && f1.exists()) {
-				String installRoot = f1.getAbsolutePath();
-//				if(installRoot == null) {
-//					// !PW What will this do on UNIX?
-//					File temp = new File("c:\\sun\\appserver\\lib\\appserv-admin.jar"); // NOI18N
-//					// need also to check on Unix system the defautl location
-//					if(temp.exists()) {
-//						installRoot = "c:\\sun\\appserver"; // NOI18N
-//						System.setProperty("com.sun.aas.installRoot", installRoot); // NOI18N
-//					} else {
-//						// !PW due to null check on f1, I don't think this entire block
-//						// is even necessary or useful anymore, but just in case,
-//						// add a return here so we don't get a NPE later.
-//						return;
-//					}
-//				}
-				
-				InstalledFileLocator locator = InstalledFileLocator.getDefault();
-
-				File f = locator.locate("modules/ext/websvcregistry.jar", null, true); // NOI18N
-				if(f != null) {
-					registryInstalled = true;
-					loader.addURL(f);
-				} else {
-					ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot locate file modules/ext/websvcregistry.jar");
-				}
-
-				// Add correct jars from the installed application server.
-				SJSASVersion appServerVersion = SJSASVersion.getSJSAppServerVersion();
-				String [] registryRuntimeJars = appServerVersion.getRegistryRuntimeLibraries();
-				
-				for(int i = 0; i < registryRuntimeJars.length; i++) {
-					loader.addURL(new File(installRoot + registryRuntimeJars[i]));
-				}
-			}
-		} catch(Exception ex) {
-			throw new Exception(ex.getLocalizedMessage(), ex);
-		}
-	}
-	
-	/*
-	 * Used to get the netbeans classloader of this class.
-	 *
-	 */
-	static class Empty {
-	}
+    
+    private static ExtensionClassLoader specialLoader = null;
+    private static boolean registryInstalled = false;
+    
+    private PersistenceManagerInterface pmi = null;
+    
+    public void restored() {
+        restoreds();
+        
+        if(registryInstalled) {
+            try {
+                PersistenceManagerInterface persistenceManager = (PersistenceManagerInterface)
+                specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
+                persistenceManager.load(specialLoader);
+            } catch(Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            }
+        }
+    }
+    
+    public void close() {
+        if(registryInstalled) {
+            try {
+                PersistenceManagerInterface persistenceManager =(PersistenceManagerInterface)
+                specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
+                persistenceManager.save(specialLoader);
+            } catch(Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            } finally {
+            }
+        }
+    }
+    
+    public void uninstalled() {
+        close();
+    }
+    
+    public static void restoreds() {
+        if(specialLoader == null) {
+            try {
+                specialLoader = new ExtensionClassLoader(new Empty().getClass().getClassLoader());
+                updatesSecialLoader(specialLoader);
+            } catch(Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            }
+        }
+    }
+    
+    public static ClassLoader getExtensionClassLoader() {
+        return specialLoader;
+    }
+    
+    public static void updatesSecialLoader(ExtensionClassLoader loader) throws Exception {
+        try {
+            String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs();
+            J2eePlatform platform = null;
+            for (int i = 0; i < serverInstanceIDs.length; i++) {
+                J2eePlatform p = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs [i]);
+                if (p!= null && p.isToolSupported("wscompile")) {
+                    platform = p;
+                    break;
+                }
+            }
+            File f1 = platform == null ? null : platform.getPlatformRoots() [0];
+            if(f1 != null && f1.exists()) {
+                String installRoot = f1.getAbsolutePath();
+                //				if(installRoot == null) {
+                //					// !PW What will this do on UNIX?
+                //					File temp = new File("c:\\sun\\appserver\\lib\\appserv-admin.jar"); // NOI18N
+                //					// need also to check on Unix system the defautl location
+                //					if(temp.exists()) {
+                //						installRoot = "c:\\sun\\appserver"; // NOI18N
+                //						System.setProperty("com.sun.aas.installRoot", installRoot); // NOI18N
+                //					} else {
+                //						// !PW due to null check on f1, I don't think this entire block
+                //						// is even necessary or useful anymore, but just in case,
+                //						// add a return here so we don't get a NPE later.
+                //						return;
+                //					}
+                //				}
+                
+                InstalledFileLocator locator = InstalledFileLocator.getDefault();
+                
+                File f = locator.locate("modules/ext/websvcregistry.jar", null, true); // NOI18N
+                if(f != null) {
+                    registryInstalled = true;
+                    loader.addURL(f);
+                    loadLocaleSpecificJars(f, loader);
+                } else {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot locate file modules/ext/websvcregistry.jar");
+                }
+                
+                // Add correct jars from the installed application server.
+                SJSASVersion appServerVersion = SJSASVersion.getSJSAppServerVersion();
+                String [] registryRuntimeJars = appServerVersion.getRegistryRuntimeLibraries();
+                
+                for(int i = 0; i < registryRuntimeJars.length; i++) {
+                    loader.addURL(new File(installRoot + registryRuntimeJars[i]));
+                }
+            }
+        } catch(Exception ex) {
+            throw new Exception(ex.getLocalizedMessage(), ex);
+        }
+    }
+    private static void loadLocaleSpecificJars(File file, ExtensionClassLoader loader) {
+        File parentDir = file.getParentFile();
+        //System.out.println("parentDir: " + parentDir);
+        File localeDir = new File(parentDir, "locale"); //NOI18N
+        if(localeDir.exists()){
+            File[] localeFiles = localeDir.listFiles();
+            File localeFile = null;
+            String localeFileName = null;
+            String fileName = file.getName();
+            fileName = getFileNameWithoutExt(fileName);
+            //System.out.println("fineName: " + fileName);
+            assert(fileName.length() > 0);
+            for(int i=0; i<localeFiles.length; i++){
+                localeFile = localeFiles[i];
+                localeFileName = localeFile.getName();
+                //System.out.println("localeFileName: " + localeFileName);
+                assert(localeFileName.length() > 0);
+                if(localeFileName.startsWith(fileName)){
+                    try{
+                        loader.addURL(localeFile);
+                    }catch (Exception ex2) {
+                        System.out.println(ex2.getLocalizedMessage());
+                    }
+                }
+            }
+        }
+    }
+    
+    private static String getFileNameWithoutExt(String fileName){
+        int index = fileName.lastIndexOf("."); //NOI18N
+        if(index != -1){
+            fileName = fileName.substring(0, index);
+        }
+        return fileName;
+    }    
+        /*
+         * Used to get the netbeans classloader of this class.
+         *
+         */
+    static class Empty {
+    }
 }
