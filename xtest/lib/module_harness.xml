@@ -254,9 +254,9 @@ Microsystems, Inc. All Rights Reserved.
     <!-- IDE test part -->
     <!-- ============= -->
     <target name="ide_test_bootstrap" >
-        <echo messsage="**********"/>
+        <echo message="**********"/>
         <echo message="! This is DEPRECATED test mode. Please refer to a http://xtest.netbeans.org to get information how to update your tests"/>
-        <echo messsage="**********"/>
+        <echo message="**********"/>
         <antcall target="fail_without_ide_plugin"/>
         <ant antfile="${xtest.ide.plugin.ant.script}" target="deprecated_ide_test_bootstrap"/>
     </target>
