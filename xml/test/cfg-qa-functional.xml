@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="XML-ALL config">
 
-    <testbag testattribs="stable" compiler="qa-compiler" executor="ide" name="all_xml_stable" resultsprocessor="qa-reporter">
+    <testbag testattribs="stable,full" compiler="qa-compiler" executor="ide" name="all_xml_full" resultsprocessor="qa-reporter">
         <testset dir="qa-functional/src">
             <patternset>
                 <!-- TAX -->
@@ -37,17 +37,16 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- TEXT-EDIT -->
                 <include name="org/netbeans/modules/xml/text/syntax/ColoringTest.class"/>
                 <!-- TREE-EDIT -->
-           </patternset>
+                <include name="org/netbeans/modules/xml/tree/nodes/XMLDataNodeTest.class"/>
+                <include name="org/netbeans/modules/xml/tree/nodes/DTDDataNodeTest.class"/> 
+       </patternset>
         </testset>
     </testbag>
         
     <testbag testattribs="fail" executor="ide" name="all_xml_fail" resultsprocessor="qa-reporter">
         <testset dir="qa-functional/src">
-            <patternset>
-                <!-- fail due #24418 -->
-                <include name="org/netbeans/modules/xml/tree/nodes/XMLDataNodeTest.class"/>
-                <include name="org/netbeans/modules/xml/tree/nodes/DTDDataNodeTest.class"/> 
-            </patternset>
+           <patternset>
+           </patternset>
         </testset>
     </testbag>
         

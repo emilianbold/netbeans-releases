@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="XML-Catalog config">
 
-    <testbag testattribs="stable" compiler="qa-compiler" executor="ide" name="catalog_stable" resultsprocessor="qa-reporter">
+    <testbag testattribs="stable,full" compiler="qa-compiler" executor="ide" name="xml_catalog_full" resultsprocessor="qa-reporter">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/modules/xml/catalog/CatalogTest.class"/>
@@ -22,12 +22,12 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
         
-    <testbag testattribs="fail" executor="ide" name="catalog_fail" resultsprocessor="qa-reporter">
+    <testbag testattribs="fail" executor="ide" name="xml_catalog_fail" resultsprocessor="qa-reporter">
         <testset dir="qa-functional/src">
         </testset>
     </testbag>
         
-    <testbag testattribs="dev" executor="ide" name="catalog_dev" resultsprocessor="qa-reporter">
+    <testbag testattribs="dev" executor="ide" name="xml_catalog_dev" resultsprocessor="qa-reporter">
         <testset dir="qa-functional/src">
             <patternset>
            </patternset>
