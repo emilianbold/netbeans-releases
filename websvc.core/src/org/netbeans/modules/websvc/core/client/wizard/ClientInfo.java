@@ -299,7 +299,8 @@ public final class ClientInfo extends JPanel {
         
         // service related fields
         jTxtWsdlURL.setEnabled(fromService);
-        jBtnGetWsdl.setEnabled(fromService);
+        String wsdlUrlText = jTxtWsdlURL.getText().trim();
+        jBtnGetWsdl.setEnabled(fromService && wsdlUrlText != null && wsdlUrlText.length() > 0);
         jBtnProxy.setEnabled(fromService);
         jLblLocalFilename.setEnabled(fromService);
         jTxtLocalFilename.setEnabled(fromService);
@@ -332,49 +333,46 @@ public final class ClientInfo extends JPanel {
 		// Register listener on the textFields to make the automatic updates
         jTxtWsdlURL.getDocument().addDocumentListener(new DocumentListener() {
                 public void changedUpdate(DocumentEvent e) {
-                    retriever = null;
-                    updateTexts(e);
+                    wsdlUrlChanged();
                 }
                 public void insertUpdate(DocumentEvent e) {
-                    retriever = null;
-                    updateTexts(e);
+                    wsdlUrlChanged();
                 }
                 public void removeUpdate(DocumentEvent e) {
-                    retriever = null;
-                    updateTexts(e);
+                    wsdlUrlChanged();
                 }
             });
         jTxtLocalFilename.getDocument().addDocumentListener(new DocumentListener() {
                 public void changedUpdate(DocumentEvent e) {
-                    updateTexts(e);
+                    updateTexts();
                 }
                 public void insertUpdate(DocumentEvent e) {
-                    updateTexts(e);
+                    updateTexts();
                 }
                 public void removeUpdate(DocumentEvent e) {
-                    updateTexts(e);
+                    updateTexts();
                 }
             });
         jTxtWsdlFile.getDocument().addDocumentListener(new DocumentListener() {
                 public void changedUpdate(DocumentEvent e) {
-                    updateTexts(e);
+                    updateTexts();
                 }
                 public void insertUpdate(DocumentEvent e) {
-                    updateTexts(e);
+                    updateTexts();
                 }
                 public void removeUpdate(DocumentEvent e) {
-                    updateTexts(e);
+                    updateTexts();
                 }
             });
         jTxtPackageName.getDocument().addDocumentListener(new DocumentListener() {
                 public void changedUpdate(DocumentEvent e) {
-                    updateTexts(e);
+                    updateTexts();
                 }
                 public void insertUpdate(DocumentEvent e) {
-                    updateTexts(e);
+                    updateTexts();
                 }
                 public void removeUpdate(DocumentEvent e) {
-                    updateTexts(e);
+                    updateTexts();
                 }
             });
 	}
@@ -571,7 +569,18 @@ public final class ClientInfo extends JPanel {
 		return true;
 	}
     
-    private void updateTexts(DocumentEvent e) {
+    private void wsdlUrlChanged() {
+        // Throw away any existing retriever.  New URL means user has to download it again.
+        retriever = null;
+        
+        // Only enable retrieval button if there is a URL specified.
+        String wsdlUrlText = jTxtWsdlURL.getText().trim();
+        jBtnGetWsdl.setEnabled(wsdlUrlText != null && wsdlUrlText.length() > 0);
+        
+        updateTexts();
+    }
+    
+    private void updateTexts() {
         if(!settingFields) {
             descriptorPanel.fireChangeEvent(); // Notify that the panel changed
         }
