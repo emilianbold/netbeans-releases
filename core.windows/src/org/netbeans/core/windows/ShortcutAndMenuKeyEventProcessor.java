@@ -104,7 +104,13 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
         if (mb == null)
             return false;
         boolean pressed = (ev.getID() == KeyEvent.KEY_PRESSED);
-
+        //#38810 start - focusing the main window in case it's not active and the 
+        // key binding should be processed.
+        if (pressed && !mw.isActive())
+        {
+            mw.toFront();
+        }
+        //#38810 end
         boolean res = invokeProcessKeyBindingsForAllComponents(ev, mw, pressed);
         
         if (res)
