@@ -683,9 +683,9 @@ class HandleLayer extends JPanel
                 if (!modifier)
                     lastLeftMousePoint = e.getPoint();
 
-                ComponentPalette palette = ComponentPalette.getDefault();
+                CPManager manager = CPManager.getDefault();
 
-                if (palette.getMode() == PaletteAction.MODE_SELECTION) {
+                if (manager.getMode() == PaletteAction.MODE_SELECTION) {
                     if (!modifier)
                         checkResizing(e.getPoint());
 
@@ -704,12 +704,12 @@ class HandleLayer extends JPanel
                             e.isControlDown() || e.isAltDown() ?
                             COMP_SELECTED : COMP_DEEPEST);
 
-                    if (palette.getMode() == PaletteAction.MODE_CONNECTION) {
+                    if (manager.getMode() == PaletteAction.MODE_CONNECTION) {
                         if (hitMetaComp != null)
                             formDesigner.connectBean(hitMetaComp);
                     }
-                    else if (palette.getMode() == PaletteAction.MODE_ADD) {
-                        PaletteItem item = palette.getSelectedItem();
+                    else if (manager.getMode() == PaletteAction.MODE_ADD) {
+                        PaletteItem item = manager.getSelectedItem();
                         RADComponent targetComp;
                         if (item.isMenu())
                             targetComp = formDesigner.getModel().getTopRADComponent();
@@ -727,7 +727,7 @@ class HandleLayer extends JPanel
                                              constraints);
 
                         if ((e.getModifiers() & InputEvent.SHIFT_MASK) == 0)
-                            palette.setMode(PaletteAction.MODE_SELECTION);
+                            manager.setMode(PaletteAction.MODE_SELECTION);
                     }
                 }
                 e.consume();
@@ -757,12 +757,12 @@ class HandleLayer extends JPanel
         }
 
         public void mouseMoved(MouseEvent e) {
-            ComponentPalette palette = ComponentPalette.getDefault();
-            if (palette.getMode() == PaletteAction.MODE_ADD) {
+            CPManager manager = CPManager.getDefault();
+            if (manager.getMode() == PaletteAction.MODE_ADD) {
                 RADComponent hitMetaComp = getMetaComponentAt(e.getPoint(), COMP_DEEPEST);
-                displayHint(hitMetaComp, e.getPoint(), palette.getSelectedItem());
+                displayHint(hitMetaComp, e.getPoint(), manager.getSelectedItem());
             }
-            else if (palette.getMode() == PaletteAction.MODE_SELECTION) {
+            else if (manager.getMode() == PaletteAction.MODE_SELECTION) {
                 checkResizing(e.getPoint());
             }
         }

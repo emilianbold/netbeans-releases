@@ -208,7 +208,7 @@ public final class BorderEditor extends PropertyEditorSupport
                 }
             };
 
-            PaletteItem[] items = ComponentPalette.getDefault().getAllItems();
+            PaletteItem[] items = CPManager.getDefault().getAllItems();
             for (int i = 0; i < items.length; i++) {
                 if (items[i].isBorder()) {
                     try {

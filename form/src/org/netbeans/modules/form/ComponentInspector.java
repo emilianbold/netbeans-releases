@@ -123,7 +123,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
                         
             Node[] selectedNodes = getExplorerManager().getSelectedNodes();
 
-            if (ComponentPalette.getDefault().getMode() ==
+            if (CPManager.getDefault().getMode() ==
                 PaletteAction.MODE_CONNECTION) {
                 if (selectedNodes.length < 1)
                     return;

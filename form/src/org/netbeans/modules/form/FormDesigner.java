@@ -543,7 +543,7 @@ public class FormDesigner extends TopComponent
             connectionSource = null;
             connectionTarget = null;
             handleLayer.repaint();
-            ComponentPalette.getDefault().setMode(PaletteAction.MODE_SELECTION);
+            CPManager.getDefault().setMode(PaletteAction.MODE_SELECTION);
         }
     }
 

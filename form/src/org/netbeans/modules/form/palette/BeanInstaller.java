@@ -64,7 +64,7 @@ public final class BeanInstaller
         JarFileSystem jar = createJarForFile(jarFile);
         if (jar == null) {
             TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                ComponentPalette.getBundle().getString(
+                CPManager.getBundle().getString(
                     "MSG_ErrorInFile"), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             return;
         }
@@ -73,7 +73,7 @@ public final class BeanInstaller
 
         if (beans.size() == 0) {
             TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                ComponentPalette.getBundle().getString(
+                CPManager.getBundle().getString(
                     "MSG_noBeansInJar"), NotifyDescriptor.INFORMATION_MESSAGE)); // NOI18N
             return;
         }
@@ -81,7 +81,7 @@ public final class BeanInstaller
         BeanSelector sel = new BeanSelector(beans);
         DialogDescriptor desc = new DialogDescriptor(
             sel,
-            ComponentPalette.getBundle().getString("CTL_SelectJB"), // NOI18N
+            CPManager.getBundle().getString("CTL_SelectJB"), // NOI18N
             true,
             null
             );
@@ -305,7 +305,7 @@ public final class BeanInstaller
                 ex.printStackTrace();
 
             String message = MessageFormat.format(
-                ComponentPalette.getBundle().getString("FMT_ERR_CannotLoadClass"), // NOI18N
+                CPManager.getBundle().getString("FMT_ERR_CannotLoadClass"), // NOI18N
                 new Object [] { className, ex.getClass().getName(), ex.getMessage() });
 
             TopManager.getDefault().notify(new NotifyDescriptor.Message(
@@ -350,7 +350,7 @@ public final class BeanInstaller
         CategorySelector sel = new CategorySelector();
         DialogDescriptor desc = new DialogDescriptor(
             sel,
-            ComponentPalette.getBundle().getString("CTL_SelectPalette"), // NOI18N
+            CPManager.getBundle().getString("CTL_SelectPalette"), // NOI18N
             true,
             null
             );
@@ -371,7 +371,7 @@ public final class BeanInstaller
 
     private static File selectJarModule() {
         JFileChooser chooser = new JFileChooser();
-        final ResourceBundle bundle = ComponentPalette.getBundle();
+        final ResourceBundle bundle = CPManager.getBundle();
 
         chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
             public boolean accept(File f) {
@@ -449,17 +449,7 @@ public final class BeanInstaller
             /* ignore */
         }
 
-        if (autoLoadFolders(globalFolder, localFolder)) {
-            /* JST: Why? A hack?
-               java.awt.EventQueue.invokeLater(
-               new Runnable() {
-               public void run() {
-               ComponentPalette.getDefault().updatePalette();
-               }
-               }
-               );
-            */
-        }
+        autoLoadFolders(globalFolder, localFolder);
     }
 
     /** Loads the beans stored in the given folder.
@@ -547,12 +537,6 @@ public final class BeanInstaller
             }
         }
 
-        // XXX(-tdt) ComponentPalette.<init> kicks off a thread to load
-        // installed beans. This thread must be postponed until bean jars are
-        // added to the repository
-        //
-        // String[] categories = ComponentPalette.getDefault().getPaletteCategories();
-
         for (int i = 0; i < list.length; i++) {
             if (list[i].getName().endsWith(JAR_EXT)) {
                 if (alreadyInstalled.get(list[i].getName()) == null) {
@@ -604,7 +588,7 @@ public final class BeanInstaller
         JarFileSystem jar = createJarForFile(jarFile);
         if (jar == null) {
             TopManager.getDefault().notify(
-                new NotifyDescriptor.Message(ComponentPalette.getBundle().getString(
+                new NotifyDescriptor.Message(CPManager.getBundle().getString(
                                                             "MSG_ErrorInFile"), // NOI18N
                                              NotifyDescriptor.ERROR_MESSAGE));
             return false;
@@ -665,7 +649,7 @@ public final class BeanInstaller
             list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
             setLayout(new BorderLayout(5, 5));
-            add(new JLabel(ComponentPalette.getBundle().getString("CTL_PaletteCategories")), // NOI18N
+            add(new JLabel(CPManager.getBundle().getString("CTL_PaletteCategories")), // NOI18N
                 BorderLayout.NORTH);
             add(new JScrollPane(list), BorderLayout.CENTER);
             setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -696,7 +680,7 @@ public final class BeanInstaller
 
             setBorder(new EmptyBorder(5, 5, 5, 5));
             setLayout(new BorderLayout(5, 5));
-            add(new JLabel(ComponentPalette.getBundle().getString("CTL_SelectBeans")), // NOI18N
+            add(new JLabel(CPManager.getBundle().getString("CTL_SelectBeans")), // NOI18N
                 BorderLayout.NORTH);
             add(new JScrollPane(list), BorderLayout.CENTER); // NOI18N
         }

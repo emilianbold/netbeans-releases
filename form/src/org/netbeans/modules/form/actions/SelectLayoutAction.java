@@ -123,7 +123,7 @@ public class SelectLayoutAction extends NodeAction
     }
 
     private PaletteItem[] getAllLayouts() {
-        PaletteItem[] allItems = ComponentPalette.getDefault().getAllItems();
+        PaletteItem[] allItems = CPManager.getDefault().getAllItems();
         ArrayList layoutsList = new ArrayList();
         for (int i = 0; i < allItems.length; i++) {
             if (allItems[i].isLayout()) {
