@@ -141,10 +141,6 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
 	</file>
         
-        <file name="A-ESCAPE.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
-	</file>
-
         <file name="S-ESCAPE.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
 	</file>
