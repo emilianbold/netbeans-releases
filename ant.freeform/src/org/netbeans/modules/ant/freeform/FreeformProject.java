@@ -203,8 +203,7 @@ public final class FreeformProject implements Project {
                     mergedInstances.add(lm.merge(lkp, classes[i]));
                 }
             }
-            // XXX - the Lookups.exclude is commented out due to the issue #53653. There was excluded the WebModuleProvider, which is needed.
-            //lkp = Lookups.exclude(lkp, (Class[])filtredClasses.toArray(new Class[filtredClasses.size()]));
+            lkp = Lookups.exclude(lkp, (Class[])filtredClasses.toArray(new Class[filtredClasses.size()]));
             Lookup fixed = Lookups.fixed(mergedInstances.toArray(new Object[mergedInstances.size()]));
             setLookups(new Lookup[]{fixed, lkp});
         }
