@@ -336,17 +336,6 @@ removed !!!!
                    property="ide.extra.classpath"/>
     </target>
     
-    
-    <target name="ide_test_init">
-        <!-- deprecated
-        <property name="junit.fork" value="no"/>
-        -->
-        <!-- run tests in ide mode -->
-        <property name="xtest.testrunner.mode" value="ide"/>
-        <!-- !! always use empty path, JUnit task will use IDE filesystems instead !! -->
-        <pathdef useid="test.classpath"/>
-    </target>
-
     <!-- if testbag did not finish correctly, notice this state to the current testbag -->
     <target name="testbag-failure" if="testbag.failure">
         <testbaginfo unexpectedFailure="testbag did not finish correctly, some tests may not have run" outfile="${xtest.workdir}/xmlresults/testbag.xml"/> 
