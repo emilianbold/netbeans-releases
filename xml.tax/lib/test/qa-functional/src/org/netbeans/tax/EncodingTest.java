@@ -81,12 +81,12 @@ public class EncodingTest extends XTest {
                 
                 DataObject fo = TestUtil.THIS.findData(NDATA_OBJECT);
                 if (fo != null) {
-                    while (!!! fo.getNodeDelegate().canDestroy()) {
-                        dbg.println("Cannot destroy node Waiting...");
-                        try { Thread.currentThread().sleep(2000); } catch (Exception e){};
-                    }
-                    fo.getNodeDelegate().destroy();
-                    //fo.delete();
+//                    while (!!! fo.getNodeDelegate().canDestroy()) {
+//                        getLog().println("Cannot destroy node Waiting...");
+//                        try { Thread.currentThread().sleep(2000); } catch (Exception e){};
+//                    }
+//                    fo.getNodeDelegate().destroy();
+                    fo.delete();
                 }
                 
                 XMLDataObject newDataObject = (XMLDataObject) origDataObject.createFromTemplate(dataFolder, "newEncoding");
