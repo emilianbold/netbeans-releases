@@ -18,6 +18,9 @@ import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.beans.*;
 import java.text.MessageFormat;
+import java.io.ObjectInput;
+import java.io.IOException;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
@@ -333,6 +336,15 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     actions.detach ();
   }
 
+  /** Deserialize this top component, sets as default.
+  * @param in the stream to deserialize from
+  */
+  public void readExternal (ObjectInput in)
+              throws IOException, ClassNotFoundException {
+    super.readExternal(in);
+    explorer = this;
+  }
+  
 
 // -----------------------------------------------------------------------------
 // Static methods
@@ -353,6 +365,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  9    Gandalf   1.8         5/11/99  David Simonek   changes to made window 
+*       system correctly serializable
 *  8    Gandalf   1.7         3/25/99  David Simonek   another small changes in 
 *       window system
 *  7    Gandalf   1.6         3/25/99  David Simonek   changes in window system,
