@@ -81,7 +81,7 @@ public class FormLoaderSettings extends SystemOption {
 // ------------------------------------------
 // properties
 
-  private static String workspace = "Visual";
+  private static String workspace = FormEditor.GUI_EDITING_WORKSPACE_NAME;
   /** If true, the generated code for AWT components' hierarchy
   * is indented to reflect the hierarchy (i.e. the code for subcomponents of
   * Container is indented to the right).
@@ -462,6 +462,7 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  20   Gandalf   1.19        1/11/00  Pavel Buzek     
  *  19   Gandalf   1.18        1/10/00  Ian Formanek    Removed obsoleted import
  *  18   Gandalf   1.17        1/5/00   Ian Formanek    NOI18N
  *  17   Gandalf   1.16        12/8/99  Pavel Buzek     "workspace" property 

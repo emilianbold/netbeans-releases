@@ -248,7 +248,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
       for (int i = wss.length; --i >= 0; ) {
         names[i] = wss[i].getName();
       }
-      names[wss.length] = NbBundle.getBundle(WorkspaceEditor.class).getString("Workspace_None");
+      names[wss.length] = NbBundle.getBundle(WorkspaceEditor.class).getString("VALUE_WORKSPACE_NONE");
       return names;
     }
   }
@@ -257,6 +257,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  22   Gandalf   1.21        1/11/00  Pavel Buzek     
  *  21   Gandalf   1.20        1/10/00  Ian Formanek    Removed obsoleted code
  *  20   Gandalf   1.19        1/5/00   Ian Formanek    NOI18N
  *  19   Gandalf   1.18        1/1/00   Ian Formanek    Fixed bug w/ resource in

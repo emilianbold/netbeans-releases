@@ -59,6 +59,7 @@ final public class FormEditor extends Object {
   * E.g. for Direction layout property, the property is named "__LAYOUT__mousePressed"
   */
   public static final String LAYOUT_PREFIX = "__LAYOUT__"; // NOI18N
+  public static final String GUI_EDITING_WORKSPACE_NAME = "GUI Editing";
 
   /** The resource bundle for the form editor */
   private static java.util.ResourceBundle formBundle = org.openide.util.NbBundle.getBundle (FormEditor.class);
@@ -450,7 +451,7 @@ static final long serialVersionUID =4248268998485315927L;
 
     public void open (Workspace workspace) {
       Workspace realWorkspace = TopManager.getDefault ().getWindowManager ().getCurrentWorkspace ();
-      Workspace visualWorkspace = TopManager.getDefault().getWindowManager().findWorkspace("Visual");
+      Workspace visualWorkspace = TopManager.getDefault().getWindowManager().findWorkspace(GUI_EDITING_WORKSPACE_NAME);
       Mode ourMode = realWorkspace.findMode(this);
       if ((ourMode == null) && workspace.equals(visualWorkspace)) {
         // create new mode for CI and set the bounds properly
@@ -635,6 +636,7 @@ static final long serialVersionUID =7424646018839457544L;
 
 /*
  * Log
+ *  42   Gandalf   1.41        1/11/00  Pavel Buzek     
  *  41   Gandalf   1.40        1/5/00   Ian Formanek    NOI18N
  *  40   Gandalf   1.39        12/8/99  Pavel Buzek     FormEditor and 
  *       ComponentInspector windows open on Visual workspace
