@@ -498,11 +498,12 @@ public class Property {
      * @see #SET_RENDERER
      */
     public String getRendererName() {
-        return getRenderer().getClass().getName();
+        return property.getShortDescription();
+        //return getRenderer().getClass().getName();
     }
     
     /** Returns component which represents renderer for this property. */
-    private Component getRenderer() {
+    public Component getRenderer() {
         final JTableOperator table = propertySheetOper.tblSheet();
         for(int row=0;row<table.getRowCount();row++) {
             if(table.getValueAt(row, 1) instanceof Node.Property) {
@@ -535,5 +536,13 @@ public class Property {
         }
         // never should happen
         throw new JemmyException("Property "+getName()+" not found in this sheet:\n"+propertySheetOper.getSource().toString());
+    }
+    
+    /** Gets short description for this property. Short description is also 
+     * used in tooltip.
+     * @return short description for this property.
+     */
+    public String getShortDescription() {
+        return this.property.getShortDescription();
     }
 }
