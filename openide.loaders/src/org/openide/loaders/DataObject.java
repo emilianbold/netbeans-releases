@@ -911,6 +911,9 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         private void readObject (ObjectInputStream ois)
         throws IOException, ClassNotFoundException {
             ois.defaultReadObject ();
+            if (fo == null) {
+                throw new java.io.FileNotFoundException ();
+            }
             // DataObjectNotFoundException extends IOException:
             obj = DataObject.find(fo);
         }
