@@ -123,8 +123,8 @@
     </Component>
     <Component class="javax.swing.JTextField" name="replaceFormatTextField">
       <Properties>
-        <Property name="editable" type="boolean" value="false"/>
         <Property name="columns" type="int" value="40"/>
+        <Property name="editable" type="boolean" value="false"/>
       </Properties>
 
       <Events>
@@ -151,7 +151,7 @@
       </Properties>
 
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value=""/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="replaceFormatLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString(&quot;LBL_ReplaceFormat_Mnem&quot;)).charAt(0));&#xa;"/>
       </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

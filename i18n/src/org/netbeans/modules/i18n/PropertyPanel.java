@@ -235,8 +235,8 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(keyBundleCombo, gridBagConstraints);
 
-        replaceFormatTextField.setEditable(false);
         replaceFormatTextField.setColumns(40);
+        replaceFormatTextField.setEditable(false);
         replaceFormatTextField.selectAll();
         replaceFormatTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -255,6 +255,8 @@ public class PropertyPanel extends JPanel {
 
         replaceFormatLabel.setText(I18nUtil.getBundle().getString("LBL_ReplaceFormat"));
         replaceFormatLabel.setLabelFor(replaceFormatTextField);
+        replaceFormatLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_ReplaceFormat_Mnem")).charAt(0));
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -362,18 +364,18 @@ public class PropertyPanel extends JPanel {
     }//GEN-LAST:event_valueTextFocusLost
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel keyLabel;
     private javax.swing.JTextArea valueText;
-    private javax.swing.JComboBox keyBundleCombo;
-    private javax.swing.JLabel valueLabel;
-    private javax.swing.JScrollPane commentScroll;
-    private javax.swing.JButton replaceFormatButton;
-    private javax.swing.JScrollPane valueScroll;
-    private javax.swing.JTextArea commentText;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JTextArea commentText;
     private javax.swing.JLabel replaceFormatLabel;
-    private javax.swing.JTextField replaceFormatTextField;
+    private javax.swing.JScrollPane valueScroll;
+    private javax.swing.JButton replaceFormatButton;
+    private javax.swing.JLabel keyLabel;
     private javax.swing.JLabel commentLabel;
+    private javax.swing.JComboBox keyBundleCombo;
+    private javax.swing.JScrollPane commentScroll;
+    private javax.swing.JLabel valueLabel;
+    private javax.swing.JTextField replaceFormatTextField;
     // End of variables declaration//GEN-END:variables
 
 }
