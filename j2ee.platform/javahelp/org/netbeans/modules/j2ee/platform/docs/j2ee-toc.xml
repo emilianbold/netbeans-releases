@@ -33,7 +33,7 @@
        <tocitem text="Where to Put Web Application Files" target="webmod_placefiles" />
     </tocitem> <!-- About Web Applications -->
     
-    <tocitem text="Creating Web Components">
+    <tocitem text="Creating and Editing Web Components">
       <tocitem text="About Creating Web Components" target="introwebcomps" />	
       <tocitem text="JSP"> 
           <tocitem text="About JavaServer Pages Technology" target="concepts_jsp" />
@@ -140,7 +140,16 @@
               <tocitem text="Running an Applet" target="webmod_runapplet"/>
       </tocitem> <!-- Working With Applets -->
    </tocitem>
-      
+   <tocitem text="Configuring Web Applications" >
+            <tocitem text="About Configuring Web Applications" target="tbd" /> 
+	    <tocitem text="Working with Deployment Descriptors"> 
+               <tocitem text="About Working with Deployment Descriptors" target="webmod_editdd" />  
+               <tocitem text="Editing Deployment Descriptors" target="concepts_deploydes" />  
+               <tocitem text="Registering a Filter" target="filter_addtodd"/>
+	       <tocitem text="Registering a Web Application Listener" target="listen_addtodd"/>
+           </tocitem> 
+	   <tocitem text="Adding a Web Application to a J2EE Application" target="tbd" />
+        </tocitem>
     <tocitem text="Building Web Applications"> 
             <tocitem text="About Building Web Applications" target="concepts_war"  />
     <!--    <tocitem text="Unpacking and Mounting WAR Files" target="war_unpack" /> -->	
@@ -170,18 +179,14 @@
    	    </tocitem>
             <tocitem text="Changing Web Servers" target="webmod_server_set" />
             <tocitem text="Changing Web Browsers" target="webmod_browser" />
-            <tocitem text="Deployment Descriptors"> 
-               <tocitem text="About Deployment Descriptors" target="webmod_editdd" />  
-               <tocitem text="Editing Deployment Descriptors" target="concepts_deploydes" />  
-               <tocitem text="Registering a Filter" target="filter_addtodd"/>
-	       <tocitem text="Registering a Web Application Listener" target="listen_addtodd"/>
-            </tocitem>   
+             
        </tocitem> <!-- Deploying Web Applications-->
        
-       <tocitem text="Debugging Web Applications"> 
+       <tocitem text="Debugging and Testing Web Applications"> 
             <tocitem text="About Debugging Web Applications" target="jsp_debug"/>
     <!--    <tocitem text="Validating JSP Syntax" target="jsp_validate" />  -->
-            <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
+    	    <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
+            <tocitem text="Testing a Web Service" target="test_ws" />
             <tocitem text="Writing A Debug Target for a Free-Form Web Project" target="proj_webfree_debug" />
      </tocitem> <!-- Debugging Web Applications-->
     
