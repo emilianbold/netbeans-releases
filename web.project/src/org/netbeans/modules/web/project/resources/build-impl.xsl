@@ -413,17 +413,17 @@ is divided into following sections:
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
 
-			<xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service|/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
-				<target name="wscompile-init">
-					<taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
-					  <classpath path="${{wscompile.classpath}}"/>
-					</taskdef>
+            <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service|/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
+                <target name="wscompile-init">
+                    <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
+                      <classpath path="${{wscompile.classpath}}"/>
+                    </taskdef>
 
-					<mkdir dir="${{build.web.dir}}/WEB-INF/wsdl"/>
-					<mkdir dir="${{build.classes.dir}}"/>
-					<mkdir dir="${{build.generated.dir}}/wssrc"/>
-				</target>
-			</xsl:if>
+                    <mkdir dir="${{build.web.dir}}/WEB-INF/wsdl"/>
+                    <mkdir dir="${{build.classes.dir}}"/>
+                    <mkdir dir="${{build.generated.dir}}/wssrc"/>
+                </target>
+            </xsl:if>
 
             <xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
               <xsl:variable name="wsname">
@@ -447,10 +447,10 @@ is divided into following sections:
               </target>
             </xsl:for-each>
 
-			<xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
-				<xsl:variable name="wsclientname">
-					<xsl:value-of select="webproject2:web-service-client-name"/>
-				</xsl:variable>
+            <xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
+                <xsl:variable name="wsclientname">
+                    <xsl:value-of select="webproject2:web-service-client-name"/>
+                </xsl:variable>
                 <xsl:variable name="useimport">
                     <xsl:choose>
                         <xsl:when test="webproject2:web-service-stub-type">
@@ -468,26 +468,27 @@ is divided into following sections:
                     </xsl:choose>
                 </xsl:variable>
 
-				<target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
-					<copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
-						tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
-						<filterset>
-							<!-- replace token with reference to WSDL file in source tree, not build tree, since the
-							     the file probably has not have been copied to the build tree yet. -->
-							<filter token="CONFIG_ABSOLUTE_PATH" value="${{basedir}}/${{web.docbase.dir}}/WEB-INF/wsdl"/>
-						</filterset>
-					</copy>
-					<wscompile
-						xPrintStackTrace="true" verbose="true"
-						fork="true" keep="true" import="true" features="norpcstructures"
-						base="${{build.classes.dir}}"
-						sourceBase="${{build.generated.dir}}/wssrc"
-						classpath="${{wscompile.classpath}}"
-						mapping="${{build.web.dir}}/WEB-INF/wsdl/{$wsclientname}-mapping.xml"
-						config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
-					</wscompile>
-				</target>
-			</xsl:for-each>
+                <target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
+                    <copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
+                        tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
+                        <filterset>
+                            <!-- replace token with reference to WSDL file in source tree, not build tree, since the
+                                 the file probably has not have been copied to the build tree yet. -->
+                            <filter token="CONFIG_ABSOLUTE_PATH" value="${{basedir}}/${{web.docbase.dir}}/WEB-INF/wsdl"/>
+                        </filterset>
+                    </copy>
+                    <wscompile
+                        xPrintStackTrace="true" verbose="false" fork="true" keep="true"
+                        client="{$useclient}" import="{$useimport}"
+                        features="${{wscompile.client.{$wsclientname}.features}}"
+                        base="${{build.classes.dir}}"
+                        sourceBase="${{build.generated.dir}}/wssrc"
+                        classpath="${{wscompile.classpath}}"
+                        mapping="${{build.web.dir}}/WEB-INF/wsdl/{$wsclientname}-mapping.xml"
+                        config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
+                    </wscompile>
+                </target>
+            </xsl:for-each>
 
             <target name="-pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
