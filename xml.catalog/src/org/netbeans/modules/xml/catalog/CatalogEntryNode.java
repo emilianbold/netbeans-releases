@@ -24,6 +24,7 @@ import org.openide.util.*;
 import org.openide.text.*;
 import org.openide.loaders.*;
 import org.openide.*;
+import org.openide.windows.CloneableTopComponent;
 
 import org.netbeans.modules.xml.catalog.lib.*;
 
@@ -108,7 +109,7 @@ final class CatalogEntryNode extends BeanNode {
      * Encoding, coloring, ..., let editor kit takes care
      */
     private class ViewCookieImpl extends CloneableEditorSupport implements ViewCookie {
-                    
+
         ViewCookieImpl(Env env) {
             super(env);
         }
@@ -132,8 +133,15 @@ final class CatalogEntryNode extends BeanNode {
         protected java.lang.String messageOpened() {
             return Util.THIS.getString ("MSG_ENTITY_OPENED", getPublicID()); // NOI18N
         }
-        
-        /** 
+
+        //#20646 associate the entry node with editor top component
+        protected CloneableEditor createCloneableEditor() {
+            CloneableEditor editor = super.createCloneableEditor();
+            editor.setActivatedNodes(new Node[] {CatalogEntryNode.this});
+            return editor;
+        }
+
+        /**
          * Do not write it down, it is runtime view. #20007
          */
         private Object writeReplace() {
