@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
                             <xsd:element name="script" type="xsd:anyURI"/>
                             <xsd:element name="target" type="xsd:NCName"/>
                             <xsd:element name="clean-target" type="xsd:NCName"/>
+                            <xsd:element name="id" type="xsd:NCName"/>
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
