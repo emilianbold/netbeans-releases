@@ -30,7 +30,6 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
   /** Hashtable, where keys are Integer(T_XXX), and values are Class[] - supported NewTypes
   * for the different menu types */
   static HashMap supportedNewMenu;
-
   /** Init supportedNewMenu table. */
   static {
     supportedNewMenu = new HashMap();
@@ -90,6 +89,10 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
   }
 
   public void reorderSubComponents (int[] perm) {
+    // remove all visual components before permutation and than add it again
+    for (int i = 0, n=subComponents.size(); i < n; i++) {
+      removeVisualMenu ((RADMenuItemComponent) subComponents.get (i));
+    }
     for (int i = 0; i < perm.length; i++) {
       int from = i;
       int to = perm[i];
@@ -100,6 +103,9 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
       } else {
         subComponents.add (to, value);
       }
+    }
+    for (int i = 0, n=subComponents.size(); i < n; i++) {
+      addVisualMenu ((RADMenuItemComponent) subComponents.get (i));
     }
     getFormManager ().fireComponentsReordered (this);
   }
@@ -126,21 +132,36 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
   private void addVisualMenu (RADMenuItemComponent comp) {
     Object o = getBeanInstance();
     Object m = comp.getBeanInstance();
+    Object dto = getDesignTimeMenus (getFormManager ()).getDesignTime (o);
+    Object dtm = getDesignTimeMenus (getFormManager ()).getDesignTime (m);
 
     switch (getMenuItemType ()) {
       case T_MENUBAR:
         ((MenuBar)o).add((Menu)m);
+        ((JMenuBar)dto).add ((JMenu) dtm);
+        ((JMenuBar)dto).validate();
         break;
       case T_MENU:
+        if (comp.getMenuItemType () == T_SEPARATOR) {
+          ((Menu)o).addSeparator();
+          ((JMenu)dto).addSeparator();
+        } else {
+          ((Menu)o).add((MenuItem)m);
+          ((JMenu)dto).add((JMenuItem)dtm);
+        }
+        break;
       case T_POPUPMENU:
         if (comp.getMenuItemType () == T_SEPARATOR) {
           ((Menu)o).addSeparator();
+          ((JMenu)dto).addSeparator();
         } else {
           ((Menu)o).add((MenuItem)m);
+          ((JPopupMenu)dto).add((JMenuItem)dtm);
         }
         break;
       case T_JMENUBAR:
         ((JMenuBar)o).add((JMenu)m);
+        ((JMenuBar)o).validate();
         break;
       case T_JMENU:
         if (comp.getMenuItemType () == T_JSEPARATOR) {
@@ -163,32 +184,49 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
   private void removeVisualMenu (RADMenuItemComponent comp) {
     Object o = getBeanInstance();
     Object m = comp.getBeanInstance();
+    Object dto = getDesignTimeMenus (getFormManager ()).getDesignTime (o);
+    Object dtm = getDesignTimeMenus (getFormManager ()).getDesignTime (m);
 
     switch (getMenuItemType ()) {
       case T_MENUBAR:
         ((MenuBar)o).remove((Menu)m);
+        ((JMenuBar)dto).remove((JMenu)dtm);
+        ((JMenuBar)dto).validate();
         break;
       case T_MENU:
-      case T_POPUPMENU:
         if (comp.getMenuItemType () == T_SEPARATOR) {
-          // [PENDING]
+          ((Menu)o).remove (subComponents.indexOf(comp));
+          ((JMenu)dto).remove (subComponents.indexOf(comp));
         } else {
           ((Menu)o).remove((MenuItem)m);
+          ((JMenu)dto).remove((JMenuItem)dtm);
+        }
+        break;
+      case T_POPUPMENU:
+        if (comp.getMenuItemType () == T_SEPARATOR) {
+          ((Menu)o).remove (subComponents.indexOf(comp));
+          // PENDING - dont know how to get reference to JPopupMenu.Separator
+          // so it is not supported by getDesignTimeMenu () !!
+          //((JPopupMenu)dto).remove((JPopupMenu.Separator)dtm);
+        } else {
+          ((Menu)o).remove((MenuItem)m);
+          ((JPopupMenu)dto).remove((JMenuItem)dtm);
         }
         break;
       case T_JMENUBAR:
         ((JMenuBar)o).remove((JMenu)m);
+        ((JMenuBar)o).validate();
         break;
       case T_JMENU:
         if (comp.getMenuItemType () == T_JSEPARATOR) {
-          // [PENDING]
+          ((JMenu)o).remove (subComponents.indexOf(comp));
         } else {
           ((JMenu)o).remove((JMenuItem)m);
         }
         break;
       case T_JPOPUPMENU:
         if (comp.getMenuItemType () == T_JSEPARATOR) {
-          // [PENDING]
+          ((JPopupMenu)o).remove((JPopupMenu.Separator)m);
         } else {
           ((JPopupMenu)o).remove((JMenuItem)m);
         }
@@ -305,6 +343,9 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
 
 /*
  * Log
+ *  8    Gandalf   1.7         12/2/99  Pavel Buzek     AWT menu is displayed in
+ *       form at design time (a swing equivalent is created for each awt menu 
+ *       and displyed instead)
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         10/9/99  Ian Formanek    Fixed bug 4411 - Delete 

@@ -65,6 +65,8 @@ public class RADMenuItemComponent extends RADComponent {
 // Private properties
 
   transient private RADMenuComponent parent;
+  private static java.util.HashMap menusByFM = new java.util.HashMap ();
+  
 
 // -----------------------------------------------------------------------------
 // Initialization
@@ -95,9 +97,11 @@ public class RADMenuItemComponent extends RADComponent {
 
     super.setComponent (beanClass);
 
+    
     Object o = getBeanInstance();
     if (o instanceof MenuItem) {
-      ((MenuItem)o).addActionListener(getDefaultActionListener());
+      //((MenuItem) o).addActionListener(getDefaultActionListener());
+      ((JMenuItem) getDesignTimeMenus (getFormManager ()).getDesignTime (o)).addActionListener(getDefaultActionListener());
     }
     else if (o instanceof JMenuItem) {
       ((JMenuItem)o).addActionListener(getDefaultActionListener());
@@ -126,7 +130,7 @@ public class RADMenuItemComponent extends RADComponent {
     if (JMenuBar.class.isAssignableFrom(cl)) return T_JMENUBAR;
     if (JPopupMenu.class.isAssignableFrom(cl)) return T_JPOPUPMENU;
 
-    throw new InternalError ("Cannot create RADMenuItemComponent for nonmenu class");
+    throw new InternalError ("Cannot create RADMenuItemComponent for nonmenu class:"+cl.getName());
   }
 
 
@@ -138,10 +142,132 @@ public class RADMenuItemComponent extends RADComponent {
     };
   }
 
+  static DesignTimeMenus getDesignTimeMenus (FormManager2 fm) {
+    DesignTimeMenus dtm = (DesignTimeMenus) menusByFM.get (fm);
+    if (dtm == null) {
+      dtm = new DesignTimeMenus (fm);
+      menusByFM.put (fm, dtm);
+    }
+    return dtm;
+  }
+
+  // to find existing menu if caller does not know about formManager
+  public static Object findDesignTimeMenu (Object awtMenu) {
+    Object result;
+    for (java.util.Iterator it = menusByFM.keySet().iterator(); it.hasNext(); ) {
+      DesignTimeMenus dtm = (DesignTimeMenus) menusByFM.get (it.next());
+      if ((result = dtm.getDesignTime (awtMenu)) != null) {
+        return result;
+      }
+    }
+    return null;
+  }
+// -----------------------------------------------------------------------------
+// Inner classes
+  static class DesignTimeMenus {
+    final java.util.HashMap designTimeMenus = new java.util.HashMap ();
+    DesignTimeMenus (FormManager2 fm) {
+      fm.addFormListener (new FormAdapter () {
+        public void propertyChanged (FormPropertyEvent evt) {
+          if (evt.getRADComponent () instanceof RADMenuItemComponent) {
+            RADMenuItemComponent comp = (RADMenuItemComponent) evt.getRADComponent ();
+            copyMenuProperties (comp.getBeanInstance(), getDesignTime (comp.getBeanInstance()));
+          }
+        }
+        public void formLoaded () {
+          for (java.util.Iterator it = designTimeMenus.keySet().iterator(); it.hasNext(); ) {
+            Object menu = it.next();
+            copyMenuProperties (menu, getDesignTime(menu));
+          }
+        }
+      });
+    }
+
+    Object getDesignTime (Object awtMenu) {
+      Object swingMenu = designTimeMenus.get(awtMenu);
+      if (swingMenu == null) { 
+        // create swingMenu with copy of awtMenu aplicable properties
+        switch (recognizeType (awtMenu.getClass())) {
+          case T_MENUBAR:          swingMenu = new JMenuBar ();          break;
+          case T_MENU:             swingMenu = new JMenu ();             break;
+          case T_POPUPMENU:        swingMenu = new JPopupMenu ();        break;
+          case T_MENUITEM:         swingMenu = new JMenuItem ();         break;
+          case T_CHECKBOXMENUITEM: swingMenu = new JCheckBoxMenuItem (); break;
+          case T_JMENUBAR:
+          case T_JMENU:
+          case T_JPOPUPMENU:
+          case T_JMENUITEM:
+          case T_JCHECKBOXMENUITEM:
+          case T_JRADIOBUTTONMENUITEM:
+          case T_JSEPARATOR:
+            swingMenu = awtMenu;
+            break;
+          // PENDING - T_SEPARATOR
+        }
+        designTimeMenus.put (awtMenu, swingMenu);
+        copyMenuProperties (awtMenu, swingMenu);
+      }
+      return swingMenu;
+    }
+
+    // copy all aplicable properties into swing equivalent of awt component
+    void copyMenuProperties (Object awtMenu, Object swingMenu) {
+      switch (recognizeType (awtMenu.getClass())) {
+        case T_MENUBAR:
+          MenuBar mb = (MenuBar) awtMenu;
+          JMenuBar jmb = (JMenuBar) swingMenu;
+          jmb.setFont(mb.getFont());
+          jmb.setName(mb.getName());
+          break;
+        case T_MENU:
+          Menu m = (Menu) awtMenu;
+          JMenu jm = (JMenu) swingMenu;
+          jm.setActionCommand(m.getActionCommand());
+          jm.setEnabled(m.isEnabled());
+          jm.setFont(m.getFont());
+          jm.setLabel(m.getLabel());
+          jm.setName(m.getName());
+          jm.getPopupMenu().setLightWeightPopupEnabled(false);
+          break;
+        case T_POPUPMENU:
+          PopupMenu pm = (PopupMenu) awtMenu;
+          JPopupMenu jpm = (JPopupMenu) swingMenu;
+          jpm.setEnabled(pm.isEnabled());
+          jpm.setFont(pm.getFont());
+          jpm.setLabel(pm.getLabel());
+          jpm.setName(pm.getName());
+          jpm.setLightWeightPopupEnabled(false);
+          break;
+        case T_MENUITEM:
+          MenuItem mi = (MenuItem) awtMenu;
+          JMenuItem jmi = (JMenuItem) swingMenu;
+          jmi.setActionCommand(mi.getActionCommand());
+          jmi.setEnabled(mi.isEnabled());
+          jmi.setFont(mi.getFont());
+          jmi.setLabel(mi.getLabel());
+          jmi.setName(mi.getName());
+          break;
+        case T_CHECKBOXMENUITEM:  
+          CheckboxMenuItem cm = (CheckboxMenuItem) awtMenu;
+          JCheckBoxMenuItem jcm = (JCheckBoxMenuItem) swingMenu;
+          jcm.setActionCommand(cm.getActionCommand());
+          jcm.setEnabled(cm.isEnabled());
+          jcm.setFont(cm.getFont());
+          jcm.setLabel(cm.getLabel());
+          jcm.setName (cm.getName());
+          jcm.setState(cm.getState());
+          break;
+        // PENDING - T_SEPARATOR
+      }
+    }
+  }
 }
 
 /*
  * Log
+ *  8    Gandalf   1.7         12/2/99  Pavel Buzek     AWT menu is displayed in
+ *       form at design time (a swing equivalent is created for each awt menu 
+ *       and displyed instead)
  *  7    Gandalf   1.6         11/10/99 Pavel Buzek     while menu is selectedf 
  *       in form in test mode do not go to event handler
  *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
