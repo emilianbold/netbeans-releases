@@ -78,6 +78,9 @@ public class ViewListNodeInfo extends DatabaseNodeInfo {
                     else
                         throw new Exception(bundle.getString("EXC_UnableToCreateNodeInformationForView")); // NOI18N
                 }
+                // refersh list of views
+                refreshChildren();
+
             }
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
