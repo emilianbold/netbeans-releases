@@ -25,7 +25,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/url/TemplateHelp.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.url.URLWizardIterator"/>
             </file>
-            <attr name="templateType_Other" boolvalue="true"/>
         </folder> <!-- Other -->
 
         <folder name="Services">
