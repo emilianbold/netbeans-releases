@@ -56,7 +56,6 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
         <pathelement location="${xmlparser}"/>
-        <pathelement location="../tmp"/>
         <pathelement location="../netbeans/modules/lexer.jar"/>
         <pathelement location="../../editor/netbeans/modules/ext/nb-editor.jar"/>
         <pathelement location="../../editor/netbeans/modules/editor.jar"/>

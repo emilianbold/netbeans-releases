@@ -31,24 +31,7 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="external" target="unscramble"/>
   </target>
 
-  <target name="hack13">
-    <available property="hack13" classname="java.lang.CharSequence" />
-    <available property="uptodate" file="tmp/java/lang/CharSequence.class" />
-
-    <antcall target="hack13-check" />
-  </target>
-
-  <target name="hack13-check" unless="hack13">
-    <antcall target="hack13-do" />
-  </target>
-
-  <target name="hack13-do" unless="uptodate">
-    <mkdir dir="tmp/java/lang/" />
-    <echo file="tmp/java/lang/CharSequence.java" message="package java.lang;public interface CharSequence {int length();char charAt(int index);CharSequence subSequence(int start, int end);public String toString();}" />
-    <javac srcdir="tmp" destdir="tmp" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" />
-  </target>
-
-  <target name="compile" depends="init, hack13">
+  <target name="compile" depends="init">
     <javac srcdir="src" destdir="src"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">
@@ -59,7 +42,6 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="external">
           <include name="antlr*.jar"/>
         </fileset>
-        <pathelement location="tmp"/>
       </classpath>
     </javac>
   </target>
@@ -106,7 +88,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="lexer.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
-    <delete dir="tmp" />
   </target>
 
   <!-- api changes documentation -->
