@@ -74,12 +74,26 @@ public class BeanInfoGeneration extends NbTestCase {
             new JelloRepository().findOrMount(sampleDir);
             mount = false;
         }
-        
-        JavaWizard jw = JavaWizard.launch(JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes") + "|" + JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes/Class.java"),
-        sampleDir);
-        jw.setName(NAME_TEST_FILE);
-        jw.updatePanel(0);
-        jw.finish();
+  /***/
+        Explorer explorer = new Explorer();
+        explorer = Explorer.find();
+        explorer.switchToFilesystemsTab();
+        explorer.selectNode(sampleDir);
+        MainFrame mf = MainFrame.getMainFrame();
+        mf.pushFileMenu("New...");
+        JamDialog dialog = new JamDialog("New Wizard");
+        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Classes");
+        node.expand();
+        node.getChild("Class").select();
+        new JamButton(dialog, "Next >").doClick();
+        dialog = new JamDialog("New Wizard - Class");
+        dialog.getJamTextField(0).setText(NAME_TEST_FILE);
+        new JamButton(dialog, "Finish").doClick();                
+/***/      
+//        JavaWizard jw = JavaWizard.launch(JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes") + "|" + JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes/Class.java"),        sampleDir);
+//        jw.setName(NAME_TEST_FILE);
+//        jw.updatePanel(0);
+//        jw.finish();
         
     }
     
@@ -92,13 +106,13 @@ public class BeanInfoGeneration extends NbTestCase {
         String myObject = sampleDir+explorer.delim+NAME_TEST_FILE;
         
         String myObjectBeanInfo = sampleDir+explorer.delim+NAME_TEST_FILE + "BeanInfo";
-//        JamUtilities.waitEventQueueEmpty(3000);                
+        JamUtilities.waitEventQueueEmpty(1500);                
         explorer.pushPopupMenu("Delete", myObject);
         new JelloYesNoDialog("Confirm Object Deletion").yes();
-//        JamUtilities.waitEventQueueEmpty(3000);        
+        JamUtilities.waitEventQueueEmpty(1500);        
         explorer.pushPopupMenu("Delete", myObjectBeanInfo);
         new JelloYesNoDialog("Confirm Object Deletion").yes();
-//        JamUtilities.waitEventQueueEmpty(1500);                
+        JamUtilities.waitEventQueueEmpty(1500);                
         if (unmount) {
             explorer.pushPopupMenu("Unmount Filesystem", sampleDir);
             
@@ -343,6 +357,7 @@ public class BeanInfoGeneration extends NbTestCase {
 
         explorer = Explorer.find();
         explorer.switchToFilesystemsTab();
+        JamUtilities.waitEventQueueEmpty(1000);
         explorer.pushPopupMenuNoBlock("Delete", sampleDir
         +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
         +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
@@ -350,6 +365,7 @@ public class BeanInfoGeneration extends NbTestCase {
         );
         new JelloYesNoDialog("Confirm Object Deletion").yes();
         new JelloYesNoDialog("Question").yes(); 
+        JamUtilities.waitEventQueueEmpty(1000);        
         explorer.pushPopupMenuNoBlock("Delete", sampleDir
         +explorer.delim+NAME_TEST_FILE+explorer.delim+"class "+NAME_TEST_FILE
         +explorer.delim+JelloBundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")
