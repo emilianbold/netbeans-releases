@@ -18,7 +18,6 @@ import javax.swing.event.*;
 import javax.swing.*;
 
 import org.openide.filesystems.*;
-import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -28,6 +27,7 @@ import org.openide.util.HelpCtx;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
+import org.openide.WizardDescriptor;
 
 /**
  * This Panel launches autoconfiguration during the New J2SE Platform sequence.
@@ -372,7 +372,7 @@ public class DetectPanel extends javax.swing.JPanel {
      * Controller for the outer class: manages wizard panel's valid state
      * according to the user's input and detection state.
      */
-    static class WizardPanel implements TemplateWizard.Panel, TaskListener, ChangeListener {
+    static class WizardPanel implements WizardDescriptor.Panel, TaskListener, ChangeListener {
         private DetectPanel         component;
         private RequestProcessor.Task task;
         private final J2SEWizardIterator  iterator;

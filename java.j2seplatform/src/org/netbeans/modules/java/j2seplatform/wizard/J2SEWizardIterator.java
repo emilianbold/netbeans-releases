@@ -40,6 +40,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
+import org.openide.WizardDescriptor;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -47,10 +48,9 @@ import org.openide.modules.InstalledFileLocator;
  * 'bin{/}java[.exe]' underneath the platform's directory, which can be run to
  * produce the target platform's VM environment.
  *
- * @author Svata Dedic
+ * @author Svata Dedic, Tomas Zezula
  */
-public class J2SEWizardIterator
-    implements TemplateWizard.Iterator, Runnable {
+public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterator, Runnable {
 
 
     private static final String CLASSIC = "classic";        //NOI18N
@@ -98,7 +98,7 @@ public class J2SEWizardIterator
         return this.currentIndex == 1;
     }
 
-    public void initialize(TemplateWizard wiz) {
+    public void initialize(WizardDescriptor wiz) {
         this. detectPanel = new DetectPanel.WizardPanel(this);
         this.srcDocPanel = new SrcDocLocation.Panel (this);
         this.currentIndex = 0;
@@ -109,7 +109,7 @@ public class J2SEWizardIterator
      * platform's properties. The XML is returned in the resulting Set.
      * @return singleton Set with java platform's instance DO inside.
      */
-    public java.util.Set instantiate(TemplateWizard wiz) throws IOException {
+    public java.util.Set instantiate() throws IOException {
         final String systemName = ((J2SEPlatformImpl)getPlatform()).getAntName();
         FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource(
                 "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
@@ -213,10 +213,9 @@ public class J2SEWizardIterator
         listeners.add(l);
     }
 
-    public void uninitialize(TemplateWizard wiz) {
+    public void uninitialize(WizardDescriptor wiz) {
         this.detectPanel = null;
         this.srcDocPanel = null;
-        this.currentIndex = -1;
     }
 
     public boolean isValid() {

@@ -14,13 +14,13 @@
 package org.netbeans.modules.java.j2seplatform;
 
 import org.openide.filesystems.*;
-import org.openide.loaders.*;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.netbeans.modules.java.j2seplatform.wizard.J2SEWizardIterator;
 
 import java.io.IOException;
+import org.openide.WizardDescriptor;
 
 /**
  * Installer factory for standard J2SE Platforms
@@ -60,7 +60,7 @@ class J2SEInstallImpl extends org.netbeans.spi.java.platform.PlatformInstall {
         return javaRunnable != null;
     }
     
-    public TemplateWizard.Iterator createIterator(FileObject baseFolder) {
+    public WizardDescriptor.InstantiatingIterator createIterator(FileObject baseFolder) {
         try {
             return new J2SEWizardIterator(baseFolder);
         } catch (IOException ioe) {

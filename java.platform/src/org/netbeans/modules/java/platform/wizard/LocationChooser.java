@@ -39,7 +39,7 @@ import org.openide.util.Utilities;
  */
 public class LocationChooser extends javax.swing.JFileChooser  implements PropertyChangeListener {
 
-    private TemplateWizard.Iterator iterator;
+    private WizardDescriptor.InstantiatingIterator iterator;
     private LocationChooser.Panel firer;
     private InstallerRegistry regs;
     private PlatformAccessory accessory;
@@ -94,7 +94,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
 
     }
 
-    private TemplateWizard.Iterator getInstaller () {
+    private WizardDescriptor.InstantiatingIterator getInstaller () {
         return this.iterator;
     }
 
@@ -185,7 +185,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         }
         
         public void readSettings(Object settings) {
-            ((LocationChooser)this.getComponent()).read ((TemplateWizard) settings);
+            ((LocationChooser)this.getComponent()).read ((WizardDescriptor) settings);
         }
         
         public void addChangeListener(ChangeListener l) {
@@ -197,13 +197,13 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         }
         
         public void storeSettings(Object settings) {
-            ((LocationChooser)this.getComponent()).store((TemplateWizard)settings);
+            ((LocationChooser)this.getComponent()).store((WizardDescriptor)settings);
         }
         
         /**
          * Returns the currently selected installer.
          */
-        TemplateWizard.Iterator getInstaller() {
+        WizardDescriptor.InstantiatingIterator getInstaller() {
             return ((LocationChooser)this.getComponent()).getInstaller ();
         }
         

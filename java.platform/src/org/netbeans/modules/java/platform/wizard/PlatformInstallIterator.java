@@ -26,11 +26,11 @@ import org.openide.WizardDescriptor;
  *
  * @author  sd99038
  */
-public class PlatformInstallIterator 
-    implements TemplateWizard.Iterator, ChangeListener {
-    TemplateWizard.Iterator typeIterator;
+public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
+    
+    WizardDescriptor.InstantiatingIterator typeIterator;
     boolean                 firstPanel;
-    TemplateWizard          wizard;
+    WizardDescriptor          wizard;
     int                     panelNumber = 0;
     Collection              origSteps;
 
@@ -42,7 +42,7 @@ public class PlatformInstallIterator
         locationPanel.addChangeListener(this);
     }
     
-    static Object create() {
+    public static PlatformInstallIterator create() {
         return new PlatformInstallIterator();
     }
     
@@ -87,7 +87,7 @@ public class PlatformInstallIterator
      * - the current iterator reports it has the next panel
      */
     public boolean hasNext() {
-        TemplateWizard.Iterator typeIt = locationPanel.getInstaller();
+        WizardDescriptor.InstantiatingIterator typeIt = locationPanel.getInstaller();
         if (firstPanel) {
             // need to decide
             if (typeIt == null) {
@@ -105,7 +105,7 @@ public class PlatformInstallIterator
         return !firstPanel;
     }
     
-    public void initialize(TemplateWizard wiz) {
+    public void initialize(WizardDescriptor wiz) {
         this.wizard = wiz;
         firstPanel = true;
         String[] steps = (String[])wizard.getProperty("WizardPanel_contentData");
@@ -116,8 +116,8 @@ public class PlatformInstallIterator
         updatePanelsList();
     }
     
-    public java.util.Set instantiate(TemplateWizard wiz) throws IOException {
-        return typeIterator.instantiate(wiz);
+    public java.util.Set instantiate() throws IOException {
+        return typeIterator.instantiate();
     }
     
     public String name() {
@@ -158,13 +158,13 @@ public class PlatformInstallIterator
         listeners.remove(l);
     }
     
-    public void uninitialize(TemplateWizard wiz) {
+    public void uninitialize(WizardDescriptor wiz) {
         if (this.typeIterator != null)
             typeIterator.uninitialize (wiz);
     }
     
     public void stateChanged(ChangeEvent e) {
-        TemplateWizard.Iterator it = locationPanel.getInstaller();
+        WizardDescriptor.InstantiatingIterator it = locationPanel.getInstaller();
         if (it != typeIterator) {
             if (this.typeIterator != null) {
                 this.typeIterator.uninitialize (this.wizard);

@@ -13,7 +13,7 @@
 
 package org.netbeans.spi.java.platform;
 
-import org.openide.loaders.TemplateWizard;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.*;
 
 /**
@@ -32,7 +32,7 @@ public abstract class PlatformInstall {
      * @return TemplateWizard.Iterator instance responsible for instantiating
      * the platform.
      */
-    public abstract TemplateWizard.Iterator createIterator(FileObject baseFolder);
+    public abstract WizardDescriptor.InstantiatingIterator createIterator(FileObject baseFolder);
 
 
     /**

@@ -38,6 +38,10 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.java.platform.wizard.PlatformInstallIterator;
+import org.openide.DialogDisplayer;
+import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 
 
@@ -239,12 +243,20 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
     private void addNewPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNewPlatform
         try {
-            TemplateWizard wiz = new TemplateWizard ();
+            WizardDescriptor wiz = new WizardDescriptor (PlatformInstallIterator.create());
             DataObject template = DataObject.find (
                     Repository.getDefault().getDefaultFileSystem().findResource(TEMPLATE));
+            wiz.putProperty("targetTemplate", template);    //NOI18N
             DataFolder folder = DataFolder.findFolder(
                     Repository.getDefault().getDefaultFileSystem().findResource(STORAGE));
-            wiz.instantiate(template,folder);
+            wiz.putProperty("targetFolder",folder); //NOI18N
+            wiz.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
+            wiz.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
+            wiz.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+            wiz.setTitle(NbBundle.getMessage(PlatformsCustomizer.class,"CTL_AddPlatformTitle"));
+            wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
+            Dialog dlg = DialogDisplayer.getDefault().createDialog(wiz);
+            dlg.setVisible(true);
             this.getChildren().refreshPlatforms();
             this.expandPlatforms(null);
         } catch (DataObjectNotFoundException dfne) {
