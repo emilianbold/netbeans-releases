@@ -40,9 +40,10 @@ public class DocumentationSettings extends SystemOption {
     private static final String PROP_AUTOCOMENT_MOD_MASK = "autocommentModifierMask";
     private static final String PROP_AUTOCOMENT_PACKAGE  = "autocommentPackage";
     private static final String PROP_AUTOCOMENT_ERR_MASK = "autocommentErrorMask";
-    private static final String PROP_EXECUTOR            = "executorEngine";
+    private static final String PROP_EXECUTOR            = "executorEngine";    
     private static final String PROP_SEARCH              = "searchEngine";
     private static final String PROP_FS_SETTING          = "filesystemSetting";
+    private static final String PROP_ASK_BEFORE_GEN      = "askBeforeGenerating";
     
     /** generation */
     //private static boolean externalJavadoc = false;
@@ -73,6 +74,8 @@ public class DocumentationSettings extends SystemOption {
             setSearchEngine(new Jdk12SearchType().getName());
         if( getProperty( PROP_FS_SETTING ) == null )
             setFileSystemSettings( new java.util.HashMap() );
+        if( getProperty( PROP_ASK_BEFORE_GEN ) == null )
+            setAskBeforeGenerating( false );
     }
 
 
@@ -243,6 +246,14 @@ public class DocumentationSettings extends SystemOption {
 
     public void setFileSystemSettings(java.util.HashMap map){
         putProperty( PROP_FS_SETTING, map, true );
+    }
+    
+    public boolean getAskBeforeGenerating(){
+        return ((Boolean)getProperty( PROP_ASK_BEFORE_GEN )).booleanValue();
+    }
+
+    public void setAskBeforeGenerating( boolean ask ){
+        putProperty( PROP_ASK_BEFORE_GEN, new Boolean(ask), true );
     }
 }
 
