@@ -102,7 +102,7 @@ ToDo:
     <!-- -Dmodules=foo,bar,... (do not include core or openide) -->
 
     <configmods property="modules" selectedconfig="${moduleconfig}">
-      <config name="platform" modules=""/>
+      <config name="platform" modules="autoupdate"/>
 
       <config name="superslim" modules="${config.superslim}"/>
 
