@@ -31,15 +31,15 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="org/openide/loaders/*Folder*.class"/>                
                 <!-- Don't worry about these, cannot be fixed currently: -->
-		<exclude name="org/openide/loaders/DataFolderTest.class/testSortMode"/> <!-- failing in cont. test -->
-		<exclude name="org/openide/loaders/DataFolderTest.class/testMove"/> <!-- failing in cont. test -->
-		<exclude name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/> <!-- failing in cont. test -->
-		<exclude name="org/openide/loaders/DataFolderTest.class/testOrderWhenMultiFileSystemSetDelegatesIsCalled" /> <!-- failing in cont. test -->
+                <exclude name="org/openide/loaders/DataFolderTest.class/testSortMode"/> <!-- failing in cont. test -->
+                <exclude name="org/openide/loaders/DataFolderTest.class/testMove"/> <!-- failing in cont. test -->
+                <exclude name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/> <!-- failing in cont. test -->
+                <exclude name="org/openide/loaders/DataFolderTest.class/testOrderWhenMultiFileSystemSetDelegatesIsCalled" /> <!-- failing in cont. test -->
                 <!-- following was disabled because of issue #20179 -->
                 <exclude name="org/openide/loaders/DataFolderMoveTest.class"/>
-		<!-- does not work an nobody knows why -->
-		<exclude name="org/openide/loaders/FolderInstanceTest.class/testFolderInstanceNeverPassesInvObjects"/>
-		<exclude name="org/openide/loaders/FolderInstanceTest.class/testChangeOfOrder"/>
+                <!-- does not work an nobody knows why -->
+                <exclude name="org/openide/loaders/FolderInstanceTest.class/testFolderInstanceNeverPassesInvObjects"/>
+                <exclude name="org/openide/loaders/FolderInstanceTest.class/testChangeOfOrder"/>
                 <exclude name="org/openide/loaders/FolderInstanceTest.class/testListenersCountWithCookie"/>
                 <exclude name="org/openide/loaders/FolderInstanceTest.class/testChangeCookie"/>
                 
@@ -47,6 +47,15 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/windows/*Test.class"/>
                 <exclude name="org/openide/windows/TopComponentGetLookupOverridenTest.class"/>
                 <exclude name="org/openide/windows/TopComponentGetLookupTest.class"/>
+                
+                <!-- run URLMapper tests which are important for buildsystem -->
+                <include name="org/openide/filesystems/URLMapperTest.class"/>
+                <include name="org/openide/filesystems/*.class/testIfReachable"/>
+                <include name="org/openide/filesystems/*.class/testConversions"/>
+                <include name="org/openide/filesystems/*.class/testForSlashes"/>
+                <include name="org/openide/filesystems/*.class/testForSpaces"/>
+                <exclude name="org/openide/filesystems/JarFileSystemTest.class/testForSpaces"/>
+                
             </patternset>
         </testset>
     </testbag>
@@ -79,9 +88,9 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- Under development: -->
                 <exclude name="org/openide/loaders/CreateFromTemplateTest.class"/>
                 <!-- Don't worry about these, cannot be fixed currently: -->
-		<exclude name="org/openide/loaders/DataFolderTest.class/testSortMode"/> <!-- failing in cont. test -->
-		<exclude name="org/openide/loaders/DataFolderTest.class/testMove"/> <!-- failing in cont. test -->
-		<exclude name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/> <!-- failing in cont. test -->
+                <exclude name="org/openide/loaders/DataFolderTest.class/testSortMode"/> <!-- failing in cont. test -->
+                <exclude name="org/openide/loaders/DataFolderTest.class/testMove"/> <!-- failing in cont. test -->
+                <exclude name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/> <!-- failing in cont. test -->
                 <!-- following was disabled because of issue #20179 -->
                 <exclude name="org/openide/loaders/DataFolderMoveTest.class"/>
                 <!-- x -->
@@ -91,8 +100,8 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart5"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart7"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart8"/>
-		<!-- does not work an nobody knows why -->
-		<exclude name="org/openide/loaders/FolderInstanceTest.class/testFolderInstanceNeverPassesInvObjects"/>
+                <!-- does not work an nobody knows why -->
+                <exclude name="org/openide/loaders/FolderInstanceTest.class/testFolderInstanceNeverPassesInvObjects"/>
                 
                 <!-- excluded because this test locks. See issue #26848 -->
                 <exclude name="org/openide/loaders/FolderLookupTest.class"/>
@@ -119,7 +128,7 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <!-- run text package tests -->
                 <include name="org/openide/text/*Test.class"/>
-		
+                
                 <!-- run also wizard's tests -->
                 <include name="org/openide/WizardDescTest.class"/>
             </patternset>
@@ -141,10 +150,10 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/explorer/propertysheet/DefaultPropertyModelTest.class"/>
                 <include name="org/openide/explorer/propertysheet/PropertySheetTest.class"/>
                 <include name="org/openide/explorer/view/*.class"/>
-		<!-- the ListViews excluded because of issue #29423 -->
+                <!-- the ListViews excluded because of issue #29423 -->
                 <exclude name="org/openide/explorer/view/ListViewTest.class"/>
                 <include name="org/openide/util/UtilProgressCursorTest.class"/>
-		<!-- excluded, a problem in infrastructure, the component is not showed -->
+                <!-- excluded, a problem in infrastructure, the component is not showed -->
                 <exclude name="org/openide/explorer/view/DefaultActionTest.class"/>
                 <include name="org/openide/explorer/view/TTVTest.class"/>
             </patternset>
@@ -169,15 +178,15 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart5"/>
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart7"/>
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart8"/>
-		<!-- failing in cont. test -->
-		<include name="org/openide/loaders/DataFolderTest.class/testSortMode"/>
-		<include name="org/openide/loaders/DataFolderTest.class/testMove"/>
-		<include name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/>
+                <!-- failing in cont. test -->
+                <include name="org/openide/loaders/DataFolderTest.class/testSortMode"/>
+                <include name="org/openide/loaders/DataFolderTest.class/testMove"/>
+                <include name="org/openide/loaders/DataFolderTest.class/testPropChildrenFiredAfterInvalidation"/>
                 <!-- #28118 -->
                 <include name="org/openide/loaders/InstanceDataObjectTest.class/testFiringEventWhenDeleted"/>
-		<!-- Nodes -->
-		<!-- include name="org/openide/nodes/FilterNodeTest.class"/ -->
-		<include name="org/openide/nodes/CookieSetTest*class"/>
+                <!-- Nodes -->
+                <!-- include name="org/openide/nodes/FilterNodeTest.class"/ -->
+                <include name="org/openide/nodes/CookieSetTest*class"/>
                 <!-- #28198 -->
                 <include name="org/openide/nodes/FilterNodeTest.class/testEquals"/>
                 <!-- #24851: -->
