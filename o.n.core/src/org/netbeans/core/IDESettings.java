@@ -38,39 +38,29 @@ public class IDESettings extends SystemOption {
   /** generated Serialized Version UID */
   static final long serialVersionUID = 801136840705717911L;
 
-  /** outputLevel property name */
-  public static String PROP_OUTPUT_LEVEL = "outputLevel";
   /** Look&feel property name */
-  public static String PROP_LOOK_AND_FEEL = "lookAndFeel";
+  public static final String PROP_LOOK_AND_FEEL = "lookAndFeel";
   /** showTipsOnStartup property name */
-  public static String PROP_SHOW_TIPS_ON_STARTUP = "showTipsOnStartup";
+  public static final String PROP_SHOW_TIPS_ON_STARTUP = "showTipsOnStartup";
   /** lastTip property name */
-  public static String PROP_LAST_TIP = "lastTip";
+  public static final String PROP_LAST_TIP = "lastTip";
   /** confirmDelete property name */
-  public static String PROP_CONFIRM_DELETE = "confirmDelete";
+  public static final String PROP_CONFIRM_DELETE = "confirmDelete";
   /** home page property name */
-  public static String PROP_HOME_PAGE = "homePage";
+  public static final String PROP_HOME_PAGE = "homePage";
   /** use proxy property name */
-  public static String PROP_USE_PROXY = "useProxy";
+  public static final String PROP_USE_PROXY = "useProxy";
   /** proxy host property name */
-  public static String PROP_PROXY_HOST = "proxyHost";
+  public static final String PROP_PROXY_HOST = "proxyHost";
   /** proxy port property name */
-  public static String PROP_PROXY_PORT = "proxyPort";
+  public static final String PROP_PROXY_PORT = "proxyPort";
 
-
-  /** Minimum output detail level */
-  public static final int OUTPUT_MINIMUM = 0;
-  /** Normal output detail level */
-  public static final int OUTPUT_NORMAL = 1;
-  /** Maximum output detail level */
-  public static final int OUTPUT_MAXIMUM = 2;
 
 // ------------------------------------------
 // properties
 
    private static boolean showTips = true;
    private static int lastTip = 1;
-   private static int outputLevel = 1;
    private static boolean confirmDelete = true;
 
    private static Hashtable alreadyLoadedBeans = new Hashtable();
@@ -81,24 +71,6 @@ public class IDESettings extends SystemOption {
   /** A utility method to avoid unnecessary creation of second URL */
   public static URL getRealHomeURL () {
     return NetworkOptions.getStaticHomeURL();
-  }
-
-  /** Getter for OutputLevel property.
-  * @return The level of output
-  */
-  public int getOutputLevel() {
-    return outputLevel;
-  }
-
-  /** Setter for OutputLevel property.
-  * @param value The new level of output
-  */
-  public void setOutputLevel(int value) {
-    if (outputLevel == value) return;
-    int oldValue = outputLevel;
-    outputLevel = value;
-    // fire the PropertyChange
-    firePropertyChange (PROP_OUTPUT_LEVEL, new Integer (oldValue), new Integer (outputLevel));
   }
 
   /** Getter for ShowTipsOnStartup
@@ -267,6 +239,8 @@ public class IDESettings extends SystemOption {
 
 /*
  * Log
+ *  11   Gandalf   1.10        8/1/99   Ian Formanek    Got rid of Output 
+ *       Details property
  *  10   Gandalf   1.9         7/28/99  Jan Jancura     Bug in useProxy property
  *  9    Gandalf   1.8         7/21/99  Ian Formanek    settings for proxy, 
  *       property output detail level hidden

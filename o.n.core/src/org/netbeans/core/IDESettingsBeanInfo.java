@@ -37,8 +37,6 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
   static {
     try {
       desc = new PropertyDescriptor[] {
-        new PropertyDescriptor (IDESettings.PROP_OUTPUT_LEVEL, IDESettings.class,
-                                "getOutputLevel", "setOutputLevel"),
         new PropertyDescriptor (IDESettings.PROP_LOOK_AND_FEEL, IDESettings.class,
                                 "getLookAndFeel", "setLookAndFeel"),
         new PropertyDescriptor (IDESettings.PROP_SHOW_TIPS_ON_STARTUP, IDESettings.class,
@@ -59,37 +57,31 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                 "getProxyPort", "setProxyPort"),
       };
 
-      desc[0].setDisplayName (Main.getString ("PROP_OUTPUT_LEVEL"));
-      desc[0].setShortDescription (Main.getString ("HINT_OUTPUT_LEVEL"));
-      desc[0].setPropertyEditorClass (IDESettingsBeanInfo.OutputLevelEditor.class);
+      desc[0].setDisplayName (Main.getString ("PROP_LOOK_AND_FEEL"));
+      desc[0].setShortDescription (Main.getString ("HINT_LOOK_AND_FEEL"));
+      desc[0].setPropertyEditorClass (IDESettingsBeanInfo.LookAndFeelPropertyEditor.class);
 
-      desc[0].setHidden(true);
+      desc[1].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
+      desc[1].setShortDescription (Main.getString ("HINT_SHOW_TIPS_ON_STARTUP"));
 
-      desc[1].setDisplayName (Main.getString ("PROP_LOOK_AND_FEEL"));
-      desc[1].setShortDescription (Main.getString ("HINT_LOOK_AND_FEEL"));
-      desc[1].setPropertyEditorClass (IDESettingsBeanInfo.LookAndFeelPropertyEditor.class);
+      desc[2].setHidden (true);
 
-      desc[2].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
-      desc[2].setShortDescription (Main.getString ("HINT_SHOW_TIPS_ON_STARTUP"));
+      desc[3].setDisplayName (Main.getString ("PROP_CONFIRM_DELETE"));
+      desc[3].setShortDescription (Main.getString ("HINT_CONFIRM_DELETE"));
 
-      desc[3].setHidden (true);
+      desc[4].setHidden(true);
 
-      desc[4].setDisplayName (Main.getString ("PROP_CONFIRM_DELETE"));
-      desc[4].setShortDescription (Main.getString ("HINT_CONFIRM_DELETE"));
-
-      desc[5].setHidden(true);
-
-      desc[6].setDisplayName (Main.getString ("PROP_HOME_PAGE"));
-      desc[6].setShortDescription (Main.getString ("HINT_HOME_PAGE"));
+      desc[5].setDisplayName (Main.getString ("PROP_HOME_PAGE"));
+      desc[5].setShortDescription (Main.getString ("HINT_HOME_PAGE"));
       
-      desc[7].setDisplayName (Main.getString ("PROP_USE_PROXY"));
-      desc[7].setShortDescription (Main.getString ("HINT_USE_PROXY"));
+      desc[6].setDisplayName (Main.getString ("PROP_USE_PROXY"));
+      desc[6].setShortDescription (Main.getString ("HINT_USE_PROXY"));
 
-      desc[8].setDisplayName (Main.getString ("PROP_PROXY_HOST"));
-      desc[8].setShortDescription (Main.getString ("HINT_PROXY_HOST"));
+      desc[7].setDisplayName (Main.getString ("PROP_PROXY_HOST"));
+      desc[7].setShortDescription (Main.getString ("HINT_PROXY_HOST"));
 
-      desc[9].setDisplayName (Main.getString ("PROP_PROXY_PORT"));
-      desc[9].setShortDescription (Main.getString ("HINT_PROXY_PORT"));
+      desc[8].setDisplayName (Main.getString ("PROP_PROXY_PORT"));
+      desc[8].setShortDescription (Main.getString ("HINT_PROXY_PORT"));
 
     } catch (IntrospectionException ex) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace();
@@ -115,39 +107,6 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
       return icon32;
   }
 
-  final public static class OutputLevelEditor extends java.beans.PropertyEditorSupport {
-    /** Display Names for alignment. */
-    private static final String[] names = {
-      Main.getString ("VALUE_OutputLevel_Minimum"),
-      Main.getString ("VALUE_OutputLevel_Normal"),
-      Main.getString ("VALUE_OutputLevel_Maximum"),
-    };
-
-    /** @return names of the possible directions */
-    public String[] getTags () {
-      return names;
-    }
-
-    /** @return text for the current value */
-    public String getAsText () {
-      int value = ((Integer)getValue ()).intValue ();
-      if ((value < 0) || (value > 2)) return null;
-      return names [value];
-    }
-
-    /** Setter.
-    * @param str string equal to one value from directions array
-    */
-    public void setAsText (String str) {
-      for (int i = 0; i <= 2; i++) {
-        if (names[i].equals (str)) {
-          setValue (new Integer (i));
-          return;
-        }
-      }
-    }
-
-  }
   public static class LookAndFeelPropertyEditor extends PropertyEditorSupport {
     /** The LookAndFeels. */
     private static java.util.Vector lfs;
@@ -214,6 +173,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  10   Gandalf   1.9         8/1/99   Ian Formanek    Got rid of Output 
+ *       Details property
  *  9    Gandalf   1.8         7/24/99  Ian Formanek    Printing stack trace on 
  *       netbeans.debug.exceptions property only
  *  8    Gandalf   1.7         7/21/99  Ian Formanek    Fixed last change
