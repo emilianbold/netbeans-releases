@@ -756,12 +756,34 @@ public final class NbMainExplorer extends CloneableTopComponent {
                     return;
                 }
                 // root context node change
-                Node n = (Node)source;
+                final Node n = (Node)source;
                 if (Node.PROP_DISPLAY_NAME.equals(propName) ||
                         Node.PROP_NAME.equals(propName)) {
-                    setName(n.getDisplayName());
+                    // Fix #39275 start - posted to awt thread.
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        close();
+                    }
+                    else {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                setName(n.getDisplayName());
+                            }
+                        });
+                    }
+                    // fix #39275 end
                 } else if (Node.PROP_ICON.equals(propName)) {
-                    setIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
+                    // Fix #39275 start - posted to awt thread.
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        close();
+                    }
+                    else {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                setIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
+                            }
+                        });
+                    }
+                    // fix #39275 end
                 } else if (Node.PROP_SHORT_DESCRIPTION.equals(propName)) {
                     setToolTipText(n.getShortDescription());
                 }
