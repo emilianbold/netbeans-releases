@@ -63,13 +63,13 @@ public class RuntimeViewPopupMenu extends ValidatePopupMenuOnNodes{
     }
     
     private void testMenu(String path){
-        runtimeTab = RuntimeTabOperator.invoke();
+        runtimeTab = new RuntimeTabOperator();
         dataObjectNode = new Node(runtimeTab.getRootNode(), path);
         doMeasurement();
     }
 
     public void shutdown(){
-        runtimeTab.close();
+        // do nothing runtimeTab.close();
     } 
 
 }
