@@ -142,7 +142,11 @@ public class ParamEditor extends javax.swing.JPanel {
         JLabel nameLabel = new JLabel(); 
         nameLabel.setDisplayedMnemonic(NbBundle.getMessage(ParamEditor.class, "MON_Name_Mnemonic").charAt(0));
         nameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ParamEditor.class, "ACS_MON_NameA11yDesc"));
-
+        if (name == null || name.length()==0) 
+            getAccessibleContext().setAccessibleDescription(title);
+        else 
+             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ParamEditor.class,
+                "ACS_ParamEditorA11yDesc",title, name)); //NOI18N
 	String text = NbBundle.getMessage(ParamEditor.class, "MON_Name");
 	text = text.concat(": "); //NOI18N
 	
