@@ -25,8 +25,10 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
+import org.openide.util.RequestProcessor;
 
-public final class NbClipboard extends ExClipboard implements LookupListener, AWTEventListener
+public final class NbClipboard extends ExClipboard
+    implements LookupListener, AWTEventListener, Runnable
 {
     private Clipboard systemClipboard;
     private Convertor[] convertors;
@@ -63,17 +65,27 @@ public final class NbClipboard extends ExClipboard implements LookupListener, AW
         convertors = (Convertor[]) c.toArray(temp);
     }
 
-    // XXX(-ttran) on Unix calling getContents() on the system clipboard is
-    // very expensive, the call can take up to 1000 milliseconds.  We need to
-    // examine the clipboard contents each time the Node is activated, the
-    // method must be fast.  Therefore we cache the contents of system
-    // clipboard and use the cache when someone calls getContents().  The cache
-    // is sync'ed with the system clipboard when _any_ of our Windows gets
-    // WINDOW_ACTIVATED event.  It means if some other apps modify the contents
-    // of the system clipboard in the background then the change won't be
-    // propagated to us immediately.  The other drawback is that if module code
-    // bypasses NBClipboard and accesses the system clipboard directly then we
-    // don't see these changes.
+    // XXX(-ttran) on Unix (and also on Windows as we discovered recently)
+    // calling getContents() on the system clipboard is very expensive, the
+    // call can take up to 1000 milliseconds.  We need to examine the clipboard
+    // contents each time the Node is activated, the method must be fast.
+    // Therefore we cache the contents of system clipboard and use the cache
+    // when someone calls getContents().  The cache is sync'ed with the system
+    // clipboard when _any_ of our Windows gets WINDOW_ACTIVATED event.  It
+    // means if some other apps modify the contents of the system clipboard in
+    // the background then the change won't be propagated to us immediately.
+    // The other drawback is that if module code bypasses NBClipboard and
+    // accesses the system clipboard directly then we don't see these changes.
+    //
+    // The other problem is an AWT bug
+    // 
+    // http://developer.java.sun.com/developer/bugParade/bugs/4818143.html
+    //
+    // sun.awt.datatransfer.ClipboardTransferable.getClipboardData() can hang
+    // for very long time (maxlong == eternity).  We tries to avoid the hang by
+    // access the system clipboard from a separate thread.  If the hang happens
+    // the thread will wait for the system clipboard forever but not the whole
+    // IDE
 
     public synchronized void setContents(Transferable contents, ClipboardOwner owner) {
         // XXX(-dstrupl) the following line might lead to a double converted
@@ -106,20 +118,28 @@ public final class NbClipboard extends ExClipboard implements LookupListener, AW
         }
     }
 
+    public void run() {
+        try {
+            Transferable transferable = systemClipboard.getContents(this);
+            super.setContents(transferable, null);
+            fireClipboardChange();
+        }
+        catch (ThreadDeath ex) {
+            throw ex;
+        }
+        catch (Throwable ignore) {
+        }
+    }
+
+    private RequestProcessor.Task syncTask =
+        new RequestProcessor("System clipboard synchronizer").create(this); // NOI18N
+
     public void eventDispatched(AWTEvent ev) {
         if (!(ev instanceof WindowEvent))
             return;
 
         if (ev.getID() == WindowEvent.WINDOW_ACTIVATED) {
-            try {
-                Transferable transferable = systemClipboard.getContents(this);
-                super.setContents(transferable, null);
-            }
-            catch (ThreadDeath ex) {
-                throw ex;
-            }
-            catch (Throwable ignore) {
-            }
+            syncTask.schedule(0);
         }
     }
 }
