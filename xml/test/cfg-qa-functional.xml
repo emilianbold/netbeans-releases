@@ -20,6 +20,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- TAX -->
 		<include name="org/netbeans/tax/EncodingTest.class"/>
 		<include name="org/netbeans/tax/XMLCloneTest.class"/>
+		<include name="org/netbeans/tax/io/TreeBuilderTest.class"/>
                 <!-- CORE -->
 		<!-- include name="org/netbeans/modules/xml/core/CoreTemplatesTest.class"/-->
 		<include name="org/netbeans/modules/xml/core/settings/CoreSettingsTest.class"/>
