@@ -945,7 +945,7 @@ public abstract class NbTopManager extends TopManager {
 	    
         public static final synchronized void modulesClassPathInitialized () {
             //System.err.println("mCPI");
-	    StartLog.logStart ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
+	    //StartLog.logStart ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
 
             // replace the lookup by new one
             Lookup lookup = Lookup.getDefault ();
@@ -998,7 +998,7 @@ public abstract class NbTopManager extends TopManager {
             // Also listen for changes in modules, as META-INF/services/ would change:
             get().getModuleSystem().getManager().addPropertyChangeListener(new ConvertorListener());
             
-	    StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
+	    //StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
             
             synchronized (this) {
                 // clear the task again
