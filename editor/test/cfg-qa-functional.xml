@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
                <include name="code_folding/CodeFoldingTestSuite.class"/>
                <include name="general/GeneralTestSuite.class"/>
                <include name="popup_menus/PopupMenusTestSuite.class"/>
-
+               <include name="editor_actions/EditorActionsTestSuite.class"/>
              </patternset>
          </testset>
      </testbag>
