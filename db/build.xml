@@ -15,8 +15,8 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="db" default="netbeans" basedir=".">
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
-  <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
+  <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="${nbext}/nbantext.jar"/>
 
   <target name="precompile">
     <javac srcdir="libsrc" destdir="libsrc">
