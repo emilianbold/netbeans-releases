@@ -353,7 +353,7 @@ is divided into following sections:
                 <xsl:attribute name="description">Test compile JSP pages to expose compilation errors.</xsl:attribute>
 
                 <mkdir dir="${{build.generated.dir}}/src"/>
-                <java classname="org.apache.jasper.JspC"
+                <java classname="org.netbeans.modules.web.project.ant.JspC"
                    fork="true"
                    failonerror="true"
                 >
@@ -362,7 +362,7 @@ is divided into following sections:
                     <arg value="-d"/>
                     <arg file="${{basedir}}/${{build.generated.dir}}/src"/>
                     <arg value="-die1"/>
-                    <classpath path="${{jspc.classpath}}"/> 
+                    <classpath path="${{libs.copyfiles.classpath}}:${{jspc.classpath}}"/> 
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"
@@ -391,6 +391,11 @@ is divided into following sections:
                     <classpath path="${{libs.copyfiles.classpath}}:${{jspc.classpath}}"/> 
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
+                <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"
+                    srcdir="${{build.generated.dir}}/src"
+                    destdir="${{build.generated.dir}}/classes"
+                    classpath="${{javac.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}"/>
+
                 <!--
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1">
                     <xsl:with-param name="srcdir" select="'${{build.generated.dir}}/src'"/>
