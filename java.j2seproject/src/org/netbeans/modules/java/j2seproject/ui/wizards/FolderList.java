@@ -39,6 +39,7 @@ import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 public final class FolderList extends javax.swing.JPanel {
 
     public static final String PROP_FILES = "files";    //NOI18N
+    public static final String PROP_LAST_USED_DIR = "lastUsedDir";  //NOI18N
 
     private String fcMessage;
     private File projectFolder;
@@ -89,6 +90,18 @@ public final class FolderList extends javax.swing.JPanel {
         if (files.length>0) {
             this.roots.setSelectedIndex(0);
         }
+    }
+    
+    public void setLastUsedDir (File lastUsedDir) {
+        if (this.lastUsedFolder == null ? lastUsedDir != null : !this.lastUsedFolder.equals(lastUsedDir)) {
+            File oldValue = this.lastUsedFolder;
+            this.lastUsedFolder = lastUsedDir;
+            this.firePropertyChange(PROP_LAST_USED_DIR, oldValue, this.lastUsedFolder);
+        }
+    }
+    
+    public File getLastUsedDir () {
+        return this.lastUsedFolder;
     }
 
     /** This method is called from within the constructor to
@@ -173,12 +186,12 @@ public final class FolderList extends javax.swing.JPanel {
         chooser.setDialogTitle(this.fcMessage);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(true);
-        if (this.projectFolder != null && this.projectFolder.isDirectory()) {
-            chooser.setCurrentDirectory (this.projectFolder);            
-        }
-        else if (this.lastUsedFolder != null && this.lastUsedFolder.isDirectory()) {
+        if (this.lastUsedFolder != null && this.lastUsedFolder.isDirectory()) {
             chooser.setCurrentDirectory (this.lastUsedFolder);
-        }                
+        }        
+        else if (this.projectFolder != null && this.projectFolder.isDirectory()) {
+            chooser.setCurrentDirectory (this.projectFolder);            
+        }                        
         if (chooser.showOpenDialog(this)== JFileChooser.APPROVE_OPTION) {
             File[] files = chooser.getSelectedFiles();
             int[] indecesToSelect = new int[files.length];
@@ -199,8 +212,7 @@ public final class FolderList extends javax.swing.JPanel {
             this.firePropertyChange(PROP_FILES, null, null);
             File cd = chooser.getCurrentDirectory();
             if (cd != null) {
-                this.projectFolder = null;
-                this.lastUsedFolder = FileUtil.normalizeFile(cd);
+                this.setLastUsedDir(FileUtil.normalizeFile(cd));
             }
         }
     }//GEN-LAST:event_addButtonActionPerformed
