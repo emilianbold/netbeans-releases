@@ -166,6 +166,7 @@ public class JDKSearchAction extends CancelableWizardAction  {
         logEvent(this, Log.DBG,"Checking Unix Path settings & environment variable ...");
         RunCommand runCommand = new RunCommand();
         runCommand.execute("/usr/bin/env");
+        runCommand.waitFor();
         
         String line = null;
         while ((line = runCommand.getOutputLine()) != null) {
@@ -194,7 +195,6 @@ public class JDKSearchAction extends CancelableWizardAction  {
                     addToList(jdkHome);
             }
         }
-        runCommand.flush();
     }
         
     void checkDir(String rootDir) {
@@ -273,8 +273,8 @@ public class JDKSearchAction extends CancelableWizardAction  {
             File jvmFile = new File(jdkPath+File.separator+"bin"+File.separator+jvm);
             RunCommand runCommand = new RunCommand();
             runCommand.execute(jvmFile.getAbsolutePath()+" -version");
-            String line = line = runCommand.getErrorLine();
-            runCommand.flush();
+            runCommand.waitFor();
+            String line = runCommand.getErrorLine();
             StringTokenizer st = new StringTokenizer(line.trim());
             String version="";
             while(st.hasMoreTokens()) 

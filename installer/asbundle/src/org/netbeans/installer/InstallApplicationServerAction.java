@@ -426,33 +426,20 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         logEvent(this, Log.DBG,"cmdArray -> " + Arrays.asList(cmdArray).toString());
         try {
             String prevLogFile = getPELogPath(getPEDirLogPath());
-
-            /*String workingDirectory = (installMode == INSTALL) ? instDirPath : imageDirPath;
-            String env = "user.dir=" + workingDirectory;
-            runCommand.execute(cmdArray, new String[] {env}, new File(workingDirectory));*/
             
             runCommand.execute(cmdArray, null, null);
             
-            if ((installMode == INSTALL) && doProgress)
+            if ((installMode == INSTALL) && doProgress) {
                 startProgress();
-            
-            if (Util.isWindowsOS()) {
-                //UGLY HACK: make sure there are enough time elapsed before starting to flush
-                int ms = (installMode == INSTALL) ? 2000 : 4500;
-                Thread.currentThread().sleep(ms);
             }
             
-            //int status;
-
-	    // Strange bug cropped up in Windows uninstall via Add/Remove window.
-	    // Got NPE while executing the flush cmd.
-	    if (runCommand.getInputReader() != null) {
-		logEvent(this, Log.DBG,"Flushing ...!");
-		runCommand.flush();
-		logEvent(this, Log.DBG,"Flushing done!");
-	    }
+            runCommand.waitFor();
+            
+            logEvent(this, Log.DBG,runCommand.print());
+            
             int status = runCommand.getReturnStatus();
             logEvent(this, Log.DBG, "status code = " + status + " which is " + ((status == 73 || status == 72 || status == 0) ? "successful" : "unsuccessful")); 
+            
             if (!isCompletedSuccessfully() || ((status != 0) && status != (installMode == INSTALL ? 73 : 72))) {
                 String mode = (installMode == INSTALL) ? "install" : "uninstall";
                 String command = Util.arrayToString(cmdArray, " ");
@@ -495,13 +482,6 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             
             // System.out.println("getPELogPath() = " + (getPELogPath(getPEDirLogPath())));
 
-	    // Strange bug cropped up in Windows uninstall via Add/Remove window.
-	    // Got NPE  during first flush above so check before executing flush.
-	    if (runCommand.getInputReader() != null) {
-		logEvent(this, Log.DBG,"Flushing 2...!");
-		runCommand.flush();
-		logEvent(this, Log.DBG,"Flushing 2 done!");
-	    }
         } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
@@ -1297,7 +1277,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             this.mos = mutableOperationState;
             lastPathShown = imageDirPath;
             appserverDir = new File(imageDirPath);
-            logFile = new File(imageDirPath, "install.log");
+            logFile = new File(instDirPath, "as-install.log");
             checksum = getCheckSum();
             
             if(Util.isSunOS()) {
@@ -1316,7 +1296,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         public void run() {
             int sleepTime = 1000;
             while (loop) {
-                logEvent(this, Log.DBG,"looping");
+                //logEvent(this, Log.DBG,"looping");
                 try {
                     if (appserverDir.exists()) {
                         //logEvent(this, Log.DBG,"going 2 updateProgressBar");
@@ -1447,9 +1427,10 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             }
         }
         
-        public void updateStatusDescription()
-        throws Exception{
-            if (isCanceled()) return;
+        public void updateStatusDescription() throws Exception {
+            if (isCanceled()) {
+                return;
+            }
             try{
                 if (logFileReader == null) {
                     if (!logFile.exists()) {

@@ -13,8 +13,8 @@
 
 package org.netbeans.installer;
 
+import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
-import com.installshield.wizard.RunnableWizardBeanState;
 import com.installshield.wizard.WizardAction;
 import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.wizard.WizardBuilderSupport;
@@ -50,7 +50,7 @@ public class SetSystemPropertiesAction extends WizardAction {
         //RunnableWizardBeanState state = getState();
         //String msg = resolveString("$L(com.sun.installer.InstallerResources,INIT_PROPS_MSG)");
         //state.setStatusDescription(msg);
-                              
+        checkStorageBuilder();
         setAdminProperties();
         
 	if (Util.isWindowsOS()) {
@@ -74,6 +74,20 @@ public class SetSystemPropertiesAction extends WizardAction {
 	}
         //It is used to create file 'nb4.1/config/productid'
         Util.setStringPropertyValue("ProductID","NBJDK");
+    }
+    
+    private void checkStorageBuilder () {
+        if (Util.isWindows95() || Util.isWindows98() || Util.isWindowsME()) {
+            try {
+                logEvent(this, Log.DBG,"Disable Storage Builder for Win95, Win98, WinME.");
+                ProductService service = (ProductService) getService(ProductService.NAME);
+                service.setRetainedProductBeanProperty
+                (ProductService.DEFAULT_PRODUCT_SOURCE, "storageBuilder", "active", Boolean.FALSE);
+            } catch(ServiceException ex) {
+                ex.printStackTrace();
+                Util.logStackTrace(this,ex);
+            }
+        }
     }
 
     private void setAdminProperties () {

@@ -13,7 +13,15 @@
 
 package org.netbeans.installer;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
+
 
 /**
  * RunCommand execute the command text and returns the
@@ -21,9 +29,6 @@ import java.io.*;
  * associated with the execution
  */
 public class RunCommand {
-    //private BufferedReader      processOutput;
-    //private BufferedReader      processError;
-    //private PrintStream	        processInput;
     private Runtime		runTime;
     protected boolean           interrupted;
     protected Process           thisProcess;
@@ -33,10 +38,11 @@ public class RunCommand {
     private BufferedReader      inputReader = null;
     private BufferedReader      errorReader = null;
     protected OutputStream      out = null;
+    private int exitValue;
+    private String in;
+    private String err;
     
     public RunCommand() {
-        //processOutput = null;
-        //processError = null;
         thisProcess = null;
         runTime = Runtime.getRuntime();
         interrupted = false;
@@ -60,7 +66,7 @@ public class RunCommand {
         cmdString = command;
         try {
             thisProcess = runTime.exec(command, envp, dir);
-            initIOStreams();
+            //initIOStreams();
             //System.out.println("process = " + thisProcess);
         } catch (Exception ex) {
             System.out.println(ex.getLocalizedMessage());
@@ -74,18 +80,17 @@ public class RunCommand {
         cmdString = Util.arrayToString(cmdArray, " ");
         try {
             thisProcess = runTime.exec(cmdArray, envp, dir);
-            initIOStreams();
-            //System.out.println("process[] = " + thisProcess);
-        } catch (Exception ex) {
-            System.out.println(ex.getLocalizedMessage());
-            ex.printStackTrace();
-        }
+            //initIOStreams();
+	} catch (Throwable t) {
+            System.out.println(t.getLocalizedMessage());
+            t.printStackTrace();
+	}
     }
     
     /**
      * Creates the I/O streams
      */
-    public void initIOStreams(){
+    /*public void initIOStreams(){
         interrupted = false;
         try {
             InputStream in = thisProcess.getInputStream();
@@ -93,14 +98,11 @@ public class RunCommand {
             out = thisProcess.getOutputStream();
             inputReader = new BufferedReader(new InputStreamReader(in));
             errorReader = new BufferedReader(new InputStreamReader(err));
-            /*processOutput = new BufferedReader(new InputStreamReader(os));
-            processError = new BufferedReader(new InputStreamReader(os_err));
-            processInput = new PrintStream(is, true);*/
         } catch (Exception ex) {
             System.out.println(ex.getLocalizedMessage());
             ex.printStackTrace();
         }
-    }
+    }*/
     
     /**
      * Interrupt the command line process
@@ -123,21 +125,52 @@ public class RunCommand {
     /**
      * Gets the return status of the command line process
      */
-    public int getReturnStatus() {
-        if(interrupted) {
+    public int getReturnStatus () {
+        if (interrupted) {
+            return(-1);
+        }
+        if (thisProcess != null) {
+            return exitValue;
+        }
+        
+        return (-3);
+    }
+    
+    /**
+     * Gets the return status of the command line process
+     */
+    public int waitFor () {
+        if (interrupted) {
             return(-1);
         }
         try {
-            thisProcess.waitFor();
-        } catch (Exception ex) {
-            System.out.println(ex.getLocalizedMessage());
-            ex.printStackTrace();
+            StreamAccumulator inAccumulator =
+                new StreamAccumulator(thisProcess.getInputStream());
+            StreamAccumulator errAccumulator =
+                new StreamAccumulator(thisProcess.getErrorStream());
+            
+	    inAccumulator.start();
+	    errAccumulator.start();
+            
+	    exitValue = thisProcess.waitFor();
+	    inAccumulator.join();
+	    errAccumulator.join();
+
+	    in = inAccumulator.result();
+	    err = errAccumulator.result();
+            
+            inputReader = new BufferedReader(new StringReader(in));
+            errorReader = new BufferedReader(new StringReader(err));
+        } catch (Throwable t) {
+            System.out.println(t.getLocalizedMessage());
+            t.printStackTrace();
             //System.out.println(ex.getMessage());
             return(-2);
         }
         //System.out.println("WaitFor completed: thisProcess -> " + thisProcess);
-        if (thisProcess != null)
-            return(thisProcess.exitValue());
+        if (thisProcess != null) {
+            return exitValue;
+        }
         
         return (-3);
     }
@@ -156,7 +189,7 @@ public class RunCommand {
         return(false);
     }
     
-    public BufferedReader getErrorReader() {
+    /*public BufferedReader getErrorReader() {
         return errorReader;
     }
     
@@ -166,9 +199,9 @@ public class RunCommand {
     
     public OutputStream getOutputStream() {
         return out;
-    }
+    }*/
     
-    public void flush(){
+    /*public void flush(){
         try {
             if (!interrupted) {
                 int c;
@@ -185,25 +218,26 @@ public class RunCommand {
             System.out.println(ex.getLocalizedMessage());
             ex.printStackTrace();
         }
-    }
+    }*/
     
     /**
      * Gets a line from the standard output of the command line process
      */
-    public String getOutputLine(){
+    public String getOutputLine() {
         String ret = null;
         try{
-            //ret = processOutput.readLine();
             ret = inputReader.readLine();
-            if(ret != null) ret = ret + "\n";
-        }catch(IOException ex) {
+            if (ret != null) {
+                ret = ret + "\n";
+            }
+        } catch(IOException ex) {
             System.out.println(ex.getLocalizedMessage());
             ex.printStackTrace();
         }
         return ret;
     }
-    /*
-    public void flush(){
+    
+    /*public void flush(){
         String line=null;
         if (!interrupted) {
             while((line = getErrorLine()) != null);
@@ -215,12 +249,12 @@ public class RunCommand {
      * Gets a line from the standard error of the command line process
      */
     public String getErrorLine(){
-        
         String ret = null;
         try{
-            //ret = processError.readLine();
             ret = errorReader.readLine();
-            if(ret != null) ret = ret + "\n";
+            if (ret != null) {
+                ret = ret + "\n";
+            }
         }catch(IOException ex) {
             System.out.println(ex.getLocalizedMessage());
             ex.printStackTrace();
@@ -228,25 +262,54 @@ public class RunCommand {
         return ret;
     }
     
-    
     /**
-     * Prints debug info about the command line process like
+     * Returns debug info about the command line process like
      * output,error & return status
      */
-    public void print() {
-        String line = null;
-        System.out.println("------------------------------  Command Print  -----------------------");
-        System.out.println(" command: ");
-        System.out.println("    " + cmdString);
-        System.out.println(" Command Output:");
-        while((line = getOutputLine()) != null) {
-            System.out.println("    " + line);
-        }
-        System.out.println(" Command Error:");
-        while((line = getErrorLine()) != null) {
-            System.out.println("    " + line);
-        }
-        System.out.println(" Return Status: " + getReturnStatus());
-        System.out.println("------------------------------------------------------------------------");
+    public String print () {
+        StringBuffer sb = new StringBuffer(1024);
+        sb.append("\n");
+        sb.append("------------------------------  Command Print  -----------------------\n");
+        sb.append("Command: \n");
+        sb.append(cmdString + "\n");
+        sb.append("Command Output:\n");
+        sb.append(in + "\n");
+        sb.append("Command Error:\n");
+        sb.append(err + "\n");
+        sb.append("Return Status: " + exitValue + "\n");
+        sb.append("------------------------------------------------------------------------\n");
+        return sb.toString();
+    }
+    
+    private static class StreamAccumulator extends Thread {
+	private final InputStream is;
+	private final StringBuffer sb = new StringBuffer();
+	private Throwable throwable = null;
+        
+	public String result () throws Throwable {
+	    if (throwable != null) {
+		throw throwable;
+            }
+	    return sb.toString();
+	}
+        
+	StreamAccumulator (InputStream is) {
+	    this.is = is;
+	}
+        
+	public void run() {
+	    try {
+		Reader r = new InputStreamReader(is);
+		char[] buf = new char[4096];
+		int n;
+                //Method read blocks till end of stream is encountered so it ends
+                //after external process ends.
+                while ((n = r.read(buf)) > 0) {
+                    sb.append(buf,0,n);
+                }
+	    } catch (Throwable t) {
+		throwable = t;
+	    }
+	}
     }
 }

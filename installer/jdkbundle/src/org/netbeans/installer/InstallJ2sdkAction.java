@@ -297,29 +297,14 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                 runCommand.execute(cmdArray, envP, null);
             }
             
-            if ((installMode == INSTALL) && doProgress)
+            if ((installMode == INSTALL) && doProgress) {
                 startProgress();
-            
-            if (Util.isWindowsOS()) {
-                //UGLY HACK: make sure there are enough time elapsed before starting to flush
-                int ms = (installMode == INSTALL) ? 2000 : 4500;
-                Thread.currentThread().sleep(ms);
             }
             
-            
-            //int status;
-            if (Util.isWindowsNT() || Util.isWindows98()) {
-                //HACK: don't flush for NT or 98
-            }
-            else {
-                logEvent(this, Log.DBG,"Flushing ...!");
-                runCommand.flush();
-                logEvent(this, Log.DBG,"Flushing done!");
-                
-            }
+            runCommand.waitFor();
+            logEvent(this, Log.DBG,runCommand.print());
             
             int status = runCommand.getReturnStatus();
-            
             logEvent(this, Log.DBG,"Return status: " + status);
             
             if((installMode == INSTALL) && doProgress) {
@@ -338,10 +323,6 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                     logEvent(this, Log.ERROR, "Couldn't set exit code. ");
                 }
             }
-            
-            logEvent(this, Log.DBG,"Flushing 2...!");
-            runCommand.flush();
-            logEvent(this, Log.DBG,"Flushing 2 done!");
         } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
@@ -1014,7 +995,6 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                 return recentFilePath;
             }
         }
-        
         
     }
     

@@ -13,13 +13,12 @@
 
 package org.netbeans.installer;
 
+import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
 import com.installshield.wizard.WizardAction;
 import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.service.ServiceException;
-import com.installshield.wizard.service.security.SecurityService;
-
 
 /** This class is used to initialize some system properties at beginning
  * of installation.
@@ -29,7 +28,6 @@ public class SetSystemPropertiesAction extends WizardAction {
     public void build(WizardBuilderSupport support) {
         try {
             support.putClass(Util.class.getName());
-            support.putRequiredService(SecurityService.NAME);
         } catch (Exception ex) {
             System.out.println(ex.getLocalizedMessage());
             ex.printStackTrace();
@@ -37,14 +35,7 @@ public class SetSystemPropertiesAction extends WizardAction {
     }
     
     public void execute(WizardBeanEvent evt) {
-        //RunnableWizardBeanState state = getState();
-        //String msg = resolveString("$L(com.sun.installer.InstallerResources,INIT_PROPS_MSG)");
-        //state.setStatusDescription(msg);
         checkStorageBuilder();
-        setAdminProperties();
-        
-        //It is used to create file 'nb4.1/config/productid'
-        Util.setStringPropertyValue("ProductID","NBAS");
     }
     
     private void checkStorageBuilder () {
@@ -58,20 +49,6 @@ public class SetSystemPropertiesAction extends WizardAction {
                 ex.printStackTrace();
                 Util.logStackTrace(this,ex);
             }
-        }
-    }
-
-    private void setAdminProperties () {
-        try {
-            boolean isAdmin;
-
-            SecurityService secService = (SecurityService)getServices().getService(SecurityService.NAME);
-            isAdmin = secService.isCurrentUserAdmin();
-	    Util.setBooleanPropertyValue("isAdmin",isAdmin);
-            logEvent(this, Log.DBG,"isAdmin: " + isAdmin);
-        }
-        catch(ServiceException ex) {
-            Util.logStackTrace(this, ex);                
         }
     }
     

@@ -474,6 +474,7 @@ public class Util {
                                                                                                                                          
         RunCommand runCommand = new RunCommand();
         runCommand.execute(jvmFile.getAbsolutePath()+" -version");
+        runCommand.waitFor();
                                                                                                                                          
         String line = runCommand.getErrorLine();
                                                                                                                                          
@@ -506,6 +507,7 @@ public class Util {
                                                                                                                                          
         RunCommand runCommand = new RunCommand();
         runCommand.execute(jvmFile.getAbsolutePath()+" -version");
+        runCommand.waitFor();
                                                                                                                                          
         String line = runCommand.getErrorLine();
                                                                                                                                          

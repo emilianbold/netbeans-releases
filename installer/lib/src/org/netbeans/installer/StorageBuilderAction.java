@@ -63,6 +63,7 @@ public class StorageBuilderAction extends ProductAction {
     public void build(ProductBuilderSupport support) {
         try {
             support.putClass(RunCommand.class.getName());
+            support.putClass("org.netbeans.installer.RunCommand$StreamAccumulator");
             support.putClass(Util.class.getName());
             support.putClass("org.netbeans.installer.StorageBuilderAction$ProgressThread");
         } catch (Exception ex){
@@ -175,6 +176,7 @@ public class StorageBuilderAction extends ProductAction {
             
 	    // Put the command and arguments together for windows
             if (Util.isWindowsOS()) {
+                //cmdArray[0] = "cmd /C \"" + execPath + "\"";
                 cmdArray[0] = execPath;
             } else {
                 cmdArray[0] = execPath;
@@ -236,26 +238,10 @@ public class StorageBuilderAction extends ProductAction {
                 startProgress();
             }
             
-            if (Util.isWindowsOS()) {
-                //UGLY HACK: make sure there are enough time elapsed before starting to flush
-                int ms = (installMode == INSTALL) ? 2000 : 4500;
-                Thread.currentThread().sleep(ms);
-            }
-            
-            
-            //int status;
-            if (Util.isWindowsNT() || Util.isWindows98()) {
-                //HACK: don't flush for NT or 98
-            }
-            else {
-                logEvent(this, Log.DBG,"Flushing ...!");
-                runCommand.flush();
-                logEvent(this, Log.DBG,"Flushing done!");
-                
-            }
+            runCommand.waitFor();
+            logEvent(this, Log.DBG,runCommand.print());
             
             int status = runCommand.getReturnStatus();
-            
             logEvent(this, Log.DBG,"Return status: " + status);
             if (status != 0) {
                 //Log error
@@ -277,10 +263,6 @@ public class StorageBuilderAction extends ProductAction {
                     logEvent(this, Log.ERROR, "Couldn't set exit code. ");
                 }
             }
-            
-            logEvent(this, Log.DBG,"Flushing 2...!");
-            runCommand.flush();
-            logEvent(this, Log.DBG,"Flushing 2 done!");
         } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
@@ -502,7 +484,7 @@ public class StorageBuilderAction extends ProductAction {
             percentageStart = mos.getProgress().getPercentComplete();
             logEvent(this, Log.DBG,"Starting percentageStart: " + percentageStart);
             while (loop) {
-                logEvent(this, Log.DBG,"looping");
+                //logEvent(this, Log.DBG,"looping");
                 try {
                     //logEvent(this, Log.DBG,"going 2 updateProgressBar");
                     updateProgressBar();

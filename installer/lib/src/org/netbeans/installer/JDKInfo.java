@@ -148,8 +148,8 @@ public class JDKInfo {
                 
                 RunCommand runCommand = new RunCommand();
                 runCommand.execute(jvmFile.getAbsolutePath() + " -version");
-                String line = line = runCommand.getErrorLine();
-                runCommand.flush();
+                runCommand.waitFor();
+                String line = runCommand.getErrorLine();
                 
                 StringTokenizer st = new StringTokenizer(line.trim());
                 String _version="";
