@@ -36,7 +36,6 @@ import com.netbeans.ide.debugger.Debugger;
 import com.netbeans.ide.debugger.DebuggerNotFoundException;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.filesystems.jar.JarFileSystem;
-import com.netbeans.ide.filesystems.local.*;
 import com.netbeans.ide.options.ControlPanel;
 import com.netbeans.ide.windows.*;
 import com.netbeans.ide.explorer.*;
