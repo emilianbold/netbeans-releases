@@ -661,7 +661,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
                 sb.append( TAB + "static {\n" + TABx2 + "try {\n" ); // NOI18N
             }
             else {
-                sb.append( TAB + "\n" + TABx3 + "try {\n" ); // NOI18N
+                sb.append( TAB + "\n" + TABx2 + "try {\n" ); // NOI18N
             }
         }
 
