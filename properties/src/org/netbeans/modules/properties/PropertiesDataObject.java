@@ -231,10 +231,10 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
 
     
     /** <code>Children</code> for <code>PropertiesDataNode</code>. */
-    class PropertiesChildren extends Children.Keys {
+    private class PropertiesChildren extends Children.Keys {
 
         /** Listens to changes on the dataobject */
-        private PropertyChangeListener pcl = null;
+        private PropertyChangeListener propertyListener = null;
 
         
         /** Constructor.*/
@@ -245,37 +245,44 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         
         /** Sets all keys in the correct order */
         protected void mySetKeys() {
-            TreeSet ts = new TreeSet(new Comparator() {
+            TreeSet newKeys = new TreeSet(new Comparator() {
                 public int compare(Object o1, Object o2) {
-                    if (o1 == o2)
+                    if (o1 == o2) {
                         return 0;
-                    if (o1 instanceof MultiDataObject.Entry && o2 instanceof MultiDataObject.Entry)
-                        return getSecondaryFilesComparator().compare(((MultiDataObject.Entry)o1).getFile().getName(),
-                            ((MultiDataObject.Entry)o2).getFile().getName());
-                    else
-                        return 0;
+                    }
+                    
+                    if(o1 == null)
+                        return -1;
+                    
+                    if(o2 == null)
+                        return 1;
+                    
+                    if(o1 instanceof String) {
+                        return ((String)o1).compareTo((String)o2);
+                    }
+                    
+                    return -1;
                 }
             });
 
-            ts.add(getPrimaryEntry());
+            newKeys.add(getPrimaryEntry().getFile().getName());
             
-            for (Iterator it = secondaryEntries().iterator();it.hasNext();) {
+            for(Iterator it = secondaryEntries().iterator();it.hasNext();) {
                 FileEntry fe = (FileEntry)it.next();
-                ts.add(fe);
+                newKeys.add(fe.getFile().getName());
             }
 
-            setKeys(ts);
+            setKeys(newKeys);
         }
 
         /** Called to notify that the children has been asked for children
-         * after and that they should set its keys.
-         */
+         * after and that they should set its keys. Overrides superclass method. */
         protected void addNotify () {
             mySetKeys();
             
             // listener
-            if(pcl == null) {
-                pcl = new PropertyChangeListener () {
+            if(propertyListener == null) {
+                propertyListener = new PropertyChangeListener () {
                     public void propertyChange(PropertyChangeEvent evt) {
                         if(PROP_FILES.equals(evt.getPropertyName())) {
                             mySetKeys();
@@ -283,23 +290,44 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
                     }
                 }; 
 
-                PropertiesDataObject.this.addPropertyChangeListener(WeakListener.propertyChange(pcl, PropertiesDataObject.this));
+                PropertiesDataObject.this.addPropertyChangeListener(
+                    WeakListener.propertyChange(propertyListener, PropertiesDataObject.this));
             }
         }
 
         /** Called to notify that the children has lost all of its references to
          * its nodes associated to keys and that the keys could be cleared without
-         * affecting any nodes (because nobody listens to that nodes).
-         */
+         * affecting any nodes (because nobody listens to that nodes). 
+         * Overrides superclass method. */
         protected void removeNotify () {
             setKeys(new ArrayList());
         }
 
-        /** Creates nodes. */
-        protected Node[] createNodes (Object key) {
-            return new Node[] { ((PropertiesFileEntry)key).getNodeDelegate() };
+        /** Creates nodes for specified key. Implements superclass abstract method. */
+        protected Node[] createNodes(Object key) {
+            if(key == null)
+                return null;
+            
+            if(!(key instanceof String))
+                return null;
+            
+            String entryName = (String)key;
+            
+            PropertiesFileEntry entry = (PropertiesFileEntry)getPrimaryEntry();
+            
+            if(entryName.equals(entry.getFile().getName()))
+                return new Node[] {entry.getNodeDelegate()};
+            
+            for(Iterator it = secondaryEntries().iterator();it.hasNext();) {
+                entry = (PropertiesFileEntry)it.next();
+                
+                if(entryName.equals(entry.getFile().getName()))
+                    return new Node[] {entry.getNodeDelegate()};
+            }
+                
+            return null;
         }
 
-    } // End of inner class PropertiesChildren.
+    } // End of class PropertiesChildren.
 
 }
