@@ -61,14 +61,6 @@ public class JavaTemplates {
         return new JavaTargetChooserPanel(project, folders, bottomPanel, false );
     }
     
-    public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel, boolean validPackageRequired) throws IllegalArgumentException {
-        if (folders.length == 0) {
-            throw new IllegalArgumentException("No folders selected"); // NOI18N
-        }
-        return new JavaTargetChooserPanel(project, folders, bottomPanel, false, validPackageRequired);
-    }
-    
-    
     /** Creates new WizardIterator containing standard Package chooser
      * @return WizardIterator consisting of one panel containing package chooser
      */
