@@ -30,6 +30,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileStateInvalidException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.api.queries.CollocationQuery;
@@ -520,20 +521,28 @@ public class FreeformProjectGenerator {
     }
 
     private static FileObject createProjectDir (File dir) throws IOException {
-        dir.mkdirs();
-        // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
+        FileObject dirFO;
+        if(!dir.exists()) {
+            //Refresh before mkdir not to depend on window focus
+            refreshFileSystem (dir);
+            dir.mkdirs();
+            refreshFileSystem (dir);
+        }
+        dirFO = FileUtil.toFileObject(dir);
+        assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
+        assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
+        return dirFO;                        
+    }
+
+
+    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
         File rootF = dir;
         while (rootF.getParentFile() != null) {
             rootF = rootF.getParentFile();
         }
         FileObject dirFO = FileUtil.toFileObject(rootF);
-        assert dirFO != null : "At least disk roots must be mounted! " + rootF;
+        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
         dirFO.getFileSystem().refresh(false);
-        dirFO = FileUtil.toFileObject(dir);
-        assert dirFO != null : "No such dir on disk: " + dir;
-        assert dirFO.isFolder() : "Not really a dir: " + dir;
-        //assert dirFO.getChildren().length == 0 : "Dir must have been empty: " + dir;
-        return dirFO;
     }
 
     /**

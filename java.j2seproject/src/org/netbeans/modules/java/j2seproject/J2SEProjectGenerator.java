@@ -28,6 +28,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
@@ -191,15 +192,10 @@ public class J2SEProjectGenerator {
     private static FileObject createProjectDir (File dir) throws IOException {
         FileObject dirFO;
         if(!dir.exists()) {
+            //Refresh before mkdir not to depend on window focus
+            refreshFileSystem (dir);
             dir.mkdirs();
-            // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
-            File rootF = dir;
-            while (rootF.getParentFile() != null) {
-                rootF = rootF.getParentFile();
-            }
-            dirFO = FileUtil.toFileObject(rootF);
-            assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
-            dirFO.getFileSystem().refresh(false);
+            refreshFileSystem (dir);
         }        
         dirFO = FileUtil.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
@@ -241,5 +237,17 @@ public class J2SEProjectGenerator {
         mt.createFromTemplate( pDf, mName );
         
     }
-    
+
+
+    private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
+        File rootF = dir;
+        while (rootF.getParentFile() != null) {
+            rootF = rootF.getParentFile();
+        }
+        FileObject dirFO = FileUtil.toFileObject(rootF);
+        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
+        dirFO.getFileSystem().refresh(false);
+    }
 }
+
+
