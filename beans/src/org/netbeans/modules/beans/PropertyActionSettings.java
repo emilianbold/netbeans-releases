@@ -75,7 +75,7 @@ public class PropertyActionSettings extends SystemOption {
      * @return HelpCtx
      */    
     public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx (PropertyActionSettings.class);
     }
 
     /** Default instance of this system option, for the convenience of associated classes.
