@@ -42,7 +42,8 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
     
     public void hide() {
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
-        wmi.setExitingIDE(true); // ??
+        //Bugfix #30281
+        wmi.setExitingIDE(true);
         WindowUtils.hideAllFrames();
         ShortcutAndMenuKeyEventProcessor.uninstall();
     }
