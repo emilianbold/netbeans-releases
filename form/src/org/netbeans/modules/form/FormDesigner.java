@@ -605,7 +605,7 @@ public class FormDesigner extends TopComponent
                         prop = topcomp.getPropertyByName("font"); // NOI18N
                         if (prop != null) {
                             val = prop.getTargetValue();
-                            if (val instanceof Font)
+                            if (val == null || val instanceof Font)
                                 componentLayer.setFont((Font) val);
                         }
                         
