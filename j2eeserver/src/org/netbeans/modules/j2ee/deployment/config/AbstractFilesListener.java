@@ -75,7 +75,6 @@ public abstract class AbstractFilesListener {
     }
     
     private void addFileListenerTo(FileObject fo) {
-        System.out.println("adding to " + fo);
         FileChangeListener l = FileUtil.weakFileChangeListener(listener, fo);
         fileListeners.put(fo, l);
         fo.addFileChangeListener(l);
@@ -85,7 +84,6 @@ public abstract class AbstractFilesListener {
     private void removeFileListenerFrom(FileObject fo) {
         FileChangeListener l = (FileChangeListener)fileListeners.remove(fo);
         if (l != null) {
-            System.out.println("removing from " + fo);
             fo.removeFileChangeListener(l);
         }
     }
