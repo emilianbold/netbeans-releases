@@ -264,7 +264,6 @@
 <mapID target="compile.default" url="compile/default.html" />
 <mapID target="compile.external" url="compile/external.html" />
 <mapID target="compile.internal" url="compile/internal.html" />
-<mapID target="compile.fastjavac" url="compile/fastjavac.html" />
 <mapID target="compile.jikes" url="compile/jikes.html" />
 <mapID target="compile.new" url="compile/new.html" />
 <mapID target="compile.remove" url="compile/remove.html" />
@@ -989,7 +988,6 @@
 
   
   
-   <mapID target="org.netbeans.modules.java.FastJavacCompilerType" url="compile/fastjavac.html" />
    <mapID target="org.netbeans.modules.java.gj.JavaCompilerType" url="compile/internal.html" />
    <mapID target="org.netbeans.modules.java.compilation.Jikes" url="compile/jikes.html" />
 
