@@ -52,9 +52,10 @@ ToDo:
     <ant dir="external" target="unscramble"/>
     <ant dir="../core/external" target="unscramble"/>
     <ant dir="../xml/external" target="unscramble"/>
+    <property name="ant.jar" value="${ant.home}/lib/ant.jar"/>
     <path id="bootstrap-cp">
      <!-- cmdline Ant -->
-     <pathelement location="${ant.home}/lib/ant.jar"/>
+     <pathelement location="${ant.jar}"/>
      <!-- Ant in NB -->
      <!-- Note: in NB 3.6, ${ant.home}/lib/ant.jar will work as is -->
      <!-- XXX so delete the following line when NB 3.6 is released: -->
