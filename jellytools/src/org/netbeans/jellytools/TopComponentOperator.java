@@ -209,21 +209,19 @@ public class TopComponentOperator extends JComponentOperator {
      * @return TopComponent instance or null if noone matching criteria was found
      */
     protected static JComponent findTopComponent(ContainerOperator cont, String name, int index, ComponentChooser subchooser) {
-        Set s=TopComponent.getRegistry().getOpened();
+        Object tc[]=TopComponent.getRegistry().getOpened().toArray();
         StringComparator comparator=cont==null?Operator.getDefaultStringComparator():cont.getComparator();
         TopComponent c;
-        Iterator it=s.iterator();
-        while (it.hasNext()) {
-            c=(TopComponent)it.next();
+        for (int i=0; i<tc.length; i++) {
+            c=(TopComponent)tc[i];
             if (c.isShowing() && comparator.equals(c.getName(), name) && isUnder(cont, c) && (subchooser==null || subchooser.checkComponent(c))) {
                 index--;
                 if (index<0)
                     return c;
             }
         }
-        it=s.iterator();
-        while (it.hasNext()) {
-            c=(TopComponent)it.next();
+        for (int i=0; i<tc.length; i++) {
+            c=(TopComponent)tc[i];
             if ((!c.isShowing()) && isParentShowing(c) && comparator.equals(c.getName(), name) && isUnder(cont, c) && (subchooser==null || subchooser.checkComponent(c))) {
                 index--;
                 if (index<0)
