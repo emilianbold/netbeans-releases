@@ -100,6 +100,11 @@ public class ServerInstance implements Node.Cookie {
         getTargetMap();
         return (ServerTarget[]) targets.values().toArray(new ServerTarget[targets.size()]);
     }
+
+    public Collection getTargetList() {
+        getTargetMap();
+        return  targets.values();
+    }
     
     // PENDING use targets final variable?
     private Map getTargetMap() {
@@ -539,4 +544,12 @@ public class ServerInstance implements Node.Cookie {
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
     }
     
+    public ServerTarget getCoTarget() {
+        ServerTarget[] childs = getTargets();
+        for (int i=0; i<childs.length; i++) {
+            if (getStartServer().isAlsoTargetServer(childs[i].getTarget()))
+                return childs[i];
+        }
+        return null;
+    }
 }

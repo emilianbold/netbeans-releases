@@ -33,7 +33,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 
 public class InstanceNode extends AbstractNode implements ServerInstance.RefreshListener {
     
-    private ServerInstance instance;
+    protected ServerInstance instance;
     
     public InstanceNode(ServerInstance instance) {
         super(new InstanceChildren(instance));
@@ -108,7 +108,7 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
             setChildren(replacing);
         }           
     
-    private static class InstanceChildren extends Children.Keys {
+    protected static class InstanceChildren extends Children.Keys {
         ServerInstance serverInstance;
         InstanceChildren(ServerInstance inst) {
             this.serverInstance = inst;
