@@ -14,8 +14,6 @@
 package org.netbeans.beaninfo.editors;
 
 import java.awt.Image;
-import java.awt.Color;
-import java.awt.FontMetrics;
 import java.beans.PropertyEditorSupport;
 import java.beans.FeatureDescriptor;
 
@@ -23,7 +21,6 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.nodes.Node;
 
-import org.netbeans.core.projects.SettingChildren;
 
 /** Editor for property of enumerated integers, each integer should
  * have associated image displayed as a property value. It's possible

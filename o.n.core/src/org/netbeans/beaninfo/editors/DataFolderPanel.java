@@ -21,31 +21,20 @@ import java.beans.*;
 import java.util.Enumeration;
 import java.text.MessageFormat;
 
-import javax.swing.tree.TreeSelectionModel;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.DefaultTreeSelectionModel;
-import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
-import javax.swing.ListSelectionModel;
-import javax.swing.JButton;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
-import org.openide.WizardDescriptor;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.explorer.view.*;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.filesystems.*;
-import org.openide.util.UserCancelException;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.enum.*;
 import org.openide.windows.TopComponent;
 

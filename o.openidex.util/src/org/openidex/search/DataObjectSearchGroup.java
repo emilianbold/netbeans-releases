@@ -15,12 +15,10 @@
 package org.openidex.search;
 
 
-import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 
 import org.openide.cookies.InstanceCookie;

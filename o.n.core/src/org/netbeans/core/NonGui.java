@@ -14,16 +14,11 @@
 package org.netbeans.core;
 
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
 import java.net.URL;
 import java.security.*;
-import java.util.Enumeration;
-import java.util.Vector;
-import java.util.Set;
-import java.util.Iterator;
 import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -33,34 +28,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.openide.util.datatransfer.ExClipboard;
 import org.openide.*;
 import org.openide.awt.StatusDisplayer;
 import org.openide.loaders.*;
 import org.openide.actions.*;
-import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 import org.openide.windows.*;
 import org.openide.explorer.*;
-import org.openide.explorer.view.BeanTreeView;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
-import org.openide.util.RequestProcessor;
-import org.openide.util.UserCancelException;
-import org.openide.util.actions.ActionPerformer;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.io.*;
 import org.openide.nodes.*;
-import org.openide.util.Utilities;
 
 import org.netbeans.TopSecurityManager;
 
 import org.netbeans.core.actions.*;
 import org.netbeans.core.modules.InstalledFileLocatorImpl;
-import org.netbeans.core.projects.ModuleLayeredFileSystem;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.projects.TrivialProjectManager;
 import org.netbeans.core.modules.ModuleSystem;

@@ -21,7 +21,6 @@ import org.xml.sax.*;
 import org.xml.sax.ext.*;
 
 import org.openide.loaders.*;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
 import org.openide.util.*;
 import org.openide.util.lookup.*;

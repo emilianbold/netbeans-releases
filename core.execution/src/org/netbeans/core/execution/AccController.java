@@ -16,10 +16,7 @@ package org.netbeans.core.execution;
 import java.security.ProtectionDomain;
 import java.security.AccessControlContext;
 import java.security.AccessController;
-import java.security.Permission;
 import java.security.PermissionCollection;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.lang.reflect.Field;
 
 /** Tries to get an IOProtectionDomain from an AccessControlContext.

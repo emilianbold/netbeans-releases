@@ -15,7 +15,6 @@ package org.netbeans.core.filesystems;
 
 import java.io.*;
 import java.util.*;
-import java.net.URL;
 
 import org.xml.sax.*;
 
@@ -26,7 +25,6 @@ import org.openide.util.*;
 import org.openide.util.lookup.*;
 import org.openide.xml.*;
 import org.openide.*;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 

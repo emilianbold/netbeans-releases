@@ -18,7 +18,6 @@ import java.beans.*;
 import org.openide.execution.NbClassPath;
 import org.openide.explorer.propertysheet.ExPropertyEditor; 
 import org.openide.explorer.propertysheet.PropertyEnv;
-import java.beans.FeatureDescriptor;
 import org.openide.nodes.Node;
 
 /** A property editor for NbClassPath.

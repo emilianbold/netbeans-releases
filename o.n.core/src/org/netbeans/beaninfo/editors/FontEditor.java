@@ -16,8 +16,6 @@ package org.netbeans.beaninfo.editors;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
-import java.util.Vector;
-import java.util.Enumeration;
 import java.util.ResourceBundle;
 
 import javax.swing.*;

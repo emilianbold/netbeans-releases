@@ -15,13 +15,9 @@ package org.netbeans.core;
 
 import java.awt.Image;
 import java.beans.*;
-import java.util.Hashtable;
 import java.util.ResourceBundle;
-import java.util.Vector;
 import org.netbeans.core.windows.MiniStatusBar;
 
-import org.openide.modules.Dependency;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 

@@ -15,9 +15,6 @@ package org.openide.execution;
 
 import java.security.PermissionCollection;
 import java.security.CodeSource;
-import java.util.Enumeration;
-import java.util.Vector;
-import java.io.IOException;
 
 import org.openide.windows.InputOutput;
 

@@ -14,7 +14,6 @@
 package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
-import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -24,7 +23,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 /**

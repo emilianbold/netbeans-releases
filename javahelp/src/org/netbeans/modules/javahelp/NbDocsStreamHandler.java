@@ -13,19 +13,11 @@
 
 package org.netbeans.modules.javahelp;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.*;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.net.*;
 import java.util.*;
 
-import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 
 /** Handler & connection cribbed from NbResourceStreamHandler.

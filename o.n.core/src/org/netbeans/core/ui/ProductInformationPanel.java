@@ -15,8 +15,6 @@ package org.netbeans.core.ui;
 
 import java.awt.Color;
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.io.File;
@@ -24,19 +22,13 @@ import java.text.MessageFormat;
 import java.util.Locale;
 
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
-import org.openide.DialogDescriptor;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 import org.netbeans.core.TopLogging;
 
-import org.netbeans.core.ui.NbLabelA11y;
 
 public class ProductInformationPanel extends JPanel {
 

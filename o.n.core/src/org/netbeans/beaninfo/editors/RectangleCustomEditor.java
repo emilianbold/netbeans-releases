@@ -16,7 +16,6 @@ package org.netbeans.beaninfo.editors;
 import java.awt.Rectangle;
 import java.util.ResourceBundle;
 
-import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;

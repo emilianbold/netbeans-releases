@@ -23,12 +23,9 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.util.io.NbMarshalledObject;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.Lookup.Result;
-import org.openide.util.Lookup.Template;
 
 /** Works with all service types.
 *

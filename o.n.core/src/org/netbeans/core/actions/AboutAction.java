@@ -15,7 +15,6 @@ package org.netbeans.core.actions;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
 
 import org.netbeans.core.Splash;

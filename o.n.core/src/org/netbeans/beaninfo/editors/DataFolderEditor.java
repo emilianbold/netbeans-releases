@@ -14,7 +14,6 @@
 package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
-import java.awt.BorderLayout;
 
 import org.openide.loaders.DataFolder;
 

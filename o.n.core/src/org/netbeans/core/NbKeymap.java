@@ -14,7 +14,6 @@
 package org.netbeans.core;
 
 import java.util.*;
-import java.util.Observable;
 import javax.swing.event.*;
 import javax.swing.Action;
 import javax.swing.KeyStroke;

@@ -13,21 +13,17 @@
 
 package org.netbeans.core.ui;
 
-import java.util.ResourceBundle;
 
 import org.openide.nodes.*;
 import org.openide.actions.*;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataShadow;
 import org.openide.loaders.TemplateWizard;
 import org.openide.loaders.XMLDataObject;
-import org.openide.util.datatransfer.NewType;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 
 

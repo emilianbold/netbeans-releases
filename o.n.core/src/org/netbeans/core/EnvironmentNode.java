@@ -22,12 +22,10 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.core.modules.ManifestSection;
 import org.netbeans.core.ui.LookupNode;
-import org.openide.nodes.AbstractNode;
 
 /** This object represents environment settings in the Corona system.
 * This class is final only for performance purposes.

@@ -13,11 +13,8 @@
 
 package org.netbeans.modules.javahelp;
 
-import javax.swing.event.ChangeListener;
 
-import javax.help.HelpSet;
 
-import org.openide.util.HelpCtx;
 
 /** Useful constants pertaining to the help system.
 * @author Jesse Glick

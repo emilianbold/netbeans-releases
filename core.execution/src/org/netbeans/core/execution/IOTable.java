@@ -13,13 +13,10 @@
 
 package org.netbeans.core.execution;
 
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Hashtable;
 
 import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 import org.openide.windows.TopComponent;
 
 /** Tasks are supposed to obey following model: every task is a ThreadGroup

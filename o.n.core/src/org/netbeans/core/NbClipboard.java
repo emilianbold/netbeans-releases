@@ -24,8 +24,6 @@ import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.Lookup.Result;
-import org.openide.util.Lookup.Template;
 import org.openide.util.Utilities;
 
 public final class NbClipboard extends ExClipboard implements LookupListener, AWTEventListener

@@ -19,7 +19,6 @@ import java.awt.Image;
 import java.beans.*;
 
 import org.openide.TopManager;
-import org.openide.util.Utilities;
 
 /** Bean info for <code>SearchType</code> class.
  *

@@ -15,7 +15,6 @@ package org.netbeans.api.javahelp;
 
 import javax.swing.event.ChangeListener;
 
-import javax.help.HelpSet;
 
 import org.openide.util.HelpCtx;
 

@@ -14,8 +14,6 @@
 package org.netbeans;
 
 import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
 import java.lang.reflect.Method;
 import java.util.jar.JarFile;

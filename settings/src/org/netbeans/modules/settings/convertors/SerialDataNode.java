@@ -27,9 +27,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.net.URL;
-import java.util.Properties;
-import java.util.Enumeration;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 

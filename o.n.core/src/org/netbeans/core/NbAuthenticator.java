@@ -13,14 +13,12 @@
 
 package org.netbeans.core;
 
-import java.net.Authenticator;
 import java.util.ResourceBundle;
 
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /** Global password protected sites Authenticator for IDE
  *

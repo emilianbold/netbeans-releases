@@ -13,8 +13,6 @@
 
 package org.netbeans.core.execution;
 
-import java.awt.AWTEvent;
-import java.awt.EventQueue;
 
 /**
 *

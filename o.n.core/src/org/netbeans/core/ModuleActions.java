@@ -15,21 +15,16 @@ package org.netbeans.core;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.*;
 import java.util.*;
 import javax.swing.Action;
 import javax.swing.event.*;
 
 import org.openide.actions.ActionManager;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.*;
-import org.openide.util.WeakListener;
 import org.openide.ErrorManager;
 
 import org.netbeans.core.modules.ManifestSection;

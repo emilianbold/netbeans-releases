@@ -15,8 +15,6 @@ package org.netbeans.beaninfo.editors;
 
 import java.io.*;
 import java.util.Properties;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.awt.*;
 import javax.swing.*;

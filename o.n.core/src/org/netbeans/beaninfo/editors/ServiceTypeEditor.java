@@ -14,10 +14,8 @@
 package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
-import java.util.ArrayList;
 import java.util.Enumeration;
 
-import org.openide.filesystems.Repository;
 import org.openide.ServiceType;
 import org.openide.explorer.propertysheet.*;
 import org.openide.util.Lookup;

@@ -13,10 +13,8 @@
 
 package org.netbeans.beaninfo.editors;
 
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
-import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.*;
 

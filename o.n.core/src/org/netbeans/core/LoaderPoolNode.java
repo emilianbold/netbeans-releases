@@ -19,10 +19,8 @@ import java.util.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.IntrospectionException;
-import java.lang.reflect.InvocationTargetException;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.openide.filesystems.*;
 import org.openide.loaders.DataLoader;
@@ -35,7 +33,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.enum.ArrayEnumeration;
 import org.openide.util.*;
 import org.openide.util.io.*;
-import org.openide.actions.ReorderAction;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
 

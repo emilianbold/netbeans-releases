@@ -13,38 +13,19 @@
 
 package org.netbeans.core.execution;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.InterruptedIOException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.BufferedWriter;
 import java.io.PrintStream;
-import java.text.MessageFormat;
 import java.util.*;
-import java.security.SecureClassLoader;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Policy;
-import java.security.Permission;
-import java.lang.ref.SoftReference;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.net.MalformedURLException;
 
-
-import org.openide.loaders.DataObject;
 import org.openide.ErrorManager;
 import org.openide.execution.NbClassPath;
-import org.openide.execution.ExecInfo;
 import org.openide.execution.ExecutorTask;
-import org.openide.execution.Executor;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 import org.netbeans.core.NbTopManager;

@@ -15,7 +15,6 @@ package org.netbeans.core;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -23,7 +22,6 @@ import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 
 import org.netbeans.core.modules.ModuleSystem;
-import org.netbeans.core.projects.ModuleLayeredFileSystem;
 import org.netbeans.core.xml.NbSAXParserFactoryImpl;
 import org.openide.awt.StatusDisplayer;
 

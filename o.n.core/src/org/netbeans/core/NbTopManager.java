@@ -21,7 +21,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLStreamHandlerFactory;
-import java.util.Enumeration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.text.MessageFormat;
@@ -32,7 +31,6 @@ import javax.swing.border.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.openide.util.datatransfer.ExClipboard;
 import org.openide.*;
 import org.openide.awt.HtmlBrowser;
 import org.openide.loaders.*;
@@ -40,13 +38,9 @@ import org.openide.actions.*;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.JarFileSystem;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
-import org.openide.windows.WindowManager;
-import org.openide.windows.TopComponent;
 import org.openide.explorer.*;
-import org.openide.explorer.view.BeanTreeView;
 import org.openide.util.*;
 import org.openide.util.io.*;
 import org.openide.nodes.*;
@@ -57,14 +51,12 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.TopSecurityManager;
 import org.netbeans.core.modules.Module;
 import org.netbeans.core.perftool.StartLog;
-import org.netbeans.core.modules.ModuleManager;
 import org.netbeans.core.modules.ModuleSystem;
 import org.netbeans.core.projects.TrivialProjectManager;
 import org.netbeans.core.windows.MainWindow;
 import org.netbeans.core.windows.PersistenceManager;
 import org.netbeans.core.windows.util.WindowUtils;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.lookup.InstanceContent;
 
 /** This class is a TopManager for Corona environment.
 *

@@ -13,14 +13,8 @@
 
 package org.netbeans.beaninfo.editors;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.lang.reflect.Array;
 import java.io.*;
-import java.text.MessageFormat;
 
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.loaders.*;
 import org.openide.text.IndentEngine;
 

@@ -13,8 +13,6 @@
 
 package org.netbeans.core.execution;
 
-import org.openide.execution.ExecutorTask;
-
 /** Informs about process state
 *
 * @author Ales Novak

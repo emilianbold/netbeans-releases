@@ -29,7 +29,6 @@ import org.openide.util.SharedClassObject;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 /** Class provides support for storing and reading session settings.

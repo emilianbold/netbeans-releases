@@ -15,8 +15,6 @@ package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
 
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;

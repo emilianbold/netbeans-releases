@@ -28,7 +28,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
 import org.openide.util.WeakListener;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.AbstractLookup;

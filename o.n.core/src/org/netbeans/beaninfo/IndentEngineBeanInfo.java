@@ -18,9 +18,7 @@ import java.awt.Image;
 import java.beans.*;
 import java.util.ResourceBundle;
 
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.text.IndentEngine;
 import org.openide.util.Utilities;
 
 /** Object that provides beaninfo for all indentation engines.

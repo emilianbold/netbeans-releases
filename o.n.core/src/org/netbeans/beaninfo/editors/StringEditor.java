@@ -14,7 +14,6 @@
 package org.netbeans.beaninfo.editors;
 
 import java.beans.PropertyEditorSupport;
-import org.openide.util.Utilities;
 
 // bugfix# 9219 for attachEnv() method
 import org.openide.explorer.propertysheet.ExPropertyEditor; 

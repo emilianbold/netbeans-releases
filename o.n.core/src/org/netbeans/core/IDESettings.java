@@ -13,21 +13,16 @@
 
 package org.netbeans.core;
 
-import java.beans.Introspector;
-import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.net.URL;
 import java.net.InetAddress;
 import java.util.Hashtable;
 import java.util.Properties;
-import javax.swing.SwingUtilities;
 
-import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.InstanceCookie;
@@ -41,7 +36,6 @@ import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 import org.netbeans.core.windows.UIModeManager;
 

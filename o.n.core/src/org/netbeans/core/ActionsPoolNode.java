@@ -13,11 +13,8 @@
 
 package org.netbeans.core;
 
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.datatransfer.Transferable;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import org.openide.nodes.*;
 import org.openide.actions.*;
@@ -25,7 +22,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /** The node for the actions pool folder representation.

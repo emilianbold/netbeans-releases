@@ -17,11 +17,9 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.windows.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
 
 import org.netbeans.core.IDESettings;
-import org.openide.windows.WindowManager;
 
 /** Activates last opened HTML browser or opens a HTML Browser on the home URL 
  *  specified in IDESettings using HtmlBrowser.URLDisplayer.showURL().

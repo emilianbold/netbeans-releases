@@ -18,8 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import org.openide.ErrorManager;
@@ -27,7 +25,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 //for OpenVMS conditional execution change
-import java.io.FileWriter;
 import java.io.FileOutputStream;
 import java.io.BufferedOutputStream;
 

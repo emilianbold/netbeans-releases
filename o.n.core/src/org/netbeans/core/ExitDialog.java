@@ -14,26 +14,9 @@
 package org.netbeans.core;
 
 
-import java.awt.Color;
-import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.image.BufferedImage;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.Rectangle;
 import java.beans.BeanInfo;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -45,26 +28,13 @@ import org.openide.awt.Actions;
 import org.openide.cookies.SaveCookie;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerPanel;
-import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeAdapter;
-import org.openide.nodes.NodeMemberEvent;
 import org.openide.NotifyDescriptor;
-import org.openide.util.actions.CallableSystemAction;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListener;
 
 /** Dialog which lets the user select which open files to close.
  *

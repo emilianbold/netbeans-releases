@@ -20,7 +20,6 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.beans.PropertyEditor;
 import java.io.File;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;

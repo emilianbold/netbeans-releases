@@ -13,11 +13,8 @@
 
 package org.netbeans.core;
 
-import java.awt.Image;
 import java.awt.Component;
 import java.beans.*;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.*;
 
 import org.openide.actions.NewTemplateAction;

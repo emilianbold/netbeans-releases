@@ -14,12 +14,8 @@
 package org.netbeans.core.xml;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.lang.ref.Reference;
-import java.util.WeakHashMap;
 import java.beans.PropertyChangeListener;
 
-import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.w3c.dom.DocumentType;

@@ -19,7 +19,6 @@ import java.util.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
-import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.util.*;

@@ -14,37 +14,24 @@
 package org.netbeans.core;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.*;
-import java.beans.PropertyChangeEvent;
 import java.text.MessageFormat;
 import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.util.*;
 import java.util.List;
 
 import javax.swing.*;
-import javax.swing.JMenuItem;
 import javax.swing.event.*;
 import org.netbeans.core.IDESettings;
 
 import org.openide.*;
 import org.openide.actions.*;
 import org.openide.awt.SplittedPanel;
-import org.openide.awt.ToolbarToggleButton;
 import org.openide.loaders.*;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
-import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeListener;
@@ -52,8 +39,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListener;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Workspace;
@@ -63,14 +48,7 @@ import org.openide.windows.TopComponent;
 import org.netbeans.core.windows.WellKnownModeNames;
 import org.netbeans.core.windows.DeferredPerformer;
 import org.netbeans.core.windows.MiniStatusBar;
-import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.ModeImpl;
-import org.openide.awt.Actions;
-import org.openide.awt.JPopupMenuPlus;
-import org.openide.awt.MouseUtils;
-import org.openide.loaders.DataFilter;
-import org.openide.loaders.RepositoryNodeFactory;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.WindowManager;
 
 /** Main explorer - the class remains here for backward compatibility

@@ -21,7 +21,6 @@ import org.netbeans.core.NbPlaces;
 
 import org.openide.*;
 import org.openide.actions.*;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.modules.*;
@@ -29,10 +28,8 @@ import org.openide.options.*;
 import org.openide.nodes.*;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.util.actions.*;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /** Set of basic nodes for the visualization of IDE state (originally org.netbeans.core.DesktopNode)

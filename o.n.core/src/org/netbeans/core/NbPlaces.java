@@ -19,25 +19,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.*;
-import org.openide.cookies.InstanceCookie;
-import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.nodes.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.LookupEvent;
-import org.openide.util.WeakListener;
 
 import org.netbeans.core.windows.nodes.WorkspacePoolContext;
 import org.netbeans.core.modules.ManifestSection;
 import org.netbeans.core.ui.MountNode;
-import org.openide.loaders.RepositoryNodeFactory;
 
 /** Important places in the system.
 *

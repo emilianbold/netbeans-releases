@@ -20,17 +20,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Locale;
 import java.util.StringTokenizer;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
 import org.openide.execution.NbClassPath;
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.beaninfo.editors.FileEditor;
