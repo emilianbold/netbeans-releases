@@ -15,7 +15,6 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
@@ -33,6 +32,9 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.CMPFiel
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
 import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.refactoring.ui.MoveClassUI;
+import org.netbeans.modules.refactoring.ui.RefactoringPanel;
+import org.netbeans.modules.refactoring.ui.RenameRefactoringUI;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
@@ -258,17 +260,6 @@ public class Utils {
         return getSourceClassPath(ejbJarFile).findResource(resourceName);
     }
 
-    public static void activateRenameClassUI(String fullClassName) {
-        JavaClass javaClass = (JavaClass) JavaModel.getDefaultExtent().getType().resolve(fullClassName);
-    }
-
-    public static void activateMoveClassUI(FileObject ejbJarFile, String fullClassName, SourceGroup sourceGroup) {
-        JavaClass javaClass = (JavaClass) JavaModel.getDefaultExtent().getType().resolve(fullClassName);
-        MoveClassAction moveClassAction = new MoveClassAction();
-        moveClassAction.init(ejbJarFile, javaClass, sourceGroup);
-        moveClassAction.performAction(null);
-    }
-
     public static ClassElement getBeanClass(FileObject ejbJarFile, final Ejb ejb) {
         String ejbClassName = ejb.getEjbClass();
         return getClassElement(ejbJarFile, ejbClassName);
@@ -349,5 +340,17 @@ public class Utils {
         FileObject src = getSourceFile(ejbJarFile, className);
         ClassElement classElement = ClassElement.forName(className, src);
         return classElement;
+    }
+
+    private static JavaClass resolveJavaClass(String fullClassName) {
+        return (JavaClass) JavaModel.getDefaultExtent().getType().resolve(fullClassName);
+    }
+
+    public static void activateRenameClassUI(String fullClassName) {
+        new RefactoringPanel(new RenameRefactoringUI(resolveJavaClass(fullClassName)));
+    }
+
+    public static void activateMoveClassUI(String fullClassName) {
+        new RefactoringPanel(new MoveClassUI(resolveJavaClass(fullClassName)));
     }
 }

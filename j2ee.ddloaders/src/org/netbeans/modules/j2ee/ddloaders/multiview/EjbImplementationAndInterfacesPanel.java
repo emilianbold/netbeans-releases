@@ -102,21 +102,20 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         };
         addFocusListener(focusListener);
 
-        //todo:remove following rows
-        //moveClassButton.setVisible(false);
-        renameClassButton.setVisible(false);
         moveClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                EjbJarMultiViewDataObject ejbJarDataObject = (EjbJarMultiViewDataObject) ((SectionNodeView) getSectionView()).getDataObject();
-                SourceGroup[] sourceGroups = ejbJarDataObject.getSourceGroups();
-                FileObject ejbJarFile = ejbJarDataObject.getPrimaryFile();
-                Utils.activateMoveClassUI(ejbJarFile, className, sourceGroups[0]);
+//                EjbJarMultiViewDataObject ejbJarDataObject = (EjbJarMultiViewDataObject) ((SectionNodeView) getSectionView()).getDataObject();
+//                SourceGroup[] sourceGroups = ejbJarDataObject.getSourceGroups();
+//                FileObject ejbJarFile = ejbJarDataObject.getPrimaryFile();
+//                new MoveClassAction().activateMoveClassUI(ejbJarFile, className, sourceGroups[0]);
+                Utils.activateMoveClassUI(className);
                 moveClassButton.setEnabled(false);
                 renameClassButton.setEnabled(false);
             }
         });
         renameClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+//                new RenameClassAction().renameClass(className);
                 Utils.activateRenameClassUI(className);
                 moveClassButton.setEnabled(false);
                 renameClassButton.setEnabled(false);

@@ -48,7 +48,7 @@ public class MoveClassForm extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
         add(moveLabel, gridBagConstraints);
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(MoveClassForm.class, "LBL_ToPackage"));
@@ -56,7 +56,7 @@ public class MoveClassForm extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
         add(jLabel2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -64,7 +64,7 @@ public class MoveClassForm extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
         add(packageComboBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
