@@ -1072,9 +1072,6 @@ public class BaseOptions extends OptionSupport {
                 }
             }
         }
-        
-        // setting global popup menu items
-        super.setSettingValue(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST, OptionUtilities.getPopupStrings(OptionUtilities.getGlobalPopupMenuItems()));
     }
     
     
