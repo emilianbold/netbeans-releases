@@ -36,4 +36,5 @@ All Rights Reserved.
         End Debugging -->
 
         <jar main="true" href="nbjnlpinstaller.jar"/>
+        <extension name="Java Help" href="help.jnlp"/>
         <!-- The rest of this file is appended by the build.xml script -->

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Nokia. Portions Copyright 2003 Nokia.
+All Rights Reserved.
+-->
+<!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Descriptor 1.0//EN" "jnlp_1_0.dtd">
+
+<jnlp spec="1.0+" codebase="@CODEBASE@" href="help.jnlp">
+    <information>
+        <title>JavaHelp</title>
+        <vendor>Sun Microsystems, Inc.</vendor>
+    </information>
+    <resources>
+        <jar href="jh-2.0_02.jar"/>
+    </resources>
+    <component-desc/>
+</jnlp> 

@@ -44,14 +44,31 @@ All Rights Reserved.
     <target depends="jnlp-expand1, create-war" name="netbeans">
     </target>
 
+    <target depends="create-config-base" name="create-config">
+        <copy file="help.jnlp" tofile="release/help.jnlp" />
+    </target>
+    
+    <!-- default jars that we do not want to sign and pack -->
+    <selector id="extensions" >
+        <filename name="**/*jh*.jar" />
+    </selector>
+    <selector id="no-extensions" >
+        <not>
+            <selector refid="extensions" />
+        </not>
+    </selector>
+
+    
     <!-- This target fills in the content of file nb-launch.jnlp.
          Scans all the available jar files and adds entries to the .jnlp file.
     -->
-    <target depends="copy-to-release, create-jnlp-jars" name="create-config">
+    <target depends="copy-to-release, create-jnlp-jars" name="create-config-base">
         <!-- This target creates the end of nb-launch.jnlp file -->
         <path id="jarfiles">
             <fileset dir="release">
                 <include name="*.jar"/>
+                <!-- do not enumerate extensions-->
+                <selector refid="no-extensions" />
             </fileset>
         </path>
         <property location="${nb_all}/installer/jnlp/release/" name="dirname"/>
@@ -97,12 +114,16 @@ All Rights Reserved.
     </target>
     
     <target name="jnlp-expand1" depends="create-config" if="jnlp.static">
-        <replace file="release/nb-launch.jnlp" token="@CODEBASE@" value="${jnlp.codebase}"/>
+        <replace dir="release" token="@CODEBASE@" value="${jnlp.codebase}">
+            <filename name="*.jnlp" />
+        </replace>
         <replace file="release/nb-launch.jnlp" token="@NAME@" value="nb-launch.jnlp"/>
     </target>
     
     <target name="jnlp-expand2" depends="create-config" unless="jnlp.static">
-        <replace file="release/nb-launch.jnlp" token="@CODEBASE@" value="$$$$codebase"/>
+        <replace dir="release" token="@CODEBASE@" value="$$$$codebase">
+            <filename name="*.jnlp" />
+        </replace>
         <replace file="release/nb-launch.jnlp" token="@NAME@" value="$$$$name"/>
     </target>
 
@@ -126,9 +147,6 @@ All Rights Reserved.
         <copy flatten="true" todir="release">
             <fileset dir="jars">
                 <include name="**/*.jar"/>
-                <!-- XXX need to exclude it now as it is signed twice -->
-                <exclude name="**/*jh*.jar" />
-                <exclude name="**/*javahelp.jar" />
                 <!-- we do not support autoupdate in webstart -->
                 <include name="**/org-netbeans-modules-autoupdate.jar" />
             </fileset>
@@ -138,6 +156,7 @@ All Rights Reserved.
         <signjar alias="${jnlp.signjar.alias}" keystore="${jnlp.signjar.keystore}" storepass="${jnlp.signjar.password}">
             <fileset dir=".">
                 <include name="release/*.jar"/>
+                <selector refid="no-extensions" />
             </fileset>
         </signjar>
     </target>
@@ -180,8 +199,6 @@ All Rights Reserved.
              <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
              </fileset>
         </jar>
-        <delete file="jars/jh*.jar" />
-
     </target>
 
     <!-- copies and conditionally repackages all jars -->
