@@ -42,17 +42,45 @@ public class MainWithProjects implements Main.MainWithProjectsInterface {
         try {
             // open project
             final Project project = OpenProjectList.fileToProject(projectDir);
-            /* temporarily commented because it doesn't wait until scannning is finished
             // posting the to AWT event thread
-            Mutex.EVENT.readAccess(new Runnable() {
+            Mutex.EVENT.writeAccess(new Runnable() {
                 public void run() {
                     OpenProjectList.getDefault().open(project);
+                    // Set main? Probably user should do this if he wants.
+                    // OpenProjectList.getDefault().setMainProject(project);
                 }
             });
-             */
-            OpenProjectList.getDefault().open(project);
-            // Set main? Probably user should do this if he wants.
-            // OpenProjectList.getDefault().setMainProject(project);
+            // WAIT PROJECT OPEN - start
+            // We need to wait until project is open and then we can start to 
+            // wait when scanning finishes. If we don't wait, scanning is started
+            // too early and finishes immediatelly.
+            Thread waitThread = new Thread(new Runnable() {
+                public void run() {
+                    boolean projectOpened = false;
+                    while(!projectOpened) {
+                        Project[] projects = OpenProjectList.getDefault().getOpenProjects();
+                        for(int i=0;i<projects.length;i++) {
+                            if(projects[i] == project) {
+                                projectOpened = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+            waitThread.start();
+            try {
+                waitThread.join(60000L);  // wait 1 minute at the most
+            }
+            catch (InterruptedException iex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, iex);
+            }
+            if (waitThread.isAlive()) {
+                // time-out expired, project not opened -> interrupt the wait thread
+                ErrorManager.getDefault().log(ErrorManager.USER, "Project not opened in 60 second.");
+                waitThread.interrupt();
+            }
+            // WAIT PROJECT OPEN - end
             // wait until metadata scanning is finished
             ((JMManager)JMManager.getManager()).waitScanFinished();
         } catch (Exception ex) {
