@@ -1366,9 +1366,17 @@ to simulate
                 <!-- Distinguish build of a dependent project as standalone module or as a part of an ear -->
                 <xsl:choose>
                     <xsl:when test="$ear">
-                        <ant target="dist-ear" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
-                            <property name="dist.ear.dir" location="${{build.dir}}"/>
-                        </ant>
+                        <xsl:choose>
+                            <!-- call standart target if the artifact type is jar (java libraries) -->
+                            <xsl:when test="$subtarget = 'jar'">
+                                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <ant target="dist-ear" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
+                                    <property name="dist.ear.dir" location="${{build.dir}}"/>
+                                </ant>                            
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:when>
                     <xsl:otherwise>
                         <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
