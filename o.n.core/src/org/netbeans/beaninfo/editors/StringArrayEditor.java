@@ -39,6 +39,7 @@ public class StringArrayEditor implements XMLPropertyEditor, StringArrayCustomiz
     private String[] strings;
     private PropertyChangeSupport support;
     private boolean editable = true;
+    private String separator = ",";
 
     public StringArrayEditor() {
         support = new PropertyChangeSupport (this);
@@ -79,8 +80,10 @@ public class StringArrayEditor implements XMLPropertyEditor, StringArrayCustomiz
         for (int i = 0; i < strings.length; i++) {
             // XXX handles in-string escapes if quoted
             buf.append(quoted ? "\""+strings[i]+"\"" : strings[i]); // NOI18N
-            if (i != strings.length - 1)
-                buf.append (", "); // NOI18N
+            if (i != strings.length - 1) {
+                buf.append (separator); 
+                buf.append (' '); // NOI18N
+            }
         }
 
         return buf.toString ();
@@ -95,7 +98,7 @@ public class StringArrayEditor implements XMLPropertyEditor, StringArrayCustomiz
             setValue(null);
             return;
         }
-        StringTokenizer tok = new StringTokenizer(text, ","); // NOI18N
+        StringTokenizer tok = new StringTokenizer(text, separator);
         java.util.List list = new LinkedList();
         while (tok.hasMoreTokens()) {
             String s = tok.nextToken();
@@ -221,12 +224,21 @@ public class StringArrayEditor implements XMLPropertyEditor, StringArrayCustomiz
     
     public void attachEnv(PropertyEnv env) {
         FeatureDescriptor d = env.getFeatureDescriptor();
+        readEnv (env.getFeatureDescriptor ());
+    }
+    
+    final void readEnv (FeatureDescriptor d) {
         if (d instanceof Node.Property) {
             editable = ((Node.Property)d).canWrite();
         } else if (d instanceof PropertyDescriptor) {
             editable = ((PropertyDescriptor)d).getWriteMethod() != null;
         } else {
             editable = true;
+        }
+        
+        Object v = d.getValue ("item.separator"); // NOI18N
+        if (v instanceof String) {
+            separator = (String)v;
         }
     }
 }
