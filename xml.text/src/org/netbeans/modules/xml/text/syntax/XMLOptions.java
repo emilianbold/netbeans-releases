@@ -36,14 +36,15 @@ public class XMLOptions extends AbstractBaseOptions {
 
     
     // remap old XMLTokenContext to new XMLDefaultTokenContext
+    // commented out match by name
     private static final String[][] TRANSLATE_COLORS = {
-        { "xml-comment", "xml-block-comment" },
-        { "xml-ref", "xml-character" },
+//        { "xml-comment", "xml-comment" },
+//        { "xml-ref", "xml-ref" },
         { "xml-string", "xml-value" },
-        { "xml-attribute", "xml-argument" },
+//        { "xml-attribute", "xml-attribute" },
         { "xml-symbol", "xml-operator" },
 //        { "xml-tag", "xml-tag" },
-        { "xml-keyword", "xml-sgml-declaration" },
+        { "xml-keyword", "xml-doctype" },
         { "xml-plain", "xml-text"},
     };
     
