@@ -261,7 +261,7 @@ public class ModeParserTest extends NbTestCase {
 //        assertEquals("Mode frame state",Frame.MAXIMIZED_BOTH,modeCfg.frameState);
         
         assertEquals("Active TC","output",modeCfg.selectedTopComponentID);
-        assertFalse("Permanent",modeCfg.permanent);
+        assertTrue("Permanent",modeCfg.permanent);
         
         System.out.println("ModeParserTest.testLoadMode05 FINISH");
     }
