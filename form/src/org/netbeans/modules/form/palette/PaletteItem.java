@@ -30,7 +30,6 @@ public class PaletteItem implements java.io.Serializable {
 //  static final long serialVersionUID = -2098259549820241091L;
 
   public final static String ATTR_IS_CONTAINER = "isContainer";
-  public final static Object VALUE_IS_CONTAINER = Boolean.TRUE;
 // -----------------------------------------------------------------------------
 // Global class variables
 
@@ -40,9 +39,10 @@ public class PaletteItem implements java.io.Serializable {
   /** The JavaBean Class represented by this PaletteItem */
   private Class beanClass;
 
-  private boolean isContainer;
-
   private InstanceCookie instanceCookie;
+  private InstanceDataObject instanceDO;
+
+  private Boolean expliciteIsContainer;
   
 // -----------------------------------------------------------------------------
 // Constructors
@@ -51,18 +51,13 @@ public class PaletteItem implements java.io.Serializable {
   public PaletteItem (InstanceCookie instanceCookie) throws ClassNotFoundException, java.io.IOException {
     this.instanceCookie = instanceCookie;
     this.beanClass = instanceCookie.instanceClass ();
-    this.isContainer = java.awt.Container.class.isAssignableFrom (beanClass);
   }
 
   /** Creates a new PaletteItem */
   public PaletteItem (InstanceDataObject ido) throws ClassNotFoundException, java.io.IOException {
     this.beanClass = ido.instanceClass ();
     this.instanceCookie = ido;
-    this.isContainer = java.awt.Container.class.isAssignableFrom (beanClass);
-    Object attr = ido.getPrimaryFile ().getAttribute (ATTR_IS_CONTAINER);
-    if ((attr != null)  && attr.equals (VALUE_IS_CONTAINER)) {
-      isContainer = true;
-    }
+    this.instanceDO = ido;
   }
 
   /** Creates a new PaletteItem for specified JavaBean class 
@@ -85,7 +80,7 @@ public class PaletteItem implements java.io.Serializable {
   */
   public PaletteItem (Class beanClass, boolean isContainer) {
     this.beanClass = beanClass;
-    this.isContainer = isContainer;
+    this.expliciteIsContainer = new Boolean (isContainer);
   }
 
 // -----------------------------------------------------------------------------
@@ -159,6 +154,15 @@ public class PaletteItem implements java.io.Serializable {
   }
 
   public boolean isContainer () {
+    if (expliciteIsContainer != null) return expliciteIsContainer.booleanValue (); // explicitly set isContainer flag
+
+    boolean isContainer = java.awt.Container.class.isAssignableFrom (beanClass);
+    if (instanceDO != null) {
+      Object attr = instanceDO.getPrimaryFile ().getAttribute (ATTR_IS_CONTAINER);
+      if ((attr != null) && (attr.equals (Boolean.FALSE))) {
+        isContainer = false;
+      }
+    }
     return isContainer;
   }
 
@@ -172,6 +176,8 @@ public class PaletteItem implements java.io.Serializable {
 
 /*
  * Log
+ *  12   Gandalf   1.11        7/23/99  Ian Formanek    isContainer property of 
+ *       Palette items
  *  11   Gandalf   1.10        7/16/99  Ian Formanek    Fixed bug 1855 - 
  *       Tooltips of borders in Component Pallete print *BorderInfo probably 
  *       instead of *Border .
