@@ -370,37 +370,9 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     /** Creates hacked fileChooser, responding on Enter the way it
      * performs folder change. */
     public static JFileChooser createHackedFileChooser() {
-        JFileChooser chooser = null;
-        //Modified to loop and have a failover mode - this issue is still
-        //being reported
-        for (int i=0; i < 5 && chooser == null; i++) {
-            try {
-                chooser = new JFileChooser();
-            } catch (NullPointerException npe) {
-                //Workaround for issue 34879 - sometimes the WinXP file chooser UI
-                //tries to create image icons for the file chooser buttons before
-                //it has loaded its images, calls new ImageIcon(null) and throws an
-                //NPE
-                ErrorManager.getDefault().log (ErrorManager.INFORMATIONAL,
-                    i + ":NPE occured in JFileChooser constructor due to Win XP LF bug. " +
-                    "Attempting to create another.");
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
-                chooser = new JFileChooser();
-            }
-        }
-        if (chooser == null) {
-            chooser = new FailureJFileChooser();
-        }
+        JFileChooser chooser = new JFileChooser();
         hackFileChooser(chooser);
         return chooser;
-    }
-    
-    private static final class FailureJFileChooser extends JFileChooser {
-        public void updateUI() {
-            //Ugly, but if the LF bug shows up after 5 tries, we have to
-            //do something or the IDE is unusable.
-            setUI ((FileChooserUI) MetalFileChooserUI.createUI(this));
-        }
     }
     
     /** Hacks fileChooser, responding on Enter the way it
