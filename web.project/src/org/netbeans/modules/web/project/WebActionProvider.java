@@ -75,7 +75,8 @@ import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.jmi.javamodel.*;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import java.lang.reflect.Modifier;
-
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
@@ -741,7 +742,14 @@ class WebActionProvider implements ActionProvider {
                 }
             }
         }
-            
+        
+        // try to use the default server instance
+        instance = Deployment.getDefault().getDefaultServerInstanceID();
+        if (instance != null) {
+            setServerInstance(instance);
+            return true;
+        }
+        
         // no selected server => warning
         String server = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
         NoSelectedServerWarning panel = new NoSelectedServerWarning (server);
@@ -750,10 +758,22 @@ class WebActionProvider implements ActionProvider {
             DialogDescriptor.OK_OPTION,
             DialogDescriptor.CANCEL_OPTION
         };
-        DialogDescriptor desc = new DialogDescriptor (panel,
+        final DialogDescriptor desc = new DialogDescriptor (panel,
                 NbBundle.getMessage (NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
             true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
+        panel.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(NoSelectedServerWarning.OK_ENABLED)) {
+                        Object newvalue = evt.getNewValue();
+                        if ((newvalue != null) && (newvalue instanceof Boolean)) {
+                            desc.setValid(((Boolean)newvalue).booleanValue());
+                        }
+                    }
+                }
+            }
+        );
+        desc.setValid(panel.getSelectedInstance() != null);
         dlg.setVisible (true);
         if (desc.getValue() != options[0]) {
             selected = false;
@@ -761,14 +781,18 @@ class WebActionProvider implements ActionProvider {
             instance = panel.getSelectedInstance ();
             selected = instance != null;
             if (selected) {
-                WebProjectProperties wpp = new WebProjectProperties (project, antProjectHelper, refHelper);
-                wpp.put (WebProjectProperties.J2EE_SERVER_INSTANCE, instance);
-                wpp.store ();
+                setServerInstance(instance);
             }
         }
         dlg.dispose();            
 
         return selected;
+    }
+    
+    private void setServerInstance(String serverInstanceId) {
+        WebProjectProperties wpp = new WebProjectProperties (project, antProjectHelper, refHelper);
+        wpp.put (WebProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceId);
+        wpp.store ();
     }
     
     private boolean isDDServlet(Lookup context, FileObject javaClass) {
