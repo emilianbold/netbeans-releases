@@ -169,9 +169,15 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             }
             String oldValue = props.getProperty (propName);
             String newValue = propValue.toString();
-            if (newValue.length()>0 && !newValue.equals(oldValue)) {
-                props.setProperty (propName, newValue);
-                modified = true;
+            if (!newValue.equals(oldValue)) {
+                if (newValue.length()>0) {
+                    props.setProperty (propName, newValue);
+                    modified = true;
+                }
+                else if (oldValue != null) {
+                    props.remove(propName);
+                    modified = true;
+                }
             }
         }
         return modified;
