@@ -500,9 +500,6 @@ public class NonGui extends NbTopManager implements Runnable {
         org.openide.util.Task automount = AutomountSupport.initialize ();
         StartLog.logProgress ("Automounter fired"); // NOI18N
         
-        // Initialization of system options declared in manifest
-        org.netbeans.core.projects.XMLSettingsHandler.openOptions();
-
         // -----------------------------------------------------------------------------------------------------
         // 10. Initialization of project (because it can change loader pool and it influences main window menu)
         try {
