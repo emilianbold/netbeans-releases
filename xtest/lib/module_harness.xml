@@ -474,18 +474,21 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="move-ide-userdir" if="ide.userdir.available">
-        <!-- zip the ide userdir stuff -->
-        <zip zipfile="${xtest.workdir}/sys/ide.zip" basedir="${xtest.workdir}/sys/ide"/>
-         <!-- copy the ide.log and the zip -->
-        <copy file="${xtest.workdir}/sys/ide.zip" todir="${xtest.current.results}/sys/ide"/>        
+        <!-- copy ide.log -->
         <copy file="${xtest.workdir}/sys/ide/system/ide.log" todir="${xtest.current.results}/sys/ide"/>
+        <!-- copy output dir -->
         <available file="${xtest.workdir}/sys/ide/output" type="dir" property="xtest.ide.output.exists"/>
         <antcall target="copy-output"/>
-         <!-- delete zip and ide workdir -->
-        <delete file="${xtest.workdir}/sys/ide.zip"/>
-        <!--
-        <delete dir="${xtest.workdir}/sys/ide"/>
-        -->
+        <!-- copy ide.zip -->
+        <condition property="xtest.userdir.move">
+           <equals arg1="${xtest.archive.ide.userdir}" arg2="true"/>
+        </condition>
+        <antcall target="copy-ide.zip"/>
+    </target>
+    
+    <target name="copy-ide.zip" if="xtest.userdir.move">
+        <!-- zip the ide userdir stuff -->
+        <zip zipfile="${xtest.current.results}/sys/ide/ide.zip" basedir="${xtest.workdir}/sys/ide"/>
     </target>
 
     <target name="copy-output" if="xtest.ide.output.exists">
