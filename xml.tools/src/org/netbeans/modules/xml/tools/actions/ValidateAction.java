@@ -81,4 +81,8 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
         return new HelpCtx (ValidateAction.class);
     }
 
+    protected boolean asynchronous() {
+        return false;
+    }
+
 }

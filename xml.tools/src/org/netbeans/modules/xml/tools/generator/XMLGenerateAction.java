@@ -48,6 +48,10 @@ public abstract class XMLGenerateAction extends CookieAction {
     protected Class getOwnCookieClass () {
         return XMLGenerateCookie.class;
     }
+    
+    protected boolean asynchronous() {
+        return false;
+    }
 
     /*
      * This code is called from a "Module-actions" thread.

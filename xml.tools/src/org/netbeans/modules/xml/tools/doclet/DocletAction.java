@@ -59,8 +59,6 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
         return MODE_ONE;
     }
 
-
-
     public void performAction(Node[] nodes) {
             
         if (nodes == null) return;
@@ -195,6 +193,10 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
 
     public String getName() {
         return Util.THIS.getString("NAME_Generate_Documentation");
+    }
+
+    protected boolean asynchronous() {
+        return false;
     }
 
 }

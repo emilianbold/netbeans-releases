@@ -66,6 +66,10 @@ public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTD
         console.message(Util.THIS.getString("MSG_DTD_valid_end"));
         console.moveToFront();
     }
+    
+    protected boolean asynchronous() {
+        return false;
+    }
 
     /** Human presentable name. */
     public String getName() {

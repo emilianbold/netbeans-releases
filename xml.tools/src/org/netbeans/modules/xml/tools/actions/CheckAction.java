@@ -81,5 +81,9 @@ public class CheckAction extends CookieAction implements CollectXMLAction.XMLAct
     public HelpCtx getHelpCtx () {
         return new HelpCtx (CheckAction.class);
     }
+    
+    protected boolean asynchronous() {
+        return false;
+    }
 
 }

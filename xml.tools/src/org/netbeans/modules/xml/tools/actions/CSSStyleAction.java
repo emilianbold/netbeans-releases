@@ -60,7 +60,6 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
 
     private String css;
 
-    
     public void performAction(Node[] nodes) {
         if (nodes == null) return;
         if (nodes.length != 1) return;
@@ -167,6 +166,10 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
 
     public String getName() {
         return Util.THIS.getString("NAME_Generate_CSS");
+    }
+    
+    protected boolean asynchronous() {
+        return false;
     }
 
 }

@@ -88,5 +88,9 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
         recentPerfomer = new TransformPerformer (nodes);
         recentPerfomer.perform();
     }
+    
+    protected boolean asynchronous() {
+        return false;
+    }
 
 }
