@@ -194,7 +194,7 @@ loop:	while (true) {
 	return buf;
     }
 
-    static String readUTF(byte[] src, int utflen) {
+    static synchronized String readUTF(byte[] src, int utflen) {
 	int i = 0;
 	int strlen = 0;
 
