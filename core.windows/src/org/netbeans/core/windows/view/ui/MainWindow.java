@@ -167,6 +167,19 @@ public final class MainWindow extends JFrame {
         //#38810 end
     }
     
+    private boolean hackFirst = Boolean.getBoolean("netbeans.winsys.flashhack"); //NOI18N
+    /** Workaround for main window flashing during startup problem on Windows.
+     * Depends on the main window being laid out twice during startup, so may
+     * not be safe enough for producting use, but including for testing.  Can't
+     * find any platform it causes a problem on thus far. */
+    public void doLayout() {
+        if (hackFirst) {
+            hackFirst = false;
+            return;
+        }
+        super.doLayout();
+    }
+    
     /** Creates and returns border for desktop which is visually aligned
      * with currently active LF */
     private static Border getDesktopBorder () {
