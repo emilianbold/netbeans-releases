@@ -26,6 +26,13 @@ Microsystems, Inc. All Rights Reserved.
       <module name="openidex" testtypes="unit" attributes="stable"/>
   </config>
   
+  <config name="unit-nb">
+      <module name="core" testtypes="unit" attributes="stable"/>
+      <module name="java" testtypes="unit" attributes="stable"/>
+      <module name="openide" testtypes="unit" attributes="stable"/>
+      <module name="openidex" testtypes="unit" attributes="stable"/>
+  </config>
+  
   <!-- QA TESTS -->
   <!-- ======== -->
   
