@@ -27,9 +27,6 @@ public class HTMLViewAction extends CallableSystemAction {
   /** generated Serialized Version UID */
   static final long serialVersionUID = 281181711813174400L;
 
-  /** URL of icon for this action */
-  private static java.net.URL urlIcon = null;
-
   /** Icon resource.
   * @return name of resource for icon
   */
@@ -57,6 +54,7 @@ public class HTMLViewAction extends CallableSystemAction {
 
 /*
  * Log
+ *  6    Gandalf   1.5         3/6/99   David Simonek   
  *  5    Gandalf   1.4         3/2/99   David Simonek   icons repair
  *  4    Gandalf   1.3         3/1/99   David Simonek   icons etc..
  *  3    Gandalf   1.2         1/21/99  David Simonek   Removed references to 
