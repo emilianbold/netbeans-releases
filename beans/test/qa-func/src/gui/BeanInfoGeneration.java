@@ -262,8 +262,9 @@ public class BeanInfoGeneration extends JellyTestCase {
         //new EventTool().waitNoEvent(1500);
         nbDialogOperator.ok();
         //new EventTool().waitNoEvent(1500);
-        EditorOperator eo = new EditorOperator(NAME_TEST_FILE+"BeanInfo");
-        ref(eo.getText());
+//        EditorOperator eo = new EditorOperator(NAME_TEST_FILE+"BeanInfo");
+//        ref(eo.getText());
+        writeResult(NAME_TEST_FILE+"BeanInfo");
         compareReferenceFiles();
     }
     
@@ -304,9 +305,17 @@ public class BeanInfoGeneration extends JellyTestCase {
         
         new EventTool().waitNoEvent(500);
         
-        EditorOperator eo = new EditorOperator(NAME_TEST_FILE+"BeanInfo");
-        ref(eo.getText());
+//        EditorOperator eo = new EditorOperator(NAME_TEST_FILE+"BeanInfo");
+//        ref(eo.getText());
+        writeResult(NAME_TEST_FILE+"BeanInfo");
         compareReferenceFiles();
+    }
+
+    private void writeResult(String name) {
+        new EventTool().waitNoEvent(1000);
+        new EditorOperator(name);
+        ref(Utilities.unify(Utilities.getAsString(name+".java")));
+        new EventTool().waitNoEvent(500);
     }
     
     public void testRegenerateBeanInfo() {
@@ -338,7 +347,7 @@ public class BeanInfoGeneration extends JellyTestCase {
             File workDir = getWorkDir();
             (new File(workDir,"testRegenerateBeanInfoInitial.ref")).createNewFile();
             PrintWriter out = new PrintWriter( new BufferedWriter( new FileWriter(workDir+File.separator+"testRegenerateBeanInfoInitial.ref")));
-            out.print(eo.getText());
+            out.print(Utilities.unify(eo.getText()));
             out.close();
         } catch(IOException exc) {
             exc.printStackTrace();
@@ -390,7 +399,7 @@ public class BeanInfoGeneration extends JellyTestCase {
             File workDir = getWorkDir();
             (new File(workDir,"testRegenerateBeanInfoModified.ref")).createNewFile();
             PrintWriter out = new PrintWriter( new BufferedWriter( new FileWriter(workDir+File.separator+"testRegenerateBeanInfoModified.ref")));
-            out.print(eo.getText());
+            out.print(Utilities.unify(eo.getText()));
             out.close();
         } catch(IOException exc) {
             exc.printStackTrace();
@@ -474,8 +483,9 @@ public class BeanInfoGeneration extends JellyTestCase {
         JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo");
         javaNode.select();
         javaNode.performPopupActionNoBlock(Bundle.getString("org.openide.actions.Bundle", "Open"));
-        EditorOperator eo = new EditorOperator(NAME_TEST_FILE+"BeanInfo");
-        ref(eo.getText());
+//        EditorOperator eo = new EditorOperator(NAME_TEST_FILE+"BeanInfo");
+//        ref(eo.getText());
+        writeResult(NAME_TEST_FILE+"BeanInfo");
         compareReferenceFiles();
     }
     
@@ -518,8 +528,9 @@ public class BeanInfoGeneration extends JellyTestCase {
         JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo");
         javaNode.select();
         javaNode.performPopupActionNoBlock(Bundle.getString("org.openide.actions.Bundle", "Open"));
-        EditorOperator eo = new EditorOperator(NAME_TEST_FILE+"BeanInfo");
-        ref(eo.getText());
+//        EditorOperator eo = new EditorOperator(NAME_TEST_FILE+"BeanInfo");
+//        ref(eo.getText());
+        writeResult(NAME_TEST_FILE+"BeanInfo");
         compareReferenceFiles();
     }
     
