@@ -16,6 +16,9 @@ package org.netbeans.lib.ddl.impl;
 import java.beans.*;
 import java.sql.*;
 import java.util.*;
+import java.text.MessageFormat;
+import org.openide.util.NbBundle;
+
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.adaptors.*;
 
@@ -31,6 +34,8 @@ public class Specification implements DatabaseSpecification {
 
     /** Used JDBC Connection */
     private Connection jdbccon;
+
+    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.lib.ddl.resources.Bundle"); // NOI18N
 
     /** Owned factory */
     SpecificationFactory factory;
@@ -90,7 +95,7 @@ public class Specification implements DatabaseSpecification {
     /** Returns used connection */
     public DBConnection getConnection()
     {
-        return (DBConnection)desc.get("connection");
+        return (DBConnection)desc.get("connection"); // NOI18N
     }
 
     public DatabaseSpecificationFactory getSpecificationFactory()
@@ -106,7 +111,7 @@ public class Specification implements DatabaseSpecification {
     public String getMetaDataAdaptorClassName()
     {
         if (adaptorClass == null || adaptorClass.length() == 0) {
-            adaptorClass = "org.netbeans.lib.ddl.adaptors.DefaultAdaptor";
+            adaptorClass = "org.netbeans.lib.ddl.adaptors.DefaultAdaptor"; // NOI18N
         }
 
         return adaptorClass;
@@ -114,10 +119,10 @@ public class Specification implements DatabaseSpecification {
 
     public void setMetaDataAdaptorClassName(String name)
     {
-        if (name.startsWith("Database.Adaptors."))
+        if (name.startsWith("Database.Adaptors.")) // NOI18N
             adaptorClass = name;
         else
-            adaptorClass = "Database.Adaptors."+name;
+            adaptorClass = "Database.Adaptors."+name; // NOI18N
         //		System.out.println("Metadata adaptor class set = "+adaptorClass);
         dmdAdaptor = null;
     }
@@ -142,8 +147,8 @@ public class Specification implements DatabaseSpecification {
                         dmdAdaptor = (DatabaseMetaData)Beans.instantiate(loader, adc);
                         if (dmdAdaptor instanceof DatabaseMetaDataAdaptor) {
                             ((DatabaseMetaDataAdaptor)dmdAdaptor).setConnection(jdbccon);
-                        } else throw new ClassNotFoundException("adaptor should implement DatabaseAdaptor interface");
-                    } else throw new ClassNotFoundException("unspecified adaptor class");
+                        } else throw new ClassNotFoundException(bundle.getString("EXC_AdaptorInterface"));
+                    } else throw new ClassNotFoundException(bundle.getString("EXC_AdaptorUnspecClass"));
                 }
             }
 
@@ -163,13 +168,13 @@ public class Specification implements DatabaseSpecification {
     public Connection openJDBCConnection()
     throws DDLException
     {
-        if (jdbccon != null) throw new DDLException("connection open");
+        if (jdbccon != null) throw new DDLException(bundle.getString("EXC_ConnOpen"));
         DBConnection dbcon = getConnection();
-        if (dbcon == null) throw new DDLException("none connection specified");
+        if (dbcon == null) throw new DDLException(bundle.getString("EXC_ConnNot"));
         try {
             jdbccon = dbcon.createJDBCConnection();
         } catch (Exception e) {
-            throw new DDLException("none connection specified");
+            throw new DDLException(bundle.getString("EXC_ConnNot"));
         }
 
         return jdbccon;
@@ -189,12 +194,12 @@ public class Specification implements DatabaseSpecification {
     public void closeJDBCConnection()
     throws DDLException
     {
-        if (jdbccon == null) throw new DDLException("no connection open");
+        if (jdbccon == null) throw new DDLException(bundle.getString("EXC_ConnNot"));
         try {
             jdbccon.close();
             jdbccon = null;
         } catch (SQLException e) {
-            throw new DDLException("unable to close connection");
+            throw new DDLException(bundle.getString("EXC_ConnUnableClose"));
         }
     }
 
@@ -222,18 +227,21 @@ public class Specification implements DatabaseSpecification {
         Class cmdclass;
         AbstractCommand cmd;
         HashMap cprops = (HashMap)desc.get(commandName);
-        if (cprops != null) classname = (String)cprops.get("Class");
-        else throw new CommandNotSupportedException(commandName, "command "+commandName+" is not supported by system");
+        if (cprops != null) classname = (String)cprops.get("Class"); // NOI18N
+        //else throw new CommandNotSupportedException(commandName, "command "+commandName+" is not supported by system");
+        else throw new CommandNotSupportedException(commandName,
+            MessageFormat.format(bundle.getString("EXC_CommandNotSupported"), new String[] {commandName})); // NOI18N
         try {
             cmdclass = Class.forName(classname);
             cmd = (AbstractCommand)cmdclass.newInstance();
         } catch (Exception e) {
-            throw new CommandNotSupportedException(commandName, "unable to find or init class "+classname+" for command "+commandName+"("+e+")");
+            throw new CommandNotSupportedException(commandName,
+                MessageFormat.format(bundle.getString("EXC_UnableFindOrInitCommand"), new String[] {classname, commandName, e.getMessage()})); // NOI18N
         }
 
         cmd.setObjectName(tableName);
         cmd.setSpecification(this);
-        cmd.setFormat((String)cprops.get("Format"));
+        cmd.setFormat((String)cprops.get("Format")); // NOI18N
         return cmd;
     }
 
@@ -432,7 +440,7 @@ public class Specification implements DatabaseSpecification {
     /** Returns type map */
     public Map getTypeMap()
     {
-        return (Map)desc.get("TypeMap");
+        return (Map)desc.get("TypeMap"); // NOI18N
     }
 
     /** Returns DBType where maps specified java type */
@@ -442,63 +450,63 @@ public class Specification implements DatabaseSpecification {
         Map typemap = getTypeMap();
 
         switch(type) {
-        case java.sql.Types.ARRAY: typestr = "ARRAY"; break;
-        case java.sql.Types.BIGINT: typestr = "BIGINT"; break;
-        case java.sql.Types.BINARY: typestr = "BINARY"; break;
-        case java.sql.Types.BIT: typestr = "BIT"; break;
-        case java.sql.Types.BLOB: typestr = "BLOB"; break;
-        case java.sql.Types.CHAR: typestr = "CHAR"; break;
-        case java.sql.Types.CLOB: typestr = "CLOB"; break;
-        case java.sql.Types.DATE: typestr = "DATE"; break;
-        case java.sql.Types.DECIMAL: typestr = "DECIMAL"; break;
-        case java.sql.Types.DISTINCT: typestr = "DISTINCT"; break;
-        case java.sql.Types.DOUBLE: typestr = "DOUBLE"; break;
-        case java.sql.Types.FLOAT: typestr = "FLOAT"; break;
-        case java.sql.Types.INTEGER: typestr = "INTEGER"; break;
-        case java.sql.Types.JAVA_OBJECT: typestr = "JAVA_OBJECT"; break;
-        case java.sql.Types.LONGVARBINARY: typestr = "LONGVARBINARY"; break;
-        case java.sql.Types.LONGVARCHAR: typestr = "LONGVARCHAR"; break;
-        case java.sql.Types.NUMERIC: typestr = "NUMERIC"; break;
-        case java.sql.Types.REAL: typestr = "REAL"; break;
-        case java.sql.Types.REF: typestr = "REF"; break;
-        case java.sql.Types.SMALLINT: typestr = "SMALLINT"; break;
-        case java.sql.Types.TIME: typestr = "TIME"; break;
-        case java.sql.Types.TIMESTAMP: typestr = "TIMESTAMP"; break;
-        case java.sql.Types.TINYINT: typestr = "TINYINT"; break;
-        case java.sql.Types.VARBINARY: typestr = "VARBINARY"; break;
-        case java.sql.Types.VARCHAR: typestr = "VARCHAR"; break;
+        case java.sql.Types.ARRAY: typestr = "ARRAY"; break; // NOI18N
+        case java.sql.Types.BIGINT: typestr = "BIGINT"; break; // NOI18N
+        case java.sql.Types.BINARY: typestr = "BINARY"; break; // NOI18N
+        case java.sql.Types.BIT: typestr = "BIT"; break; // NOI18N
+        case java.sql.Types.BLOB: typestr = "BLOB"; break; // NOI18N
+        case java.sql.Types.CHAR: typestr = "CHAR"; break; // NOI18N
+        case java.sql.Types.CLOB: typestr = "CLOB"; break; // NOI18N
+        case java.sql.Types.DATE: typestr = "DATE"; break; // NOI18N
+        case java.sql.Types.DECIMAL: typestr = "DECIMAL"; break; // NOI18N
+        case java.sql.Types.DISTINCT: typestr = "DISTINCT"; break; // NOI18N
+        case java.sql.Types.DOUBLE: typestr = "DOUBLE"; break; // NOI18N
+        case java.sql.Types.FLOAT: typestr = "FLOAT"; break; // NOI18N
+        case java.sql.Types.INTEGER: typestr = "INTEGER"; break; // NOI18N
+        case java.sql.Types.JAVA_OBJECT: typestr = "JAVA_OBJECT"; break; // NOI18N
+        case java.sql.Types.LONGVARBINARY: typestr = "LONGVARBINARY"; break; // NOI18N
+        case java.sql.Types.LONGVARCHAR: typestr = "LONGVARCHAR"; break; // NOI18N
+        case java.sql.Types.NUMERIC: typestr = "NUMERIC"; break; // NOI18N
+        case java.sql.Types.REAL: typestr = "REAL"; break; // NOI18N
+        case java.sql.Types.REF: typestr = "REF"; break; // NOI18N
+        case java.sql.Types.SMALLINT: typestr = "SMALLINT"; break; // NOI18N
+        case java.sql.Types.TIME: typestr = "TIME"; break; // NOI18N
+        case java.sql.Types.TIMESTAMP: typestr = "TIMESTAMP"; break; // NOI18N
+        case java.sql.Types.TINYINT: typestr = "TINYINT"; break; // NOI18N
+        case java.sql.Types.VARBINARY: typestr = "VARBINARY"; break; // NOI18N
+        case java.sql.Types.VARCHAR: typestr = "VARCHAR"; break; // NOI18N
         }
 
-        return (String)typemap.get("java.sql.Types."+typestr);
+        return (String)typemap.get("java.sql.Types."+typestr); // NOI18N
     }
 
     /** Returns DBType where maps specified java type */
     public static int getType(String type)
     {
-        if (type.equals("java.sql.Types.ARRAY")) return java.sql.Types.ARRAY;
-        if (type.equals("java.sql.Types.BIGINT")) return java.sql.Types.BIGINT;
-        if (type.equals("java.sql.Types.BINARY")) return java.sql.Types.BINARY;
-        if (type.equals("java.sql.Types.BIT")) return java.sql.Types.BIT;
-        if (type.equals("java.sql.Types.BLOB")) return java.sql.Types.BLOB;
-        if (type.equals("java.sql.Types.CHAR")) return java.sql.Types.CHAR;
-        if (type.equals("java.sql.Types.DATE")) return java.sql.Types.DATE;
-        if (type.equals("java.sql.Types.DECIMAL")) return java.sql.Types.DECIMAL;
-        if (type.equals("java.sql.Types.DISTINCT")) return java.sql.Types.DISTINCT;
-        if (type.equals("java.sql.Types.DOUBLE")) return java.sql.Types.DOUBLE;
-        if (type.equals("java.sql.Types.FLOAT")) return java.sql.Types.FLOAT;
-        if (type.equals("java.sql.Types.INTEGER")) return java.sql.Types.INTEGER;
-        if (type.equals("java.sql.Types.JAVA_OBJECT")) return java.sql.Types.JAVA_OBJECT;
-        if (type.equals("java.sql.Types.LONGVARBINARY")) return java.sql.Types.LONGVARBINARY;
-        if (type.equals("java.sql.Types.LONGVARCHAR")) return java.sql.Types.LONGVARCHAR;
-        if (type.equals("java.sql.Types.NUMERIC")) return java.sql.Types.NUMERIC;
-        if (type.equals("java.sql.Types.REAL")) return java.sql.Types.REAL;
-        if (type.equals("java.sql.Types.REF")) return java.sql.Types.REF;
-        if (type.equals("java.sql.Types.SMALLINT")) return java.sql.Types.SMALLINT;
-        if (type.equals("java.sql.Types.TIME")) return java.sql.Types.TIME;
-        if (type.equals("java.sql.Types.TIMESTAMP")) return java.sql.Types.TIMESTAMP;
-        if (type.equals("java.sql.Types.TINYINT")) return java.sql.Types.TINYINT;
-        if (type.equals("java.sql.Types.VARBINARY")) return java.sql.Types.VARBINARY;
-        if (type.equals("java.sql.Types.VARCHAR")) return java.sql.Types.VARCHAR;
+        if (type.equals("java.sql.Types.ARRAY")) return java.sql.Types.ARRAY; // NOI18N
+        if (type.equals("java.sql.Types.BIGINT")) return java.sql.Types.BIGINT; // NOI18N
+        if (type.equals("java.sql.Types.BINARY")) return java.sql.Types.BINARY; // NOI18N
+        if (type.equals("java.sql.Types.BIT")) return java.sql.Types.BIT; // NOI18N
+        if (type.equals("java.sql.Types.BLOB")) return java.sql.Types.BLOB; // NOI18N
+        if (type.equals("java.sql.Types.CHAR")) return java.sql.Types.CHAR; // NOI18N
+        if (type.equals("java.sql.Types.DATE")) return java.sql.Types.DATE; // NOI18N
+        if (type.equals("java.sql.Types.DECIMAL")) return java.sql.Types.DECIMAL; // NOI18N
+        if (type.equals("java.sql.Types.DISTINCT")) return java.sql.Types.DISTINCT; // NOI18N
+        if (type.equals("java.sql.Types.DOUBLE")) return java.sql.Types.DOUBLE; // NOI18N
+        if (type.equals("java.sql.Types.FLOAT")) return java.sql.Types.FLOAT; // NOI18N
+        if (type.equals("java.sql.Types.INTEGER")) return java.sql.Types.INTEGER; // NOI18N
+        if (type.equals("java.sql.Types.JAVA_OBJECT")) return java.sql.Types.JAVA_OBJECT; // NOI18N
+        if (type.equals("java.sql.Types.LONGVARBINARY")) return java.sql.Types.LONGVARBINARY; // NOI18N
+        if (type.equals("java.sql.Types.LONGVARCHAR")) return java.sql.Types.LONGVARCHAR; // NOI18N
+        if (type.equals("java.sql.Types.NUMERIC")) return java.sql.Types.NUMERIC; // NOI18N
+        if (type.equals("java.sql.Types.REAL")) return java.sql.Types.REAL; // NOI18N
+        if (type.equals("java.sql.Types.REF")) return java.sql.Types.REF; // NOI18N
+        if (type.equals("java.sql.Types.SMALLINT")) return java.sql.Types.SMALLINT; // NOI18N
+        if (type.equals("java.sql.Types.TIME")) return java.sql.Types.TIME; // NOI18N
+        if (type.equals("java.sql.Types.TIMESTAMP")) return java.sql.Types.TIMESTAMP; // NOI18N
+        if (type.equals("java.sql.Types.TINYINT")) return java.sql.Types.TINYINT; // NOI18N
+        if (type.equals("java.sql.Types.VARBINARY")) return java.sql.Types.VARBINARY; // NOI18N
+        if (type.equals("java.sql.Types.VARCHAR")) return java.sql.Types.VARCHAR; // NOI18N
 
         return -1;
     }
