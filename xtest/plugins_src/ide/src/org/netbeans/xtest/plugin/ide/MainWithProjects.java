@@ -20,10 +20,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
+import org.openide.util.Mutex;
 
 /**
  * Portion of Main that needs to run with access to Projects API & impl.
@@ -44,8 +41,13 @@ public class MainWithProjects implements Main.MainWithProjectsInterface {
     public void openProject(File projectDir) {
         try {
             // open project
-            Project project = OpenProjectList.fileToProject(projectDir);
-            OpenProjectList.getDefault().open(project);
+            final Project project = OpenProjectList.fileToProject(projectDir);
+            // posting the to AWT event thread
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    OpenProjectList.getDefault().open(project);
+                }
+            });
             // Set main? Probably user should do this if he wants.
             // OpenProjectList.getDefault().setMainProject(project);
             // wait until metadata scanning is finished
