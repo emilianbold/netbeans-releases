@@ -19,7 +19,9 @@ import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -41,6 +43,14 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "nbproject/private/private.properties",
         "src",
         "test",
+    };
+    
+    private static final String[] createdFilesExtSources = {
+        "build.xml",
+        "nbproject/build-impl.xml",
+        "nbproject/project.xml",
+        "nbproject/project.properties",
+        "nbproject/private/private.properties",
     };
 
     private static final String[] createdProperties = {
@@ -97,6 +107,45 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         for (int i=0; i<createdProperties.length; i++) {
             assertNotNull(createdProperties[i]+" property cannot be found in project.properties", props.getProperty(createdProperties[i]));
             l.remove(createdProperties[i]);
+        }
+        assertEquals("Found unexpected property: "+l,createdProperties.length, props.keySet().size());
+    } 
+    
+    public void testCreateProjectFromExtSources () throws Exception {
+        File root = getWorkDir();
+        clearWorkDir();
+        File proj = new File (root, "ProjectDir");
+        proj.mkdir();
+        File srcRoot = new File (root, "src");
+        srcRoot.mkdir ();
+        File testRoot = new File (root, "tests");
+        testRoot.mkdir ();
+        AntProjectHelper helper = J2SEProjectGenerator.createProject(proj, "test-project-ext-src", srcRoot, testRoot, "manifest.mf");
+        assertNotNull (helper);
+        FileObject fo = FileUtil.toFileObject(proj);
+        for (int i=0; i<createdFilesExtSources.length; i++) {
+            assertNotNull(createdFilesExtSources[i]+" file/folder cannot be found", fo.getFileObject(createdFilesExtSources[i]));
+        } 
+        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ArrayList l = new ArrayList(props.keySet());
+        for (int i=0; i<createdProperties.length; i++) {
+            String propName = createdProperties[i];
+            String propValue = props.getProperty(propName);
+            assertNotNull(propName+" property cannot be found in project.properties", propValue);
+            l.remove(propName);
+            if ("manifest.file".equals (propName)) {
+                assertEquals("Invalid value of manifest.file property.", "manifest.mf", propValue);
+            }
+            else if ("src.dir".equals (propName)) {
+                PropertyEvaluator eval = helper.getStandardPropertyEvaluator();                
+                File file = helper.resolveFile(eval.evaluate(propValue));
+                assertEquals("Invalid value of src.dir property.", srcRoot, file);
+            }
+            else if ("test.src.dir".equals(propName)) {
+                PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
+                File file = helper.resolveFile(eval.evaluate(propValue));
+                assertEquals("Invalid value of test.src.dir property.", testRoot, file);
+            }
         }
         assertEquals("Found unexpected property: "+l,createdProperties.length, props.keySet().size());
     }

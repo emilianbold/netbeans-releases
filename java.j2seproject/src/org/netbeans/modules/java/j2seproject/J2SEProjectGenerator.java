@@ -67,11 +67,11 @@ public class J2SEProjectGenerator {
     }
 
     public static AntProjectHelper createProject(final File dir, final String name,
-                                                  final File sourceFolder, final File testFolder) throws IOException {
+                                                  final File sourceFolder, final File testFolder, final String manifestFile) throws IOException {
         assert sourceFolder != null : "Source folder must be given";   //NOI18N
         final FileObject dirFO = createProjectDir (dir);
         // this constructor creates only java application type
-        final AntProjectHelper h = createProject(dirFO, name, null, null, null, null, false);
+        final AntProjectHelper h = createProject(dirFO, name, null, null, null, manifestFile, false);
         final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {

@@ -102,11 +102,13 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
             if (testFolder != null) {
                 testFolder = FileUtil.normalizeFile(testFolder);
             }
-            J2SEProjectGenerator.createProject(dirF, name, sourceFolder, testFolder );
+            J2SEProjectGenerator.createProject(dirF, name, sourceFolder, testFolder, MANIFEST_FILE );
             FileObject srcFo = FileUtil.toFileObject(sourceFolder);
             if (srcFo != null) {
                 resultSet.add (srcFo);
             }
+            FileObject dirFO = FileUtil.toFileObject(dirF);
+            createManifest(dirFO, MANIFEST_FILE);
         }
         else {
             AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == TYPE_APP ? MANIFEST_FILE : null);
