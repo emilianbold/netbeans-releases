@@ -104,11 +104,6 @@ public final class PropertiesLocaleNode extends FileEntryNode
     public Action getPreferredAction() {
         return getActions(false)[0];
     }
-    
-    /** Gets help context. Overrides superclass method. */ 
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(Util.HELP_ID_ADDLOCALE);
-    }
 
     /** Gets the name. Note: It gets only the local part of the name  (e.g. "de_DE_EURO").
      * Reason is to allow user change only this part of name by renaming (on Node).

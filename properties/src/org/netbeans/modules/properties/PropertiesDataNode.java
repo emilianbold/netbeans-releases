@@ -203,11 +203,6 @@ public class PropertiesDataNode extends DataNode {
             return NbBundle.getBundle(PropertiesDataNode.class).getString("LAB_NewLocaleAction");
         }
 
-        /** Overrides superclass method.*/
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(Util.HELP_ID_ADDLOCALE);
-        }
-
         /** Overrides superclass method. */
         public void create() throws IOException {
             final DataObject propertiesDataObject = (DataObject)getCookie(DataObject.class);

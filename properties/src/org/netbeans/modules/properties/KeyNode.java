@@ -111,11 +111,6 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
     public Element.ItemElem getItem() {
         return propStructure.getItem(itemKey);
     }
-
-    /** Gets help context. Overrides superclass method. */ 
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(Util.HELP_ID_ADDING);
-    }
     
     /** Indicates whether the node may be destroyed. Overrides superclass method.
      * @return true.
