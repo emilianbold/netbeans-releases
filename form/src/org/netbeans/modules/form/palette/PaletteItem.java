@@ -154,6 +154,7 @@ public class PaletteItem implements java.io.Serializable {
 
   public boolean isMenu () {
     return java.awt.MenuBar.class.isAssignableFrom (beanClass) || 
+           java.awt.PopupMenu.class.isAssignableFrom (beanClass) || 
            javax.swing.JMenuBar.class.isAssignableFrom (beanClass) || 
            javax.swing.JPopupMenu.class.isAssignableFrom (beanClass);
   }
@@ -161,6 +162,8 @@ public class PaletteItem implements java.io.Serializable {
 
 /*
  * Log
+ *  10   Gandalf   1.9         7/8/99   Ian Formanek    PopupMenu recognized as 
+ *       menu component
  *  9    Gandalf   1.8         7/3/99   Ian Formanek    isMenu added
  *  8    Gandalf   1.7         6/10/99  Ian Formanek    Fixed usage of 
  *       InstanceCookie as source for the PaletteItem
