@@ -35,6 +35,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-support-actions-PauseAction.instance" />
             <file name="org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance" />
             <file name="org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance" />
+
+            <file name="org-netbeans-modules-debugger-support-actions-FixAction.instance" />
+            <file name="org-netbeans-modules-debugger-support-actions-PopTopmostFrameAction.instance" />
         </folder>
     </folder>
 
@@ -82,27 +85,36 @@ Microsystems, Inc. All Rights Reserved.
     		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
     
-            <attr name="Separator3.instance/org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance" boolvalue="true" />
+            <attr name="Separator3.instance/org-netbeans-modules-debugger-support-actions-FixAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-FixAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-FixAction.instance/Separator4.instance" boolvalue="true" />
+            <file name="Separator4.instance">
+    		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+	    </file>
+    
+            <attr name="Separator4.instance/org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance"/>
             <attr name="org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance/org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance"/>
-            <attr name="org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance/Separator4.instance" boolvalue="true" />
-            <file name="Separator4.instance">
+            <attr name="org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance/org-netbeans-modules-debugger-support-actions-PopTopmostFrameAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-PopTopmostFrameAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-PopTopmostFrameAction.instance/Separator5.instance" boolvalue="true" />
+            <file name="Separator5.instance">
 		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
             
-            <attr name="Separator4.instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true" />
+            <attr name="Separator5.instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true" />
             <file name="org-openide-actions-ToggleBreakpointAction.instance"/>
             <attr name="org-openide-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" />
             <attr name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance/org-openide-actions-AddWatchAction.instance" boolvalue="true" />
             <file name="org-openide-actions-AddWatchAction.instance"/>
-            <attr name="org-openide-actions-AddWatchAction.instance/Separator5.instance" boolvalue="true" />
-            <file name="Separator5.instance">
+            <attr name="org-openide-actions-AddWatchAction.instance/Separator6.instance" boolvalue="true" />
+            <file name="Separator6.instance">
 		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
 
-            <attr name="Separator5.instance/org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance" boolvalue="true" />
+            <attr name="Separator6.instance/org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance" />
 
         </folder>
@@ -148,7 +160,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance"/>
             <attr name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true" />
             <file name="org-openide-actions-ToggleBreakpointAction.instance"/>
-            <attr name="org-openide-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" boolvalue="true" />
+            <attr name="org-openide-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-FixAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-FixAction.instance" />
+            <attr name="org-netbeans-modules-debugger-support-actions-FixAction.instance/org-openide-actions-AddBreakpointAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" />
             <attr name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance/org-openide-actions-AddWatchAction.instance" boolvalue="true" />
             <file name="org-openide-actions-AddWatchAction.instance"/>
