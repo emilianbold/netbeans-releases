@@ -383,6 +383,7 @@ public class TreeModelNode extends AbstractNode {
         IllegalArgumentException, java.lang.reflect.InvocationTargetException {
             try {
                 model.setValueAt (object, id, v);
+                TreeModelNode.this.firePropertyChange (null, null, null);
             } catch (UnknownTypeException e) {
                 e.printStackTrace ();
             }
