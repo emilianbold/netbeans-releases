@@ -28,7 +28,7 @@ import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.colorchooser.ColorSelectionModel;
 
 import com.netbeans.ide.util.QuickSorter;
-import com.netbeans.ide.util.NetbeansBundle;
+import com.netbeans.ide.util.NbBundle;
 
 /** A property editor for Color class.
 * (Final only for performance, can be unfinaled if desired)
@@ -39,7 +39,7 @@ public final class ColorEditor implements PropertyEditor {
   // static .....................................................................................
 
   // the bundle to use
-  static ResourceBundle bundle = NetbeansBundle.getBundle (
+  static ResourceBundle bundle = NbBundle.getBundle (
     "com.netbeans.developer.impl.locales.ExplorerBundle");
 
   private static JColorChooser staticChooser;
@@ -536,6 +536,7 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  5    Gandalf   1.4         2/5/99   Petr Hamernik   bugfix
  *  4    Gandalf   1.3         2/4/99   David Simonek   bugfix #1038
  *  3    Gandalf   1.2         2/4/99   Petr Hamernik   
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    some cotemporarily 
