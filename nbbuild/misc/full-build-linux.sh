@@ -24,6 +24,10 @@
 # sources=/space/src/nb_all
 # a full NB source checkout (cvs co standard ide xtest jemmy jellytools)
 #
+# update=yes
+# if set to "yes", do a CVS update after cleaning and before building
+# (default "no").
+#
 # nbjdk=/opt/java/j2se/1.4.2
 # JDK 1.4.2 installation directory. (Full JDK, not just JRE.)
 #
@@ -78,6 +82,11 @@ fi
 if [ -z "$sources" ]
 then
     sources=$(cd $(dirname $0)/../..; pwd)
+fi
+
+if [ -z "$update" ]
+then
+    update=no
 fi
 
 if [ -z "$nbjdk" ]
@@ -160,7 +169,7 @@ then
         xpid=$!
     elif [ $spawndisplaytype = vnc ]
     then
-        Xvnc -localhost -desktop 'NetBeans test display' -geometry 1024x768 -depth 16 $display &
+        Xvnc -localhost -SecurityTypes=none -desktop 'NetBeans test display' -geometry 1024x768 -depth 16 $display &
         xpid=$!
     else
         echo "strange \$spawndisplaytype: $spawndisplaytype" >&2
@@ -197,12 +206,20 @@ antcmd="nice $ant -emacs $scramblerflag"
 
 if [ $doclean = yes ]
 then
-    cleantarget=real-clean
+    echo "----------CLEANING SOURCES----------" 1>&2
+    $antcmd -f $sources/nbbuild/build.xml real-clean
 fi
+
+if [ $update = yes ]
+then
+    echo "----------UPDATING SOURCES----------" 1>&2
+    (cd $sources; cvs -q update)
+fi
+
 echo "----------BUILDING NETBEANS----------" 1>&2
 # Intentionally skipping check-commit-validation.
 # Running sanity-start just so you have a good chance to see deprecation messages etc.
-$antcmd -f $sources/nbbuild/build.xml $cleantarget nozip-check
+$antcmd -f $sources/nbbuild/build.xml nozip-check
 status=$?
 if [ $status != 0 ]
 then
