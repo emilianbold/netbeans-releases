@@ -40,6 +40,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="mdr" testtypes="perf" attributes="stable">
           <property file="../../mdr/test/perf.properties"/>
       </module>
+      <module name="schema2beans" testtypes="unit" attributes="all,code"/>
   </config>
   
   <!-- QA TESTS -->
