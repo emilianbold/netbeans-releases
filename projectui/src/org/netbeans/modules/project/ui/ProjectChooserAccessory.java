@@ -223,7 +223,12 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         if (dir != null) {
             FileObject fo = convertToValidDir(dir);
             if (fo != null) {
-                retVal = ProjectManager.getDefault().isProject( fo );    
+                if ( Utilities.isUnix() && fo.getParent() != null && fo.getParent().getParent() == null  ) {
+                    retVal = false; // Ignore all subfolders of / on unixes (e.g. /net, /proc)
+                }
+                else {
+                    retVal = ProjectManager.getDefault().isProject( fo );    
+                }
             }            
         }
         return retVal;
@@ -441,29 +446,6 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             }
         }
         
-        // private static File evilNetFolder = new File( "/net" ); // NOI18N
-        
-        private static boolean isRoot( File f ) {
-           
-            return f.getParent() == null;
-            
-            /*
-            if ( evilNetFolder.equals( f ) ) {
-                return true; // Autoumount on Unixes would make it slow
-            }
-             */
-            /*
-            File[] roots = File.listRoots();
-            for( int i = 0; i < roots.length; i++ ) {
-                if ( roots[i].equals( f ) ) {
-                    System.out.println(f + " is root" );
-                    return true;
-                }
-            }
-            System.out.println(f + " is not root");
-            return false;
-            */
-        }
                 
     }
     
