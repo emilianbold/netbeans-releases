@@ -481,9 +481,11 @@ class DataFolderPanel extends TopComponent implements
                 FileSystem fs = fo.getFileSystem ();
 
                 if (fo.isRoot ()) {
-                    name = ""; // NOI18N
-                    // Fix 8492 (new it works corect w/o this change)
-                    //name = packageName.getText().trim();
+                    // bugfix #31645, possibility create new folder under root
+                    name = packageName.getText().trim();
+                    if (fo.getFileObject (name) != null) {
+                        name = ""; // NOI18N
+                    }
                 }
 
                 system = new WeakReference (fs);
