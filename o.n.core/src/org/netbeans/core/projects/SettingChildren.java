@@ -19,6 +19,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.nodes.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataShadow;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileStateInvalidException;
@@ -267,6 +268,21 @@ public final class SettingChildren extends FilterNode.Children {
 
             specialProp (new FileStateProperty (pf, FileStateManager.LAYER_SESSION, PROP_LAYER_SESSION, false));
             specialProp (new FileStateProperty (pf, FileStateManager.LAYER_MODULES, PROP_LAYER_MODULES, false));
+        }
+        
+        /* @return the display name of the original node
+        */
+        public String getDisplayName() {
+            String retVal = null;
+            DataObject dobj= (DataObject) getCookie (DataObject.class);
+            if (dobj != null && dobj instanceof DataShadow) {
+                DataShadow dsh = (DataShadow)dobj;
+                Node origNode = dsh.getOriginal().getNodeDelegate();
+                if (origNode != null) {
+                    retVal = origNode.getDisplayName();
+                }
+            }                        
+            return (retVal != null) ? retVal : super.getDisplayName();
         }
         
         /** Registers special property.
