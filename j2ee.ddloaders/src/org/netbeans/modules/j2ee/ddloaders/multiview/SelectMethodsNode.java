@@ -14,14 +14,10 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.SelectMethodCustomizer;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.filesystems.FileObject;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 /**
  * @author pfiala
