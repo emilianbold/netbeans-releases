@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -45,8 +45,8 @@ public class GoldenGuiTest extends JellyTestCase {
          */
     }
     
-    /* Simple gui test using golden files. It checks debugger state from 
-     * runtime tab in Explorer window.
+    /* Simple gui test using golden files. It checks properties of HTTP Server node
+     * in the runtime window.
      * If everything works well, contents of golden file is compared at the end
      * with output collected by ref PrintStream into a file. If files differ, test
      * is failed, otherwise it is passed.
@@ -55,16 +55,16 @@ public class GoldenGuiTest extends JellyTestCase {
      */
     public void testPart1() throws Exception {
         Node rootNode = RuntimeTabOperator.invoke().getRootNode();
-        Node debuggerNode = new Node(rootNode, "Debugger");
-        new PropertiesAction().perform(debuggerNode);
-        PropertySheetOperator pso = new PropertySheetOperator("Debugger");
-        Property p = new Property(pso, "Debugger State");
-        String state = p.getValue();
+        Node httpNode = new Node(rootNode, "HTTP Server");
+        new PropertiesAction().perform(httpNode);
+        PropertySheetOperator pso = new PropertySheetOperator("HTTP Server");
+        Property p = new Property(pso, "Hosts With Granted Access");
+        String value = p.getValue();
         pso.close();
         // write to ref PrintStream to compare with golden file
-        ref(state);
+        ref(value);
         // compare outpup written to ref PrintStream with contents of golden file
-        // (data/goldenfiles/GoldenGuiTest/testPart1.pass)
+        // (data/goldenfiles/guitest/GoldenGuiTest/testPart1.pass)
         compareReferenceFiles();
     }
     

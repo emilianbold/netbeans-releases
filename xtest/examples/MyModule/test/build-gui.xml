@@ -8,43 +8,30 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="MyModule GUI tests compilers and executors" basedir="." default="all">
+<project name="MyModule/test-gui" basedir="." default="all">
 
-    <!-- path reference used in both compiler and executor -->
-    <path id="jemmy.and.jelly.path">
-        <pathelement location="../../../../jemmy/builds/jemmy.jar"/>
-        <pathelement location="../../../../jellytools/builds/jelly2-nb.jar"/>
-    </path>
+    <!-- Imports default qa-functional-compiler and runidetest executor.
+        jemmy and jellytools jars are on classpath for both. -->
+    <import file="../../../../nbbuild/templates/xtest-qa-functional.xml"/>
     
+    <!-- Creates an empty Java project in IDE -->
+    <!-- <property name="xtest.ide.create.project" value="true"/> -->
+    <!-- Opens project at specified location -->
+    <!-- <property name="xtest.ide.open.project" location="${xtest.data}/myproject"/> -->
+
     <!-- ========= -->
     <!-- Compilers -->
-    <!-- ========= -->    
-    <target name="gui-compiler">  
-        <buildTests srcDir="gui/src"  compileExcludes="**/data/**">
-            <classpath>
-                <path refid="jemmy.and.jelly.path"/>  
-                <pathelement location="${netbeans.home}/lib/openide.jar"/>
-            </classpath>
+    <!-- ========= -->
+    
+    <target name="gui-compiler" depends="init,init-cp">
+        <buildTests srcdir="gui/src">
+            <classpath refid="jemmy.and.jelly.path"/>
         </buildTests>
     </target>
-    
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->    
-    <!-- This target is executed from test-executor in newly created Project -->
-    <!-- Name of this task is defined in cfg-xxx.xml -->
-    <!-- This target executes tests inside IDE -->
-    <target name="runidetest">
-        <executeTests pluginName="ide">
-            <classpath refid="jemmy.and.jelly.path"/>
-        </executeTests>
-    </target>
-        
-   
-    
+
 </project>
 

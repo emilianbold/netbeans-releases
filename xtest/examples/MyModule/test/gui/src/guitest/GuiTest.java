@@ -49,7 +49,7 @@ public class GuiTest extends JellyTestCase {
          */
     }
     
-    /** Simple gui test. It checks debugger state from runtime tab in Explorer
+    /** Simple gui test. It checks properties of HTTP Server node in the runtime 
      * window. If something goes wrong, runtime exception is thrown
      * from jemmy or jelly. It is caught in JellyTestCase, screenshot is created
      * and test finishes with status "fail".
@@ -58,14 +58,14 @@ public class GuiTest extends JellyTestCase {
      */
     public void testPart1() {
         Node rootNode = RuntimeTabOperator.invoke().getRootNode();
-        Node debuggerNode = new Node(rootNode, "Debugger");
-        new PropertiesAction().perform(debuggerNode);
-        PropertySheetOperator pso = new PropertySheetOperator("Debugger");
-        Property p = new Property(pso, "Debugger State");
-        String state = p.getValue();
+        Node httpNode = new Node(rootNode, "HTTP Server");
+        new PropertiesAction().perform(httpNode);
+        PropertySheetOperator pso = new PropertySheetOperator("HTTP Server");
+        Property p = new Property(pso, "Hosts With Granted Access");
+        String value = p.getValue();
         pso.close();
-        String expectedState = "not running";
-        assertEquals("Debugger in wrong state", expectedState, state);
+        String expectedValue = "Selected Hosts: ";
+        assertEquals("Wrong value", expectedValue, value);
     }
     
     /** Second test only opens About dialog and close it.

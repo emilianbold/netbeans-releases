@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -24,9 +24,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="MyModule unit test config">
     
-    <!-- testbag with all MyModule tests running in code mode (i.e. in standard JVM)
-         use ant runtests -Dxtest.attribs=stable,code to run this testbag  -->
-    <testbag testattribs="all and code" executor="code" name="all tests (no ide)">
+    <!-- testbag with all MyModule tests running in jvm mode (i.e. in standard JVM)
+         use ant runtests -Dxtest.attribs=all,jvm to run this testbag  -->
+    <testbag testattribs="all and jvm" executor="unit-executor" name="all tests (no ide)">
         <testset dir="unit/src">
             <patternset>
 	        <include name="myorg/MyorgSuite.class"/>
@@ -34,19 +34,19 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <!-- testbag with tests which does not fail, use ant runtests -Dxtest.attribs=stable,code -->
-    <testbag testattribs="stable and code" executor="code" name="stable tests (no ide)">
+    <!-- testbag with tests which does not fail, use ant runtests -Dxtest.attribs=stable,jvm -->
+    <testbag testattribs="stable and jvm" executor="unit-executor" name="stable tests (no ide)">
         <testset dir="unit/src">
             <patternset>
 		<include name="myorg/HelloWorldTest.class"/>
 		<exclude name="myorg/HelloWorldTest.class/testGreeting2"/>
-		<include name="myorg/Hello2.class"/>
+		<include name="myorg/Hello2Test.class"/>
             </patternset>
         </testset>
     </testbag>
     
     <!-- testbag with failing test (just one method)  -->
-    <testbag testattribs="failing" executor="code" name="failing tests (no ide)">
+    <testbag testattribs="failing" executor="unit-executor" name="failing tests (no ide)">
         <testset dir="unit/src">
             <patternset>
                 <include name="myorg/HelloWorldTest.class/testGreeting2"/>
@@ -56,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <!-- testbag with all MyModule tests running in ide mode (i.e. inside NetBeans IDE)
-         use ant runtests -Dxtest.attribs=stable,ide to run this testbag  -->
+         use ant runtests -Dxtest.attribs=all,ide to run this testbag  -->
     <testbag testattribs="all and ide" executor="ide" name="all tests (in ide)">
         <!--
         <testsetup dir="unit/src">
@@ -87,7 +87,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <!-- empty testbag - for use with xtest.includes and xtest.excludes properties -->
-    <testbag testattribs="empty" executor="code" name="empty">
+    <testbag testattribs="empty" executor="unit-executor" name="empty">
         <testset dir="unit/src">
             <patternset/>
         </testset>
@@ -95,20 +95,19 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- xxxxx -->
 
-    <!-- code excecutor - use this one if you plan to run your tests in standard 
+    <!-- unit excecutor - use this one if you plan to run your tests in standard 
                           JVM. You can also write your own executor, which will 
                           then call this one. It is handy when some servers (e.g. rmi registry)
                           have to be started before tests are run and stopped after
                           the run. -->
-    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
     
     <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
-                        Similarly as with code executor, you can create your own to 
+                        Similarly as with jvm executor, you can create your own to 
                         prepare some neccessary stuff before running tests. -->
     <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
     
     <!-- compiler   - this target will compile tests -->
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
-
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     
 </mconfig>
