@@ -13,7 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="all">
 
-    <target name="all" depends="test1,test2,services1,services2,ims"/>
+    <target name="all" depends="test1,test2,services1,services2"/>
 
     <target name="test1">
         <javac srcdir="test1-src" destdir="test1-src"/>
@@ -40,14 +40,6 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="services-jar-2" destdir="services-jar-2" classpath="services-jar-1.jar"/>
         <jar jarfile="services-jar-2.jar" manifest="services-jar-2.mf">
             <fileset dir="services-jar-2"/>
-        </jar>
-    </target>
-
-    <target name="ims">
-	<property name="ims.classpath" value="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <javac srcdir="install-manifest-service" destdir="install-manifest-service" classpath="${ims.classpath}"/>
-        <jar jarfile="install-manifest-service.jar" manifest="install-manifest-service.mf">
-            <fileset dir="install-manifest-service"/>
         </jar>
     </target>
 
