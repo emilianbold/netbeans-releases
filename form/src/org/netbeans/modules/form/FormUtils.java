@@ -1185,7 +1185,21 @@ public class FormUtils
         protected Class resolveClass(ObjectStreamClass streamCls)
             throws IOException, ClassNotFoundException
         {
-            return classLoader.loadClass(streamCls.getName());
+            String name = streamCls.getName();
+            if (name.startsWith("[")) { // NOI18N
+                // load array element class first to avoid failure
+                for (int i=1, n=name.length(); i < n; i++) {
+                    char c = name.charAt(i);
+                    if (c == 'L' && name.endsWith(";")) { // NOI18N
+                        String clsName = name.substring(i+1, n-1);
+                        classLoader.loadClass(clsName);
+                        break;
+                    }
+                    else if (c != '[')
+                        return super.resolveClass(streamCls);
+                }
+            }
+            return classLoader.loadClass(name);
         }
     }
 }
