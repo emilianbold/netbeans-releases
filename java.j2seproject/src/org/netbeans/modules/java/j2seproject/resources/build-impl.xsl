@@ -546,7 +546,7 @@ is divided into following sections:
             <target name="-debug-start-debugger">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
-                <j2seproject:nbjpdastart/>
+                <j2seproject:nbjpdastart name="${{debug.class}}"/>
             </target>
 
             <target name="-debug-start-debuggee">
