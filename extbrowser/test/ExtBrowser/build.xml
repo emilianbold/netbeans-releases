@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
        <ant dir="." antfile="${xtest.module_harness.antfile}" target="compiler-launcher"/>
     </target>
     <target name="common">
-        <ant dir="../Common" target="jar"/>
+        <ant dir="${nb_all.dir}/web/test/Common" target="jar"/>
     </target>
 	     
     <!-- This calls common clean process. -->    

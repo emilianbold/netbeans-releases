@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
           -->
     
         <!-- List of directories where jars will be searched. -->
-        <property name="xtest.extra.jars.path" location="${nb_all.dir}/jemmy/;${nb_all.dir}/jellytools/;../Common"/>
+        <property name="xtest.extra.jars.path" location="${nb_all.dir}/jemmy/;${nb_all.dir}/jellytools/;${nb_all.dir}/web/test/Common"/>
     
         <!-- This jars is used for compilation, execution codetests and also for
              execution ide tests (it means this classpath will be mounted in repository).
