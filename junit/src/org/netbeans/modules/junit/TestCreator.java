@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -33,7 +33,8 @@ import org.netbeans.modules.javacore.api.JavaModel;
  * @author  Marian Petras
  * @version 1.0
  */
-public class TestCreator extends java.lang.Object {
+public final class TestCreator {
+    /* the class is final only for performance reasons */
     
     /* attributes - private */
     static private final String JUNIT_SUPER_CLASS_NAME                = "TestCase";
@@ -44,11 +45,313 @@ public class TestCreator extends java.lang.Object {
     private static final String METHOD_NAME_SETUP = "setUp";            //NOI18N
     private static final String METHOD_NAME_TEARDOWN = "tearDown";      //NOI18N
     
+    /**
+     * bitmap combining modifiers PUBLIC, PROTECTED and PRIVATE
+     *
+     * @see  java.lang.reflect.Modifier
+     */
+    private static final int ACCESS_MODIFIERS = Modifier.PUBLIC
+                                                | Modifier.PROTECTED
+                                                | Modifier.PRIVATE;
+    
+    /** should test classes be skipped during generation of tests? */
+    private boolean skipTestClasses = true;
+    /** should package-private classes be skipped during generation of tests? */
+    private boolean skipPkgPrivateClasses = false;
+    /** should abstract classes be skipped during generation of tests? */
+    private boolean skipAbstractClasses = false;
+    /** should exception classes be skipped during generation of tests? */
+    private boolean skipExceptionClasses = false;
+    /**
+     * should test suite classes be generated when creating tests for folders
+     * and/or packages?
+     */
+    private boolean generateSuiteClasses = true;
+    /**
+     * bitmap defining whether public/protected methods should be tested
+     *
+     * @see  #testPackagePrivateMethods
+     */
+    private int methodAccessModifiers = Modifier.PUBLIC | Modifier.PROTECTED;
+    /**
+     * should package-private methods be tested? 
+     *
+     * @see  #methodAccessModifiers
+     */
+    private boolean testPkgPrivateMethods = true;
+    /**
+     * should default method bodies be generated for newly created test methods?
+     *
+     * @see  #generateMethodJavadoc
+     * @see  #generateMethodBodyComments
+     */
+    private boolean generateDefMethodBody = true;
+    /**
+     * should Javadoc comment be generated for newly created test methods?
+     *
+     * @see  #generateDefMethodBody
+     * @see  #generateMethodBodyComments
+     */
+    private boolean generateMethodJavadoc = true;
+    /**
+     * should method body comment be generated for newly created test methods?
+     *
+     * @see  #generateDefMethodBody
+     * @see  #generateMethodJavadoc
+     */
+    private boolean generateMethodBodyComment = true;
+    /**
+     * should <code>setUp()</code> method be generated in test classes?
+     *
+     * @see  #generateTearDown
+     * @see  #generateMainMethod
+     */
+    private boolean generateSetUp = true;
+    /**
+     * should <code>tearDown()</code> method be generated in test classes?
+     *
+     * @see  #generateSetUp
+     * @see  #generateMainMethod
+     */
+    private boolean generateTearDown = true;
+    /**
+     * should static method <code>main(String args[])</code>
+     * be generated in test classes?
+     *
+     * @see  #generateSetUp
+     * @see  #generateTearDown
+     */
+    private boolean generateMainMethod = true;
+    /**
+     * cached value of <code>JUnitSettings.getGenerateMainMethodBody()</code>
+     */
+    private String initialMainMethodBody;
+    
+    
     /* public methods */
     
-    /** Creates new TestCreator */
-    public TestCreator() {
+    /**
+     * Creates a new <code>TestCreator</code>.
+     *
+     * @param  loadDefaults  <code>true</code> if defaults should be loaded
+     *                       from <code>JUnitSettings</code>;
+     *                       <code>false</code> otherwise
+     */
+    public TestCreator(boolean loadDefaults) {
+        if (loadDefaults) {
+            loadDefaults();
+        }
     }
+    
+    /**
+     * Loads default settings from <code>JUnitSettings</code>.
+     */
+    private void loadDefaults() {
+        final JUnitSettings settings = JUnitSettings.getDefault();
+        
+        skipTestClasses = JUnitSettings.GENERATE_TESTS_FROM_TEST_CLASSES;
+        skipPkgPrivateClasses = !settings.isIncludePackagePrivateClasses();
+        skipAbstractClasses = !settings.isGenerateAbstractImpl();
+        skipExceptionClasses = !settings.isGenerateExceptionClasses();
+        generateSuiteClasses = settings.isGenerateSuiteClasses();
+        
+        methodAccessModifiers = 0;
+        if (settings.isMembersPublic()) {
+            methodAccessModifiers |= Modifier.PUBLIC;
+        }
+        if (settings.isMembersProtected()) {
+            methodAccessModifiers |= Modifier.PROTECTED;
+        }
+        testPkgPrivateMethods = settings.isMembersPackage();
+        
+        generateDefMethodBody = settings.isBodyContent();
+        generateMethodJavadoc = settings.isJavaDoc();
+        generateMethodBodyComment = settings.isBodyComments();
+        generateSetUp = settings.isGenerateSetUp();
+        generateTearDown = settings.isGenerateTearDown();
+        generateMainMethod = settings.isGenerateMainMethod();
+    }
+    
+    /**
+     * Sets whether tests for test classes should be generated
+     * The default is <code>true</code>.
+     *
+     * @param  test  <code>false</code> if test classes should be skipped
+     *               during test creation;
+     *               <code>true</code> otherwise
+     */
+    public void setSkipTestClasses(boolean skip) {
+        this.skipTestClasses = skip;
+    }
+    
+    /**
+     * Sets whether tests for package-private classes should be generated
+     * The default is <code>false</code>.
+     *
+     * @param  test  <code>false</code> if package-private classes should
+     *               be skipped during test creation;
+     *               <code>true</code> otherwise
+     */
+    public void setSkipPackagePrivateClasses(boolean skip) {
+        this.skipPkgPrivateClasses = skip;
+    }
+    
+    /**
+     * Sets whether tests for abstract classes should be generated
+     * The default is <code>false</code>.
+     *
+     * @param  test  <code>false</code> if abstract classes should be skipped
+     *               during test creation;
+     *               <code>true</code> otherwise
+     */
+    public void setSkipAbstractClasses(boolean skip) {
+        this.skipAbstractClasses = skip;
+    }
+    
+    /**
+     * Sets whether tests for exception classes should be generated
+     * The default is <code>false</code>.
+     *
+     * @param  test  <code>false</code> if exception classes should be skipped
+     *               during test creation;
+     *               <code>true</code> otherwise
+     */
+    public void setSkipExceptionClasses(boolean skip) {
+        this.skipExceptionClasses = skip;
+    }
+    
+    /**
+     * Sets whether test suite classes should be generated when creating tests
+     * for folders and/or packages.
+     *
+     * @param  generate  <code>true</code> if test suite classes should
+     *                   be generated; <code>false</code> otherwise
+     */
+    public void setGenerateSuiteClasses(boolean generate) {
+        this.generateSuiteClasses = generate;
+    }
+    
+    /**
+     * Sets whether public methods should be tested or not.
+     * The default is <code>true</code>.
+     *
+     * @param  test  <code>true</code> if public methods should be tested;
+     *               <code>false</code> if public methods should be skipped
+     */
+    public void setTestPublicMethods(boolean test) {
+        if (test) {
+            methodAccessModifiers |= Modifier.PUBLIC;
+        } else {
+            methodAccessModifiers &= ~Modifier.PUBLIC;
+        }
+    }
+    
+    /**
+     * Sets whether protected methods should be tested or not.
+     * The default is <code>true</code>.
+     *
+     * @param  test  <code>true</code> if protected methods should be tested;
+     *               <code>false</code> if protected methods should be skipped
+     */
+    public void setTestProtectedMethods(boolean test) {
+        if (test) {
+            methodAccessModifiers |= Modifier.PROTECTED;
+        } else {
+            methodAccessModifiers &= ~Modifier.PROTECTED;
+        }
+    }
+    
+    /**
+     * Sets whether package-private methods should be tested or not.
+     * The default is <code>true</code>.
+     *
+     * @param  test  <code>true</code> if package-private methods should be
+     *               tested;
+     *               <code>false</code> if package-private methods should be
+     *              skipped
+     */
+    public void setTestPackagePrivateMethods(boolean test) {
+        this.testPkgPrivateMethods = test;
+    }
+    
+    /**
+     * Sets whether default method bodies should be generated for newly created
+     * test methods.
+     * The default is <code>true</code>.
+     *
+     * @param  generate  <code>true</code> if default method bodies should
+     *                   be generated; <code>false</code> otherwise
+     */
+    public void setGenerateDefMethodBody(boolean generate) {
+        this.generateDefMethodBody = generate;
+    }
+    
+    /**
+     * Sets whether Javadoc comment should be generated for newly created
+     * test methods.
+     * The default is <code>true</code>.
+     *
+     * @param  generate  <code>true</code> if Javadoc comment should
+     *                   be generated; <code>false</code> otherwise
+     */
+    public void setGenerateMethodJavadoc(boolean generate) {
+        this.generateMethodJavadoc = generate;
+    }
+    
+    /**
+     * Sets whether method body comment should be generated for newly created
+     * test methods.
+     * The default is <code>true</code>.
+     *
+     * @param  generate  <code>true</code> if method body comment should
+     *                   be generated; <code>false</code> otherwise
+     */
+    public void setGenerateMethodBodyComment(boolean generate) {
+        this.generateMethodBodyComment = generate;
+    }
+    
+    /**
+     * Sets whether <code>setUp()</code> method should be generated
+     * in test classes being created/updated.
+     * The default is <code>true</code>.
+     *
+     * @param  generate  <code>true</code> if <code>setUp()</code> method
+     *                   should be generated; <code>false</code> otherwise
+     * @see  #setGenerateTearDown
+     * @see  #setGenerateMainMethod
+     */
+    public void setGenerateSetUp(boolean generate) {
+        this.generateSetUp = generate;
+    }
+    
+    /**
+     * Sets whether <code>tearDown()</code> method should be generated
+     * in test classes being created/updated.
+     * The default is <code>true</code>.
+     *
+     * @param  generate  <code>true</code> if <code>tearDown()</code> method
+     *                   should be generated; <code>false</code> otherwise
+     * @see  #setGenerateSetUp
+     * @see  #setGenerateMainMethod
+     */
+    public void setGenerateTearDown(boolean generate) {
+        this.generateTearDown = generate;
+    }
+    
+    /**
+     * Sets whether static method <code>main(String args[])</code> should
+     * be generated in test classes.
+     * The default is <code>true</code>.
+     *
+     * @param  generate  <code>true</code> if the method should be generated;
+     *                   <code>false</code> otherwise
+     * @see  #setGenerateSetUp
+     * @see  #setGenerateTearDown
+     */
+    public void setGenerateMainMethod(boolean generate) {
+        this.generateMainMethod = generate;
+    }
+    
     
     private static String arrayToString(Object[] array) {
         String result=array.getClass().getName()+":";
@@ -86,8 +389,8 @@ public class TestCreator extends java.lang.Object {
     }
     
     
-    static public void createTestClass(Resource srcRc, JavaClass srcClass,
-                                       Resource tgtRc, JavaClass tgtClass) {
+    public void createTestClass(Resource srcRc, JavaClass srcClass,
+                                Resource tgtRc, JavaClass tgtClass) {
         JavaModel.getJavaRepository().beginTrans(true);
         try {
             JavaModelPackage tgtPackage = (JavaModelPackage)tgtRc.refImmediatePackage();
@@ -140,9 +443,9 @@ public class TestCreator extends java.lang.Object {
         return pkg.getImport().createImport(JUNIT_FRAMEWORK_PACKAGE_NAME,null, false, true);
     }
     
-    static public void createTestSuite(List listMembers,
-                                       String packageName,
-                                       JavaClass tgtClass) {
+    public void createTestSuite(List listMembers,
+                                String packageName,
+                                JavaClass tgtClass) {
         JavaModel.getJavaRepository().beginTrans(true);
         try {
             
@@ -161,7 +464,7 @@ public class TestCreator extends java.lang.Object {
         }
     }
     
-    static public void addFrameworkImport(Resource tgtRes){
+    public static void addFrameworkImport(Resource tgtRes){
         JavaModelPackage pkg = (JavaModelPackage)tgtRes.refImmediatePackage();
         
         // look for the import among all imports in the target file
@@ -179,74 +482,56 @@ public class TestCreator extends java.lang.Object {
         
     }
     
-    static public void initialize() {
-        // setup the methods filter
-        cfg_MethodsFilter = 0;
-        cfg_MethodsFilterPackage = JUnitSettings.getDefault().isMembersPackage();
-        if (JUnitSettings.getDefault().isMembersProtected()) cfg_MethodsFilter |= Modifier.PROTECTED;
-        if (JUnitSettings.getDefault().isMembersPublic()) cfg_MethodsFilter |= Modifier.PUBLIC;
-    }
-    
-    static public boolean isClassTestable(JavaClass jc) {
+    /**
+     * Checks whether the given class or at least one of its nested classes
+     * is testable.
+     *
+     * @param  jc  class to be checked
+     * @return  <code>true</code> if the class passes all criteria given
+     *          by the current configuration so that test class should be
+     *          created for it, <code>false</code> otherwise
+     */
+    public boolean isClassTestable(JavaClass jc) {
+        assert jc != null;
         
         JavaModel.getJavaRepository().beginTrans(true);
         try {
             
-            if (jc == null) return false;
-            
-            JUnitSettings settings = JUnitSettings.getDefault();
-            
-            // check whether class implements test interfaces
-            if (TestUtil.isClassImplementingTestInterface(jc)) {
-                if (!JUnitSettings.GENERATE_TESTS_FROM_TEST_CLASSES) {
-                    // we don't want to generate tests from test classes
-                    return false;
-                }
-            }
-            
-            int classModifiers = jc.getModifiers();
-            if ( ((0 != (classModifiers & Modifier.PUBLIC)) ||
-                  ( settings.isIncludePackagePrivateClasses() && (0 == ( classModifiers & Modifier.PRIVATE )))
-                  ) &&
-                 (settings.isGenerateExceptionClasses() || ! TestUtil.isClassException(jc)) &&
-                 (!jc.isInner() || 0 != (classModifiers & Modifier.STATIC)) &&
-                 (0 == (classModifiers & Modifier.ABSTRACT) || settings.isGenerateAbstractImpl()) &&
-                 hasTestableMethods(jc)) {
-                return true;
-            }
-            
-            // nothing from the non-static inner class is accessible (and testable),
-            // except there is a class specific way how to get an instance of inner class
-            if (jc.isInner() && 0 == (classModifiers & Modifier.STATIC)) {
+            /*
+             * If the class is a test class and test classes should be skipped,
+             * do not check nested classes (skip all):
+             */
+            if (skipTestClasses
+                    && TestUtil.isClassImplementingTestInterface(jc)) {
                 return false;
             }
             
-            // check for testable inner classes
+            /* Check if the class itself (w/o nested classes) is testable: */
+            final int modifiers = jc.getModifiers();
+            if ((Modifier.isPublic(modifiers)
+                   || (testPkgPrivateMethods && !Modifier.isPrivate(modifiers)))
+                && (!skipAbstractClasses || !Modifier.isAbstract(modifiers))
+                && (Modifier.isStatic(modifiers) || !jc.isInner())
+                && (hasTestableMethods(jc))
+                && (!skipExceptionClasses || !TestUtil.isClassException(jc))) {
+                return true;
+            }
+            
+            /* ... No. But maybe one of its nested classes is testable: */
             Iterator it  = TestUtil.collectFeatures(jc, JavaClass.class, 0, true).iterator();
             while (it.hasNext()) {
                 if (isClassTestable((JavaClass)it.next())) return true;
             }
             
+            /* ... No. So there is nothing to test in this class. */
             return false;
-            
-            
         } finally {
             JavaModel.getJavaRepository().endTrans();
         }
-        
     }
     
     
-    
-    
-    
-    
     /* private methods */
-    static private boolean         cfg_MethodsFilterPackage = true;
-    static private int             cfg_MethodsFilter = 0;
-    
-    
-    
     
     /**
      * Returns true if tgtClass contains suite() method
@@ -333,7 +618,7 @@ public class TestCreator extends java.lang.Object {
         return "test" + smName.substring(0,1).toUpperCase() + smName.substring(1);
     }
     
-    static private Method createTestMethod(JavaClass sclass, Method sm, JavaModelPackage pkg) {
+    private Method createTestMethod(JavaClass sclass, Method sm, JavaModelPackage pkg) {
         
         String smName = sm.getName();
         
@@ -345,7 +630,7 @@ public class TestCreator extends java.lang.Object {
         
         // javadoc
         String javadocText =
-            JUnitSettings.getDefault().isJavaDoc() ?
+            generateMethodJavadoc ?
             MessageFormat.format(NbBundle.getMessage(TestCreator.class,
                                                      "TestCreator.variantMethods.JavaDoc.comment"),
                                  new Object[] {smName, sclass.getName()})
@@ -353,15 +638,15 @@ public class TestCreator extends java.lang.Object {
             
         // create body of the method
         StringBuffer newBody = new StringBuffer(512);
-        if (JUnitSettings.getDefault().isBodyContent()) {
+        if (generateDefMethodBody) {
             // generate default bodies, printing the name of method
             newBody.append("System.out.println(\"" + newName + "\");\n");
         }
-        if (JUnitSettings.getDefault().isBodyComments()) {
+        if (generateMethodBodyComment) {
             // generate comments to bodies
             newBody.append("\n"+NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.defaultComment")+"\n");
         }
-        if (JUnitSettings.getDefault().isBodyContent()) {
+        if (generateDefMethodBody) {
             // generate a test failuare by default (in response to request 022).
             newBody.append(NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.defaultBody")+"\n");
         }
@@ -390,7 +675,7 @@ public class TestCreator extends java.lang.Object {
     
     
     
-    static private boolean hasTestableMethods(JavaClass cls) {
+    private boolean hasTestableMethods(JavaClass cls) {
         
         Iterator methods = TestUtil.collectFeatures(cls, Method.class, 0, true).iterator();
         while (methods.hasNext()) {
@@ -403,7 +688,7 @@ public class TestCreator extends java.lang.Object {
     
     
     
-    static public void fillGeneral(JavaClass testClass) {
+    public void fillGeneral(JavaClass testClass) {
         // public entry points are wrapped in MDR transactions
         JavaModel.getJavaRepository().beginTrans(true);
         try {
@@ -422,14 +707,14 @@ public class TestCreator extends java.lang.Object {
             
             
             //add method setUp() (optionally):
-            if (JUnitSettings.getDefault().isGenerateSetUp()
+            if (generateSetUp
                 && !hasInitMethod(testClass, METHOD_NAME_SETUP)) {
                 
                 testClass.getFeatures().add(generateInitMethod(pkg, METHOD_NAME_SETUP));
             }
             
             //add method tearDown() (optionally):
-            if (JUnitSettings.getDefault().isGenerateTearDown()
+            if (generateTearDown
                 && !hasInitMethod(testClass, METHOD_NAME_TEARDOWN)) {
                 testClass.getFeatures().add(generateInitMethod(pkg, METHOD_NAME_TEARDOWN));
             }
@@ -489,7 +774,10 @@ public class TestCreator extends java.lang.Object {
     
     
     
-    static private void fillTestClass(Resource srcRc, JavaClass srcClass, Resource tgtRc, JavaClass tgtClass) {
+    private void fillTestClass(Resource srcRc, 
+                               JavaClass srcClass,
+                               Resource tgtRc,
+                               JavaClass tgtClass) {
         fillGeneral(tgtClass);
         
         List    innerClasses = TestUtil.filterFeatures(srcClass, JavaClass.class);
@@ -523,8 +811,7 @@ public class TestCreator extends java.lang.Object {
         
         // add suite method ... only if we are supposed to do so
         
-        if (JUnitSettings.getDefault().isGenerateSuiteClasses() &&
-            (!hasSuiteMethod(tgtClass))) {
+        if (generateSuiteClasses && !hasSuiteMethod(tgtClass)) {
             tgtClass.getFeatures().add(createTestClassSuiteMethod(tgtClass));
         }
         
@@ -546,20 +833,16 @@ public class TestCreator extends java.lang.Object {
         
         
         // create abstract class implementation
-        if (
-            (JUnitSettings.getDefault().isGenerateAbstractImpl()) &&
-            (
-             (Modifier.ABSTRACT == (srcClass.getModifiers() & Modifier.ABSTRACT)) |
-             (srcClass.isInterface())
-             )
-            ) {
+        if (!skipAbstractClasses
+                && (Modifier.isAbstract(srcClass.getModifiers())
+                    || srcClass.isInterface())) {
             createAbstractImpl(srcClass, tgtClass);
         }
         
     }
     
     
-    static private void fillSuiteClass(List listMembers,
+    private void fillSuiteClass(List listMembers,
                                        String packageName,
                                        JavaClass tgtClass)  
     {      
@@ -615,22 +898,24 @@ public class TestCreator extends java.lang.Object {
     }
     
     
-    
-    static private boolean isMethodAcceptable(Method m) {
-        return (
-                (m.getModifiers() & Modifier.PRIVATE) == 0 &&
-                (
-                 (m.getModifiers() & cfg_MethodsFilter) != 0 ||
-                 (
-                  (m.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) == 0
-                  && cfg_MethodsFilterPackage
-                  )
-                 )
-                );
+    /**
+     * Checks whether a test for the given method should be created.
+     * Access modifiers of the given method are compared to this creator's
+     * settings.
+     *
+     * @param  m  method to be checked
+     * @return  <code>true</code> if this creator is configured to create tests
+     *          for methods having the given method's access modifiers;
+     *          <code>false</code> otherwise
+     */
+    private boolean isMethodAcceptable(Method m) {
+        final int modifiers = m.getModifiers();
+        return ((modifiers & methodAccessModifiers) != 0)
+            || (testPkgPrivateMethods && ((modifiers & ACCESS_MODIFIERS) == 0));
     }
     
     
-    static private void createAbstractImpl(JavaClass srcClass, JavaClass tgtClass) {
+    private void createAbstractImpl(JavaClass srcClass, JavaClass tgtClass) {
         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
         String implClassName = srcClass.getSimpleName() + "Impl";
         JavaClass innerClass = tgtClass.getInnerClass(implClassName, false);
@@ -642,7 +927,8 @@ public class TestCreator extends java.lang.Object {
             
             // generate JavaDoc for the generated implementation of tested abstract class
             String javadocText = null;
-            if (JUnitSettings.getDefault().isJavaDoc()) {
+            
+            if (generateMethodJavadoc) {
                 javadocText = MessageFormat.format(NbBundle.getMessage(TestCreator.class,"TestCreator.abstracImpl.JavaDoc.comment"),
                                                    new Object[] {srcClass.getName()});
             }
@@ -696,7 +982,7 @@ public class TestCreator extends java.lang.Object {
     }
     
     
-    static private Method createMethodImpl(JavaModelPackage pkg, Method origMethod)  {
+    private Method createMethodImpl(JavaModelPackage pkg, Method origMethod)  {
         Method   newMethod = pkg.getMethod().createMethod();
         
         newMethod.setName(origMethod.getName());
@@ -709,7 +995,7 @@ public class TestCreator extends java.lang.Object {
         
         // prepare the body of method implementation
         StringBuffer    body = new StringBuffer(200);
-        if (JUnitSettings.getDefault().isBodyComments()) {
+        if (generateMethodBodyComment) {
             body.append(NbBundle.getMessage(TestCreator.class,"TestCreator.methodImpl.bodyComment"));
             body.append("\n\n");
         }
@@ -781,12 +1067,11 @@ public class TestCreator extends java.lang.Object {
     }
     
     
-    private static void addMainMethod(JavaClass tgtClass) {
+    private void addMainMethod(JavaClass tgtClass) {
         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
-        if ((JUnitSettings.getDefault().isGenerateMainMethod()) && (!TestUtil.hasMainMethod(tgtClass))) {
+        if (generateMainMethod && !TestUtil.hasMainMethod(tgtClass)) {
             // add main method
-            String mainMethodBodySetting =
-                JUnitSettings.getDefault().getGenerateMainMethodBody();
+            String mainMethodBodySetting = getInitialMainMethodBody();
             
             if ((mainMethodBodySetting != null) && (mainMethodBodySetting.length() > 0) ) {
                 // create body
@@ -822,12 +1107,28 @@ public class TestCreator extends java.lang.Object {
         }
     }
     
+    /**
+     */
+    private String getInitialMainMethodBody() {
+        if (initialMainMethodBody == null) {
+            initialMainMethodBody = JUnitSettings.getDefault()
+                                    .getGenerateMainMethodBody();
+            if (initialMainMethodBody == null) {
+                /*
+                 * set it to a non-null value so that this method does not try
+                 * to load it from the settings next time
+                 */
+                initialMainMethodBody = "";                             //NOI18N
+            }
+        }
+        return initialMainMethodBody;
+    }
     
     private static Type createStringType(JavaModelPackage pkg) {
         return pkg.getType().resolve("java.lang.String");
     }
     
-    public static void createEmptyTest(Resource srcRc, JavaClass cls) {
+    public void createEmptyTest(Resource srcRc, JavaClass cls) {
         addFrameworkImport(srcRc);
         fillGeneral(cls);
     }

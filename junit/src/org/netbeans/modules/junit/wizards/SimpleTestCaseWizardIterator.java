@@ -290,9 +290,9 @@ public class SimpleTestCaseWizardIterator
                 new FileObject[] {testRootFolder});
                 
         /* create test class(es) for the selected source class: */
-        TestCreator.initialize();
         try {
             return CreateTestAction.createSingleTest(
+                new TestCreator(true),
                 testClassPath, classToTest,
                 null,               //use the default class name
                 templateDataObj,

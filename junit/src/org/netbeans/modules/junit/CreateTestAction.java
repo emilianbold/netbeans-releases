@@ -125,8 +125,6 @@ public class CreateTestAction extends TestAction {
                 }
             }
             
-            TestCreator.initialize();
-            
             ProgressIndicator progress = new ProgressIndicator();
             progress.show();
             
@@ -137,7 +135,7 @@ public class CreateTestAction extends TestAction {
             
             // results will be accumulated here
             CreationResults results;
-            
+            final TestCreator testCreator = new TestCreator(true);
             try {
                 if (singleClass) {
                     assert testClassName != null;
@@ -146,6 +144,7 @@ public class CreateTestAction extends TestAction {
                     if (fo != null) {
                         try {
                             results = createSingleTest(
+                                    testCreator,
                                     testClassPath,
                                     fo,
                                     testClassName,
@@ -173,7 +172,8 @@ public class CreateTestAction extends TestAction {
                             continue;
                         }
                         try {
-                            results.combine(createTests(nodes[nodeIdx],
+                            results.combine(createTests(testCreator,
+                                                        nodes[nodeIdx],
                                                         testClassPath,
                                                         doTestTempl,
                                                         doSuiteTempl,
@@ -293,6 +293,7 @@ public class CreateTestAction extends TestAction {
         }
         
         public static DataObject createSuiteTest(
+                final TestCreator testCreator,
                 ClassPath testClassPath,
                 DataFolder folder,
                 String suiteName,
@@ -335,7 +336,7 @@ public class CreateTestAction extends TestAction {
                     }
                     
                     try {
-                        TestCreator.createTestSuite(suite, dotPkg, targetClass);
+                        testCreator.createTestSuite(suite, dotPkg, targetClass);
                         save(doTarget);
                     } catch (Exception e) {
                         ErrorManager.getDefault().log(ErrorManager.ERROR,
@@ -355,6 +356,7 @@ public class CreateTestAction extends TestAction {
         }
         
         private CreationResults createTests(
+                    final TestCreator testCreator,
                     Node node,
                     ClassPath testClassPath,
                     DataObject doTestT,
@@ -378,7 +380,8 @@ public class CreateTestAction extends TestAction {
                         break;
                     }
                     
-                    results.combine(createTests(childs[ch],
+                    results.combine(createTests(testCreator,
+                                                childs[ch],
                                                 testClassPath,
                                                 doTestT,
                                                 doSuiteT,
@@ -395,7 +398,8 @@ public class CreateTestAction extends TestAction {
                         && ((0 < mySuite.size())
                             & (JUnitSettings.getDefault()
                                .isGenerateSuiteClasses()))) {
-                    createSuiteTest(testClassPath,
+                    createSuiteTest(testCreator,
+                                    testClassPath,
                                     DataFolder.findFolder(foSource),
                                     (String) null,
                                     mySuite,
@@ -411,7 +415,8 @@ public class CreateTestAction extends TestAction {
                         && !("java".equals(foSource.getExt()))) {       //NOI18N
                     return CreationResults.EMPTY;
                 } else {
-                    return createSingleTest(testClassPath,
+                    return createSingleTest(testCreator,
+                                            testClassPath,
                                             foSource,
                                             null,      //use the default clsname
                                             doTestT,
@@ -423,6 +428,7 @@ public class CreateTestAction extends TestAction {
         }
         
         public static CreationResults createSingleTest(
+                final TestCreator testCreator,
                 ClassPath testClassPath,
                 FileObject foSource,
                 String testClassName,
@@ -451,7 +457,7 @@ public class CreateTestAction extends TestAction {
                 
                 JavaClass theClass = (JavaClass)el;
                 
-                if (skipNonTestable && !TestCreator.isClassTestable(theClass)) {
+                if (skipNonTestable && !testCreator.isClassTestable(theClass)) {
                     if (progress != null) {
                         // ignoring because untestable
                         progress.setMessage(
@@ -500,7 +506,7 @@ public class CreateTestAction extends TestAction {
                                   getCreatingMsg(targetClass.getName()), false);
                         }
 
-                        TestCreator.createTestClass(srcRc,
+                        testCreator.createTestClass(srcRc,
                                                     theClass,
                                                     tgtRc,
                                                     targetClass);

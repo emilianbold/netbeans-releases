@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,6 +30,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.junit.CreateTestAction;
 import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitSettings;
+import org.netbeans.modules.junit.TestCreator;
 import org.netbeans.modules.junit.TestUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -286,6 +287,7 @@ public class TestSuiteWizardIterator
         /* create test class(es) for the selected source class: */
         try {
             DataObject suite = CreateTestAction.createSuiteTest(
+                new TestCreator(true),
                 testClassPath, targetDataFolder, name,
                 new LinkedList(testClassNames),
                 templateDataObj, null, null);

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -273,7 +273,7 @@ public class EmptyTestCaseWizardIterator
         FileObject foSource = testDataObj.getPrimaryFile();
         Resource srcRc = JavaModel.getResource(foSource);        
         JavaClass cls = org.netbeans.modules.junit.TestUtil.getMainJavaClass(srcRc);
-        org.netbeans.modules.junit.TestCreator.createEmptyTest(srcRc, cls);
+        new org.netbeans.modules.junit.TestCreator(true).createEmptyTest(srcRc, cls);
         
         return Collections.singleton(testDataObj);
     }
