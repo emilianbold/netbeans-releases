@@ -39,5 +39,9 @@ Microsystems, Inc. All Rights Reserved.
     <stop antfile="${pointbase.setupfile}" target="stop"/>
   </setup>
   
+  <!-- Run all GUI tests from MyModule -->
+  <config name="gui">
+    <module name="MyModule" testtypes="gui" attributes="all,ide,stable"/>
+  </config>
 </testconfig>
 
