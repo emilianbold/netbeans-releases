@@ -40,7 +40,12 @@ public class Status implements DeploymentStatus {
     public Status (ActionType at, CommandType ct, String msg, StateType state) {
         this.at = at;
         this.ct = ct;
-        this.msg = msg;
+        int lastEx;
+        if ((lastEx = msg.lastIndexOf ("Exception:")) > 0) {  //NOI18N
+            this.msg = msg.substring (lastEx + "Exception:".length());  //NOI18N
+        } else {
+            this.msg = msg;
+        }
         this.state = state;
     }
     
