@@ -15,10 +15,12 @@ package org.netbeans.jellytools.actions;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.drivers.input.KeyRobotDriver;
 import org.netbeans.jemmy.operators.*;
+import org.netbeans.jemmy.util.EmptyVisualizer;
 import org.openide.util.actions.SystemAction;
 
 /** Ancestor class for all non-blocking actions.<p>
@@ -63,8 +65,12 @@ public class ActionNoBlock extends Action {
     /** performs action through main menu
      * @throws UnsupportedOperationException when action does not support menu mode */    
     public void performMenu() {
-        if (menuPath==null)
+        if (menuPath==null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define menu path");
+        }
+        // Need to wait here to be more reliable.
+        // TBD - It can be removed after issue 23663 is solved.
+        new EventTool().waitNoEvent(500);
         MainWindowOperator.getDefault().menuBar().pushMenuNoBlock(menuPath, "|");
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
@@ -81,9 +87,26 @@ public class ActionNoBlock extends Action {
             throw new UnsupportedOperationException(getClass().toString()+" does not define popup path");
         testNodes(nodes);
         TreePath paths[]=new TreePath[nodes.length];
-        for (int i=0; i<nodes.length; i++)
+        for (int i=0; i<nodes.length; i++) {
             paths[i]=nodes[i].getTreePath();
-        JPopupMenuOperator popup=new JPopupMenuOperator(nodes[0].tree().callPopupOnPaths(paths));
+        }
+        Operator.ComponentVisualizer treeVisualizer = nodes[0].tree().getVisualizer();
+        Operator.ComponentVisualizer oldVisualizer = null;
+        // If visualizer of JTreeOperator is EmptyVisualizer, we need
+        // to avoid making tree component visible in callPopup method.
+        // So far only known case is tree from TreeTableOperator.
+        if(treeVisualizer instanceof EmptyVisualizer) {
+            oldVisualizer = Operator.getDefaultComponentVisualizer();
+            Operator.setDefaultComponentVisualizer(treeVisualizer);
+        }
+        // Need to wait here to be more reliable.
+        // TBD - It can be removed after issue 23663 is solved.
+        new EventTool().waitNoEvent(500);
+        JPopupMenuOperator popup = new JPopupMenuOperator(nodes[0].tree().callPopupOnPaths(paths));
+        // restore previously used default visualizer
+        if(oldVisualizer != null) {
+            Operator.setDefaultComponentVisualizer(oldVisualizer);
+        }
         popup.setComparator(new Operator.DefaultStringComparator(false, true));
         popup.pushMenuNoBlock(popupPath, "|");
         try {
@@ -99,6 +122,9 @@ public class ActionNoBlock extends Action {
     public void performPopup(ComponentOperator component) {
         if (popupPath==null)
             throw new UnsupportedOperationException(getClass().toString()+" does not define popup path");
+        // Need to wait here to be more reliable.
+        // TBD - It can be removed after issue 23663 is solved.
+        new EventTool().waitNoEvent(500);
         component.clickForPopup();
         JPopupMenuOperator popup=new JPopupMenuOperator(component);
         popup.setComparator(new Operator.DefaultStringComparator(false, true));

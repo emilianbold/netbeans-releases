@@ -20,6 +20,7 @@ import javax.swing.tree.TreePath;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.drivers.input.KeyRobotDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -212,8 +213,12 @@ public class Action {
     /** performs action through main menu
      * @throws UnsupportedOperationException when action does not support menu mode */    
     public void performMenu() {
-        if (menuPath==null)
+        if (menuPath==null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define menu path");
+        }
+        // Need to wait here to be more reliable.
+        // TBD - It can be removed after issue 23663 is solved.
+        new EventTool().waitNoEvent(500);
         MainWindowOperator.getDefault().menuBar().pushMenu(menuPath, "|");
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
@@ -277,17 +282,13 @@ public class Action {
      * @param nodes nodes to be action performed on  
      * @throws UnsupportedOperationException when action does not support popup mode */    
     public void performPopup(Node[] nodes) {
-        if (popupPath==null)
+        if (popupPath==null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define popup path");
+        }
         testNodes(nodes);
         TreePath paths[]=new TreePath[nodes.length];
-        for (int i=0; i<nodes.length; i++)
+        for (int i=0; i<nodes.length; i++) {
             paths[i]=nodes[i].getTreePath();
-        nodes[0].tree().selectPaths(paths);
-        try {
-            Thread.sleep(SELECTION_WAIT_TIME);
-        } catch (Exception e) {
-            throw new JemmyException("Sleeping interrupted", e);
         }
         Operator.ComponentVisualizer treeVisualizer = nodes[0].tree().getVisualizer();
         Operator.ComponentVisualizer oldVisualizer = null;
@@ -298,6 +299,9 @@ public class Action {
             oldVisualizer = Operator.getDefaultComponentVisualizer();
             Operator.setDefaultComponentVisualizer(treeVisualizer);
         }
+        // Need to wait here to be more reliable.
+        // TBD - It can be removed after issue 23663 is solved.
+        new EventTool().waitNoEvent(500);
         JPopupMenuOperator popup=new JPopupMenuOperator(nodes[0].tree().callPopupOnPaths(paths));
         // restore previously used default visualizer
         if(oldVisualizer != null) {
@@ -316,8 +320,12 @@ public class Action {
      * @param component component to be action performed on
      * @throws UnsupportedOperationException when action does not support popup mode */    
     public void performPopup(ComponentOperator component) {
-        if (popupPath==null)
+        if (popupPath==null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define popup path");
+        }
+        // Need to wait here to be more reliable.
+        // TBD - It can be removed after issue 23663 is solved.
+        new EventTool().waitNoEvent(500);
         component.clickForPopup();
         JPopupMenuOperator popup=new JPopupMenuOperator(component);
         popup.setComparator(new Operator.DefaultStringComparator(false, true));
@@ -392,7 +400,7 @@ public class Action {
             throw new JemmyException("Sleeping interrupted", e);
         }
     }
-    
+
     /** performs action through shortcut
      * @param node node to be action performed on 
      * @throws UnsupportedOperationException when action does not support shortcut mode */    
@@ -449,11 +457,36 @@ public class Action {
         }
     }
     
-    private int getDefaultMode() {
+    /** Returns default mode in which actions are performed.
+     * @returns default mode in which actions are performed
+     * @see #POPUP_MODE
+     * @see #MENU_MODE
+     * @see #API_MODE
+     * @see #SHORTCUT_MODE
+     */
+    public int getDefaultMode() {
         int mode=(((Integer)JemmyProperties.getCurrentProperty("Action.DefaultMode")).intValue());
         if (mode<0 || mode>3)
             return POPUP_MODE;
         return mode;
+    }
+    
+    /** Sets default mode in which actions are performed. If given mode value
+     * is not valid, it sets {@link #POPUP_MODE} as default.
+     * @param mode mode to be set
+     * @returns previous value
+     * @see #POPUP_MODE
+     * @see #MENU_MODE
+     * @see #API_MODE
+     * @see #SHORTCUT_MODE
+     */
+    public int setDefaultMode(int mode) {
+        int oldMode = (((Integer)JemmyProperties.getCurrentProperty("Action.DefaultMode")).intValue());
+        if (mode<0 || mode>3) {
+            mode = POPUP_MODE;
+        }
+        JemmyProperties.setCurrentProperty("Action.DefaultMode", new Integer(mode));
+        return oldMode;
     }
     
     /** This class defines keyboard shortcut for action execution */    
