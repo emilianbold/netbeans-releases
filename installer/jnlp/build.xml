@@ -20,6 +20,11 @@ All Rights Reserved.
     <property name="jnlp-api.file.location" value="../external/jnlp.jar"/>
     <property name="jnlp-servlet.file.location" value="../external/jnlp-servlet.jar"/>
 
+    
+    <property name="jnlp.signjar.alias" value="jnlp" />
+    <property name="jnlp.signjar.keystore" location="default.keystore" />
+    <property name="jnlp.signjar.password" value="netbeans" />
+    
     <target name="compile">
         <ant dir="../external"/>
         <javac debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" destdir="src" srcdir="src">
@@ -106,7 +111,7 @@ All Rights Reserved.
             warfile="${netbeans.dest}.war"/>
     </target>
         
-    <target depends="jars" name="create-jnlp-jars">
+    <target depends="jars,generate-keystore" name="create-jnlp-jars">
         <mkdir dir="release"/>
         <copy flatten="true" todir="release">
             <fileset dir="jars">
@@ -153,14 +158,7 @@ All Rights Reserved.
         <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         
         <repeat values="${allmodules}" name="maindir" target="buildjar"/>
-        <!-- if we use JDK 1.4 we no longer need these files: -->
-        <delete file="jars/core/crimson-1.1.3.jar"/>
-        <delete file="jars/core/regexp-1.2.jar"/>
-        <delete file="jars/core/xml-apis-1.0b2.jar"/>
-        <!-- For some reason we still need xerces from core. It should not be
-             needed but somehow using this version prevents some bug. So
-             we include core's xerces -->
-<!--        <delete file="jars/core/xerces-2.0.2.jar"/> -->
+
         <mkdir dir="jars"/>
         <jar compress="false"
              jarfile="jars/nbjnlpinstaller.jar">
@@ -173,6 +171,7 @@ All Rights Reserved.
     <!-- copies and conditionally repackages all jars -->
     <target name="buildjar">
         <echo message="buildjar running with property maindir == ${maindir}"/>
+        
         
         <mkdir dir="jars/${maindir}"/>
         
@@ -271,7 +270,6 @@ All Rights Reserved.
             <param name="subdir" value="modules/autoload/locale"/>
             <param name="forconversion" value="${f9}"/>
         </antcall>
-
     </target>
     
     <target name="repackage-all">
@@ -317,6 +315,31 @@ NetBeans-Prefix: ${fname}
              manifest="jars/${maindir}/${fname}-manifest.mf"
         />
         <delete dir="jars/${maindir}/tmp"/>
+    </target>
+
+    <available file="${jnlp.signjar.keystore}" property="do.not.generate.keystore" />
+    <target name="generate-keystore" unless="do.not.generate.keystore" >
+        <echo message="Going to create default keystore in ${jnlp.signjar.keystore}" />
+        <exec 
+            executable="keytool" 
+            dir="."  
+            inputstring="
+            noname${line.separator}
+            noorganization${line.separator}
+            nolocation${line.separator}
+            nostate${line.separator}
+            no${line.separator}yes${line.separator}yes${line.separator}"
+        >
+          <arg value="--genkey" />
+          <arg value="--alias" />
+          <arg value="${jnlp.signjar.alias}" />
+          <arg value="--keystore" />
+          <arg file="${jnlp.signjar.keystore}" />
+          <arg value="--storepass" />
+          <arg value="${jnlp.signjar.password}" />
+          <arg value="--keypass" />
+          <arg value="${jnlp.signjar.password}" />
+        </exec>
     </target>
 </project>
 
