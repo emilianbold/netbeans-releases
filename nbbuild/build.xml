@@ -51,9 +51,11 @@ ToDo:
     <ant dir="../libs/external" target="unscramble"/>
     <ant dir="../xml/external" target="unscramble"/>
     <path id="bootstrap-cp">
-      <fileset dir="..">
-        <!-- For running inside IDE, to pick up ant.jar -->
-        <include name="nbbuild/external/ant*.jar"/>
+     <!-- cmdline Ant -->
+     <pathelement location="${ant.home}/lib/ant.jar"/>
+     <!-- Ant in NB -->
+     <pathelement path="${netbeans.library.path}"/>
+     <fileset dir="..">
         <!-- XML Serializer: -->
         <include name="libs/external/xerces*.jar"/>
         <!-- Needed for CheckLinks: -->
