@@ -255,120 +255,18 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
      */
     static DataFolder findSessionFolder (String name) {
         try {
-            FileObject fo = NbTopManager.get ().getRepository().findResource(name);
-
-            boolean prepop = false;
+            FileSystem fs = NbTopManager.get ().getRepository().getDefaultFileSystem ();
+            FileObject fo = fs.findResource(name);
             if (fo == null) {
                 // resource not found, try to create new folder
-                fo = NbTopManager.get ().getRepository ().getDefaultFileSystem ().getRoot ().createFolder (name);
-                prepop = true;
+                fo = fs.getRoot ().createFolder (name);
             }
             DataFolder df = DataFolder.findFolder(fo);
-            if (prepop) {
-                try {
-                    prepopulate (df);
-                } catch (Exception e) {
-                    if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                        e.printStackTrace ();
-                }
-            }
             return df;
         } catch (IOException ex) {
             throw new InternalError ("Folder not found and cannot be created: " + name); // NOI18N
         }
     }
-    
-    /** Possibly prepopulate a folder with useful contents.
-     * So you can start the IDE with a blank system folder,
-     * and it will automatically create sane defaults at startup time.
-     * @param folder the folder to (possibly) populate with new contents
-     * @throws IOException as usual
-     */
-    private static void prepopulate (DataFolder folder) throws IOException, MalformedURLException {
-        // Most of these will be displayed in Global Options, so make sure the folder itself is localized:
-        folder.getPrimaryFile ().setAttribute ("SystemFileSystem.localizingBundle", "org.netbeans.core.Bundle"); // NOI18N
-        // Now do different things, depending on which folder it is.
-        String name = folder.getName ();
-        if (name.equals ("Templates")) { //NOI18N
-            TemplateWizard.setDescription (folder, new URL ("nbrescurrloc:/org/netbeans/core/resources/templatesRootDescription.html")); //NOI18N
-        } else if (name.equals ("Actions")) { //NOI18N
-            populateFolderWithInstances (folder, new URL ("nbresbootloc:/org/netbeans/core/resources/instancesForActions.txt"), null); //NOI18N
-        } else if (name.equals ("Menu")) { //NOI18N
-            populateFolderWithInstances (folder, new URL ("nbresbootloc:/org/netbeans/core/resources/instancesForMenu.txt"), "javax.swing.JSeparator"); //NOI18N
-        } else if (name.equals ("Toolbars")) { //NOI18N
-            populateFolderWithInstances (folder, new URL ("nbresbootloc:/org/netbeans/core/resources/instancesForToolbars.txt"), "javax.swing.JToolBar$separator"); //NOI18N
-            // Also have .xml configuration files for it:
-            FileUtil.extractJar (folder.getPrimaryFile (),
-                                 NbBundle.getLocalizedFile ("org.netbeans.core.resources.toolbarConfigs", "jar").openStream ());
-        } else if (name.equals ("Welcome")) { //NOI18N
-            populateFolderWithInstances (folder, new URL ("nbresbootloc:/org/netbeans/core/resources/instancesForWelcome.txt"), null); //NOI18N
-        }
-    }
-    
-    /** Populate a folder with .instance files.
-     * The configuration file should look like this:
-     * <br><code><pre>
-     * org.openide.actions.FooAction
-     * SubFolder/org.openide.actions.BarAction
-     * SubFolder/-
-     * SubFolder/org.openide.actions.BazAction
-     * </pre></code>
-     * <br>Here you can indicate class names to create, and subfolders to put them in.
-     * The folder order will be set.
-     * Hyphens auto-create the proper kind of separator, where appropriate.
-     * @param folder the folder to fill
-     * @param listing a URL to the configuration file
-     * @param separatorClass classname of instance to use for separators, or <code>null</code>
-     */
-    private static void populateFolderWithInstances (DataFolder folder, URL listing, String separatorClass) throws IOException {
-        InputStream is = listing.openStream ();
-        BufferedReader r = new BufferedReader (new InputStreamReader (is));
-        Map ordering = new HashMap (); // Map<DataFolder,List<DataObject>>
-        int counter = 0;
-        String line; while ((line = r.readLine ()) != null) {
-            String clazz;
-            DataFolder subFolder = folder;
-            int idx = line.lastIndexOf ('/');
-            if (idx == -1) {
-                clazz = line;
-            } else {
-                clazz = line.substring (idx + 1);
-                String sub = line.substring (0, idx);
-                StringTokenizer tok = new StringTokenizer (sub, "/"); //NOI18N
-                while (tok.hasMoreTokens ()) {
-                    String path = tok.nextToken ();
-                    FileObject child = subFolder.getPrimaryFile ().getFileObject (path);
-                    if (child == null) {
-                        DataFolder newFolder = DataFolder.create (subFolder, path);
-                        newFolder.getPrimaryFile ().setAttribute ("SystemFileSystem.localizingBundle", "org.netbeans.core.Bundle"); // NOI18N
-                        List l = (List) ordering.get (subFolder);
-                        if (l == null) ordering.put (subFolder, (l = new LinkedList ()));
-                        l.add (newFolder);
-                        subFolder = newFolder;
-                    } else {
-                        subFolder = DataFolder.findFolder (child);
-                    }
-                }
-            }
-            DataObject instance;
-            if (clazz.equals ("-") && separatorClass != null) { //NOI18N
-                instance = InstanceDataObject.create (subFolder, "Separator" + ++counter, separatorClass);
-            } else {
-                instance = InstanceDataObject.create (subFolder, null, clazz);
-            }
-            List l = (List) ordering.get (subFolder);
-            if (l == null) ordering.put (subFolder, (l = new LinkedList ()));
-            l.add (instance);
-        }
-        Iterator it = ordering.entrySet ().iterator ();
-        while (it.hasNext ()) {
-            Map.Entry entry = (Map.Entry) it.next ();
-            DataFolder subFolder = (DataFolder) entry.getKey ();
-            List children = (List) entry.getValue ();
-            subFolder.setOrder ((DataObject[]) children.toArray (new DataObject[children.size ()]));
-        }
-    }
-
 }
 
 /*
