@@ -902,6 +902,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../contrib/insertunicode" target="netbeans"/>
   </target>
 
+  <target name="all-contrib/workplace" depends="all-openide,all-openide/loaders">
+    <echo message="Building module contrib/workplace..."/>
+    <ant dir="../contrib/workplace" target="netbeans"/>
+  </target>
+
   <target name="all-jasm" depends="all-openide,all-openide/loaders,all-editor,all-java/srcmodel,all-openide/deprecated,all-openide/execution,all-openide/compiler,all-clazz">
       <echo message="Building module jasm..."/>
       <ant dir="../jasm" target="netbeans"/>
