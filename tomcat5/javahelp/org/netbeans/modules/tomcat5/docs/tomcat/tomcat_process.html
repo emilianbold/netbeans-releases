@@ -8,7 +8,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <title>Working with the Tomcat Web Server</title>
-<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+<link rel="stylesheet" href="../../../usersguide/ide.css" type="text/css">
 </head>
 <body>
 <h2>Working with the Tomcat Web Server</h2>
@@ -18,29 +18,17 @@ The following table shows how to work with the Tomcat Web Server.
    process step. The right column contains detail information to accomplish that process.">
    <tr valign="top"> 
     <td align="center"><img src="../images/circle1.gif" alt="Number one"><br>
-	    <b>Start the Tomcat Web Server</b></td>
-   <td> 
-	   <ol>
-	 <li><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/server/server_register.html">Register</a> 
+	    <b>Set up the Tomcat Web Server</b></td>
+    <td>
+	  
+	   <ol> 
+	<li><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/server_register.html">Register</a> 
 	the Tomcat Web Server with the IDE.</li>
-	<li>Set the Tomcat Web Server as the project's 
-	<a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/deploy/deploy_changeserver.html">target server</a>.	   
-	<li>Do one of the following:
-	<ul><li>To start the Tomcat Web Server automatically,
-		<a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/deploy/deploy_webapp.html">deploy the web application</a>.</li>
-		<li>To start the Tomcat Web Server manually, right-click the 
-		server instance in the Runtime window, choose Start/Stop Server, and 
-		click Start Server in the Server Status dialog box.</li>
-	<table cellpadding="3" cellspacing="0" border="0">
-  <tr valign="top">
-      <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-      <td>
-	 Click Start Server (Debug) if you want to start
-	 the Tomcat Web Server manually in debug mode.
-      </td>
-   </tr>
-</table></ul>
-<li><a href="tomcat_edit_tomcatuser.html">Authenticate</a> the Tomcat Web Server.</li>
+	<li><a href="tomcat_top_node.html">View the Tomcat Web Server in the IDE</a><br></li>
+	<li>Do one or more of the following:<ul>
+	      <li><a href="tomcat_internal_props.html">Customize the Tomcat Web Server</a><br></li>
+	      <li><a href="tomcat_setup_tdcp.html">Set up a connection pool</a><br></li>
+	      <li><a href="tomcat_setup_unsupported.html">Write Ant targets for deployment</a><br></li></ul></li>
       </ol>
     </td>
   </tr>
@@ -50,25 +38,41 @@ The following table shows how to work with the Tomcat Web Server.
       <hr align="center" width="80%">
     </td>
   </tr>
-  <tr valign="top"> 
-    <td align="center"><img src="../images/circle2.gif" alt="Number two"><br>
-	    <b>Change the Tomcat Web Server</b></td>
-    <td>
-	   Do one or more of the following: 
-      <ul>
-	      <li><a href="tomcat_internal_props.html">Customize the Tomcat Web Server</a><br></li>
-	      <li><a href="tomcat_setup_tdcp.html">Set up a connection pool</a><br></li>
-	      <li><a href="tomcat_setup_unsupported.html">Write Ant targets for deployment</a><br></li>
-      </ul>
-    </td>
-  </tr>
- 
+  
+    <tr valign="top"> 
+         <td align="center"><img src="../images/circle2.gif" alt="Number two"><br>
+	    <b>Deploy to the Tomcat Web Server</b></td>
+   <td> 
+	   <ol>
+	<li>Set the Tomcat Web Server as the project's 
+	<a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/deploy/deploy_changeserver.html">target server</a>.	   
+	<li>Do one of the following:
+	<ul><li>To start the Tomcat Web Server automatically,
+		<a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/deploy/deploy_webapp.html">deploy the web application</a>.</li>
+		<li>To start the Tomcat Web Server manually, right-click the 
+		server instance in the Runtime window, choose Start/Stop Server, and 
+		click Start Server in the Server Status dialog box. Start the server manually when
+		 you, for example, use a <a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_webfree_debug.html">debug target in a free-form project</a> .
+
+	<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top">
+      <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+      <td>
+	 Click Start Server (Debug) if you want to start
+	 the Tomcat Web Server manually in debug mode.
+      </td>
+   </tr>
+</table>
+
+		
+  </li></ol>
+
  
   
 </table>
 
 <hr>
-<small><a href="../../credits.html">Legal Notices</a></small> 
+<small><a href="../credits.html">Legal Notices</a></small> 
 <table cellpadding="50" border="0">
   <tr>
     <td>&nbsp;</td>
