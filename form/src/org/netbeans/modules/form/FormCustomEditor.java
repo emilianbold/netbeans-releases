@@ -106,7 +106,7 @@ public class FormCustomEditor extends JPanel
         Object currentValue = editor.getValue();
 
         // go through all available property editors, set their values and
-        // setup their cutom editors
+        // setup their custom editors
         for (int i=0; i < allEditors.length; i++) {
             PropertyEditor prEd = allEditors[i];
             editor.getPropertyContext().initPropertyEditor(prEd);
@@ -120,22 +120,25 @@ public class FormCustomEditor extends JPanel
                     ((ExPropertyEditor)prEd).attachEnv(env);
 
                 if (currentValue != null) {
-                    if (editor.getPropertyType().isAssignableFrom(
-                                           currentValue.getClass()))
-                    {   // currentValue is a real property value corresponding
-                        // to property editor value type
-                        prEd.setValue(currentValue);
-                        valueSet = true;
-                    }
-                    else if (currentValue instanceof FormDesignValue) {
-                        Object realValue =
-                            ((FormDesignValue)currentValue).getDesignValue();
-                        if (realValue != FormDesignValue.IGNORED_VALUE) {
-                            // current value is FormDesignValue with known real value
-                            prEd.setValue(realValue); 
+                    try {
+                        if (editor.getPropertyType().isAssignableFrom(
+                                               currentValue.getClass()))
+                        {   // currentValue is a real property value corresponding
+                            // to property editor value type
+                            prEd.setValue(currentValue);
                             valueSet = true;
                         }
+                        else if (currentValue instanceof FormDesignValue) {
+                            Object realValue = // get real value of the design value
+                                ((FormDesignValue)currentValue).getDesignValue();
+                            if (realValue != FormDesignValue.IGNORED_VALUE) {
+                                // there is a known real value
+                                prEd.setValue(realValue); 
+                                valueSet = true;
+                            }
+                        }
                     }
+                    catch (IllegalArgumentException ex) {} // ignore
                 }
                 // [null value should not be set?]
 
