@@ -56,8 +56,12 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
     public CustomizerCompile( J2SEProjectProperties uiProperties ) {
         initComponents();
                 
+        uiProperties.JAVAC_DEPRECATION_MODEL.setMnemonic( jCheckBoxDeprecation.getMnemonic() );
         jCheckBoxDeprecation.setModel( uiProperties.JAVAC_DEPRECATION_MODEL );
+        
+        uiProperties.JAVAC_DEBUG_MODEL.setMnemonic( jCheckBoxDebugInfo.getMnemonic() );
         jCheckBoxDebugInfo.setModel( uiProperties.JAVAC_DEBUG_MODEL );
+        
         additionalJavacParamsJTextField.setDocument( uiProperties.JAVAC_COMPILER_ARG_MODEL );                 
         
     }
