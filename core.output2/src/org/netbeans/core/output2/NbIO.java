@@ -249,7 +249,8 @@ class NbIO implements InputOutput {
         }
 
         void reuse() {
-            pristine = true;
+             pristine = true;
+             inputClosed = false;
         }
 
         private StringBuffer buffer() {
@@ -264,7 +265,7 @@ class NbIO implements InputOutput {
             }
         }
         
-        private boolean closed = false;
+        private boolean inputClosed = false;
         public void eof() {
             synchronized (lock) {
                 try {
@@ -289,7 +290,7 @@ class NbIO implements InputOutput {
              if (Controller.log) Controller.log  (NbIO.this + ":Input read: " + off + " len " + len);
             checkPristine();
             synchronized (lock) {
-                while (!closed && buffer().length() == 0) {
+                while (!inputClosed && buffer().length() == 0) {
                     try {
                         lock.wait();
                     } catch (InterruptedException e) {
@@ -298,7 +299,7 @@ class NbIO implements InputOutput {
                         throw ioe;
                     }
                 }
-                if (closed) {
+                if (inputClosed) {
                     return -1;
                 }
                 int realLen = Math.min (buffer().length(), len);
@@ -312,7 +313,7 @@ class NbIO implements InputOutput {
             if (Controller.log) Controller.log (NbIO.this + ": Input read one char");
             checkPristine();
             synchronized (lock) {
-                while (!closed && buffer().length() == 0) {
+                while (!inputClosed && buffer().length() == 0) {
                     try {
                         lock.wait();
                     } catch (InterruptedException e) {
@@ -321,7 +322,7 @@ class NbIO implements InputOutput {
                         throw ioe;
                     }
                 }
-                if (closed) {
+                if (inputClosed) {
                     return -1;
                 }
                 int i = (int) buffer().charAt(0);
@@ -332,7 +333,7 @@ class NbIO implements InputOutput {
 
         public boolean ready() throws IOException {        
             synchronized (lock) {
-                return !closed && buffer().length() > 0;
+                return !inputClosed && buffer().length() > 0;
             }
         }
         
@@ -340,7 +341,7 @@ class NbIO implements InputOutput {
             if (Controller.log) Controller.log (NbIO.this + ": Input skip " + n);
             checkPristine();
             synchronized (lock) {
-                while (!closed && buffer().length() == 0) {
+                while (!inputClosed && buffer().length() == 0) {
                     try {
                         lock.wait();
                     } catch (InterruptedException e) {
@@ -349,7 +350,7 @@ class NbIO implements InputOutput {
                         throw ioe;
                     }
                 }
-                if (closed) {
+                if (inputClosed) {
                     return 0;
                 }
                 int realLen = Math.min (buffer().length(), (int) n);
@@ -362,14 +363,14 @@ class NbIO implements InputOutput {
             if (Controller.log) Controller.log (NbIO.this + ": Input close");
             setInputVisible(false);
             synchronized (lock) {
-                closed = true;
+                inputClosed = true;
                 buffer().setLength(0);
                 lock.notifyAll();
             }
         }
         
         public boolean isClosed() {
-            return closed;
+            return inputClosed;
         }
     }
     
