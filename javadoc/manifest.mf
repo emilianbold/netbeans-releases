@@ -4,7 +4,6 @@ OpenIDE-Module-Install: com/netbeans/developer/modules/javadoc/JavadocModule.cla
 OpenIDE-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.java/1
 OpenIDE-Module-Specification-Version: 0.9.2
 OpenIDE-Module-Implementation-Version: 0.9.2
-OpenIDE-Module-Description: com.netbeans.developer.modules.javadoc.docs.HelpSet
 
 Name: com/netbeans/developer/modules/javadoc/settings/DocumentationSettings.class
 OpenIDE-Module-Class: Option
