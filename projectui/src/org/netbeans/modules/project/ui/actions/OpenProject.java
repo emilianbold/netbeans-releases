@@ -18,13 +18,16 @@ import java.io.File;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectChooserAccessory;
+import org.netbeans.modules.project.ui.ProjectTab;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
@@ -52,7 +55,7 @@ public class OpenProject extends BasicAction {
               
             if ( option == JFileChooser.APPROVE_OPTION ) {
 
-                File projectDir = FileUtil.normalizeFile(chooser.getSelectedFile());
+                final File projectDir = FileUtil.normalizeFile(chooser.getSelectedFile());
 
                 Project project = OpenProjectList.fileToProject( projectDir ); 
                 
@@ -69,6 +72,22 @@ public class OpenProject extends BasicAction {
                         // Set main project if selected
                         OpenProjectList.getDefault().setMainProject( project );
                     }
+                    final ProjectTab ptLogial  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
+                    
+                    // invoke later to select the being opened project if the focus is outside ProjectTab
+                    SwingUtilities.invokeLater (new Runnable () {
+                        public void run () {
+                            Node root = ptLogial.getExplorerManager ().getRootContext ();
+                            Node projNode = root.getChildren ().findChild (projectDir.getName ());
+                            try {
+                                ptLogial.getExplorerManager ().setSelectedNodes (new Node[] {projNode});
+                                ptLogial.open ();
+                                ptLogial.requestActive ();
+                            } catch (Exception ignore) {
+                                // may ignore it
+                            }
+                        }
+                    });
                     break; // and exit the loop
                 }
             }
