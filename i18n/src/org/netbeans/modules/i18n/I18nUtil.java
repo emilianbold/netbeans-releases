@@ -107,10 +107,6 @@ public final class I18nUtil {
     /** Items for i18n regular expression customizer. */
     private static List i18nRegExpItems;
 
-    /** Resource bundle used in i18n module. */
-    private static ResourceBundle bundle;
-    
-    
     /** Gets <code>initFormatItems</code>. */
     public static List getInitFormatItems() { 
         if(initFormatItems == null) {
@@ -255,10 +251,7 @@ public final class I18nUtil {
     
     /** Gets resource bundle for i18n module. */
     public static ResourceBundle getBundle() {
-        if(bundle == null)
-            bundle = NbBundle.getBundle(I18nModule.class);
-        
-        return bundle;
+        return NbBundle.getBundle(I18nModule.class);
     }
     
     /** Gets i18n options. */

@@ -42,10 +42,11 @@ public class JavaPropertyPanel extends PropertyPanel {
     private JButton argumentsButton;
 
 
-    private static ResourceBundle bundle = org.openide.util.NbBundle.getBundle(Util.class);
+    private final ResourceBundle bundle;
     
     /** Creates new form JavaPropertyPanel */
     public JavaPropertyPanel() {
+        bundle = org.openide.util.NbBundle.getBundle(JavaPropertyPanel.class);
         initComponents();
     }    
     

@@ -32,7 +32,7 @@ import javax.swing.text.StyledDocument;
 public abstract class InfoPanel extends JPanel {
 
     /** Helper bundle in which are internationalized string from this source. */
-    private static ResourceBundle bundle;
+    private ResourceBundle bundle;
 
     
     /** Creates new form InfoPanel */

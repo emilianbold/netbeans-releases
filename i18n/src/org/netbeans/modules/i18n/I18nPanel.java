@@ -46,7 +46,7 @@ public class I18nPanel extends JPanel {
     private I18nString i18nString;
     
     /** Helper bundle used for i18n-zing strings in this source.  */
-    private static ResourceBundle bundle;
+    private ResourceBundle bundle;
 
     /** Helper property change support. */
     private PropertyChangeListener propListener;

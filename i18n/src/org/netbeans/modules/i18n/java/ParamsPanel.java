@@ -43,14 +43,15 @@ public class ParamsPanel extends JPanel {
     /** List model for parameters. */
     private ParamsListModel model;
 
-    private static ResourceBundle bundle = org.openide.util.NbBundle.getBundle(Util.class);
-    
+    private final ResourceBundle bundle;    
+
     /** Generated serailized version UID. */
     static final long serialVersionUID =-3754019215574878093L;
     
     
     /** Creates new form ParamsPanel */
     public ParamsPanel() {
+        bundle = org.openide.util.NbBundle.getBundle(ParamsPanel.class);
         initComponents ();
         initAccessibility();
         paramsList.setModel(getListModel());

@@ -48,7 +48,7 @@ public class JavaReplacePanel extends JPanel {
     private JavaI18nSupport javaI18nSupport;
     
     /** Bundle in which are stored resources used in this source. */
-    private static ResourceBundle bundle;
+    private final ResourceBundle bundle;
     
     
     /** Creates new form JavaCustomPanel.
