@@ -266,6 +266,8 @@ public final class EclipseProject implements Comparable {
     void setAbsolutePathForEntry(ClassPathEntry entry) {
         // set abs. path default (null)
         entry.setAbsolutePath(null);
+        
+        // try to resolve entry as a VARIABLE
         if (entry.getType() == ClassPathEntry.TYPE_VARIABLE) {
             String rawPath = entry.getRawPath();
             int slashIndex = rawPath.indexOf('/');
@@ -284,6 +286,8 @@ public final class EclipseProject implements Comparable {
             }
             return;
         }
+        
+        // try to resolve entry as a PROJECT
         if (entry.getType() == ClassPathEntry.TYPE_PROJECT) {
             if (workspace != null) {
                 entry.setAbsolutePath(workspace.getProjectAbsolutePath(
@@ -294,11 +298,23 @@ public final class EclipseProject implements Comparable {
             //            }
             return;
         }
-        ClassPath.Link link = getLink(entry);
+        
+        // try to resolve entry as a LINK
+        ClassPath.Link link = getLink(entry.getRawPath());
         if (link != null) {
-            // change type from source to source link
-            entry.setType(ClassPathEntry.TYPE_LINK);
-            entry.setAbsolutePath(link.getLocation());
+            logger.finest("Found link for entry \"" + entry + "\": " + link); // NOI18N
+            if (new File(link.getLocation()).exists()) {
+                // change type from source to source link
+                entry.setType(ClassPathEntry.TYPE_LINK);
+                entry.setAbsolutePath(link.getLocation());
+            } else {
+                logger.info("Not able to resolve absolute path for classpath" + // NOI18N
+                        " entry \"" + entry.getRawPath() + "\". This classpath" + // NOI18N
+                        " entry is external source which points to PATH VARIABLE" + // NOI18N
+                        " which points to final destination. This future will be" + // NOI18N
+                        " supported in future version of Importer."); // NOI18N
+                entry.setType(ClassPathEntry.TYPE_UNKNOWN);
+            }
             return;
         }
         if (entry.isRawPathRelative()) {
@@ -345,16 +361,15 @@ public final class EclipseProject implements Comparable {
      * Recongises if a given entry represents link. If yes returns link it
      * represents otherwise null.
      */
-    private ClassPath.Link getLink(ClassPathEntry entry) {
+    private ClassPath.Link getLink(String linkName) {
         if (links != null) {
             for (Iterator it = links.iterator(); it.hasNext(); ) {
                 ClassPath.Link link = (ClassPath.Link) it.next();
-                if (link.getName().equals(entry.getRawPath())) {
+                if (link.getName().equals(linkName)) {
                     return link;
                 }
             }
         }
-        logger.info("Cannot resolve link: " + entry.getRawPath()); // NOI18N
         return null;
     }
     

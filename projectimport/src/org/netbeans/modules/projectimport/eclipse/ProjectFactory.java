@@ -84,6 +84,7 @@ final class ProjectFactory {
      *     <code>projectDir</code> is not a valid Eclipse project.
      */
     void load(EclipseProject project) throws ProjectImporterException {
+        logger.finest("Loading project: " + project.getName()); // NOI18N
         ProjectParser.parse(project);
         File cpFile = project.getClassPathFile();
         // non-java project doesn't need to have a classpath file
