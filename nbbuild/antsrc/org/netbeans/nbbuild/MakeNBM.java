@@ -543,9 +543,33 @@ public class MakeNBM extends MatchingTask {
             } else {
                 log ("Signing NBM file " + file);
                 SignJar signjar = (SignJar) project.createTask ("signjar");
-                signjar.setKeystore (signature.keystore.getAbsolutePath ());
+                //I have to use Reflection API, because there was changed API in ANT1.5
+                try {
+                    try {
+                        Class[] paramsT = {String.class};
+                        Object[] paramsV1 = {signature.keystore.getAbsolutePath()};
+                        Object[] paramsV2 = {file.getAbsolutePath()};
+                        signjar.getClass().getDeclaredMethod( "setKeystore", paramsT ).invoke( signjar, paramsV1 );
+                        signjar.getClass().getDeclaredMethod( "setJar", paramsT ).invoke( signjar, paramsV2 );
+                    } catch (NoSuchMethodException ex1) {
+                        //Probably ANT 1.5
+                        try {
+                            Class[] paramsT = {File.class};
+                            Object[] paramsV1 = {signature.keystore};
+                            Object[] paramsV2 = {file};
+                            signjar.getClass().getDeclaredMethod( "setKeystore", paramsT ).invoke( signjar, paramsV1 );
+                            signjar.getClass().getDeclaredMethod( "setJar", paramsT ).invoke( signjar, paramsV2 );
+                        }
+                        catch (NoSuchMethodException ex2) {
+                            throw new BuildException("Unknown ANT version, only ANT 1.4.1 is currently supported and ANT 1.4.1+ is acceptable.");
+                        }
+                    }
+                } catch (IllegalAccessException ex3) {
+                    throw new BuildException(ex3);
+                } catch (java.lang.reflect.InvocationTargetException ex4) {
+                    throw new BuildException(ex4);
+                }
                 signjar.setStorepass (signature.storepass);
-                signjar.setJar (file.getAbsolutePath ());
                 signjar.setAlias (signature.alias);
                 signjar.setLocation (location);
                 signjar.init ();
