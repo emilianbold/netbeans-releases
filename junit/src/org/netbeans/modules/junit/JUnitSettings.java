@@ -86,7 +86,7 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_EXECUTOR_TYPE, new Integer(EXECUTOR_EXTERNAL), true);
         putProperty(PROP_GENERATE_ABSTRACT_IMPL, new Boolean(true), true);
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, new Boolean(false), true);
-        putProperty(PROP_TEST_RUNNER, "org.netbeans.modules.junit.TestRunner", true);
+        putProperty(PROP_TEST_RUNNER, "org.netbeans.junit.NbTestRunner", true);
         putProperty(PROP_PROPERTIES, NbBundle.getMessage(JUnitSettings.class, "PROP_properties_default_value"), true);
         putProperty(PROP_GENERATE_NBJUNIT, new Boolean(true), true);
         putProperty(PROP_REGENERATE_SUITE_METHOD, new Boolean(true), true);
