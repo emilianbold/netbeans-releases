@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -33,9 +33,6 @@ import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
 
-/** Test Plain top manager. Must be run externally.
- * @author Jaroslav Tulach
- */
 public class EncodingTest extends NbTestCase {
     /** the fs to work on */
     private LocalFileSystem fs;
