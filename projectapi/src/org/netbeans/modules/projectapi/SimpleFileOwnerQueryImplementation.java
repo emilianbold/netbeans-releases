@@ -46,11 +46,12 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         if (file == null) {
             return null;
         }
-        FileObject f;
-        if (file.isData()) {
-            f = file.getParent();
-        } else {
-            f = file;
+        return getOwner(file);
+    }
+        
+    public Project getOwner(FileObject f) {
+        if (f.isData()) {
+            f = f.getParent();
         }
         while (f != null) {
             Project p;

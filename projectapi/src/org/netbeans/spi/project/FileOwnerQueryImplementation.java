@@ -15,6 +15,7 @@ package org.netbeans.spi.project;
 
 import java.net.URI;
 import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 
 /**
  * Knowledge of which project some files belong to.
@@ -29,6 +30,13 @@ public interface FileOwnerQueryImplementation {
      * @return a project which owns it, or null for no response
      */
     Project getOwner(URI file);
+    
+    /**
+     * Decide which project, if any, "owns" a given file.
+     * @param file FileObject of an existing file
+     * @return a project which owns it, or null for no response
+     */
+    Project getOwner(FileObject file);
     
     // XXX int getPriority();
     

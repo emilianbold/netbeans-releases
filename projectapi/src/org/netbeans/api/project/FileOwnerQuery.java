@@ -17,11 +17,15 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /**
  * Find the project which owns a file.
@@ -30,9 +34,11 @@ import org.openide.util.Lookup;
  */
 public class FileOwnerQuery {
 
-    private static final Lookup.Result/*<FileOwnerQueryImplementation>*/ implementations =
-        Lookup.getDefault().lookup(new Lookup.Template(FileOwnerQueryImplementation.class));
+    private static Lookup.Result/*<FileOwnerQueryImplementation>*/ implementations;
 
+    /** Cache of all available FileOwnerQueryImplementation instances. */
+    private static List/*<FileOwnerQueryImplementation>*/ cache;
+    
     private FileOwnerQuery() {}
 
     /**
@@ -41,12 +47,15 @@ public class FileOwnerQuery {
      * @return a project which contains it, or null if there is no known project containing it
      */
     public static Project getOwner(FileObject file) {
-        URL url = URLMapper.findURL(file, URLMapper.EXTERNAL);
-        if (url == null) {
-            return null;
+        Iterator it = getInstances().iterator();
+        while (it.hasNext()) {
+            FileOwnerQueryImplementation q = (FileOwnerQueryImplementation)it.next();
+            Project p = q.getOwner(file);
+            if (p != null) {
+                return p;
+            }
         }
-        URI u = URI.create(url.toString());
-        return getOwner(u);
+        return null;
     }
 
     /**
@@ -80,7 +89,7 @@ public class FileOwnerQuery {
         else if (!uri.isAbsolute() || uri.isOpaque()) {
             throw new IllegalArgumentException("Bad URI: " + uri); // NOI18N
         }
-        Iterator it = implementations.allInstances().iterator();
+        Iterator it = getInstances().iterator();
         while (it.hasNext()) {
             FileOwnerQueryImplementation q = (FileOwnerQueryImplementation)it.next();
             Project p = q.getOwner(uri);
@@ -91,4 +100,20 @@ public class FileOwnerQuery {
         return null;
     }
 
+    private static synchronized List getInstances() {
+        if (implementations == null) {
+            implementations = Lookup.getDefault().lookup(new Lookup.Template(FileOwnerQueryImplementation.class));
+            implementations.addLookupListener(new LookupListener() {
+                public void resultChanged (LookupEvent ev) {
+                    synchronized (FileOwnerQuery.class) {
+                        cache = null;
+                    }
+                }});
+        }
+        if (cache == null) {
+            cache = new ArrayList(implementations.allInstances());
+        }
+        return cache;
+    }
+    
 }
