@@ -225,6 +225,14 @@ public class TestSuiteWizardIterator
         this.wizard = wiz;
         current = INDEX_TARGET;
         loadSettings(wiz);
+
+        String [] panelNames =  new String [] {
+          NbBundle.getMessage(EmptyTestCaseWizardIterator.class,"LBL_panel_chooseFileType"),
+          NbBundle.getMessage(EmptyTestCaseWizardIterator.class,"LBL_panel_Target")};
+
+        ((javax.swing.JComponent)getTargetPanel().getComponent()).putClientProperty("WizardPanel_contentData", panelNames); 
+        ((javax.swing.JComponent)getTargetPanel().getComponent()).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); 
+
     }
 
     /**
