@@ -37,7 +37,7 @@ import org.openide.util.actions.SystemAction;
 *
 * @author Jaroslav Tulach, Petr Hamernik
 */
-final class DataSystem extends AbstractNode 
+public final class DataSystem extends AbstractNode 
 implements RepositoryListener, NewTemplateAction.Cookie {
     /** default instance */
     private static DataSystem def;
