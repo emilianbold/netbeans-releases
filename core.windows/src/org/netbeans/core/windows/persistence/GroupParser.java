@@ -178,6 +178,9 @@ class GroupParser {
             } catch (IOException exc) {
                 //If reading of one tcGroup fails we want to log message
                 //and continue.
+                // see #45497 - if something fails to load, remove it from local config..
+                toRemove.add(tcGroupParser);
+                deleteLocalTCGroup(tcGroupParser.getName());
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                 continue;
             }
@@ -194,8 +197,10 @@ class GroupParser {
             tcGroupParserMap.remove(tcGroupParser.getName());
         }
         
-        sc.tcGroupConfigs = (TCGroupConfig [])
-            tcGroupCfgList.toArray(new TCGroupConfig[tcGroupParserMap.size()]);
+        sc.tcGroupConfigs = (TCGroupConfig []) 
+            // safer array initialization, making sure the size of array matches size of list
+            // see #45497
+            tcGroupCfgList.toArray(new TCGroupConfig[tcGroupCfgList.size()]);
         
         PersistenceManager pm = PersistenceManager.getDefault();
         for (int i = 0; i < sc.tcGroupConfigs.length; i++) {
