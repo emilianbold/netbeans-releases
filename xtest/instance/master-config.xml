@@ -15,6 +15,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <testconfig>
 
+  <!-- Dev TESTS -->
+  <!-- ========= -->  
+
   <config name="config-1">
       <module name="core" testtypes="unit" attributes="stable"/>
       <module name="openide" testtypes="unit" attributes="stable"/>
@@ -22,39 +25,19 @@ Microsystems, Inc. All Rights Reserved.
       <module name="openidex" testtypes="unit" attributes="stable"/>
   </config>
   
-  <config name="config-2">
-      <module name="core" testtypes="junitgrr,backward" attributes="stable"/>
-      <module name="projects" testtypes="compatibility" attributes="compatibility"/>
-      <testtype name="unit" modules="core,openide,java,mdr" attributes="stable,pilsen"/>
-  </config>
-  
-  <config name="config-3">
-      <module name="openide" testtypes="unit" attributes="unstable"/>
-  </config>
-  
-  <!-- Now not allowed
-  <config name="config-4"
-          modules="openide,core,java"
-          testtypes="unit,perf,compatible,jaja"
-          attributes="release32,stable,code"/>
-  -->
-  
-  <config name="config-5">
-      <module name="openide" testtypes="unit" attributes="stable"/>
-  </config>
-  
-  <config name="config-6">
-      <module name="openide" testtypes="unit" attributes="stable,ide"/>
-  </config>
-  
-  <config name="config-7">
-      <module name="openide" testtypes="unit" attributes="stable,code"/>
-  </config>
-  
   <config name="config-validation">
       <module name="openide" testtypes="validation" attributes="stable,code"/>
   </config>
   
+  <!-- QA TESTS -->
+  <!-- ======== -->
+  
+  <!-- QA functional tests for Netbeans and FFJ CE -->
+  <config name="qa-functional-nb-ffjce">
+      <module name="debuggercore" testtypes="qa-functional" attributes="stable"/>
+  </config>
+
+  <!-- Deprecated, only for compatibility -->
   <config name="qa-pilot">
       <module name="debuggercore" testtypes="qa-functional" attributes="stable"/>
   </config>
