@@ -3825,8 +3825,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     }
                     else if (c != '[')
                         return super.resolveClass(streamCls);
-                    else
-                        break;
                 }
             }
             return PersistenceObjectRegistry.loadClass(name);
