@@ -17,11 +17,14 @@ package org.netbeans.modules.search;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 
 import org.openide.nodes.Node;
+import org.openide.util.Mutex;
 import org.openide.util.Task;
 import org.openide.util.WeakListeners;
 import org.openidex.search.SearchGroup;
+import org.openidex.search.SearchType;
 
 
 /**
@@ -29,62 +32,93 @@ import org.openidex.search.SearchGroup;
  *
  * @author  Peter Zavadsky
  */
-public class SearchTask extends Task {
+final class SearchTask implements Runnable {
 
     /** nodes to search */
-    private Node[] nodes;
+    private final Node[] nodes;
+    /** */
+    private final SearchType[] customizedSearchTypes;
+    /** */
+    private final List searchTypeList;
     /** ResultModel result model. */
     private ResultModel resultModel;
-    /** Properties listener which listens on last search type in the
-     * search chain. */
-    private PropertyChangeListener propListener;
     /** <code>SearchGroup</code> to search on. */
     private SearchGroup searchGroup;
-    
-    
-    /** Creates new <code>SearchTask</code>.
-     * @param nodes search starting points
-     * @param searchGroup search group to search on.
-     * @param na who could be notified
+    /**
+     * listener which listens for the search group's notifications of found
+     * objects
      */
-    public SearchTask(Node[] nodes, SearchGroup searchGroup, ResultModel resultModel) {
-        super(Task.EMPTY);
-
+    private PropertyChangeListener searchGroupListener;
+    /** attribute used by class <code>Manager</code> */
+    private boolean notifyWhenFinished = true;
+    /** */
+    private volatile boolean interrupted = false;
+    /** */
+    private volatile boolean finished = false;
+    
+    
+    /**
+     * Creates a new <code>SearchTask</code>.
+     *
+     * @param 
+     * @param 
+     * @param 
+     */
+    public SearchTask(final Node[] nodes,
+                      final List searchTypeList,
+                      final SearchType[] customizedSearchTypes) {
         this.nodes = nodes;
-        this.searchGroup = searchGroup;
-        this.resultModel = resultModel;
+        this.searchTypeList = searchTypeList;
+        this.customizedSearchTypes = customizedSearchTypes;
     }
 
     
     /** Runs the search task. */
     public void run() {
-        try {
-            // Set of search types to be used able to search on the same object type.
-            if (searchGroup == null) {
-                return;
-            }
-            searchGroup.addPropertyChangeListener(WeakListeners.propertyChange(
-                propListener = new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if (SearchGroup.PROP_FOUND.equals(evt.getPropertyName())) {
-                            matchingObjectFound(evt.getNewValue());
-                        }
-                    }
-                }, searchGroup)
-            );
-
-            searchGroup.setSearchRootNodes(nodes);
-            try {
-                searchGroup.search();
-            } catch (RuntimeException ex) {
-                resultModel.searchException(ex);
-            }
-        } finally {
-            // Notifies search task has finished.
-            notifyFinished();
+        /* Start the actual search: */
+        ensureResultModelExists();
+        if (searchGroup == null) {
+            return;
         }
+
+        //Set of search types to be used able to search on the same object type.
+        searchGroup.addPropertyChangeListener(WeakListeners.propertyChange(
+            searchGroupListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (SearchGroup.PROP_FOUND.equals(evt.getPropertyName())) {
+                        matchingObjectFound(evt.getNewValue());
+                    }
+                }
+            }, searchGroup)
+        );
+
+        searchGroup.setSearchRootNodes(nodes);
+        try {
+            searchGroup.search();
+        } catch (RuntimeException ex) {
+            resultModel.searchException(ex);
+        }
+        finished = true;
+    }
+
+    /**
+     */
+    ResultModel getResultModel() {
+        ensureResultModelExists();
+        return resultModel;
     }
     
+    /**
+     */
+    private void ensureResultModelExists() {
+        if (resultModel == null) {
+            SearchGroup[] groups
+                    = SearchGroup.createSearchGroups(customizedSearchTypes);
+            searchGroup = (groups.length != 0) ? groups[0] : null;
+            resultModel = new ResultModel(searchTypeList, searchGroup);
+        }
+    }
+
     /**
      * Called when a matching object is found by the <code>SearchGroup</code>.
      * Notifies the result model of the found object and stops searching
@@ -99,11 +133,55 @@ public class SearchTask extends Task {
         }
     }
     
-    /** Stops this search task. */
-    public void stop() {
+    /**
+     * Stops this search task.
+     * This method also sets a value of attribute
+     * <code>notifyWhenFinished</code>. This method may be called multiple
+     * times (even if this task is already stopped) to change the value
+     * of the attribute.
+     *
+     * @param  notifyWhenFinished  new value of attribute
+     *                             <code>notifyWhenFinished</code>
+     */
+    void stop(boolean notifyWhenFinished) {
+        if (notifyWhenFinished == false) {     //allow only change true -> false
+            this.notifyWhenFinished = notifyWhenFinished;
+        }
+        stop();
+    }
+    
+    /**
+     * Stops this search task.
+     *
+     * @see  #stop(boolean)
+     */
+    void stop() {
+        if (!finished) {
+            interrupted = true;
+        }
         if (searchGroup != null) {
             searchGroup.stopSearch();
         }
+    }
+    
+    /**
+     * Returns value of attribute <code>notifyWhenFinished</code>.
+     *
+     * @return  current value of the attribute
+     */
+    boolean notifyWhenFinished() {
+        return notifyWhenFinished;
+    }
+    
+    /**
+     * Was this search task interrupted?
+     *
+     * @return  <code>true</code> if this method has been interrupted
+     *          by calling {@link #stop()} or {@link #stop(boolean)}
+     *          during the search; <code>false</code> otherwise
+     */
+    boolean wasInterrupted() {
+        return interrupted;
     }
 
 }

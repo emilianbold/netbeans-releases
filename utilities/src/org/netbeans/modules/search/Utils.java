@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.BorderFactory;
@@ -139,6 +140,20 @@ final class Utils {
         }
         return border;
     }    
+    
+    /**
+     * Clones a list of <code>SearchType</code>s.
+     *
+     * @param  searchTypes  list of search types to be cloned
+     * @return  deep copy of the given list of <code>SearchTypes</code>s
+     */
+    static List cloneSearchTypes(List searchTypes) {
+        List clonedSearchTypes = new ArrayList(searchTypes.size());
+        for (Iterator it = searchTypes.iterator(); it.hasNext(); ) {
+            clonedSearchTypes.add(((SearchType) it.next()).clone());
+        }
+        return clonedSearchTypes;
+    }
     
     
 }

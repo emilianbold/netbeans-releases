@@ -29,7 +29,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
+import java.util.Observable;
+import java.util.Observer;
 import javax.accessibility.AccessibleContext;
+import javax.swing.AbstractButton;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -55,6 +59,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -72,7 +77,12 @@ import org.openidex.search.SearchType;
  * @author  Marian Petras
  */
 final class ResultView extends TopComponent
-                       implements ChangeListener, ExplorerManager.Provider {
+                       implements ExplorerManager.Provider, Observer {
+    
+    /** */
+    private volatile boolean hasResults = false;
+    /** */
+    private volatile boolean searchInProgress = false;
                            
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "search-results";                  //NOI18N
@@ -94,6 +104,17 @@ final class ResultView extends TopComponent
     
     /** Result data model. */
     private ResultModel resultModel = null;
+    
+    /** */
+    private final RootNode root;
+    
+    /** */
+    private ResultTreeChildren children;
+    
+    /** */
+    private Node[] lastSearchNodes;
+    /** */
+    private List lastEnabledSearchTypes;
 
 
     /**
@@ -152,7 +173,7 @@ final class ResultView extends TopComponent
         buttonGroup.add(sortButton);
         buttonGroup.add(unsortButton);
         
-        Node root = createTreeViewRoot();
+        root = createTreeViewRoot();
         explorerManager = new ExplorerManager();
         explorerManager.setRootContext(root);
         selectAndActivateNode(root);
@@ -192,12 +213,18 @@ final class ResultView extends TopComponent
      *
      * @return  the created node
      */
-    private final Node createTreeViewRoot() {
-        AbstractNode node = new AbstractNode(Children.LEAF);
-        node.setName(NbBundle.getMessage(ResultView.class,
-                                         "TEXT_Search_in_filesystems"));//NOI18N
-        node.setIconBase("org/netbeans/modules/search/res/find");       //NOI18N
-        return node;
+    private final RootNode createTreeViewRoot() {
+        RootNode root = new RootNode();
+        root.setName(getInitialRootNodeText());
+        root.setIconBase("org/netbeans/modules/search/res/find");       //NOI18N
+        return root;
+    }
+    
+    /**
+     */
+    private String getInitialRootNodeText() {
+        return NbBundle.getMessage(ResultView.class,
+                                   "TEXT_Search_in_filesystems");       //NOI18N
     }
     
     /**
@@ -366,20 +393,176 @@ final class ResultView extends TopComponent
 
                 }//GEN-END:initComponents
 
+    /** Send search details to output window. */
+    public void fillOutput() {
+        btnShowDetails.setEnabled(false);
+        Manager.getInstance()
+               .schedulePrintingDetails(children, resultModel.getSearchGroup());
+    }
+    
+    /* overridden */
+    protected void componentOpened() {
+        Manager.getInstance().searchWindowOpened();
+        
+        root.setDisplayName(getInitialRootNodeText());
+        explorerManager.setRootContext(root);
+        selectAndActivateNode(root);
+    }
+
     /* overridden */
     protected void componentClosed() {
-        stopSearching();
-        if (resultModel != null) {
-            resultModel.removeChangeListener(this);
-            resultModel.close();
-            resultModel = null;
-
-            Node empty = Node.EMPTY;
-            explorerManager.setRootContext(empty);
-            selectAndActivateNode(empty);
+        rememberInput(null, null);
+        Manager.getInstance().searchWindowClosed();
+        
+        Node empty = Node.EMPTY;
+        explorerManager.setRootContext(empty);
+        selectAndActivateNode(empty);
+    }
+    
+    /**
+     * Displays a message informing about the task which blocks the search
+     * from being started. The search may also be blocked by a not yet finished
+     * previous search task.
+     *
+     * @param  blockingTask  constant identifying the blocking task
+     * @see  Manager#SEARCHING
+     * @see  Manager#CLEANING_RESULT
+     * @see  Manager#PRINTING_DETAILS
+     */
+    void notifySearchPending(final int blockingTask) {
+        String msgKey = null;
+        switch (blockingTask) {
+            case Manager.SEARCHING:
+                msgKey = "TEXT_FINISHING_PREV_SEARCH";                  //NOI18N
+                break;
+            case Manager.CLEANING_RESULT:
+                msgKey = "TEXT_CLEANING_RESULT";                        //NOI18N
+                break;
+            case Manager.PRINTING_DETAILS:
+                msgKey = "TEXT_PRINTING_DETAILS";                       //NOI18N
+                break;
+            default:
+                assert false;
+        }
+        setRootNodeText(NbBundle.getMessage(ResultView.class, msgKey));
+        setStateFromAWT(btnStop, true);
+        setStateFromAWT(sortButton, false);
+        setStateFromAWT(unsortButton, false);
+    }
+    
+    /**
+     */
+    void searchTaskStateChanged(final int changeType) {
+        switch (changeType) {
+            case Manager.EVENT_SEARCH_STARTED:
+                searchStarted();
+                break;
+            case Manager.EVENT_SEARCH_FINISHED:
+                searchFinished();
+                break;
+            case Manager.EVENT_SEARCH_INTERRUPTED:
+                searchInterrupted();
+                break;
+            case Manager.EVENT_SEARCH_CANCELLED:
+                searchCancelled();
+                break;
+            default:
+                assert false;
         }
     }
-            
+    
+    /**
+     */
+    void showAllDetailsFinished() {
+        updateShowAllDetailsBtn();
+    }
+    
+    /**
+     */
+    private void searchStarted() {
+        setRootNodeText(NbBundle.getMessage(ResultView.class,
+                                            "TEXT_SEARCHING___"));      //NOI18N
+        
+        searchInProgress = true;
+        updateShowAllDetailsBtn();
+        updateSortUnsortBtns();
+        setStateFromAWT(btnStop, true);
+    }
+    
+    /**
+     */
+    private void searchFinished() {
+        setFinalRootNodeText();
+        
+        searchInProgress = false;
+        updateShowAllDetailsBtn();
+        updateSortUnsortBtns();
+        setStateFromAWT(btnStop, false);
+    }
+    
+    /**
+     */
+    private void searchInterrupted() {
+        searchFinished();
+    }
+    
+    /**
+     */
+    private void searchCancelled() {
+        setRootNodeText(NbBundle.getMessage(ResultView.class,
+                                            "TEXT_TASK_CANCELLED"));    //NOI18N
+        
+        searchInProgress = true;
+        updateShowAllDetailsBtn();
+        updateSortUnsortBtns();
+        setStateFromAWT(btnStop, false);
+    }
+    
+    /**
+     */
+    private void setFinalRootNodeText() {
+        int resultSize = resultModel.size();
+        
+        if (resultModel.wasLimitReached()) {
+            setRootNodeText(
+                    NbBundle.getMessage(ResultView.class,
+                                        "TEXT_MSG_FOUND_X_NODES_LIMIT", //NOI18N
+                                        new Integer(resultSize)));
+            return;
+        }
+        
+        String baseMsg;
+        if (resultSize == 0) {
+            baseMsg = NbBundle.getMessage(ResultView.class,
+                                          "TEXT_MSG_NO_NODE_FOUND");    //NOI18N
+        } else if (resultSize == 1) {
+            baseMsg = NbBundle.getMessage(ResultView.class,
+                                          "TEXT_MSG_FOUND_A_NODE");     //NOI18N
+        } else {
+            baseMsg = NbBundle.getMessage(ResultView.class,
+                                         "TEXT_MSG_FOUND_X_NODES",      //NOI18N
+                                          new Integer(resultSize));
+        }
+        String exMsg = resultModel.getExceptionMsg();
+        String msg = exMsg == null ? baseMsg
+                                   : baseMsg + " (" + exMsg + ")";      //NOI18N
+        setRootNodeText(msg);
+    }
+    
+    /**
+     */
+    private void updateShowAllDetailsBtn() {
+        setStateFromAWT(btnShowDetails, hasResults && !searchInProgress);
+    }
+    
+    /**
+     */
+    private void updateSortUnsortBtns() {
+        boolean enabled = hasResults && !searchInProgress;
+        setStateFromAWT(sortButton, enabled);
+        setStateFromAWT(unsortButton, enabled);
+    }
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private final javax.swing.JButton btnModifySearch = new javax.swing.JButton();
@@ -393,35 +576,120 @@ final class ResultView extends TopComponent
     
 
     /** Set new model. */
-    void setModel(ResultModel resultModel) {
-        if (this.resultModel != null) {
-            this.resultModel.removeChangeListener(this);
-            this.resultModel.close();
+    void setResultModel(final ResultModel resultModel) {
+        if ((this.resultModel == null) && (resultModel == null)) {
+            return;
         }
         
+        if (this.resultModel != null) {
+            this.resultModel.deleteObserver(this);
+            if (children != null) {
+                children.clear();
+            }
+            children = null;
+        }
         this.resultModel = resultModel;
+        if (resultModel != null) {
+            setChildren(children = new ResultTreeChildren(resultModel));
+            this.resultModel.addObserver(this);
+        } else {
+            hasResults = false;
+            setChildren(Children.LEAF);
+        }
         
-        Node root = resultModel.getRoot();
-        explorerManager.setRootContext(root);
-        selectAndActivateNode(root);
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
+                selectAndActivateNode(root);
+                
+                updateShowAllDetailsBtn();
+                updateSortUnsortBtns();
+                if (children != null) {
+                    if (children.isSorted()) {
+                        sortButton.setSelected(true);
+                    } else {
+                        unsortButton.setSelected(true);
+                    }
+                }
+            }
+        });
         
-        resultModel.addChangeListener(this);
-        
-        initButtons();
-        btnShowDetails.setEnabled(true);
     }
     
-    /** Set visibility of buttons &amp; others... */
-    private void initButtons() {
-        if (resultModel.isSorted()) {
-            sortButton.setSelected(true);
-        } else {
-            unsortButton.setSelected(true);
+    /**
+     */
+    public void update(Observable o, Object foundObject) {
+        hasResults = true;
+        updateRootDisplayName();
+    }
+    
+    /**
+     * Updates the number of found nodes in the name of the root node.
+     */
+    private void updateRootDisplayName() {
+        int count = resultModel.size();
+        setRootNodeText(NbBundle.getMessage(ResultModel.class,
+                                            "TXT_RootSearchedNodes",    //NOI18N
+                                            Integer.toString(count)));
+    }
+    
+    /**
+     */
+    private void setRootNodeText(String txt) {
+        Method method;
+        try {
+            method = root.getClass().getMethod("setDisplayName",        //NOI18N
+                                               new Class[] {String.class});
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            return;
         }
-        
-        btnStop.setEnabled(!resultModel.isDone());
-        sortButton.setEnabled(resultModel.isDone());
-        unsortButton.setEnabled(resultModel.isDone());
+        callFromAWT(method, root, txt);
+    }
+            
+    /**
+     */
+    private void setChildren(final Children children) {
+        Method method;
+        try {
+            method = root.getClass().getDeclaredMethod(
+                                             "changeChildren",          //NOI18N
+                                             new Class[] {Children.class});
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            return;
+        }
+        callFromAWT(method, root, children);
+    }
+    
+    /**
+     */
+    private void setStateFromAWT(AbstractButton button,
+                                 boolean enabled) {
+        Method method;
+        try {
+            method = button.getClass().getMethod("setEnabled",          //NOI18N
+                                                 new Class[] {Boolean.TYPE});
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            return;
+        }
+        callFromAWT(method, button, Boolean.valueOf(enabled));
+    }
+    
+    /**
+     */
+    private void callFromAWT(final Method method,
+                             final Object object,
+                             final Object param) {
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
+                try {
+                    method.invoke(object, new Object[] {param});
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+        });
     }
     
     /* Implements interface ExplorerManager.Provider */
@@ -439,19 +707,39 @@ final class ResultView extends TopComponent
         setActivatedNodes(nodes);
     }
     
+    /**
+     */
+    void rememberInput(Node[] nodes,
+                       List enabledSearchTypes) {
+        lastSearchNodes = nodes;
+        lastEnabledSearchTypes = enabledSearchTypes;
+    }
+    
     /** (Re)open the dialog window for entering (new) search criteria. */
     private void customizeCriteria() {
-        Node[] oldRoots;
+        Node[] nodesToSearch;
         List searchTypes;
+        
+        if (lastSearchNodes != null) {
+            nodesToSearch = lastSearchNodes;
+            searchTypes = lastEnabledSearchTypes;
+        } else {
+            Node repositoryNode = RepositoryNodeFactory.getDefault()
+                                  .repository(DataFilter.ALL);
+            nodesToSearch = new Node[] {repositoryNode};
+            searchTypes = SearchPerformer.getTypes(nodesToSearch);
+        }
+        /*
         if (resultModel != null) {
-            oldRoots = resultModel.getSearchGroup().getSearchRoots();
+            nodesToSearch = resultModel.getSearchGroup().getSearchRoots();
             searchTypes = resultModel.getEnabledSearchTypes();
         } else {
             Node repositoryNode = RepositoryNodeFactory.getDefault()
                                   .repository(DataFilter.ALL);
-            oldRoots = new Node[] {repositoryNode};
-            searchTypes = SearchPerformer.getTypes(oldRoots);
+            nodesToSearch = new Node[] {repositoryNode};
+            searchTypes = SearchPerformer.getTypes(nodesToSearch);
         }
+         */
 
         /* Clone the list (deep copy): */
         List searchTypesClone = new ArrayList(searchTypes.size());
@@ -459,50 +747,22 @@ final class ResultView extends TopComponent
             searchTypesClone.add(((SearchType) it.next()).clone());
         }
         
+        lastEnabledSearchTypes = searchTypesClone;
+        
         SearchPanel searchPanel = new SearchPanel(searchTypesClone, true);
         searchPanel.showDialog();
         
-        if (searchPanel.getReturnStatus() == SearchPanel.RET_OK) {
-            //stop previous search
-            if (resultModel != null) {
-                resultModel.stop();
-            }
-            
-            // Start a new search.
-            SearchEngine searchEngine = new SearchEngine();
-            
-            SearchGroup[] groups = SearchGroup.createSearchGroups(searchPanel.getCustomizedSearchTypes());
-
-            SearchGroup searchGroup = null;
-
-            if (groups.length > 0) {
-                // PENDING Here should be solved cases when more groups were created,
-                // if not only intersection result is necessary etc.
-                searchGroup = groups[0];
-            }
-            
-            ResultModel newResultModel = new ResultModel(searchTypesClone,
-                                                         searchGroup);
-
-            SearchTask task = searchEngine.search(
-                //criteriaModel.getNodes(),
-                oldRoots,
-                searchGroup,
-                newResultModel);
-            
-            newResultModel.setTask(task);
-            
-            setModel(newResultModel);
-            initButtons();
+        if (searchPanel.getReturnStatus() != SearchPanel.RET_OK) {
+            return;
         }
-    }
-    
-    /**
-     */
-    private void stopSearching() {
-        if (resultModel != null) {
-            resultModel.stop();
-        }
+        
+        rememberInput(nodesToSearch,
+                      Utils.cloneSearchTypes(searchTypesClone));
+
+        Manager.getInstance().scheduleSearchTask(
+                new SearchTask(nodesToSearch,
+                               searchTypesClone,
+                               searchPanel.getCustomizedSearchTypes()));
     }
     
     /**
@@ -512,10 +772,11 @@ final class ResultView extends TopComponent
      *                 <code>false</code> to unsort the nodes
      */
     private void setNodesSorted(boolean sorted) {
+        assert children != null;
         Node[] selectedNodes = explorerManager.getSelectedNodes();
-        Node root = resultModel.sortNodes(sorted);
-        explorerManager.setRootContext(root);
-        initButtons();
+        children.sort(sorted);
+        //Node root = resultModel.sortNodes(sorted);
+        //explorerManager.setRootContext(root);
         try {
             explorerManager.setSelectedNodes(selectedNodes);
             setActivatedNodes(selectedNodes);
@@ -525,32 +786,42 @@ final class ResultView extends TopComponent
         }
     }
     
-    /** Respond to result model state change. */
-    public void stateChanged(ChangeEvent evt) {
-        if (evt.getSource() == resultModel) {
-            if (resultModel.isDone()) {
-                initButtons();
-            }
-        }
-    }
-
     /**
      */
     private class ButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             Object source = e.getSource();
             if (source == btnStop) {
-                stopSearching();
+                Manager.getInstance().stopSearching();
             } else if (source == btnModifySearch) {
                 customizeCriteria();
             } else if (source == btnShowDetails) {
-                resultModel.fillOutput();
+                fillOutput();
             } else if (source == sortButton) {
                 setNodesSorted(true);
             } else if (source == unsortButton) {
                 setNodesSorted(false);
             }
         }
+    }
+    
+    
+    /**
+     */
+    private class RootNode extends AbstractNode {
+        
+        /**
+         */
+        RootNode() {
+            super(Children.LEAF);
+        }
+        
+        /**
+         */
+        void changeChildren(final Children children) {
+            super.setChildren(children);
+        }
+        
     }
     
 }

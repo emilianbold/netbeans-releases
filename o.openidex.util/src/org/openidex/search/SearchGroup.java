@@ -73,7 +73,7 @@ public abstract class SearchGroup extends Object {
     protected final Set resultObjects = new LinkedHashSet(50);
 
     /** Flag indicating the search should be stopped. */
-    protected boolean stopped = false;
+    protected volatile boolean stopped = false;
 
     private PropertyChangeListener propListener;   
 
