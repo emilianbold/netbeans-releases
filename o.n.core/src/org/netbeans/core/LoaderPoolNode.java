@@ -26,6 +26,7 @@ import com.netbeans.ide.TopManager;
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.actions.SystemAction;
+import com.netbeans.ide.util.enum.ArrayEnumeration;
 import com.netbeans.ide.util.Mutex;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.actions.ReorderAction;
@@ -40,7 +41,7 @@ import com.netbeans.ide.actions.ReorderAction;
 * can obtain through getNbLoaderPool().
 * @author Dafe Simonek
 */
-public final class LoaderPoolNode extends IndexedNode {
+public final class LoaderPoolNode extends AbstractNode {
   /** Default icon base for loader pool node.*/
   private static final String LOADER_POOL_ICON_BASE =
     "/com/netbeans/developer/impl/resources/loaderPool";
@@ -52,33 +53,24 @@ public final class LoaderPoolNode extends IndexedNode {
   private static LoaderPoolNode.NbLoaderPool loaderPool;
 
   private static SystemAction [] staticActions;
-  /** For easier access to our children */
-  private LoaderPoolNodeChildren myChildren;
 
-  /** This class is the singleton, so it doesn't allow others to create it.
-  * @param childrenDataRep Concrete implementation of Map interface used
-  * for children representation.
-  * @param options Option pool, which content we represent in nodes.
-  */
-  private LoaderPoolNode (java.util.Map childrenDataRep,
-                          NbLoaderPool loaders) {
-    this(new LoaderPoolNodeChildren(childrenDataRep, loaders));
-  }
+  private static LoaderChildren myChildren = new LoaderChildren ();
 
+  private static ArrayList loaders = new ArrayList ();
+
+  /** copy of the loaders to prevent copying */
+  private static Object[] loadersArray;
+  
   /** Just workaround, need to pass instance of
   * the LoaderPoolNodeChildren as two params to superclass
   */
-  private LoaderPoolNode (Children myChildren) {
-    super(myChildren, (Index)myChildren);
-    initialize();
-  }
-
-  /** Initialize itself */
-  private void initialize () {
-    myChildren = (LoaderPoolNodeChildren)getChildren();
+  private LoaderPoolNode () {
+    super (myChildren);
     setName(NbBundle.getBundle(this).
                    getString("CTL_LoaderPool"));
     setIconBase(LOADER_POOL_ICON_BASE);
+
+    getCookieSet ().add (new Index ());
   }
 
   /** Method that creates sheet for this node.
@@ -122,21 +114,20 @@ public final class LoaderPoolNode extends IndexedNode {
   *
   * @return array of system actions that should be in popup menu
   */
-  public SystemAction[] getActions () {
-    if (staticActions == null)
-      staticActions = new SystemAction[] {
-        SystemAction.get(ReorderAction.class),
-        null,
-        SystemAction.get(PropertiesAction.class),
-      };
-    return staticActions;
+  public SystemAction[] createActions () {
+    return new SystemAction[] {
+      SystemAction.get(ReorderAction.class),
+      null,
+      SystemAction.get(PropertiesAction.class),
+    };
+    
   }
 
   /** Adds new loader at the end of existing ones.
   * @param dl data loader to add
   * @exception IllegalArgumentException if the loader is already there
-  */
-  public void add (DataLoader dl) {
+  *
+  private static void add (DataLoader dl) {
     myChildren.addLoader(dl);
   }
 
@@ -144,8 +135,8 @@ public final class LoaderPoolNode extends IndexedNode {
   * @param dl data loader to add
   * @param at the position to insert it the loader to
   * @exception IllegalArgumentException if the loader is already there
-  */
-  public void add (DataLoader dl, int at) {
+  *
+  private static void add (DataLoader dl, int at) {
     myChildren.addLoader(dl, at);
   }
 
@@ -158,8 +149,51 @@ public final class LoaderPoolNode extends IndexedNode {
   * @param after class to be installed after (or null)
   * @exception IllegalArgumentException if the loader is already there
   */
-  public void add (DataLoader dl, Class before, Class after) {
-    myChildren.addLoader(dl, before, after);
+  public static synchronized void add (DataLoader dl, Class before, Class after) {
+    // insert algorithm
+    int first = -1;
+    int last = -1;
+    Iterator loadersIter = loaders.iterator();
+    for (int i = 0; loadersIter.hasNext(); i++) {
+      Class repr = ((DataLoader)loadersIter.next()).getRepresentationClass();
+      if (first == -1 && before != null && before.isAssignableFrom(repr)) {
+        first = i;
+      }
+      if (after != null && after.isAssignableFrom (repr)) {
+        // if we should be installed after the representation class of
+        // this class loader, rememeber its index
+        last = i;
+      }
+    }
+    if (last == -1) {
+      if (first != -1) {
+        // install the loader before given
+        loaders.add (first, dl);
+      } else {
+        // add the loader to the end
+        loaders.add (dl);
+      }
+    } else {
+      // install the element after the last index found
+      loaders.add (last + 1, dl);
+    }
+
+    update ();
+  }
+
+  /** Notification that the state of pool has changed
+  */
+  private static void update () {
+    // clear the cache of loaders
+    loadersArray = null;
+    
+    myChildren.update ();
+
+    if (loaderPool != null) {
+      loaderPool.superFireChangeEvent(
+        new ChangeEvent(loaderPool)
+      );
+    }
   }
 
 
@@ -173,8 +207,12 @@ public final class LoaderPoolNode extends IndexedNode {
   * @param dl data loader to remove
   * @return true if the loader was registered and false if not
   */
-  public boolean remove (DataLoader dl) {
-    return myChildren.removeLoader(dl);
+  public static synchronized boolean remove (DataLoader dl) {
+    if (loaders.remove (dl)) {
+      update ();
+      return true;
+    }
+    return false;
   }
 
   /** Returns the only instance of the loader pool node in our system.
@@ -182,9 +220,9 @@ public final class LoaderPoolNode extends IndexedNode {
   * loader pool node is singleton.
   * @return loader pool node instance
   */
-  public static LoaderPoolNode getLoaderPoolNode () {
+  public static synchronized LoaderPoolNode getLoaderPoolNode () {
     if (loaderPoolNode == null)
-      loaderPoolNode = new LoaderPoolNode(new HashMap(15), getNbLoaderPool());
+      loaderPoolNode = new LoaderPoolNode();
     return loaderPoolNode;
   }
 
@@ -234,15 +272,8 @@ public final class LoaderPoolNode extends IndexedNode {
 
     /** @return true
     */
-    public boolean hasDefaultAction () {
-      return true;
-    }
-
-    /** Executes default action.
-    * @exeception InvocationTargetException if an exception occures during execution
-    */
-    public void invokeDefaultAction() throws InvocationTargetException {
-      TopManager.getDefault().getNodeOperation().showProperties(this);
+    public SystemAction getDefaultAction () {
+      return SystemAction.get (PropertiesAction.class);
     }
 
     /** Cannot be removed
@@ -268,217 +299,23 @@ public final class LoaderPoolNode extends IndexedNode {
   * Extends Index.MapChildren implementation to map nodes to loaders and to support
   * children reordering.
   */
-  private static final class LoaderPoolNodeChildren extends Index.MapChildren {
-    /** Reference to loader pool data */
-    private final LoaderPoolNode.NbLoaderPool loaders;
-
-    /** The only constructor. Non-public, called from LoaderPoolNode.
-    * @param data Allows for different data structure used for mapping between
-    * loaders and nodes.
-    * @param loaders Loader pool data.
-    */
-    LoaderPoolNodeChildren (final java.util.Map data,
-                            final LoaderPoolNode.NbLoaderPool loaders) {
-      super(data);
-      this.loaders = loaders;
-      setImmediateReorder(false);
+  private static final class LoaderChildren extends Children.Keys {
+    /** Update the the nodes */
+    public void update () {
+      setKeys (loaders);
     }
 
-    /** Overrides reorder(perm) from MapChildren.
-    * Fires ChangeEvent indicating loader pool change after reorder operation.
-    *
-    * @param perm the permutation describing reorder action.
+    /** Creates new node for the loader.
     */
-    public void reorder (final int[] perm) {
-      super.reorder(perm);
-      // fire event indicating loader pool change
-      getNbLoaderPool().superFireChangeEvent(new ChangeEvent(this));
-    }
-
-    /** Create default node array for loaders taken from loaders pool
-    * which we've been given in constructor.
-    * Overrides initMap from Index.MapChildren class.
-    */
-    protected java.util.Map initMap () {
-      // take loaders from loader pool
-      Enumeration dataLoaders = loaders.loaders();
-      // create map between loaders and nodes
-      java.util.Map map = new java.util.HashMap();
-      while (dataLoaders.hasMoreElements()) {
-        try {
-          DataLoader dl = (DataLoader)dataLoaders.nextElement();
-          Node n = new LoaderPoolNode.LoaderPoolItemNode(dl);
-          map.put(dl, n);
-        }
-        catch (IntrospectionException e) {
-          // commented out only for testing purposes
-          //TopManager.getDefault().notifyException(e);
-        }
+    protected Node[] createNodes (Object loader) {
+      Node n;
+      try {
+        n = new LoaderPoolItemNode ((DataLoader)loader);
+      } catch (IntrospectionException e) {
+        n = new AbstractNode (Children.LEAF);
+        // PENDING
       }
-      // and return it
-      return map;
-    }
-
-    protected Node[] doInitNodes (final java.util.Map m) {
-      return super.doInitNodes(m);
-    }
-
-    /** Adds new loader at the end of existing ones.
-    * @param dl data loader to add
-    * @exception IllegalArgumentException if the loader is already there
-    */
-    void addLoader (final DataLoader dl) {
-      MUTEX.readAccess(new Mutex.Action () {
-        public Object run () {
-          if (getMyMap().containsKey(dl))
-            throw new IllegalArgumentException ();
-          // add the element as the one with lowest priority
-          try {
-            Node n = new LoaderPoolNode.LoaderPoolItemNode(dl);
-            put(dl, n);
-            // fire event indicating loader pool change
-            getNbLoaderPool().superFireChangeEvent(
-              new ChangeEvent(LoaderPoolNodeChildren.this));
-          }
-          catch (IntrospectionException e) {
-            // commented out only for testing purposes
-            //TopManager.getDefault().notifyException(e);
-          }
-          return null;
-        }
-      });
-    }
-
-    /** Adds new loader at the end of existing ones.
-    * @param dl data loader to add
-    * @param at the position to insert it the loader to
-    * @exception IllegalArgumentException if the loader is already there
-    */
-    void addLoader (final DataLoader dl, final int at) {
-      MUTEX.readAccess(new Mutex.Action () {
-        public Object run () {
-          if (getMyMap().containsKey(dl))
-            throw new IllegalArgumentException ();
-          // add the element as the one with lowest priority
-          try {
-            Node n = new LoaderPoolNode.LoaderPoolItemNode(dl);
-            put(dl, n, at);
-            // fire event indicating loader pool change
-            getNbLoaderPool().superFireChangeEvent(
-              new ChangeEvent(LoaderPoolNodeChildren.this));
-          }
-          catch (IntrospectionException e) {
-            // commented out only for testing purposes
-            //TopManager.getDefault().notifyException(e);
-          }
-          return null;
-        }
-      });
-    }
-
-    /** Adds new loader when previous and following are specified.
-    * If the loader cannot find the right position it adds it to the latest
-    * one that nearly satisfies.
-    *
-    * @param dl data loader to add
-    * @param before class to be before (or null)
-    * @param after class to be installed after (or null)
-    * @exception IllegalArgumentException if the loader is already there
-    */
-    void addLoader (final DataLoader dl, final Class before, final Class after) {
-      MUTEX.readAccess(new Mutex.Action () {
-        public Object run () {
-          // obtain the map holding loaders-nodes pairs
-          java.util.Map myMap = getMyMap();
-          if (myMap.containsKey(dl))
-            throw new IllegalArgumentException ();
-          int first = -1;
-          int last = -1;
-          Iterator loadersIter = myMap.keySet().iterator();
-          for (int i = 0; loadersIter.hasNext(); i++) {
-            Class repr = ((DataLoader)loadersIter.next()).getRepresentationClass();
-            if (first == -1 && before != null && before.isAssignableFrom(repr)) {
-              first = i;
-            }
-            if (after != null && after.isAssignableFrom (repr)) {
-              // if we should be installed after the representation class of
-              // this class loader, rememeber its index
-              last = i;
-            }
-          }
-          if (last == -1) {
-            if (first != -1) {
-              // install the loader before given
-              addLoader(dl, first);
-            } else {
-              // add the loader to the end
-              addLoader(dl);
-            }
-          } else {
-            // install the element after the last index found
-            addLoader(dl, last + 1);
-          }
-          return null;
-        }
-      });
-    }
-
-    /** Removes the loader. It is only removed from the list but
-    * if an DataObject instance created exists it will be still
-    * valid.
-    *
-    * @param dl data loader to remove
-    * @return true if the loader was registered and false if not
-    */
-    boolean removeLoader (final DataLoader dl) {
-      Boolean wasThere = (Boolean)MUTEX.readAccess(
-        new Mutex.Action () {
-          public Object run () {
-            Boolean isHere = new Boolean(getMyMap().containsKey(dl));
-            remove(dl);
-            // fire event indicating loader pool change
-            getNbLoaderPool().superFireChangeEvent(
-              new ChangeEvent(LoaderPoolNodeChildren.this));
-            return isHere;
-          }
-        });
-      return wasThere.booleanValue();
-    }
-
-    /** Acces to the nodes-loaders map for inner classes under the MUTEX */
-    private java.util.Map getMyMap () {
-      return nodes;
-    }
-
-    /** Overrides put method from Index.MapChildren.
-    * Accessor for inner classes only.
-    * @param key the key
-    * @param node the node
-    */
-    protected void put (final Object key, final Node node) {
-      super.put(key, node);
-    }
-
-    /** Overrides put method from Index.MapChildren.
-    * Accessor for inner classes only.
-    * @param key the key
-    * @param node the node
-    * @param index position of new key-node pair. If index is below zero,
-    *   pair will be added to the first (zero) position.
-    *   If index exceeds number of map entries in the map, it is added to
-    *   the last position.
-    */
-    protected void put (final Object key, final Node node, final int index) {
-      super.put(key, node, index);
-    }
-
-    /** Overrides remove method from Index.MapChildren.
-    * Accessor for inner classes only.
-    * @param key the key
-    * @param node the node
-    */
-    protected void remove (final Object key) {
-      super.remove(key);
+      return new Node[] { n };
     }
 
   } // end of LoaderPoolChildren
@@ -497,14 +334,18 @@ public final class LoaderPoolNode extends IndexedNode {
     /** Enumerates all loaders. Loaders are taken from children
     * structure of LoaderPoolNode. */
     protected Enumeration loaders () {
-     final java.util.Map map =
-       ((LoaderPoolNodeChildren)getLoaderPoolNode().getChildren()).getMyMap();
-     return (Enumeration)Children.MUTEX.readAccess(
-       new Mutex.Action() {
-         public Object run () {
-           return Collections.enumeration(new HashSet(map.keySet()));
-         }
-       });
+
+      //
+      // prevents from extensive copying
+      //
+      
+      Object[] arr = loadersArray;
+      if (arr == null) {
+        synchronized (LoaderPoolNode.class) {
+          arr = loadersArray = loaders.toArray ();
+        }
+      }
+      return new ArrayEnumeration (loadersArray);
     }
 
     /** Fires change event to all listeners
@@ -519,10 +360,54 @@ public final class LoaderPoolNode extends IndexedNode {
 
   } // end of NbLoaderPool
 
+  /** Index support for reordering of file system pool.
+  */
+  private final class Index extends com.netbeans.ide.nodes.Index.Support {
+    /** Get the nodes; should be overridden if needed.
+    * @return the nodes
+    * @throws NotImplementedException always
+    */
+    public Node[] getNodes () {
+      return getChildren ().getNodes ();
+    }
+
+    /** Get the node count. Subclasses must provide this.
+    * @return the count
+    */
+    public int getNodesCount () {
+      return getNodes ().length;
+    }
+
+    /** Reorder by permutation. Subclasses must provide this.
+    * @param perm the permutation
+    */
+    public void reorder (int[] perm) {
+      Object[] arr = loaders.toArray ();
+
+      if (arr.length == perm.length) {
+        Object[] target = new Object[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+          if (target[perm[i]] != null) {
+            throw new IllegalArgumentException ();
+          }
+          target[perm[i]] = arr[i];
+        }
+        
+        loaders = new ArrayList (Arrays.asList (target));
+        update ();
+      } else {
+        throw new IllegalArgumentException ();
+      }
+
+    }
+    
+  } // End of Index
+  
 }
 
 /*
 * Log
+*  12   Gandalf   1.11        3/25/99  Jaroslav Tulach Loader pool order fixed.
 *  11   Gandalf   1.10        3/24/99  Ian Formanek    
 *  10   Gandalf   1.9         3/24/99  Ian Formanek    
 *  9    Gandalf   1.8         3/18/99  Ian Formanek    
