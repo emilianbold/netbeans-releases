@@ -201,10 +201,13 @@ public abstract class NbTopManager extends TopManager {
             if (value != null) {
                 System.setProperty (propName, value);
             } else {
-                System.err.println(
-                    "Warning: Versioning property \"" + propName + // NOI18N
-                    "\" is not set. Defaulting to \"" + failbackValue + '"' // NOI18N
-                ); 
+                if (!Boolean.getBoolean("netbeans.suppress.sysprop.warning")) {
+                    System.err.println(
+                        "Warning: Versioning property \"" + propName + // NOI18N
+                        "\" is not set. Defaulting to \"" + failbackValue + '"' // NOI18N
+                    ); 
+                    System.err.println("(to suppress this message run with -Dnetbeans.suppress.sysprop.warning=true)"); // NOI18N
+                }
                 System.setProperty (propName, failbackValue);
             }
         }
