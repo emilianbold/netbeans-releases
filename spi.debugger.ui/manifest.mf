@@ -1,8 +1,8 @@
 OpenIDE-Module: com.netbeans.developer.modules.debugger.core/1
 OpenIDE-Module-Name: Debugger Core
 OpenIDE-Module-Install: com/netbeans/developer/modules/debugger/support/DebuggerModule.class
-OpenIDE-Module-Specification-Version: 0.1.9.1
-OpenIDE-Module-Implementation-Version: 0.1.9.1
+OpenIDE-Module-Specification-Version: 0.1.9.2
+OpenIDE-Module-Implementation-Version: 0.1.9.2
 
 Name: com/netbeans/developer/modules/debugger/support/DebuggerSettings.class
 OpenIDE-Module-Class: Option

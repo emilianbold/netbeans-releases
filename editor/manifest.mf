@@ -1,8 +1,8 @@
 OpenIDE-Module: com.netbeans.developer.modules.text/1
 OpenIDE-Module-Name: Editor
 OpenIDE-Module-Install: com/netbeans/developer/modules/text/EditorModule.class
-OpenIDE-Module-Specification-Version: 0.9
-OpenIDE-Module-Implementation-Version: 0.9
+OpenIDE-Module-Specification-Version: 0.9.1
+OpenIDE-Module-Implementation-Version: 0.9.1
 
 Name: com/netbeans/developer/modules/text/options/AllOptions.class
 OpenIDE-Module-Class: Option

@@ -2,4 +2,4 @@ OpenIDE-Module: com.netbeans.developer.modules.usersguide/1
 OpenIDE-Module-Name: Developer 3.0 User's Guide
 OpenIDE-Module-Description: com.netbeans.developer.modules.usersguide.UGHelpSet
 OpenIDE-Module-Install: com/netbeans/developer/modules/usersguide/UGModule.class
-OpenIDE-Module-Specification-Version: 0.2
+OpenIDE-Module-Specification-Version: 0.2.1
