@@ -16,16 +16,22 @@ package org.netbeans.modules.editor;
 import java.awt.Font;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.text.AttributedCharacterIterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.JEditorPane;
+import javax.swing.Timer;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.PrintContainer;
 import org.netbeans.editor.Syntax;
+import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Utilities;
 import org.openide.text.NbDocument;
 import org.openide.text.AttributedCharacters;
+import org.openide.text.IndentEngine;
 
 /**
 * BaseDocument extension managing the readonly blocks of text
@@ -35,8 +41,30 @@ import org.openide.text.AttributedCharacters;
 */
 
 public class NbEditorDocument extends GuardedDocument
-            implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
-    NbDocument.Printable, NbDocument.CustomEditor {
+implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
+NbDocument.Printable, NbDocument.CustomEditor {
+
+    /** Mime type of the document. The name of this property corresponds
+     * to the property that is filled in the document by CloneableEditorSupport.
+     */
+    public static final String MIME_TYPE_PROP = "mimeType";
+
+    private static final HashMap kit2Formatter = new HashMap();
+    private static final int CLEAR_FORMATTER_CACHE_DELAY = 5000;
+    private static final Timer clearTimer = new Timer(CLEAR_FORMATTER_CACHE_DELAY,
+        new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                synchronized (kit2Formatter) {
+                    kit2Formatter.clear();
+                }
+            }
+        }
+    );
+
+    static {
+        clearTimer.setRepeats(true);
+        clearTimer.start();
+    }
 
     public NbEditorDocument(Class kitClass) {
         super(kitClass);
@@ -76,6 +104,30 @@ public class NbEditorDocument extends GuardedDocument
         return Utilities.getEditorUI(j).getExtComponent();
     }
 
+    public Formatter getFormatter() {
+        String mimeType = (String)getProperty(MIME_TYPE_PROP);
+        Formatter f = null;
+        if (mimeType != null) {
+            synchronized (kit2Formatter) {
+                f = (Formatter)kit2Formatter.get(mimeType);
+                if (f == null) {
+                    IndentEngine eng = IndentEngine.find(mimeType);
+                    if (eng != null) {
+                        if (eng instanceof FormatterIndentEngine) {
+                            f = ((FormatterIndentEngine)eng).getFormatter();
+
+                        } else { // generic indent engine
+                            f = new IndentEngineFormatter(getKitClass(), eng);
+                        }
+
+                        kit2Formatter.put(mimeType, f);
+                    }
+                }
+            }
+        }
+
+        return (f != null) ? f : super.getFormatter();
+    }
 
     class NbPrintContainer extends AttributedCharacters implements PrintContainer {
 
