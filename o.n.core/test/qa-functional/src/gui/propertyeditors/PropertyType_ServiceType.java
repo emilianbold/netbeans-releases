@@ -65,7 +65,7 @@ public class PropertyType_ServiceType extends PropertyEditorsTest {
     }
     
     public void testCustomizerCancel(){
-        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.search.types.Bundle", "Services/SearchType/org-netbeans-modules-search-ObjectTypeType.settings"); // Type
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "Services/SearchType/org-netbeans-modules-search-ObjectTypeType.settings"); // Type
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerCancel(propertyName_L, false);
