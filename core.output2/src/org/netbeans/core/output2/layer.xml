@@ -16,6 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Actions">
         <folder name="Build">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.output2.Bundle" />        
             <file name="org-netbeans-core-output2-NextOutJumpAction.instance"/>
             <file name="org-netbeans-core-output2-PreviousOutJumpAction.instance"/>
         </folder>
