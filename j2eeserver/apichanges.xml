@@ -80,6 +80,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Add-StartServer-needsRestart">
+            <api name="plugins"/>
+            <summary>StartServer.needsRestart tells j2eeserver a state of the server</summary>
+            <version major="1" minor="6"/>
+            <date day="20" month="1" year="2005"/>
+            <author login="nnguyen"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    This optional method allow plugin to communicate with
+		    j2eeserver about the need to restart the server before
+		    deployment so that last changes to server configuration
+		    would take effect.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer"/>
+            <issue number="53721"/>
+        </change>
     
         <change id="Add-ModuleChangeDescriptor-getChangedFiles">
             <api name="plugins"/>

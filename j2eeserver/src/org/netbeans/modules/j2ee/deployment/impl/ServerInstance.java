@@ -422,11 +422,18 @@ public class ServerInstance implements Node.Cookie {
         }
         
         boolean canControlAdmin = ss.supportsStartDeploymentManager();
-
+        boolean needsRestart = ss.needsRestart(target);
+        
         if (ss.isAlsoTargetServer(target)) {
             if (debugMode) { 
                 if (ss.isDebuggable(target)) { // implies ss.isRunning() true
-                    return true;
+                    if (! needsRestart) {
+                        return true;
+                    }
+                    if (! canControlAdmin || ! _stop(ui)) {
+                        return errorCannotControlAdmin(ui);
+                    }
+                    
                 } else if (isReallyRunning()) { // running but not debuggable
                     if (canControlAdmin) {
                         if (! _stop(ui))
@@ -442,16 +449,22 @@ public class ServerInstance implements Node.Cookie {
                 }
             } else {
                 if (isReallyRunning()) {
-                    return true;
-                } else if (canControlAdmin) {
+                    if (! needsRestart) {
+                        return true;
+                    } 
+                    if (! canControlAdmin || ! _stop(ui)) {
+                        return errorCannotControlAdmin(ui);
+                    }
+                }
+                if (canControlAdmin) {
                     return _start(ui);
                 } else {
                     return errorCannotControlAdmin(ui);
                 }
             }
         } else { // not also target server
-            // using JSR-77 Management so need to make sure admin is running
-            if (! isReallyRunning()) {
+            // this block ensure a running admin server to control other targets
+            if (! isReallyRunning()) {  
                 if (canControlAdmin) {
                     if (! _start(ui)) {
                         return false;
@@ -462,13 +475,27 @@ public class ServerInstance implements Node.Cookie {
             }
             if (debugMode) {
                 if (ss.isDebuggable(target)) {
-                    return true;
-                }
-                if (! _stop(target, ui)) {
-                    return false;
+                    if ( ! needsRestart) {
+                        return true;
+                    }
+                    if (! _stop(target, ui)) {
+                        return false;
+                    }
+                } else if (ss.isRunning(target)) {
+                    if (! _stop(target, ui)) {
+                        return false;
+                    }
                 }
                 return _startDebug(target, ui);
             } else {
+                if (ss.isRunning(target)) {
+                    if (! needsRestart) {
+                        return true;
+                    }
+                    if ( ! _stop(target, ui)) {
+                        return false;
+                    }
+                }
                 return _start(target, ui);
             }
         }
