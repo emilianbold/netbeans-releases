@@ -16,13 +16,13 @@ package org.netbeans.modules.properties;
 
 
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.ResourceBundle;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -33,7 +33,6 @@ import javax.swing.table.*;
 
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
-import org.openide.options.SystemOption;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
@@ -102,7 +101,7 @@ public class BundleEditPanel extends JPanel {
             // Sorted column.
             private int column;
             
-	    public java.awt.Component getTableCellRendererComponent(JTable table, Object value,
+	    public Component getTableCellRendererComponent(JTable table, Object value,
                          boolean isSelected, boolean hasFocus, int row, int column) {
                 
                 this.column = column;             
@@ -117,7 +116,7 @@ public class BundleEditPanel extends JPanel {
                 }
 
                 setText((value == null) ? "" : value.toString()); // NOI18N
-		this.setBorder(javax.swing.UIManager.getBorder("TableHeader.cellBorder")); // NOI18N
+		this.setBorder(UIManager.getBorder("TableHeader.cellBorder")); // NOI18N
 	        return this;
             }
             
@@ -236,32 +235,31 @@ public class BundleEditPanel extends JPanel {
 
         // set renderer
         theTable.setDefaultRenderer(PropertiesTableModel.StringPair.class, new DefaultTableCellRenderer() {
-            public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table,
+            public Component getTableCellRendererComponent(JTable table,
                     Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-  
-                java.awt.Component c = super.getTableCellRendererComponent(table,
-                    UtilConvert.unicodesToChars(((PropertiesTableModel.StringPair)value).getValue()),
-                    isSelected, hasFocus, row, column);
-         
+
                 PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)value;
-                
+                        
+                JLabel label = (JLabel)super.getTableCellRendererComponent(table, sp, isSelected, hasFocus, row, column);
+                label.setText(sp.getValue() == null ? "" : UtilConvert.unicodesToChars(sp.toString())); // NOI18N
+         
                 // Set background color.
                 if(sp.isKeyType())
-                    c.setBackground(settings.getKeyBackground());
+                    label.setBackground(settings.getKeyBackground());
                 else {
                     if( sp.getValue() != null)
-                        c.setBackground(settings.getValueBackground());
+                        label.setBackground(settings.getValueBackground());
                     else
-                        c.setBackground(settings.getShadowColor());
+                        label.setBackground(settings.getShadowColor());
                 }
 
                 // Set foregound color.
                 if(sp.isKeyType())
-                    c.setForeground(settings.getKeyColor());
+                    label.setForeground(settings.getKeyColor());
                 else
-                    c.setForeground(settings.getValueColor());
+                    label.setForeground(settings.getValueColor());
                 
-                return c;
+                return label;
             }
 
             // Overrides superclass method. It adds the highlighting of search occurences in it.
@@ -274,7 +272,7 @@ public class BundleEditPanel extends JPanel {
                     String findString = FindPerformer.getFindPerformer(BundleEditPanel.this.theTable).getFindString();
 
                     // If there is a findString and the cell could contain it go ahead.
-                    if(text.length()>0 && findString != null && findString.length()>0) {
+                    if(text != null && text.length()>0 && findString != null && findString.length()>0) {
                         int index = 0;
                         int width = (int)g.getFontMetrics().getStringBounds(findString, g).getWidth();
 
@@ -301,6 +299,7 @@ public class BundleEditPanel extends JPanel {
 
         // selection listeners
         rowSelections = theTable.getSelectionModel();
+
         rowSelections.addListSelectionListener(
             new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
@@ -312,6 +311,7 @@ public class BundleEditPanel extends JPanel {
                     });
                 }
             });
+        
         columnSelections = theTable.getColumnModel().getSelectionModel();
         columnSelections.addListSelectionListener(
             new ListSelectionListener() {
@@ -324,7 +324,7 @@ public class BundleEditPanel extends JPanel {
                     });
                 }
             });
-
+            
         // property change listener - listens to editing state of the table
         theTable.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -432,8 +432,7 @@ public class BundleEditPanel extends JPanel {
         if (rowSelections.isSelectionEmpty() ||
                 rowSelections.getMinSelectionIndex()    != rowSelections.getMaxSelectionIndex()) {
             removeButton.setEnabled(false);
-        }
-        else {
+        } else {
             removeButton.setEnabled(true);
         }
 
@@ -445,8 +444,7 @@ public class BundleEditPanel extends JPanel {
                 textComment.setText("");
                 textValue.setText("");
             }
-        }
-        else {
+        } else {
             if (!theTable.isEditing()) {
                 PropertiesTableModel.StringPair sp =
                     (PropertiesTableModel.StringPair)theTable.getModel().getValueAt(rowSelections.getMinSelectionIndex(),
@@ -454,8 +452,8 @@ public class BundleEditPanel extends JPanel {
                 textComment.setText(sp.getComment());
                 textValue.setText(sp.getValue());
 
-                /*          boolean edit = theTable.editCellAt(rowSelections.getMinSelectionIndex(),
-                                                           columnSelections.getMinSelectionIndex());*/
+                //          boolean edit = theTable.editCellAt(rowSelections.getMinSelectionIndex(),
+                //                                           columnSelections.getMinSelectionIndex());
             }
 
             // the selection is ok - set cell editable if:
@@ -476,12 +474,10 @@ public class BundleEditPanel extends JPanel {
         textValue.setEnabled(theTable.isEditing());
         // sometimes edit the comment
         if (theTable.isEditing()) {
-            PropertiesTableModel.StringPair sp =
-                (PropertiesTableModel.StringPair)theTable.getCellEditor().getCellEditorValue();
+            PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)theTable.getCellEditor().getCellEditorValue();
             textComment.setEditable(sp.isCommentEditable());
             textComment.setEnabled(sp.isCommentEditable());
-        }
-        else {
+        } else {
             textComment.setEditable(false);
             textComment.setEnabled(false);
         }
@@ -769,7 +765,7 @@ public class BundleEditPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
 
 
-    /** Inner interface used for gaining colors and keystrokes for table view, from
+    /** Interface used for gaining colors and keystrokes for table view, from
      * editor module via soft dependence. There are two implemenations.
      * The default one in this class, containing default colors and key strokes, and implementaion 
      * in syntax/PropertiesOptions class which passes colors and keystrokes from editor settings. That 
@@ -790,6 +786,6 @@ public class BundleEditPanel extends JPanel {
         public void settingsUpdated();
         public void addPropertyChangeListener(PropertyChangeListener listener);
         public void removePropertyChangeListener(PropertyChangeListener listener);
-   } // end of inner inaterface PropertiesSettings
+   } // End of interface PropertiesSettings.
    
 }

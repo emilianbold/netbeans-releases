@@ -15,28 +15,20 @@
 package org.netbeans.modules.properties;
 
 
-import java.beans.PropertyChangeListener;
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
 import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
 import javax.swing.text.Position;
 
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
 import org.openide.text.PositionBounds;
-import org.openide.TopManager;
-import org.openide.util.io.NullOutputStream;
 
 
 /** 
- * Parser of Java source code. It generates the hierarchy
- * of the implementations of elements.
- *
+ * Parser of .properties files. It generates structure of comment-key-vaue property elements.
  * @author Petr Jiricka, Petr Hamernik
+ * @see PropertiesStructure
+ * @see Element.ItemElem
  */
 class PropertiesParser {
 
@@ -48,9 +40,6 @@ class PropertiesParser {
 
     /** Properties file reader. Input stream. */
     PropertiesReader input;
-
-    /** Properties element */
-    PropertiesStructure propStruct;
 
     
     /** 
@@ -72,7 +61,7 @@ class PropertiesParser {
     * @exception IOException if any i/o problem occured during reading
     */
     private PropertiesReader createReader() throws IOException {
-        if (editor.isDocumentLoaded()) {
+        if(editor.isDocumentLoaded()) {
             // Loading from the memory (Document)
             final Document doc = editor.getDocument();
             final String[] str = new String[1];
@@ -107,8 +96,7 @@ class PropertiesParser {
             PropertiesStructure ps = parseFileMain(input);
             input.close();
             pfe.getHandler().setPropertiesStructure(ps);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             // parsing failed, the old copy remains valid
             // if there is no old copy, notify user
             // PENDING notify the user
@@ -122,7 +110,7 @@ class PropertiesParser {
         
         while (true) {
             Element.ItemElem elem = readNextElem(in);
-            if (elem == null)
+            if(elem == null)
                 break;
             else {
                 // add at the end of the list
@@ -148,33 +136,32 @@ class PropertiesParser {
         boolean firstNull = true;
         while (fl != null) {
             firstNull = false;
-            if (fl.flag) {
+            if(fl.flag) {
                 // part of the comment
                 comment.append(fl.line);
                 comment.append(fl.lineSep);
                 keyPos = in.position;
-            }
-            else
+            } else
                 // not a part of a comment
                 break;
             fl = in.readLineExpectComment();
         }
 
         // exit completely if null is returned the very first time
-        if (firstNull)
+        if(firstNull)
             return null;
 
         String comHelp;
         comHelp = comment.toString();
-        if (comment.length() > 0)
-            if (comment.charAt(comment.length() - 1) == '\n')
+        if(comment.length() > 0)
+            if(comment.charAt(comment.length() - 1) == '\n')
                 comHelp = comment.substring(0, comment.length() - 1);
 
         commE = new Element.CommentElem(createBiasBounds(begPos, keyPos), comHelp);
         // fl now contains the line after the comment or  null if none exists
 
 
-        if (fl == null) {
+        if(fl == null) {
             keyE = null;
             valueE = null;
         } else {
@@ -191,11 +178,11 @@ class PropertiesParser {
                 // now the new line
                 nowPos = in.position;
                 fl = in.readLineNoFrills();
-                if (fl == null) break;
+                if(fl == null) break;
                 // delete the leading whitespaces
                 int startIndex=0;
                 for(startIndex=0; startIndex < fl.line.length(); startIndex++)
-                    if (UtilConvert.whiteSpaceChars.indexOf(fl.line.charAt(startIndex)) == -1)
+                    if(UtilConvert.whiteSpaceChars.indexOf(fl.line.charAt(startIndex)) == -1)
                         break;
                 fl.stringValue = fl.line.substring(startIndex, fl.line.length());
                 fl.startPosition = nowPos + startIndex;
@@ -218,7 +205,7 @@ class PropertiesParser {
             int separatorIndex;
             for(separatorIndex=keyStart; separatorIndex<len; separatorIndex++) {
                 char currentChar = line.charAt(separatorIndex);
-                if (currentChar == '\\')
+                if(currentChar == '\\')
                     separatorIndex++;
                 else if(UtilConvert.keyValueSeparators.indexOf(currentChar) != -1)
                     break;
@@ -227,24 +214,24 @@ class PropertiesParser {
             // Skip over whitespace after key if any
             int valueIndex;
             for (valueIndex=separatorIndex; valueIndex<len; valueIndex++)
-                if (UtilConvert.whiteSpaceChars.indexOf(line.charAt(valueIndex)) == -1)
+                if(UtilConvert.whiteSpaceChars.indexOf(line.charAt(valueIndex)) == -1)
                     break;
 
             // Skip over one non whitespace key value separators if any
-            if (valueIndex < len)
-                if (UtilConvert.strictKeyValueSeparators.indexOf(line.charAt(valueIndex)) != -1)
+            if(valueIndex < len)
+                if(UtilConvert.strictKeyValueSeparators.indexOf(line.charAt(valueIndex)) != -1)
                     valueIndex++;
 
             // Skip over white space after other separators if any
             while (valueIndex < len) {
-                if (UtilConvert.whiteSpaceChars.indexOf(line.charAt(valueIndex)) == -1)
+                if(UtilConvert.whiteSpaceChars.indexOf(line.charAt(valueIndex)) == -1)
                     break;
                 valueIndex++;
             }
             String key = line.substring(keyStart, separatorIndex);
             String value = (separatorIndex < len) ? line.substring(valueIndex, len) : ""; // NOI18N
 
-            if (key == null)
+            if(key == null)
                 // PENDING - should join with the next comment
                 ;
 
@@ -266,7 +253,7 @@ class PropertiesParser {
     * in the parser.
     * @return the offset
     */
-    static int position(long p) {
+    private static int position(long p) {
         return (int)(p & 0xFFFFFFFFL);
     }
 
@@ -276,7 +263,7 @@ class PropertiesParser {
     * @param end the end in the internal position form
     * @return the bounds
     */
-    PositionBounds createBiasBounds(long begin, long end) {
+    private PositionBounds createBiasBounds(long begin, long end) {
         PositionRef posBegin = editor.createPositionRef(position(begin), Position.Bias.Forward);
         PositionRef posEnd = editor.createPositionRef(position(end), Position.Bias.Backward);
         return new PositionBounds(posBegin, posEnd);
@@ -288,14 +275,17 @@ class PropertiesParser {
      */
     private static class PropertiesReader {
 
+        /** Name constant of line separator system property. */
+        private static final String LINE_SEPARATOR = "line.separator"; // NOI18N
+        
         /** The underlaying reader. */
         private Reader reader;
 
-        /** Position after the last character read. */
-        public int position;
-
         /** The character that someone peeked. */
         private int peekChar;
+        
+        /** Position after the last character read. */
+        public int position;
 
         
         /** Does the initialization */
@@ -327,7 +317,7 @@ class PropertiesParser {
         public int read() throws IOException {
             int character = peek();
             peekChar = -1;
-            if (character != -1)
+            if(character != -1)
                 position++;
 
             return character;
@@ -338,7 +328,7 @@ class PropertiesParser {
         * @return the character or -1 if the end of the stream has been reached
         */
         private int peek() throws IOException {
-            if (peekChar == -1)
+            if(peekChar == -1)
                 peekChar = reader.read();
             return peekChar;
         }
@@ -349,14 +339,14 @@ class PropertiesParser {
          */
         public FlaggedLine readLineExpectComment() throws IOException {
             int charRead = read();
-            if (charRead == -1)
+            if(charRead == -1)
                 // end of the reader reached
                 return null;
 
             boolean decided = false;
             FlaggedLine fl = new FlaggedLine();
             while (charRead != -1 && charRead != (int)'\n' && charRead != (int)'\r') {
-                if (!decided)
+                if(!decided)
                     if(UtilConvert.whiteSpaceChars.indexOf((char)charRead) == -1) {
                         // not a whitespace - decide now
                         fl.flag = (((char)charRead == '!') || ((char)charRead == '#'));
@@ -366,23 +356,22 @@ class PropertiesParser {
                 charRead = read();
             }
 
-            if (!decided)
+            if(!decided)
                 // all were whitespaces
                 fl.flag = true;
 
             // set the line separator
-            if (charRead == (int)'\r')
-                if (peek() == (int)'\n') {
+            if(charRead == (int)'\r')
+                if(peek() == (int)'\n') {
                     charRead = read();
                     fl.lineSep = "\r\n"; // NOI18N
-                }
-                else
+                } else
                     fl.lineSep = "\r"; // NOI18N
             else
-                if (charRead == (int)'\n') 
+                if(charRead == (int)'\n') 
                     fl.lineSep = "\n"; // NOI18N
                 else
-                    fl.lineSep = System.getProperty("line.separator"); // NOI18N
+                    fl.lineSep = System.getProperty(LINE_SEPARATOR);
 
             return fl;
         }
@@ -392,7 +381,7 @@ class PropertiesParser {
          */
         public FlaggedLine readLineNoFrills() throws IOException {
             int charRead = read();
-            if (charRead == -1)
+            if(charRead == -1)
                 // end of the reader reached
                 return null;
 
@@ -403,18 +392,17 @@ class PropertiesParser {
             }
 
             // set the line separator
-            if (charRead == (int)'\r')
-                if (peek() == (int)'\n') {
+            if(charRead == (int)'\r')
+                if(peek() == (int)'\n') {
                     charRead = read();
                     fl.lineSep = "\r\n"; // NOI18N
-                }
-                else
+                } else
                     fl.lineSep = "\r"; // NOI18N
             else
-                if (charRead == (int)'\n') // NOI18N
+                if(charRead == (int)'\n') // NOI18N
                     fl.lineSep = "\n"; // NOI18N
                 else
-                    fl.lineSep = System.getProperty("line.separator"); // NOI18N
+                    fl.lineSep = System.getProperty(LINE_SEPARATOR);
 
             return fl;
         }
@@ -423,10 +411,10 @@ class PropertiesParser {
         public void close() throws IOException {
             reader.close();
         }
-    } // End of inner class PropertiesReader.
+    } // End of nested class PropertiesReader.
 
     
-    /** Inner  class which maps positions in a string to positions in the underlying file.
+    /** Nested class which maps positions in a string to positions in the underlying file.
      * @see FlaggedLine */
     private static class PositionMap {
 
@@ -463,23 +451,23 @@ class PropertiesParser {
                 lastLengthSoFar = lengthSoFar;
                 lengthSoFar += ((FlaggedLine)list.get(part)).stringValue.length();
                 // brute patch - last (cr)lf should not be the part of the thing, other should
-                if (part == list.size() - 1)
-                    if (lengthSoFar >= posString)
+                if(part == list.size() - 1)
+                    if(lengthSoFar >= posString)
                         break;
                     else;
                 else
-                    if (lengthSoFar > posString)
+                    if(lengthSoFar > posString)
                         break;
             }
-            if (posString > lengthSoFar)
+            if(posString > lengthSoFar)
                 throw new ArrayIndexOutOfBoundsException("not in scope"); // NOI18N
 
             return ((FlaggedLine)list.get(part)).startPosition + posString - lastLengthSoFar;
         }
-    } // End of inner class PositionMap.
+    } // End of nested class PositionMap.
 
     
-    /** Helper inner class */
+    /** Helper nested class. */
     private static class FlaggedLine {
 
         /** Line buffer. */
@@ -505,5 +493,5 @@ class PropertiesParser {
             lineSep = "\n"; // NOI18N
             startPosition = 0;
         }
-    } // End of inner class FlaggedLine.
+    } // End of nested class FlaggedLine.
 }

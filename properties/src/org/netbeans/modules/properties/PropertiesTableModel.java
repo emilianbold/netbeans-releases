@@ -15,64 +15,52 @@
 package org.netbeans.modules.properties;
 
 
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.datatransfer.*;
-import java.beans.*;
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
-import javax.swing.table.*;
+import java.io.Serializable;
 import javax.swing.event.TableModelEvent;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
 import javax.swing.JTable;
 
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.datatransfer.*;
-import org.openide.actions.InstantiateAction;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
-import org.openide.util.actions.SystemAction;
-import org.openide.nodes.*;
-import org.openide.loaders.*;
-import org.openide.*;
 
 
-/** Model for the properties edit table
-*
-* @author Petr Jiricka
-*/
+/** 
+ * Model for the properties edit table.
+ * @author Petr Jiricka
+ * @see javax.swing.table.AbstractTableModel
+ */
 public class PropertiesTableModel extends AbstractTableModel {
 
-    /** generated Serialized Version UID */
+    /** Generated serialized version UID. */
     static final long serialVersionUID = -7882925922830244768L;
 
-    /** Main dataobject */
+    /** <code>PropertiesDataObject</code> this table presents. */
     PropertiesDataObject obj;
 
-    /** Listens to changes on the bundle structure */
-    private PropertyBundleListener pbl;
+    /** Listens to changes on the bundle structure. */
+    private PropertyBundleListener bundleListener;
 
+    
     /** Create a data node for a given data object.
     * The provided children object will be used to hold all child nodes.
     * @param obj object to work with
     * @param ch children container for the node
     */
-    public PropertiesTableModel (PropertiesDataObject obj) {
-        super ();
+    public PropertiesTableModel(PropertiesDataObject obj) {
+        super();
         this.obj = obj;
 
         // listener for the BundleStructure
-        pbl = new TablePropertyBundleListener();
+        bundleListener = new TablePropertyBundleListener();
 
-        obj.getBundleStructure().addPropertyBundleListener(new WeakListenerPropertyBundle(pbl));
+        obj.getBundleStructure().addPropertyBundleListener(new WeakListenerPropertyBundle(bundleListener));
 
         //PENDING move the column corresponding to curNode to the beginning
     }
 
+    
     /** Inner class. Listener for changes on bundle structure. */
     private class TablePropertyBundleListener implements PropertyBundleListener {
         public void bundleChanged(PropertyBundleEvent evt) {
@@ -140,7 +128,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                 break;
             }
         }
-    }  // end of inner class TablePropertyBundleListener
+    }  // End of inner class TablePropertyBundleListener.
 
     /** Returns the class for a model. */
     public Class getColumnClass(int columnIndex) {
@@ -162,8 +150,10 @@ public class PropertiesTableModel extends AbstractTableModel {
         BundleStructure bs = obj.getBundleStructure();
         switch (column) {
         case 0:
+            // Get StringPair for key.
             return stringPairForKey(row);//bs.getNthKey(row);
         default:
+            // Get StringPair for value.
             Element.ItemElem item;
             try {
                 item = bs.getItem(column - 1, row);
@@ -171,12 +161,6 @@ public class PropertiesTableModel extends AbstractTableModel {
                 item = null;
             }
             return stringPairForValue(item);
-            /*
-            if (item == null)
-              return "";
-            else  
-              return item.getValue();
-            */   
         }
     }
 
@@ -186,11 +170,13 @@ public class PropertiesTableModel extends AbstractTableModel {
         Element.ItemElem item = bs.getItem(0, row);
         StringPair sp;
         if (item == null)
-            sp = new StringPair("", bs.getNthKey(row), true);
+            sp = new StringPair("", bs.getNthKey(row), true); // NOI18N
         else
             sp = new StringPair(item.getComment(), bs.getNthKey(row), true);
+        
         if (obj.getBundleStructure().getEntryCount() > 1)
             sp.setCommentEditable(false);
+        
         return sp;
     }
 
@@ -230,27 +216,23 @@ public class PropertiesTableModel extends AbstractTableModel {
 
     /** Sets the value at rowIndex and columnIndex */
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        // If values equals -> no change was made -> return immediatelly.
+        if(aValue.equals(getValueAt(rowIndex, columnIndex)))
+            return;
+        
         // PENDING - set comment for all files
+        // Is key.
         if (columnIndex == 0) {
             BundleStructure bs = obj.getBundleStructure();
             String oldValue = (String)bs.getNthKey(rowIndex);
             if (oldValue == null)
                 return;
             String newValue = ((StringPair)aValue).getValue();
-            if (newValue == null) { // key can be an empty string
-                // remove from all files
+            if (newValue == null) { // Key can be an empty string
+                // Remove from all files.
                 return;
-                /*for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
-                  PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
-                  if (entry != null) {
-                    PropertiesStructure ps = entry.getHandler().getStructure();
-                    if (ps != null) {
-                      ps.deleteItem(oldValue);
-                    }
-                  }  
-            }*/
             } else {
-                // set in all files
+                // Set in all files
                 for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
                     PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
                     if (entry != null) {
@@ -277,7 +259,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                 }
             }
         } else {
-            // property value
+            // Property value.
             PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(columnIndex - 1);
             String key = obj.getBundleStructure().getNthKey(rowIndex);
             if (entry != null && key != null) {
@@ -382,21 +364,29 @@ public class PropertiesTableModel extends AbstractTableModel {
     }
 
 
-    /** Object for the value for one cell.
-    * Encapsulates up to two values. 
-    * It is used to represent either (comment, value) pair of an item, or a key for an item.
-    */
+    /** 
+     * Object for the value for one cell in a table view.
+     * It is used to represent either (comment, value) pair of an item, or a key for an item.
+     */
     static class StringPair implements Serializable {
 
+        /** Holds comment for this instance. */
         private String comment;
+        /** Key or value string depending on the <code>keyType</code>. */
         private String value;
+        /** Type of instance
+         * @return true when it is key-like or false when it is value-like instance. */
         private boolean keyType;
+        /** Flag if comment is editable for this instance. */
         private boolean commentEditable;
 
+        /** Generated serial version UID. */
         static final long serialVersionUID =-463968846283787181L;
+        
+        
         /** Constructs with empty comment and value. */
         public StringPair() {
-            this (null, "", false);
+            this (null, "", false); // NOI18N
         }
 
         /** Constructs with the given value and no comment. */
@@ -417,22 +407,55 @@ public class PropertiesTableModel extends AbstractTableModel {
             commentEditable = true;
         }
 
-        /** Returns the comment associated with this element. */
+        
+        /** @return comment associated with this element. */
         public String getComment() {
             return comment;
         }
 
-        /** Returns the value associated with this element. */
+        /** @return the value associated with this element. */
         public String getValue() {
             return value;
         }
 
-        public Object clone() {
+        // TEMP>>
+/*        public Object clone() {
             String c = (comment == null ? null : new String(comment));
             String v = (value == null ? null : new String(value));
             return new StringPair(c, v);
-        }
+        }*/
+        // TEMP<<
+        
+        /** Overrides superclass method. */
+        public boolean equals(Object obj) {
+            if(obj == null || !(obj instanceof StringPair))
+                return false;
+            
+            StringPair compared = (StringPair)obj;
 
+            // PENDING compare keyTypes as well?
+            
+            // Compare commnents first.
+            if(comment == null && compared.getComment() != null)
+                return false;
+ 
+            String str1 = UtilConvert.unicodesToChars(comment);
+            String str2 = UtilConvert.unicodesToChars(compared.getComment());
+            
+            if(!str1.equals(str2))
+                return false;
+            
+            // Compare values.
+            if(value == null && compared.getValue() != null)
+                return false;
+            
+            str1 = UtilConvert.unicodesToChars(value);
+            str2 = UtilConvert.unicodesToChars(compared.getValue());
+            
+            return str1.equals(str2);
+        }
+        
+        /** Overrides superclass method. */
         public String toString() {
             return value;
         }
@@ -442,7 +465,7 @@ public class PropertiesTableModel extends AbstractTableModel {
             return keyType;
         }
 
-        /** Returns whether the comment should be allowed to be edited. */
+        /** @return true if comment should be allowed for editing. */
         public boolean isCommentEditable() {
             return commentEditable;
         }
@@ -451,7 +474,6 @@ public class PropertiesTableModel extends AbstractTableModel {
         public void setCommentEditable(boolean newEditable) {
             commentEditable = newEditable;
         }
-
-    } // end of inner class
+    } // End of nested class StringPair.
         
 }
