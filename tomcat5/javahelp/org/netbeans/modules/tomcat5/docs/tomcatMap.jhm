@@ -24,7 +24,8 @@ help\
 	<mapID target="tomcat_addinstall" url="tomcat/tomcat_addinstall.html" />
         <!-- context node is a kludge until we can get a map id
             for the context node in addition to the web module node-->
-	<mapID target="tomcat_context_node" url="tomcat/tomcat_context_node.html" />
+	    <mapID target="tomcat_context_node" url="tomcat/tomcat_context_node.html" />
+	    	<mapID target="tomcat_process" url="tomcat/tomcat_process.html" />
 	<mapID target="tomcat_edit_config" url="tomcat/tomcat_edit_config.html" />
 	<mapID target="tomcat_admin_access" url="tomcat/tomcat_admin_access.html" />
         <mapID target="tomcat_edit_tomcatuser" url="tomcat/tomcat_edit_tomcatuser.html" />

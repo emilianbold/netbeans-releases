@@ -19,6 +19,7 @@
 <tocitem text="Servers">
    <tocitem text="Tomcat Web Server">
 	<tocitem text="About the Tomcat Web Server" target="tomcat_plugin" />
+	<tocitem text="Working with the Tomcat Web Server" target="tomcat_process" />
 	<tocitem text="Setting Up the Tomcat Web Server">
 	<tocitem text="Viewing the Tomcat Web Server in the IDE" target="tomcat_top_node" />
 	<tocitem text="Customizing the Tomcat Web Server" target="tomcat_internal_props"/>
