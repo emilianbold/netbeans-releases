@@ -22,6 +22,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 
 import org.openide.*;
+import org.openide.awt.Actions;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.InstanceCookie;
@@ -260,6 +261,9 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
     }
 
     public Class instanceClass () throws IOException, ClassNotFoundException {
+        // [PENDING] should in fact return some class which is instanceof Presenter.Menu
+        // and Presenter.Toolbar and be able to construct menu items and toolbar buttons
+        // (useful in the future for WelcomePanel)
         return JMenuItem.class;
     }
 
@@ -270,12 +274,20 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
     private static class URLMenuItem extends JMenuItem implements ActionListener, NodeListener {
         private final Node n;
         URLMenuItem (Node n) {
-            super (n.getDisplayName (),
-                   new ImageIcon (n.getIcon (BeanInfo.ICON_COLOR_16x16)));
             this.n = n;
+            updateText ();
+            updateIcon ();
             HelpCtx.setHelpIDString (this, n.getHelpCtx ().getHelpID ());
             addActionListener (this);
             n.addNodeListener (WeakListener.node (this, n));
+        }
+        private void updateText () {
+            String text = n.getDisplayName ();
+            Actions.setMenuText (this, text, true);
+            setToolTipText (Actions.cutAmpersand (text));
+        }
+        private void updateIcon () {
+            setIcon (new ImageIcon (n.getIcon (BeanInfo.ICON_COLOR_16x16)));
         }
         public void actionPerformed (ActionEvent ev) {
             ((OpenCookie) n.getCookie (OpenCookie.class)).open ();
@@ -288,10 +300,10 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
             String what = ev.getPropertyName ();
             if (what == null || what.equals (Node.PROP_DISPLAY_NAME)
                              || what.equals (Node.PROP_NAME)) {
-                setText (n.getDisplayName ());
+                updateText ();
             }
             if (what == null || what.equals (Node.PROP_ICON)) {
-                setIcon (new ImageIcon (n.getIcon (BeanInfo.ICON_COLOR_16x16)));
+                updateIcon ();
             }
         }
     }
