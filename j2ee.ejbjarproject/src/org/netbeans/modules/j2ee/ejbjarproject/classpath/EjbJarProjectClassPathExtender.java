@@ -12,11 +12,16 @@
  */
 package org.netbeans.modules.j2ee.ejbjarproject.classpath;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -35,7 +40,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 
-public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender {
+public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender,  PropertyChangeListener {
     
     private static final String DEFAULT_CLASS_PATH = EjbJarProjectProperties.JAVAC_CLASSPATH;
     private static final String DEFAULT_INCLUDED_LIBS_ELEMENT = ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES;
@@ -57,7 +62,10 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender 
                                         EjbJarProjectProperties.WELL_KNOWN_PATHS, 
                                         EjbJarProjectProperties.LIBRARY_PREFIX, 
                                         EjbJarProjectProperties.LIBRARY_SUFFIX, 
-                                        EjbJarProjectProperties.ANT_ARTIFACT_PREFIX );        
+                                        EjbJarProjectProperties.ANT_ARTIFACT_PREFIX );   
+        
+        eval.addPropertyChangeListener(this); //listen for changes of libraries list
+        registerLibraryListeners();
     }
 
     public boolean addLibrary(final Library library) throws IOException {
@@ -210,4 +218,43 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender 
          return this.cs;
     }
 
+    private void registerLibraryListeners () {
+        EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+        Library libs [] = LibraryManager.getDefault().getLibraries();
+        for (int i = 0; i < libs.length; i++) {
+            libs [i].removePropertyChangeListener(this);
+        }
+        Iterator i = cs.itemsIterator(props.getProperty(EjbJarProjectProperties.JAVAC_CLASSPATH),  ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
+        while (i.hasNext()) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken()) {
+                item.getLibrary().addPropertyChangeListener(this);
+            }
+        }
+    }
+    
+    public void propertyChange (PropertyChangeEvent e) {
+        if (e.getSource().equals(eval) && (e.getPropertyName().equals(EjbJarProjectProperties.JAVAC_CLASSPATH))) {
+            registerLibraryListeners();
+        } else if (e.getPropertyName().equals(Library.PROP_CONTENT)) {
+            ProjectManager.mutex().postWriteRequest(new Runnable () {
+                public void run() {
+                    EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                    //update lib references in private properties
+                    EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    List wmLibs = cs.itemsList(props.getProperty(EjbJarProjectProperties.JAVAC_CLASSPATH),  ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
+                    cs.encodeToStrings(wmLibs.iterator(), ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
+                    EjbJarProjectProperties.storeLibrariesLocations(wmLibs.iterator(), privateProps);
+                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+                    
+                    try {
+                        ProjectManager.getDefault().saveProject(project);
+                    }
+                    catch (IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                }
+            });
+        }
+    }
 }

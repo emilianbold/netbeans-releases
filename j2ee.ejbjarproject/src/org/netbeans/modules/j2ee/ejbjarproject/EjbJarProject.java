@@ -516,14 +516,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             return;
         
         if (fo.getParent ().equals (libFolder)) {
-            EjbJarProjectClassPathExtender cpExt = (EjbJarProjectClassPathExtender)getLookup ().lookup (EjbJarProjectClassPathExtender.class);
-            if (cpExt == null) {
-                ErrorManager.getDefault().log ("EjbJarProjectClassPathExtender not found in the project lookup of project: " + getProjectDirectory().getPath()); //NOI18N
-                return;
-            }
-
             try {
-                cpExt.addArchiveFile(fo);
+                classpathExtender.addArchiveFile(fo);
             }
             catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
@@ -663,9 +657,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {}
                 
                 if (libFolderName != null && helper.resolveFile (libFolderName).isDirectory ()) {
-                    EjbJarProjectClassPathExtender cpExt = (EjbJarProjectClassPathExtender)EjbJarProject.this.getLookup().lookup(EjbJarProjectClassPathExtender.class);
                     libFolder = helper.resolveFileObject(libFolderName);
-                    if (cpExt != null) {
                         FileObject children [] = libFolder.getChildren ();
                         List libs = new LinkedList();
                         for (int i = 0; i < children.length; i++) {
@@ -674,11 +666,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                         }
                         FileObject[] libsArray = new FileObject[libs.size()];
                         libs.toArray(libsArray);
-                        cpExt.addArchiveFiles(EjbJarProjectProperties.JAVAC_CLASSPATH, libsArray, ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
+                        classpathExtender.addArchiveFiles(EjbJarProjectProperties.JAVAC_CLASSPATH, libsArray, ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
                         libFolder.addFileChangeListener (EjbJarProject.this);
-                    }
-                    else
-                        ErrorManager.getDefault().log("Cannot find EjbJarProjectClassPathExtender in the lookup of the project " + EjbJarProject.this.getProjectDirectory() + "."); // NOI18N
                 }
                 
                 // Check up on build scripts.
