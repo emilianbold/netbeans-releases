@@ -52,6 +52,192 @@
   };
   
 // ****************************************************
+// Cloudscape Embedded JDBC Driver
+// ****************************************************
+  "Cloudscape Embedded JDBC Driver" = {
+    DriverName = "Cloudscape Embedded JDBC Driver";
+    getTables_Catalog = true;
+    getTables_SchemaPattern = true;
+    TableNamePattern = null;
+    getTables_Types = true;
+
+    getProcedures_Catalog = true;
+    getProcedures_SchemaPattern = true;
+    getProcedures_ProcedureNamePattern = null;
+
+    getPrimaryKeys_Catalog = true;
+    getPrimaryKeys_Schema = true;
+    
+    getExportedKeys_Catalog = true;
+    getExportedKeys_Schema = true;
+    
+    getIndexInfo_Catalog = true;
+    getIndexInfo_Schema = true;
+
+    getColumns_Catalog = true;
+    getColumns_SchemaPattern = true;
+
+    getProcedureColumns_Catalog = true;
+    getProcedureColumns_SchemaPattern = true;
+    getProcedureColumns_ColumnNamePattern = null;
+  };  
+
+// ****************************************************
+// DB2
+// ****************************************************
+  "DB2CLI.DLL" = {
+    DriverName = "DB2CLI.DLL";
+    getTables_Catalog = true;
+    getTables_SchemaPattern = true;
+    getTables_TableNamePattern = null;
+    getTables_Types = true;
+
+    getProcedures_Catalog = true;
+    getProcedures_SchemaPattern = true;
+    getProcedures_ProcedureNamePattern = null;
+
+    getPrimaryKeys_Catalog = true;
+    getPrimaryKeys_Schema = true;
+    
+    getExportedKeys_Catalog = true;
+    getExportedKeys_Schema = true;
+    
+    getIndexInfo_Catalog = true;
+    getIndexInfo_Schema = true;
+
+    getColumns_Catalog = true;
+    getColumns_SchemaPattern = true;
+
+    getProcedureColumns_Catalog = true;
+    getProcedureColumns_SchemaPattern = true;
+    getProcedureColumns_ColumnNamePattern = null;
+};
+
+// ****************************************************
+// HypersonicSQL Driver
+// ****************************************************
+  "HypersonicSQL Driver" = {
+    DriverName = "HypersonicSQL Driver";
+    getTables_Catalog = true;
+    getTables_SchemaPattern = true;
+    getTables_TableNamePattern = null;
+    getTables_Types = true;
+
+    getProcedures_Catalog = true;
+    getProcedures_SchemaPattern = true;
+    getProcedures_ProcedureNamePattern = null;
+
+    getPrimaryKeys_Catalog = true;
+    getPrimaryKeys_Schema = true;
+    
+    getExportedKeys_Catalog = true;
+    getExportedKeys_Schema = true;
+    
+    getIndexInfo_Catalog = true;
+    getIndexInfo_Schema = true;
+
+    getColumns_Catalog = true;
+    getColumns_SchemaPattern = true;
+
+    getProcedureColumns_Catalog = true;
+    getProcedureColumns_SchemaPattern = true;
+    getProcedureColumns_ColumnNamePattern = null;
+};
+
+// ****************************************************
+// IDS JDBC Driver for MS Access
+// ****************************************************
+  "IDS JDBC Driver" = {
+    DriverName = "IDS JDBC Driver";
+    getTables_Catalog = true;
+    getTables_SchemaPattern = null;
+    getTables_TableNamePattern = null;
+    getTables_Types = true;
+
+    getProcedures_Catalog = true;
+    getProcedures_SchemaPattern = null;
+    getProcedures_ProcedureNamePattern = null;
+
+    getPrimaryKeys_Catalog = true;
+    getPrimaryKeys_Schema = null;
+    
+    getExportedKeys_Catalog = true;
+    getExportedKeys_Schema = null;
+    
+    getIndexInfo_Catalog = true;
+    getIndexInfo_Schema = null;
+
+    getColumns_Catalog = true;
+    getColumns_SchemaPattern = null;
+
+    getProcedureColumns_Catalog = true;
+    getProcedureColumns_SchemaPattern = null;
+    getProcedureColumns_ColumnNamePattern = null;
+};
+  
+// ****************************************************
+// InstantDB JDBC Driver
+// ****************************************************
+  "InstantDB JDBC Driver" = {
+    DriverName = "InstantDB JDBC Driver";
+    getTables_Catalog = true;
+    getTables_SchemaPattern = true;
+    TableNamePattern = null;
+    getTables_Types = true;
+
+    getProcedures_Catalog = true;
+    getProcedures_SchemaPattern = true;
+    getProcedures_ProcedureNamePattern = null;
+
+    getPrimaryKeys_Catalog = true;
+    getPrimaryKeys_Schema = true;
+    
+    getExportedKeys_Catalog = true;
+    getExportedKeys_Schema = true;
+    
+    getIndexInfo_Catalog = true;
+    getIndexInfo_Schema = true;
+
+    getColumns_Catalog = true;
+    getColumns_SchemaPattern = true;
+
+    getProcedureColumns_Catalog = true;
+    getProcedureColumns_SchemaPattern = true;
+    getProcedureColumns_ColumnNamePattern = null;
+  };  
+
+// ****************************************************
+// InterClient driver for InterBase
+// ****************************************************
+  "InterClient" = {
+    DriverName = "InterClient";
+    getTables_Catalog = true;
+    getTables_SchemaPattern = null;
+    getTables_TableNamePattern = null;
+    getTables_Types = true;
+
+    getProcedures_Catalog = true;
+    getProcedures_SchemaPattern = null;
+    getProcedures_ProcedureNamePattern = null;
+
+    getPrimaryKeys_Catalog = true;
+    getPrimaryKeys_Schema = null;
+    
+    getExportedKeys_Catalog = true;
+    getExportedKeys_Schema = null;
+    
+    getIndexInfo_Catalog = true;
+    getIndexInfo_Schema = null;
+
+    getColumns_Catalog = true;
+    getColumns_SchemaPattern = null;
+
+    getProcedureColumns_Catalog = true;
+    getProcedureColumns_SchemaPattern = null;
+    getProcedureColumns_ColumnNamePattern = null;
+  };
+  
+// ****************************************************
 // JTurbo Type 4 JDBC driver for MS SQLServer
 // ****************************************************
   "JTurbo Type 4 JDBC driver for MS SQLServer" = {
@@ -80,6 +266,99 @@
     getProcedureColumns_Catalog = true;
     getProcedureColumns_SchemaPattern = true;
     getProcedureColumns_ColumnNamePattern = null;
+  };
+
+// ****************************************************
+// Mark Matthews' MySQL Driver
+// ****************************************************
+  "Mark Matthews' MySQL Driver" = {
+    DriverName = "Mark Matthews' MySQL Driver";
+    getTables_Catalog = true;
+    getTables_SchemaPattern = true;
+    TableNamePattern = null;
+    getTables_Types = true;
+
+    getProcedures_Catalog = true;
+    getProcedures_SchemaPattern = true;
+    getProcedures_ProcedureNamePattern = null;
+
+    getPrimaryKeys_Catalog = true;
+    getPrimaryKeys_Schema = true;
+    
+    getExportedKeys_Catalog = true;
+    getExportedKeys_Schema = true;
+    
+    getIndexInfo_Catalog = true;
+    getIndexInfo_Schema = true;
+
+    getColumns_Catalog = true;
+    getColumns_SchemaPattern = true;
+
+    getProcedureColumns_Catalog = true;
+    getProcedureColumns_SchemaPattern = true;
+    getProcedureColumns_ColumnNamePattern = null;
+  };
+  
+// ****************************************************
+// MySQL JDBC-ODBC bridge
+// ****************************************************
+  "JDBC-ODBC Bridge (myodbc.dll)" = {
+    DriverName = "JDBC-ODBC Bridge (myodbc.dll)";
+    getTables_Catalog = true;
+    getTables_SchemaPattern = null;
+    TableNamePattern = null;
+    getTables_Types = true;
+
+    getProcedures_Catalog = true;
+    getProcedures_SchemaPattern = null;
+    getProcedures_ProcedureNamePattern = null;
+
+    getPrimaryKeys_Catalog = true;
+    getPrimaryKeys_Schema = null;
+    
+    getExportedKeys_Catalog = true;
+    getExportedKeys_Schema = null;
+    
+    getIndexInfo_Catalog = true;
+    getIndexInfo_Schema = null;
+
+    getColumns_Catalog = true;
+    getColumns_SchemaPattern = null;
+
+    getProcedureColumns_Catalog = true;
+    getProcedureColumns_SchemaPattern = null;
+    getProcedureColumns_ColumnNamePattern = null;
+  };  
+
+// ****************************************************
+// Oracle JDBC driver
+// ****************************************************
+  "Oracle JDBC driver" = {
+    DriverName = "Oracle JDBC driver";
+    getTables_Catalog = true;
+    getTables_SchemaPattern = true;
+    getTables_TableNamePattern = null;
+    getTables_Types = true;
+
+    getProcedures_Catalog = true;
+    getProcedures_SchemaPattern = true;
+    getProcedures_ProcedureNamePattern = null;
+
+    getPrimaryKeys_Catalog = true;
+    getPrimaryKeys_Schema = true;
+    
+    getExportedKeys_Catalog = true;
+    getExportedKeys_Schema = true;
+    
+    getIndexInfo_Catalog = true;
+    getIndexInfo_Schema = true;
+
+    getColumns_Catalog = true;
+    getColumns_SchemaPattern = true;
+
+    getProcedureColumns_Catalog = true;
+    getProcedureColumns_SchemaPattern = true;
+   getProcedureColumns_ColumnNamePattern = null;
   };
   
 // ****************************************************
@@ -113,128 +392,5 @@
     getProcedureColumns_ColumnNamePattern = null;
   };
   
-// ****************************************************
-// Oracle JDBC driver
-// ****************************************************
-  "Oracle JDBC driver" = {
-    DriverName = "Oracle JDBC driver";
-    getTables_Catalog = true;
-    getTables_SchemaPattern = true;
-    getTables_TableNamePattern = null;
-    getTables_Types = true;
 
-    getProcedures_Catalog = true;
-    getProcedures_SchemaPattern = true;
-    getProcedures_ProcedureNamePattern = null;
-
-    getPrimaryKeys_Catalog = true;
-    getPrimaryKeys_Schema = true;
-    
-    getExportedKeys_Catalog = true;
-    getExportedKeys_Schema = true;
-    
-    getIndexInfo_Catalog = true;
-    getIndexInfo_Schema = true;
-
-    getColumns_Catalog = true;
-    getColumns_SchemaPattern = true;
-
-    getProcedureColumns_Catalog = true;
-    getProcedureColumns_SchemaPattern = true;
-    getProcedureColumns_ColumnNamePattern = null;
-  };
-  
-// ****************************************************
-// InterClient driver for InterBase
-// ****************************************************
-  "InterClient" = {
-    DriverName = "InterClient";
-    getTables_Catalog = null;
-    getTables_SchemaPattern = null;
-    getTables_TableNamePattern = %;
-    getTables_Types = null;
-
-    getProcedures_Catalog = null;
-    getProcedures_SchemaPattern = null;
-    getProcedures_ProcedureNamePattern = %;
-
-    getPrimaryKeys_Catalog = null;
-    getPrimaryKeys_Schema = null;
-    
-    getExportedKeys_Catalog = null;
-    getExportedKeys_Schema = null;
-    
-    getIndexInfo_Catalog = null;
-    getIndexInfo_Schema = null;
-
-    getColumns_Catalog = null;
-    getColumns_SchemaPattern = null;
-
-    getProcedureColumns_Catalog = null;
-    getProcedureColumns_SchemaPattern = null;
-    getProcedureColumns_ColumnNamePattern = %;
-  };
-  
-// ****************************************************
-// IDS JDBC Driver for MS Access
-// ****************************************************
-  "IDS JDBC Driver" = {
-    DriverName = "IDS JDBC Driver";
-    getTables_Catalog = true;
-    getTables_SchemaPattern = null;
-    getTables_TableNamePattern = null;
-    getTables_Types = true;
-
-    getProcedures_Catalog = true;
-    getProcedures_SchemaPattern = null;
-    getProcedures_ProcedureNamePattern = null;
-
-    getPrimaryKeys_Catalog = true;
-    getPrimaryKeys_Schema = null;
-    
-    getExportedKeys_Catalog = true;
-    getExportedKeys_Schema = null;
-    
-    getIndexInfo_Catalog = true;
-    getIndexInfo_Schema = null;
-
-    getColumns_Catalog = true;
-    getColumns_SchemaPattern = null;
-
-    getProcedureColumns_Catalog = true;
-    getProcedureColumns_SchemaPattern = null;
-    getProcedureColumns_ColumnNamePattern = null;
-};
-  
-// ****************************************************
-// Mark Matthews' MySQL Driver
-// ****************************************************
-  "Mark Matthews' MySQL Driver" = {
-    DriverName = "Mark Matthews' MySQL Driver";
-    getTables_Catalog = true;
-    getTables_SchemaPattern = true;
-    TableNamePattern = null;
-    getTables_Types = true;
-
-    getProcedures_Catalog = true;
-    getProcedures_SchemaPattern = true;
-    getProcedures_ProcedureNamePattern = null;
-
-    getPrimaryKeys_Catalog = true;
-    getPrimaryKeys_Schema = true;
-    
-    getExportedKeys_Catalog = true;
-    getExportedKeys_Schema = true;
-    
-    getIndexInfo_Catalog = true;
-    getIndexInfo_Schema = true;
-
-    getColumns_Catalog = true;
-    getColumns_SchemaPattern = true;
-
-    getProcedureColumns_Catalog = true;
-    getProcedureColumns_SchemaPattern = true;
-    getProcedureColumns_ColumnNamePattern = null;
-  };  
-   
 }
