@@ -13,9 +13,10 @@
 
 package org.netbeans.modules.editor;
 
-import java.io.Writer;
+import java.io.*;
 import javax.swing.text.Document;
-import org.netbeans.editor.Formatter;
+import org.netbeans.editor.ext.ExtFormatter;
+import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.Settings;
 import org.openide.text.IndentEngine;
 import org.openide.util.HelpCtx;
@@ -28,52 +29,56 @@ import org.openide.util.HelpCtx;
 
 public abstract class FormatterIndentEngine extends IndentEngine {
 
+    public static final String EXPAND_TABS_PROP = "expandTabs";
+
+    public static final String SPACES_PER_TAB_PROP = "spacesPerTab";
+
+    static final long serialVersionUID = -3408217516931076216L;
+
     /** Formatter to delegate to. It's checked before use and if it's null
      * the createFormatter() is called to initialize it.
      */
-    private transient Formatter formatter;
+    private transient ExtFormatter formatter;
 
     private String[] acceptedMimeTypes;
 
     /** Get the formatter to which this indentation engine delegates. */
-    public Formatter getFormatter() {
-        checkFormatter();
-        return formatter;
-    }
-
-    private void checkFormatter() {
+    public ExtFormatter getFormatter() {
         if (formatter == null) {
             formatter = createFormatter();
         }
+        return formatter;
     }
 
-    public Object getSettingValue(String settingName) {
-        return Settings.getValue(getFormatter().getKitClass(), settingName);
+    /** Create the formatter. */
+    protected abstract ExtFormatter createFormatter();
+
+    public Object getValue(String settingName) {
+        return getFormatter().getSettingValue(settingName);
     }
 
-    public void setSettingValue(String settingName, Object newValue) {
-        Object oldValue = getSettingValue(settingName);
+    public void setValue(String settingName, Object newValue) {
+        Object oldValue = getValue(settingName);
         if ((oldValue == null && newValue == null)
                 || (oldValue != null && oldValue.equals(newValue))
            ) {
             return; // no change
         }
 
-        Settings.setValue(getFormatter().getKitClass(), settingName, newValue);
+        getFormatter().setSettingValue(settingName, newValue);
         firePropertyChange(settingName, oldValue, newValue);
     }
 
-    /** Create the formatter. */
-    protected abstract Formatter createFormatter();
-
     public int indentLine(Document doc, int offset) {
-        checkFormatter();
-        return formatter.indentLine(doc, offset);
+        return getFormatter().indentLine(doc, offset);
     }
 
     public int indentNewLine(Document doc, int offset) {
-        checkFormatter();
-        return formatter.indentNewLine(doc, offset);
+        return getFormatter().indentNewLine(doc, offset);
+    }
+
+    public Writer createWriter(Document doc, int offset, Writer writer) {
+        return getFormatter().createWriter(doc, offset, writer);
     }
 
     protected boolean acceptMimeType(String mimeType) {
@@ -88,6 +93,49 @@ public abstract class FormatterIndentEngine extends IndentEngine {
         return false;
     }
 
+    public boolean isExpandTabs() {
+        return getFormatter().expandTabs();
+    }
+
+    public void setExpandTabs(boolean expandTabs) {
+        boolean old = getFormatter().expandTabs();
+        // Must call setter because of turning into custom property
+        getFormatter().setExpandTabs(expandTabs);
+        updateShiftWidth();
+        if (old != expandTabs) {
+            firePropertyChange(EXPAND_TABS_PROP,
+                old ? Boolean.TRUE : Boolean.FALSE,
+                expandTabs ? Boolean.TRUE : Boolean.FALSE
+            );
+        }
+    }
+
+    public int getSpacesPerTab() {
+        return getFormatter().getSpacesPerTab();
+    }
+
+    public void setSpacesPerTab(int spacesPerTab) {
+        int old = getFormatter().getSpacesPerTab();
+        getFormatter().setSpacesPerTab(spacesPerTab);
+        updateShiftWidth();
+        if (old != spacesPerTab) {
+            firePropertyChange(SPACES_PER_TAB_PROP,
+                new Integer(old),
+                new Integer(spacesPerTab)
+            );
+        }
+    }
+
+    /** This method is used for updating shift-width
+     * after manual change of one of the parameters
+     * it's computed from.
+     */
+    private void updateShiftWidth() {
+        ExtFormatter f = getFormatter();
+        int shw = f.expandTabs() ? f.getSpacesPerTab() : f.getTabSize();
+        f.setShiftWidth(shw);
+    }
+
     public void setAcceptedMimeTypes(String[] mimes) {
         this.acceptedMimeTypes = mimes;
     }
@@ -96,14 +144,26 @@ public abstract class FormatterIndentEngine extends IndentEngine {
         return acceptedMimeTypes;
     }
 
-    public Writer createWriter(Document doc, int offset, Writer writer) {
-        checkFormatter();
-        return formatter.createWriter(doc, offset, writer);
+    // Serialization ------------------------------------------------------------
+
+    private static final ObjectStreamField[] serialPersistentFields = {
+        new ObjectStreamField(EXPAND_TABS_PROP, Boolean.TYPE),
+        new ObjectStreamField(SPACES_PER_TAB_PROP, Integer.TYPE)
+    };
+    
+    private void readObject(java.io.ObjectInputStream ois)
+    throws IOException, ClassNotFoundException {
+        ObjectInputStream.GetField fields = ois.readFields();
+        setExpandTabs(fields.get(EXPAND_TABS_PROP, SettingsDefaults.defaultExpandTabs.booleanValue()));
+        setSpacesPerTab(fields.get(SPACES_PER_TAB_PROP, SettingsDefaults.defaultSpacesPerTab.intValue()));
     }
 
-    private void readObject(java.io.ObjectInputStream ois)
-    throws java.io.IOException, ClassNotFoundException {
-        ois.defaultReadObject();
+    private void writeObject(java.io.ObjectOutputStream oos)
+    throws IOException, ClassNotFoundException {
+        ObjectOutputStream.PutField fields = oos.putFields();
+        fields.put(EXPAND_TABS_PROP, isExpandTabs());
+        fields.put(SPACES_PER_TAB_PROP, getSpacesPerTab());
+        oos.writeFields();
     }
 
 }
