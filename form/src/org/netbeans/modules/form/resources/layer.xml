@@ -57,12 +57,15 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
         <folder name="View">
-            <file name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" />
             <attr name="Separator1[javax-swing-JSeparator].instance/Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" boolvalue="true" />
+            <file name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance" />
+            <attr name="Component Inspector[org-netbeans-modules-form-actions-ComponentInspectorAction].instance/org-netbeans-modules-objectbrowser-ShowBrowserAction.instance" boolvalue="true" />
         </folder>
+         
         <folder name="Tools">
-            <file name="Install New JavaBean[org-netbeans-modules-form-actions-InstallBeanAction].instance" />
             <attr name="Separator1[javax-swing-JSeparator].instance/Install New JavaBean[org-netbeans-modules-form-actions-InstallBeanAction].instance" boolvalue="true" />
+            <file name="Install New JavaBean[org-netbeans-modules-form-actions-InstallBeanAction].instance" />
+            <attr name="Install New JavaBean[org-netbeans-modules-form-actions-InstallBeanAction].instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
         </folder>
     </folder>
 
