@@ -120,9 +120,15 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             return;
         }
         final CallStackFrame csf = currentDebugger.getCurrentCallStackFrame ();
-        final JPDAThread ct = currentThread;
-        final String language = DebuggerManager.getDebuggerManager ().
-            getCurrentSession ().getCurrentLanguage ();
+        final DebuggerEngine currentEngine = DebuggerManager.
+            getDebuggerManager ().getCurrentEngine ();
+        final Session currentSession = DebuggerManager.getDebuggerManager ().
+            getCurrentSession ();
+        final String language = currentSession == null ? 
+            null : currentSession.getCurrentLanguage ();
+        final SourcePath sourcePath = currentEngine == null ? 
+            null : (SourcePath) currentEngine.lookupFirst 
+                (null, SourcePath.class);
 
         // 3) annotate current line & stack
         SwingUtilities.invokeLater (new Runnable () {
@@ -130,21 +136,15 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 // show current line
                 if (currentPC != null)
                     EditorContextBridge.removeAnnotation (currentPC);
-                Session currentSession = DebuggerManager.getDebuggerManager ().
-                    getCurrentSession();
-                if (currentSession != null) {
-                    SourcePath sp = (SourcePath) DebuggerManager.
-                        getDebuggerManager ().getCurrentEngine ().lookupFirst 
-                        (null, SourcePath.class);
-                    if (csf != null)
-                        sp.showSource (csf, language);
-
+                if (csf != null && sourcePath != null && currentThread != null) {
+                    
+                    sourcePath.showSource (csf, language);
                     // annotate current line
-                    currentPC = sp.annotate (ct, language);
+                    currentPC = sourcePath.annotate (currentThread, language);
                 }
             }
         });
-        annotateCallStack (stack);
+        annotateCallStack (stack, sourcePath);
     }
 
 
@@ -175,7 +175,8 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     }
 
     private void annotateCallStack (
-        final CallStackFrame[] stack
+        final CallStackFrame[] stack,
+        final SourcePath sourcePath
     ) {
         if (task != null) {
             // cancel old task
@@ -184,8 +185,6 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         }
         task = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
-                    getCurrentEngine ();
                 HashMap newAnnotations = new HashMap ();
                 int i, k = stack.length;
                 for (i = 1; i < k; i++) {
@@ -205,10 +204,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                     Object da = stackAnnotations.remove (line);
                     if (da == null) {
                         // line has not been annotated -> create annotation
-                        SourcePath sp = (SourcePath) DebuggerManager.
-                            getDebuggerManager ().getCurrentEngine ().lookupFirst 
-                            (null, SourcePath.class);
-                        da = sp.annotate (stack [i], language);
+                        da = sourcePath.annotate (stack [i], language);
                     }
 
                     // 4) add new line to hashMap
