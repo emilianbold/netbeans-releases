@@ -1347,13 +1347,12 @@ class Controller  {
 	
 	if(debug) log("showReplay(): reaching the end..."); // NOI18N
 
-	if(browser == null) 
-
         // window system code must be run in AWT thread
         SwingUtilities.invokeLater(new Runnable() {
             public void run () {
-		browser = 
-		    new HtmlBrowser.BrowserComponent(getFactory(), true, true);
+                if(browser == null) 
+                    browser = 
+                        new HtmlBrowser.BrowserComponent(getFactory(), true, true);
 		
 		if(browser != null) {
 		    browser.setURL(url);
