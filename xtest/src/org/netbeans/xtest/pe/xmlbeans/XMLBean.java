@@ -51,6 +51,9 @@ public abstract class XMLBean {
     // cdata of the XML element
     public String xml_cdata = null;
     
+    /** Holds value of property id. */
+    private long id;
+    
     // utility methods
     public static Object[] addToArray(Object[] array, Object obj) throws IllegalArgumentException {
         debugInfo("addToArray(): array = "+array+" object to add = "+obj);
@@ -527,7 +530,19 @@ public abstract class XMLBean {
         return element;
     }
     
+    /** Getter for property id.
+     * @return Value of property id.
+     */
+    public long getId() {
+        return this.id;
+    }    
     
+    /** Setter for property id.
+     * @param id New value of property id.
+     */
+    public void setId(long id) {
+        this.id = id;
+    }    
     
     // helper class for storing already instantiated XMLBeans grouped by
     // element types

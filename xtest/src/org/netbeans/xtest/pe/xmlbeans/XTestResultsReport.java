@@ -52,6 +52,8 @@ public class XTestResultsReport extends XMLBean {
     public SystemInfo[] xmlel_SystemInfo;
     public TestRun[] xmlel_TestRun;
     
+    /** Holds value of property systemInfo_id. */
+    private long systemInfo_id;    
     
     // business methods
     public boolean isValid() {
@@ -65,6 +67,202 @@ public class XTestResultsReport extends XMLBean {
     
     public boolean equals(Object obj) {
         return equalByAttributes(obj);
+    }
+    
+    /** Getter for property timeStamp.
+     * @return Value of property timeStamp.
+     */
+    public java.sql.Timestamp getTimeStamp() {
+        return xmlat_timeStamp;
+    }
+    
+    /** Setter for property timeStamp.
+     * @param timeStamp New value of property timeStamp.
+     */
+    public void setTimeStamp(java.sql.Timestamp timeStamp) {
+        xmlat_timeStamp = timeStamp;
+    }
+    
+    /** Getter for property time.
+     * @return Value of property time.
+     */
+    public long getTime() {
+        return xmlat_time;
+    }
+    
+    /** Setter for property time.
+     * @param time New value of property time.
+     */
+    public void setTime(long time) {
+        xmlat_time = time;
+    }
+    
+    /** Getter for property build.
+     * @return Value of property build.
+     */
+    public String getBuild() {
+        return xmlat_build;
+    }
+    
+    /** Setter for property build.
+     * @param build New value of property build.
+     */
+    public void setBuild(String build) {
+        xmlat_build = build;
+    }
+    
+    /** Getter for property comment.
+     * @return Value of property comment.
+     */
+    public String getComment() {
+        return xmlat_comment;
+    }
+    
+    /** Setter for property comment.
+     * @param comment New value of property comment.
+     */
+    public void setComment(String comment) {
+        xmlat_comment = comment;
+    }
+    
+    /** Getter for property host.
+     * @return Value of property host.
+     */
+    public String getHost() {
+        return xmlat_host;
+    }
+    
+    /** Setter for property host.
+     * @param host New value of property host.
+     */
+    public void setHost(String host) {
+        xmlat_host = host;
+    }
+    
+    /** Getter for property platform.
+     * @return Value of property platform.
+     */
+    public String getPlatform() {
+        return xmlat_platform;
+    }
+    
+    /** Setter for property platform.
+     * @param platform New value of property platform.
+     */
+    public void setPlatform(String platform) {
+        xmlat_platform = platform;
+    }
+    
+    /** Getter for property project.
+     * @return Value of property project.
+     */
+    public String getProject() {
+        return xmlat_project;
+    }
+    
+    /** Setter for property project.
+     * @param project New value of property project.
+     */
+    public void setProject(String project) {
+        xmlat_project = project;
+    }
+    
+    /** Getter for property testedType.
+     * @return Value of property testedType.
+     */
+    public String getTestedType() {
+        return xmlat_testedType;
+    }
+    
+    /** Setter for property testedType.
+     * @param testedType New value of property testedType.
+     */
+    public void setTestedType(String testedType) {
+        xmlat_testedType = testedType;
+    }
+    
+    /** Getter for property testingGroup.
+     * @return Value of property testingGroup.
+     */
+    public String getTestingGroup() {
+        return xmlat_testingGroup;
+    }
+    
+    /** Setter for property testingGroup.
+     * @param testingGroup New value of property testingGroup.
+     */
+    public void setTestingGroup(String testingGroup) {
+        xmlat_testingGroup = testingGroup;
+    }
+    
+    /** Getter for property testsError.
+     * @return Value of property testsError.
+     */
+    public long getTestsError() {
+        return xmlat_testsError;
+    }
+    
+    /** Setter for property testsError.
+     * @param testsError New value of property testsError.
+     */
+    public void setTestsError(long testsError) {
+        xmlat_testsError = testsError;
+    }
+    
+    /** Getter for property testsFail.
+     * @return Value of property testsFail.
+     */
+    public long getTestsFail() {
+        return xmlat_testsFail;
+    }
+    
+    /** Setter for property testsFail.
+     * @param testsFail New value of property testsFail.
+     */
+    public void setTestsFail(long testsFail) {
+        xmlat_testsFail = testsFail;
+    }
+    
+    /** Getter for property testsPass.
+     * @return Value of property testsPass.
+     */
+    public long getTestsPass() {
+        return xmlat_testsPass;
+    }
+    
+    /** Setter for property testsPass.
+     * @param testsPass New value of property testsPass.
+     */
+    public void setTestsPass(long testsPass) {
+        xmlat_testsPass = testsPass;
+    }
+    
+    /** Getter for property testsTotal.
+     * @return Value of property testsTotal.
+     */
+    public long getTestsTotal() {
+        return xmlat_testsTotal;
+    }
+    
+    /** Setter for property testsTotal.
+     * @param testsTotal New value of property testsTotal.
+     */
+    public void setTestsTotal(long testsTotal) {
+        xmlat_testsTotal = testsTotal;
+    }
+    
+    /** Getter for property systemInfo_id.
+     * @return Value of property systemInfo_id.
+     */
+    public long getSystemInfo_id() {
+        return this.systemInfo_id;
+    }
+    
+    /** Setter for property systemInfo_id.
+     * @param systemInfo_id New value of property systemInfo_id.
+     */
+    public void setSystemInfo_id(long systemInfo_id) {
+        this.systemInfo_id = systemInfo_id;
     }
     
 }

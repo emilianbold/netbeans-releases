@@ -34,6 +34,146 @@ public class UnitTestCase extends XMLBean {
     public UnitTestCase() {
     }
     
+    /** Getter for property name.
+     * @return Value of property name.
+     */
+    public String getName() {
+        return xmlat_name;
+    }    
+    
+    /** Setter for property name.
+     * @param name New value of property name.
+     */
+    public void setName(String name) {
+        xmlat_name = name;
+    }
+    
+    /** Getter for property time.
+     * @return Value of property time.
+     */
+    public long getTime() {
+        return xmlat_time;
+    }
+    
+    /** Setter for property time.
+     * @param time New value of property time.
+     */
+    public void setTime(long time) {
+        xmlat_time = time;
+    }
+    
+    /** Getter for property className.
+     * @return Value of property className.
+     */
+    public String getClassName() {
+        return xmlat_class;
+    }
+    
+    /** Setter for property className.
+     * @param className New value of property className.
+     */
+    public void setClassName(String className) {
+        xmlat_class = className;
+    }
+    
+    /** Getter for property test.
+     * @return Value of property test.
+     */
+    public String getTest() {
+        return xmlat_test;
+    }
+    
+    /** Setter for property test.
+     * @param test New value of property test.
+     */
+    public void setTest(String test) {
+        xmlat_test = test;
+    }
+    
+    /** Getter for property result.
+     * @return Value of property result.
+     */
+    public String getResult() {
+        return xmlat_result;
+    }
+    
+    /** Setter for property result.
+     * @param result New value of property result.
+     */
+    public void setResult(String result) {
+        xmlat_result = result;
+    }
+    
+    /** Getter for property workdir.
+     * @return Value of property workdir.
+     */
+    public String getWorkdir() {
+        return xmlat_workdir;
+    }
+    
+    /** Setter for property workdir.
+     * @param workdir New value of property workdir.
+     */
+    public void setWorkdir(String workdir) {
+        xmlat_workdir = workdir;
+    }
+    
+    /** Getter for property message.
+     * @return Value of property message.
+     */
+    public String getMessage() {
+        return xmlat_message;
+    }
+    
+    /** Setter for property message.
+     * @param message New value of property message.
+     */
+    public void setMessage(String message) {
+        xmlat_message = message;
+    }
+    
+    /** Getter for property type.
+     * @return Value of property type.
+     */
+    public String getType() {
+        return xmlat_type;
+    }
+    
+    /** Setter for property type.
+     * @param type New value of property type.
+     */
+    public void setType(String type) {
+        xmlat_type = type;
+    }
+    
+    /** Getter for property unitTestSuite_id.
+     * @return Value of property unitTestSuite_id.
+     */
+    public long getUnitTestSuite_id() {
+        return this.unitTestSuite_id;
+    }
+    
+    /** Setter for property unitTestSuite_id.
+     * @param unitTestSuite_id New value of property unitTestSuite_id.
+     */
+    public void setUnitTestSuite_id(long unitTestSuite_id) {
+        this.unitTestSuite_id = unitTestSuite_id;
+    }
+    
+    /** Getter for property stackTrace.
+     * @return Value of property stackTrace.
+     */
+    public String getStackTrace() {
+        return xml_cdata;
+    }
+    
+    /** Setter for property stackTrace.
+     * @param stackTrace New value of property stackTrace.
+     */
+    public void setStackTrace(String stackTrace) {
+        xml_cdata = stackTrace;
+    }
+    
     // attributes
     public String   xmlat_class;
     public String   xmlat_name;
@@ -44,4 +184,7 @@ public class UnitTestCase extends XMLBean {
     public String   xmlat_type;
     public long     xmlat_time;
 
+    /** Holds value of property unitTestSuite_id. */
+    private long unitTestSuite_id;
+    
 }
