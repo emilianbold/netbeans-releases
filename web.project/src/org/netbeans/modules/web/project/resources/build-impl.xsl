@@ -94,6 +94,7 @@ is divided into following sections:
 
             <target name="-do-ear-init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
+                <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
                 <property value="${{build.ear.web.dir}}/META-INF" name="build.meta.inf.dir"/>
             </target>
     
