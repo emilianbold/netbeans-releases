@@ -33,6 +33,11 @@ package com.netbeans.developer.modules.loaders.form;
 * @author Ian Formanek
 */
 public interface FormDesignValue extends java.io.Serializable {
+  /** A special value which is not used during design-time if returned from the getDesignValue
+  * method call.
+  * @see #getDesignValue
+  */
+  public static final Object IGNORED_VALUE = new Object ();
 
   /** Provides a value which should be used during design-time
   * as the real property value on the bean instance.
@@ -47,6 +52,8 @@ public interface FormDesignValue extends java.io.Serializable {
 
 /*
  * Log
+ *  3    Gandalf   1.2         6/27/99  Ian Formanek    Added constant 
+ *       IGNORED_VALUE
  *  2    Gandalf   1.1         6/27/99  Ian Formanek    implements serializable,
  *       getDesignValue has a RADComponent parameter
  *  1    Gandalf   1.0         5/23/99  Ian Formanek    
