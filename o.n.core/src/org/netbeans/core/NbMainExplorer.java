@@ -540,7 +540,8 @@ public final class NbMainExplorer extends CloneableTopComponent
             // enhancement 9940, add MiniStatusBarListener a status bar's state
             ideSettings.addPropertyChangeListener (new MiniStatusBarStateListener ());
         }
-        
+
+        /** Initialize visual content of component */
         protected void componentShowing () {
             super.componentShowing ();
             
@@ -550,6 +551,19 @@ public final class NbMainExplorer extends CloneableTopComponent
                 view.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NbMainExplorer.class).getString("ACSN_ExplorerBeanTree"));
                 view.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(NbMainExplorer.class).getString("ACSD_ExplorerBeanTree"));
             }
+        }
+
+        /** Performs superclass addNotify code, then delegates to
+         * componentShowing if component is used outside window system.
+         * Needed for proper initialization.
+         */
+        public void addNotify () {
+            super.addNotify();
+            Workspace curWs = WindowManager.getDefault().getCurrentWorkspace();
+            if ((curWs != null) && curWs.findMode(this) != null) {
+                return;
+            }
+            componentShowing();
         }
 
         /** Initializes gui of this component. Subclasses can override
