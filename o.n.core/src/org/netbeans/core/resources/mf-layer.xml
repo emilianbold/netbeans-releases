@@ -78,6 +78,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-NewAction.instance"/>
             <file name="org-netbeans-core-actions-OpenExplorerAction.instance"/>
             <file name="org-openide-actions-OpenAction.instance"/>
+            <file name="org-openide-actions-PopupAction.instance"/>
             <file name="org-openide-actions-PrintAction.instance"/>
             <file name="org-openide-actions-PageSetupAction.instance"/>
             <file name="org-openide-filesystems-RefreshAction.instance"/>
@@ -119,7 +120,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-NextTabAction.instance"/>
             <file name="org-netbeans-core-actions-OpenedWindowsAction.instance"/>
             <file name="org-openide-actions-UndockAction.instance"/>
-            <file name="org-netbeans-core-actions-ConvertAction.instance"/>
         </folder>
     </folder>
 
