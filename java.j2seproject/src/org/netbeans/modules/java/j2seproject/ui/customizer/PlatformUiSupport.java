@@ -285,6 +285,7 @@ public class PlatformUiSupport {
                             if (initialPlatform.equals(antName)) {
                                 if (this.selectedPlatform == null) {
                                     this.selectedPlatform = pk;
+                                    initialPlatform = null;
                                 }
                                 activeFound = true;
                             }
@@ -293,7 +294,7 @@ public class PlatformUiSupport {
                 }
                 if (!activeFound) {
                     if (initialPlatform == null) {
-                        if (this.selectedPlatform == null) {
+                        if (this.selectedPlatform == null || !orderedNames.contains(this.selectedPlatform)) {
                             this.selectedPlatform = new PlatformKey (JavaPlatformManager.getDefault().getDefaultPlatform());
                         }
                     }
