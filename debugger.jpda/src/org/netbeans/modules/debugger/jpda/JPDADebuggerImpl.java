@@ -673,10 +673,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public void resume () {
         synchronized (LOCK) {
             //S ystem.err.println("resume");
-            if (getState () == STATE_RUNNING) {
-                System.err.println("already resumed!!");
-                Thread.dumpStack();
-            }
+            if (getState () == STATE_RUNNING) return;
             if (virtualMachine != null)
                 virtualMachine.resume ();
             setState (STATE_RUNNING);
