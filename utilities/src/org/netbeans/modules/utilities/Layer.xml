@@ -149,11 +149,12 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
             </file>
-<!--            <file name="keyboard-shortcuts.xml" url="nbresloc:/org/netbeans/modules/utilities/keyboard-shortcuts.xml">
+            <attr name="using-netbeans.url/shortcuts.xml" boolvalue="true"/>
+            <file name="shortcuts.xml" url="nbresloc:/org/netbeans/modules/utilities/shortcuts.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
-            </file>        -->    
-            <attr name="using-netbeans.url/utilities-sep-2.instance" boolvalue="true"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/pdf/PDFDataIcon.gif"/>
+            </file>
+            <attr name="shortcuts.xml/utilities-sep-2.instance" boolvalue="true"/>
             <file name="utilities-sep-2.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
