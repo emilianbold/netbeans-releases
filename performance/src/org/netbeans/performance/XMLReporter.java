@@ -158,9 +158,8 @@ public class XMLReporter implements Reporter {
     private int actIndent = 0;
     
     private void printSysInfo() {
-        indent( 0, "<sysinfo cpu=\"UltraSPARC II/360MHz\" os=\"Solaris 8\" ram = \"512MB\" jdk=\"jdk1.3.1-fcs\"/>", 0 );
         /*
-         *
+        indent( 0, "<sysinfo cpu=\"UltraSPARC II/360MHz\" os=\"Solaris 8\" ram = \"512MB\" jdk=\"jdk1.3.1-fcs\"/>", 0 );
          */
     }
 
