@@ -335,9 +335,14 @@ class WebActionProvider implements ActionProvider {
             if (javaFiles!=null && javaFiles.length > 0) {
                 if (javaFiles[0].getAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI)!=null)
                     return true;
-                else if (isDDServlet(context, javaFiles[0]))
+                else if (Boolean.TRUE.equals(javaFiles[0].getAttribute("org.netbeans.modules.web.IsServletFile"))) //NOI18N
                     return true;
-                else return false;
+                else if (isDDServlet(context, javaFiles[0])) {
+                    try {
+                        javaFiles[0].setAttribute("org.netbeans.modules.web.IsServletFile",Boolean.TRUE); //NOI18N
+                    } catch (IOException ex){}
+                    return true;
+                } else return false;
             } else return false;
         }
         else {
