@@ -23,6 +23,8 @@ import org.openide.util.NbBundle;
 
 import java.util.*;
 import java.io.*;
+import org.openide.modules.InstalledFileLocator;
+
 //import java.util.logging.*;
 
 public final class ServerRegistry implements java.io.Serializable {
@@ -379,14 +381,15 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     private ServerString getInstallerDefaultPlugin() {
-        String netbeansHome = System.getProperty("netbeans.home"); //NOI18N
-        Properties installProp = readProperties(netbeansHome, "system/install.properties"); //NOI18N
+        File propFile = InstalledFileLocator.getDefault ().locate ("config/install.properties", null, false);
+        Properties installProp = readProperties(propFile); //NOI18N
         
         String j2eeDefaultServerFileName = installProp.getProperty(J2EE_DEFAULT_SERVER);
         if (j2eeDefaultServerFileName == null)
             return null;
         
-        Properties defaultServerProp = readProperties(netbeansHome, j2eeDefaultServerFileName);
+        File serverFile = InstalledFileLocator.getDefault ().locate (j2eeDefaultServerFileName, null, false);
+        Properties defaultServerProp = readProperties(serverFile);
         String serverName = defaultServerProp.getProperty(SERVER_NAME);
         String url = defaultServerProp.getProperty(URL_ATTR);
         String user = defaultServerProp.getProperty(USERNAME_ATTR);
@@ -418,11 +421,10 @@ public final class ServerRegistry implements java.io.Serializable {
         return null;
     }
     
-    static private Properties readProperties(String rootDir, String relativePath) {
-        File propFile = new File(rootDir, relativePath);
+    static private Properties readProperties(File propFile) {
         Properties prop = new Properties();
         try {
-            if (propFile.exists())
+            if (propFile != null && propFile.exists())
                 prop.load(new FileInputStream(propFile));
         } catch (IOException ioe) {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.toString());
