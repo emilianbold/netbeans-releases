@@ -58,7 +58,7 @@ public final class RecentViewListAction extends AbstractAction
     public void actionPerformed(ActionEvent evt) {
         TopComponent[] documents = getRecentDocuments();
         
-        if (documents.length == 0) {
+        if (documents.length < 2) {
             return;
         }
         
@@ -96,17 +96,15 @@ public final class RecentViewListAction extends AbstractAction
             }
         }
         
-        if(documents.length > 1) {
-            TopComponent tc = documents[1];
-            // #37226 Unmaximized the other mode if needed.
-            WindowManagerImpl wm = WindowManagerImpl.getInstance();
-            ModeImpl mode = (ModeImpl) wm.findMode(tc);
-            if(mode != null && mode != wm.getMaximizedMode()) {
-                wm.setMaximizedMode(null);
-            }
-            
-            tc.requestActive();
+        TopComponent tc = documents[1];
+        // #37226 Unmaximized the other mode if needed.
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        ModeImpl mode = (ModeImpl) wm.findMode(tc);
+        if(mode != null && mode != wm.getMaximizedMode()) {
+            wm.setMaximizedMode(null);
         }
+        
+        tc.requestActive();
     }
     
     private SwitcherTableItem[] createSwitcherItems(TopComponent[] tcs) {

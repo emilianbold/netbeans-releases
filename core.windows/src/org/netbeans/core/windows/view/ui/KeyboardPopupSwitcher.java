@@ -24,10 +24,12 @@ import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import org.netbeans.core.IDESettings;
 import org.netbeans.core.windows.actions.RecentViewListAction;
 import org.netbeans.swing.popupswitcher.SwitcherTable;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
@@ -93,11 +95,20 @@ public final class KeyboardPopupSwitcher {
     /** Indicates whether an item to be selected is previous or next one. */
     private boolean fwd = true;
     
-    /** 
+    /** Used to retrieve state about UI Mode */
+    private static IDESettings settings =
+            (IDESettings) SharedClassObject.findObject (IDESettings.class, true);
+    
+    /**
      * Tries to process given <code>KeyEvent</code> and returns true is event
      * was successfully processed/consumed.
      */
     public static boolean processShortcut(KeyEvent kev) {
+        // don't perform in MDI only when main window is not focused
+        if (settings.getUIMode() == 2 &&
+                !WindowManager.getDefault().getMainWindow().isFocused()) {
+            return false;
+        }
         boolean isCtrlTab = kev.getKeyCode() == KeyEvent.VK_TAB &&
                 kev.getModifiers() == InputEvent.CTRL_MASK;
         boolean isCtrlShiftTab = kev.getKeyCode() == KeyEvent.VK_TAB &&
