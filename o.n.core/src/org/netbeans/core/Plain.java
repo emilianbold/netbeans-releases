@@ -111,7 +111,10 @@ public class Plain extends NbTopManager implements Runnable {
         if (! fs.isReadOnly()) {
             moduleSystem.readList();
             moduleSystem.scanForNewAndRestore();
+            LoaderPoolNode.installationFinished();
             moduleSystem.installNew();
+        } else {
+            LoaderPoolNode.installationFinished();
         }
     }
   
