@@ -103,6 +103,7 @@ public abstract class FormProperty extends Node.Property {
                            String name, Class type,
                            String displayName, String shortDescription) {
         super(type);
+        setValue("changeImmediate", Boolean.FALSE);
         setName(name);
         setDisplayName(displayName);
         setShortDescription(shortDescription);
@@ -112,6 +113,7 @@ public abstract class FormProperty extends Node.Property {
 
     protected FormProperty(FormPropertyContext propertyContext, Class type) {
         super(type);
+        setValue("changeImmediate", Boolean.FALSE);
         setPropertyContext(propertyContext);
     }
 
@@ -120,6 +122,7 @@ public abstract class FormProperty extends Node.Property {
     protected FormProperty(String name, Class type,
                            String displayName, String shortDescription) {
         super(type);
+        setValue("changeImmediate", Boolean.FALSE);
         setName(name);
         setDisplayName(displayName);
         setShortDescription(shortDescription);
@@ -132,6 +135,7 @@ public abstract class FormProperty extends Node.Property {
     // is used first time
     protected FormProperty(Class type) {
         super(type);
+        setValue("changeImmediate", Boolean.FALSE);
         this.propertyContext = FormPropertyContext.EmptyImpl.getInstance();
     }
 
