@@ -4,7 +4,7 @@ OpenIDE-Module-Install: org/netbeans/modules/web/core/ServletSupportModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/web/core/resources/layer.xml
 OpenIDE-Module-Specification-Version: 1.8
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.43
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.1
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1,org.netbeans.modules.j2eeserver/2, org.netbeans.modules.schema2beans/1, org.netbeans.modules.html/1, org.netbeans.modules.jarpackager/2, org.openidex.util/2
 
 Name: org/netbeans/modules/web/dd/DDDataLoader.class
