@@ -101,6 +101,9 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetTab"/>
                 <include name="org/openide/compiler/*Test.class"/>
                 
+                <!-- run text package tests -->
+                <include name="org/openide/text/*Test.class"/>
+		
                 <!-- run also window system tests -->
                 <include name="org/openide/windows/*Test.class"/>
             </patternset>
