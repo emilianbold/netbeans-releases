@@ -224,7 +224,10 @@ public class JPDAStart extends Task implements Runnable {
                 if (startVerbose)
                     System.out.println("\nS start listening on port " + port);
                 
-                JPDADebugger.startListening (lc, args, new Object[] {sourcePath, getName ()});
+                Properties props = new Properties();
+                // uncomment to implement smart stepping with step-outs rather than step-ins (for J2ME)
+                // props.put("SS_ACTION_STEPOUT", Boolean.TRUE);
+                JPDADebugger.startListening (lc, args, new Object[] {sourcePath, getName (), props});
             } catch (Throwable e) {
                 lock [1] = e;
             } finally {

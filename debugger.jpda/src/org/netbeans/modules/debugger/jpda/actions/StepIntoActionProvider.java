@@ -21,15 +21,14 @@ import com.sun.jdi.request.StepRequest;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
+
 import org.netbeans.api.debugger.ActionsManager;
 
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
@@ -51,6 +50,7 @@ import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 public class StepIntoActionProvider extends JPDADebuggerActionProvider 
 implements Executor, PropertyChangeListener {
     
+    public static final String SS_STEP_OUT = "SS_ACTION_STEPOUT";
     private static boolean ssverbose = 
         System.getProperty ("netbeans.debugger.smartstepping") != null;
     
@@ -59,8 +59,8 @@ implements Executor, PropertyChangeListener {
     private ThreadReference tr;
     private String position;
     private ContextProvider lookupProvider;
+    private boolean smartSteppingStepOut;
 
-        
     public StepIntoActionProvider (ContextProvider lookupProvider) {
         super (
             (JPDADebuggerImpl) lookupProvider.lookupFirst 
@@ -71,6 +71,11 @@ implements Executor, PropertyChangeListener {
         SourcePath ec = (SourcePath) lookupProvider.
             lookupFirst (null, SourcePath.class);
         ec.addPropertyChangeListener (this);
+        for (Iterator i = lookupProvider.lookup(null, Properties.class).iterator(); i.hasNext(); ) {
+            if (((Properties) i.next()).containsKey(SS_STEP_OUT)) {
+                smartSteppingStepOut = true;
+            }
+        }
     }
 
 
@@ -99,7 +104,7 @@ implements Executor, PropertyChangeListener {
         while (i.hasNext ())
             setEnabled (
                 i.next (),
-                (debuggerState == getDebuggerImpl ().STATE_STOPPED) &&
+                (debuggerState == JPDADebugger.STATE_STOPPED) &&
                 (getDebuggerImpl ().getCurrentThread () != null)
             );
     }
@@ -159,6 +164,9 @@ implements Executor, PropertyChangeListener {
         } else {
             if (ssverbose)
                 System.out.println("SS:  => do next step!");
+            if (smartSteppingStepOut)
+                getStepActionProvider().doAction(ActionsManager.ACTION_STEP_OUT);
+            else
             if (stepRequest != null)
                 stepRequest.enable ();
             else
@@ -175,6 +183,19 @@ implements Executor, PropertyChangeListener {
     }
 
     
+    private StepActionProvider stepActionProvider;
+
+    private StepActionProvider getStepActionProvider () {
+        if (stepActionProvider == null) {
+            List l = lookupProvider.lookup (null, ActionsProvider.class);
+            int i, k = l.size ();
+            for (i = 0; i < k; i++)
+                if (l.get (i) instanceof StepActionProvider)
+                    stepActionProvider = (StepActionProvider) l.get (i);
+        }
+        return stepActionProvider;
+    }
+
     // other methods ...........................................................
     
     void removeStepRequests () {
