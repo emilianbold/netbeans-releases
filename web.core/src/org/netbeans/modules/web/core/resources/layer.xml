@@ -242,4 +242,9 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
   
+    <folder name="Plugins">
+      <folder name="Web"><folder name="Actions">
+      </folder></folder>
+    </folder>
+
 </filesystem>
