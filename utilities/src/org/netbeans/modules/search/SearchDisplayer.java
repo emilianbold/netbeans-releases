@@ -37,8 +37,10 @@ import org.netbeans.modules.search.res.*;
 import org.netbeans.editor.*;
 
 /**
+ * Presents search results in output window. It can display
+ * just nodes marked by SearchDetailCookie.
  *
- * @author  pkuzel
+ * @author  Petr Kuzel
  * @version 
  */
 public class SearchDisplayer extends Object implements NodeAcceptor {
