@@ -90,7 +90,7 @@ public class FormEditorModule extends ModuleInstall {
 
       createAction (ComponentInspectorAction.class, 
         DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "View"), 
-        "HTMLViewAction", true, false, true, false
+        "HTMLViewAction", true, false, false, false
       );
 
       // install actions into toolbar
@@ -510,6 +510,9 @@ public class FormEditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  35   Gandalf   1.34        10/27/99 Ian Formanek    Fixed bug 4596 - There 
+ *       should be no separator in View menu between Component Inspector and 
+ *       other windows.
  *  34   Gandalf   1.33        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  33   Gandalf   1.32        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
