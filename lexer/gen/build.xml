@@ -29,7 +29,6 @@ Microsystems, Inc. All Rights Reserved.
           <include name="antlr*.jar"/>
         </fileset>
         <pathelement location="${lexer.dir}/${nb.modules.dir}/org-netbeans-modules-lexer.jar"/>
-<!--        <pathelement location="${lexerroot}/tmp"/>-->
       </classpath>
     </javac>
 
@@ -43,8 +42,7 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
         <pathelement location="${lexer.dir}/${nb.modules.dir}/org-netbeans-modules-lexer.jar"/>
         <pathelement location="../../ant/external/lib/ant.jar"/>
-<!--        <pathelement location="${lexerroot}/tmp"/>
-        <pathelement location="src"/>-->
+	<pathelement location="src" />
       </classpath>
     </javac>
   </target>
