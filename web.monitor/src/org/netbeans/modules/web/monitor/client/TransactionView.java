@@ -251,6 +251,10 @@ class TransactionView extends ExplorerPanel implements
 	    RequestProcessor.postRequest(req, 500); // wait a sec...
     }
 
+    public int getPersistenceType() { 
+	return TopComponent.PERSISTENCE_ONLY_OPENED;
+    }
+
     class OpenTransactionNodesRequest implements Runnable {
 	
 	public void run() {

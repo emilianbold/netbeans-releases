@@ -73,8 +73,11 @@ public class MonitorAction extends CallableSystemAction {
     static void addTransaction(String id) { 
 	if(!TransactionView.getInstance().isOpened()) {
 	    openTransactionView(); 
+	    // This will cause the record to be loaded from disk, so
+	    // we don't need to add it in this case
 	} 
-	Controller.getInstance().addTransaction(id); 
+	// Otherwise we add it to the current records
+	else Controller.getInstance().addTransaction(id); 
     } 
 
     private static void openTransactionView() {

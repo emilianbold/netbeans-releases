@@ -159,8 +159,13 @@ class Controller  {
 	if(debug) log("Creating node for " + id);
 	TransactionNode[] nodes = new TransactionNode[1];
 	MonitorData md = retrieveMonitorData(id, currDirStr); 
-	nodes[0] = createTransactionNode(md, true);
-    	currTrans.add(nodes);
+	try { 
+	    nodes[0] = createTransactionNode(md, true);
+	    currTrans.add(nodes);
+	}
+	catch(Exception ex) {
+	    // If there is some kind of parsing exception, do nothing
+	}
     }
 
     /**
@@ -949,7 +954,15 @@ class Controller  {
     private TransactionNode createTransactionNode(MonitorData md, boolean current) {
 
 	if(debug) log("createTransactionNode(MonitorData)"); //NOI18N 
-	Dispatches dis = md.getDispatches();
+	Dispatches dis = null; 
+	try { 
+	    dis = md.getDispatches();
+	}
+	catch(Exception ex) { 
+	    // Any parsing exception at this point, just ignore this
+	    // part of the request
+	} 
+
 	TransactionNode node = null;
 	
 	// No dispatched requests, we add a regular transaction node
