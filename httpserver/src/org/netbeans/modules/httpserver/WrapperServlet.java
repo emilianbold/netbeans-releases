@@ -22,7 +22,7 @@ import javax.servlet.http.*;
 
 import org.openide.execution.NbfsURLConnection;
 import org.openide.filesystems.FileObject;
-// import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 
@@ -58,16 +58,22 @@ public class WrapperServlet extends NbBaseServlet {
         try {
             URL newURL;
             
-            /*
             if (NbfsURLConnection.PROTOCOL.equals (url.getProtocol ())) {
                 FileObject fo = NbfsURLConnection.decodeURL (url);
-                if (url != null) {
-                    newURL = URLMapper.findURL (fo, URLMapper.EXTERNAL);
-                    if (newURL != null) 
-                        return newURL;
+                if (fo != null) {
+                    URL fsurl = URLMapper.findURL (fo, URLMapper.NETWORK);
+                    if (fsurl != null && "jar".equals (fsurl.getProtocol ()))   // NOI18N
+                        fsurl = null;
+
+                    if (fsurl == null) 
+                        fsurl = URLMapper.findURL (fo, URLMapper.EXTERNAL);
+                    if (fsurl != null && "jar".equals (fsurl.getProtocol ()))   // NOI18N
+                        fsurl = null;
+
+                        return fsurl;
                 }
             }
-             */
+
             String orig = url.toString ();
             int slash = orig.indexOf ('/');
             if (slash >= 0 && orig.charAt (slash+1) == '/') {
