@@ -25,15 +25,16 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
+import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
 * A property editor for Font class.
 *
-* @version  0.10, 17 Jun 1998
+* @author Ian Formanek
 */
-public class FontEditor implements PropertyEditor {
+public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
   // static .....................................................................................
 
@@ -307,10 +308,56 @@ public class FontEditor implements PropertyEditor {
       repaint();
     }
   }
+
+//--------------------------------------------------------------------------
+// XMLPropertyEditor implementation
+
+  public static final String XML_FONT = "Font";
+
+  public static final String ATTR_NAME = "name";
+  public static final String ATTR_STYLE = "style";
+  public static final String ATTR_SIZE = "size";
+
+  /** Called to load property value from specified XML subtree. If succesfully loaded, 
+  * the value should be available via the getValue method.
+  * An IOException should be thrown when the value cannot be restored from the specified XML element
+  * @param element the XML DOM element representing a subtree of XML from which the value should be loaded
+  * @exception IOException thrown when the value cannot be restored from the specified XML element
+  */
+  public void readFromXML (org.w3c.dom.Node element) throws java.io.IOException {
+    if (!XML_FONT.equals (element.getNodeName ())) {
+      throw new java.io.IOException ();
+    }
+    org.w3c.dom.NamedNodeMap attributes = element.getAttributes ();
+    try {
+      String name = attributes.getNamedItem (ATTR_NAME).getNodeValue ();
+      String style = attributes.getNamedItem (ATTR_STYLE).getNodeValue (); // [PENDING - style names]
+      String size = attributes.getNamedItem (ATTR_SIZE).getNodeValue (); 
+      setValue (new Font (name, Integer.parseInt (style), Integer.parseInt (size)));
+    } catch (NullPointerException e) {
+      throw new java.io.IOException ();
+    }
+  }
+  
+  /** Called to store current property value into XML subtree. The property value should be set using the
+  * setValue method prior to calling this method.
+  * @param doc The XML document to store the XML in - should be used for creating nodes only
+  * @return the XML DOM element representing a subtree of XML from which the value should be loaded
+  */
+  public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
+    org.w3c.dom.Element el = doc.createElement (XML_FONT);
+    el.setAttribute (ATTR_NAME, font.getName ());
+    el.setAttribute (ATTR_STYLE, Integer.toString (font.getStyle ()));
+    el.setAttribute (ATTR_SIZE, Integer.toString (font.getSize ()));
+    return el;
+  }
+
 }
 
 /*
  * Log
+ *  5    Gandalf   1.4         7/13/99  Ian Formanek    Implements 
+ *       XMLPropertyEditor
  *  4    Gandalf   1.3         7/8/99   Jesse Glick     Context help.
  *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
