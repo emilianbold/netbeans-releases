@@ -74,18 +74,28 @@ public class AntProjectDataObject extends MultiDataObject implements PropertyCha
         return new AntProjectNode (this);
     }
 
-    void addSaveCookie (SaveCookie save) {
-        if (getCookie (SaveCookie.class) == null) {
-            getCookieSet ().add (save);
-            setModified (true);
-        }
+    void addSaveCookie (final SaveCookie save) {
+        // #9586 invoke this asynch due to strange behavior in CloneableEditorSupport:
+        RequestProcessor.postRequest (new Runnable () {
+                public void run () {
+                    if (getCookie (SaveCookie.class) == null) {
+                        getCookieSet ().add (save);
+                        setModified (true);
+                    }
+                }
+            });
     }
 
-    void removeSaveCookie (SaveCookie save) {
-        if (getCookie (SaveCookie.class) == save) {
-            getCookieSet ().remove (save);
-            setModified (false);
-        }
+    void removeSaveCookie (final SaveCookie save) {
+        // #9586 again:
+        RequestProcessor.postRequest (new Runnable () {
+                public void run () {
+                    if (getCookie (SaveCookie.class) == save) {
+                        getCookieSet ().remove (save);
+                        setModified (false);
+                    }
+                }
+            });
     }
 
     public void propertyChange (PropertyChangeEvent ev) {

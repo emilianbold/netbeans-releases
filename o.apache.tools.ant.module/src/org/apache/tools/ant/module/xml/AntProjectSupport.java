@@ -139,7 +139,7 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
             EditorCookie editor = getEditor ();
             if (editor != null) {
                 StyledDocument doc = editor.openDocument ();
-                rd = new DocumentReader (doc);
+                rd = new DocumentReader (doc, fo);
                 doc.addDocumentListener (this);
             } else if (fo != null) {
                 rd = new InputStreamReader (fo.getInputStream ());
@@ -227,7 +227,7 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
                 // XXX replace with XMLDataObject.write when possible....
                 OutputFormat format = new OutputFormat (projDoc);
                 format.setPreserveSpace (true);
-                Writer wr = new DocumentWriter (doc);
+                Writer wr = new DocumentWriter (doc, fo);
                 try {
                     XMLSerializer ser = new XMLSerializer (wr, format);
                     ser.serialize (projDoc);
@@ -353,11 +353,11 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     private static class DocumentReader extends PipedReader implements Runnable {
         private StyledDocument doc;
         private PipedWriter wr;
-        public DocumentReader (StyledDocument doc) throws IOException {
+        public DocumentReader (StyledDocument doc, FileObject fo) throws IOException {
             this.doc = doc;
             wr = new PipedWriter ();
             connect (wr);
-            new Thread (this).start ();
+            new Thread (this, "ant DocumentReader: " + fo).start (); // NOI18N
         }
         public void run () {
             try {
@@ -385,11 +385,11 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
     private static class DocumentWriter extends PipedWriter implements Runnable {
         private StyledDocument doc;
         private PipedReader rd;
-        public DocumentWriter (final StyledDocument doc) throws IOException {
+        public DocumentWriter (StyledDocument doc, FileObject fo) throws IOException {
             this.doc = doc;
             rd = new PipedReader ();
             connect (rd);
-            new Thread (this).start ();
+            new Thread (this, "ant DocumentWriter: " + fo).start (); // NOI18N
         }
         public void run () {
             try {
