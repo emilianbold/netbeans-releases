@@ -285,9 +285,11 @@ implements Outputable, Timeoutable {
     public static JPopupMenu callPopup(final ComponentOperator oper, int x, int y, int mouseButton) {
 	oper.makeComponentVisible();
         //1.5 workaround
-        oper.getQueueTool().waitEmpty(10);
-        oper.getQueueTool().waitEmpty(10);
-        oper.getQueueTool().waitEmpty(10);
+        QueueTool qt = new QueueTool();
+        qt.setOutput(oper.getOutput().createErrorOutput());
+        qt.waitEmpty(10);
+        qt.waitEmpty(10);
+        qt.waitEmpty(10);
         //end of 1.5 workaround
         oper.clickForPopup(x, y, mouseButton);
         oper.getTimeouts().sleep("JMenuOperator.WaitBeforePopupTimeout");

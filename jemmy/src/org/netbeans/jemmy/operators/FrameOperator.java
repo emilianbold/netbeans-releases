@@ -299,7 +299,9 @@ public class FrameOperator extends WindowOperator implements Outputable {
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put(TITLE_DPROP, ((Frame)getSource()).getTitle());
+        if(((Frame)getSource()).getTitle() != null) {
+            result.put(TITLE_DPROP, ((Frame)getSource()).getTitle());
+        }
 	result.put(STATE_DPROP, 
 		   (((Frame)getSource()).getState() == Frame.ICONIFIED) ?
 		   STATE_ICONIFIED_DPROP_VALUE : STATE_NORMAL_DPROP_VALUE);
