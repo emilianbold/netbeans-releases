@@ -36,6 +36,11 @@ public class FormDataLoader extends JavaDataLoader {
     /** Constructs a new FormDataLoader */
     public FormDataLoader() {
         super(FormDataObject.class);
+    }
+
+    protected void initialize () {
+        super.initialize ();
+
         setDisplayName(NbBundle.getBundle(FormDataLoader.class).getString("PROP_FormLoader_Name"));
 
         setActions(new SystemAction[] {
