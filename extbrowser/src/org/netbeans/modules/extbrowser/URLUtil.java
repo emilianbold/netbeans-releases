@@ -51,7 +51,7 @@ public class URLUtil {
         try {
             FileObject fos[] = URLMapper.findFileObjects(new URL(urlString));
             if ((fos != null) && (fos.length > 0)) {
-                URL newUrl = URLMapper.findURL(fos[0], URLMapper.EXTERNAL);
+                URL newUrl = getURLOfAppropriateType(fos[0]);
                 if (newUrl != null) {
                     // re-add the anchor if exists
                     urlString = newUrl.toString();
@@ -67,6 +67,19 @@ public class URLUtil {
         }
         
         return url;
+    }
+    
+    /** Returns a URL for the given file object that can be correctly interpreted
+     * by usual web browsers (including Netscape 4.71, IE and Mozilla).
+     * First attepts to get an EXTERNAL URL, if that is a file: URL, it is used;
+     * otherwise a NETWORK URL is used.
+     */
+    private static URL getURLOfAppropriateType(FileObject fo) {
+        URL myURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+        if ((myURL != null) && "file".equals(myURL.getProtocol().toLowerCase())) {
+            return myURL;
+        }
+        return URLMapper.findURL(fo, URLMapper.NETWORK);
     }
     
 
