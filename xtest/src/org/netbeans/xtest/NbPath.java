@@ -30,32 +30,39 @@ import java.io.*;
 public class NbPath extends Task {
 
     public static void main(String args[]) throws Exception {
-        NbPath nb = new NbPath();
-        
-        nb.setNbHome("c:/sw/nb126");
-        nb.execute();
     }
     
     public void setNbHome(String home) {
-        this.home = home;
+        this.nbhome = checkPath(home);
     }
     
+    public void setXTHome(String home) {
+        this.xthome = checkPath(home);
+    }
+
+    public void setAntHome(String home) {
+        this.anthome = checkPath(home);
+    }
+
     public void execute () throws BuildException {
-        if (null == home)
-            throw new BuildException("Use nbhome attribute to set up the netbeans home directory.");
+        File jar;
         
+        if (null == nbhome || null == xthome)
+            throw new BuildException("Use nbhome attribute to set up the netbeans home directory.");
+  
+        // prepare netbeans.test.... path
         StringBuffer list = new StringBuffer(1024);
-        listJars(home, "lib/patches", list);
-        listJars(home, "lib", list);
-        listJars(home, "lib/ext", list);
-        listJars(home, "modules", list);
-        listJars(home, "modules/ext", list);
+        listJars(nbhome, "lib/patches", list);
+        listJars(nbhome, "lib", list);
+        listJars(nbhome, "lib/ext", list);
+        listJars(nbhome, "modules", list);
+        listJars(nbhome, "modules/ext", list);
         getProject().setProperty(NB_LIBRARY_PATH, list.toString());
 
         list.setLength(0);
-        listJars(home, "lib/patches", list);
-        listJars(home, "lib", list);
-        listJars(home, "lib/ext", list);
+        listJars(nbhome, "lib/patches", list);
+        listJars(nbhome, "lib", list);
+        listJars(nbhome, "lib/ext", list);
         listJars(System.getProperty("java.home"), "lib", list);
         getProject().setProperty(NB_CLASS_PATH, list.toString());
 
@@ -63,27 +70,66 @@ public class NbPath extends Task {
         listJars(System.getProperty("java.home"), "lib", list);
         listJars(System.getProperty("Env-JAVA_HOME"), "lib", list);
         getProject().setProperty(NB_BOOTCLASS_PATH, list.toString());
+
+        // prepare ant.class.path property
+        String ant_path = null;
+        String ant_jars [] = new String [] { "ant.jar", "optional.jar" }; // will find both optional.jar & ant-optional.jar
+        if (null != anthome)
+            ant_path = lookupAnt(anthome);
         
+        if (null == ant_path && null != System.getProperty("ant.home"))
+            ant_path = lookupAnt(System.getProperty("ant.home"));
+        
+        if (null == ant_path)
+            ant_path = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), ant_jars);
+
+        if (null == ant_path)
+            ant_path = lookupJarsFromPath(System.getProperty("java.class.path", ""), ant_jars);
+
+        if (null == ant_path)
+            ant_path = "";
+
+        getProject().setProperty(ANT_PATH, ant_path);
+        
+        // find junit.jar
+        String junit_path = null;
+        String junit_jars [] = new String [] { "junit.jar" };
+        junit_path = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), junit_jars);
+        if (null == junit_path)
+            junit_path = lookupJarsFromPath(System.getProperty("java.class.path", ""), junit_jars);
+        if (null == junit_path)
+            junit_path = "";
+        getProject().setProperty(JUNIT_PATH, junit_path);
+        
+        // find xalan.jar
+        String xalan_path = null;
+        String xalan_jars [] = new String [] { "xalan.jar" };
+        xalan_path = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), xalan_jars);
+        if (null == xalan_path)
+            xalan_path = lookupJarsFromPath(System.getProperty("java.class.path", ""), xalan_jars);
+        if (null == xalan_path)
+            xalan_path = "";
+        getProject().setProperty(XALAN_PATH, xalan_path);
+
+        // find xerces.jar
+        String xerces_path = null;
+        String xerces_jars [] = new String [] { "xerces.jar" };
+        xerces_path = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), xerces_jars);
+        if (null == xerces_path)
+            xerces_path = lookupJarsFromPath(System.getProperty("java.class.path", ""), xerces_jars);
+        if (null == xerces_path)
+            xerces_path = "";
+        getProject().setProperty(XERCES_PATH, xerces_path);
+        
+        // prepare xtest.path property
+        String  xtest_home = null;
         list.setLength(0);
-        if (null != System.getProperty("ant.home")) {
-            listJars(System.getProperty("ant.home"), "lib/patch", list);
-            listJars(System.getProperty("ant.home"), "lib", list);
-        }
-        else {
-            File jar = new File(System.getProperty("netbeans.home"), "modules/ext/ant.jar");
-            if (jar.exists())
-                addPath(list, jar.getAbsolutePath());
-            jar = new File(System.getProperty("netbeans.home"), "modules/ext/ant-optional.jar");
-            if (jar.exists())
-                addPath(list, jar.getAbsolutePath());
-            else {
-                jar = new File(System.getProperty("netbeans.home"), "modules/ext/optional.jar");
-                if (jar.exists())
-                    addPath(list, jar.getAbsolutePath());
-            }
-            listJars(System.getProperty("netbeans.home"), "lib/ext", list);
-        }
-        getProject().setProperty(ANT_CLASS_PATH, list.toString());
+        addPath(list, appendSlash(xthome) + "lib/xtest.jar");
+        addPath(list, ant_path);
+        addPath(list, junit_path);
+        addPath(list, xalan_path);
+        addPath(list, xerces_path);
+        getProject().setProperty(XTEST_PATH, list.toString());
     }
 
     private void listJars(String root, String folder, StringBuffer list) {
@@ -101,8 +147,8 @@ public class NbPath extends Task {
     }
     
     private void addPath(StringBuffer list, String path) {
-        if (0 != list.length()) 
-            list.append(";");
+        if (0 != list.length() && ';' != list.charAt(list.length() - 1))
+            list.append(';');
         list.append(path.replace('\\', '/'));
     }
     
@@ -114,6 +160,60 @@ public class NbPath extends Task {
         return newS;
     }
 
+    private String lookupAnt(String antHome) {
+        StringBuffer list;
+        File jar1 = new File(antHome, "lib/ant.jar");
+        File jar2 = new File(antHome, "lib/optional.jar");
+        
+        if (!jar2.exists())
+            jar2 = new File(antHome, "lib/ant-optional.jar");
+        
+        if (!jar1.exists() || !jar2.exists())
+            return null;
+        
+        list = new StringBuffer(256);
+        addPath(list, jar1.getAbsolutePath());
+        addPath(list, jar2.getAbsolutePath());
+        
+        return list.toString();
+    }
+    
+    private String lookupJarsFromPath(String path, String jars[]) {
+        StringBuffer list = new StringBuffer();
+        
+        for(int i = 0; i < jars.length; i++) {
+            String jarPath;
+            if (null == (jarPath = getJarPath(path, jars[i])))
+                return null;
+            
+            addPath(list, jarPath);
+        }
+        
+        return list.toString();
+    }
+
+    private String getJarPath(String path, String jar) {
+        int iJar        = path.indexOf(jar);
+        int iBegin;
+        int iEnd;
+        
+        if (-1 == iJar)
+            return null;
+        
+        iBegin = path.lastIndexOf(';', iJar);
+        iBegin = -1 == iBegin ? 0 : iBegin + 1;
+        iEnd = path.indexOf(';', iJar);
+        iEnd = -1 == iEnd ? path.length() : iEnd;
+        return path.substring(iBegin, iEnd);
+    }
+    
+    private String checkPath(String path) {
+        File f = new File(path);
+        if (!f.isAbsolute())
+            f = getProject().resolveFile(path);
+        return f.getAbsolutePath();
+    }
+    
     private class FileExtFilter implements FileFilter {
         protected String extension = null;
         public FileExtFilter(String extension) {
@@ -133,9 +233,16 @@ public class NbPath extends Task {
         }
     }
     
-    private String home = null;
+    private String nbhome = null;
+    private String xthome = null;
+    private String anthome = null;
+    
     private static String NB_LIBRARY_PATH     = "netbeans.test.library.path";
     private static String NB_CLASS_PATH       = "netbeans.test.class.path";
     private static String NB_BOOTCLASS_PATH   = "netbeans.test.bootclass.path";
-    private static String ANT_CLASS_PATH      = "ant.class.path";
+    private static String XTEST_PATH          = "xtest.path";
+    private static String ANT_PATH            = "ant.path";
+    private static String JUNIT_PATH          = "junit.path";
+    private static String XALAN_PATH          = "xalan.path";
+    private static String XERCES_PATH         = "xerces.path";
 }
