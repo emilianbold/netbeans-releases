@@ -17,6 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Actions">
         <folder name="Project">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
             <!-- Project operations -->
             <file name="org-netbeans-modules-project-ui-NewProject.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewProject"/>
