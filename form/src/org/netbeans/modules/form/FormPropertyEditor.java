@@ -369,7 +369,7 @@ public class FormPropertyEditor implements PropertyEditor,
         synchronized(this) {
             if (listeners == null)
                 return;
-            targets = (java.util.ArrayList) listeners;
+            targets = (ArrayList) listeners.clone();
         }
 
         PropertyChangeEvent evt = new PropertyChangeEvent(this, null, null, null);
