@@ -13,13 +13,22 @@
 
 package org.netbeans.modules.xml.multiview;
 
-import org.openide.loaders.*;
-import org.openide.cookies.*;
-import org.openide.nodes.CookieSet;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.netbeans.core.spi.multiview.*;
-import java.io.*;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.nodes.CookieSet;
+import org.openide.util.NbBundle;
 import org.xml.sax.InputSource;
+
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 /**
  * XmlMultiviewDataObject.java
  *
@@ -33,8 +42,9 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private org.xml.sax.SAXException saxError;
     boolean changedFromUI;
     private boolean modelUpdated;
-    private Reader reader;
-    
+    //private HashMap webSupportMap,customDataMap;
+    protected boolean parsable;
+
     /** Creates a new instance of XmlMultiViewDataObject */
     public XmlMultiViewDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
@@ -242,5 +252,22 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     public void setLastOpenView(int index) {
         getEditorSupport().setLastOpenView(index);
     }
-    
+
+    public boolean isParsable(){
+        return parsable;
+    }
+
+    public void checkParsable() {
+        if (!isParsable()) {
+            NotifyDescriptor desc = new org.openide.NotifyDescriptor.Message(
+                    NbBundle.getMessage(XmlMultiViewDataObject.class, "TXT_DocumentUnparsable"),
+                    NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(desc);
+            if (getOriginal() == null) {
+                goToXmlView();
+            }
+        }
+    }
+
+    public abstract RootInterface getOriginal();
 }

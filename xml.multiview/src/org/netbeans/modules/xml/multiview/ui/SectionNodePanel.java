@@ -15,28 +15,26 @@ package org.netbeans.modules.xml.multiview.ui;
 
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.openide.nodes.Node;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
 
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.CompoundBorder;
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 
 /**
  * @author pfiala
- *
- * The SectionNodePanel shows data of related SectionNode object
- * which contains all information about the section
+ *         <p/>
+ *         The SectionNodePanel shows data of related SectionNode object
+ *         which contains all information about the section
  */
 public class SectionNodePanel extends SectionPanel {
 
     public SectionNodePanel(SectionNode node) {
         super(node.getSectionNodeView(), node, node.getDisplayName(), node);
-        if(node.getKey() instanceof SectionView) {
+        if (node.getKey() instanceof SectionView) {
             // the section corresponding to the top level node is always expanded
             setInnerViewMode();
-        } else if(node.isExpanded()) {
+        } else if (node.isExpanded()) {
             setExpandedViewMode();
         }
     }
@@ -74,6 +72,7 @@ public class SectionNodePanel extends SectionPanel {
 
     /**
      * Creation of inner panel using related SectionNode object
+     *
      * @return newly created inner panel
      */
     protected SectionInnerPanel createInnerpanel() {
@@ -97,8 +96,8 @@ public class SectionNodePanel extends SectionPanel {
      */
     public void open() {
         Node parentNode = getNode().getParentNode();
-        if(parentNode instanceof SectionNode) {
-            ((SectionNode)parentNode).getSectionNodePanel().open();
+        if (parentNode instanceof SectionNode) {
+            ((SectionNode) parentNode).getSectionNodePanel().open();
         }
         if (getInnerPanel() == null) {
             super.open();
@@ -107,8 +106,8 @@ public class SectionNodePanel extends SectionPanel {
 
     public void dataFileChanged() {
         SectionInnerPanel innerPanel = getInnerPanel();
-        if(innerPanel != null) {
+        if (innerPanel != null) {
             innerPanel.dataFileChanged();
-        }        
+        }
     }
 }

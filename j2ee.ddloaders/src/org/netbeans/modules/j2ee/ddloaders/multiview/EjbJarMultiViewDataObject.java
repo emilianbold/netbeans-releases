@@ -27,6 +27,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeEvent;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeListener;
@@ -456,7 +457,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     }
 
     private boolean parse(InputSource is) throws IOException {
-        boolean parsable = false;
+        parsable = false;
         if (is != null) { // merging model with the document
             org.xml.sax.SAXParseException error = null;
             SAXException oldError = getSaxError();
@@ -481,11 +482,11 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
                     oldEjbJar.setError(null);
                     ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(
                             oldError == null ? null : oldError.getMessage(), null);
+                    parsable = true;
                 }
                 System.out.println("version:" + ejbJar.getVersion() + " Status:" + ejbJar.getStatus() + " Error:" + //NOI18N
                         ejbJar.getError());
                 setSaxError(error);
-                parsable = true;
             } catch (SAXException ex) {
                 if (ejbJar == null || oldEjbJar.getOriginal() == null) {
                     ejbJar = new EjbJarProxy(null, version);
@@ -544,6 +545,10 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             new DDView(this, OVERVIEW),
             new DDView(this, CMP_RELATIONSHIPS),
         };
+    }
+
+    public RootInterface getOriginal() {
+        return ((EjbJarProxy) ejbJar).getOriginal();
     }
 
     /**
