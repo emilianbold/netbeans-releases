@@ -41,13 +41,13 @@ import java.net.URL;
  *
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class TestSuiteTargetPanel extends javax.swing.JPanel implements WizardDescriptor.Panel {
+public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardDescriptor.Panel {
     
     private ChangeListener listener=null;
     private static final String DEFAULT_NAME="<default name>";
     
     /** Creates new form TestSuitePanel1 */
-    public TestSuiteTargetPanel() {
+    public TestTypeTemplatePanel() {
         initComponents();
         templateCombo.setRenderer(new WizardIterator.MyCellRenderer());
         DocumentListener list=new DocumentListener() {
@@ -56,7 +56,6 @@ public class TestSuiteTargetPanel extends javax.swing.JPanel implements WizardDe
             public void changedUpdate(DocumentEvent e) {fireStateChanged();}
         };
         nameField.getDocument().addDocumentListener(list);
-        packageField.getDocument().addDocumentListener(list);
         fireStateChanged();
     }
     
@@ -70,8 +69,6 @@ public class TestSuiteTargetPanel extends javax.swing.JPanel implements WizardDe
 
         nameLabel = new javax.swing.JLabel();
         nameField = new javax.swing.JTextField();
-        packageLabel = new javax.swing.JLabel();
-        packageField = new javax.swing.JTextField();
         templateLabel = new javax.swing.JLabel();
         templateCombo = new javax.swing.JComboBox();
         descriptionLabel = new javax.swing.JLabel();
@@ -108,34 +105,6 @@ public class TestSuiteTargetPanel extends javax.swing.JPanel implements WizardDe
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(nameField, gridBagConstraints);
-
-        packageLabel.setText("Package: ");
-        packageLabel.setLabelFor(packageField);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-        add(packageLabel, gridBagConstraints);
-
-        packageField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                packageFieldFocusGained(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 100.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-        add(packageField, gridBagConstraints);
 
         templateLabel.setText("Select a Template: ");
         templateLabel.setLabelFor(templateCombo);
@@ -216,10 +185,6 @@ public class TestSuiteTargetPanel extends javax.swing.JPanel implements WizardDe
         }
     }//GEN-LAST:event_templateComboActionPerformed
 
-    private void packageFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_packageFieldFocusGained
-        packageField.selectAll();
-    }//GEN-LAST:event_packageFieldFocusGained
-
     private void nameFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_nameFieldFocusGained
         nameField.selectAll();
     }//GEN-LAST:event_nameFieldFocusGained
@@ -238,7 +203,7 @@ public class TestSuiteTargetPanel extends javax.swing.JPanel implements WizardDe
     }
     
     public void readSettings(Object obj) {
-        templateCombo.setModel(new DefaultComboBoxModel(WizardIterator.getSuiteTemplates()));
+        templateCombo.setModel(new DefaultComboBoxModel(WizardIterator.getTestTypeTemplates()));
         templateComboActionPerformed(null);
     }
     
@@ -251,11 +216,9 @@ public class TestSuiteTargetPanel extends javax.swing.JPanel implements WizardDe
         String name=nameField.getText();
         if (DEFAULT_NAME.equals(name))
             name=null;
-        wizard.putProperty(WizardIterator.SUITE_NAME_PROPERTY, name);
-        wizard.putProperty(WizardIterator.SUITE_PACKAGE_PROPERTY, packageField.getText().replace('.','/'));
+        wizard.putProperty(WizardIterator.TESTTYPE_NAME_PROPERTY, name);
         Object template=templateCombo.getSelectedItem();
-        wizard.putProperty(WizardIterator.SUITE_TEMPLATE_PROPERTY, template);
-        wizard.putProperty(WizardIterator.TEMPLATE_METHODS_PROPERTY, WizardIterator.getTemplateMethods((JavaDataObject)template));
+        wizard.putProperty(WizardIterator.TESTTYPE_TEMPLATE_PROPERTY, template);
 
     }
 
@@ -274,24 +237,18 @@ public class TestSuiteTargetPanel extends javax.swing.JPanel implements WizardDe
     }
     
     public boolean isValid() {
-        StringTokenizer st=new StringTokenizer(packageField.getText().replace('.','/'),"/");
-        while (st.hasMoreTokens())
-            if (!Utilities.isJavaIdentifier(st.nextToken()))
-                return false;
         return DEFAULT_NAME.equals(nameField.getText())||Utilities.isJavaIdentifier(nameField.getText());
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel nameLabel;
-    private javax.swing.JLabel packageLabel;
     private javax.swing.JLabel templateLabel;
     private javax.swing.JTextField nameField;
-    private javax.swing.JTextField packageField;
     private org.openide.awt.HtmlBrowser htmlBrowser;
     private javax.swing.JPanel descriptionPanel;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JComboBox templateCombo;
     private javax.swing.JLabel noDescription;
     // End of variables declaration//GEN-END:variables
-     
+    
 }

@@ -82,10 +82,12 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Templates">
     <folder name="TestTools">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
+      <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/testtools.html"/>
       <file name="MyTestWorkspace.xml" url="templates/build.xml.template">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestWorkspaceWizardIterator.singleton"/>
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/workspace.html"/>
       </file>
       <file name="build-.xml" url="templates/build-.xml.template">
       </file>
@@ -97,21 +99,25 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestTypeWizardIterator.singleton"/>
         <attr name="templatepattern" stringvalue="{0}{1}"/>
         <attr name="usepattern" boolvalue="true"/>
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/qa-functional.html"/>
       </file>
       <file name="simpleTest.java" url="templates/simpleTest.java.template">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestSuiteWizardIterator.singleton"/>
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/simpleTest.html"/>
       </file>
       <file name="jemmyTest.java" url="templates/jemmyTest.java.template">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestSuiteWizardIterator.singleton"/>
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/jemmyTest.html"/>
       </file>
       <file name="jellyTest.java" url="templates/jellyTest.java.template">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestSuiteWizardIterator.singleton"/>
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/jellyTest.html"/>
       </file>
     </folder>
   </folder>

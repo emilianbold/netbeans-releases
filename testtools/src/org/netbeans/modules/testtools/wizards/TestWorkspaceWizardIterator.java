@@ -50,6 +50,7 @@ public class TestWorkspaceWizardIterator extends WizardIterator {
         panels=new WizardDescriptor.Panel[] {
             wizard.targetChooser(),
             new TestWorkspaceSettingsPanel(),
+            new TestTypeTemplatePanel(),
             new TestTypeSettingsPanel(),
             new TestBagSettingsPanel(),
             new TestSuiteTargetPanel(),
@@ -58,22 +59,25 @@ public class TestWorkspaceWizardIterator extends WizardIterator {
         names = new String[] {
             "Test Workspace "+wizard.targetChooser().getComponent().getName(),
             "Test Workspace Settings",
+            "Test Type Name and Template",
             "Test Type Settings",
             "Test Bag Settings",
-            "Test Suite Target Location",
+            "Test Suite Template and Target Location",
             "Create Test Cases"
         };
         for (int i=0; i<panels.length; i++) {
             ((javax.swing.JComponent)panels[i]).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+            ((javax.swing.JComponent)panels[i]).setName(names[i]);
         }
         ((javax.swing.JComponent)panels[0]).putClientProperty("WizardPanel_contentData", names); 
         current=0;
     }
     
     public java.util.Set instantiate(TemplateWizard wizard) throws java.io.IOException {
-        HashSet set=new HashSet();
-        set.add(wizard.getTemplate().createFromTemplate(DataFolder.create(wizard.getTargetFolder(),"test"), "build"));
-        return set;
+        wizard.putProperty(CREATE_TESTBAG_PROPERTY, new Boolean(current>3));
+        wizard.putProperty(CREATE_TESTTYPE_PROPERTY, new Boolean(current>2));
+        wizard.putProperty(CREATE_SUITE_PROPERTY, new Boolean(!hasNext()));
+        return instantiateTestWorkspace(wizard);
     }
     
 }

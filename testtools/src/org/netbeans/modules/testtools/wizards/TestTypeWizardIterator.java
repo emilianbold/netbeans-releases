@@ -25,6 +25,14 @@ import org.openide.loaders.DataObject;
 import org.openide.TopManager;
 import org.openide.loaders.DataFolder;
 import java.util.HashSet;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.FileUtil;
+import java.io.File;
+import org.netbeans.modules.java.JavaDataObject;
+import java.util.Vector;
+import org.openide.src.MethodElement;
+import java.io.IOException;
 
 /**
  *
@@ -57,24 +65,24 @@ public class TestTypeWizardIterator extends WizardIterator {
             "Test Type "+wizard.targetChooser().getComponent().getName(),
             "Test Type Settings",
             "Test Bag Settings",
-            "Test Suite Target Location",
+            "Test Suite Template and Target Location",
             "Create Test Cases"
         };
         for (int i=0; i<panels.length; i++) {
             ((javax.swing.JComponent)panels[i]).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+            ((javax.swing.JComponent)panels[i]).setName(names[i]);
         }
         ((javax.swing.JComponent)panels[0]).putClientProperty("WizardPanel_contentData", names); 
         current=0;
     }
     
-    public java.util.Set instantiate(TemplateWizard wizard) throws java.io.IOException {
-        String name=wizard.getTargetName();
-        if (name==null)
-            name=wizard.getTemplate().getPrimaryFile().getName();
-        DataFolder.create(wizard.getTargetFolder(), name+"/src");
-        HashSet set=new HashSet();
-        set.add(wizard.getTemplate().createFromTemplate(wizard.getTargetFolder(), wizard.getTargetName()));
-        return set;
+    public java.util.Set instantiate(TemplateWizard wizard) throws IOException {
+        wizard.putProperty(TESTTYPE_NAME_PROPERTY, wizard.getTargetName());
+        wizard.putProperty(TESTTYPE_TARGET_PROPERTY, wizard.getTargetFolder());
+        wizard.putProperty(TESTTYPE_TEMPLATE_PROPERTY, wizard.getTemplate());
+        wizard.putProperty(CREATE_TESTBAG_PROPERTY, new Boolean(current>1));
+        wizard.putProperty(CREATE_SUITE_PROPERTY, new Boolean(!hasNext()));
+        return instantiateTestType(wizard);
     }
     
 }

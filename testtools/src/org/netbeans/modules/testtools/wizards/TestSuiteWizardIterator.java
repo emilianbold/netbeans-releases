@@ -50,6 +50,7 @@ public class TestSuiteWizardIterator extends WizardIterator {
 
     public void initialize(TemplateWizard wizard) {
         this.wizard=wizard;
+        wizard.putProperty(TEMPLATE_METHODS_PROPERTY, getTemplateMethods((JavaDataObject)wizard.getTemplate()));
         panels=new WizardDescriptor.Panel[] {
             wizard.targetChooser(),
             new TestCasesPanel()
@@ -60,24 +61,16 @@ public class TestSuiteWizardIterator extends WizardIterator {
         };
         for (int i=0; i<panels.length; i++) {
             ((javax.swing.JComponent)panels[i]).putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+            ((javax.swing.JComponent)panels[i]).setName(names[i]);
         }
         ((javax.swing.JComponent)panels[0]).putClientProperty("WizardPanel_contentData", names); 
         current=0;
     }
     
     public java.util.Set instantiate(TemplateWizard wizard) throws java.io.IOException {
-        Vector methods=(Vector)wizard.getProperty(METHODS_PROPERTY);
-        JavaDataObject jdo=(JavaDataObject)wizard.getTemplate();
-        MethodElement[] templates=getTemplateMethods(jdo);
-        jdo=(JavaDataObject)jdo.createFromTemplate(wizard.getTargetFolder(), wizard.getTargetName());
-        try {
-            transformTemplateMethods(jdo, (CaseElement[])methods.toArray(new CaseElement[methods.size()]), templates);
-        } catch (SourceException se) {
-            ErrorManager.getDefault().notify(se);
-        }
-        HashSet set=new HashSet();
-        set.add(jdo);
-        return set;
+        wizard.putProperty(SUITE_TARGET_PROPERTY, wizard.getTargetFolder());
+        wizard.putProperty(SUITE_NAME_PROPERTY, wizard.getTargetName());
+        return instantiateTestSuite(wizard);
     }
     
 }
