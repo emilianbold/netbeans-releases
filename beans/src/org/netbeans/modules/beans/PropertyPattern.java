@@ -287,7 +287,11 @@ public class PropertyPattern extends Pattern {
                                                 new Object[] { fmt.format (estimatedField) } );
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
             if ( DialogDisplayer.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
-                estimatedField.setName( Identifier.create( Introspector.decapitalize( name ) ) );
+                String fieldName = Introspector.decapitalize(name);
+                
+                if( PropertyActionSettings.getDefault().getPropStyle().equals(PropertyActionSettings.GENERATE_UNDERSCORED))
+                    fieldName = PropertyActionSettings.GENERATE_UNDERSCORED + fieldName;
+                estimatedField.setName(Identifier.create(fieldName));
                 if ( mode == READ_WRITE || mode == READ_ONLY ) {
                     String existingGetterBody = getterMethod.getBody().trim();
                     String oldGetterBody1 = BeanPatternGenerator.propertyGetterBody( oldName, true, true ).trim();
