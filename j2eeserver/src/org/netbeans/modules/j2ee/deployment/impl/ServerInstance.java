@@ -171,7 +171,7 @@ public class ServerInstance implements Node.Cookie {
         else {
             for (Iterator it = debugInfo.keySet().iterator(); sdi == null && it.hasNext(); ) {
                 Target t = (Target) it.next();
-                if (t == target || t.getName().equals(target.getName()))
+                if (t == target || (t != null && t.getName().equals(target.getName())))
                     sdi = (ServerDebugInfo) debugInfo.get(t);
             }
         }
