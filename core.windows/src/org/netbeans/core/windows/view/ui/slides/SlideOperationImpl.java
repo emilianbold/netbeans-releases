@@ -15,7 +15,10 @@ package org.netbeans.core.windows.view.ui.slides;
 
 import java.awt.Component;
 import java.awt.Rectangle;
+import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.windows.Constants;
@@ -95,6 +98,14 @@ class SlideOperationImpl implements SlideOperation, ChangeListener {
         switch (type) {
             case SLIDE_IN:
                 component.setBounds(finishBounds);
+                if (component instanceof JComponent) {
+                    //Allow drop-shadows and such for floating windows -- maybe better
+                    //place to set this?
+                    Border b = (Border) UIManager.get ("floatingBorder"); //NOI18N
+                    if (b != null) {
+                        ((javax.swing.JComponent) component).setBorder (b);
+                    }
+                }                
                 pane.add(component, layer);
                 break;
             case SLIDE_OUT:
