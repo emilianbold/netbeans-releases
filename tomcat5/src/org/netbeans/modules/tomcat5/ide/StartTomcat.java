@@ -85,19 +85,21 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     public static final String TAG_JPDA_SHUTDOWN = "jpda_shutdown"; // NOI18N
 
     /** Startup command tag. */
-    public static final String TAG_STARTUP_CMD   = "startup"; // NOI18N
+    public static final String TAG_EXEC_CMD      = "catalina"; // NOI18N
+    public static final String TAG_EXEC_STARTUP  = "exec_startup"; // NOI18N
+    public static final String TAG_EXEC_SHUTDOWN = "exec_shutdown"; // NOI18N
     /** Shutdown command tag. */
-    public static final String TAG_SHUTDOWN_CMD   = "shutdown"; // NOI18N
+    //public static final String TAG_SHUTDOWN_CMD   = "shutdown"; // NOI18N
     /** Debug startup/shutdown tag */
     public static final String TAG_DEBUG_CMD   = "catalina"; // NOI18N
     
-    private static NbProcessDescriptor defaultExecDesc(String command) {
+    private static NbProcessDescriptor defaultExecDesc(String command, String argCommand) {
         return new NbProcessDescriptor (
                 "{" + StartTomcat.TAG_CATALINA_HOME + "}{" +     // NOI18N
                 ProcessExecutor.Format.TAG_SEPARATOR + "}bin{" + // NOI18N
                 ProcessExecutor.Format.TAG_SEPARATOR + "}{" +     // NOI18N
                 command + "}",  // NOI18N
-                "", 
+                "{" + argCommand + "}" ,  // NOI18N
                 org.openide.util.NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
             );     
     }
@@ -266,16 +268,18 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
         // XXX check for null's
 
         // install the monitor
-        try {
-            MonitorSupport.synchronizeMonitorWithFlag(tm, true, true);
-        }
-        catch (IOException e) {
-            // fault, but not a critical one
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
-        catch (SAXException e) {
-            // fault, but not a critical one
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        if (command == CommandType.START) {
+            try {
+                MonitorSupport.synchronizeMonitorWithFlag(tm, true, true);
+            }
+            catch (IOException e) {
+                // fault, but not a critical one
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+            catch (SAXException e) {
+                // fault, but not a critical one
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
         }
         
         if (startDebugMode) {
@@ -303,6 +307,9 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
                     true,
                     new File (homeDir, "bin")
                 );        
+                if (command == CommandType.START) {
+                    ProcessSupport.connectProcessToOutputWindow(p, tm.getUri());
+                }
             } catch (java.io.IOException ioe) {
                 if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                     TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);    // NOI18N
@@ -313,7 +320,8 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
                 );
             }        
         } else {
-            NbProcessDescriptor pd  = defaultExecDesc (command == CommandType.START ? StartTomcat.TAG_STARTUP_CMD : StartTomcat.TAG_SHUTDOWN_CMD);
+            NbProcessDescriptor pd  = defaultExecDesc (StartTomcat.TAG_EXEC_CMD, 
+                                                       command == CommandType.START ? StartTomcat.TAG_EXEC_STARTUP : StartTomcat.TAG_EXEC_SHUTDOWN);
             try { 
                 pes.fireHandleProgressEvent (
                     null, 
@@ -334,6 +342,9 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
                     true,
                     new File (homeDir, "bin")
                 );
+                if (command == CommandType.START) {
+                    ProcessSupport.connectProcessToOutputWindow(p, tm.getUri());
+                }
             } catch (java.io.IOException ioe) {
                 if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                     TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);    // NOI18N
@@ -689,11 +700,13 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
         public TomcatFormat (String home) {
             super(new java.util.HashMap ());
             java.util.Map map = getMap ();
-            map.put (TAG_STARTUP_CMD, org.openide.util.Utilities.isWindows ()? "startup.bat": "startup.sh"); // NOI18N
-            map.put (TAG_SHUTDOWN_CMD, org.openide.util.Utilities.isWindows ()? "shutdown.bat": "shutdown.sh"); // NOI18N
+            map.put (TAG_EXEC_CMD, org.openide.util.Utilities.isWindows ()? "catalina.bat": "catalina.sh"); // NOI18N
+            map.put (TAG_EXEC_STARTUP, "run"); // NOI18N
+            map.put (TAG_EXEC_SHUTDOWN, "stop"); // NOI18N
+            //map.put (TAG_SHUTDOWN_CMD, org.openide.util.Utilities.isWindows ()? "shutdown.bat": "shutdown.sh"); // NOI18N
             map.put (TAG_DEBUG_CMD, org.openide.util.Utilities.isWindows ()? "catalina.bat": "catalina.sh"); // NOI18N
             map.put (TAG_JPDA, "jpda"); // NOI18N
-            map.put (TAG_JPDA_STARTUP, "start"); // NOI18N
+            map.put (TAG_JPDA_STARTUP, "run"); // NOI18N
             map.put (TAG_JPDA_SHUTDOWN, "stop"); // NOI18N
             map.put (StartTomcat.TAG_CATALINA_HOME, home); // NOI18N
             map.put (ProcessExecutor.Format.TAG_SEPARATOR, File.separator);
