@@ -51,4 +51,17 @@ Microsystems, Inc. All Rights Reserved.
 	</target>
 
 	<target name="compile" depends="jar-lib, projectized.compile" />
+    
+    <target name="jar-with-module-deps" if="module.dependencies">
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+            <manifest>
+                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
+                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
+            </manifest>
+            <fileset dir="${build.classes.dir}"/>
+        </jar>
+    </target>
+
 </project>
