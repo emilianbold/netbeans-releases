@@ -1194,7 +1194,7 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         panel.setResultSourceTitle("Merge Result");
         panel.setStatusLabel("Conflict: 2 of 10, Unresolved: 8");
         org.openide.DialogDescriptor dlg = new org.openide.DialogDescriptor(
-            panel, "Merge", false, org.openide.DialogDescriptor.OK_CANCEL_OPTION,
+            panel, "Resolve Conflicts", false, org.openide.DialogDescriptor.OK_CANCEL_OPTION,
             org.openide.DialogDescriptor.OK_OPTION, 0, new HelpCtx(panel.getClass()), null);
         java.awt.Dialog dialog = org.openide.TopManager.getDefault().createDialog(dlg);
         dialog.show();
