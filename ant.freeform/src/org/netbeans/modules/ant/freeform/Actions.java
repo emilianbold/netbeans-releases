@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -29,6 +30,7 @@ import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.w3c.dom.Element;
 
@@ -146,7 +148,13 @@ public final class Actions implements ActionProvider {
                     Element actionEl = (Element)it.next();
                     if (actionEl.getLocalName().equals("ide-action")) { // NOI18N
                         String cmd = actionEl.getAttribute("name");
-                        String displayName = cmd; // XXX I18N
+                        String displayName;
+                        try {
+                            displayName = NbBundle.getMessage(Actions.class, "CMD_" + cmd);
+                        } catch (MissingResourceException e) {
+                            // OK, fall back to raw name.
+                            displayName = cmd;
+                        }
                         actions.add(ProjectSensitiveActions.projectCommandAction(cmd, displayName, null));
                     } else {
                         assert actionEl.getLocalName().equals("action") : actionEl;
