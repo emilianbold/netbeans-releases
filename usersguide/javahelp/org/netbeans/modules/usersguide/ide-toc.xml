@@ -86,9 +86,9 @@
     <tocitem text="About" target="editing.intro"/>
     <tocitem text="Source Editor" target="editing.editorwindow"/>
     <tocitem text="Opening a File in the Source Editor" target="editing.opening"/>
-    <tocitem text="Maximizing the Source Editor" target="editorwindow.maximize"/>
-    <tocitem text="Splitting the Source Editor" target="workspace.clone"/>
-    <tocitem text="Code Navigation Tips" target="editor.navigation"/>
+    <tocitem text="Source Editor General Tasks: Quick Reference" target="editor.quickref"/>
+    <tocitem text="Code Navigation: Quick Reference" target="editor.navigation"/>
+    <tocitem text="Keystroke Savers: Quick Reference" target="editor.keystroke-savers"/>
     <tocitem text="Editing Java Code" target="editing.newcode"/>
     <tocitem text="Error Marking" target="editing_error-marks"/>
     <tocitem text="Formatting Code" target="editing.formatting"/>
@@ -113,14 +113,9 @@
       <tocitem text="Editing a Macro" target="editing.macros.editing"/>
       <tocitem text="Running a Macro" target="editing.macros.invoking"/>
     </tocitem>
-    <tocitem text="Other Source Editor Shortcuts" >
       <tocitem text="Using the Word Match Feature" target="editing.wordmatch"/>
       <tocitem text="Using the Jump List" target="editing.jumplist"/>
-      <tocitem text="Using Bookmarks" target="editing.bookmarks"/>
-      <tocitem text="Using 'Go To' Shortcuts" target="editing.goto"/>
-      <tocitem text="Opening a Java File With 'Go To Class'" target="editing.fastopen"/>
       <tocitem text="Adding a Java Import Statement With Fast Import" target="editing.fastimport"/>
-    </tocitem>
     <tocitem text="Synchronizing Source Code">
       <tocitem text="About" target="java.sync.intro"/>
       <tocitem text="Setting Source Synchronization Properties" target="java.sync.properties" />

@@ -170,11 +170,8 @@
 <mapID target="editing.macros.editing" url="editing/macros/editing.html" />
 <mapID target="editing.macros.invoking" url="editing/macros/invoking.html" />
 <mapID target="editing.jumplist" url="editing/jumplist.html" />
-<mapID target="editing.bookmarks" url="editing/bookmarks.html" />
 <mapID target="editing.wordmatch" url="editing/wordmatch.html" />
-<mapID target="editing.goto" url="editing/goto.html" />
 <mapID target="editing.fastimport" url="editing/fastimport.html" />
-<mapID target="editing.fastopen" url="editing/fastopen.html" />
 <mapID target="editing.xmlsettings" url="editing/xmlsettings.html" />
 <mapID target="editing.configuring" url="editing/configuring/configuring.html" />
 <mapID target="editing.settingkeybdshorts" url="editing/configuring/settingkeybdshorts.html" />
@@ -182,8 +179,8 @@
 <mapID target="editing_error-marks" url="editing/editing_error-marks.html" />
 <mapID target="editing.tasks" url="editing/tasks_viewing.html" />
 <mapID target="editor.hiding" url="editing/editor_hiding.html" />
+<mapID target="editor.keystroke-savers" url="editing/editor_keystroke-savers.html" />
 <mapID target="editor.quickref" url="editing/editor_quickref.html" />
-<mapID target="editorwindow.maximize" url="editing/editorwindow_maximize.html" />
 <mapID target="editor.navigation" url="editing/editor_navigation.html" />
 <mapID target="editor.smart-brackets" url="editing/editor_smart-brackets.html" />
 
@@ -298,7 +295,6 @@
 <!--linked to from web/advanced help set - file webmod/mod_browser.html-->
 
 <mapID target="workspace.jump" url="workspace/workspace_jump.html" />
-<mapID target="workspace.clone" url="workspace/clone.html" />
 <mapID target="workspace.window.mode" url="workspace/window_modes.html" />
 
 <mapID target="propfiles.intro" url="propfiles/propfile.html" />
