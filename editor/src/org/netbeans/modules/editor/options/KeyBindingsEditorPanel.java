@@ -39,7 +39,6 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
     private int actionIndex;
     private String kitClassName;
     private KeyBindingsEditor editor;
-    private String defaultActionName;
     private ButtonGroup sortGroup;
 
     /** Creates new form KeyBindingsEditorPanel */
@@ -86,8 +85,6 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
             return;
         }
-
-        defaultActionName = null;
 
         // Get all actions available in given kit, sort them and store their
         // ActionDescriptors. Prepare mapping for looking them up by their names.
@@ -153,7 +150,6 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
                 KeySequence sequence = getKeySequenceForBinding( inherited, b );
 
                 if( sequence == null ) {
-                    if( !inherited ) defaultActionName = b.actionName;
                 } else {
                     ad.sequences.add( sequence );
                 }
@@ -181,10 +177,6 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         Vector val = new Vector();
         // add the kitClass of current kit
         val.add( kitClassName );
-
-        // add default action if we have one
-        if( defaultActionName != null)
-            val.add( new MultiKeyBinding( (KeyStroke)null, defaultActionName ) );
 
         // go through whole array of Actions and add all KeySequences for every Action
         for( int i=0; i<acts.length; i++ ) {
