@@ -22,6 +22,8 @@ import org.openide.cookies.*;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.windows.CloneableOpenSupport;
 import threaddemo.model.Phadhail;
 
@@ -70,12 +72,31 @@ final class PhadhailEditorSupport extends CloneableEditorSupport implements Open
         return ph.getPath();
     }
     
+    /**
+     * Same as default behavior in CES except solves a deadlock.
+     * The problem arises e.g. when first calling openDocument while
+     * holding a write lock: the prepareDocument task is posted to RP,
+     * where it starts to run but then Env.inputStream blocks getting
+     * a read lock.
+     */
+    public Task prepareDocument() {
+        ((PhadhailEnv)env).preloadInputStream();
+        Task t = super.prepareDocument();
+        t.addTaskListener(new TaskListener() {
+            public void taskFinished(Task t) {
+                ((PhadhailEnv)env).forgetPreloadedInputStream();
+            }
+        });
+        return t;
+    }
+    
     private static final class PhadhailEnv implements CloneableEditorSupport.Env {
         
         private final Phadhail ph;
         private PhadhailEditorSupport supp;
         private final long createTime;
         private boolean modified;
+        private byte[] preloadedContents = null;
         
         public PhadhailEnv(Phadhail ph) {
             this.ph = ph;
@@ -98,13 +119,37 @@ final class PhadhailEditorSupport extends CloneableEditorSupport implements Open
             return new Date(createTime);
         }
         
+        public void preloadInputStream() {
+            if (preloadedContents == null) {
+                try {
+                    InputStream is = ph.getInputStream();
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream(is.available());
+                    byte[] buf = new byte[4096];
+                    int read;
+                    while ((read = is.read(buf)) != -1) {
+                        baos.write(buf, 0, read);
+                    }
+                    preloadedContents = baos.toByteArray();
+                } catch (IOException e) {
+                    // ignore, will show up later
+                    e.printStackTrace();
+                }
+            }
+        }
+        
+        public void forgetPreloadedInputStream() {
+            preloadedContents = null;
+        }
+        
         public InputStream inputStream() throws IOException {
-            // XXX does this need to take a lock?
-            return ph.getInputStream();
+            if (preloadedContents != null) {
+                return new ByteArrayInputStream(preloadedContents);
+            } else {
+                return ph.getInputStream();
+            }
         }
         
         public OutputStream outputStream() throws IOException {
-            // XXX ditto?
             return ph.getOutputStream();
         }
         
