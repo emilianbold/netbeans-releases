@@ -367,6 +367,7 @@ Microsystems, Inc. All Rights Reserved.
                debug="${build.compiler.debug}">
             <classpath>
                 <pathelement location="../src"/>
+		<pathelement location="../../openide/openide-13javac-workaround.jar"/>		
                 <fileset dir="../../openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
