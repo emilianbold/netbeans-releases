@@ -104,6 +104,7 @@ public class NewProject extends BasicAction {
 
                         LinkedList filesToOpen = new LinkedList();
 
+                        Project p = null;        
                         for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
                             Object obj = it.next ();
                             FileObject newFo = null;
@@ -115,7 +116,7 @@ public class NewProject extends BasicAction {
                                 // check if it's project's directory
                                 if (newDo.getPrimaryFile ().isFolder ()) {
                                     try {
-                                        Project p = ProjectManager.getDefault().findProject( newDo.getPrimaryFile () );                            
+                                        p = ProjectManager.getDefault().findProject( newDo.getPrimaryFile () );                            
                                         if ( p != null ) {
                                             // It is a project open it
                                             OpenProjectList.getDefault().open( p, true );
@@ -132,16 +133,24 @@ public class NewProject extends BasicAction {
                                     catch ( IOException e ) {
                                         continue;
                                     }
-                                } else {                            
+                                }                                 
+                                else {                            
                                     filesToOpen.add( newDo );                            
                                 }
-                            } else {
+                            } 
+                            else {
                                 assert false : obj;
                             }
                         }
                         // Second open the files                
-                        for( Iterator it = filesToOpen.iterator(); it.hasNext(); ) {
-                            ProjectUtilities.openAndSelectNewObject( (DataObject)it.next() );
+                        if ( filesToOpen.isEmpty() && p != null) {
+                            // Just select and expand the project node
+                            ProjectUtilities.selectAndExpandProject( p );
+                        }
+                        else {
+                            for( Iterator it = filesToOpen.iterator(); it.hasNext(); ) { // Open the files
+                                ProjectUtilities.openAndSelectNewObject( (DataObject)it.next() );
+                            }
                         }
 
                     }

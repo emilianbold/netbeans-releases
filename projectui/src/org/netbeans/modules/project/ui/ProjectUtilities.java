@@ -70,6 +70,32 @@ public class ProjectUtilities {
     
     private ProjectUtilities() {}
     
+    public static void selectAndExpandProject( final Project p ) {
+        
+        // invoke later to select the being opened project if the focus is outside ProjectTab
+        SwingUtilities.invokeLater (new Runnable () {
+            
+            final ProjectTab ptLogial = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
+            
+            public void run () {
+                Node root = ptLogial.getExplorerManager ().getRootContext ();
+                Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
+                System.out.println("Proj node" + projNode );
+                if ( projNode != null ) {
+                    try {                            
+                        ptLogial.getExplorerManager ().setSelectedNodes( new Node[] { projNode } );
+                        ptLogial.expandNode( projNode );
+                        ptLogial.open ();
+                        ptLogial.requestActive ();
+                    } catch (Exception ignore) {
+                        // may ignore it
+                    }
+                }
+            }
+        });
+        
+    }
+    
     /** Invokes the preferred action on given object and tries to select it in
      * corresponding view, e.g. in logical view if possible otherwise
      * in physical project's view.

@@ -389,6 +389,10 @@ public class ProjectTab extends TopComponent
         
     }
     
+    public void expandNode( Node node ) {
+        btv.expandNode( node );
+    }
+    
     /*
     private static  void print( String[] path ) {
         for( int i = 0; i < path.length; i++ ) {
