@@ -405,6 +405,14 @@
 <mapID target="vcs.output" url="vcs-nb/vcs_output.html" />
 <mapID target="vcs.status" url="vcs-nb/vcs_status.html" />
 <mapID target="vcs.diffs" url="vcs-nb/vcs_diffs.html" />
+<mapID target="vcs.groups" url="vcs-nb/vcs_groups.html" />
+<mapID target="vcs.groupsadd" url="vcs-nb/vcs_groupsadd.html" />
+<mapID target="vcs.groupsaddfile" url="vcs-nb/vcs_groupsaddfile.html" />
+<mapID target="vcs.groupscommands" url="vcs-nb/vcs_groupscommands.html" />
+<mapID target="vcs.groupsmovefile" url="vcs-nb/vcs_groupsmovefile.html" />
+<mapID target="vcs.groupsproperties" url="vcs-nb/vcs_groupsproperties.html" />
+<mapID target="vcs.groupsresolve" url="vcs-nb/vcs_groupsresolve.html" />
+<mapID target="vcs.groupsverify" url="vcs-nb/vcs_groupsverify.html" />
 <mapID target="vcs.filesystemsettings" url="vcs-nb/vcs_filesystemsettings.html" />
 <mapID target="vcs.binary" url="vcs-nb/vcs_binary.html" />
 <mapID target="vcs.cvs-intro" url="vcs-nb/cvs-nb/cvs_intro.html" />
@@ -435,7 +443,6 @@
 <mapID target="vcsgeneric.vars-runtime" url="vcs-nb/vcsgeneric/vcsgeneric_vars-runtime.html" />
 <mapID target="vcsgeneric.vars-subcode" url="vcs-nb/vcsgeneric/vcsgeneric_vars-subcode.html" />
 <mapID target="vcsgeneric.vars-syntax" url="vcs-nb/vcsgeneric/vcsgeneric_vars-syntax.html" />
-
 
 
 <mapID target="webbrowser.swing" url="webbrowser/swingbrowser.html" />
