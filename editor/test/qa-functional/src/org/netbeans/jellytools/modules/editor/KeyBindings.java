@@ -28,7 +28,7 @@ public class KeyBindings extends JDialogOperator {
     /** Creates new KeyBindings that can handle it.
      */
     public KeyBindings() {
-        super("Key Bindings");
+        super(java.util.ResourceBundle.getBundle("org.netbeans.modules.editor.options.Bundle").getString("PROP_KeyBindings"));
     }
     
     private JRadioButtonOperator _rbSortByName;
@@ -54,7 +54,7 @@ public class KeyBindings extends JDialogOperator {
      */
     public JRadioButtonOperator rbSortByName() {
         if (_rbSortByName==null) {
-            _rbSortByName = new JRadioButtonOperator(this, " Sort by Name");
+            _rbSortByName = new JRadioButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.modules.editor.options.Bundle").getString("KBEP_name_sort_button"));
         }
         return _rbSortByName;
     }
@@ -64,7 +64,7 @@ public class KeyBindings extends JDialogOperator {
      */
     public JRadioButtonOperator rbSortByAction() {
         if (_rbSortByAction==null) {
-            _rbSortByAction = new JRadioButtonOperator(this, " Sort by Action");
+            _rbSortByAction = new JRadioButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.modules.editor.options.Bundle").getString("KBEP_action_sort_button"));
         }
         return _rbSortByAction;
     }
@@ -104,7 +104,7 @@ public class KeyBindings extends JDialogOperator {
      */
     public JLabelOperator lblKeybindings() {
         if (_lblKeybindings==null) {
-            _lblKeybindings = new JLabelOperator(this, "Keybindings:");
+            _lblKeybindings = new JLabelOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.modules.editor.options.Bundle").getString("KBEP_Sequences"));
         }
         return _lblKeybindings;
     }
@@ -124,7 +124,7 @@ public class KeyBindings extends JDialogOperator {
      */
     public JButtonOperator btAdd() {
         if (_btAdd==null) {
-            _btAdd = new JButtonOperator(this, "Add...");
+            _btAdd = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.modules.editor.options.Bundle").getString("KBEP_Add"));
         }
         return _btAdd;
     }
@@ -134,7 +134,7 @@ public class KeyBindings extends JDialogOperator {
      */
     public JButtonOperator btRemove() {
         if (_btRemove==null) {
-            _btRemove = new JButtonOperator(this, "Remove");
+            _btRemove = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.modules.editor.options.Bundle").getString("KBEP_Remove"));
         }
         return _btRemove;
     }
@@ -144,7 +144,7 @@ public class KeyBindings extends JDialogOperator {
      */
     public JButtonOperator btOK() {
         if (_btOK==null) {
-            _btOK = new JButtonOperator(this, "OK");
+            _btOK = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.modules.editor.options.Bundle").getString("KBEP_OK_LABEL"));
         }
         return _btOK;
     }
@@ -154,7 +154,7 @@ public class KeyBindings extends JDialogOperator {
      */
     public JButtonOperator btCancel() {
         if (_btCancel==null) {
-            _btCancel = new JButtonOperator(this, "Cancel");
+            _btCancel = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.netbeans.core.awt.Bundle").getString("CancelButton"));
         }
         return _btCancel;
     }
@@ -164,7 +164,7 @@ public class KeyBindings extends JDialogOperator {
      */
     public JButtonOperator btHelp() {
         if (_btHelp==null) {
-            _btHelp = new JButtonOperator(this, "Help");
+            _btHelp = new JButtonOperator(this, java.util.ResourceBundle.getBundle("org.openide.explorer.propertysheet.Bundle").getString("CTL_Help"));
         }
         return _btHelp;
     }
@@ -313,7 +313,7 @@ public class KeyBindings extends JDialogOperator {
         String[] names=new String[] {"Plain Editor","HTML Editor","Java Editor"};
         List list;
         for (int j=0;j < 20;j++) {
-         
+            
             for (int i=0;i < names.length;i++) {
                 list = KeyBindings.listActions(names[i]);
                 System.out.println("step "+j+" output size="+list.size());
