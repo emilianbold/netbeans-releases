@@ -55,7 +55,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   private static ResourceBundle bundle = NbBundle.getBundle(HttpServerSettings.class);
 
   /** port */
-  private static int port = 81; //8080
+  private static int port = 8081; //8080
 
   /** allowed connections hosts - local/any */
   private static String host = LOCALHOST;
@@ -261,6 +261,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  4    Gandalf   1.3         5/11/99  Petr Jiricka    
  *  3    Gandalf   1.2         5/11/99  Petr Jiricka    
  *  2    Gandalf   1.1         5/10/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/7/99   Petr Jiricka    
