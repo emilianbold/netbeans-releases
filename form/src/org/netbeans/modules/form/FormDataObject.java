@@ -38,14 +38,6 @@ public class FormDataObject extends JavaDataObject {
     //  static final long serialVersionUID = 7952143476761137063L;
 
     //--------------------------------------------------------------------
-    // Static variables
-
-    private static java.util.ResourceBundle formBundle = org.openide.util.NbBundle.getBundle(FormDataObject.class);
-
-    /** lock for closing window */
-    private static final Object OPEN_FORM_LOCK = new Object();
-
-    //--------------------------------------------------------------------
     // Private variables
 
     /** If true, a postInit method is called after reparsing - used after createFromTemplate */
@@ -54,7 +46,6 @@ public class FormDataObject extends JavaDataObject {
     transient private boolean modifiedInit;
     /** A flag to prevent multiple registration of ComponentRefListener */
     transient private boolean componentRefRegistered;
-
 
     transient private FormEditorSupport formEditor;
 
