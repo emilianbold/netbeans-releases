@@ -22,7 +22,7 @@ import java.util.Iterator;
 interface UsedCodeObject {
 
     // use type constants
-    public final int DEFINING = 1; // the used object defines the using object
+    public final int DEFINED = 1; // the used object defines the using object
     public final int USING = 2; // the used object is just used (as a parameter)
 
     void addUsingObject(UsingCodeObject usingObject,

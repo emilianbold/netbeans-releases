@@ -175,6 +175,13 @@ class CopySupport {
                                                targetComponent))
                     return null; // not allowed, ignore paste
 
+                boolean compoundUndoableEditStarted =
+                          targetForm.isUndoRedoRecording()
+                          && targetForm.startCompoundEdit();
+
+                // remove source component from its parent
+                sourceForm.removeComponentFromContainer(sourceComponent);
+
                 if (sourceComponent instanceof RADVisualComponent
                     && targetComponent instanceof RADVisualContainer)
                 {
@@ -199,18 +206,12 @@ class CopySupport {
                         return transferable;
                     }
 
-                    // remove source component from its parent
-                    sourceForm.removeComponentFromContainer(sourceComponent);
-
                     // add the component to the target container
                     visualCont.add(sourceComponent);
                     layoutSupport.addComponents(compArray, constrArray);
-                    targetForm.fireComponentAdded(sourceComponent);
+                    targetForm.fireComponentAdded(sourceComponent, false);
                 }
                 else {
-                    // remove source component from its parent
-                    sourceForm.removeComponentFromContainer(sourceComponent);
-
                     ComponentContainer targetContainer =
                         targetComponent instanceof ComponentContainer ?
                             (ComponentContainer) targetComponent : null;
@@ -218,6 +219,9 @@ class CopySupport {
                     // add the component to the target container
                     targetForm.addComponent(sourceComponent, targetContainer);
                 }
+
+                if (compoundUndoableEditStarted)
+                    targetForm.endCompoundEdit();
 
                 targetForm.getFormDesigner().setSelectedComponent(sourceComponent);
             }

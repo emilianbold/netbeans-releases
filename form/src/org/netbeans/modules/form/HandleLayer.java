@@ -401,6 +401,7 @@ class HandleLayer extends JPanel
         
         try {
             ci.setSelectedNodes(selectedNode, fes);
+            formDesigner.clearSelectionImpl();
         }
         catch (java.beans.PropertyVetoException ex) {
             ex.printStackTrace();

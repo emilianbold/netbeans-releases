@@ -28,9 +28,10 @@ final class CodeObjectUsage {
         this.usedObject = usedObject;
     }
 
-    public void addUsingObject(UsingCodeObject usingObject,
-                               int useType,
-                               Object useCategory)
+    public CodeStructureChange addUsingObject(UsingCodeObject usingObject,
+                                              int useType,
+                                              Object useCategory,
+                                              boolean provideUndoableChange)
     {
         if (useCategory == null)
             throw new IllegalArgumentException();
@@ -38,26 +39,36 @@ final class CodeObjectUsage {
         if (usageList == null)
             usageList = new LinkedList();
 
-        // [check if the object is not already registered??]
-        usageList.add(new ObjectUse(usingObject, useType, useCategory));
+        ObjectUse use = new ObjectUse(usingObject, useType, useCategory);
+        usageList.add(use); // [check if the object is not already registered??]
 
         usingObject.usageRegistered(usedObject);
+
+        return provideUndoableChange ?
+               new UsageChange(usedObject, use, true) : null;
     }
 
-    public void removeUsingObject(UsingCodeObject usingObject) {
+    public CodeStructureChange removeUsingObject(UsingCodeObject usingObject,
+                                                 boolean provideUndoableChange)
+    {
         if (usageList == null)
-            return;
+            return null;
 
-        boolean removed = false;
+        ObjectUse removed = null;
         Iterator it = usageList.iterator();
         while (it.hasNext()) {
             ObjectUse use = (ObjectUse) it.next();
-            if (usingObject == use.usingObject)
+            if (usingObject == use.usingObject) {
+                removed = use;
                 it.remove();
+            }
         }
 
-        if (removed)
+        if (removed != null)
             usingObject.usedObjectRemoved(usedObject);
+
+        return provideUndoableChange && removed != null ?
+               new UsageChange(usedObject, removed, false) : null;
     }
 
     public Iterator getUsingObjectsIterator(int useType, Object useCategory) {
@@ -72,11 +83,11 @@ final class CodeObjectUsage {
     // -------
 
     private static class ObjectUse {
-        Object usingObject;
-        int type;
-        Object category;
+        private UsingCodeObject usingObject;
+        private int type;
+        private Object category;
 
-        ObjectUse(Object usingObject, int useType, Object useCategory) {
+        ObjectUse(UsingCodeObject usingObject, int useType, Object useCategory) {
             this.usingObject = usingObject;
             this.type = useType;
             this.category = useCategory;
@@ -88,6 +99,34 @@ final class CodeObjectUsage {
             if (category == null)
                 return true;
             return category.equals(this.category);
+        }
+    }
+
+    // --------
+
+    private static class UsageChange implements CodeStructureChange {
+        private UsedCodeObject usedObject;
+        private ObjectUse use;
+        private boolean added; // true: added, false: removed
+
+        UsageChange(UsedCodeObject usedObject, ObjectUse use, boolean added) {
+            this.usedObject = usedObject;
+            this.use = use;
+            this.added = added;
+        }
+
+        public void undo() {
+            if (added)
+                usedObject.removeUsingObject(use.usingObject);
+            else
+                usedObject.addUsingObject(use.usingObject, use.type, use.category);
+        }
+
+        public void redo() {
+            if (added)
+                usedObject.addUsingObject(use.usingObject, use.type, use.category);
+            else
+                usedObject.removeUsingObject(use.usingObject);
         }
     }
 

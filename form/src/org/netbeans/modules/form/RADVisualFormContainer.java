@@ -88,6 +88,11 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setFormSize(Dimension value) {
+         // changing more properties at once, so start a compound undobale edit
+        boolean compoundUndoableEditStarted =
+                    getFormModel().isUndoRedoRecording()
+                    && getFormModel().startCompoundEdit();
+
         Object old = formSize;
         formSize = value;
         getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE, old, value);
@@ -95,9 +100,11 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         if (getFormSizePolicy() == GEN_BOUNDS && !getDesignerSize().equals(value))
             setDesignerSize(value);
         
-        if (getNodeReference() != null) { // propagate the change to node
+        if (getNodeReference() != null) // propagate the change to node
             getNodeReference().firePropertyChangeHelper(PROP_FORM_SIZE, old, value);
-        }
+
+        if (compoundUndoableEditStarted)
+            getFormModel().endCompoundEdit();
     }
     
     public Dimension getDesignerSize() {
@@ -108,6 +115,11 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setDesignerSize(Dimension value) {
+         // changing more properties at once, so start a compound undobale edit
+        boolean compoundUndoableEditStarted =
+                    getFormModel().isUndoRedoRecording()
+                    && getFormModel().startCompoundEdit();
+
         Object old = getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
         setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, value);
         getFormModel().fireSyntheticPropertyChanged(
@@ -115,6 +127,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
         if (getFormSizePolicy() == GEN_BOUNDS && !getFormSize().equals(value))
             setFormSize(value);
+
+        if (compoundUndoableEditStarted)
+            getFormModel().endCompoundEdit();
     }
 
     public boolean getGeneratePosition() {
@@ -122,7 +137,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setGeneratePosition(boolean value) {
-        // [PENDING - set as aux value]
         boolean old = generatePosition;
         generatePosition = value;
         getFormModel().fireSyntheticPropertyChanged(this, PROP_GENERATE_POSITION,
@@ -134,7 +148,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setGenerateSize(boolean value) {
-        // [PENDING - set as aux value]
         boolean old = generateSize;
         generateSize = value;
         getFormModel().fireSyntheticPropertyChanged(this, PROP_GENERATE_SIZE,
@@ -146,7 +159,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setGenerateCenter(boolean value) {
-        // [PENDING - set as aux value]
         boolean old = generateCenter;
         generateCenter = value;
         getFormModel().fireSyntheticPropertyChanged(this, PROP_GENERATE_CENTER,
@@ -160,13 +172,20 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public void setFormSizePolicy(int value) {
-        // [PENDING - set as aux value]
+         // changing more properties at once, so start a compound undobale edit
+        boolean compoundUndoableEditStarted =
+                    getFormModel().isUndoRedoRecording()
+                    && getFormModel().startCompoundEdit();
+
         int old = formSizePolicy;
         formSizePolicy = value;
         if (value == GEN_BOUNDS)
             setFormSize(getDesignerSize());
         getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE_POLICY,
                                         new Integer(old), new Integer(value));
+
+        if (compoundUndoableEditStarted)
+            getFormModel().endCompoundEdit();
     }
 
     // ------------------------------------------------------------------------------

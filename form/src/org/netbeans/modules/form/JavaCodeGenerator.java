@@ -1483,7 +1483,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 codeWriter.write(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
                 codeWriter.flush();
                 i1 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerBody(bodyText));
+                codeWriter.write(getValidEventHandlerBody(bodyText));
                 codeWriter.flush();
                 i2 = buffer.getBuffer().length();
                 codeWriter.write(getEventHandlerFooter());
@@ -1531,7 +1531,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 codeWriter.write(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
                 codeWriter.flush();
                 i1 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerBody(bodyText));
+                codeWriter.write(getValidEventHandlerBody(bodyText));
                 codeWriter.flush();
                 i2 = buffer.getBuffer().length();
                 codeWriter.write(getEventHandlerFooter());
@@ -1605,11 +1605,8 @@ class JavaCodeGenerator extends CodeGenerator {
         return buf.toString();
     }
 
-    private String getEventHandlerBody(String bodyText) {
-        if (bodyText == null) {
-            bodyText = getDefaultEventBody();
-        }
-        return bodyText;
+    private String getValidEventHandlerBody(String bodyText) {
+        return bodyText == null ? getDefaultEventBody() : bodyText;
     }
 
     private String getEventHandlerFooter() {
@@ -1669,6 +1666,17 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
+    /** Gets the body (text) of event handler of given name. */
+    public String getEventHandlerText(String handlerName) {
+        JavaEditor.InteriorSection section = getEventHandlerSection(handlerName);
+        if (section != null) {
+            String tx = section.getText();
+            tx = tx.substring(tx.indexOf("{")+1, tx.lastIndexOf("}")).trim() + "\n"; // NOI18N
+            return tx;
+        }
+        return null;
+    }
+
     /** 
      * Returns whether the specified event handler is empty (with no user
      * code). Empty handlers can be deleted without user confirmation.
@@ -1689,7 +1697,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     /** Clears undo buffer after code generation */
     private void clearUndo() {
-        formEditorSupport.getUndoManager().discardAllEdits();
+        formEditorSupport.discardEditorUndoableEdits();
     }
 
     // sections acquirement

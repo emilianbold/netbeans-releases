@@ -40,6 +40,11 @@ public class FormNode extends AbstractNode implements FormCookie {
         return formModel;
     }
 
+    // FormCookie implementation
+    public final Node getOriginalNode() {
+        return this;
+    }
+
     public Node.Cookie getCookie(Class type) {
         Node.Cookie cookie = super.getCookie(type);
         if (cookie == null

@@ -27,5 +27,7 @@ interface UsingCodeObject {
     // notifying about removing the used object from structure
     boolean usedObjectRemoved(UsedCodeObject usedObject);
 
+    UsedCodeObject getDefiningObject();
+
     Iterator getUsedObjectsIterator();
 }

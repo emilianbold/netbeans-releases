@@ -69,6 +69,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     private RADComponent parentComponent;
 
     private FormModel formModel;
+    private boolean inModel;
 
     private ComponentEventHandlers eventsList;
 
@@ -83,17 +84,12 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     // -----------------------------------------------------------------------------
     // Constructors & Initialization
 
-    /** Creates a new RADComponent */
-    public RADComponent() {
-//        auxValues = new HashMap(10);
-    }
-
     /** Called to initialize the component with specified FormModel.
      * @param formModel the FormModel of the form into which this component
      * will be added 
      */
     public boolean initialize(FormModel formModel) {
-        if (this.formModel != formModel) {
+        if (this.formModel == null) {
             this.formModel = formModel;
             readOnly = formModel.isReadOnly();
 
@@ -105,6 +101,9 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
             return true;
         }
+        else if (this.formModel != formModel)
+            throw new IllegalStateException(
+                "Cannot initialize metacomponent with another form model"); // NOI18N
         return false;
     }
 
@@ -201,26 +200,37 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     }
 
     protected void createCodeExpression() {
-        resetCodeExpression();
+        if (componentCodeExpression == null) {
+            CodeStructure codeStructure = formModel.getCodeStructure();
+            componentCodeExpression = codeStructure.createExpression(
+                                   FormCodeSupport.createOrigin(this));
+            codeStructure.registerExpression(componentCodeExpression);
 
-        CodeStructure codeStructure = formModel.getCodeStructure();
-        componentCodeExpression = codeStructure.createExpression(
-                                    FormCodeSupport.createOrigin(this));
-        codeStructure.registerExpression(componentCodeExpression);
-
-        if (formModel.getTopRADComponent() != this)
-            codeStructure.createVariableForExpression(componentCodeExpression,
-                                                      0x30DF, // default type
-                                                      storedName);
+            if (formModel.getTopRADComponent() != this)
+                formModel.getCodeStructure().createVariableForExpression(
+                                               componentCodeExpression,
+                                               0x30DF, // default type
+                                               storedName);
+        }
     }
 
-    void resetCodeExpression() {
+    final void removeCodeExpression() {
         if (componentCodeExpression != null) {
             CodeVariable var = componentCodeExpression.getVariable();
             if (var != null)
                 storedName = var.getName();
             CodeStructure.removeExpression(componentCodeExpression);
-            componentCodeExpression = null;
+        }
+    }
+
+    final void releaseCodeExpression() {
+        if (componentCodeExpression != null) {
+            CodeVariable var = componentCodeExpression.getVariable();
+            if (var != null) {
+                storedName = var.getName();
+                formModel.getCodeStructure()
+                    .removeExpressionFromVariable(componentCodeExpression);
+            }
         }
     }
 
@@ -336,10 +346,11 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     public String getName() {
         if (componentCodeExpression != null) {
             CodeVariable var = componentCodeExpression.getVariable();
-            return var != null ? var.getName() : null;
+            if (var != null)
+                return var.getName();
+            // [maybe component name could generally differ from variable name]
         }
-        return null;
-        // [maybe component name could generally differ from variable name ...]
+        return storedName;
     }
 
     /** Setter for the name of the component - it is the name of component's
@@ -489,8 +500,16 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
      * @return the FormModel which manages the form into which this component
      *         has been added
      */
-    public FormModel getFormModel() {
+    public final FormModel getFormModel() {
         return formModel;
+    }
+
+    public final boolean isInModel() {
+        return inModel;
+    }
+
+    final void setInModel(boolean in) {
+        inModel = in;
     }
 
     /** @retrun ComponentEventHandlers object that stores component's events
@@ -762,7 +781,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         return nodeEvents;
     }
 
-    protected Node.Property createProperty(final PropertyDescriptor desc) {
+    protected Node.Property createProperty(PropertyDescriptor desc) {
         if (desc.getPropertyType() == null)
             return null;
 
@@ -805,32 +824,45 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                 return;
 
             String propName = ((FormProperty)source).getName();
+            String eventName = evt.getPropertyName();
 
-            if (FormProperty.PROP_VALUE.equals(evt.getPropertyName())) {
-                // property value has changed
-                getFormModel().fireComponentPropertyChanged(
-                                   RADComponent.this,
-                                   propName,
-                                   evt.getOldValue(),
-                                   evt.getNewValue());
+            if (FormProperty.PROP_VALUE.equals(eventName)
+                || FormProperty.PROP_VALUE_AND_EDITOR.equals(eventName))
+            {   // property value has changed (or value and editor together)
+                if (formModel.isUndoRedoRecording()
+                    && !formModel.isCompoundEditInProgress()
+                    && java.awt.EventQueue.isDispatchThread())
+                {   // undo/redo hack - for the case more properties were
+                    // changed at once - to be handled as one undoable change
+                    formModel.startCompoundEdit();
+                    java.awt.EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            formModel.endCompoundEdit();
+                        }
+                    });
+                }
 
-                if (getNodeReference() != null) // propagate the change to node
-                    getNodeReference().firePropertyChangeHelper(
-                                           propName,
-                                           evt.getOldValue(),
-                                           evt.getNewValue());
-            }
-            else if (FormProperty.CURRENT_EDITOR.equals(evt.getPropertyName())) {
-                // property editor has changed
-//                getFormModel().fireComponentPropertyChanged(
-//                                   RADComponent.this,
-//                                   propName,
-//                                   null, null);
+                Object oldValue = evt.getOldValue();
+                Object newValue = evt.getNewValue();
+                formModel.fireComponentPropertyChanged(
+                              RADComponent.this, propName, oldValue, newValue);
 
                 if (getNodeReference() != null) { // propagate the change to node
+                    if (FormProperty.PROP_VALUE_AND_EDITOR.equals(eventName)) {
+                        oldValue = ((FormProperty.ValueWithEditor)oldValue).getValue();
+                        newValue = ((FormProperty.ValueWithEditor)newValue).getValue();
+                    } // [does this conversion need to be done??]
+
+                    getNodeReference().firePropertyChangeHelper(
+                                           propName, oldValue, newValue);
+                }
+            }
+            else if (FormProperty.CURRENT_EDITOR.equals(eventName)) {
+                // property editor has changed - don't fire to FormModel,
+                // only to component node
+                if (getNodeReference() != null)
                     getNodeReference().firePropertyChangeHelper(
                                             propName, null, null);
-                }
             }
         }
     }

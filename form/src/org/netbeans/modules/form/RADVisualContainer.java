@@ -183,8 +183,14 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     }
 
     public void initSubComponents(RADComponent[] initComponents) {
-        subComponents = new ArrayList(initComponents.length);
-        for (int i = 0; i < initComponents.length; i++) {
+        if (subComponents == null)
+            subComponents = new ArrayList(initComponents.length);
+        else {
+            subComponents.clear();
+            subComponents.ensureCapacity(initComponents.length);
+        }
+
+        for (int i=0; i < initComponents.length; i++) {
             RADComponent comp = initComponents[i];
 
             if (comp instanceof RADVisualComponent)

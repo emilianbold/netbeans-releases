@@ -15,6 +15,8 @@ package org.netbeans.modules.form;
 
 import java.util.*;
 import javax.swing.event.EventListenerList;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.undo.*;
 import org.netbeans.modules.form.layoutsupport.*;
 
 import org.netbeans.modules.form.codestructure.CodeStructure;
@@ -45,6 +47,9 @@ public class FormModel
     private boolean readOnly = false;
     private boolean formLoaded = false;
 
+    private boolean undoRedoRecording = false;
+    private CompoundEdit compoundEdit;
+
     private FormEventHandlers eventHandlers;
 
     // list of listeners registered on FormModel
@@ -52,7 +57,7 @@ public class FormModel
 
     private MetaComponentCreator metaCreator;
 
-    private CodeStructure codeStructure = new CodeStructure();
+    private CodeStructure codeStructure = new CodeStructure(false);
     private CodeGenerator codeGenerator; // [this reference should be removed]
 
     // -------------
@@ -224,39 +229,44 @@ public class FormModel
         return metaCreator;
     }
 
-    public void addComponent(RADComponent comp,
-                             ComponentContainer parentContainer) {
-        initComponentWithModelRecursively(comp);
-
+    public void addComponent(RADComponent metacomp,
+                             ComponentContainer parentContainer)
+    {
         if (parentContainer != null) {
-            parentContainer.add(comp);
+            parentContainer.add(metacomp);
         }
         else {
-            comp.setParentComponent(null);
-            otherComponents.add(comp);
+            metacomp.setParentComponent(null);
+            otherComponents.add(metacomp);
         }
 
-        fireComponentAdded(comp);
+        boolean newlyAdded = !metacomp.isInModel();
+        if (newlyAdded)
+            setInModelRecursively(metacomp, true);
+
+        fireComponentAdded(metacomp, newlyAdded);
     }
 
-    public void addVisualComponent(RADVisualComponent comp,
+    public void addVisualComponent(RADVisualComponent metacomp,
                                    RADVisualContainer parentContainer,
                                    LayoutConstraints constraints)
     {
-        initComponentWithModelRecursively(comp);
-
         LayoutSupportManager layoutSupport = parentContainer.getLayoutSupport();
-        RADVisualComponent[] compArray = new RADVisualComponent[] { comp };
+        RADVisualComponent[] compArray = new RADVisualComponent[] { metacomp };
         LayoutConstraints[] constrArray = new LayoutConstraints[] { constraints };
 
         // this may throw a RuntimeException if the components are not accepted
         layoutSupport.acceptNewComponents(compArray, constrArray);
 
-        parentContainer.add(comp);
+        parentContainer.add(metacomp);
 
         layoutSupport.addComponents(compArray, constrArray);
 
-        fireComponentAdded(comp);
+        boolean newlyAdded = !metacomp.isInModel();
+        if (newlyAdded)
+            setInModelRecursively(metacomp, true);
+
+        fireComponentAdded(metacomp, newlyAdded);
     }
 
     public void setContainerLayout(RADVisualContainer metacont,
@@ -269,44 +279,66 @@ public class FormModel
 
         metacont.setLayoutSupportDelegate(layoutDelegate, lmInstance);
 
-        fireContainerLayoutChanged(metacont, current, layoutDelegate);
+        fireContainerLayoutExchanged(metacont, current, layoutDelegate);
     }
 
-    public void removeComponentFromContainer(RADComponent comp) {
-        RADComponent parent = comp.getParentComponent();
+    public void removeComponentFromContainer(RADComponent metacomp) {
+        RADComponent parent = metacomp.getParentComponent();
         ComponentContainer parentContainer =
             parent instanceof ComponentContainer ?
                 (ComponentContainer) parent : getModelContainer();
 
-        parentContainer.remove(comp);
+        int index = parentContainer.getIndexOf(metacomp);
+        parentContainer.remove(metacomp);
 
-//        if (comp instanceof RADVisualComponent)
-//            ((RADVisualComponent)comp).resetConstraintsProperties();
-
-        fireComponentRemoved(comp, parentContainer);
+        fireComponentRemoved(metacomp, parentContainer, index, false,
+                             null, null);
     }
 
-    public void removeComponent(RADComponent comp) {
-        if (eventHandlers != null)
-            removeEventHandlersRecursively(comp);
+    public void removeComponent(RADComponent metacomp) {
+        boolean compoundUndoableEditStarted;
+        if (eventHandlers != null) {
+            compoundUndoableEditStarted = undoRedoRecording
+                                          && startCompoundEdit();
+            removeEventHandlersRecursively(metacomp);
+        }
+        else compoundUndoableEditStarted = false;
 
-        removeCodeExpressionsRecursively(comp);
+        RADComponent parent = metacomp.getParentComponent();
+        ComponentContainer parentContainer =
+            parent instanceof ComponentContainer ?
+                (ComponentContainer) parent : getModelContainer();
 
-        removeComponentFromContainer(comp);
+        int index = parentContainer.getIndexOf(metacomp);
+        parentContainer.remove(metacomp);
 
-//        if (comp instanceof RADVisualComponent)
-//            ((RADVisualComponent)comp).resetConstraintsProperties();
-    }
-
-    // sets FormModel for given component and all its subcomponents
-    private void initComponentWithModelRecursively(RADComponent comp) {
-        if (comp instanceof ComponentContainer) {
-            RADComponent[] subcomps = ((ComponentContainer)comp).getSubBeans();
-            for (int i=0; i < subcomps.length; i++)
-                initComponentWithModelRecursively(subcomps[i]);
+        // turn on undo/redo recording on code structure (if allowed)
+        Object codeStructureMark1 = null, codeStructureMark2 = null;
+        boolean codeStructureUndoRedo = codeStructure.isUndoRedoRecording();
+        if (undoRedoRecording && !codeStructureUndoRedo) {
+            codeStructure.setUndoRedoRecording(true);
+            codeStructureMark1 = codeStructure.markForUndo();
         }
 
-        comp.initialize(this);
+        metacomp.removeCodeExpression();
+        metacomp.setInModel(false);
+        if (metacomp instanceof ComponentContainer)
+            releaseComponent(metacomp);
+
+        // turn off undo/redo recording on code structure (if turned on)
+        if (undoRedoRecording && !codeStructureUndoRedo) {
+            codeStructureMark2 = codeStructure.markForUndo();
+            if (codeStructureMark2.equals(codeStructureMark1))
+                codeStructureMark2 = codeStructureMark1 = null;
+
+            codeStructure.setUndoRedoRecording(false);
+        }
+
+        fireComponentRemoved(metacomp, parentContainer, index, true,
+                             codeStructureMark1, codeStructureMark2);
+
+        if (compoundUndoableEditStarted)
+            endCompoundEdit();
     }
 
     // removes all event handlers attached to given component and all
@@ -329,18 +361,76 @@ public class FormModel
         }
     }
 
-    private void removeCodeExpressionsRecursively(RADComponent comp) {
-        comp.resetCodeExpression();
-        if (comp instanceof ComponentContainer) {
-            RADComponent[] comps =((ComponentContainer) comp).getSubBeans();
-            for (int i=0, n=comps.length; i<n; i++) {
-                removeCodeExpressionsRecursively(comps[i]);
-            }
+    private static void releaseComponent(RADComponent metacomp) {
+        RADComponent[] comps = ((ComponentContainer)metacomp).getSubBeans();
+        for (int i=0, n=comps.length; i < n; i++) {
+            metacomp = comps[i];
+            metacomp.releaseCodeExpression();
+            metacomp.setInModel(false);
+            if (metacomp instanceof ComponentContainer)
+                releaseComponent(metacomp);
+        }
+    }
+
+    static void setInModelRecursively(RADComponent metacomp, boolean inModel) {
+        metacomp.setInModel(inModel);
+        if (metacomp instanceof ComponentContainer) {
+            RADComponent[] comps = ((ComponentContainer)metacomp).getSubBeans();
+            for (int i=0; i < comps.length; i++)
+                setInModelRecursively(comps[i], inModel);
         }
     }
 
     // ----------
-    // events and listeners
+    // undo and redo
+
+    public void setUndoRedoRecording(boolean record) {
+        t("turning undo/redo recording "+(record?"on":"off")); // NOI18N
+        undoRedoRecording = record;
+    }
+
+    public boolean isUndoRedoRecording() {
+        return undoRedoRecording;
+    }
+
+    public boolean startCompoundEdit() {
+        if (compoundEdit == null) {
+            t("starting compound edit"); // NOI18N
+            compoundEdit = new CompoundEdit();
+            return true;
+        }
+        return false;
+    }
+
+    public CompoundEdit endCompoundEdit() {
+        if (compoundEdit != null) {
+            t("ending compound edit"); // NOI18N
+            compoundEdit.end();
+            if (undoRedoRecording && compoundEdit.isSignificant())
+                FormEditorSupport.getFormUndoManager(this)
+                                    .addEdit(compoundEdit);
+            CompoundEdit edit = compoundEdit;
+            compoundEdit = null;
+            return edit;
+        }
+        return null;
+    }
+
+    public boolean isCompoundEditInProgress() {
+        return compoundEdit != null && compoundEdit.isInProgress();
+    }
+
+    public void addUndoableEdit(UndoableEdit edit) {
+        t("adding undoable edit"); // NOI18N
+        if (isCompoundEditInProgress())
+            compoundEdit.addEdit(edit);
+        else
+            FormEditorSupport.getFormUndoManager(this)
+                .undoableEditHappened(new UndoableEditEvent(this, edit));
+    }
+
+    // ----------
+    // listeners registration, firing methods
 
     public void addFormModelListener(FormModelListener l) {
         listenerList.add(FormModelListener.class, l);
@@ -350,9 +440,12 @@ public class FormModel
         listenerList.remove(FormModelListener.class, l);
     }
 
+    /** Fires an event informing about general form change. */
     public void fireFormChanged() {
-        t("formChanged"); // NOI18N
+        t("firing form change"); // NOI18N
+
         FormModelEvent e = new FormModelEvent(this);
+        e.setChangeType(FormModelEvent.FORM_CHANGED);
         
   	Object[] listeners = listenerList.getListenerList();
   	for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -362,12 +455,16 @@ public class FormModel
   	}
     }
 
+    /** Fires an event informing about that the form has been just loaded. */
     public void fireFormLoaded() {
-        t("formLoaded"); // NOI18N
+        t("firing form loaded"); // NOI18N
         formLoaded = true;
+        if (!readOnly && !Boolean.getBoolean("netbeans.form.no_undo")) // NOI18N
+            setUndoRedoRecording(true);
         initializeCodeGenerator();
 
         FormModelEvent e = new FormModelEvent(this);
+        e.setChangeType(FormModelEvent.FORM_LOADED);
 
   	Object[] listeners = listenerList.getListenerList();
   	for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -377,9 +474,12 @@ public class FormModel
   	}
     }
 
+    /** Fires an event informing about that the form is just about to be saved. */
     public void fireFormToBeSaved() {
-        t("formToBeSaved"); // NOI18N
+        t("firing form to be saved"); // NOI18N
+
         FormModelEvent e = new FormModelEvent(this);
+        e.setChangeType(FormModelEvent.FORM_TO_BE_SAVED);
 
   	Object[] listeners = listenerList.getListenerList();
   	for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -389,9 +489,12 @@ public class FormModel
   	}
     }
 
+    /** Fires an event informing about that the form is just about to be closed. */
 //    public void fireFormToBeClosed() {
-//        t("formToBeClosed fired"); // NOI18N
+//        t("firing form to be closed fired"); // NOI18N
+//
 //        FormModelEvent e = new FormModelEvent(this);
+//        e.setChangeType(FormModelEvent.FORM_TO_BE_CLOSED);
 //
 //  	Object[] listeners = listenerList.getListenerList();
 //  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -401,13 +504,47 @@ public class FormModel
 //  	}
 //    }
 
-    public void fireContainerLayoutChanged(RADVisualContainer metacont,
-                                           LayoutSupportDelegate oldLayoutSupp,
-                                           LayoutSupportDelegate newLayoutSupp) {
-        t("containerLayoutChanged, container: " // NOI18N
+    /** Fires an event informing about changing layout manager of a container.
+     * An undoable edit is created and registered automatically. */
+    public void fireContainerLayoutExchanged(RADVisualContainer metacont,
+                                             LayoutSupportDelegate oldLayout,
+                                             LayoutSupportDelegate newLayout)
+    {
+        t("firing container layout exchange, container: " // NOI18N
           + (metacont != null ? metacont.getName() : "null")); // NOI18N
-        FormModelEvent e = new FormModelEvent(this, metacont,
-                                              oldLayoutSupp, newLayoutSupp);
+
+        FormModelEvent e = new FormModelEvent(this);
+        e.setLayout(metacont, oldLayout, newLayout);
+        e.setChangeType(FormModelEvent.CONTAINER_LAYOUT_EXCHANGED);
+
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == FormModelListener.class) {
+                FormModelListener l = (FormModelListener)listeners[i+1];
+                l.containerLayoutExchanged(e);
+                l.formChanged(e);
+            }
+        }
+
+        if (undoRedoRecording && metacont != null && oldLayout != newLayout)
+            addUndoableEdit(e.getUndoableEdit());
+    }
+
+    /** Fires an event informing about changing a property of container layout.
+     * An undoable edit is created and registered automatically. */
+    public void fireContainerLayoutChanged(RADVisualContainer metacont,
+                                           String propName,
+                                           Object oldValue,
+                                           Object newValue)
+    {
+        t("firing container layout change, container: " // NOI18N
+          + (metacont != null ? metacont.getName() : "null") // NOI18N
+          + ", property: " + propName); // NOI18N
+
+        FormModelEvent e = new FormModelEvent(this);
+        e.setComponentAndContainer(metacont, metacont);
+        e.setProperty(propName, oldValue, newValue);
+        e.setChangeType(FormModelEvent.CONTAINER_LAYOUT_CHANGED);
 
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -417,16 +554,28 @@ public class FormModel
                 l.formChanged(e);
             }
         }
+
+        if (undoRedoRecording
+            && metacont != null && propName != null && oldValue != newValue)
+        {
+            addUndoableEdit(e.getUndoableEdit());
+        }
     }
 
+    /** Fires an event informing about changing a property of component layout
+     * constraints. An undoable edit is created and registered automatically. */
     public void fireComponentLayoutChanged(RADVisualComponent metacomp,
                                            String propName,
-                                           Object propOldVal,
-                                           Object propNewVal) {
-        t("componentLayoutChanged, component: " // NOI18N
+                                           Object oldValue,
+                                           Object newValue)
+    {
+        t("firing component layout change: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
-        FormModelEvent e = new FormModelEvent(this, metacomp,
-                                              propName, propOldVal, propNewVal);
+
+        FormModelEvent e = new FormModelEvent(this);
+        e.setComponentAndContainer(metacomp, null);
+        e.setProperty(propName, oldValue, newValue);
+        e.setChangeType(FormModelEvent.COMPONENT_LAYOUT_CHANGED);
 
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -436,44 +585,86 @@ public class FormModel
                 l.formChanged(e);
             }
         }
+
+        if (undoRedoRecording
+            && metacomp != null && propName != null && oldValue != newValue)
+        {
+            addUndoableEdit(e.getUndoableEdit());
+        }
     }
 
-    public void fireComponentAdded(RADComponent metacomp) {
-        t("componentAdded, component: " // NOI18N
+    /** Fires an event informing about adding a component to the form.
+     * An undoable edit is created and registered automatically. */
+    public void fireComponentAdded(RADComponent metacomp,
+                                   boolean addedNew)
+    {
+        t("firing component added: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
-        FormModelEvent e = new FormModelEvent(this, metacomp);
+
+        FormModelEvent e = new FormModelEvent(this);
+        e.setAddData(metacomp, null, addedNew);
+        e.setChangeType(FormModelEvent.COMPONENT_ADDED);
 
   	Object[] listeners = listenerList.getListenerList();
   	for (int i = listeners.length - 2; i >= 0; i -= 2) {
   	    if (listeners[i] == FormModelListener.class) {
                 FormModelListener l = (FormModelListener)listeners[i+1];
-  		l.componentAdded(e);
+                if (addedNew)
+                    l.componentAdded(e);
+  		l.componentAddedToContainer(e);
                 l.formChanged(e);
   	    }
   	}
+
+        if (undoRedoRecording && metacomp != null)
+            addUndoableEdit(e.getUndoableEdit());
     }
-    
+
+    /** Fires an event informing about removing a component from the form.
+     * An undoable edit is created and registered automatically. */
     public void fireComponentRemoved(RADComponent metacomp,
-                                     ComponentContainer metacont) {
-        t("componentRemoved, component: " // NOI18N
+                                     ComponentContainer metacont,
+                                     int index,
+                                     boolean removedFromModel,
+                                     Object codeStructureMark1,
+                                     Object codeStructureMark2)
+    {
+        t("firing component removed: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
-        FormModelEvent e = new FormModelEvent(this, metacomp, metacont);
+
+        FormModelEvent e = new FormModelEvent(this);
+        e.setRemoveData(metacomp, metacont, index, removedFromModel,
+                        codeStructureMark1, codeStructureMark2);
+        e.setChangeType(FormModelEvent.COMPONENT_REMOVED);
 
   	Object[] listeners = listenerList.getListenerList();
   	for (int i = listeners.length - 2; i >= 0; i -= 2) {
   	    if (listeners[i] == FormModelListener.class) {
                 FormModelListener l = (FormModelListener)listeners[i+1];
-  		l.componentRemoved(e);
+  		l.componentRemovedFromContainer(e);
+                if (codeStructureMark1 != null)
+                    l.componentRemoved(e);
                 l.formChanged(e);
   	    }
   	}
+
+        if (undoRedoRecording && metacomp != null && metacont != null)
+            addUndoableEdit(e.getUndoableEdit());
     }
 
-    public void fireComponentsReordered(ComponentContainer metacont) {
-        t("componentsReordered, container: " // NOI18N
+    /** Fires an event informing about reordering components in a container.
+     * An undoable edit is created and registered automatically. */
+    public void fireComponentsReordered(ComponentContainer metacont,
+                                        int[] perm)
+    {
+        t("firing components reorder in container: " // NOI18N
           + (metacont instanceof RADComponent ?
              ((RADComponent)metacont).getName() : "<top>")); // NOI18N
-        FormModelEvent e = new FormModelEvent(this, metacont);
+
+        FormModelEvent e = new FormModelEvent(this);
+        e.setComponentAndContainer(null, metacont);
+        e.setReordering(perm);
+        e.setChangeType(FormModelEvent.COMPONENTS_REORDERED);
 
   	Object[] listeners = listenerList.getListenerList();
   	for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -483,37 +674,58 @@ public class FormModel
                 l.formChanged(e);
   	    }
   	}
+
+        if (undoRedoRecording && metacont != null)
+            addUndoableEdit(e.getUndoableEdit());
     }
 
+    /** Fires an event informing about changing a property of a component.
+     * An undoable edit is created and registered automatically. */
     public void fireComponentPropertyChanged(RADComponent metacomp,
                                              String propName,
-                                             Object propOldVal,
-                                             Object propNewVal) {
-        t("componentPropertyChanged, component: " // NOI18N
+                                             Object oldValue,
+                                             Object newValue)
+    {
+        t("firing component property change, component: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "<null component>") // NOI18N
           + ", property: " + propName); // NOI18N
-        FormModelEvent e = new FormModelEvent(this, metacomp,
-                                              propName, propOldVal, propNewVal);
 
-  	Object[] listeners = listenerList.getListenerList();
-  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
-  	    if (listeners[i] == FormModelListener.class) {
+        FormModelEvent e = new FormModelEvent(this);
+        e.setComponentAndContainer(metacomp, null);
+        e.setProperty(propName, oldValue, newValue);
+        e.setChangeType(FormModelEvent.COMPONENT_PROPERTY_CHANGED);
+
+        Object[] listeners = listenerList.getListenerList();
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == FormModelListener.class) {
                 FormModelListener l = (FormModelListener)listeners[i+1];
-  		l.componentPropertyChanged(e);
+                l.componentPropertyChanged(e);
                 l.formChanged(e);
-  	    }
-  	}
+            }
+        }
+
+        if (undoRedoRecording
+            && metacomp != null && propName != null && oldValue != newValue)
+        {
+            addUndoableEdit(e.getUndoableEdit());
+        }
     }
 
+    /** Fires an event informing about changing a synthetic property of
+     * a component. An undoable edit is created and registered automatically. */
     public void fireSyntheticPropertyChanged(RADComponent metacomp,
                                              String propName,
-                                             Object propOldVal,
-                                             Object propNewVal) {
-        t("syntheticPropertyChanged, component: " // NOI18N
+                                             Object oldValue,
+                                             Object newValue)
+    {
+        t("firing synthetic property change, component: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null") // NOI18N
           + ", property: " + propName); // NOI18N
-        FormModelEvent e = new FormModelEvent(this, metacomp,
-                                              propName, propOldVal, propNewVal);
+
+        FormModelEvent e = new FormModelEvent(this);
+        e.setComponentAndContainer(metacomp, null);
+        e.setProperty(propName, oldValue, newValue);
+        e.setChangeType(FormModelEvent.SYNTHETIC_PROPERTY_CHANGED);
 
   	Object[] listeners = listenerList.getListenerList();
   	for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -523,21 +735,85 @@ public class FormModel
                 l.formChanged(e);
   	    }
   	}
+
+        if (undoRedoRecording
+            && metacomp != null && propName != null && oldValue != newValue)
+        {
+            addUndoableEdit(e.getUndoableEdit());
+        }
     }
 
-    // not implemented yet
-    public void fireEventHandlerAdded(EventHandler handler) {
-        t("eventHandlerAdded"); // NOI18N
+    /** Fires an event informing about attaching a new event to event handler
+     * (or also with creating new event handler). An undoable edit is created
+     * and registered automatically. */
+    public void fireEventHandlerAdded(Event event,
+                                      EventHandler handler,
+                                      String bodyText, // only if addedNew == true
+                                      boolean createdNew)
+    {
+        t("event handler added: "+handler.getName()); // NOI18N
+        FormModelEvent e = new FormModelEvent(this);
+        e.setEvent(event, handler, bodyText, createdNew);
+        e.setChangeType(FormModelEvent.EVENT_HANDLER_ADDED);
+
+  	Object[] listeners = listenerList.getListenerList();
+  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
+  	    if (listeners[i] == FormModelListener.class) {
+                FormModelListener l = (FormModelListener)listeners[i+1];
+  		l.eventHandlerAdded(e);
+                l.formChanged(e);
+  	    }
+  	}
+
+        if (undoRedoRecording && event != null && handler != null)
+            addUndoableEdit(e.getUndoableEdit());
     }
 
-    // not implemented yet
-    public void fireEventHandlerRemoved(EventHandler handler, String oldName) {
-        t("eventHandlerRemoved"); // NOI18N
+    /** Fires an event informing about detaching an event from event handler
+     * (or also with removing the event handler). An undoable edit is created
+     * and registered automatically. */
+    public void fireEventHandlerRemoved(Event event,
+                                        EventHandler handler,
+                                        String bodyText,
+                                        boolean handlerDeleted)
+    {
+        t("firing event handler removed: "+handler.getName()); // NOI18N
+        FormModelEvent e = new FormModelEvent(this);
+        e.setEvent(event, handler, bodyText, handlerDeleted);
+        e.setChangeType(FormModelEvent.EVENT_HANDLER_REMOVED);
+
+  	Object[] listeners = listenerList.getListenerList();
+  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
+  	    if (listeners[i] == FormModelListener.class) {
+                FormModelListener l = (FormModelListener)listeners[i+1];
+  		l.eventHandlerRemoved(e);
+                l.formChanged(e);
+  	    }
+  	}
+
+        if (undoRedoRecording && event != null && handler != null)
+            addUndoableEdit(e.getUndoableEdit());
     }
 
-    // not implemented yet
-    public void fireEventHandlerRenamed(EventHandler handler) {
-        t("eventHandlerRenamed"); // NOI18N
+    /** Fires an event informing about renaming an event handler. An undoable
+     * edit is created and registered automatically. */
+    public void fireEventHandlerRenamed(EventHandler handler, String oldName) {
+        t("event handler renamed: "+handler.getName()); // NOI18N
+        FormModelEvent e = new FormModelEvent(this);
+        e.setEvent(handler, oldName);
+        e.setChangeType(FormModelEvent.EVENT_HANDLER_RENAMED);
+
+  	Object[] listeners = listenerList.getListenerList();
+  	for (int i = listeners.length - 2; i >= 0; i -= 2) {
+  	    if (listeners[i] == FormModelListener.class) {
+                FormModelListener l = (FormModelListener)listeners[i+1];
+  		l.eventHandlerRenamed(e);
+                l.formChanged(e);
+  	    }
+  	}
+
+        if (undoRedoRecording && handler != null && oldName != null)
+            addUndoableEdit(e.getUndoableEdit());
     }
 
     // -------------
@@ -581,7 +857,8 @@ public class FormModel
         public void initSubComponents(RADComponent[] initComponents) {
             otherComponents.clear();
             for (int i = 0; i < initComponents.length; i++)
-                otherComponents.add(initComponents[i]);
+                if (initComponents[i] != topRADComponent)
+                    otherComponents.add(initComponents[i]);
         }
 
         public void reorderSubComponents(int[] perm) {
@@ -621,7 +898,7 @@ public class FormModel
     static void t(String str) {
         if (TRACE)
             if (str != null)
-                System.out.println(Integer.toString(++traceCount) + " Form: "+str); // NOI18N
+                System.out.println("FormModel "+(++traceCount)+": "+str); // NOI18N
             else
                 System.out.println(""); // NOI18N
     }

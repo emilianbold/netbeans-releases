@@ -35,7 +35,8 @@ final class DefaultCodeExpression implements CodeExpression {
     private CodeObjectUsage expressionUsage;
 
 
-    public DefaultCodeExpression(CodeStructure codeStructure, CodeExpressionOrigin origin)
+    public DefaultCodeExpression(CodeStructure codeStructure,
+                                 CodeExpressionOrigin origin)
     {
         this.codeStructure = codeStructure;
         setOrigin(origin);
@@ -61,6 +62,9 @@ final class DefaultCodeExpression implements CodeExpression {
 
     public void setOrigin(CodeExpressionOrigin newOrigin) {
         CodeExpressionOrigin oldOrigin = expressionOrigin;
+        if (oldOrigin == newOrigin)
+            return;
+
         CodeExpression registerParent = null;
         List registerParams = null;
 
@@ -112,11 +116,15 @@ final class DefaultCodeExpression implements CodeExpression {
 
         expressionOrigin = newOrigin;
 
+        if (codeStructure.isUndoRedoRecording())
+            codeStructure.logUndoableChange(
+                new OriginChange(oldOrigin, newOrigin));
+
         if (newOrigin != null) {
             if (oldOrigin != null) {
                 if (registerParent != null)
                     registerParent.addUsingObject(
-                        this, UsedCodeObject.DEFINING, CodeExpression.class);
+                        this, UsedCodeObject.DEFINED, CodeExpression.class);
 
                 if (registerParams != null)
                     for (int i=0, n=registerParams.size(); i < n; i++) {
@@ -139,11 +147,24 @@ final class DefaultCodeExpression implements CodeExpression {
                                int useType,
                                Object useCategory)
     {
-        getExpressionUsage().addUsingObject(usingObject, useType, useCategory);
+        CodeStructureChange undoableChange =
+                getExpressionUsage().addUsingObject(
+                                       usingObject,
+                                       useType,
+                                       useCategory,
+                                       codeStructure.isUndoRedoRecording());
+        if (undoableChange != null)
+            codeStructure.logUndoableChange(undoableChange);
     }
 
     public boolean removeUsingObject(UsingCodeObject usingObject) {
-        getExpressionUsage().removeUsingObject(usingObject);
+        CodeStructureChange undoableChange =
+                getExpressionUsage().removeUsingObject(
+                                       usingObject,
+                                       codeStructure.isUndoRedoRecording());
+        if (undoableChange != null)
+            codeStructure.logUndoableChange(undoableChange);
+
         boolean stillUsed = !getExpressionUsage().isEmpty();
         if (!stillUsed) // the elment is no longer used in the structure
             codeStructure.removeExpressionFromVariable(this);
@@ -176,13 +197,39 @@ final class DefaultCodeExpression implements CodeExpression {
         return false;
     }
 
+    public UsedCodeObject getDefiningObject() {
+        return getOrigin().getParentExpression();
+    }
+
     public Iterator getUsedObjectsIterator() {
         return new UsedObjectsIterator();
     }
 
     // --------
 
-    class UsedObjectsIterator implements Iterator {
+    private class OriginChange implements CodeStructureChange {
+        private CodeExpressionOrigin oldOrigin;
+        private CodeExpressionOrigin newOrigin;
+
+        OriginChange(CodeExpressionOrigin oldOrigin,
+                     CodeExpressionOrigin newOrigin)
+        {
+            this.oldOrigin = oldOrigin;
+            this.newOrigin = newOrigin;
+        }
+
+        public void undo() {
+            expressionOrigin = oldOrigin;
+        }
+
+        public void redo() {
+            expressionOrigin = newOrigin;
+        }
+    }
+
+    // --------
+
+    private class UsedObjectsIterator implements Iterator {
         int index;
         CodeExpression[] parameters;
 

@@ -35,8 +35,7 @@ import org.netbeans.modules.form.actions.FormEditorAction;
  * @author Ian Formanek, Tomas Pavek
  */
 
-public class FormEditorSupport extends JavaEditor
-                               implements FormCookie, EditCookie
+public class FormEditorSupport extends JavaEditor implements EditCookie
 {
     static final String NO_WORKSPACE = "None"; // NOI18N
 
@@ -78,7 +77,8 @@ public class FormEditorSupport extends JavaEditor
     private static PropertyChangeListener topcompsListener;
     private static PropertyChangeListener paletteListener;
 
-    private UndoRedo.Manager undoManager;
+    private UndoRedo.Manager editorUndoManager;
+    private UndoRedo.Manager formUndoManager;
 
     /** Table of FormModel instances (FormModel to FormEditorSupport map) */
     private static Hashtable openForms = new Hashtable();
@@ -137,8 +137,8 @@ public class FormEditorSupport extends JavaEditor
 
     /** Public method for loading form data from file. Does not open the
      * source editor and designer, does not report errors and does not throw
-     * any exceptions. Runs in AWT event queue thread, returns after the form
-     * is loaded (even if not called from AWT thread). 
+     * any exceptions. Runs in AWT event dispatch thread, returns after the
+     * form is loaded (even if not called from AWT thread). 
      & @return whether the form is loaded (true also if it already was)
      */
     public boolean loadForm() {
@@ -153,7 +153,7 @@ public class FormEditorSupport extends JavaEditor
                 logPersistenceError(ex, 0);
             }
         }
-        else { // loading must be done in AWT event queue
+        else { // loading must be done in AWT event dispatch thread
             try {
                 java.awt.EventQueue.invokeAndWait(new Runnable() {
                     public void run() {
@@ -397,12 +397,21 @@ public class FormEditorSupport extends JavaEditor
     }
 
     protected UndoRedo.Manager createUndoRedoManager() {
-        undoManager = super.createUndoRedoManager();
-        return undoManager;
+        editorUndoManager = super.createUndoRedoManager();
+        return editorUndoManager;
     }
 
-    UndoRedo.Manager getUndoManager() {
-        return undoManager;
+    void discardEditorUndoableEdits() {
+        if (editorUndoManager != null)
+            editorUndoManager.discardAllEdits();
+    }
+
+    UndoRedo.Manager getFormUndoManager() {
+        if (formUndoManager == null) {
+            formUndoManager = new UndoRedo.Manager();
+            formUndoManager.setLimit(50);
+        }
+        return formUndoManager;
     }
 
     // ------------
@@ -441,6 +450,12 @@ public class FormEditorSupport extends JavaEditor
     public static FormDataObject getFormDataObject(FormModel formModel) {
         FormEditorSupport fes = (FormEditorSupport) openForms.get(formModel);
         return fes != null ? fes.getFormDataObject() : null;
+    }
+
+    /** @return UndoRedo.Manager instance for given form */
+    public static UndoRedo.Manager getFormUndoManager(FormModel formModel) {
+        FormEditorSupport fes = (FormEditorSupport) openForms.get(formModel);
+        return fes != null ? fes.getFormUndoManager() : null;
     }
 
     /** @return FormEditorSupport instance for given form */
@@ -518,6 +533,7 @@ public class FormEditorSupport extends JavaEditor
         formLoaded = true;
 //        getCodeGenerator().initialize(formModel);
         formModel.fireFormLoaded();
+        getFormUndoManager().discardAllEdits();
 
         // create form nodes hierarchy and add it to SourceChildren
         formRootNode = new FormRootNode(formModel);
@@ -764,6 +780,9 @@ public class FormEditorSupport extends JavaEditor
             formDesigner = null;
         }
 
+        if (formUndoManager != null)
+            formUndoManager.discardAllEdits();
+
         // reset references
         formRootNode = null;
         formDesigner = null;
@@ -790,16 +809,16 @@ public class FormEditorSupport extends JavaEditor
             }
 
             // the following methods perform node updates
-            public void containerLayoutChanged(FormModelEvent e) {
+            public void containerLayoutExchanged(FormModelEvent e) {
                 updateNodeChildren(e.getContainer());
             }
             public void componentLayoutChanged(FormModelEvent e) {
                 updateNodeChildren(e.getContainer());
             }
-            public void componentAdded(FormModelEvent e) {
+            public void componentAddedToContainer(FormModelEvent e) {
                 updateNodeChildren(e.getContainer());
             }
-            public void componentRemoved(FormModelEvent e) {
+            public void componentRemovedFromContainer(FormModelEvent e) {
                 updateNodeChildren(e.getContainer());
             }
             public void componentsReordered(FormModelEvent e) {

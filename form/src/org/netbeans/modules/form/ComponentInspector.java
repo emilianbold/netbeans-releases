@@ -16,98 +16,122 @@ package org.netbeans.modules.form;
 import java.io.*;
 import java.util.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.beans.*;
 import java.text.MessageFormat;
+import java.awt.datatransfer.*;
+import javax.swing.undo.*;
 
 import org.openide.*;
+import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.explorer.*;
 import org.openide.explorer.propertysheet.*;
 import org.openide.awt.SplittedPanel;
+import org.openide.awt.UndoRedo;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.windows.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.SharedClassObject;
-import org.openide.util.Utilities;
+import org.openide.util.*;
+import org.openide.util.actions.*;
+import org.openide.util.datatransfer.*;
 
 import org.netbeans.modules.form.actions.*;
 import org.netbeans.modules.form.palette.*;
 
 /**
- * The ComponentInspector explorer
- **/
+ * The ComponentInspector - explorer and property sheet.
+ *
+ * @author Tomas Pavek
+ */
+
+/* [ComponentInspector uses its own (simplified) implementation of action
+ *  performes - like org.openide.explorer.ExplorerActions (rev. 1.47) - to be
+ *  able to deal with multiple components operations - like delete and paste.
+ *  This is necessary for correct undo/redo behavior (compound changes).]
+ */
 
 public class ComponentInspector extends ExplorerPanel implements Serializable
 {
-    private static TestAction testAction = (TestAction)
-                       SharedClassObject.findObject(TestAction.class, true);
+    private TestAction testAction = (TestAction)
+                SystemAction.findObject(TestAction.class, true);
+    private FormEditorAction inspectorAction = (FormEditorAction)
+                SystemAction.findObject(FormEditorAction.class, true);
 
-    private static FormEditorAction inspectorAction =
-        (FormEditorAction)
-            SharedClassObject.findObject(FormEditorAction.class, true);
+    private DeleteAction deleteAction = (DeleteAction)
+                SystemAction.findObject(DeleteAction.class, true);
+    private CopyAction copyAction = (CopyAction)
+                SystemAction.findObject(CopyAction.class, true);
+    private CutAction cutAction = (CutAction)
+                SystemAction.findObject(CutAction.class, true);
+    private PasteAction pasteAction = (PasteAction)
+                SystemAction.findObject(PasteAction.class, true);
 
-    /** The default width of the ComponentInspector */
-    public static final int DEFAULT_INSPECTOR_WIDTH = 250;
-    /** The default height of the ComponentInspector */
-    public static final int DEFAULT_INSPECTOR_HEIGHT = 400;
-    /** The default percents of the splitting of the ComponentInspector */
-    public static final int DEFAULT_INSPECTOR_PERCENTS = 30;
+    private ActionPerformer copyActionPerformer = new CopyCutActionPerformer(true);
+    private ActionPerformer cutActionPerformer = new CopyCutActionPerformer(false);
+    private ActionPerformer deleteActionPerformer = new DeleteActionPerformer();
+
+    private boolean actionsAttached = false;
+
+    private ClipboardListener clipboardListener;
+
+    /** Currently focused form or null if no form is opened/focused */
+    private FormEditorSupport focusedForm;
+
+    private boolean dontSynchronizeSelectedNodes = false;
+
+    private SplittedPanel split;
+    private PropertySheetView sheet;
 
     private static EmptyInspectorNode emptyInspectorNode;
 
     /** Default icon base for control panel. */
     private static final String EMPTY_INSPECTOR_ICON_BASE =
         "org/netbeans/modules/form/resources/emptyInspector"; // NOI18N
-    
-    private static ResourceBundle formBundle = FormEditor.getFormBundle();
-    
-    /** Currently focused form or null if no form is opened/focused */
-    private FormEditorSupport focusedForm;
-//    private FormModel formModel;
-    private boolean focusingOnForm = false;
-
-    private SplittedPanel split;
-    private PropertySheetView sheet;
 
     /** The icon for ComponentInspector */
-    private static String iconURL = "org/netbeans/modules/form/resources/inspector.gif"; // NOI18N
+    private static String iconURL =
+        "org/netbeans/modules/form/resources/inspector.gif"; // NOI18N
 
     static final long serialVersionUID =4248268998485315927L;
 
     private static ComponentInspector instance;
+
+    // ------------
+    // construction
 
     public static ComponentInspector getInstance() {
         if (instance == null)
             instance = new ComponentInspector();
         return instance;
     }
-    
+
     private ComponentInspector() {
         ExplorerManager manager = getExplorerManager();
         emptyInspectorNode = new EmptyInspectorNode();
         manager.setRootContext(emptyInspectorNode);
-        
+
         setLayout(new BorderLayout());
-        
+
         createSplit();
 
         setIcon(Utilities.loadImage(iconURL));
-        setName(formBundle.getString("CTL_InspectorTitle"));
+        setName(FormUtils.getBundleString("CTL_InspectorTitle")); // NOI18N
 
-        // Force winsys to not show tab when this comp is alone
-        putClientProperty("TabPolicy", "HideWhenAlone");
-        setToolTipText(FormEditor.getFormBundle().getString("HINT_ComponentInspector"));
-        
-        manager.addPropertyChangeListener(new NodeSelectedListener());
+        // force window system to not show tab when this comp is alone
+        putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
+        setToolTipText(FormUtils.getBundleString("HINT_ComponentInspector")); // NOI18N
+
+        manager.addPropertyChangeListener(new NodeSelectionListener());
     }
 
     private void createSplit() {
         split = new SplittedPanel();
         BeanTreeView treeView = new BeanTreeView();
+        sheet = new PropertySheetView();
         split.add(treeView, SplittedPanel.ADD_FIRST);
-        split.add(sheet = new PropertySheetView(), SplittedPanel.ADD_SECOND);
+        split.add(sheet, SplittedPanel.ADD_SECOND);
         split.setSplitType(SplittedPanel.VERTICAL);
-        split.setSplitPosition(DEFAULT_INSPECTOR_PERCENTS);
+        split.setSplitPosition(30);
 
         sheet.setDisplayWritableOnly(
             FormEditor.getFormSettings().getDisplayWritableOnly());
@@ -115,72 +139,57 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
 
         add(BorderLayout.CENTER, split);
 
-        treeView.getAccessibleContext().setAccessibleName(formBundle.getString("ACS_ComponentTree"));
-        treeView.getAccessibleContext().setAccessibleDescription(formBundle.getString("ACSD_ComponentTree"));
+        treeView.getAccessibleContext().setAccessibleName(
+            FormUtils.getBundleString("ACS_ComponentTree")); // NOI18N
+        treeView.getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_ComponentTree")); // NOI18N
     }
 
-    class NodeSelectedListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (!ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()))
-                return;
-            if (focusedForm == null)
-                return;
+    // ------------
+    // activating and focusing
 
-            FormDesigner designer = focusedForm.getFormDesigner();
-            if (designer == null)
-                return;
+    protected void componentActivated() {
+        attachActions();
+    }
 
-            Node[] selectedNodes = getExplorerManager().getSelectedNodes();
+    protected void componentDeactivated() {
+        detachActions();
+    }
 
-            if (CPManager.getDefault().getMode() == PaletteAction.MODE_CONNECTION) {
-                if (selectedNodes.length == 0)
-                    return;
+    synchronized void attachActions() {
+        actionsAttached = true;
+        updateActions();
 
-                RADComponentCookie cookie = (RADComponentCookie)
-                    selectedNodes[0].getCookie(RADComponentCookie.class);
-                if (cookie != null
-                    && cookie.getRADComponent() == designer.getConnectionSource()
-                    && selectedNodes.length > 1)
-                {
-                    cookie = (RADComponentCookie)
-                        selectedNodes[selectedNodes.length-1].getCookie(RADComponentCookie.class);
-                }
-                if (cookie != null)
-                    designer.connectBean(cookie.getRADComponent(), true);
-            }
-            else if (!focusingOnForm) {
-                designer.clearSelectionImpl();
-
-                for (int i = 0; i < selectedNodes.length; i++) {
-                    RADComponentCookie cookie =
-                        (RADComponentCookie) selectedNodes[i].getCookie(RADComponentCookie.class);
-                    if (cookie != null) {
-                        designer.addComponentToSelectionImpl(
-                            cookie.getRADComponent());
-                    }
-                }
-            }
+        Clipboard c = getClipboard();
+        if (c instanceof ExClipboard) {
+            ExClipboard clip = (ExClipboard) c;
+            if (clipboardListener == null)
+                clipboardListener = new ClipboardChangesListener();
+            clip.addClipboardListener(clipboardListener);
         }
     }
 
-    class PropertiesDisplayListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (PropertySheet.PROPERTY_DISPLAY_WRITABLE_ONLY.equals(
-                                              evt.getPropertyName()))
-            {
-                FormEditor.getFormSettings().setDisplayWritableOnly(
-                                               sheet.getDisplayWritableOnly());
-            }
+    synchronized void detachActions() {
+        actionsAttached = false;
+
+        Clipboard c = getClipboard();
+        if (c instanceof ExClipboard) {
+            ExClipboard clip = (ExClipboard) c;
+            clip.removeClipboardListener(clipboardListener);
         }
+
+        if (deleteActionPerformer == deleteAction.getActionPerformer())
+            deleteAction.setActionPerformer(null);
+        if (copyActionPerformer == copyAction.getActionPerformer()) {
+            copyAction.setActionPerformer(null);
+            pasteAction.setPasteTypes(null);
+        }
+        if (cutActionPerformer == cutAction.getActionPerformer())
+            cutAction.setActionPerformer(null);
     }
 
-    public void open(Workspace workspace) {
-        // extension of this method is not needed now
-        super.open(workspace);
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("gui.component-inspector"); // NOI18N
+    boolean getActionsAttached() {
+        return actionsAttached;
     }
 
     /** This method focuses the ComponentInspector on given form.
@@ -234,16 +243,16 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
             Node formNode = form.getFormRootNode();
             // XXX how can it be null?
             if (formNode == null) {
-                System.err.println("Warning: FormEditorSupport.getFormRootNode() returns null");
+                System.err.println("Warning: FormEditorSupport.getFormRootNode() returns null"); // NOI18N
                 getExplorerManager().setRootContext(emptyInspectorNode);
             }
             else {
                 sheet.setDisplayWritableOnly(!form.getFormModel().isReadOnly()
                      && FormEditor.getFormSettings().getDisplayWritableOnly());
 
-                focusingOnForm = true;
+                dontSynchronizeSelectedNodes = true;
                 getExplorerManager().setRootContext(formNode);
-                focusingOnForm = false;
+                dontSynchronizeSelectedNodes = false;
             }
         }
         updateTitle();
@@ -259,7 +268,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     }
 
     protected void updateTitle() {
-        setName(formBundle.getString("CTL_InspectorTitle"));
+        setName(FormUtils.getBundleString("CTL_InspectorTitle")); // NOI18N
     }
 
     FormEditorSupport getFocusedForm() {
@@ -267,10 +276,12 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     }
 
     void setSelectedNodes(Node[] nodes, FormEditorSupport form)
-    throws PropertyVetoException
+        throws PropertyVetoException
     {
         if (form == focusedForm) {
+            dontSynchronizeSelectedNodes = true;
             getExplorerManager().setSelectedNodes(nodes);
+            dontSynchronizeSelectedNodes = false;
         }
     }
 
@@ -278,28 +289,452 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         return getExplorerManager().getSelectedNodes();
     }
 
-    /** Fixed preferred size, so as the inherited preferred size is too big */
-    public Dimension getPreferredSize() {
-        return new Dimension(DEFAULT_INSPECTOR_WIDTH, DEFAULT_INSPECTOR_HEIGHT);
+    // ---------------
+    // actions
+
+    private void updateActions() {
+        boolean noPerformers = false;
+        Node[] selected = getExplorerManager().getSelectedNodes();
+        int n = selected != null ? selected.length : 0;
+        int i;
+
+        if (n > 0) {
+            if (n > 1) {
+                HashMap allNodes = new HashMap(101);
+                for (i=0; i < n; i++)
+                    if (!checkNodeParents(selected[i], allNodes)) {
+                        noPerformers = true;
+                        break;
+                    }
+            }
+
+            if (!noPerformers) {
+                for (i=0; i < n; i++)
+                    if (!selected[i].canCopy()) {
+                        copyAction.setActionPerformer(null);
+                        break;
+                    }
+                if (i == n)
+                    copyAction.setActionPerformer(copyActionPerformer);
+
+                for (i=0; i < n; i++)
+                    if (!selected[i].canCut()) {
+                        cutAction.setActionPerformer(null);
+                        break;
+                    }
+                if (i == n)
+                    cutAction.setActionPerformer(cutActionPerformer);
+
+                for (i=0; i < n; i++)
+                    if (!selected[i].canDestroy()) {
+                        deleteAction.setActionPerformer(null);
+                        break;
+                    }
+                if (i == n)
+                    deleteAction.setActionPerformer(deleteActionPerformer);
+            }
+        }
+        else noPerformers = true; // no selected nodes
+
+        if (noPerformers) {
+            deleteAction.setActionPerformer(null);
+            copyAction.setActionPerformer(null);
+            cutAction.setActionPerformer(null);
+        }
+
+        updatePasteAction();
     }
 
-    /** replaces this in object stream */
+    private void updatePasteAction() {
+        Node[] selected = getExplorerManager().getSelectedNodes();
+        if (selected != null && selected.length == 1) {
+            // exactly one node must be selected
+            Clipboard clipboard = getClipboard();
+            Transferable trans = clipboard.getContents(this); // [this??]
+            if (trans != null) {
+                Node node = selected[0];
+                PasteType[] pasteTypes = node.getPasteTypes(trans);
+                if (pasteTypes.length != 0) {
+                    // transfer accepted by the node, we are done
+                    pasteAction.setPasteTypes(pasteTypes);
+                    return;
+                }
+
+                boolean multiFlavor = false;
+                try {
+                    multiFlavor = trans.isDataFlavorSupported(
+                                    ExTransferable.multiFlavor);
+                }
+                catch (Exception e) {} // ignore, should not happen
+
+                if (multiFlavor) {
+                    // The node did not accept whole multitransfer as is - try
+                    // to break it into individual transfers and paste them in
+                    // sequence instead.
+                    try {
+                        MultiTransferObject mto = (MultiTransferObject)
+                            trans.getTransferData(ExTransferable.multiFlavor);
+
+                        int n = mto.getCount(), i;
+                        Transferable[] t = new Transferable[n];
+                        PasteType[] p = new PasteType[n];
+
+                        for (i=0; i < n; i++) {
+                            t[i] = mto.getTransferableAt(i);
+                            pasteTypes = node.getPasteTypes(t[i]);
+                            if (pasteTypes.length == 0)
+                                break;
+
+                            p[i] = pasteTypes[0]; // ??
+                        }
+
+                        if (i == n) { // all individual transfers accepted
+                            pasteAction.setPasteTypes(
+                                new PasteType[] { new MultiPasteType(t, p) });
+                            return;
+                        }
+                    }
+                    catch (Exception ex) {
+                        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                            ex.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        pasteAction.setPasteTypes(null);
+    }
+
+    private boolean checkNodeParents(Node node, Map set) {
+        if (set.get(node) != null)
+            return false; // the node is in the set (as parent of another node)
+        
+        // 'this' means the original node (not parent)
+        set.put(node, this);
+ 
+        node = node.getParentNode();
+        while (node != null) {
+            if (set.put(node, node) == this)
+                return false; // the parent is also a node already in the set
+            node = node.getParentNode();
+        }
+
+        return true;
+    }
+
+    // --------------
+
+    public UndoRedo getUndoRedo() {
+        return focusedForm != null ? focusedForm.getFormUndoManager() : null;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("gui.component-inspector"); // NOI18N
+    }
+
+    /** Fixed preferred size (as the inherited preferred size is too big). */
+    public Dimension getPreferredSize() {
+        return new Dimension(250, 400);
+    }
+
+    /** Replaces this in object stream. */
     public Object writeReplace() {
         return new ResolvableHelper();
     }
 
-    static class EmptyInspectorNode extends AbstractNode {
+    // -------------
+
+    private Clipboard getClipboard() {
+        Clipboard c = (java.awt.datatransfer.Clipboard)
+            Lookup.getDefault().lookup(java.awt.datatransfer.Clipboard.class);
+        if (c == null)
+            c = Toolkit.getDefaultToolkit().getSystemClipboard();
+        return c;
+    }
+
+    // ---------------
+    // innerclasses
+
+    // listener on nodes selection (ExplorerManager)
+    private class NodeSelectionListener implements PropertyChangeListener,
+                                                   ActionListener
+    {
+        private javax.swing.Timer timer;
+
+        NodeSelectionListener() {
+            timer = new javax.swing.Timer(150, this);
+            timer.setCoalesce(true);
+            timer.setRepeats(false);
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (!ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName()))
+                return;
+
+            timer.start();
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            if (actionsAttached)
+                updateActions();
+
+            if (focusedForm == null)
+                return;
+
+            FormDesigner designer = focusedForm.getFormDesigner();
+            if (designer == null)
+                return;
+
+            Node[] selected = getExplorerManager().getSelectedNodes();
+
+            if (CPManager.getDefault().getMode() == PaletteAction.MODE_CONNECTION) {
+                // handle connection mode
+                if (selected.length == 0)
+                    return;
+
+                RADComponentCookie cookie = (RADComponentCookie)
+                    selected[0].getCookie(RADComponentCookie.class);
+                if (cookie != null
+                    && cookie.getRADComponent() == designer.getConnectionSource()
+                    && selected.length > 1)
+                {
+                    cookie = (RADComponentCookie)
+                        selected[selected.length-1].getCookie(RADComponentCookie.class);
+                }
+                if (cookie != null)
+                    designer.connectBean(cookie.getRADComponent(), true);
+            }
+            else if (!dontSynchronizeSelectedNodes) {
+                // synchronize FormDesigner with ComponentInspector
+                designer.clearSelectionImpl();
+
+                for (int i=0; i < selected.length; i++) {
+                    FormCookie formCookie = (FormCookie)
+                        selected[i].getCookie(FormCookie.class);
+                    if (formCookie != null) {
+                        Node node = formCookie.getOriginalNode();
+                        if (node instanceof RADComponentNode)
+                            designer.addComponentToSelectionImpl(
+                                ((RADComponentNode)node).getRADComponent());
+                    }
+                }
+            }
+
+            timer.stop();
+        }
+    }
+
+    // listener on clipboard changes
+    private class ClipboardChangesListener implements ClipboardListener {
+        public void clipboardChanged(ClipboardEvent ev) {
+            if (!ev.isConsumed())
+                updatePasteAction();
+        }
+    }
+
+    // listener on PropertySheet.PROPERTY_DISPLAY_WRITABLE_ONLY flag
+    private class PropertiesDisplayListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PropertySheet.PROPERTY_DISPLAY_WRITABLE_ONLY.equals(
+                                              evt.getPropertyName()))
+            {
+                FormEditor.getFormSettings().setDisplayWritableOnly(
+                                               sheet.getDisplayWritableOnly());
+            }
+        }
+    }
+
+    // performer for DeleteAction
+    private class DeleteActionPerformer implements ActionPerformer {
+        public void performAction(SystemAction action) {
+            Node[] selected = getExplorerManager().getSelectedNodes();
+            if (selected == null || selected.length == 0)
+                return;
+            
+            if (ExplorerPanel.isConfirmDelete() && !confirmDelete(selected))
+                return;
+            
+            try { // clear nodes selection first
+                getExplorerManager().setSelectedNodes(new Node[0]);
+            }
+            catch (PropertyVetoException e) {} // cannot be vetoed
+
+            FormModel formModel = focusedForm.getFormModel();
+
+            boolean compoundUndoableEditStarted =
+                formModel.isUndoRedoRecording() && formModel.startCompoundEdit();
+
+//            if (compoundUndoableEditStarted)
+//                formModel.addUndoableEdit(new SelectionUndo(selected));
+
+            for (int i=0; i < selected.length; i++) {
+                try {
+                    selected[i].destroy();
+                }
+                catch (IOException ex) { // should not happen
+                    ex.printStackTrace();
+                }
+            }
+
+            if (compoundUndoableEditStarted)
+                formModel.endCompoundEdit();
+        }
+        
+        private boolean confirmDelete(Node[] selected) {
+            String message;
+            String title;
+            if (selected.length == 1) {
+                message = NbBundle.getMessage(ExplorerActions.class,
+                                              "MSG_ConfirmDeleteObject", // NOI18N
+                                              selected[0].getDisplayName());
+                title = NbBundle.getMessage(ExplorerActions.class,
+                                            "MSG_ConfirmDeleteObjectTitle"); // NOI18N
+            }
+            else {
+                message = NbBundle.getMessage(ExplorerActions.class,
+                                              "MSG_ConfirmDeleteObjects", // NOI18N
+                                               new Integer(selected.length));
+                title = NbBundle.getMessage(ExplorerActions.class,
+                                            "MSG_ConfirmDeleteObjectsTitle"); // NOI18N
+            }
+
+            NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
+                        message, title, NotifyDescriptor.YES_NO_OPTION);
+
+            return NotifyDescriptor.YES_OPTION.equals (
+                   TopManager.getDefault().notify(desc));
+        }
+    }
+
+    // performer for CopyAction and CutAction
+    private class CopyCutActionPerformer implements ActionPerformer {
+        private boolean copy;
+
+        public CopyCutActionPerformer(boolean copy) {
+            this.copy = copy;
+        }
+
+        public void performAction(SystemAction action) {
+            Transferable trans;
+            Node[] selected = getExplorerManager().getSelectedNodes();
+
+            if (selected == null || selected.length == 0)
+                trans = null;
+            else if (selected.length == 1)
+                trans = getTransferableOwner(selected[0]);
+            else {
+                Transferable[] transArray = new Transferable[selected.length];
+                for (int i=0; i < selected.length; i++)
+                    if ((transArray[i] = getTransferableOwner(selected[i]))
+                                                                     == null)
+                        return;
+
+                trans = new ExTransferable.Multi(transArray);
+            }
+
+            if (trans != null) {
+                Clipboard clipboard = getClipboard();
+                clipboard.setContents(trans, new StringSelection("")); // NOI18N
+            }
+        }
+
+        private Transferable getTransferableOwner(Node node) {
+            try {
+                return copy ? node.clipboardCopy() : node.clipboardCut();
+            }
+            catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                return null;
+            }
+        }
+    }
+
+    // paste type used for ExTransferable.Multi
+    private class MultiPasteType extends PasteType {
+        private Transferable[] t;
+        private PasteType[] p;
+
+        MultiPasteType(Transferable[] t, PasteType[] p) {
+            this.t = t;
+            this.p = p;
+        }
+
+        // performs the paste action
+        public Transferable paste() throws IOException {
+            Transferable[] transOut = new Transferable[p.length];
+
+            boolean compoundUndoableEditStarted =
+                focusedForm.getFormModel().isUndoRedoRecording()
+                && focusedForm.getFormModel().startCompoundEdit();
+
+            for (int i=0; i < p.length; i++) {
+                Transferable newTrans = p[i].paste();
+                transOut[i] = newTrans != null ? newTrans : t[i];
+            }
+
+            if (compoundUndoableEditStarted)
+                focusedForm.getFormModel().endCompoundEdit();
+
+            return new ExTransferable.Multi(transOut);
+        }
+    }
+
+/*    private class SelectionUndo extends AbstractUndoableEdit {
+        private RADComponent[] components;
+
+        SelectionUndo(Node[] selected) {
+            java.util.List compList = new ArrayList(selected.length);
+            for (int i=0; i < selected.length; i++) {
+                RADComponentCookie radCookie = (RADComponentCookie)
+                        selected[i].getCookie(RADComponentCookie.class);
+                if (radCookie != null)
+                   compList.add(radCookie.getRADComponent());
+            }
+            components = new RADComponent[compList.size()];
+            compList.toArray(components);
+        }
+
+        public void undo() throws CannotUndoException {
+            super.undo();
+            if (components != null && components.length > 0) {
+                Node[] nodes = new Node[components.length];
+                for (int i=0; i < components.length; i++)
+                    nodes[i] = components[i].getNodeReference();
+
+                try {
+                    getExplorerManager().setSelectedNodes(nodes);
+                }
+                catch (PropertyVetoException ex) {} // ignore
+            }
+        }
+
+        public void redo() throws CannotRedoException {
+            super.redo();
+            // redo does nothing
+        }
+
+        public String getUndoPresentationName() {
+            return ""; // NOI18N
+        }
+        public String getRedoPresentationName() {
+            return ""; // NOI18N
+        }
+    } */
+
+    // -----------
+
+    // node for empty ComponentInspector
+    private static class EmptyInspectorNode extends AbstractNode {
         public EmptyInspectorNode() {
             super(Children.LEAF);
             setIconBase(EMPTY_INSPECTOR_ICON_BASE);
         }
-
         public boolean canRename() {
             return false;
         }
     }
 
-    final public static class ResolvableHelper implements java.io.Serializable {
+    final public static class ResolvableHelper implements Serializable {
         static final long serialVersionUID = 7424646018839457544L;
         public Object readResolve() {
             return ComponentInspector.getInstance();

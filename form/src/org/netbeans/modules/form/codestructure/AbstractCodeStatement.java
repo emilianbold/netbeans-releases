@@ -47,13 +47,17 @@ abstract class AbstractCodeStatement implements CodeStatement {
         return false;
     }
 
+    public UsedCodeObject getDefiningObject() {
+        return getParentExpression();
+    }
+
     public Iterator getUsedObjectsIterator() {
         return new UsedObjectsIterator();
     }
 
     // --------
 
-    class UsedObjectsIterator implements Iterator {
+    private class UsedObjectsIterator implements Iterator {
         int index;
         CodeExpression[] parameters;
 

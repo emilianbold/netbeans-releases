@@ -15,6 +15,7 @@ package org.netbeans.modules.form;
 
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.undo.*;
 import javax.swing.border.Border;
 import java.util.*;
 import java.text.MessageFormat;
@@ -26,6 +27,7 @@ import org.openide.cookies.InstanceCookie;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.compat2.border.*;
+import org.netbeans.modules.form.codestructure.CodeStructure;
 
 /**
  * This class represents an access point for adding new components to FormModel.
@@ -48,6 +50,8 @@ public class MetaComponentCreator {
     private static final int TARGET_OTHER = 5;
 
     FormModel formModel;
+
+    CreatorCodeUndoableEdit undoEdit;
 
     MetaComponentCreator(FormModel model) {
         formModel = model;
@@ -113,25 +117,57 @@ public class MetaComponentCreator {
 
         // if layout or border is to be copied from a meta component, we just
         // apply the cloned instance, but don't copy the meta component
-        if (targetPlacement == TARGET_LAYOUT) {
+        if (targetPlacement == TARGET_LAYOUT)
             return copyAndApplyLayout(sourceComp, targetComp);
-        }
 
-        else if (targetPlacement == TARGET_BORDER) {
+        if (targetPlacement == TARGET_BORDER)
             return copyAndApplyBorder(sourceComp, targetComp);
-        }
 
-        else if (targetPlacement == NO_TARGET)
+        if (targetPlacement == NO_TARGET)
             return null;
+
+        // in other cases let's copy the source meta component
 
         if (sourceComp instanceof RADVisualComponent)
             LayoutSupportManager.storeConstraints(
                                      (RADVisualComponent) sourceComp);
 
-        // in other cases let's copy the source meta component
+        // start compound undoable edit
+        boolean compoundUndoableEditStarted = formModel.isUndoRedoRecording()
+                                              && formModel.startCompoundEdit();
+
+        // turn on undo/redo recording on code structure (if allowed)
+        CodeStructure codeStructure = formModel.getCodeStructure();
+        if (formModel.isUndoRedoRecording()
+            && !codeStructure.isUndoRedoRecording())
+        {
+            codeStructure.setUndoRedoRecording(true);
+            undoEdit = new CreatorCodeUndoableEdit();
+            undoEdit.codeUndoRedoStart = codeStructure.markForUndo();
+        }
+        else undoEdit = null;
+
+        // copy the source metacomponent
         RADComponent newMetaComp = makeCopy(sourceComp, targetPlacement);
-        if (newMetaComp == null)
+
+        if (newMetaComp == null) { // copying failed (for a mystic reason)
+            if (undoEdit != null)
+                codeStructure.setUndoRedoRecording(false);
+            if (compoundUndoableEditStarted) {
+                formModel.setUndoRedoRecording(false); // don't record the edit
+                formModel.endCompoundEdit();
+                formModel.setUndoRedoRecording(true);
+            }
+            undoEdit = null;
             return null;
+        }
+
+        if (undoEdit != null) { // finish undo/redo recording on code structure
+            undoEdit.codeUndoRedoEnd = codeStructure.markForUndo();
+            codeStructure.setUndoRedoRecording(false);
+            formModel.addUndoableEdit(undoEdit);
+            undoEdit = null;
+        }
 
         if (targetPlacement == TARGET_MENU) {
             addMenuComponent(newMetaComp, targetComp);
@@ -145,11 +181,18 @@ public class MetaComponentCreator {
             }
             else constraints = null;
 
-            return addVisualComponent(newVisual, targetComp, constraints);
+            newMetaComp = addVisualComponent(newVisual,
+                                             targetComp,
+                                             constraints);
+            // might be null if layout support did not accept the component
         }
         else if (targetPlacement == TARGET_OTHER) {
             addOtherComponent(newMetaComp, targetComp);
         }
+        else finishCreatorCodeUndoableEdit();
+
+        if (compoundUndoableEditStarted)
+            formModel.endCompoundEdit(); // finish compound undoable edit
 
         return newMetaComp;
     }
@@ -188,7 +231,7 @@ public class MetaComponentCreator {
         if (beanClass == null)
             return null;
 
-        // check pasting form class to itself
+        // check adding form class to itself
         if (formModel.getFormBaseClass().isAssignableFrom(beanClass)) {
             // it might be...
             SourceElement formSource =
@@ -208,34 +251,53 @@ public class MetaComponentCreator {
             }
         }
 
-        RADComponent newComp;
+        int targetPlacement =
+            getTargetPlacement(beanClass, targetComp, true, true);
 
-        switch (getTargetPlacement(beanClass, targetComp, true, true)) {
-            case TARGET_LAYOUT:
-                newComp = setContainerLayout(source, targetComp);
-                break;
+        if (targetPlacement == TARGET_LAYOUT)
+            return setContainerLayout(source, targetComp);
 
-            case TARGET_BORDER:
-                newComp = setComponentBorder(source, targetComp);
-                break;
+        if (targetPlacement == TARGET_BORDER)
+            return setComponentBorder(source, targetComp);
 
-            case TARGET_MENU:
-                newComp = addMenuComponent(source, targetComp);
-                break;
+        if (targetPlacement == NO_TARGET)
+            return null;
 
-            case TARGET_VISUAL:
-                newComp = addVisualComponent(source, targetComp, constraints);
-                break;
+        // start compound undoable edit
+        boolean compoundUndoableEditStarted = formModel.isUndoRedoRecording()
+                                              && formModel.startCompoundEdit();
 
-            case TARGET_OTHER:
-                newComp = addOtherComponent(source, targetComp);
-                break;
-
-            default:
-                newComp = null;
+        // turn on undo/redo recording on code structure (if allowed)
+        CodeStructure codeStructure = formModel.getCodeStructure();
+        if (formModel.isUndoRedoRecording()
+            && !codeStructure.isUndoRedoRecording())
+        {
+            codeStructure.setUndoRedoRecording(true);
+            undoEdit = new CreatorCodeUndoableEdit();
+            undoEdit.codeUndoRedoStart = codeStructure.markForUndo();
+            formModel.addUndoableEdit(undoEdit);
         }
+        else undoEdit = null;
 
-        return newComp;
+        RADComponent newMetaComp = null;
+
+        if (targetPlacement == TARGET_MENU)
+            newMetaComp = addMenuComponent(source, targetComp);
+
+        else if (targetPlacement == TARGET_VISUAL)
+            newMetaComp = addVisualComponent(source, targetComp, constraints);
+
+        else if (targetPlacement == TARGET_OTHER)
+            newMetaComp = addOtherComponent(source, targetComp);
+
+        else finishCreatorCodeUndoableEdit(); // should not happen
+
+        // finish undo setup
+        undoEdit = null;
+        if (compoundUndoableEditStarted)
+            formModel.endCompoundEdit();
+
+        return newMetaComp;
     }
 
     /** This method is responsible for decision whether a bean can be added to
@@ -535,6 +597,8 @@ public class MetaComponentCreator {
         // non-default values e.g. a label on buttons, checkboxes
         defaultComponentInit(newMetaComp);
 
+        finishCreatorCodeUndoableEdit();
+
         Class beanClass = newMetaComp.getBeanClass();
         if (java.awt.Window.class.isAssignableFrom(beanClass)
                 || java.applet.Applet.class.isAssignableFrom(beanClass))
@@ -587,6 +651,8 @@ public class MetaComponentCreator {
         newMetaComp.initialize(formModel);
         if (!initComponentInstance(newMetaComp, source))
             return null;
+
+        finishCreatorCodeUndoableEdit();
 
         addOtherComponent(newMetaComp, targetComp);
         return newMetaComp;
@@ -869,6 +935,8 @@ public class MetaComponentCreator {
         // non-default values e.g. a label on buttons, checkboxes
         defaultMenuInit(newMenuItemComp);
 
+        finishCreatorCodeUndoableEdit();
+
         addMenuComponent(newMenuItemComp, targetComp);
 
         // for new menu bars we do some additional special things...
@@ -972,6 +1040,7 @@ public class MetaComponentCreator {
     }
 
     // --------
+    // default component initialization
 
     static void defaultComponentInit(RADComponent radComp) {
         Object comp = radComp.getBeanInstance();
@@ -1111,6 +1180,44 @@ public class MetaComponentCreator {
                 }
                 catch (Exception e) {} // never mind, ignore
             }
+        }
+    }
+
+    //---------
+
+    private void finishCreatorCodeUndoableEdit() {
+        if (undoEdit != null) { // finish undo/redo recording on code structure
+            CodeStructure codeStructure = formModel.getCodeStructure();
+            undoEdit.codeUndoRedoEnd = codeStructure.markForUndo();
+            codeStructure.setUndoRedoRecording(false);
+        }
+    }
+
+    private class CreatorCodeUndoableEdit extends AbstractUndoableEdit {
+        private Object codeUndoRedoStart;
+        private Object codeUndoRedoEnd;
+
+        public void undo() throws CannotUndoException {
+            super.undo();
+
+            if (codeUndoRedoStart != null
+                    && !codeUndoRedoStart.equals(codeUndoRedoEnd))
+                formModel.getCodeStructure().undoToMark(codeUndoRedoStart);
+        }
+
+        public void redo() throws CannotRedoException {
+            super.redo();
+
+            if (codeUndoRedoEnd != null
+                    && !codeUndoRedoEnd.equals(codeUndoRedoStart))
+                formModel.getCodeStructure().redoToMark(codeUndoRedoEnd);
+        }
+
+        public String getUndoPresentationName() {
+            return ""; // NOI18N
+        }
+        public String getRedoPresentationName() {
+            return ""; // NOI18N
         }
     }
 }

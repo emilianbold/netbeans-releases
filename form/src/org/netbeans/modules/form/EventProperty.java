@@ -129,7 +129,6 @@ public class EventProperty extends PropertySupport.ReadWrite {
         if (change.hasRemoved()) { // some handlers to remove
             for (Iterator iter = change.getRemoved().iterator(); iter.hasNext();) {
                 formHandlers.removeEventHandler(event, (String)iter.next());
-                formModel.fireFormChanged();
             }
         }
 
@@ -144,7 +143,6 @@ public class EventProperty extends PropertySupport.ReadWrite {
                     continue; // no change
 
                 formHandlers.renameEventHandler(oldName, newName);
-                formModel.fireFormChanged();
             }
         }
 
@@ -156,9 +154,7 @@ public class EventProperty extends PropertySupport.ReadWrite {
                     continue;
                 }
 
-                if (formHandlers.addEventHandler(event, handlerName))
-                    formModel.fireFormChanged();
-                else continue; // incompatible handler
+                formHandlers.addEventHandler(event, handlerName);
             }
         }
 

@@ -50,8 +50,10 @@ public abstract class FormProperty extends Node.Property {
 
     // --------------------
     // constants
+
     public static final String PROP_VALUE = "propertyValue"; // NOI18N
     public static final String CURRENT_EDITOR = "currentEditor"; // NOI18N
+    public static final String PROP_VALUE_AND_EDITOR = "propertyValueAndEditor"; // NOI18N
     public static final String PROP_PRE_CODE = "preCode"; // NOI18N
     public static final String PROP_POST_CODE = "postCode"; // NOI18N
 
@@ -181,21 +183,55 @@ public abstract class FormProperty extends Node.Property {
     {
 //        if (!canWrite())
 //            throw new IllegalAccessException("Not a writeable property: "+getName());
-        Object oldValue = null;
+        Object oldValue;
         if (canRead()) {
             try { // get the old value (still the current)
                 oldValue = getValue();
-                if (!(value instanceof FormDesignValue)
-                    && (value == oldValue
-                        || (value != null && value.equals(oldValue))))
-                    return; // no change
             }
             catch (Exception e) {  // no problem -> keep null
+                oldValue = BeanSupport.NO_VALUE;
             }
         }
+        else oldValue = BeanSupport.NO_VALUE;
+        
+        if (value instanceof ValueWithEditor) {
+            // changing value and property editor at once
+            ValueWithEditor vwpe = (ValueWithEditor) value;
+            value = vwpe.getValue();
+            PropertyEditor newEditor = vwpe.getPropertyEditor(this);
+            PropertyEditor oldEditor = currentEditor;
+
+            if (newEditor != oldEditor) {
+                // turn off change firing as we fire the two changes as one
+                boolean fire = fireChanges;
+                fireChanges = false;
+                setCurrentEditor(newEditor);
+                setValue(value);
+                fireChanges = fire;
+
+                if (oldValue == BeanSupport.NO_VALUE)
+                    oldValue = null; // [should not BeanSupport.NO_VALUE remain??]
+
+                propertyValueAndEditorChanged(
+                    new ValueWithEditor(oldValue, oldEditor),
+                    new ValueWithEditor(value, newEditor));
+
+                return;
+            }
+            // othrewise continue setting only the value itself
+        }
+
+        if (oldValue != BeanSupport.NO_VALUE) {
+            // check whether the new value is different
+            if (!(value instanceof FormDesignValue)
+                && (value == oldValue
+                    || (value != null && value.equals(oldValue))))
+                return; // no change
+        }
+        else oldValue = null; // [should not BeanSupport.NO_VALUE remain??]
 
         if (value == BeanSupport.NO_VALUE) {
-            // special - BeanSupport.NO_VALUE resets change flag
+            // special value to be set - reset the change flag
             setChanged(false);
             propertyValue = value;
             lastRealValue = null;
@@ -309,8 +345,7 @@ public abstract class FormProperty extends Node.Property {
                         || (defValue != null && defValue.equals(oldValue))))
                     return; // no change
             }
-            catch (Exception e) {  // no problem -> keep null
-            }
+            catch (Exception e) {}  // no problem -> keep null
         }
 
         if (canWriteToTarget()) {
@@ -539,7 +574,6 @@ public abstract class FormProperty extends Node.Property {
             return ed.getJavaInitializationString();
         }
         catch (Exception e) {
-//            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
             e.printStackTrace();
         }
         return null;
@@ -673,6 +707,25 @@ public abstract class FormProperty extends Node.Property {
         }
     }
 
+    protected void propertyValueAndEditorChanged(ValueWithEditor old,
+                                                 ValueWithEditor current)
+    {
+        if (fireChanges) {
+            try {
+                firePropertyChange(PROP_VALUE_AND_EDITOR, old, current);
+            }
+            catch (PropertyVetoException ex) {
+                boolean fire = fireChanges;
+                fireChanges = false;
+                try {
+                    setValue(old);
+                }
+                catch (Exception ex2) {} // ignore
+                fireChanges = fire;
+            }
+        }
+    }
+
     private void firePropertyChange(String propName, Object old, Object current)
         throws PropertyVetoException
     {
@@ -763,4 +816,47 @@ public abstract class FormProperty extends Node.Property {
                 }
         }
     } */
+
+    // ------------
+
+    public static final class ValueWithEditor {
+        private Object value;
+        private PropertyEditor propertyEditor;
+        private int propertyEditorIndex;
+
+        ValueWithEditor(Object value, PropertyEditor propertyEditor) {
+            this.value = value;
+            this.propertyEditor = propertyEditor;
+        }
+
+        ValueWithEditor(Object value, int propertyEditorIndex) {
+            this.value = value;
+            this.propertyEditorIndex = propertyEditorIndex;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+
+        public PropertyEditor getPropertyEditor() {
+            return propertyEditor;
+        }
+
+        PropertyEditor getPropertyEditor(FormProperty property) {
+            if (propertyEditor != null)
+                return propertyEditor;
+            if (propertyEditorIndex < 0)
+                return null;
+
+            PropertyEditor pe = property.getPropertyEditor();
+            if (pe instanceof FormPropertyEditor) {
+                FormPropertyEditor fpe = (FormPropertyEditor) pe;
+                PropertyEditor[] allEds = fpe.getAllEditors();
+                if (propertyEditorIndex < allEds.length)
+                    return allEds[propertyEditorIndex];
+            }
+
+            return null;
+        }
+    }
 }

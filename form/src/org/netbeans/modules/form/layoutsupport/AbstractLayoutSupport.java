@@ -103,6 +103,17 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
                            boolean fromCode)
         throws Exception
     {
+        if (this.layoutContext == layoutContext) {
+            // already initialized - just reuse the delegate
+            if (setLayoutCode != null)
+                setLayoutCode.removeAll();
+            else setLayoutCode =
+                     layoutContext.getCodeStructure().createCodeGroup();
+
+            readLayoutCode(setLayoutCode); //  reinstate layout code (for sure)
+            return;
+        }
+
         this.layoutContext = layoutContext;
         clean();
 

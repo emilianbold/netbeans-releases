@@ -112,7 +112,13 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     }
 
     public void initSubComponents(RADComponent[] initComponents) {
-        subComponents = new ArrayList(initComponents.length);
+        if (subComponents == null)
+            subComponents = new ArrayList(initComponents.length);
+        else {
+            subComponents.clear();
+            subComponents.ensureCapacity(initComponents.length);
+        }
+
         for (int i = 0; i < initComponents.length; i++) {
             RADComponent comp = initComponents[i];
             if (comp instanceof RADMenuItemComponent) {

@@ -11,17 +11,13 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+package org.netbeans.modules.form.codestructure;
 
-package org.netbeans.modules.form;
-
-import org.openide.nodes.Node;
-
-/** Cookie for obtaining FormModel.
- *
+/**
  * @author Tomas Pavek
  */
-public interface FormCookie extends Node.Cookie {
 
-    public FormModel getFormModel();
-    public Node getOriginalNode();
+interface CodeStructureChange {
+    void undo();
+    void redo();
 }

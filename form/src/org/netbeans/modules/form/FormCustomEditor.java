@@ -351,9 +351,9 @@ public class FormCustomEditor extends JPanel
                 prop.setPreCode(preCode);
                 prop.setPostCode(postCode);
 
-                editor.setCurrentEditor(currentEditor);
-
                 prop.setChangeFiring(fire);
+
+                value = new FormProperty.ValueWithEditor(value, currentEditor);
             }
             else { // there are more nodes selected
                 String propName = editor.getProperty().getName();
@@ -372,41 +372,19 @@ public class FormCustomEditor extends JPanel
                     if (prop == null)
                         continue; // property not known
 
-                    PropertyEditor pe = prop.getPropertyEditor();
-                    if (pe instanceof FormPropertyEditor) {
-                        boolean fire = prop.isChangeFiring();
-                        prop.setChangeFiring(false);
+                    boolean fire = prop.isChangeFiring();
+                    prop.setChangeFiring(false);
 
-                        prop.setPreCode(preCode);
-                        prop.setPostCode(postCode);
+                    prop.setPreCode(preCode);
+                    prop.setPostCode(postCode);
 
-                        // set the current editor for this FormPropertyEditor,
-                        // but be sure it matches via currentIndex
-                        FormPropertyEditor fpe = (FormPropertyEditor) pe;
-                        PropertyEditor[] allEds = fpe.getAllEditors();
-                        if (currentIndex < allEds.length
-                            && currentEditor.getClass().equals(
-                                 allEds[currentIndex].getClass()))
-                        {
-                            fpe.setCurrentEditor(allEds[currentIndex]);
-                        }
-
-                        prop.setChangeFiring(fire);
-                    }
+                    prop.setChangeFiring(fire);
                 }
+
+                value = new FormProperty.ValueWithEditor(value, currentIndex);
             }
         }
 
         return value;
-    }
-
-    public PropertyEditor getCurrentPropertyEditor() {
-        int index = editorsCombo.getSelectedIndex();
-        return (index == -1) ? null : allEditors[index];
-    }
-
-    public Component getCurrentCustomPropertyEditor() {
-        int index = editorsCombo.getSelectedIndex();
-        return (index == -1) ? null : allCustomEditors[index];
     }
 }

@@ -73,10 +73,6 @@ public class FormPropertyEditor implements PropertyEditor,
         return property.getCurrentEditor();
     }
 
-    void setCurrentEditor(PropertyEditor newEditor) {
-        property.setCurrentEditor(newEditor);
-    }
-
     // -----------------------------------------------------------------------------
     // PropertyChangeListener implementation
 

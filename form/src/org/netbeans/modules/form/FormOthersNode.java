@@ -144,7 +144,7 @@ class FormOthersNode extends FormNode {
         public void reorder(int[] perm) {
             ComponentContainer cont = children.getFormModel().getModelContainer();
             cont.reorderSubComponents(perm);
-            children.getFormModel().fireComponentsReordered(cont);
+            children.getFormModel().fireComponentsReordered(cont, perm);
 //            children.updateKeys();
         }
     }

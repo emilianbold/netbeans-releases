@@ -91,6 +91,14 @@ public abstract class CodeGenerator {
                                                String[] exceptTypes,
                                                String[] paramTypes);
 
+    /** 
+     * Gets the body (text) of event handler of given name.
+     * @param handlerName name of the event handler
+     * @return text of the event handler body
+     */
+
+    public abstract String getEventHandlerText(String handlerName);
+
     /** Focuses the specified event handler in the editor. */
 
     public abstract void gotoEventHandler(String handlerName);

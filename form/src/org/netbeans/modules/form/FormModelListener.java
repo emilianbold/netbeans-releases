@@ -27,12 +27,16 @@ public interface FormModelListener extends java.util.EventListener
     public void formToBeSaved(FormModelEvent e);
 //    public void formToBeClosed(FormModelEvent e);
 
-    public void containerLayoutChanged(FormModelEvent e);
-    public void componentLayoutChanged(FormModelEvent e);
-
     public void componentAdded(FormModelEvent e);
     public void componentRemoved(FormModelEvent e);
+
+    public void componentAddedToContainer(FormModelEvent e);
+    public void componentRemovedFromContainer(FormModelEvent e);
     public void componentsReordered(FormModelEvent e);
+
+    public void containerLayoutExchanged(FormModelEvent e);
+    public void containerLayoutChanged(FormModelEvent e);
+    public void componentLayoutChanged(FormModelEvent e);
 
     public void componentPropertyChanged(FormModelEvent e);
     public void syntheticPropertyChanged(FormModelEvent e);

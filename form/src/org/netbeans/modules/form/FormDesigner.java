@@ -28,10 +28,9 @@ import org.openide.*;
 import org.openide.windows.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
+import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerPanel;
-import org.openide.filesystems.*;
 
-import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.*;
 import org.netbeans.modules.form.fakepeer.FakePeerContainer;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
@@ -50,8 +49,9 @@ public class FormDesigner extends TopComponent
 
     private ComponentLayer componentLayer;
     private HandleLayer handleLayer;
-    private InPlaceEditLayer textEditLayer;
     private FormDesignerPanel fdPanel;
+
+    private InPlaceEditLayer textEditLayer;
     private FormProperty editedProperty;
 
     private RADVisualComponent topDesignComponent;
@@ -167,7 +167,7 @@ public class FormDesigner extends TopComponent
                 updateActivatedNodes();
         }
 
-        FormEditor.actions.attach(ci.getExplorerManager());
+        ci.attachActions();
         if (textEditLayer == null || !textEditLayer.isVisible())
             handleLayer.requestFocus();
         else
@@ -178,12 +178,17 @@ public class FormDesigner extends TopComponent
         if (formModel == null)
             return;
 
-        if (textEditLayer != null && textEditLayer.isVisible()) {
+        if (textEditLayer != null && textEditLayer.isVisible())
             textEditLayer.finishEditing(false);
-        }
-        FormEditor.actions.detach();
+
+        ComponentInspector.getInstance().detachActions();
         resetConnection();
         super.componentDeactivated();
+    }
+
+    public UndoRedo getUndoRedo() {
+        return formEditorSupport != null ?
+               formEditorSupport.getFormUndoManager() : null;
     }
 
     void updateActivatedNodes() {
@@ -218,68 +223,6 @@ public class FormDesigner extends TopComponent
         setToolTipText(name);
     }
     
-    private String generateModeName(FormDesigner fd) {
-        FileObject fo = fd.getModel().getFormDataObject().getFormFile();
-        String modeName = null;
-        try {
-            modeName = fo.getFileSystem().getDisplayName().replace(java.io.File.separatorChar, '.')
-                      + "." + fo.getPackageNameExt('.', '.');
-        }
-        catch (FileStateInvalidException ex) {
-            // nothing to do
-        }
-        return modeName;
-    }
-    
-    /*
-    private void updateFormsInOneWindow() {
-        Workspace workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
-        String modeName = "Form";
-        Mode mode = workspace.findMode(modeName);
-        
-        if (formSettings.getOpenFormsInOneWindow()) {
-            if (mode == null) {
-                mode = workspace.createMode(
-                    modeName,
-                    FormEditor.getFormBundle().getString("CTL_FormWindowTitle"), // NOI18N
-                    null);                        
-            }
-            
-            Object[] modes = workspace.getModes().toArray();
-            for (int i=0; i<modes.length; i++) {
-                if (((Mode)modes[i]).getName().endsWith(".form")) {
-                    TopComponent[] comps = ((Mode)modes[i]).getTopComponents();
-                    for (int j=0; j<comps.length; j++) {
-                        if (comps[j].isOpened()) {
-                            mode.dockInto(comps[j]);
-                        }
-                    }
-                }
-            }
-        }
-        else {
-            TopComponent[] comps = mode.getTopComponents();
-            
-            for (int i=0; i < comps.length; i++) {
-                if (comps[i].isOpened()) {
-                    
-                    modeName = generateModeName(((FormDesigner)comps[i]));
-                    mode = workspace.findMode(modeName);
-                    
-                    if (mode == null) {
-                        mode = workspace.createMode(
-                                modeName,
-                                FormEditor.getFormBundle().getString("CTL_FormWindowTitle"), // NOI18N
-                                null);                        
-                    }
-                    
-                    mode.dockInto(comps[i]);
-                }
-            }
-        }
-    }
-     */
-
     ////////////////
     
     FormDesigner(FormModel formModel) {
@@ -833,6 +776,10 @@ public class FormDesigner extends TopComponent
     // update tasks (managed by VisualUpdater).
     class FormListener extends FormModelAdapter {
 
+        public void containerLayoutExchanged(FormModelEvent e) {
+            placeUpdateTask(UpdateTask.LAYOUT, e);
+        }
+
         public void containerLayoutChanged(FormModelEvent e) {
             placeUpdateTask(UpdateTask.LAYOUT, e);
         }
@@ -842,12 +789,12 @@ public class FormDesigner extends TopComponent
                 placeUpdateTask(UpdateTask.LAYOUT, e);
         }
 
-        public void componentAdded(FormModelEvent e) {
+        public void componentAddedToContainer(FormModelEvent e) {
             if (isInDesignedTree(e.getComponent()))
                 placeUpdateTask(UpdateTask.ADD, e);
         }
 
-        public void componentRemoved(FormModelEvent e) {
+        public void componentRemovedFromContainer(FormModelEvent e) {
             RADComponent removed = e.getComponent();
 
             // test whether topDesignComponent or some of its parents

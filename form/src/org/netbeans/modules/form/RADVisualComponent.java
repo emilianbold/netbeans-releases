@@ -187,16 +187,17 @@ public class RADVisualComponent extends RADComponent {
     }
 
     public void resetConstraintsProperties() {
-        if (constraintsProperties != null)
+        if (constraintsProperties != null) {
             for (int i=0; i < constraintsProperties.length; i++)
                 nameToProperty.remove(constraintsProperties[i].getName());
 
-        constraintsProperties = null;
-        beanPropertySets = null;
+            constraintsProperties = null;
+            beanPropertySets = null;
 
-        RADComponentNode node = getNodeReference();
-        if (node != null)
-            node.fireComponentPropertySetsChange();
+            RADComponentNode node = getNodeReference();
+            if (node != null)
+                node.fireComponentPropertySetsChange();
+        }
     }
 
     private void createConstraintsProperties() {
@@ -248,8 +249,10 @@ public class RADVisualComponent extends RADComponent {
             throws PropertyVetoException
         {
             Object source = ev.getSource();
+            String eventName = ev.getPropertyName();
             if (source instanceof FormProperty
-                && FormProperty.PROP_VALUE.equals(ev.getPropertyName()))
+                && (FormProperty.PROP_VALUE.equals(eventName)
+                    || FormProperty.PROP_VALUE_AND_EDITOR.equals(eventName)))
             {
                 LayoutSupportManager layoutSupport = getParentLayoutSupport();
                 int index = getComponentIndex();

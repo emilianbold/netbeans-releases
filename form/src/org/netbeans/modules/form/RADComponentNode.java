@@ -290,6 +290,7 @@ public class RADComponentNode extends FormNode
         // turn on notifying the user about deleting event handlers
         FormEventHandlers.setNotifyUser(true);
         component.getFormModel().removeComponent(component);
+        component.setNodeReference(null);
         FormEventHandlers.restorePreviousNotifySettings();
 
         super.destroy();
@@ -466,8 +467,9 @@ public class RADComponentNode extends FormNode
         if (copy || cut) { // copy or cut some RADComponent
             RADComponent transComp = null;
             try {
-                transComp = (RADComponent) t.getTransferData(
-                                                t.getTransferDataFlavors()[0]);
+                Object data = t.getTransferData(t.getTransferDataFlavors()[0]);
+                if (data instanceof RADComponent)
+                    transComp = (RADComponent) data;
             }
             catch (UnsupportedFlavorException e) {} // should not happen
             catch (java.io.IOException e) {} // should not happen
@@ -611,7 +613,7 @@ public class RADComponentNode extends FormNode
             if (component instanceof ComponentContainer) {
                 ComponentContainer cont = (ComponentContainer) component;
                 cont.reorderSubComponents(perm);
-                component.getFormModel().fireComponentsReordered(cont);
+                component.getFormModel().fireComponentsReordered(cont, perm);
             }
         }
     }

@@ -14,81 +14,159 @@
 package org.netbeans.modules.form;
 
 import java.util.EventObject;
-import org.netbeans.modules.form.layoutsupport.LayoutSupportDelegate;
+import javax.swing.undo.*;
+
+import org.openide.nodes.Node;
+
+import org.netbeans.modules.form.layoutsupport.*;
 
 /**
  *
- * @author Tran Duc Trung
+ * @author Tran Duc Trung, Tomas Pavek
  */
 
 public class FormModelEvent extends EventObject
 {
+    public static final int FORM_CHANGED = 1;
+    public static final int FORM_LOADED = 2;
+    public static final int FORM_TO_BE_SAVED = 3;
+//    public static final int FORM_TO_BE_CLOSED = 4;
+    public static final int CONTAINER_LAYOUT_EXCHANGED = 5;
+    public static final int CONTAINER_LAYOUT_CHANGED = 6;
+    public static final int COMPONENT_LAYOUT_CHANGED = 7;
+    public static final int COMPONENT_ADDED = 8;
+    public static final int COMPONENT_REMOVED = 9;
+    public static final int COMPONENTS_REORDERED = 10;
+    public static final int COMPONENT_PROPERTY_CHANGED = 11;
+    public static final int SYNTHETIC_PROPERTY_CHANGED = 12;
+    public static final int EVENT_HANDLER_ADDED = 13;
+    public static final int EVENT_HANDLER_REMOVED = 14;
+    public static final int EVENT_HANDLER_RENAMED = 15;
+
+    private boolean createdDeleted;
     private RADComponent component;
     private ComponentContainer container;
+    private LayoutConstraints constraints;
+    private int componentIndex = -1;
+    private int[] reordering;
+    private Object codeUndoRedoStart;
+    private Object codeUndoRedoEnd;
     private String propertyName;
-    private Object propertyOldValue;
-    private Object propertyNewValue;
+    private Object oldPropertyValue;
+    private Object newPropertyValue;
     private LayoutSupportDelegate oldLayoutSupport;
     private LayoutSupportDelegate newLayoutSupport;
+    private Event componentEvent;
+
+    private int changeType;
+
+    private UndoableEdit undoableEdit;
+
+    // -----------
 
     FormModelEvent(FormModel source) {
         super(source);
     }
 
-    FormModelEvent(FormModel source,
-                   RADComponent metacomp,
-                   String propName, Object propOldVal, Object propNewVal)
-    {
-        this(source);
-        if (metacomp != null) {
-            component = metacomp;
-            deriveContainer(metacomp);
-        }
+    void setProperty(String propName, Object oldValue, Object newValue) {
         propertyName = propName;
-        propertyOldValue = propOldVal;
-        propertyNewValue = propNewVal;
+        oldPropertyValue = oldValue;
+        newPropertyValue = newValue;
     }
 
-    FormModelEvent(FormModel source,
-                   RADComponent metacomp,
-                   ComponentContainer metacont) {
-        this(source);
+    void setComponentAndContainer(RADComponent metacomp,
+                                  ComponentContainer metacont)
+    {
         component = metacomp;
-        container = metacont;
+        container = metacont != null ? metacont : deriveContainer(metacomp);
     }
 
-    FormModelEvent(FormModel source,
-                   RADComponent metacomp) {
-        this(source);
-        component = metacomp;
-        deriveContainer(metacomp);
-    }
-
-    FormModelEvent(FormModel source,
-                   ComponentContainer metacont) {
-        this(source);
-        container = metacont;
-    }
-
-    FormModelEvent(FormModel source,
-                   RADVisualContainer metacont,
+    void setLayout(RADVisualContainer metacont,
                    LayoutSupportDelegate oldLayoutSupp,
-                   LayoutSupportDelegate newLayoutSupp) {
-        this(source);
+                   LayoutSupportDelegate newLayoutSupp)
+    {
         component = metacont;
         container = metacont;
         oldLayoutSupport = oldLayoutSupp;
         newLayoutSupport = newLayoutSupp;
     }
 
-    private void deriveContainer(RADComponent comp) {
+    void setReordering(int[] perm) {
+        reordering = perm;
+    }
+
+    void setAddData(RADComponent metacomp,
+                    ComponentContainer metacont,
+                    boolean addedNew)
+    {
+        setComponentAndContainer(metacomp, metacont);
+        createdDeleted = addedNew;
+    }
+
+    void setRemoveData(RADComponent metacomp,
+                       ComponentContainer metacont,
+                       int index,
+                       boolean removedFromModel,
+                       Object codeStructureMark1,
+                       Object codeStructureMark2)
+    {
+        component = metacomp;
+        container = metacont;
+        componentIndex = index;
+        codeUndoRedoStart = codeStructureMark1;
+        codeUndoRedoEnd = codeStructureMark2;
+        createdDeleted = removedFromModel;
+
+        if (metacomp instanceof RADVisualComponent
+            && metacont instanceof RADVisualContainer)
+        {
+            LayoutSupportManager laysup =
+                ((RADVisualContainer)metacont).getLayoutSupport();
+            constraints =
+                laysup.getStoredConstraints((RADVisualComponent)metacomp);
+        }
+    }
+
+    void setEvent(Event event,
+                  EventHandler handler,
+                  String bodyText,
+                  boolean createdNew)
+    {
+        componentEvent = event;
+        propertyName = handler.getName();
+        newPropertyValue = bodyText;
+        createdDeleted = createdNew;
+    }
+
+    void setEvent(EventHandler handler, String oldName) {
+        propertyName = handler.getName();
+        oldPropertyValue = oldName;
+        newPropertyValue = handler.getName();
+    }
+
+    void setChangeType(int changeType) {
+        this.changeType = changeType;
+    }
+
+    private static ComponentContainer deriveContainer(RADComponent comp) {
+        if (comp == null)
+            return null;
         if (comp.getParentComponent() instanceof ComponentContainer)
-            container = (ComponentContainer) comp.getParentComponent();
+            return (ComponentContainer) comp.getParentComponent();
         else if (comp.getParentComponent() == null)
-            container = comp.getFormModel().getModelContainer();
+            return comp.getFormModel().getModelContainer();
+        return null;
     }
 
     // -------
+
+    public final FormModel getFormModel() {
+        return (FormModel) getSource();
+    }
+
+    public final int getChangeType() {
+        return changeType;
+    }
 
     public final ComponentContainer getContainer() {
         return container;
@@ -96,6 +174,14 @@ public class FormModelEvent extends EventObject
 
     public final RADComponent getComponent() {
         return component;
+    }
+
+    public final LayoutConstraints getComponentLayoutConstraints() {
+        return constraints;
+    }
+
+    public final boolean getCreatedDeleted() {
+        return createdDeleted;
     }
 
     public final String getPropertyName() {
@@ -110,12 +196,16 @@ public class FormModelEvent extends EventObject
         return prop instanceof RADProperty ? (RADProperty) prop : null;
     }
 
-    public final Object getPropertyOldValue() {
-        return propertyOldValue;
+    public final Object getOldPropertyValue() {
+        return oldPropertyValue instanceof FormProperty.ValueWithEditor ?
+                 ((FormProperty.ValueWithEditor)oldPropertyValue).getValue() :
+                 oldPropertyValue;
     }
 
-    public final Object getPropertyNewValue() {
-        return propertyNewValue;
+    public final Object getNewPropertyValue() {
+        return newPropertyValue instanceof FormProperty.ValueWithEditor ?
+                 ((FormProperty.ValueWithEditor)newPropertyValue).getValue() :
+                 newPropertyValue;
     }
 
     public final LayoutSupportDelegate getOldLayoutSupport() {
@@ -124,5 +214,423 @@ public class FormModelEvent extends EventObject
 
     public final LayoutSupportDelegate getNewLayoutSupport() {
         return newLayoutSupport;
+    }
+
+    public final int[] getReordering() {
+        return reordering;
+    }
+
+    public final Event getComponentEvent() {
+        return componentEvent;
+    }
+
+    public final String getEventHandlerName() {
+        return propertyName;
+    }
+
+    public final String getEventHandlerText() {
+        return changeType == EVENT_HANDLER_ADDED
+                       || changeType == EVENT_HANDLER_REMOVED ?
+               (String) newPropertyValue : null;
+    }
+
+    // ----------
+
+    UndoableEdit getUndoableEdit() {
+        if (undoableEdit == null)
+            undoableEdit = new FormUndoableEdit();
+        return undoableEdit;
+    }
+
+    // ----------
+
+    private class FormUndoableEdit extends AbstractUndoableEdit {
+        public void undo() throws CannotUndoException {
+            super.undo();
+
+            // turn off undo/redo monitoring in FormModel while undoing!
+            boolean undoRedoOn = getFormModel().isUndoRedoRecording();
+            if (undoRedoOn)
+                getFormModel().setUndoRedoRecording(false);
+
+            switch(changeType) {
+                case CONTAINER_LAYOUT_EXCHANGED:
+                    FormModel.t("UNDO: container layout change"); // NOI18N
+                    undoContainerLayoutExchange();
+                    break;
+                case CONTAINER_LAYOUT_CHANGED:
+                    FormModel.t("UNDO: container layout property change"); // NOI18N
+                    undoContainerLayoutChange();
+                    break;
+                case COMPONENT_LAYOUT_CHANGED:
+                    FormModel.t("UNDO: component layout constraints change"); // NOI18N
+                    undoComponentLayoutChange();
+                    break;
+                case COMPONENTS_REORDERED:
+                    FormModel.t("UNDO: components reorder"); // NOI18N
+                    undoComponentsReorder();
+                    break;
+                case COMPONENT_ADDED:
+                    FormModel.t("UNDO: component addition"); // NOI18N
+                    undoComponentAddition();
+                    break;
+                case COMPONENT_REMOVED:
+                    FormModel.t("UNDO: component removal"); // NOI18N
+                    undoComponentRemoval();
+                    break;
+                case COMPONENT_PROPERTY_CHANGED:
+                    FormModel.t("UNDO: component property change"); // NOI18N
+                    undoComponentPropertyChange();
+                    break;
+                case SYNTHETIC_PROPERTY_CHANGED:
+                    FormModel.t("UNDO: synthetic property change"); // NOI18N
+                    undoSyntheticPropertyChange();
+                    break;
+                case EVENT_HANDLER_ADDED:
+                    FormModel.t("UNDO: event handler addition"); // NOI18N
+                    undoEventHandlerAddition();
+                    break;
+                case EVENT_HANDLER_REMOVED:
+                    FormModel.t("UNDO: event handler removal"); // NOI18N
+                    undoEventHandlerRemoval();
+                    break;
+                case EVENT_HANDLER_RENAMED:
+                    FormModel.t("UNDO: event handler renaming"); // NOI18N
+                    undoEventHandlerRenaming();
+                    break;
+
+                default: FormModel.t("UNDO: "+changeType); // NOI18N
+                         break;
+            }
+
+            if (undoRedoOn) // turn on undo/redo monitoring again
+                getFormModel().setUndoRedoRecording(true);
+        }
+
+        public void redo() throws CannotRedoException {
+            super.redo();
+
+            // turn off undo/redo monitoring in FormModel while redoing!
+            boolean undoRedoOn = getFormModel().isUndoRedoRecording();
+            if (undoRedoOn)
+                getFormModel().setUndoRedoRecording(false);
+
+            switch(changeType) {
+                case CONTAINER_LAYOUT_EXCHANGED:
+                    FormModel.t("REDO: container layout change"); // NOI18N
+                    redoContainerLayoutExchange();
+                    break;
+                case CONTAINER_LAYOUT_CHANGED:
+                    FormModel.t("REDO: container layout property change"); // NOI18N
+                    redoContainerLayoutChange();
+                    break;
+                case COMPONENT_LAYOUT_CHANGED:
+                    FormModel.t("REDO: component layout constraints change"); // NOI18N
+                    redoComponentLayoutChange();
+                    break;
+                case COMPONENTS_REORDERED:
+                    FormModel.t("REDO: components reorder"); // NOI18N
+                    redoComponentsReorder();
+                    break;
+                case COMPONENT_ADDED:
+                    FormModel.t("REDO: component addition"); // NOI18N
+                    redoComponentAddition();
+                    break;
+                case COMPONENT_REMOVED:
+                    FormModel.t("REDO: component removal"); // NOI18N
+                    redoComponentRemoval();
+                    break;
+                case COMPONENT_PROPERTY_CHANGED:
+                    FormModel.t("REDO: component property change"); // NOI18N
+                    redoComponentPropertyChange();
+                    break;
+                case SYNTHETIC_PROPERTY_CHANGED:
+                    FormModel.t("REDO: synthetic property change"); // NOI18N
+                    redoSyntheticPropertyChange();
+                    break;
+                case EVENT_HANDLER_ADDED:
+                    FormModel.t("REDO: event handler addition"); // NOI18N
+                    redoEventHandlerAddition();
+                    break;
+                case EVENT_HANDLER_REMOVED:
+                    FormModel.t("REDO: event handler removal"); // NOI18N
+                    redoEventHandlerRemoval();
+                    break;
+                case EVENT_HANDLER_RENAMED:
+                    FormModel.t("REDO: event handler renaming"); // NOI18N
+                    redoEventHandlerRenaming();
+                    break;
+
+                default: FormModel.t("REDO: "+changeType); // NOI18N
+                         break;
+            }
+
+            if (undoRedoOn) // turn on undo/redo monitoring again
+                getFormModel().setUndoRedoRecording(true);
+        }
+
+        public String getUndoPresentationName() {
+            return ""; // NOI18N
+        }
+        public String getRedoPresentationName() {
+            return ""; // NOI18N
+        }
+
+        // -------------
+
+        private void undoContainerLayoutExchange() {
+            try {
+                getFormModel().setContainerLayout((RADVisualContainer)container,
+                                                  oldLayoutSupport,
+                                                  null);
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        private void redoContainerLayoutExchange() {
+            try {
+                getFormModel().setContainerLayout((RADVisualContainer)container,
+                                                  newLayoutSupport,
+                                                  null);
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        private void undoContainerLayoutChange() {
+            LayoutSupportManager laysup =
+                component instanceof RADVisualContainer ?
+                    ((RADVisualContainer)component).getLayoutSupport() : null;
+            if (laysup != null) {
+                Node.Property prop = laysup.getLayoutProperty(propertyName);
+                if (prop != null)
+                    try {
+                        prop.setValue(oldPropertyValue);
+                    }
+                    catch (Exception ex) { // should not happen
+                        ex.printStackTrace();
+                    }
+            }
+        }
+
+        private void redoContainerLayoutChange() {
+            LayoutSupportManager laysup =
+                component instanceof RADVisualContainer ?
+                    ((RADVisualContainer)component).getLayoutSupport() : null;
+            if (laysup != null) {
+                Node.Property prop = laysup.getLayoutProperty(propertyName);
+                if (prop != null)
+                    try {
+                        prop.setValue(newPropertyValue);
+                    }
+                    catch (Exception ex) { // should not happen
+                        ex.printStackTrace();
+                    }
+            }
+        }
+
+        private void undoComponentLayoutChange() {
+            if (component instanceof RADVisualComponent) {
+                ((RADVisualComponent)component).getConstraintsProperties();
+                FormProperty prop = component.getPropertyByName(propertyName);
+                if (prop != null)
+                    try {
+                        prop.setValue(oldPropertyValue);
+                    }
+                    catch (Exception ex) { // should not happen
+                        ex.printStackTrace();
+                    }
+            }
+        }
+
+        private void redoComponentLayoutChange() {
+            if (component instanceof RADVisualComponent) {
+                ((RADVisualComponent)component).getConstraintsProperties();
+                FormProperty prop = component.getPropertyByName(propertyName);
+                if (prop != null)
+                    try {
+                        prop.setValue(newPropertyValue);
+                    }
+                    catch (Exception ex) { // should not happen
+                        ex.printStackTrace();
+                    }
+            }
+        }
+
+        private void undoComponentAddition() {
+            redoComponentRemoval();
+        }
+
+        private void redoComponentAddition() {
+            undoComponentRemoval();
+        }
+
+        private void undoComponentRemoval() {
+            if (codeUndoRedoStart != null)
+                getFormModel().getCodeStructure().undoToMark(codeUndoRedoStart);
+
+            RADComponent[] currentSubComps = container.getSubBeans();
+            RADComponent[] undoneSubComps =
+                new RADComponent[currentSubComps.length+1];
+
+            if (componentIndex < 0)
+                componentIndex = currentSubComps.length;
+
+            for (int i=0,j=0; j < undoneSubComps.length; i++,j++) {
+                if (i == componentIndex) {
+                    undoneSubComps[j] = component;
+                    if (i == currentSubComps.length)
+                        break;
+                    j++;
+                }
+                undoneSubComps[j] = currentSubComps[i];
+            }
+
+            if (container instanceof RADVisualContainer
+                && component instanceof RADVisualComponent)
+            {
+                LayoutSupportManager layoutSupport =
+                    ((RADVisualContainer)container).getLayoutSupport();
+                layoutSupport.removeAll();
+
+                RADVisualComponent[] visualComps =
+                    new RADVisualComponent[undoneSubComps.length];
+                LayoutConstraints[] originalConstraints =
+                    new LayoutConstraints[undoneSubComps.length];
+
+                for (int i=0; i < undoneSubComps.length; i++) {
+                    visualComps[i] = (RADVisualComponent) undoneSubComps[i];
+                    originalConstraints[i] =
+                        i == componentIndex && constraints != null ?
+                            constraints :
+                            layoutSupport.getStoredConstraints(visualComps[i]);
+                }
+
+                container.initSubComponents(undoneSubComps);
+                // [should not call acceptNewComponents?? - probably not]
+                layoutSupport.addComponents(visualComps, originalConstraints);
+            }
+            else {
+                container.initSubComponents(undoneSubComps);
+            }
+
+            if (createdDeleted)
+                FormModel.setInModelRecursively(component, true);
+
+            getFormModel().fireComponentAdded(component, createdDeleted);
+        }
+
+        private void redoComponentRemoval() {
+            if (createdDeleted)
+                getFormModel().removeComponent(component);
+            else
+                getFormModel().removeComponentFromContainer(component);
+
+            if (codeUndoRedoEnd != null)
+                getFormModel().getCodeStructure().redoToMark(codeUndoRedoEnd);
+        }
+
+        private void undoComponentsReorder() {
+            if (container != null && reordering != null) {
+                int[] revPerm = new int[reordering.length];
+                for (int i=0; i < reordering.length; i++)
+                    revPerm[reordering[i]] = i;
+
+                container.reorderSubComponents(revPerm);
+                getFormModel().fireComponentsReordered(container, revPerm);
+            }
+        }
+
+        private void redoComponentsReorder() {
+            if (container != null && reordering != null) {
+                container.reorderSubComponents(reordering);
+                getFormModel().fireComponentsReordered(container, reordering);
+            }
+        }
+
+        private void undoComponentPropertyChange() {
+            FormProperty prop = component.getPropertyByName(propertyName);
+            if (prop != null)
+                try {
+                    prop.setValue(oldPropertyValue);
+                }
+                catch (Exception ex) { // should not happen
+                    ex.printStackTrace();
+                }
+        }
+
+        private void redoComponentPropertyChange() {
+            FormProperty prop = component.getPropertyByName(propertyName);
+            if (prop != null)
+                try {
+                    prop.setValue(newPropertyValue);
+                }
+                catch (Exception ex) { // should not happen
+                    ex.printStackTrace();
+                }
+        }
+
+        private void undoSyntheticPropertyChange() {
+            Node.Property[] props = component.getSyntheticProperties();
+            for (int i=0; i < props.length; i++) {
+                if (props[i].getName().equals(propertyName)) {
+                    try {
+                        props[i].setValue(oldPropertyValue);
+                    }
+                    catch (Exception ex) { // should not happen
+                        ex.printStackTrace();
+                    }
+                    break;
+                }
+            }
+        }
+
+        private void redoSyntheticPropertyChange() {
+            Node.Property[] props = component.getSyntheticProperties();
+            for (int i=0; i < props.length; i++) {
+                if (props[i].getName().equals(propertyName)) {
+                    try {
+                        props[i].setValue(newPropertyValue);
+                    }
+                    catch (Exception ex) { // should not happen
+                        ex.printStackTrace();
+                    }
+                    break;
+                }
+            }
+        }
+
+        private void undoEventHandlerAddition() {
+            getFormModel().getFormEventHandlers().removeEventHandler(
+                componentEvent, propertyName);
+        }
+
+        private void redoEventHandlerAddition() {
+            getFormModel().getFormEventHandlers().addEventHandler(
+                componentEvent, propertyName, (String) newPropertyValue);
+        }
+
+        private void undoEventHandlerRemoval() {
+            getFormModel().getFormEventHandlers().addEventHandler(
+                componentEvent, propertyName, (String) newPropertyValue);
+        }
+
+        private void redoEventHandlerRemoval() {
+            getFormModel().getFormEventHandlers().removeEventHandler(
+                componentEvent, propertyName);
+        }
+
+        private void undoEventHandlerRenaming() {
+            getFormModel().getFormEventHandlers().renameEventHandler(
+                (String) newPropertyValue, (String) oldPropertyValue);
+        }
+
+        private void redoEventHandlerRenaming() {
+            getFormModel().getFormEventHandlers().renameEventHandler(
+                (String) oldPropertyValue, (String) newPropertyValue);
+        }
     }
 }

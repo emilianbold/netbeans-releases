@@ -72,7 +72,7 @@ public class Event
                                            metacomponent, listenerMethod)))
             return;
 
-        metacomponent.getFormModel().fireFormChanged();
+//        metacomponent.getFormModel().fireFormChanged();
 
         String newHandlerName =
             ((EventHandler)eventHandlers.get(eventHandlers.size() - 1))
