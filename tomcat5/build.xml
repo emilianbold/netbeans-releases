@@ -31,9 +31,9 @@ Microsystems, Inc. All Rights Reserved.
   <path id="cp">
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <!--
-        <pathelement location="${nb_root}/openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <pathelement path="${nb_root}/core/external/xml-apis-1.0b2.jar" />
         -->
+        <pathelement location="${nb_root}/openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <pathelement location="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
         <pathelement location="${nb_root}/j2eeserver/netbeans/modules/j2eeserver.jar"/>
