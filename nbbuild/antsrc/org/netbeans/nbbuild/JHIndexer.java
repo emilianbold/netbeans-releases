@@ -119,11 +119,15 @@ public class JHIndexer extends MatchingTask {
                 try {
                     PrintWriter pw = new PrintWriter (os);
                     pw.println ("IndexRemove " + basedir + File.separator);
+                    String message = "Files to be indexed:";
                     for (int i = 0; i < files.length; i++) {
                         // [PENDING] JavaHelp docs say to use / as file sep for File directives;
                         // so what should the complete path be? Someone should test this on Windoze...
-                        pw.println ("File " + basedir + File.separator + files[i]);
+                        String path = basedir + File.separator + files[i];
+                        pw.println ("File " + path);
+                        message += "\n\t" + path;
                     }
+                    log (message, Project.MSG_VERBOSE);
                     pw.flush ();
                 } finally {
                     os.close ();
