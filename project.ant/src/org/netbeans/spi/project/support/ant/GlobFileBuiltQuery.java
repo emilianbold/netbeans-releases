@@ -17,19 +17,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileBuiltQuery;
+import org.netbeans.modules.project.ant.FileChangeSupport;
+import org.netbeans.modules.project.ant.FileChangeSupportEvent;
+import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -41,6 +40,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -54,17 +54,12 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
-    private final FileObject projectDir;
-    private final File projectDirF;
     private final String[] fromPrefixes;
     private final String[] fromSuffixes;
     private final String[] toPrefixes;
     private final String[] toSuffixes;
     private static final Object NONE = "NONE"; // NOI18N
     private final Map/*<FileObject,Reference<StatusImpl>|NONE>*/ statuses = new WeakHashMap();
-    private RequestProcessor.Task refreshTask = null;
-    private final FileL fileL;
-    private final FileChangeListener weakFileL;
 
     /**
      * Create a new query implementation based on an Ant-based project.
@@ -73,9 +68,6 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     public GlobFileBuiltQuery(AntProjectHelper helper, PropertyEvaluator eval, String[] from, String[] to) throws IllegalArgumentException {
         this.helper = helper;
         this.eval = eval;
-        projectDir = helper.getProjectDirectory();
-        projectDirF = FileUtil.toFile(projectDir);
-        assert projectDirF != null;
         int l = from.length;
         if (to.length != l) {
             throw new IllegalArgumentException("Non-matching lengths"); // NOI18N
@@ -100,11 +92,6 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             // XXX check that none of the pieces contain two slashes in a row, and
             // the path does not start with or end with a slash, etc.
         }
-        fileL = new FileL();
-        /* XXX because of #33162 (no listening to file trees), cannot just do:
-        projectDir.addFileChangeListener(FileUtil.weakFileChangeListener(fileL, projectDir));
-         */
-        weakFileL = FileUtil.weakFileChangeListener(fileL, null);
         // XXX add properties listener to evaluator... if anything changes, refresh all
         // status objects and clear the status cache; can then also keep a cache of
         // evaluated path prefixes & suffixes
@@ -128,15 +115,15 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         return status;
     }
     
-    private StatusImpl createStatus(FileObject file) {
-        String path = FileUtil.getRelativePath(projectDir, file);
-        if (path == null) {
-            // XXX support external source roots
+    private File findTarget(FileObject file) {
+        File sourceF = FileUtil.toFile(file);
+        if (sourceF == null) {
             if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("No relative path to " + file + " in " + projectDir + ", skipping");
+                err.log("Not a disk file: " + file);
             }
             return null;
         }
+        String source = sourceF.getAbsolutePath();
         for (int i = 0; i < fromPrefixes.length; i++) {
             String prefixEval = eval.evaluate(fromPrefixes[i]);
             if (prefixEval == null) {
@@ -145,10 +132,6 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
                 }
                 continue;
             }
-            if (!path.startsWith(prefixEval)) {
-                continue;
-            }
-            String remainder = path.substring(prefixEval.length());
             String suffixEval = eval.evaluate(fromSuffixes[i]);
             if (suffixEval == null) {
                 if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -156,7 +139,16 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
                 }
                 continue;
             }
-            if (!remainder.endsWith(suffixEval)) {
+            boolean endsWithSlash = prefixEval.endsWith("/"); // NOI18N
+            String prefixF = helper.resolveFile(prefixEval).getAbsolutePath();
+            if (endsWithSlash && !prefixF.endsWith(File.separator)) {
+                prefixF += File.separatorChar;
+            }
+            if (!source.startsWith(prefixF)) {
+                continue;
+            }
+            String remainder = source.substring(prefixF.length());
+            if (!remainder.endsWith(suffixEval.replace('/', File.separatorChar))) {
                 continue;
             }
             String particular = remainder.substring(0, remainder.length() - suffixEval.length());
@@ -174,102 +166,35 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
                 }
                 continue;
             }
-            String targetPath = toPrefixEval + particular + toSuffixEval;
+            File target = helper.resolveFile(toPrefixEval + particular + toSuffixEval);
             if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("Made status object for " + file + ": " + targetPath);
+                err.log("Found target for " + source + ": " + target);
             }
-            return new StatusImpl(file, targetPath);
+            return target;
         }
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            err.log("No match for path " + path + " among " + Arrays.asList(fromPrefixes) + " " + Arrays.asList(fromSuffixes));
+            err.log("No match for path " + source + " among " + Arrays.asList(fromPrefixes) + " " + Arrays.asList(fromSuffixes));
         }
         return null;
     }
     
-    private synchronized void updateAll() {
-        // Need to post a fresh task since otherwise there can be lock
-        // order conflicts with masterfs.
-        // Use just one task, i.e. try to coalesce change events.
-        if (refreshTask == null) {
-            refreshTask = RequestProcessor.getDefault().create(fileL);
+    private StatusImpl createStatus(FileObject file) {
+        File target = findTarget(file);
+        if (target != null) {
+            return new StatusImpl(file, target);
+        } else {
+            return null;
         }
-        // Give it a small timeout to allow a bunch of events to be coalesced.
-        ((RequestProcessor.Task)refreshTask).schedule(100);
     }
     
-    private final class FileL implements FileChangeListener, Runnable {
-        
-        FileL() {}
-        
-        public void fileChanged(FileEvent fe) {
-            updateAll();
-        }
-        
-        public void fileDataCreated(FileEvent fe) {
-            updateAll();
-        }
-        
-        public void fileDeleted(FileEvent fe) {
-            updateAll();
-        }
-        
-        public void fileFolderCreated(FileEvent fe) {
-            updateAll();
-        }
-        
-        public void fileRenamed(FileRenameEvent fe) {
-            updateAll();
-        }
-        
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-            // ignore
-        }
-        
-        public void run() {
-            synchronized (GlobFileBuiltQuery.this) {
-                Iterator/*<Reference<StatusImpl>|NONE>*/ it = statuses.values().iterator();
-                while (it.hasNext()) {
-                    Object o = it.next();
-                    if (o == NONE) {
-                        continue;
-                    }
-                    Reference r = (Reference)o;
-                    if (r == null) {
-                        continue;
-                    }
-                    StatusImpl status = (StatusImpl)r.get();
-                    if (status == null) {
-                        continue;
-                    }
-                    status.isBuilt();
-                }
-            }
-        }
-        
-    }
-    
-    private final class StatusImpl implements FileBuiltQuery.Status, PropertyChangeListener/*<DataObject>*/, FileChangeListener {
+    private final class StatusImpl implements FileBuiltQuery.Status, PropertyChangeListener/*<DataObject>*/, FileChangeListener, FileChangeSupportListener, Runnable {
         
         private final List/*<ChangeListener>*/ listeners = new ArrayList();
         private Boolean built = null;
         private final DataObject source;
-        private final String[] targetPath;
-        /**
-         * A Filesystems representation of the current target file, or if it does not
-         * exist, the lowest ancestor in the project directory which does.
-         * We don't do anything with it - intentionally; its only purpose is to not
-         * be garbage collected, so that changes will still be fired in it when
-         * appropriate. Every time we check the timestamp on disk, we also update
-         * this file object, to force the Filesystems infrastructure to keep on
-         * listening to it. Wouldn't be necessary if all changes to the target file
-         * went through the Filesystems API, but more typically they will occur on
-         * disk and cause a refresh of some high-up parent directory.
-         * Also because of the lack of hierarchical listeners (#33162), we need to
-         * keep a file change listener on the last available parent.
-         */
-        private FileObject lastTargetApproximation;
+        private File target;
         
-        StatusImpl(FileObject source, String targetPath) {
+        StatusImpl(FileObject source, File target) {
             try {
                 this.source = DataObject.find(source);
             } catch (DataObjectNotFoundException e) {
@@ -277,24 +202,26 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             }
             this.source.addPropertyChangeListener(WeakListeners.propertyChange(this, this.source));
             source.addFileChangeListener(FileUtil.weakFileChangeListener(this, source));
-            StringTokenizer tok = new StringTokenizer(targetPath, "/"); // NOI18N
-            this.targetPath = new String[tok.countTokens()];
-            int i = 0;
-            while (tok.hasMoreTokens()) {
-                this.targetPath[i++] = tok.nextToken();
-            }
+            this.target = target;
+            FileChangeSupport.DEFAULT.addListener(this, target);
         }
         
         // Side effect is to update its cache and maybe fire changes.
-        public synchronized boolean isBuilt() {
-            boolean b = isReallyBuilt();
-            if (built != null && built.booleanValue() != b) {
-                // XXX do not fire change from within synch block
-                fireChange();
+        public boolean isBuilt() {
+            boolean doFire = false;
+            boolean b;
+            synchronized (GlobFileBuiltQuery.this) {
+                b = isReallyBuilt();
+                if (built != null && built.booleanValue() != b) {
+                    doFire = true;
+                }
+                built = Boolean.valueOf(b);
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log("isBuilt: " + b + " from " + this);
+                }
             }
-            built = Boolean.valueOf(b);
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("isBuilt: " + b + " from " + this);
+            if (doFire) {
+                fireChange();
             }
             return b;
         }
@@ -312,24 +239,13 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
                 }
                 return false;
             }
-            if (lastTargetApproximation != null) {
-                lastTargetApproximation.removeFileChangeListener(weakFileL);
-            }
-            lastTargetApproximation = projectDir;
-            for (int i = 0; i < targetPath.length; i++) {
-                String piece = targetPath[i];
-                FileObject lta2 = lastTargetApproximation.getFileObject(piece);
-                if (lta2 == null) {
-                    lastTargetApproximation.addFileChangeListener(weakFileL);
-                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                        err.log("did not find " + piece + " in " + lastTargetApproximation + ": " + this);
-                    }
-                    return false;
+            if (target == null) {
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    err.log("no target matching " + this);
                 }
-                lastTargetApproximation = lta2;
+                return false;
             }
-            lastTargetApproximation.addFileChangeListener(weakFileL);
-            long targetTime = lastTargetApproximation.lastModified().getTime();
+            long targetTime = target.lastModified();
             long sourceTime = source.getPrimaryFile().lastModified().getTime();
             if (targetTime >= sourceTime) {
                 return true;
@@ -341,19 +257,26 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             }
         }
         
-        public synchronized void addChangeListener(ChangeListener l) {
-            listeners.add(l);
+        public void addChangeListener(ChangeListener l) {
+            synchronized (listeners) {
+                listeners.add(l);
+            }
         }
         
-        public synchronized void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
+        public void removeChangeListener(ChangeListener l) {
+            synchronized (listeners) {
+                listeners.remove(l);
+            }
         }
         
         private void fireChange() {
-            if (listeners.isEmpty()) {
-                return;
+            ChangeListener[] _listeners;
+            synchronized (listeners) {
+                if (listeners.isEmpty()) {
+                    return;
+                }
+                _listeners = (ChangeListener[]) listeners.toArray(new ChangeListener[listeners.size()]);
             }
-            ChangeListener[] _listeners = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
             ChangeEvent ev = new ChangeEvent(this);
             for (int i = 0; i < _listeners.length; i++) {
                 _listeners[i].stateChanged(ev);
@@ -361,11 +284,11 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         }
         
         private void update() {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    isBuilt();
-                }
-            });
+            RequestProcessor.getDefault().post(this);
+        }
+        
+        public void run() {
+            isBuilt();
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
@@ -384,6 +307,17 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         }
         
         public void fileRenamed(FileRenameEvent fe) {
+            File target2 = findTarget(source.getPrimaryFile());
+            if (!Utilities.compareObjects(target, target2)) {
+                // #45694: source file moved, recalculate target.
+                if (target != null) {
+                    FileChangeSupport.DEFAULT.removeListener(this, target);
+                }
+                if (target2 != null) {
+                    FileChangeSupport.DEFAULT.addListener(this, target2);
+                }
+                target = target2;
+            }
             update();
         }
         
@@ -399,10 +333,22 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             // ignore
         }
         
-        public String toString() {
-            return "GFBQ.StatusImpl[" + source.getPrimaryFile() + " -> " + Arrays.asList(targetPath) + "]"; // NOI18N
+        public void fileCreated(FileChangeSupportEvent event) {
+            update();
+        }
+
+        public void fileDeleted(FileChangeSupportEvent event) {
+            update();
+        }
+
+        public void fileModified(FileChangeSupportEvent event) {
+            update();
         }
         
+        public String toString() {
+            return "GFBQ.StatusImpl[" + source.getPrimaryFile() + " -> " + target + "]"; // NOI18N
+        }
+
     }
     
 }

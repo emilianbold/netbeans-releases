@@ -675,9 +675,8 @@ public final class AntProjectHelper {
      * An attempt is made to fire changes from the status object whenever the result
      * should change from one call to the next.
      * <p>
-     * The source pattern must be a relative path inside the project directory.
-     * The target pattern currently must also, though this restriction may
-     * be relaxed in the future.
+     * The (evaluated) source and target patterns may be relative, resolved against
+     * the project directory (perhaps going outside it), or absolute.
      * </p>
      * <div class="nonnormative">
      * <p>
