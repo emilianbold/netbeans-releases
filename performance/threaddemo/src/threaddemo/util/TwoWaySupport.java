@@ -16,7 +16,8 @@ package threaddemo.util;
 import java.lang.ref.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Mutex;
 
 // XXX possibly need some method which is like getStaleValueNonBlocking but which
@@ -150,12 +151,8 @@ import org.openide.util.Mutex;
  */
 public abstract class TwoWaySupport {
     
-    /** logging support, may be null */
-    private static final ErrorManager err;
-    static {
-        ErrorManager _err = ErrorManager.getDefault().getInstance(TwoWaySupport.class.getName());
-        err = _err.isLoggable(ErrorManager.INFORMATIONAL) ? _err : null;
-    }
+    /** logging support */
+    private static final Logger logger = Logger.getLogger(TwoWaySupport.class.getName());
     
     /** lock used for all static vars */
     private static final Object LOCK = new String("TwoWaySupport");
@@ -343,7 +340,7 @@ public abstract class TwoWaySupport {
             assert !mutating;
             while (deriving) {
                 // Another reader is getting the value at the moment, wait for it.
-                if (err != null) err.log("gVB: waiting for another reader to finish deriving");
+                logger.finer("waiting for another reader to finish deriving");
                 try {
                     LOCK.wait();
                 } catch (InterruptedException e) {/* OK */}
@@ -351,11 +348,11 @@ public abstract class TwoWaySupport {
             if (fresh) {
                 Object o = model.get();
                 if (o != null) {
-                    if (err != null) err.log("gVB -> fresh value: " + o);
+                    logger.log(Level.FINER, "fresh value: {0}", o);
                     return o;
                 }
             } else if (problem != null) {
-                if (err != null) err.log("gVB -> " + problem);
+                logger.log(Level.FINER, "problem: {0}", problem);
                 deactivate();
                 throw new InvocationTargetExceptionNoStackTrace(problem);
             }
@@ -379,7 +376,7 @@ public abstract class TwoWaySupport {
             if (old != null && result.derivedDelta == null) {
                 throw new IllegalStateException("Cannot have a null derivedDelta for a non-null oldValue");
             }
-            if (err != null) err.log("gVB -> derived value: " + result.newValue);
+            logger.log(Level.FINER, "derived value: {0}", result.newValue);
             fresh = true;
             newValue = result.newValue;
         } catch (RuntimeException e) {
@@ -789,7 +786,7 @@ public abstract class TwoWaySupport {
                 final TwoWaySupport[] s = new TwoWaySupport[1];
                 synchronized (LOCK) {
                     while (toDerive.isEmpty()) {
-                        if (err != null) err.log("derivation thread waiting...");
+                        logger.finer("derivation thread waiting...");
                         try {
                             LOCK.wait();
                         } catch (InterruptedException e) {
@@ -799,7 +796,7 @@ public abstract class TwoWaySupport {
                     Iterator it = toDerive.iterator();
                     DeriveTask t = (DeriveTask)it.next();
                     s[0] = (TwoWaySupport)t.support.get();
-                    if (err != null) err.log("derivation thread found: " + s[0]);
+                    logger.log(Level.FINER, "derivation thread found: {0}", s[0]);
                     if (s[0] == null) {
                         // Dead - support was collected before we got to it.
                         it.remove();
@@ -807,7 +804,7 @@ public abstract class TwoWaySupport {
                     }
                     long now = System.currentTimeMillis();
                     if (t.schedule > now) {
-                        if (err != null) err.log("derivation thread deferring: " + s[0] + " for " + (t.schedule - now) + "msec");
+                        logger.log(Level.FINER, "derivation thread deferring: {0} for {1}msec", new Object[] {s[0], new Long(t.schedule - now)});
                         try {
                             LOCK.wait(t.schedule - now);
                         } catch (InterruptedException e) {
@@ -817,7 +814,7 @@ public abstract class TwoWaySupport {
                         continue;
                     }
                 }
-                if (err != null) err.log("derivation thread processing: " + s[0]);
+                logger.log(Level.FINER, "derivation thread processing: {0}", s[0]);
                 // Out of synch block; we have a support to run.
                 s[0].getMutex().readAccess(new Mutex.Action() {
                     public Object run() {
@@ -828,11 +825,9 @@ public abstract class TwoWaySupport {
                         } catch (InvocationTargetException e) {
                             // OK, handled separately.
                         } catch (RuntimeException e) {
-                            // Oops!
-                            ErrorManager.getDefault().notify(e);
+                            e.printStackTrace();
                         } catch (Error e) {
-                            // Oops!
-                            ErrorManager.getDefault().notify(e);
+                            e.printStackTrace();
                         }
                         return null;
                     }
