@@ -11,6 +11,13 @@
     <folder name="InstalledServers">
     </folder>
   </folder>
+  
+  <folder name="Services">
+    <folder name="J2EEServers">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.deployment.impl.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/deployment/impl/ui/resources/ServerRegistry.gif"/>
+    </folder>
+  </folder>
 
   <folder name="UI">
     <folder name="Runtime">
@@ -18,6 +25,15 @@
 <!--          <module name="org.netbeans.modules.j2eeserver/3" spec="1.0"/> -->
           <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.ui.ServerRegistryNode"/>
        </file>
+    </folder>
+    <folder name="Services">
+        <folder name="IDEConfiguration">
+           <folder name="ServerAndExternalToolSettings">
+              <file name="J2EEServers.shadow">
+                 <attr name="originalFile" stringvalue="Services/J2EEServers"/>
+              </file>
+           </folder>
+        </folder>
     </folder>
   </folder>
 

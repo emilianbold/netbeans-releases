@@ -36,18 +36,7 @@ public class RegistryNodeProvider {
     public RegistryNodeProvider(RegistryNodeFactory factory) {
         this.factory = factory;
     }
-    
-    public Node createServerNode(Server server) {
-        ServerNode xnode = new ServerNode(server);
-        if (factory != null) {
-            Node original = factory.getFactoryNode(createLookup(server));
-            if (original != null) {
-                return new FilterXNode(original, xnode, true, new FilterXNode.XChildren(xnode));
-            }
-        }
-        return xnode;
-    }
-    
+       
     public Node createInstanceNode(ServerInstance instance) {
         return createInstanceNode(instance, false);
     }
