@@ -946,7 +946,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../jasm" target="netbeans"/>
   </target>
   
-  <!-- STAVBICKA START -->
   <target name="all-projects/projectapi" depends="all-projects/queries,all-openide">
       <echo message="Building module projects/projectapi..."/>
       <ant dir="../projects/projectapi" target="netbeans"/>
@@ -971,8 +970,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module java/platform..."/>
     <ant dir="../java/platform" target="netbeans"/>
   </target>
-  <target name="all-java/j2seplatform" depends="all-openide,all-openide/loaders,all-java/api,all-java/platform,all-ant/project,all-projects/queries">
-    <!-- dependency on all-projects/queries is temporary -->
+  <target name="all-java/j2seplatform" depends="all-openide,all-openide/loaders,all-java/api,all-java/platform,all-ant/project,all-projects/libraries">
     <echo message="Building module java/j2seplatform..."/>
     <ant dir="../java/j2seplatform" target="netbeans"/>
   </target>
@@ -996,7 +994,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module i18n/form..."/>
     <ant dir="../i18n/form" target="netbeans"/>
   </target>
-  <!-- STAVBICKA END -->
 
   <!-- #27098: MakeParserDB requires several modules to have been successfully built. -->
   <!-- Target all/mmm should depend on makeparserdb-modules if mmm/build.xml uses <makeparserdb>. -->
