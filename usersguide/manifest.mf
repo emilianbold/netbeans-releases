@@ -1,7 +1,7 @@
 OpenIDE-Module: org.netbeans.modules.usersguide/1
 OpenIDE-Module-Name: General Online Help
 OpenIDE-Module-Install: org/netbeans/modules/usersguide/UGModule.class
-OpenIDE-Module-Description: org.netbeans.modules.usersguide.ide
+OpenIDE-Module-Layer: org/netbeans/modules/usersguide/layer.xml
 OpenIDE-Module-Specification-Version: 1.8
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Short-Description: Online documentation for the IDE.
