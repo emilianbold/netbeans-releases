@@ -297,11 +297,11 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
     String getIconBase() {
       if ( mode == PropertyPattern.READ_ONLY )
-        return BIF_PROPERTY_RO + ( isIncluded() ? "S" : "N" );
+        return BIF_PROPERTY_RO + ( this.isIncluded() ? "S" : "N" );
       else if ( mode == PropertyPattern.WRITE_ONLY )
-        return BIF_PROPERTY_WO + ( isIncluded() ? "S" : "N" );
+        return BIF_PROPERTY_WO + ( this.isIncluded() ? "S" : "N" );
       else
-        return BIF_PROPERTY_RW + ( isIncluded() ? "S" : "N" );
+        return BIF_PROPERTY_RW + ( this.isIncluded() ? "S" : "N" );
 
     }
     
@@ -441,11 +441,11 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
       String getIconBase() {
         if ( getMode() == PropertyPattern.READ_ONLY )
-          return BIF_IDXPROPERTY_RO + ( isIncluded() ? "S" : "N" );
+          return BIF_IDXPROPERTY_RO + ( this.isIncluded() ? "S" : "N" );
         else if ( getMode() == PropertyPattern.WRITE_ONLY )
-          return BIF_IDXPROPERTY_WO + ( isIncluded() ? "S" : "N" );
+          return BIF_IDXPROPERTY_WO + ( this.isIncluded() ? "S" : "N" );
         else
-          return BIF_IDXPROPERTY_RW + ( isIncluded() ? "S" : "N" );
+          return BIF_IDXPROPERTY_RW + ( this.isIncluded() ? "S" : "N" );
       }
 
       void analyzeCreationString( String statement ) {
@@ -512,9 +512,9 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
     String getIconBase() {
       if ( isUnicast() )
-        return BIF_EVENTSET_UNICAST + ( isIncluded() ? "S" : "N" );
+        return BIF_EVENTSET_UNICAST + ( this.isIncluded() ? "S" : "N" );
       else
-        return BIF_EVENTSET_MULTICAST + ( isIncluded() ? "S" : "N" );
+        return BIF_EVENTSET_MULTICAST + ( this.isIncluded() ? "S" : "N" );
     }
 
     Collection getCustomizationStrings () {
