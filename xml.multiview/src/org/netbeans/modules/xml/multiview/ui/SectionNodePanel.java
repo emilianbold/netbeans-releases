@@ -23,20 +23,27 @@ import javax.swing.*;
 
 /**
  * @author pfiala
+ *
+ * The SectionNodePanel shows data of related SectionNode object
+ * which contains all information about the section
  */
 public class SectionNodePanel extends SectionPanel {
 
     public SectionNodePanel(SectionNode node) {
         super(node.getSectionNodeView(), node, node.getDisplayName(), node);
         if(node.getKey() instanceof SectionView) {
-            setExpandedViewMode();
-        } else if(node.isExpanded()) {
+            // the section corresponding to the top level node is always expanded
             setInnerViewMode();
-
+        } else if(node.isExpanded()) {
+            setExpandedViewMode();
         }
     }
 
-    protected void setInnerViewMode() {
+    /**
+     * The expanded viev mode shows only title bar and border around inner panel,
+     * The inner panel is always visible and the section cannot be collapsed
+     */
+    protected void setExpandedViewMode() {
         getTitleButton().setVisible(true);
         getFoldButton().setVisible(false);
         getSeparator().setVisible(false);
@@ -49,7 +56,11 @@ public class SectionNodePanel extends SectionPanel {
         getFiller().setVisible(false);
     }
 
-    protected void setExpandedViewMode() {
+    /**
+     * The inner view mode shows only inner panel.
+     * The inner panel is always visible and the section cannot be collapsed
+     */
+    protected void setInnerViewMode() {
         getTitleButton().setVisible(false);
         getFoldButton().setVisible(false);
         getSeparator().setVisible(false);
@@ -57,15 +68,23 @@ public class SectionNodePanel extends SectionPanel {
         getFiller().setVisible(false);
     }
 
+    /**
+     * Creation of inner panel using related SectionNode object
+     * @return newly created inner panel
+     */
     protected SectionInnerPanel createInnerpanel() {
         SectionInnerPanel innerPanel = ((SectionNode) getNode()).createInnerPanel();
         if (innerPanel == null) {
-            SectionNode node = (SectionNode) getNode();
-            innerPanel = new BoxPanel(node.getSectionNodeView());
+            // This case arises only if the inner panel has not been implemented yet.
+            // Then we show empty panel.
+            innerPanel = new BoxPanel(((SectionNode) getNode()).getSectionNodeView());
         }
         return innerPanel;
     }
 
+    /**
+     * Method of NodeSectionPanel interface
+     */
     public void open() {
         Node parentNode = getNode().getParentNode();
         if(parentNode instanceof SectionNode) {
