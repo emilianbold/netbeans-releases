@@ -528,27 +528,6 @@ public class TestCreator extends java.lang.Object {
         return false;
     }
     
-    /*
-     static private boolean isException(ClassElement element) {
-        return TestUtil.isClassElementException(element);
-    }
-     */
-
-    static private boolean isException(String className) {
-        //System.err.println("!!!! JUNIT !!!! isException !!!!");
-        try {
-            Class clazz = org.openide.TopManager.getDefault().currentClassLoader().loadClass(className);
-            //Class clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
-            //System.err.println("!!!! clazz1 = "+clazz1+" !!!! clazz2 = "+clazz2);
-            return java.lang.Throwable.class.isAssignableFrom(clazz);
-        } catch (Exception e) {
-            /*
-            System.err.println("!!!! Here goes exception"+e);
-            e.printStackTrace(System.err);
-             */
-        }
-        return false;
-    }
 
     static private boolean isMethodAcceptable(MethodElement m) {
         String name;
