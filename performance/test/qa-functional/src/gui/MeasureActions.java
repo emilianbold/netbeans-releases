@@ -64,7 +64,7 @@ public class MeasureActions  {
 
         suite.addTest(new CloseEditor("testClosing20kBJavaFile", "Close Java file (20kB)"));
 //TODO Form designer isn't TopComponent        suite.addTest(new CloseEditor("testClosing20kBFormFile", "Close Form file (20kB)"));
-//TODO causes OutOfMemoryException !!!        suite.addTest(new CloseAllEditors("testClosingAllJavaFiles", "Close All Documents if 10 Java files opened"));
+        suite.addTest(new CloseAllEditors("testClosingAllJavaFiles", "Close All Documents if 10 Java files opened"));
         
         suite.addTest(new CloseEditorTab("testClosingTab", "Close on tab from Editor window"));
         

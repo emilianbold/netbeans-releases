@@ -43,9 +43,13 @@ public class MeasureDialogs  {
         suite.addTest(new UpdateCenter("measureTime", "Update Center wizard open"));
         suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
         suite.addTest(new VersioningManager("measureTime", "Versioning Manager open"));
-//TODO wait until implemented Favourite Folders tab        suite.addTest(new AllFilesWindow("measureTime", "All Files window open"));
+        
+        suite.addTest(new FilesWindow("measureTime", "Files window open"));
+        suite.addTest(new ProjectsWindow("measureTime", "Projects window open"));
+        suite.addTest(new FavoritesWindow("measureTime", "Projects window open"));
         suite.addTest(new RuntimeWindow("measureTime", "Runtime window open"));
         suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
+        
 //TODO it still fails in Promo D       suite.addTest(new OutputWindow("measureTime", "Output window open"));
         suite.addTest(new ToDoWindow("measureTime", "To Do window open"));
         suite.addTest(new HttpMonitorWindow("measureTime", "Http Monitor window open"));
@@ -57,7 +61,7 @@ public class MeasureDialogs  {
         suite.addTest(new AddNewServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
         suite.addTest(new SetDefaultServerDialog("measureTime", "Set Default Server dialog open"));
         suite.addTest(new MountXMLCatalogDialog("measureTime", "Mount XML Catalog dialog open"));
-        suite.addTest(new FindInFiles("measureTime", "Find in Files dialog open"));
+        suite.addTest(new FindInProjects("measureTime", "Find in Projects dialog open"));
         suite.addTest(new ProjectPropertiesWindow("measureTime", "Project Properties window open"));
  
         suite.addTest(new AttachDialog("measureTime", "Attach dialog open"));
@@ -75,12 +79,12 @@ public class MeasureDialogs  {
         suite.addTest(new ImportManagementWizard("measureTime", "Import Management Tool open"));
         suite.addTest(new OverrideMethods("measureTime", "Override and Implement Methods dialog open"));
         suite.addTest(new GotoLineDialog("measureTime", "Go to Line dialog open"));
-//TODO causes OutOfMemoryException !!!        suite.addTest(new AutoCommentWindow("measureTime", "Auto Comment Tool open"));
-//TODO causes OutOfMemoryException !!!        suite.addTest(new EditorProperties("measureTime", "Editor Properties open"));
+        suite.addTest(new AutoCommentWindow("measureTime", "Auto Comment Tool open"));
+        suite.addTest(new EditorProperties("measureTime", "Editor Properties open"));
         suite.addTest(new FindInSourceEditor("measureTime", "Find in Source Editor dialog open"));
-//TODO causes OutOfMemoryException !!!        suite.addTest(new InternationalizeDialog("measureTime", "Internationalize dialog open"));
+        suite.addTest(new InternationalizeDialog("measureTime", "Internationalize dialog open"));
         
-//TODO causes OutOfMemoryException !!!        suite.addTest(new DocumentsDialog("measureTime", "Documents dialog open"));
+        suite.addTest(new DocumentsDialog("measureTime", "Documents dialog open"));
         
         return suite;
     }

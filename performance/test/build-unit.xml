@@ -13,21 +13,20 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="Measure startup time and memory usage" basedir="." default="all">
-    <import file="../../nbbuild/default.xml"/>
-    <property file="../../nbbuild/directories.properties"/>
-    
+
     <!-- Root folders -->
     <property name="nball.dir" location="../../../nb_all"/>
     <property name="nbextra.dir" location="../../../nbextra"/>
-    <property name="nbextra.qa.performance.dir" location="${nbextra.dir}/qa/performance"/>
-
-    <!-- path reference used in both compiler and executor -->
-    <path id="jemmy.and.jelly.path">
-        <pathelement location="${nball.dir}/jemmy/builds/jemmy.jar"/>
-        <pathelement location="${nball.dir}/jellytools/builds/jelly2-nb.jar"/>
-    </path>
-        
+    <property name="nbextra.qa.performance.dist.dir" location="${nbextra.dir}/qa/performance/dist"/>
     
+    <!-- Imports default set boot classpath for appropriate JDK used for testing,
+        unzip projects for testing. -->
+    <import file="${nbextra.qa.performance.dist.dir}/build-performance-tests.xml"/>
+
+    <import file="../../nbbuild/default.xml"/>
+    <property file="../../nbbuild/directories.properties"/>
+
+        
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
@@ -102,74 +101,14 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Prepare PS utils to be available from IDE during test -->    
     <target name="prepare_measure_memory">
-        <copy file="${nbextra.qa.performance.dir}/top/pslist.exe" tofile="${xtest.tmpdir}/pslist.exe" />
+        <copy file="${nbextra.qa.performance.dist.dir}/pslist.exe" tofile="${xtest.tmpdir}/pslist.exe" />
         <echo message="PS utilities prepared!"/>
     </target>
 
-    <!-- Replace original netbeans.conf with released netbeans.conf -->
-    <target name="copy_released_ide_cfg_file">
-        <move file="${netbeans.dest.dir}/etc/netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf.original" />
-        <copy file="${nbextra.qa.performance.dir}/patches/netbeans.conf" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
-    </target>
-
-    <!-- Replace released netbeans.conf with original netbeans.conf -->
-    <target name="copy_original_ide_cfg_file">
-        <move file="${netbeans.dest.dir}/etc/netbeans.conf.original" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
-    </target>
-    
-    <!-- Copy and unzip project JEdit from close source path, will be used for Performance tests -->
-    <target name="copy_unzip_jedit_project">
-        <unzip src="${nbextra.dir}/qa/projectized/jEdit41.zip" dest="${xtest.tmpdir}/"/>
-    </target>
-        
     <!-- Make ide executable -->
     <target name="make_netbeans_executable">
         <chmod perm="ugo+rx" file="${netbeans.dest.dir}/bin/netbeans"/>
         <chmod perm="ugo+rx" file="${netbeans.dest.dir}/platform4/launcher/nbexec"/>
     </target>
-        
-    <!-- ========= -->
-    <!-- JDKs     -->
-    <!-- ========= -->
-    
-    <target name="set_bootclasspath_jdk142" depends="which_boot_classpath" if="java142">
-        <copy file="${nbextra.qa.performance.dir}/jdk/hack_jdk142.zip" tofile="${xtest.tmpdir}/hack_jdk.zip" />
-        <echo message="Set xtest.ide.commandline.suffix for Java 1.4.2!"/>
-    </target>
-
-    <target name="set_bootclasspath_jdk150" depends="which_boot_classpath" if="java150">
-        <copy file="${nbextra.qa.performance.dir}/jdk/hack_jdk150.zip" tofile="${xtest.tmpdir}/hack_jdk.zip" />
-        <echo message="Set xtest.ide.commandline.suffix for Java 1.5.0!"/>
-    </target>
-
-    <!-- this "switch" will decide how to create boot classpath -->
-    <target name="which_boot_classpath">
-        <echo message="Java version = ${java.version}"/>
-        
-        <condition property="java142">
-            <or>
-                <!-- the jdk_hack is now written against the classes in 1.4.2_02 (which are the same as in 1.4.2_03),
-                there was a change in JComponent between 1.4.2_01 and 1.4.2_02, thus the hack cannot be used with
-                1.4.2 and 1.4.2_01 anymore...
-                <equals arg1="${java.version}" arg2="1.4.2"/>
-                <equals arg1="${java.version}" arg2="1.4.2_01"/>
-                -->
-                <equals arg1="${java.version}" arg2="1.4.2_02"/>
-                <equals arg1="${java.version}" arg2="1.4.2_03"/>
-                <equals arg1="${java.version}" arg2="1.4.2_04"/>
-            </or>    
-        </condition>
-        
-        <condition property="java150">
-            <or>
-                <equals arg1="${java.version}" arg2="1.5.0-beta2"/>
-                <equals arg1="${java.version}" arg2="1.5.0-beta"/>
-                <equals arg1="${java.version}" arg2="1.5.0"/>
-            </or>
-        </condition>
-        
-    </target>
-    
-    
         
 </project>

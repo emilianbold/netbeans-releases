@@ -83,7 +83,7 @@ public class MeasureMenus  {
         
         suite.addTest(new ToolsOptionsNodePopupMenu("testOptionsNodePopupMenu", "Tools-Options node popup"));
 
-//TODO causes OutOfMemoryException !!!        suite.addTest(new EditorDownButtonPopupMenu("testEditorDownButtonPopupMenu", "Editor Down Button popup"));
+        suite.addTest(new EditorDownButtonPopupMenu("testEditorDownButtonPopupMenu", "Editor Down Button popup"));
         
         
 //TODO        suite.addTest(new WebNodePopupMenu("measureTime", "Web Filesystem node popup"));  
