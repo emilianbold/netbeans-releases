@@ -43,6 +43,8 @@ public class Installer extends ModuleInstall {
      * Unhooks <code>SearchPerformer</code> from <code>FindAction</code>. */
     public void uninstalled () {
         hook.unhook();
+        
+        Manager.getInstance().doCleanup();
     }
 
 

@@ -330,6 +330,15 @@ final class ResultView extends TopComponent
         btnStop.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_STOP"));           //NOI18N
     }       
     
+    /**
+     * This method exists just to make the <code>close()</code> method
+     * accessible via <code>Class.getDeclaredMethod(String, Class[])</code>.
+     * It is used in <code>Manager</code>.
+     */
+    void closeResults() {
+        close();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

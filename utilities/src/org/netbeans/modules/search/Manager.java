@@ -31,6 +31,13 @@ import org.openidex.search.SearchGroup;
  * @author  Marian Petras
  */
 final class Manager {
+    
+    /**
+     * timeout for cleanup in the case that the module is being uninstalled
+     * (in milliseconds)
+     */
+    private static final int CLEANUP_TIMEOUT_MILLIS = 3000;
+    
 
     static final int NO_TASK          = 0;
     
@@ -49,6 +56,9 @@ final class Manager {
     static final int EVENT_SEARCH_CANCELLED = 4;
     
     private static final Manager instance = new Manager();
+    
+    
+    private boolean moduleBeingUninstalled = false;
 
 
     private final Object lock = new Object();
@@ -288,6 +298,10 @@ final class Manager {
         synchronized (lock) {
             searchWindowOpen = false;
             
+            if (moduleBeingUninstalled) {
+                return;
+            }
+            
             callOnWindowFromAWT("setResultModel", null);                //NOI18N
             if (currentSearchTask != null) {
                 currentSearchTask.stop(false);
@@ -425,6 +439,11 @@ final class Manager {
      */
     private void taskFinished(Task task) {
         synchronized (lock) {
+            if (moduleBeingUninstalled) {
+                allTasksFinished();
+                return;
+            }
+            
             if (task == searchTask) {
                 assert state == SEARCHING;
                 if (currentSearchTask.notifyWhenFinished()) {
@@ -453,6 +472,50 @@ final class Manager {
                 assert false;
             }
             processNextPendingTask();
+        }
+    }
+    
+    /**
+     * Called only if the module is about to be uninstalled.
+     * This method is called at the moment that there are no active tasks
+     * (searching, printing details, etc.) and the module is ready for
+     * final cleanup.
+     */
+    private void allTasksFinished() {
+        synchronized (lock) {
+            lock.notifyAll();
+        }
+    }
+    
+    /**
+     * Called from the <code>Installer</code> to notify that the module
+     * is being uninstalled.
+     * Calling this method sets a corresponding flag. When the flag is set,
+     * no new actions (cleaning results, printing details, etc.) are started
+     * and the behaviour is changed so that manipulation with the ResultView
+     * is reduced or eliminated. Also, if no tasks are currently active,
+     * immediatelly closes the results window; otherwise it postpones closing
+     * the window until the currently active task(s) finish.
+     */
+    void doCleanup() {
+        synchronized (lock) {
+            moduleBeingUninstalled = true;
+            if (state != NO_TASK) {
+                if (currentSearchTask != null) {
+                    currentSearchTask.stop(false);
+                }
+                if (currentPrintDetailsTask != null) {
+                    currentPrintDetailsTask.stop();
+                }
+                try {
+                    lock.wait(CLEANUP_TIMEOUT_MILLIS);
+                } catch (InterruptedException ex) {
+                    ErrorManager.getDefault().notify(
+                            ErrorManager.EXCEPTION,
+                            ex);
+                }
+            }
+            callOnWindowFromAWT("closeResults");                        //NOI18N
         }
     }
     
