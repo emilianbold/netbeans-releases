@@ -17,6 +17,7 @@ import java.beans.*;
 import java.io.IOException;
 import java.lang.ref.*;
 import java.util.*;
+import java.util.logging.Logger;
 import javax.swing.event.*;
 import javax.swing.text.StyledDocument;
 import org.openide.ErrorManager;
@@ -37,6 +38,8 @@ import threaddemo.locking.LockAction;
  * @author Jesse Glick
  */
 public abstract class DocumentParseSupport extends TwoWaySupport {
+    
+    private static final Logger logger = Logger.getLogger(DocumentParseSupport.class.getName());
     
     private final EditorCookie.Observable edit;
 
@@ -87,7 +90,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
     protected final void initiating() {
         if (requiresUnmodifiedDocument()) {
             edit.prepareDocument();
-            System.err.println("initiating...");//XXX
+            logger.finer("initiating...");
         }
     }
 
@@ -99,7 +102,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
      *                        it with a newer document if it has in fact changed
      */
     private void refreshDocument(boolean requireDocument) throws IOException {
-        System.err.println("rD begin");//XXX
+        logger.finer("rD begin");
         StyledDocument oldDocument = document;
         edit.removePropertyChangeListener(listener);
         assert --cookieListenerCount == 0;
@@ -122,7 +125,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
                 assert ++listenerCount == 1 : listenerCount;
             }
         }
-        System.err.println("rD end");//XXX
+        logger.finer("rD end");
     }
     
     /**
@@ -262,12 +265,12 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         // XXX getting >1 i/rU for one change?
         
         public void insertUpdate(DocumentEvent e) {
-            System.err.println("DPS.iU");//XXX
+            logger.finer("DPS.iU");
             documentUpdate(e);
         }
         
         public void removeUpdate(DocumentEvent e) {
-            System.err.println("DPS.rU");//XXX
+            logger.finer("DPS.rU");
             documentUpdate(e);
         }
         
@@ -288,7 +291,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         
         public void propertyChange(final PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(EditorCookie.Observable.PROP_DOCUMENT)) {
-                System.err.println("DPS.pC<PROP_DOCUMENT>");//XXX
+                logger.finer("DPS.pC<PROP_DOCUMENT>");
                 //new Exception("got PROP_DOCUMENT on " + DocumentParseSupport.this).printStackTrace();
                 try {
                     refreshDocument(true);

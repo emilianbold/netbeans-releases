@@ -90,7 +90,6 @@ final class Monitor extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         long now = System.currentTimeMillis();
         long block = now - last;
-        //System.err.println("timer: block=" + block);
         if (block > GRACE) {
             System.err.println("AWT blocked for " + block + "msec");
             blockageField.setText(Long.toString(block) + "msec");

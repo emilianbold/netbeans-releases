@@ -17,6 +17,7 @@ import java.awt.EventQueue;
 import java.io.IOException;
 import java.lang.ref.*;
 import java.util.*;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.*;
 import org.netbeans.spi.looks.*;
@@ -34,6 +35,8 @@ import threaddemo.model.*;
  * @author Jesse Glick
  */
 final class PhadhailLook extends Look implements PhadhailListener, LookupListener, ChangeListener {
+    
+    private static final Logger logger = Logger.getLogger(PhadhailLook.class.getName());
     
     private static final Map phadhails2Results = new IdentityHashMap(); // Map<Phadhail,Lookup.Result>
     private static final Map results2Phadhails = new IdentityHashMap(); // Map<Lookup.Result,Phadhail>
@@ -74,14 +77,9 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     public Boolean isLeaf(Object o, Lookup e) {
         assert EventQueue.isDispatchThread();
         Phadhail ph = (Phadhail)o;
-        
-        
-        if ( !ph.hasChildren() && PhadhailLookups.getLookup(ph).lookup(DomProvider.class) == null ) {
-            return Boolean.TRUE;
-        }
-        else {
-            return Boolean.FALSE;
-        }
+        return !ph.hasChildren() &&
+               PhadhailLookups.getLookup(ph).lookup(DomProvider.class) == null ?
+               Boolean.TRUE : Boolean.FALSE;
     }
     
     public List getChildObjects(final Object o, Lookup e) {
@@ -100,7 +98,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
                     p.start();
                 }
                 if (p.isReady()) {
-                    System.err.println("DOM tree is ready, will ask for its document element");
+                    logger.finer("DOM tree is ready, will ask for its document element");
                     // XXX do this block atomically in a lock?
                     try {
                         return Collections.singletonList(p.getDocument().getDocumentElement());
@@ -108,7 +106,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
                         assert false : x;
                     }
                 } else {
-                    System.err.println("DOM tree is not ready");
+                    logger.finer("DOM tree is not ready");
                     p.start();
                     // Cf. PhadhailLookSelector.StringLook:
                     return Collections.singletonList("Please wait...");
@@ -180,7 +178,9 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         Phadhail ph = (Phadhail)o;
         Lookup.Result r = (Lookup.Result)phadhails2Results.get(ph);
         if (r == null) {
-            r = PhadhailLookups.getLookup(ph).lookup(new Lookup.Template());
+            Lookup l = PhadhailLookups.getLookup(ph);
+            r = l.lookup(new Lookup.Template());
+            assert r != null : "Null lookup from " + l + " in " + ph;
             phadhails2Results.put(ph, r);
             assert !results2Phadhails.containsKey(r);
             results2Phadhails.put(r, ph);
@@ -220,7 +220,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     }
     
     public void stateChanged(ChangeEvent e) {
-        System.err.println("PL: got change");
+        logger.finer("got change");
         DomProvider p = (DomProvider)e.getSource();
         final Phadhail ph = (Phadhail)domProviders2Phadhails.get(p);
         assert ph != null;

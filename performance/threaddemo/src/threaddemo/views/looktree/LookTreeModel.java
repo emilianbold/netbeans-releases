@@ -15,6 +15,8 @@ package threaddemo.views.looktree;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
@@ -27,6 +29,8 @@ import org.openide.util.Lookup;
  * @author Jesse Glick
  */
 final class LookTreeModel implements TreeModel {
+    
+    private static final Logger logger = Logger.getLogger(LookTreeModel.class.getName());
     
     private final Object rootObject;
     private final LookSelector sel;
@@ -60,7 +64,7 @@ final class LookTreeModel implements TreeModel {
     
     public int getChildCount(Object parent) {
         LookTreeNode n = (LookTreeNode)parent;
-        //System.err.println("childCount of " + parent + " is " + n.getChildren().size());
+        //logger.log(Level.FINER, "childCount of {0} is {1}", new Object[] {parent, n.getChildren().size()});
         return n.getChildCount();
     }
     
@@ -89,7 +93,7 @@ final class LookTreeModel implements TreeModel {
             // XXX cell renderer does not adjust size to match new value...
         } catch (IOException e) {
             // More or less normal.
-            System.err.println(e);
+            logger.info(e.toString());
         }
     }
     
@@ -110,7 +114,7 @@ final class LookTreeModel implements TreeModel {
     }
     
     void fireChildrenChange(LookTreeNode source) {
-        //System.err.println("fireChildrenChange: " + source);
+        logger.log(Level.FINER, "fireChildrenChange: {0}", source);
         if (listeners.isEmpty()) {
             return;
         }
@@ -120,7 +124,7 @@ final class LookTreeModel implements TreeModel {
         Iterator it = listeners.iterator();
         while (it.hasNext()) {
             TreeModelListener l = (TreeModelListener)it.next();
-            //System.err.println("firing: " + ev + " to " + l);
+            logger.log(Level.FINER, "firing: {0} to {1}", new Object[] {ev, l});
             l.treeStructureChanged(ev);
         }
     }

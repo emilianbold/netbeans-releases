@@ -16,6 +16,8 @@ package threaddemo.views;
 import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.spi.looks.Look;
 import org.openide.actions.DeleteAction;
@@ -32,6 +34,8 @@ import org.w3c.dom.events.*;
  * @author Jesse Glick
  */
 public class ElementLook extends Look implements EventListener {
+    
+    private static final Logger logger = Logger.getLogger(ElementLook.class.getName());
     
     public ElementLook() {
         super("ElementLook");
@@ -59,7 +63,9 @@ public class ElementLook extends Look implements EventListener {
         // expanded, some infinite loop occurs and this method is called repeatedly
         try {
             Element parent = (Element)evt.getCurrentTarget();
-            System.err.println("ElementLook: event on " + parent.getTagName() + ": " + evt + "; co=" + getChildObjects(parent, null));//XXX
+            if (logger.isLoggable(Level.FINER)) {
+                logger.log(Level.FINER, "ElementLook: event on {0}: {1}; co={2}", new Object[] {parent.getTagName(), evt, getChildObjects(parent, null)});
+            }
             fireChange(parent, Look.GET_CHILD_OBJECTS | Look.GET_DISPLAY_NAME);
         } catch (RuntimeException e) {
             e.printStackTrace();
@@ -113,7 +119,6 @@ public class ElementLook extends Look implements EventListener {
     }
     
     public List getChildObjects(Object o, Lookup env) {
-        //System.err.println("ElementLook: gCO on " + ((Element)o).getTagName());
         NodeList nl = ((Element)o).getChildNodes();
         List l = new ArrayList(Math.max(nl.getLength(), 1));
         for (int i = 0; i < nl.getLength(); i++) {
