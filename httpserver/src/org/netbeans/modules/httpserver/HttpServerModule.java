@@ -42,18 +42,14 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
   private static Thread serverThread;
   private static boolean inSetRunning = false;
   
-  static boolean optionsSerialized = false;
-
   /** Module installed again.
   * Add applet executor
   */
   public void restored() {            
-System.out.println("restored - serialized : " + optionsSerialized);
-    if (!optionsSerialized) {
-      // set the default value of the running property
-      new HttpServerSettings();  // this fills the options variable,  bugfix #3595
-      HttpServerSettings.OPTIONS.isRunning();                                    
+    try {
+      org.openide.util.HttpServer.registerServer(HttpServerSettings.OPTIONS);
     }
+    catch (SecurityException e) {}
   }
 
 
@@ -71,26 +67,6 @@ System.out.println("restored - serialized : " + optionsSerialized);
     }  
     return true; // agree to close
   }
-
-	/** Writes data
-	* @param out ObjectOutputStream
-	*/
- 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeObject(new Boolean(true));
-	}
-	
-	/** Reads data
-	* @param in ObjectInputStream
-	*/
- 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException	{
-System.out.println("readExternal");
- 	  Object obj = in.readObject();
- 	  if (obj instanceof Boolean) {
- 	    optionsSerialized = ((Boolean)obj).booleanValue();
-System.out.println("boolean : " + optionsSerialized);
- 	  }
-System.out.println("class : " + ((obj == null) ? "null" : obj.getClass().getName()));
-	}	
 
   /** initiates HTTPServer so it runs */
   static void initHTTPServer() {
@@ -223,6 +199,8 @@ e.printStackTrace();
 
 /*
  * Log
+ *  27   Gandalf   1.26        10/6/99  Petr Jiricka    Removed module 
+ *       (de)serialization
  *  26   Gandalf   1.25        10/6/99  Petr Jiricka    Removed debug DumpStack
  *  25   Gandalf   1.24        10/5/99  Petr Jiricka    
  *  24   Gandalf   1.23        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
