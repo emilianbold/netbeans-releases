@@ -2,11 +2,11 @@
 
 <Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <SyntheticProperties>
-    <SyntheticProperty name="encoding" type="java.lang.String" value="UTF-8"/>
   </SyntheticProperties>
 
   <Events>
     <EventHandler event="componentShown" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="formComponentShown"/>
+    <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="formFocusGained"/>
   </Events>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
@@ -22,20 +22,22 @@
       <SubComponents>
         <Component class="javax.swing.JEditorPane" name="codeEditorPane">
 
+          <Events>
+            <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="codeEditorPaneFocusGained"/>
+            <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="codeEditorPaneFocusLost"/>
+          </Events>
+
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value=""/>
             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="codeEditorPane.setContentType(&quot;text/x-java&quot;);  // NOI18N&#xa;try {&#xa;     codeEditorPane.setText((String) property.getValue()); &#xa;    }&#xa;catch (java.lang.reflect.InvocationTargetException e1){&#xa;            e1.printStackTrace();&#xa;    }&#xa;catch (IllegalAccessException e2) {&#xa;            e2.printStackTrace();&#xa;        }"/>
             <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value=""/>
           </AuxValues>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
-          </Constraints>
         </Component>
       </SubComponents>
     </Container>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.beaninfo.editors.StringEditor" value="jLabel1"/>
+        <Property name="text" type="java.lang.String" value="jLabel1"/>
       </Properties>
 
       <AuxValues>

@@ -42,6 +42,8 @@ public class CustomCodeEditor extends javax.swing.JPanel implements EnhancedCust
         jLabel1.setText(getString("CustomCodeEditor.label1"));
         jLabel1.setDisplayedMnemonic(getMnemonic("CustomCodeEditor.label1"));
         jLabel1.setLabelFor(codeEditorPane);
+        codeEditorPane.requestFocus();
+        codeEditorPane.getCaret().setVisible(codeEditorPane.hasFocus());
     }
 
     /** This method is called from within the constructor to
@@ -53,16 +55,22 @@ public class CustomCodeEditor extends javax.swing.JPanel implements EnhancedCust
         jScrollPane1 = new javax.swing.JScrollPane();
         codeEditorPane = new javax.swing.JEditorPane();
         jLabel1 = new javax.swing.JLabel();
+
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
+
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
                 formComponentShown(evt);
             }
-        }
-        );
-        
-        
+        });
+
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                formFocusGained(evt);
+            }
+        });
+
         codeEditorPane.setContentType("text/x-java");  // NOI18N
         try {
             codeEditorPane.setText((String) property.getValue());
@@ -73,37 +81,60 @@ public class CustomCodeEditor extends javax.swing.JPanel implements EnhancedCust
         catch (IllegalAccessException e2) {
             e2.printStackTrace();
         }
+        codeEditorPane.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                codeEditorPaneFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                codeEditorPaneFocusLost(evt);
+            }
+        });
+
         jScrollPane1.setViewportView(codeEditorPane);
-        
-        
+
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.gridwidth = 0;
-        gridBagConstraints1.gridheight = 0;
+        gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints1.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints1.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints1);
-        
-        
+
         jLabel1.setText("jLabel1");
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.gridwidth = 0;
+        gridBagConstraints1.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(jLabel1, gridBagConstraints1);
-        
+
     }//GEN-END:initComponents
+
+    private void codeEditorPaneFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_codeEditorPaneFocusLost
+        // Add your handling code here:
+        codeEditorPane.getCaret().setVisible(codeEditorPane.hasFocus());
+    }//GEN-LAST:event_codeEditorPaneFocusLost
+
+    private void codeEditorPaneFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_codeEditorPaneFocusGained
+        // Add your handling code here:
+        codeEditorPane.getCaret().setVisible(codeEditorPane.hasFocus());
+    }//GEN-LAST:event_codeEditorPaneFocusGained
+
+    private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
+        // Add your handling code here:
+        codeEditorPane.requestFocus();
+        codeEditorPane.getCaret().setVisible(true); // true is HARDCODED here due to BUG in MAC OS X
+    }//GEN-LAST:event_formFocusGained
 
     private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
         // Add your handling code here:
         codeEditorPane.requestFocus();
+        codeEditorPane.getCaret().setVisible(codeEditorPane.hasFocus());
     }//GEN-LAST:event_formComponentShown
 
 
