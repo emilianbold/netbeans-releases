@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <property name="f4jroot" location="../../f4j_all"/>
   <property name="nbroot" location="../../nb_all"/>
-  <property name="nbextra" location="../../nbextra"/>
+  <property name="binroot" location="../../nbextra"/>
   <property name="license.file" location="${f4jroot}/core/release/LICENSE.txt"/>
 
 
@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="monitor.nbm"
              topdir="."
-	     manifest="manifest.mf"
+	     module="netbeans/modules/monitor.jar"
 	     homepage="http://${homepage.base}/monitor.html"
 	     distribution="${dist.base}/monitor.nbm">
       <license file="${license.file}" />
@@ -56,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
         <include name="**/*.jar"/>
       </fileset>
       <fileset dir=".">
-        <include name="*.mf"/>
+        <include name="*subst.mf"/>
       </fileset>
     </delete>
     <delete dir="netbeans"/>
@@ -74,7 +74,7 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/docs/org/netbeans/modules/web/monitor/docs/JavaHelpSearch"/>
     <jhindexer basedir="netbeans/docs/org/netbeans/modules/web/monitor/docs/"
                db="netbeans/docs/org/netbeans/modules/web/monitor/docs/JavaHelpSearch"
-               jhall="${nbroot}/nbbuild/lib/jhall.jar">
+               jhall="${binroot}/nbbuild/lib/jhall.jar">
       <include name="**/*.html"/>
       <exclude name="JavaHelpSearch/"/>
       <exclude name="ja/"/>
@@ -84,7 +84,7 @@ Microsystems, Inc. All Rights Reserved.
     <jhindexer basedir="netbeans/docs/org/netbeans/modules/web/monitor/docs/ja/"
                db="netbeans/docs/org/netbeans/modules/web/monitor/docs/ja/JavaHelpSearch"
                locale="ja"
-	       jhall="${nbroot}/nbbuild/lib/jhall.jar">
+	       jhall="${binroot}/nbbuild/lib/jhall.jar">
       <include name="**/*.html"/>
       <exclude name="JavaHelpSearch/"/>
       <exclude name="credits.html"/>
@@ -112,7 +112,6 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
          <pathelement location="${nbroot}/httpserver/netbeans/modules/httpserver.jar"/>
          <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
-         <pathelement location="${nbroot}/core/release/lib/ext/parser.jar"/>
          <pathelement location="extra/servlet.jar"/>	
          <pathelement location="${nbroot}/web/netbeans/modules/jsp.jar"/>
       </classpath>
@@ -130,7 +129,6 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
          <pathelement location="${nbroot}/httpserver/netbeans/modules/httpserver.jar"/>
          <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
-         <pathelement location="${nbroot}/core/release/lib/ext/parser.jar"/>
          <pathelement location="${nbroot}/web/netbeans/modules/jsp.jar"/>
          <pathelement location="extra/servlet.jar"/>
        </classpath>
@@ -145,8 +143,8 @@ Microsystems, Inc. All Rights Reserved.
 	 excludes="**/SCCS/**,**/CVS/**">
        <classpath>
           <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
-          <pathelement location="${nbroot}/core/release/lib/ext/servlet.jar"/> 
-          <pathelement location="${nbextra}/httpserver/release/modules/ext/webserver.jar"/>
+          <pathelement location="${binroot}/core/release/lib/ext/servlet.jar"/> 
+          <pathelement location="${binroot}/httpserver/release/modules/ext/webserver.jar"/>
        </classpath>
      </javac>
   </target>
@@ -202,11 +200,13 @@ Microsystems, Inc. All Rights Reserved.
   <target name="jars" depends="compile,tomcat-monitor, iplanet-monitor">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf"
+          filtering="on"/>
 
     <!-- Create jspie.jar, which includes some stuff from ${nbroot}/web. -->
 
       <locjar jarfile="netbeans/modules/monitor.jar"
-         manifest="manifest.mf"
+         manifest="manifest-subst.mf"
          compress="false">
       <locale name="ja"/>
       <branding name="f4j"/>
