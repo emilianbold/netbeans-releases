@@ -55,7 +55,26 @@ public class NbEditorUtilities {
         }
         return null;
     }
-    
+
+    /**
+     * Verify whether the given document is still being actively used
+     * by the corresponding editor support.
+     */
+    public static boolean isDocumentActive(Document doc) {
+        DataObject dob = getDataObject(doc);
+        if (dob != null) {
+            EditorCookie editorCookie = (EditorCookie)dob.getCookie(EditorCookie.class);
+            if (editorCookie != null) {
+                Document ecDoc = editorCookie.getDocument(); // returns null if closed
+                if (ecDoc == doc) { // actively used by ec
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /** Get the fileobject from the document's StreamDescriptionProperty property. */
     public static FileObject getFileObject(Document doc) {
         Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
