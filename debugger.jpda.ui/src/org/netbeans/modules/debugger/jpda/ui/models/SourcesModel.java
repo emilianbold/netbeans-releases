@@ -205,8 +205,10 @@ NodeActionsProvider {
     public void setValueAt (Object node, String columnID, Object value) 
     throws UnknownTypeException {
         if (columnID.equals ("use")) {
-            if (node instanceof String)
+            if (node instanceof String) {
                 setEnabled ((String) node, ((Boolean) value).booleanValue ());
+                return;
+            }
         } 
         throw new UnknownTypeException (node);
     }

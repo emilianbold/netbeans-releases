@@ -214,7 +214,7 @@ public class AbstractVariable implements Variable {
         return getModel ().getField (
             f, 
             (ObjectReference) getInnerValue (),
-            ((ReferenceType) getInnerValue ().type ()).name (),
+            //((ReferenceType) getInnerValue ().type ()).name (),
             id
         );
     }

@@ -39,7 +39,7 @@ public class VariablesActionsProvider implements NodeActionsProvider {
                 return true;
             }
             public void perform (Object[] nodes) {
-                goToSource ((Variable) nodes [0]);
+                goToSource ((Field) nodes [0]);
             }
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
@@ -56,9 +56,12 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
             return new Action [0];
-        if (node instanceof Variable)
+        if (node instanceof Field)
             return new Action [] {
                 GO_TO_SOURCE_ACTION
+            };
+        if (node instanceof Variable)
+            return new Action [] {
             };
         throw new UnknownTypeException (node);
     }
@@ -66,8 +69,8 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     public void performDefaultAction (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
             return;
-        if (node instanceof Variable) {
-            goToSource ((Variable) node);
+        if (node instanceof Field) {
+            goToSource ((Field) node);
             return;
         }
         throw new UnknownTypeException (node);
@@ -87,13 +90,13 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     public void removeTreeModelListener (TreeModelListener l) {
     }
     
-    public void goToSource (Variable variable) {
+    public void goToSource (Field variable) {
         EngineContext ectx = (EngineContext) lookupProvider.lookupFirst
             (EngineContext.class);
         ectx.showSource (variable);
     }
 
-    private boolean isSourceAvailable (Variable v) {
+    private boolean isSourceAvailable (Field v) {
         EngineContext ectx = (EngineContext) lookupProvider.lookupFirst 
             (EngineContext.class);
         return ectx.sourceAvailable (v);

@@ -229,7 +229,7 @@ public class LocalsTreeModel implements TreeModel {
         List l = rt.fields ();
         ArrayList ch = new ArrayList ();
         ClassType superRt = null;
-        String className = rt.name ();
+       // String className = rt.name ();
 //        if ( includeSuper &&
 //             (rt instanceof ClassType)
 //        ) {
@@ -242,7 +242,7 @@ public class LocalsTreeModel implements TreeModel {
             Field f = (Field) l.get (i);
             if ( f.isStatic () || f.isSynthetic ())
                 continue;
-            ch.add (getField (f, or, parentID, className));
+            ch.add (getField (f, or, parentID));
         }
         return (AbstractVariable[]) ch.toArray (new AbstractVariable [ch.size ()]);
     }
@@ -256,12 +256,12 @@ public class LocalsTreeModel implements TreeModel {
         ReferenceType rt = or.referenceType ();
         List l = rt.allFields ();
         ArrayList ch = new ArrayList ();
-        String className = rt.name ();
+        //String className = rt.name ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             Field f = (Field) l.get (i);
             if (f.isStatic ())
-                ch.add (getField (f, or, av.getID (), className));
+                ch.add (getField (f, or, av.getID ()));
         }
         return (FieldVariable[]) ch.toArray (new FieldVariable [ch.size ()]);
     }
@@ -276,7 +276,7 @@ public class LocalsTreeModel implements TreeModel {
         List l = rt.allFields ();
         Set s = new HashSet (rt.fields ());
         ArrayList ch = new ArrayList ();
-        String className = rt.name ();
+       // String className = rt.name ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             Field f = (Field) l.get (i);
@@ -284,7 +284,7 @@ public class LocalsTreeModel implements TreeModel {
                 continue;
             if (s.contains (f))
                 continue;
-            ch.add (getField (f, or, av.getID (), className));
+            ch.add (getField (f, or, av.getID ()));
         }
         return (FieldVariable[]) ch.toArray (new FieldVariable [ch.size ()]);
     }
@@ -357,22 +357,22 @@ public class LocalsTreeModel implements TreeModel {
     FieldVariable getField (
         Field f, 
         ObjectReference or, 
-        String parentID,
-        String className
+        String parentID//,
+        //String className
     ) {
         Value v = or.getValue (f);
         if ( (v == null) || (v instanceof ObjectReference))
             return new ObjectFieldVariable (
                 this,
                 (ObjectReference) v,
-                className,
+                //f.declaringType (), //className,
                 f,
                 parentID,
                 debugger.getGenericSignature(f),
                 or
             );
         else
-            return new FieldVariable (this, v, className, f, parentID, or);
+            return new FieldVariable (this, v, f, parentID, or);
     }
     
     private boolean isLeafChanged (Value v1, Value v2) {

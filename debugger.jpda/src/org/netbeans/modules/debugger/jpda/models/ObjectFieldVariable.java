@@ -34,7 +34,7 @@ implements ObjectVariable {
     ObjectFieldVariable (
         LocalsTreeModel model, 
         ObjectReference value, 
-        String className,
+        //String className,
         Field field,
         String parentID,
         String genericSignature,
@@ -43,7 +43,7 @@ implements ObjectVariable {
         super (
             model,
             value,
-            className,
+           // className,
             field,
             parentID,
             genericSignature

@@ -28,14 +28,14 @@ public class FieldVariable extends AbstractVariable implements
 org.netbeans.api.debugger.jpda.Field {
         
     protected Field field;
-    private String className;
+    //private String className;
     private ObjectReference objectReference;
     
 
     FieldVariable (
         LocalsTreeModel model,
         Value value,
-        String className,
+    //    String className,
         Field field,
         String parentID,
         ObjectReference objectReference
@@ -47,14 +47,14 @@ org.netbeans.api.debugger.jpda.Field {
                 (value instanceof ObjectReference ? "^" : "")
         );
         this.field = field;
-        this.className = className;
+        //this.className = className;
         this.objectReference = objectReference;
     }
 
     FieldVariable (
         LocalsTreeModel model,
         Value value,
-        String className,
+       // String className,
         Field field,
         String parentID,
         String genericSignature
@@ -62,7 +62,7 @@ org.netbeans.api.debugger.jpda.Field {
         super(model, value, genericSignature, parentID + '.' + field.name () +
                 (value instanceof ObjectReference ? "^" : ""));
         this.field = field;
-        this.className = className;
+       // this.className = className;
     }
     
     // LocalVariable impl.......................................................
@@ -83,7 +83,7 @@ org.netbeans.api.debugger.jpda.Field {
      * @return name of enclosing class
      */
     public String getClassName () {
-        return className;
+        return field.declaringType ().name (); //className;
     }
 
     /**
