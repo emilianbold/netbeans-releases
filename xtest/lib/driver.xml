@@ -130,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
          <property name="archive.filename2" value="xtr-nb-${xtest.tested.project}-${ide.build}-${xtest.testing.group}-${xtest.tested.type}-${xtest.machine}.zip"/>
          <property name="archive.file2" value="${xtest.results}/${archive.filename2}"/>
          <zip zipfile="${archive.file2}">
-            <fileset dir="${xtest.results}" includes="**/xmlresults/*.xml"/>
+            <fileset dir="${xtest.results}" includes="**/xmlresults/*.xml,**/suites/*.xml"/>
          </zip>
          <antcall target="ship-results"/>
          <antcall target="ship-nbresults"/>
