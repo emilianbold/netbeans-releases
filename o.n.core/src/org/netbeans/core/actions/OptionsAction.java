@@ -217,13 +217,6 @@ public class OptionsAction extends CallableSystemAction {
             return singleton;
         }
         
-        public void reshape (int x, int y, int w, int h) {
-            super.reshape (x,y,w,h);
-            //issue 34104, bad sizing/split location for Chinese locales that require
-            //a larger default font size
-            split.setDividerLocation ((w / 3) + (w/7));
-        }
-
         private transient JSplitPane split=null;
         protected TreeView initGui () {
             TTW retVal = new TTW () ;
@@ -248,7 +241,7 @@ public class OptionsAction extends CallableSystemAction {
 
             return retVal;
         }
-
+        
         /** Overridden to provide a larger preferred size if the default font
          *  is larger, for locales that require this.   */
         public Dimension getPreferredSize() {
@@ -295,6 +288,8 @@ public class OptionsAction extends CallableSystemAction {
                 ((TTW)view).expandTheseNodes (toExpand, getExplorerManager ().getRootContext ());                
                 expanded = true;
             }
+            // initialize divider location
+            split.setDividerLocation(getPreferredSize().width / 2);
         }
         
 
@@ -468,21 +463,28 @@ public class OptionsAction extends CallableSystemAction {
                 if (active_set != new_set) {
                     // setup new columns
                     final Node.Property set [] = new_set;
-                    SwingUtilities.invokeLater (new Runnable () {
-                        public void run () {
-                            // change columns
-                            setProperties (set);
-                            // set preferred colunm sizes
-                            setTreePreferredWidth(set.length == 1 ? 480 : 300);
-                            setTableColumnPreferredWidth (0, 20);
-                            for (int i = 1; i < set.length; i++)
-                                setTableColumnPreferredWidth (i, 60);
-                       }
- 
-                    });
-
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        setNewSet(set);
+                    } else {
+                        SwingUtilities.invokeLater (new Runnable () {
+                            public void run () {
+                                setNewSet(set);
+                            }
+                        });
+                    }
                     // remeber the last set of columns
                     active_set = new_set;
+                }
+            }
+            
+            private void setNewSet (Node.Property[] set) {
+                // change columns
+                setProperties (set);
+                // set preferred colunm sizes
+                setTreePreferredWidth(set.length == 1 ? 480 : 300);
+                setTableColumnPreferredWidth (0, 20);
+                for (int i = 1; i < set.length; i++) {
+                    setTableColumnPreferredWidth (i, 60);
                 }
             }
             
