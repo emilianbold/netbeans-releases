@@ -66,7 +66,7 @@ public class BiIncludeAllAction extends NodeAction  {
             if ( bis == null )
                 return false;
             Node[] nodes = bis.getChildren().getNodes();
-            if ( nodes == null )
+            if ( nodes == null || nodes.length == 0 )
                 return false;
             BiFeature biFeature = ((BiFeatureNode)nodes[0]).getBiFeature();
             BiAnalyser biAnalyser = ((BiFeatureNode)nodes[0]).getBiAnalyser();

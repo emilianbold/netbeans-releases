@@ -471,7 +471,7 @@ public final class BiNode extends AbstractNode {
             if ( nodes == null )
                 return new SystemAction[0];
 
-            if( nodes[0] != null && ((BiFeatureNode)nodes[0]).getBiFeature() instanceof BiFeature.Descriptor )
+            if( nodes.length == 0 || ( nodes[0] != null && ((BiFeatureNode)nodes[0]).getBiFeature() instanceof BiFeature.Descriptor) )
                 return new SystemAction[0];
             
             return new SystemAction[] {
