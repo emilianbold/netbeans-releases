@@ -51,12 +51,14 @@ public abstract class SourcePathProvider {
 
     /**
      * Translates a relative path ("java/lang/Thread.java") to url 
-     * ("file:///C:/Sources/java/lang/Thread.java").
+     * ("file:///C:/Sources/java/lang/Thread.java"). Uses GlobalPathRegistry
+     * if global == true.
      *
      * @param relativePath a relative path (java/lang/Thread.java)
+     * @param global true if global path should be used
      * @return url
      */
-    public abstract String getURL (String relativePath);
+    public abstract String getURL (String relativePath, boolean global);
     
     /**
      * Returns array of source roots.

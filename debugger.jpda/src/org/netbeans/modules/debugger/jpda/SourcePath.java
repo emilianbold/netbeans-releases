@@ -87,13 +87,16 @@ public class SourcePath {
     }
 
     /**
-     * Translates a relative path (java/lang/Thread.java) to url.
+     * Translates a relative path ("java/lang/Thread.java") to url 
+     * ("file:///C:/Sources/java/lang/Thread.java"). Uses GlobalPathRegistry
+     * if global == true.
      *
      * @param relativePath a relative path (java/lang/Thread.java)
+     * @param global true if global path should be used
      * @return url
      */
-    public String getURL (String relativePath) {
-        return getContext ().getURL (relativePath);
+    public String getURL (String relativePath, boolean global) {
+        return getContext ().getURL (relativePath, global);
     }
     
     public String getURL (
@@ -102,12 +105,16 @@ public class SourcePath {
     ) {
         try {
             return getURL (
-                convertSlash (sf.location ().sourcePath (stratumn))
+                convertSlash (sf.location ().sourcePath (stratumn)),
+                true
             );
         } catch (AbsentInformationException e) {
-            return getURL (convertClassNameToRelativePath (
-                sf.location ().declaringType ().name ()
-            ));
+            return getURL (
+                convertClassNameToRelativePath (
+                    sf.location ().declaringType ().name ()
+                ),
+                true
+            );
         }
     }
     
@@ -162,7 +169,7 @@ public class SourcePath {
     public boolean sourceAvailable (
         String relativePath
     ) {
-        return getURL (relativePath) != null;
+        return getURL (relativePath, true) != null;
     }
 
     public boolean sourceAvailable (
@@ -199,11 +206,12 @@ public class SourcePath {
         String stratumn
     ) {
         try {
-            return getURL (convertSlash (csf.getSourcePath (stratumn)));
+            return getURL (convertSlash (csf.getSourcePath (stratumn)), true);
         } catch (NoInformationException e) {
-            return getURL (convertClassNameToRelativePath (csf.getClassName ()));
-
-
+            return getURL (
+                convertClassNameToRelativePath (csf.getClassName ()),
+                true
+            );
         }
     }
 
@@ -215,13 +223,16 @@ public class SourcePath {
         if (lineNumber < 1) lineNumber = 1;
         try {
             return EditorContextBridge.showSource (
-                getURL (convertSlash (t.getSourcePath (stratumn))),
+                getURL (convertSlash (t.getSourcePath (stratumn)), true),
                 lineNumber,
                 debugger
             );
         } catch (NoInformationException e) {
             return EditorContextBridge.showSource (
-                getURL (convertClassNameToRelativePath (t.getClassName ())),
+                getURL (
+                    convertClassNameToRelativePath (t.getClassName ()), 
+                    true
+                ),
                 lineNumber,
                 debugger
             );
@@ -233,13 +244,15 @@ public class SourcePath {
         if (lineNumber < 1) lineNumber = 1;
         try {
             return EditorContextBridge.showSource (
-                getURL (convertSlash (csf.getSourcePath (stratumn))),
+                getURL (convertSlash (csf.getSourcePath (stratumn)), true),
                 lineNumber,
                 debugger
             );
         } catch (NoInformationException e) {
             return EditorContextBridge.showSource (
-                getURL (convertClassNameToRelativePath (csf.getClassName ())),
+                getURL (
+                    convertClassNameToRelativePath (csf.getClassName ()), true
+                ),
                 lineNumber,
                 debugger
             );
@@ -249,7 +262,9 @@ public class SourcePath {
     public boolean showSource (Field v) {
         String fieldName = ((Field) v).getName ();
         String className = className = ((Field) v).getClassName ();
-        String url = getURL (EditorContextBridge.getRelativePath (className));
+        String url = getURL (
+            EditorContextBridge.getRelativePath (className), true
+        );
         if (url == null) return false;
         int lineNumber = lineNumber = EditorContextBridge.getFieldLineNumber (
             url,
@@ -286,14 +301,16 @@ public class SourcePath {
         if (lineNumber < 1) return null;
         try {
             return EditorContextBridge.annotate (
-                getURL (convertSlash (t.getSourcePath (stratumn))),
+                getURL (convertSlash (t.getSourcePath (stratumn)), true),
                 lineNumber,
                 EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
                 debugger
             );
         } catch (NoInformationException e) {
             return EditorContextBridge.annotate (
-                getURL (convertClassNameToRelativePath (t.getClassName ())),
+                getURL (
+                    convertClassNameToRelativePath (t.getClassName ()), true
+                ),
                 lineNumber,
                 EditorContext.CURRENT_LINE_ANNOTATION_TYPE,
                 debugger
@@ -309,14 +326,16 @@ public class SourcePath {
         if (lineNumber < 1) return null;
         try {
             return EditorContextBridge.annotate (
-                getURL (convertSlash (csf.getSourcePath (stratumn))),
+                getURL (convertSlash (csf.getSourcePath (stratumn)), true),
                 lineNumber,
                 EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE,
                 debugger
             );
         } catch (NoInformationException e) {
             return EditorContextBridge.annotate (
-                getURL (convertClassNameToRelativePath (csf.getClassName ())),
+                getURL (
+                    convertClassNameToRelativePath (csf.getClassName ()), true
+                ),
                 lineNumber,
                 EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE,
                 debugger
@@ -339,10 +358,10 @@ public class SourcePath {
             this.cp2 = cp2;
         }
 
-        public String getURL (String relativePath) {
-            String p1 = cp1.getURL (relativePath);
+        public String getURL (String relativePath, boolean global) {
+            String p1 = cp1.getURL (relativePath, global);
             if (p1 != null) return p1;
-            return cp2.getURL (relativePath);
+            return cp2.getURL (relativePath, global);
         }
 
         public String getRelativePath (

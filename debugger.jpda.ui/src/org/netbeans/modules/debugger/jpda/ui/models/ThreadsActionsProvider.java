@@ -196,6 +196,6 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
         SourcePath sp = (SourcePath) DebuggerManager.
             getDebuggerManager ().getCurrentEngine ().lookupFirst 
             (null, SourcePath.class);
-        return sp.sourceAvailable (t, language);
+        return sp.sourceAvailable (t, language, true);
     }
 }

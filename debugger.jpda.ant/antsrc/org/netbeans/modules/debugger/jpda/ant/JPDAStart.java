@@ -18,6 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -213,9 +214,20 @@ public class JPDAStart extends Task implements Runnable {
                 ClassPath sourcePath = createSourcePath (
                     getProject (),
                     classpath, 
-                    sourcepath, 
+                    sourcepath
+                );
+                ClassPath jdkSourcePath = createJDKSourcePath (
+                    getProject (),
                     bootclasspath
                 );
+                if (startVerbose) {
+                    System.out.println("\nS Crete sourcepath: ***************");
+                    System.out.println ("    classpath : " + classpath);
+                    System.out.println ("    sourcepath : " + sourcepath);
+                    System.out.println ("    bootclasspath : " + bootclasspath);
+                    System.out.println ("    >> sourcePath : " + sourcePath);
+                    System.out.println ("    >> jdkSourcePath : " + jdkSourcePath);
+                }
                 
                 if (stopClassName != null && stopClassName.length() > 0) {
                     if (startVerbose)
@@ -234,14 +246,17 @@ public class JPDAStart extends Task implements Runnable {
                 if (startVerbose)
                     System.out.println("\nS start listening on port " + port);
                 
-                Properties props = new Properties();
+                Map properties = new HashMap ();
                 // uncomment to implement smart stepping with step-outs 
                 // rather than step-ins (for J2ME)
                 // props.put("SS_ACTION_STEPOUT", Boolean.TRUE);
+                properties.put ("sourcepath", sourcePath);
+                properties.put ("name", getName ());
+                properties.put ("jdksources", jdkSourcePath);
                 JPDADebugger.startListening (
                     lc, 
                     args, 
-                    new Object[] {sourcePath, getName (), props}
+                    new Object[] {properties}
                 );
             } catch (Throwable e) {
                 lock [1] = e;
@@ -276,29 +291,26 @@ public class JPDAStart extends Task implements Runnable {
     static ClassPath createSourcePath (
         Project project, 
         Path classpath,
-        Path sourcepath,
-        Path bootclasspath
+        Path sourcepath
     ) {
         ClassPath cp = convertToSourcePath (project, classpath);
         ClassPath sp = convertToClassPath (project, sourcepath);
-        ClassPath bp = null;
-        if (bootclasspath == null)
-            bp = JavaPlatform.getDefault ().getSourceFolders ();
-            // if current platform is default one, bootclasspath is set to null
-        else
-            bp = convertToSourcePath (project, bootclasspath);
         
         ClassPath sourcePath = ClassPathSupport.createProxyClassPath (
-            new ClassPath[] {cp, sp, bp}
+            new ClassPath[] {cp, sp}
         );
-        if (startVerbose) {
-            System.out.println("\nS Crete sourcepath: ***************");
-            System.out.println ("    classpath : " + classpath);
-            System.out.println ("    sourcepath : " + sourcepath);
-            System.out.println ("    bootclasspath : " + bootclasspath);
-            System.out.println ("    >> sourcePath : " + sourcePath);
-        }
         return sourcePath;
+    }
+
+    static ClassPath createJDKSourcePath (
+        Project project, 
+        Path bootclasspath
+    ) {
+        if (bootclasspath == null)
+            return JavaPlatform.getDefault ().getSourceFolders ();
+            // if current platform is default one, bootclasspath is set to null
+        else
+            return convertToSourcePath (project, bootclasspath);
     }
     
     private static ClassPath convertToClassPath (Project project, Path path) {

@@ -263,6 +263,19 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>"global" parameter added to "SourcePathProvider.getURL (String relativePath, boolean global)" method.</summary>
+        <date day="18" month="10" year="2004"/>
+        <author login="jjancura"/>
+        <compatibility addition="yes" source="incompatible" binary="incompatible"/>
+        <description>
+            <p>
+                This parameter has been added to distinguish between finding sources for smart
+                stepping feature, and for all other features like douuble click on stack trace..
+            </p>
+        </description>
+    </change>
 
 </changes>
 

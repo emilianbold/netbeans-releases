@@ -491,12 +491,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
             synchronized (LOCK) {
                 List l = disableAllBreakpoints ();
                 try {
-                    return org.netbeans.modules.debugger.jpda.expr.Evaluator.invokeVirtual (
-                                        reference,
-                                        method,
-                                        getEvaluationThread (),
-                                        Arrays.asList (arguments)
-                                    );
+                    return org.netbeans.modules.debugger.jpda.expr.Evaluator.
+                        invokeVirtual (
+                            reference,
+                            method,
+                            getEvaluationThread (),
+                            Arrays.asList (arguments)
+                        );
                 } finally {
                     enableAllBreakpoints (l);
                 }

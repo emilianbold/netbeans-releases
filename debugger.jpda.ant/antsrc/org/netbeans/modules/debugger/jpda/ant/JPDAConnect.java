@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.debugger.jpda.ant;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
@@ -125,12 +127,28 @@ public class JPDAConnect extends Task {
 
         final Object[] lock = new Object [1];
 
-        final ClassPath sourcePath = JPDAStart.createSourcePath (
+        ClassPath sourcePath = JPDAStart.createSourcePath (
             getProject (),
-            classpath,
-            sourcepath,
+            classpath, 
+            sourcepath
+        );
+        ClassPath jdkSourcePath = JPDAStart.createJDKSourcePath (
+            getProject (),
             bootclasspath
         );
+        if (startVerbose) {
+            System.out.println("\nS Crete sourcepath: ***************");
+            System.out.println ("    classpath : " + classpath);
+            System.out.println ("    sourcepath : " + sourcepath);
+            System.out.println ("    bootclasspath : " + bootclasspath);
+            System.out.println ("    >> sourcePath : " + sourcePath);
+            System.out.println ("    >> jdkSourcePath : " + jdkSourcePath);
+        }
+        final Map properties = new HashMap ();
+        properties.put ("sourcepath", sourcePath);
+        properties.put ("name", getName ());
+        properties.put ("jdksources", jdkSourcePath);
+        
 
         synchronized(lock) {
             RequestProcessor.getDefault ().post (new Runnable () {
@@ -151,7 +169,7 @@ public class JPDAConnect extends Task {
                                     JPDADebugger.attach (
                                         host, 
                                         Integer.parseInt (address), 
-                                        new Object[] {sourcePath}
+                                        new Object[] {properties}
                                     );
                                 } catch (NumberFormatException e) {
                                     throw new BuildException (
@@ -163,7 +181,7 @@ public class JPDAConnect extends Task {
                             else
                                 JPDADebugger.attach (
                                     address, 
-                                    new Object[] {sourcePath}
+                                    new Object[] {properties}
                                 );
                             if (startVerbose)
                                 System.out.println(

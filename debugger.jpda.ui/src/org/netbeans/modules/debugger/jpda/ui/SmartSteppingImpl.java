@@ -64,7 +64,7 @@ PropertyChangeListener {
         if (className == null) return false;
 
         SourcePath ectx = getEngineContext (lookupProvider);
-        boolean b = ectx.sourceAvailable (thread, null);
+        boolean b = ectx.sourceAvailable (thread, null, false);
         if (b) return true;
         
         // find pattern
@@ -74,7 +74,7 @@ PropertyChangeListener {
             int i = name.lastIndexOf ('/');
             if (i < 0) break;
             n1 = name.substring (0, i);
-        } while (!ectx.sourceAvailable (n1));
+        } while (!ectx.sourceAvailable (n1, false));
         HashSet s = new HashSet ();
         s.add (name.replace ('/', '.') + ".*");
         addExclusionPatterns (s);

@@ -39,13 +39,16 @@ public class EngineContextProviderImpl extends SourcePathProvider {
 
     
     /**
-     * Translates a relative path (java/lang/Thread.java) to url.
+     * Translates a relative path ("java/lang/Thread.java") to url 
+     * ("file:///C:/Sources/java/lang/Thread.java"). Uses GlobalPathRegistry
+     * if global == true.
      *
      * @param relativePath a relative path (java/lang/Thread.java)
+     * @param global true if global path should be used
      * @return url
      */
-    public String getURL (String relativePath) {
-        if (verbose) System.out.println ("ECPI(JSP): getURL " + relativePath);
+    public String getURL (String relativePath, boolean global) {
+        if (verbose) System.out.println ("ECPI(JSP): getURL " + relativePath + " global " + global);
         if (virtualFolders.contains (relativePath)) {
             if (verbose) System.out.println ("ECPI(JSP):  fo virtual folder");
             return "virtual folder";

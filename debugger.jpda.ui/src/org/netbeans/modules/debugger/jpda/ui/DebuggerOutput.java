@@ -218,7 +218,7 @@ PropertyChangeListener {
                 String relativePath = EditorContextBridge.getRelativePath 
                     (t, language);
                 String url = (relativePath != null) ?
-                    engineContext.getURL (relativePath) :
+                    engineContext.getURL (relativePath, true) :
                     null;
                 IOManager.Line line = null;
                 if (lineNumber > 0 && url != null)
