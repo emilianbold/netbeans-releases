@@ -65,8 +65,18 @@ public final class StandardLogger extends AntLogger {
         public SessionData() {}
     }
     
+    /** used only for unit testing */
+    private final long mockTotalTime;
+    
     /** Default constructor for lookup. */
-    public StandardLogger() {}
+    public StandardLogger() {
+        mockTotalTime = 0L;
+    }
+    
+    /** used only for unit testing */
+    StandardLogger(long mockTotalTime) {
+        this.mockTotalTime = mockTotalTime;
+    }
     
     public boolean interestedInSession(AntSession session) {
         return true;
@@ -119,11 +129,11 @@ public final class StandardLogger extends AntLogger {
         event.consume();
     }
 
-    private static void deliverBlockOfTextAsErrors(String lines, AntEvent originalEvent) {
-        StringTokenizer tok = new StringTokenizer(lines, "\n"); // NOI18N
+    private static void deliverBlockOfTextAsLines(String lines, AntEvent originalEvent, int level) {
+        StringTokenizer tok = new StringTokenizer(lines, "\r\n"); // NOI18N
         while (tok.hasMoreTokens()) {
             String line = tok.nextToken();
-            originalEvent.getSession().deliverMessageLogged(originalEvent, line, AntEvent.LOG_ERR);
+            originalEvent.getSession().deliverMessageLogged(originalEvent, line, level);
         }
     }
     
@@ -132,7 +142,7 @@ public final class StandardLogger extends AntLogger {
         PrintWriter pw = new PrintWriter(sw);
         t.printStackTrace(pw);
         pw.flush();
-        deliverBlockOfTextAsErrors(sw.toString(), originalEvent);
+        deliverBlockOfTextAsLines(sw.toString(), originalEvent, AntEvent.LOG_ERR);
     }
     
     public void buildStarted(AntEvent event) {
@@ -152,6 +162,9 @@ public final class StandardLogger extends AntLogger {
         AntSession session = event.getSession();
         Throwable t = event.getException();
         long time = System.currentTimeMillis() - getSessionData(session).startTime; // #10305
+        if (mockTotalTime != 0L) {
+            time = mockTotalTime;
+        }
         if (t == null) {
             session.println(formatMessageWithTime("FMT_finished_target_printed", time), false, null);
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StandardLogger.class, "FMT_finished_target_status", session.getDisplayName()));
@@ -164,7 +177,7 @@ public final class StandardLogger extends AntLogger {
                     // which produces a BE whose toString is the location + message.
                     // But send to other loggers since they may wish to suppress such an error.
                     String msg = t.toString();
-                    deliverBlockOfTextAsErrors(msg, event);
+                    deliverBlockOfTextAsLines(msg, event, AntEvent.LOG_ERR);
                 } else if (!(t instanceof ThreadDeath) || event.getSession().getVerbosity() >= AntEvent.LOG_VERBOSE) {
                     // ThreadDeath can be thrown when killing an Ant process, so don't print it normally
                     deliverStackTrace(t, event);
@@ -207,10 +220,19 @@ public final class StandardLogger extends AntLogger {
         if (event.isConsumed()) {
             return;
         }
+        event.consume();
         AntSession session = event.getSession();
         String line = event.getMessage();
-        // XXX should perhaps detect messages with embedded newlines and deliverBlockOfTextAsErrors or similar
         if (LOGGABLE) ERR.log("Received message: " + line);
+        if (line.indexOf('\n') != -1) {
+            // Multiline message. Should be split into blocks and redelivered,
+            // to allow other loggers (e.g. JavaAntLogger) to process individual
+            // lines (e.g. stack traces). Note that other loggers are still capable
+            // of handling the original multiline message specially. Note also that
+            // only messages at or above the session verbosity will be split.
+            deliverBlockOfTextAsLines(line, event, event.getLogLevel());
+            return;
+        }
         Matcher m = CARET_SHOWING_COLUMN.matcher(line);
         if (m.matches()) {
             // #37358: adjust the column number of the last hyperlink accordingly.
@@ -221,7 +243,6 @@ public final class StandardLogger extends AntLogger {
                 data.lastHyperlink.setColumn1(m.group(1).length() + 1);
                 data.lastHyperlink = null;
                 // Don't print the actual caret line, just noise.
-                event.consume();
                 return;
             }
         }
@@ -229,9 +250,8 @@ public final class StandardLogger extends AntLogger {
         if (hyperlink instanceof Hyperlink) {
             getSessionData(session).lastHyperlink = (Hyperlink) hyperlink;
         }
-        // XXX should translate tabs to spaces here as a safety measure
+        // XXX should translate tabs to spaces here as a safety measure (esp. since output window messes it up...)
         event.getSession().println(line, event.getLogLevel() <= AntEvent.LOG_WARN, hyperlink);
-        event.consume();
     }
     
     public void taskFinished(AntEvent event) {
