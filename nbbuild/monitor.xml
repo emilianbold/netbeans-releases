@@ -29,6 +29,7 @@ To implement:
 - standalone usage checker for library JARs (all classes must resolvable) (or part of openide test suite)
 - nbrescurr: where nbres: suffices
 - use of org.netbeans.core from modules (except apisupport to reload, autoupdate, maybe projects)
+- System.getProperty("java.version").startsWith(...) [cf. #16813]
 -->
 
 <project name="Source Monitor" default="all" basedir=".">
