@@ -908,6 +908,11 @@ public class XMLDataObject extends MultiDataObject {
         
         private void message (final String level, final org.xml.sax.SAXParseException e) {
             
+            ErrorManager em = ErrorManager.getDefault().getInstance("org.openide.loaders.XMLDataObject"); // NOI18N
+            if (!em.isLoggable(ErrorManager.INFORMATIONAL)) {
+                return;
+            }
+            
             final String msg = NbBundle.getMessage(
                 XMLDataObject.class,
                 "PROP_XmlMessage",  //NOI18N
@@ -920,7 +925,7 @@ public class XMLDataObject extends MultiDataObject {
                 }
             );
                 
-            ErrorManager.getDefault().log(msg);
+            em.log(msg);
         }
 
         public void error (org.xml.sax.SAXParseException e) {
