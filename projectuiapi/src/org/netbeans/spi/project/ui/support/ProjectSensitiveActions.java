@@ -36,7 +36,7 @@ public class ProjectSensitiveActions {
      * @param namePattern Pattern which should be used for determining the Action's 
      *        name. It takes two parameters {0} - number of selected projects
      *        {1} - name of the first project.  
-     * @param icon Icon of the action
+     * @param icon icon of the action (or null)
      */    
     public static Action projectCommandAction( String command, String namePattern, Icon icon ) {
         return Utilities.getActionsFactory().projectCommandAction( command, namePattern, icon );
