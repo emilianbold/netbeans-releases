@@ -31,6 +31,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Actions;
 import org.openide.awt.MouseUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -158,7 +159,9 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
         okButton.setEnabled (false);
         
         DialogDescriptor desc = new DialogDescriptor (panel,
-                action == null ? NbBundle.getMessage (NoMainProjectWarning.class, "CTL_NoMainProjectWarning_Title") : action, // NOI18N
+                action == null ?
+                    NbBundle.getMessage(NoMainProjectWarning.class, "CTL_NoMainProjectWarning_Title") :
+                    Actions.cutAmpersand(action),
             true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
         dlg.setVisible (true);
