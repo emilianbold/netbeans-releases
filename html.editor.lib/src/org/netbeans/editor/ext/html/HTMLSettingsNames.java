@@ -29,4 +29,6 @@ public class HTMLSettingsNames extends SettingsNames {
      */
     public static final String COMPLETION_LOWER_CASE = "completion-lower-case"; // NOI18N
     
+    public static final String CODE_FOLDING_UPDATE_TIMEOUT = "code-folding-update-interval"; //NOI18N
+    
 }

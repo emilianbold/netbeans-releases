@@ -26,4 +26,6 @@ public class HTMLSettingsDefaults extends ExtSettingsDefaults {
     
     // lower case of HTML code completion
     public static final Boolean defaultCompletionLowerCase = Boolean.TRUE;    
+    
+    public static final Integer defaultCodeFoldingUpdateInterval = new Integer(2000); //ms
 }

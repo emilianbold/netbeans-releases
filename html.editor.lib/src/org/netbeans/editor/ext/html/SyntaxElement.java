@@ -21,8 +21,7 @@ import javax.swing.text.*;
 
 import org.netbeans.editor.ext.*;
 
-/** SyntaxElement is class internal to HTML Completion engine, it is used
- * during the analysis of the HTML code.
+/**This class is used during the analysis of the HTML code.
  *
  * It is an element of the dynamically created chain of other SyntaxElements.
  * The access to it is done through the HTMLSyntaxSupport, which also takes
@@ -31,7 +30,7 @@ import org.netbeans.editor.ext.*;
  * @author  Petr Nejedly
  * @version 1.0
  */
-class SyntaxElement {
+public class SyntaxElement {
     
     public static final int TYPE_COMMENT = 0;
     public static final int TYPE_DECLARATION = 1;
