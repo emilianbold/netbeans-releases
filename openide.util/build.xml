@@ -99,7 +99,9 @@ Microsystems, Inc. All Rights Reserved.
   
 
   <target name="clean">
-    <delete dir="src/org/openide" />
+    <delete dir="src/org/openide/resources" />
+    <delete dir="src/org/openide/util" />
+    <delete dir="src/org/openide/xml" />
     <delete >
       <fileset dir="src" >
         <include name="**/*.class" />
