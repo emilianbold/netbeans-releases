@@ -182,7 +182,6 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
         add(contentField, gridBagConstraints);
 
         fillPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        fillPanel.setName("null");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
