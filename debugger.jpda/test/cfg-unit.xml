@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="java unit test config">
 
-    <testbag testattribs="stable" executor="unit-executor" name="Debugger JPDA API">
+    <testbag testattribs="unstable" executor="unit-executor" name="Debugger JPDA API">
         <testset dir="unit/src">
             <patternset>
 <!--                <include name="org/netbeans/api/debugger/jpda/Test.class"/>-->
