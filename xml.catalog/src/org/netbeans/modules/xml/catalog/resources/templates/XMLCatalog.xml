@@ -13,6 +13,12 @@
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">                
 
     <!-- TODO fill real entries instead of sample one. -->
-    <public publicId="-//Company//Entity ID//EN" uri="file:/path/entity"/>
-
+    <public publicId="-//Company//Entity ID//EN" uri="file:/path/entity.dtd"/>
+    
+    <!-- TODO: for XML schema it is recommended to use both <public> and <system> elements
+         to specify the schema location, e.g : -->
+    <!--
+    <public publicId="http://org.company/xml/ns/entity.xsd" uri="file:/path/entity.xsd"/>
+    <system systemId="http://org.company/xml/ns/entity.xsd" uri="file:/path/entity.xsd"/>
+    -->
 </catalog>
