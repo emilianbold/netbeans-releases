@@ -442,12 +442,16 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
     /** Inner class for opening at a given key. */
     public class PropertiesOpenAt implements OpenCookie {
 
+        /** Entry the key belongs to. */
+        private PropertiesFileEntry entry;
+        
         /** Key where to open at. */
         private String key;
 
         
         /** Construcor. */
-        PropertiesOpenAt(String key) {
+        PropertiesOpenAt(PropertiesFileEntry entry, String key) {
+            this.entry = entry;
             this.key   = key;
         }
 
@@ -461,17 +465,37 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         public void open() {
             // Instead of PropertiesOpen.super.open() so we get reference to TopComponent.
             // Note: It is strange for me that calling PropetiesOpen.this.openCloneableTopComponent throw s exception at run-time.
-            PropertiesCloneableTopComponent editor = (PropertiesCloneableTopComponent)PropertiesOpen.super.openCloneableTopComponent();
+            final PropertiesCloneableTopComponent editor = (PropertiesCloneableTopComponent)PropertiesOpen.super.openCloneableTopComponent();
             editor.requestFocus();
             
             BundleStructure bs = propDataObject.getBundleStructure();
-            // find the entry
-            int entryIndex = bs.getEntryIndexByFileName(propDataObject.getPrimaryEntry().getFile().getName());
+            // Find indexes.
+            int entryIndex = bs.getEntryIndexByFileName(entry.getFile().getName());
             int rowIndex   = bs.getKeyIndexByName(key);
+            
             if ((entryIndex != -1) && (rowIndex != -1)) {
-                editor.editCellAt(rowIndex, entryIndex + 1);
+                final int row = rowIndex;
+                final int column = entryIndex + 1;
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        JTable table = ((BundleEditPanel)editor.getComponent(0)).getTable();
+                        // Autoscroll to cell if possible and necessary.
+                        if (table.getAutoscrolls()) { 
+                            Rectangle cellRect = table.getCellRect(row, column, false);
+                            if (cellRect != null) {
+                                table.scrollRectToVisible(cellRect);
+                            }
+                        }
+
+                        // Update selection & edit.
+                        table.getColumnModel().getSelectionModel().setSelectionInterval(row, column);
+                        table.getSelectionModel().setSelectionInterval(row, column);
+
+                        table.editCellAt(row, column);
+                    }
+                });
             }
-            editor.requestFocus();
         }
     } // End of inner class PropertiesOpenAt.
 
@@ -646,7 +670,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
          * @param row Row index of cell to edit. 
          * @param column Column index of cell to edit. 
          */
-        public void editCellAt(final int row,final int column) {
+/*        public void editCellAt(final int row,final int column) {
             SwingUtilities.invokeLater(
                 new Runnable() {
                     public void run() {
@@ -662,12 +686,11 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
                         table.getColumnModel().getSelectionModel().setSelectionInterval(row, column);
                         table.getSelectionModel().setSelectionInterval(row, column);
 
-                        ((BundleEditPanel)getComponent(0)).stopEditing();
                         table.editCellAt(row, column);
                     }
                 }
             );
-        }
+        }*/
 
         /** Inits the subcomponents. Sets layout for this top component and adds <code>BundleEditPanel</code> to it. 
          * @see BundleEditPanel */

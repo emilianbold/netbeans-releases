@@ -15,37 +15,34 @@
 package org.netbeans.modules.properties;
 
 
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.datatransfer.*;
-import java.beans.*;
-import java.io.*;
+import java.beans.PropertyChangeEvent;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
 
-import org.openide.util.datatransfer.*;
 import org.openide.actions.*;
 import org.openide.cookies.SaveCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.ViewCookie;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.*;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 
-/** Standard node representing a key-value-comment item in the properties file.
-*
-* @author Petr Jiricka
-*/
+/** 
+ * Node representing a key-value-comment item in one .properties file.
+ * @author Petr Jiricka
+ */
 public class KeyNode extends AbstractNode {
 
     /** Structure on top of which this element lives. */
-    private PropertiesStructure struct;
+    private PropertiesStructure propStructure;
     
     /** Key for the element. */
     private String itemKey;
@@ -62,11 +59,11 @@ public class KeyNode extends AbstractNode {
     * @param entry entry to work with
     * @param ch children container for the node
     */
-    public KeyNode (PropertiesStructure struct, String itemKey) {
-        super (Children.LEAF);
-        this.struct = struct;
+    public KeyNode (PropertiesStructure propStructure, String itemKey) {
+        super(Children.LEAF);
+        this.propStructure = propStructure;
         this.itemKey = itemKey;
-        super.setName (UtilConvert.unicodesToChars(itemKey));
+        super.setName(UtilConvert.unicodesToChars(itemKey));
         setDefaultAction(SystemAction.get(OpenAction.class));
         setActions(
             new SystemAction[] {
@@ -87,17 +84,17 @@ public class KeyNode extends AbstractNode {
         setIconBase (ITEMS_ICON_BASE);
 
         // edit as a viewcookie
-        PropertiesDataObject pdo = ((PropertiesDataObject)struct.getParent().getEntry().getDataObject());
+        PropertiesDataObject pdo = ((PropertiesDataObject)propStructure.getParent().getEntry().getDataObject());
 
-        getCookieSet().add(pdo.getOpenSupport().new PropertiesOpenAt(itemKey));
-        getCookieSet().add(struct.getParent().getEntry().getPropertiesEditor().new PropertiesEditAt(itemKey));
+        getCookieSet().add(pdo.getOpenSupport().new PropertiesOpenAt(propStructure.getParent().getEntry(), itemKey));
+        getCookieSet().add(propStructure.getParent().getEntry().getPropertiesEditor().new PropertiesEditAt(itemKey));
     }
 
     /** Get the represented item.
      * @return the item
     */
     public Element.ItemElem getItem() {
-        Element.ItemElem item = struct.getItem(itemKey);
+        Element.ItemElem item = propStructure.getItem(itemKey);
         /*if (item == null)
           // PENDING   */
         return item;
@@ -114,7 +111,7 @@ public class KeyNode extends AbstractNode {
     /* Destroyes the node
     */
     public void destroy () throws IOException {
-        struct.deleteItem(itemKey);
+        propStructure.deleteItem(itemKey);
         super.destroy ();
     }
 
@@ -143,23 +140,24 @@ public class KeyNode extends AbstractNode {
     * @param name new name for the object
     * @exception IllegalArgumentException if the rename failed
     */
-    public void setName (String name) {
+    public void setName(String name) {
+        // The new name is same -> do nothing.
+        if(name.equals(UtilConvert.unicodesToChars(itemKey)))
+            return;
+        
         String oldKey = itemKey;
         name = UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(name));
         itemKey = name;
-        if (!struct.renameItem(oldKey, name)) {
+        if (!propStructure.renameItem(oldKey, name)) {
             itemKey = oldKey;
             NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                                               NbBundle.getBundle(KeyNode.class).getString("MSG_CannotRenameKey"),
-                                               NotifyDescriptor.ERROR_MESSAGE);
+                NbBundle.getBundle(KeyNode.class).getString("MSG_CannotRenameKey"),
+                NotifyDescriptor.ERROR_MESSAGE
+            );
             TopManager.getDefault().notify(msg);
             return;
         }
         updateCookieNames();
-        // regenerate all children
-        /*    Node par = getParentNode();
-            PropertiesFileEntry.PropKeysChildren ch = (PropertiesFileEntry.PropKeysChildren)par.getChildren();
-            ch.mySetKeys();*/
     }
 
 
@@ -212,10 +210,10 @@ public class KeyNode extends AbstractNode {
                     if (!(val instanceof String))
                         throw new IllegalArgumentException();
 
-                    KeyNode.this.setName ((String)val);
+                    KeyNode.this.setName((String)val);
                 }
             };
-        p.setName (Element.ItemElem.PROP_ITEM_KEY);
+        p.setName(Element.ItemElem.PROP_ITEM_KEY);
         ss.put (p);
 
         // Value property
@@ -237,7 +235,7 @@ public class KeyNode extends AbstractNode {
                     getItem().setValue((String)val);
                 }
             };
-        p.setName (Element.ItemElem.PROP_ITEM_VALUE);
+        p.setName(Element.ItemElem.PROP_ITEM_VALUE);
         ss.put (p);
 
         // Comment property
@@ -259,26 +257,26 @@ public class KeyNode extends AbstractNode {
                     getItem().setComment((String)val);
                 }
             };
-        p.setName (Element.ItemElem.PROP_ITEM_COMMENT);
+        p.setName(Element.ItemElem.PROP_ITEM_COMMENT);
         ss.put (p);
 
         return s;
     }
 
     /** Returns all the item in addition to "normal" cookies. */
-    public Node.Cookie getCookie(Class cls) {
-        if (cls.isInstance(getItem())) return getItem();
-        if (cls.equals(SaveCookie.class)) return struct.getParent().getEntry().getCookie(cls);
-        return super.getCookie(cls);
+    public Node.Cookie getCookie(Class clazz) {
+        if (clazz.isInstance(getItem())) return getItem();
+        if (clazz.equals(SaveCookie.class)) return propStructure.getParent().getEntry().getCookie(clazz);
+        return super.getCookie(clazz);
     }
 
     /** Support for firing property change.
-    * @param ev event describing the change
+    * @param evt event describing the change
     */
-    void fireChange (PropertyChangeEvent ev) {
-        firePropertyChange (ev.getPropertyName (), ev.getOldValue (), ev.getNewValue ());
-        if (ev.getPropertyName ().equals (DataObject.PROP_NAME)) {
-            super.setName (itemKey);
+   void fireChange(PropertyChangeEvent evt) {
+        firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+        if(evt.getPropertyName().equals(DataObject.PROP_NAME)) {
+            super.setName(itemKey);
             return;
         }
     }
