@@ -784,7 +784,7 @@ public class WebProjectProperties {
                 
                 //file inside library is broken
                 if (root == null)
-                    return;
+                    continue;
                 
                 if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
                     root = FileUtil.getArchiveFile (root);
