@@ -5,6 +5,7 @@
  */
 package org.netbeans.i18n.jelly;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.util.NameComponentChooser;
 
@@ -18,7 +19,7 @@ public class NewBundleOperator extends JDialogOperator {
     /** Creates new NewBundle that can handle it.
      */
     public NewBundleOperator() {
-        super(new NameComponentChooser("dialog0"));
+        super(Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_Template_Dialog_Title"));
     }
     
     private JLabelOperator _lblFilesystem;
@@ -39,7 +40,7 @@ public class NewBundleOperator extends JDialogOperator {
      */
     public JLabelOperator lblFilesystem() {
         if (_lblFilesystem==null) {
-            _lblFilesystem = new JLabelOperator(this, " Filesystem:");
+            _lblFilesystem = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_Template_Dialog_RootTitle"));
         }
         return _lblFilesystem;
     }
@@ -69,7 +70,7 @@ public class NewBundleOperator extends JDialogOperator {
      */
     public JLabelOperator lblObjectName() {
         if (_lblObjectName==null) {
-            _lblObjectName = new JLabelOperator(this, "Object  Name");
+            _lblObjectName = new JLabelOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "LBL_TemplateName"));
         }
         return _lblObjectName;
     }
@@ -89,7 +90,7 @@ public class NewBundleOperator extends JDialogOperator {
      */
     public JButtonOperator btOK() {
         if (_btOK==null) {
-            _btOK = new JButtonOperator(this, "OK");
+            _btOK = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_OKButton"));
         }
         return _btOK;
     }
@@ -99,7 +100,7 @@ public class NewBundleOperator extends JDialogOperator {
      */
     public JButtonOperator btCancel() {
         if (_btCancel==null) {
-            _btCancel = new JButtonOperator(this, "Cancel");
+            _btCancel = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.i18n.Bundle", "CTL_CancelButton"));
         }
         return _btCancel;
     }
@@ -147,7 +148,7 @@ public class NewBundleOperator extends JDialogOperator {
     /** clicks on "OK" ButtonBarButton
      */
     public void ok() {
-        btOK().push();
+        btOK().pushNoBlock();
     }
     
     /** clicks on "Cancel" ButtonBarButton
