@@ -759,6 +759,7 @@ SystemFileSystem
 
   <!-- default workspaces, frames and their layout defined by core-->
   <folder name="windows">
+    <attr name="SystemFileSystem.layer" stringvalue="project"/>
     <file name="windowmanager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
     <folder name="windowmanager">
       <attr name="Editing/Running" boolvalue="true" />
@@ -820,19 +821,14 @@ SystemFileSystem
     </folder>
     <folder name="components">
       <file name="filesystems.settings" url="components/filesystems.settings" >
-        <attr name="global-layer" boolvalue="false" />
       </file>
       <file name="runtime.settings" url="components/runtime.settings" >
-        <attr name="global-layer" boolvalue="false" />
       </file>
       <file name="output.settings" url="components/output.settings" >
-        <attr name="global-layer" boolvalue="false" />
       </file>
       <file name="execution.settings" url="components/execution.settings" >
-        <attr name="global-layer" boolvalue="false" />
       </file>
       <file name="properties.settings" url="components/properties.settings" >
-        <attr name="global-layer" boolvalue="false" />
       </file>
     </folder>
 
