@@ -94,9 +94,9 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Menu">
         <folder name="File">
-            <attr name="org-netbeans-core-actions-OpenExplorerAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-core-actions-UnmountFSAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
-            <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true"/>
         </folder>
         <folder name="Edit">
             <attr name="org-openide-actions-GotoAction.instance/sep-before-reposearch[javax-swing-JSeparator].instance" boolvalue="true"/>
