@@ -119,11 +119,11 @@ public class SchemaPanel extends JPanel {
             idx = items.indexOf(schema.toLowerCase());
         if (idx == -1)
             idx = items.indexOf(schema.toUpperCase());
-        if (idx != -1)
+        if (idx != -1) {
             schemas.setSelectedIndex(idx);
-        if (idx == 1)
             // schema has been found in the items
             return true;
+        }
         // schema has not been found in the items then index is set at first item
         return false;
     }
