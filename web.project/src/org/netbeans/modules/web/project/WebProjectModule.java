@@ -63,18 +63,17 @@ public class WebProjectModule extends ModuleInstall {
                             EditableProperties ep = PropertyUtils.getGlobalProperties();
                             boolean changed = false;
                             // JSPC classpath
-                            StringBuffer sb = new StringBuffer();
+                            StringBuffer sb = new StringBuffer(450);
                             // Ant is needed in classpath if we are forking JspC into another process
-                            sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false));
-                            sb.append(":${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}"); // NOI18N
-                            sb.append(":"); // NOI18N
-                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.5.7.jar", null, false));
-                            sb.append(":"); // NOI18N
-                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.5.7.jar", null, false));
-                            sb.append(":"); // NOI18N
-                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false));
-                            sb.append(":"); // NOI18N
-                            sb.append(InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false));
+                            sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false))
+                            .append(":${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}:") // NOI18N
+                            .append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.5.7.jar", null, false))
+                            .append(":") // NOI18N
+                            .append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.5.7.jar", null, false))
+                            .append(":") // NOI18N
+                            .append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false))
+                            .append(":") // NOI18N
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false));
                             String jspc_cp_old = ep.getProperty(JSPC_CLASSPATH);
                             String jspc_cp = sb.toString();
                             if (jspc_cp_old == null || !jspc_cp_old.equals (jspc_cp)) {
