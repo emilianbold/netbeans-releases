@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,6 +38,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -54,13 +56,12 @@ import org.openide.xml.XMLUtil;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-
-// XXX might work better to look for existing <javac> etc. from build.xml & copy w/ mods...
 
 /**
  * Handles providing implementations of some Java-oriented IDE-specific actions.
@@ -69,14 +70,33 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 final class JavaActions implements ActionProvider {
     
-    private static final String NS_GENERAL = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
+    static final String NS_GENERAL = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
+    /* Too problematic for importing <classpath> from existing <java>, since Ant would want NS on that too (oddly):
+    private static final String NS_JPDA = "antlib:org.netbeans.modules.debugger.jpda.ant"; // NOI18N
+     */
     
     private static final String[] ACTIONS = {
         ActionProvider.COMMAND_COMPILE_SINGLE,
+        ActionProvider.COMMAND_DEBUG,
         // XXX more
     };
     
-    static final String SCRIPT_PATH = "nbproject/ide-targets.xml"; // NOI18N
+    /**
+     * Script to hold file-sensitive generated targets like compile.single.
+     * (Or for generated targets for debug which cannot reuse any existing target body.)
+     * These pick up at least project.dir from project.xml and the entire
+     * target body is fixed by the IDE, except for some strings determined
+     * by information from project.xml like the classpath. The basedir
+     * is set to the project directory so that properties match their
+     * semantics in project.xml.
+     */
+    static final String FILE_SCRIPT_PATH = "nbproject/ide-file-targets.xml"; // NOI18N
+    /**
+     * Script to hold non-file-sensitive generated targets like debug.
+     * These import the original build script and share its basedir, so that
+     * properties match the semantics of build.xml.
+     */
+    static final String GENERAL_SCRIPT_PATH = "nbproject/ide-targets.xml"; // NOI18N
     
     private final Project project;
     private final AntProjectHelper helper;
@@ -97,6 +117,8 @@ final class JavaActions implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         if (command.equals(ActionProvider.COMMAND_COMPILE_SINGLE)) {
             return findPackageRoot(context) != null;
+        } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
+            return true;
         } else {
             throw new IllegalArgumentException(command);
         }
@@ -109,6 +131,8 @@ final class JavaActions implements ActionProvider {
                     try {
                         if (command.equals(ActionProvider.COMMAND_COMPILE_SINGLE)) {
                             handleCompileSingle(context);
+                        } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
+                            handleDebug();
                         } else {
                             throw new IllegalArgumentException(command);
                         }
@@ -125,12 +149,13 @@ final class JavaActions implements ActionProvider {
     /**
      * Display an alert asking the user whether to really generate a target.
      * @param commandDisplayName the display name of the action to be bound
+     * @param scriptPath the path that to the script that will be generated or written to
      * @return true if IDE should proceed
      */
-    private boolean alert(String commandDisplayName) {
+    private boolean alert(String commandDisplayName, String scriptPath) {
         String projectDisplayName = ProjectUtils.getInformation(project).getDisplayName();
         String title = NbBundle.getMessage(JavaActions.class, "TITLE_generate_target_dialog", commandDisplayName, projectDisplayName);
-        String body = NbBundle.getMessage(JavaActions.class, "TEXT_generate_target_dialog", commandDisplayName, SCRIPT_PATH);
+        String body = NbBundle.getMessage(JavaActions.class, "TEXT_generate_target_dialog", commandDisplayName, scriptPath);
         NotifyDescriptor d = new NotifyDescriptor.Message(body, NotifyDescriptor.QUESTION_MESSAGE);
         d.setTitle(title);
         d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
@@ -139,25 +164,33 @@ final class JavaActions implements ActionProvider {
         d.setOptions(new Object[] {generate, NotifyDescriptor.CANCEL_OPTION});
         return DialogDisplayer.getDefault().notify(d) == generate;
     }
-    
+
+    /**
+     * Implementation of Compile File.
+     */
     private void handleCompileSingle(Lookup context) throws IOException, SAXException {
-        if (!alert(NbBundle.getMessage(JavaActions.class, "ACTION_compile.single"))) {
+        // XXX could also try copy + mod from build.xml? but less likely to have <compile> in an accessible place...
+        if (!alert(NbBundle.getMessage(JavaActions.class, "ACTION_compile.single"), FILE_SCRIPT_PATH)) {
             return;
         }
-        Document doc = readCustomScript();
+        Document doc = readCustomScript(FILE_SCRIPT_PATH);
+        ensurePropertiesCopied(doc.getDocumentElement());
         Comment comm = doc.createComment(" " + NbBundle.getMessage(JavaActions.class, "COMMENT_edit_target") + " ");
+        doc.getDocumentElement().appendChild(comm);
+        comm = doc.createComment(" " + NbBundle.getMessage(JavaActions.class, "COMMENT_more_info_x.single") + " ");
         doc.getDocumentElement().appendChild(comm);
         String propertyName = "files"; // NOI18N
         AntLocation root = findPackageRoot(context);
         assert root != null : context;
         Element target = createCompileSingleTarget(doc, context, propertyName, root);
         doc.getDocumentElement().appendChild(target);
-        writeCustomScript(doc);
-        // XXX support also folders (i.e. just files w/o ext??):
+        writeCustomScript(doc, FILE_SCRIPT_PATH);
+        // XXX #53622: support also folders (i.e. just files w/o ext??):
         String pattern = "\\.java$"; // NOI18N
         String targetName = target.getAttribute("name");
-        addBinding(ActionProvider.COMMAND_COMPILE_SINGLE, targetName, propertyName, root.virtual, pattern, "relative-path", ","); // NOI18N
-        jumpTo(targetName);
+        addBinding(ActionProvider.COMMAND_COMPILE_SINGLE, FILE_SCRIPT_PATH, targetName, propertyName, root.virtual, pattern, "relative-path", ","); // NOI18N
+        jumpToBinding(ActionProvider.COMMAND_COMPILE_SINGLE);
+        jumpToBuildScript(FILE_SCRIPT_PATH, targetName);
     }
     
     Element createCompileSingleTarget(Document doc, Lookup context, String propertyName, AntLocation root) {
@@ -170,16 +203,16 @@ final class JavaActions implements ActionProvider {
         fail.appendChild(doc.createTextNode(NbBundle.getMessage(JavaActions.class, "COMMENT_must_set_property", propertyName)));
         target.appendChild(fail);
         String classesDir = findClassesOutputDir(root.virtual);
-        if (classesDir != null) {
-            Element mkdir = doc.createElement("mkdir"); // NOI18N
-            mkdir.setAttribute("dir", classesDir); // NOI18N
-            target.appendChild(mkdir);
+        if (classesDir == null) {
+            target.appendChild(doc.createComment(" " + NbBundle.getMessage(JavaActions.class, "COMMENT_must_set_build_classes_dir") + " "));
+            classesDir = "${build.classes.dir}"; // NOI18N
         }
+        Element mkdir = doc.createElement("mkdir"); // NOI18N
+        mkdir.setAttribute("dir", classesDir); // NOI18N
+        target.appendChild(mkdir);
         Element javac = doc.createElement("javac"); // NOI18N
         javac.setAttribute("srcdir", root.virtual); // NOI18N
-        if (classesDir != null) {
-            javac.setAttribute("destdir", classesDir); // NOI18N
-        }
+        javac.setAttribute("destdir", classesDir); // NOI18N
         javac.setAttribute("includes", "${" + propertyName + "}"); // NOI18N
         String sourceLevel = findSourceLevel(root.virtual);
         if (sourceLevel != null) {
@@ -195,12 +228,130 @@ final class JavaActions implements ActionProvider {
         return target;
     }
     
+    private void handleDebug() throws IOException, SAXException {
+        if (!alert(NbBundle.getMessage(JavaActions.class, "ACTION_debug"), GENERAL_SCRIPT_PATH)) {
+            return;
+        }
+        String[] bindings = findCommandBinding(ActionProvider.COMMAND_RUN);
+        Element task = null;
+        Element origTarget = null;
+        if (bindings != null && bindings.length <= 2) {
+            origTarget = findExistingBuildTarget(ActionProvider.COMMAND_RUN);
+            assert origTarget != null;
+            task = targetUsesTaskExactlyOnce(origTarget, "java"); // NOI18N
+        }
+        String generatedTargetName = "debug-nb"; // NOI18N
+        String generatedScriptPath;
+        Document doc;
+        Element generatedTarget;
+        if (task != null) {
+            // We can copy the original run target with some modifications.
+            generatedScriptPath = GENERAL_SCRIPT_PATH;
+            doc = readCustomScript(GENERAL_SCRIPT_PATH);
+            ensureImports(doc.getDocumentElement(), bindings[0]);
+            generatedTarget = createDebugTargetFromTemplate(generatedTargetName, origTarget, task, doc);
+        } else {
+            // No info, need to generate a dummy debug target.
+            generatedScriptPath = FILE_SCRIPT_PATH;
+            doc = readCustomScript(FILE_SCRIPT_PATH);
+            ensurePropertiesCopied(doc.getDocumentElement());
+            generatedTarget = createDebugTargetFromScratch(generatedTargetName, doc);
+        }
+        Comment comm = doc.createComment(" " + NbBundle.getMessage(JavaActions.class, "COMMENT_edit_target") + " ");
+        doc.getDocumentElement().appendChild(comm);
+        comm = doc.createComment(" " + NbBundle.getMessage(JavaActions.class, "COMMENT_more_info_debug") + " ");
+        doc.getDocumentElement().appendChild(comm);
+        doc.getDocumentElement().appendChild(generatedTarget);
+        writeCustomScript(doc, generatedScriptPath);
+        addBinding(ActionProvider.COMMAND_DEBUG, generatedScriptPath, generatedTargetName, null, null, null, null, null);
+        jumpToBinding(ActionProvider.COMMAND_DEBUG);
+        jumpToBuildScript(generatedScriptPath, generatedTargetName);
+    }
+    
+    private Element createNbjpdastart(Document ownerDocument) {
+        Element nbjpdastart = ownerDocument.createElement("nbjpdastart"); // NOI18N
+        nbjpdastart.setAttribute("name", ProjectUtils.getInformation(project).getDisplayName()); // NOI18N
+        nbjpdastart.setAttribute("addressproperty", "jpda.address"); // NOI18N
+        nbjpdastart.setAttribute("transport", "dt_socket"); // NOI18N
+        return nbjpdastart;
+    }
+    
+    private static final String[] DEBUG_VM_ARGS = {
+        "-Xdebug", // NOI18N
+        "-Xnoagent", // NOI18N
+        "-Djava.compiler=none", // NOI18N
+        "-Xrunjdwp:transport=dt_socket,address=${jpda.address}", // NOI18N
+    };
+    private void addDebugVMArgs(Element java, Document ownerDocument) {
+        for (int i = 0; i < DEBUG_VM_ARGS.length; i++) {
+            Element jvmarg = ownerDocument.createElement("jvmarg"); // NOI18N
+            jvmarg.setAttribute("value", DEBUG_VM_ARGS[i]); // NOI18N
+            java.appendChild(jvmarg);
+        }
+    }
+    
+    Element createDebugTargetFromTemplate(String generatedTargetName, Element origTarget, Element origTask, Document ownerDocument) {
+        NodeList tasks = origTarget.getChildNodes();
+        int taskIndex = -1;
+        for (int i = 0; i < tasks.getLength(); i++) {
+            if (tasks.item(i) == origTask) {
+                taskIndex = i;
+                break;
+            }
+        }
+        assert taskIndex != -1;
+        Element target = (Element) ownerDocument.importNode(origTarget, true);
+        Element task = (Element) target.getChildNodes().item(taskIndex);
+        target.setAttribute("name", generatedTargetName); // NOI18N
+        Element nbjpdastart = createNbjpdastart(ownerDocument);
+        String textualCp = task.getAttribute("classpath"); // NOI18N
+        if (textualCp.length() > 0) {
+            Element classpath = ownerDocument.createElement("classpath"); // NOI18N
+            classpath.setAttribute("path", textualCp); // NOI18N
+            nbjpdastart.appendChild(classpath);
+        } else {
+            NodeList origClasspath = task.getElementsByTagName("classpath"); // NOI18N
+            if (origClasspath.getLength() == 1) {
+                Element classpath = (Element) ownerDocument.importNode(origClasspath.item(0), true);
+                nbjpdastart.appendChild(classpath);
+            }
+        }
+        target.insertBefore(nbjpdastart, task);
+        addDebugVMArgs(task, ownerDocument);
+        return target;
+    }
+    
+    Element createDebugTargetFromScratch(String generatedTargetName, Document ownerDocument) {
+        Element target = ownerDocument.createElement("target");
+        target.setAttribute("name", generatedTargetName); // NOI18N
+        Element path = ownerDocument.createElement("path"); // NOI18N
+        // XXX would be better to determine runtime CP from project.xml and put it here instead (if that is possible)...
+        path.setAttribute("id", "cp"); // NOI18N
+        path.appendChild(ownerDocument.createComment(" " + NbBundle.getMessage(JavaActions.class, "COMMENT_set_runtime_cp") + " "));
+        target.appendChild(path);
+        Element nbjpdastart = createNbjpdastart(ownerDocument);
+        Element classpath = ownerDocument.createElement("classpath"); // NOI18N
+        classpath.setAttribute("refid", "cp"); // NOI18N
+        nbjpdastart.appendChild(classpath);
+        target.appendChild(nbjpdastart);
+        target.appendChild(ownerDocument.createComment(" " + NbBundle.getMessage(JavaActions.class, "COMMENT_set_main_class") + " "));
+        Element java = ownerDocument.createElement("java"); // NOI18N
+        java.setAttribute("classname", "some.main.Class"); // NOI18N
+        classpath = ownerDocument.createElement("classpath"); // NOI18N
+        classpath.setAttribute("refid", "cp"); // NOI18N
+        java.appendChild(classpath);
+        addDebugVMArgs(java, ownerDocument);
+        target.appendChild(java);
+        return target;
+    }
+    
     /**
-     * Read {@link #SCRIPT_PATH} if it exists, else create a skeleton.
+     * Read a generated script if it exists, else create a skeleton.
+     * @param scriptPath e.g. {@link #FILE_SCRIPT_PATH} or {@link #GENERAL_SCRIPT_PATH}
      */
-    Document readCustomScript() throws IOException, SAXException {
+    Document readCustomScript(String scriptPath) throws IOException, SAXException {
         // XXX if there is TAX support for rewriting XML files, use that here...
-        FileObject script = helper.getProjectDirectory().getFileObject(SCRIPT_PATH);
+        FileObject script = helper.getProjectDirectory().getFileObject(scriptPath);
         if (script != null) {
             InputStream is = script.getInputStream();
             try {
@@ -211,28 +362,123 @@ final class JavaActions implements ActionProvider {
         } else {
             Document doc = XMLUtil.createDocument("project", /*XXX:"antlib:org.apache.tools.ant"*/null, null, null); // NOI18N
             Element root = doc.getDocumentElement();
-            root.setAttribute("basedir", /* ".." times count('/', SCRIPT_PATH) */".."); // NOI18N
             String projname = ProjectUtils.getInformation(project).getDisplayName();
             root.setAttribute("name", NbBundle.getMessage(JavaActions.class, "LBL_generated_script_name", projname));
-            String projectDir = evaluator.getProperty("project.dir"); // NOI18N
-            if (projectDir != null) {
-                // Need to define this in the script, too, or else external source roots will not work.
-                Element property = doc.createElement("property"); // NOI18N
-                property.setAttribute("name", "project.dir"); // NOI18N
-                property.setAttribute("location", projectDir); // NOI18N
-                root.appendChild(property);
-            }
             return doc;
         }
     }
     
     /**
-     * Write {@link #SCRIPT_PATH} with a new or modified document.
+     * Make sure that if the project defines ${project.dir} in project.xml that
+     * a custom build script also defines this property.
+     * Generally, copy any properties defined in project.xml to Ant syntax.
+     * Used for generated targets which essentially copy Ant fragments from project.xml
+     * (rather than the user's build.xml).
+     * Also sets the basedir to the (IDE) project directory.
+     * Idempotent, takes effect only once.
+     * Use with {@link #FILE_SCRIPT_PATH}.
+     * @param antProject XML of an Ant project (document element)
      */
-    void writeCustomScript(Document doc) throws IOException {
-        FileObject script = helper.getProjectDirectory().getFileObject(SCRIPT_PATH);
+    void ensurePropertiesCopied(Element antProject) {
+        if (antProject.getAttribute("basedir").length() > 0) {
+            // Do not do it twice to the same script.
+            return;
+        }
+        antProject.setAttribute("basedir", /* ".." times count('/', FILE_SCRIPT_PATH) */".."); // NOI18N
+        // Look for <properties> in project.xml and make corresponding definitions in the Ant script.
+        Element data = helper.getPrimaryConfigurationData(true);
+        Element properties = Util.findElement(data, "properties", NS_GENERAL);
+        if (properties != null) {
+            Iterator/*<Element>*/ propertiesIt = Util.findSubElements(properties).iterator();
+            while (propertiesIt.hasNext()) {
+                Element el = (Element) propertiesIt.next();
+                Element nue = antProject.getOwnerDocument().createElement("property"); // NOI18N
+                if (el.getLocalName().equals("property")) { // NOI18N
+                    String name = el.getAttribute("name"); // NOI18N
+                    assert name != null;
+                    String text = Util.findText(el);
+                    assert text != null;
+                    nue.setAttribute("name", name);
+                    nue.setAttribute("value", text);
+                } else if (el.getLocalName().equals("property-file")) { // NOI18N
+                    String text = Util.findText(el);
+                    assert text != null;
+                    nue.setAttribute("file", text);
+                } else {
+                    assert false : el;
+                }
+                antProject.appendChild(nue);
+            }
+        }
+    }
+    
+    /**
+     * Make sure that the custom build script imports the original build script
+     * and is using the same base dir.
+     * Used for generated targets which essentially copy Ant targets from build.xml.
+     * Use with {@link #GENERAL_SCRIPT_PATH}.
+     * Idempotent, takes effect only once.
+     * @param antProject XML of an Ant project (document element)
+     * @oaram origScriptPath Ant name of original build script's path
+     */
+    void ensureImports(Element antProject, String origScriptPath) throws IOException, SAXException {
+        if (antProject.getAttribute("basedir").length() > 0) {
+            // Do not do it twice to the same script.
+            return;
+        }
+        String origScriptPathEval = evaluator.evaluate(origScriptPath);
+        if (origScriptPathEval == null) {
+            // Can't do anything, forget it.
+            return;
+        }
+        String origScriptURI = helper.resolveFile(origScriptPathEval).toURI().toString();
+        Document origScriptDocument = XMLUtil.parse(new InputSource(origScriptURI), false, true, null, null);
+        String origBasedir = origScriptDocument.getDocumentElement().getAttribute("basedir"); // NOI18N
+        if (origBasedir.length() == 0) {
+            origBasedir = "."; // NOI18N
+        }
+        String basedir, importPath;
+        File origScript = new File(origScriptPathEval);
+        if (origScript.isAbsolute()) {
+            // Use full path.
+            importPath = origScriptPathEval;
+            if (new File(origBasedir).isAbsolute()) {
+                basedir = origBasedir;
+            } else {
+                basedir = PropertyUtils.resolveFile(origScript.getParentFile(), origBasedir).getAbsolutePath();
+            }
+        } else {
+            // Import relative to that path.
+            // Note that <import>'s path is always relative to the location of the importing script, regardless of the basedir.
+            String prefix = /* ".." times count('/', FILE_SCRIPT_PATH) */"../"; // NOI18N
+            importPath = prefix + origScriptPathEval;
+            if (new File(origBasedir).isAbsolute()) {
+                basedir = origBasedir;
+            } else {
+                int slash = origScriptPathEval.replace(File.separatorChar, '/').lastIndexOf('/');
+                if (slash == -1) {
+                    basedir = prefix + origBasedir;
+                } else {
+                    basedir = prefix + origScriptPathEval.substring(0, slash + 1) + origBasedir;
+                }
+                // Trim:
+                basedir = basedir.replaceAll("/\\.$", ""); // NOI18N
+            }
+        }
+        antProject.setAttribute("basedir", basedir); // NOI18N
+        Element importEl = antProject.getOwnerDocument().createElement("import"); // NOI18N
+        importEl.setAttribute("file", importPath); // NOI18N
+        antProject.appendChild(importEl);
+    }
+    
+    /**
+     * Write a script with a new or modified document.
+     * @param scriptPath e.g. {@link #FILE_SCRIPT_PATH} or {@link #GENERAL_SCRIPT_PATH}
+     */
+    void writeCustomScript(Document doc, String scriptPath) throws IOException {
+        FileObject script = helper.getProjectDirectory().getFileObject(scriptPath);
         if (script == null) {
-            script = FileUtil.createData(helper.getProjectDirectory(), SCRIPT_PATH);
+            script = FileUtil.createData(helper.getProjectDirectory(), scriptPath);
         }
         FileLock lock = script.lock();
         try {
@@ -314,7 +560,6 @@ final class JavaActions implements ActionProvider {
     static final class AntLocation {
         public final String virtual;
         public final FileObject physical;
-        // XXX should this also hold a Element compilationUnit (for source packages)? in a subclass? or similar info?
         public AntLocation(String virtual, FileObject physical) {
             this.virtual = virtual;
             this.physical = physical;
@@ -430,57 +675,74 @@ final class JavaActions implements ActionProvider {
     
     /**
      * Add an action binding to project.xml.
+     * If there is no required context, the action is also added to the context menu of the project node.
      * @param command the command name
-     * @param target the name of the target (in {@link #SCRIPT_PATH})
-     * @param propertyName a property name to hold the selection
+     * @param scriptPath the path to the generated script
+     * @param target the name of the target (in scriptPath)
+     * @param propertyName a property name to hold the selection (or null for no context, in which case remainder should be null)
      * @param dir the raw text to use for the directory name
      * @param pattern the regular expression to match, or null
      * @param format the format to use
      * @param separator the separator to use for multiple files, or null for single file only
      */
-    void addBinding(String command, String target, String propertyName, String dir, String pattern, String format, String separator) throws IOException {
+    void addBinding(String command, String scriptPath, String target, String propertyName, String dir, String pattern, String format, String separator) throws IOException {
         // XXX cannot use FreeformProjectGenerator since that is currently not a public support SPI from ant/freeform
         // XXX should this try to find an existing binding? probably not, since it is assumed that if there was one, we would never get here to begin with
         Element data = helper.getPrimaryConfigurationData(true);
         Element ideActions = Util.findElement(data, "ide-actions", NS_GENERAL); // NOI18N
         if (ideActions == null) {
-            // XXX probably won't happen, since generator produces it always
+            // Probably won't happen, since generator produces it always.
+            // Not trivial to just add it now, since order is significant in the schema. (FPG deals with these things.)
             return;
         }
         Document doc = data.getOwnerDocument();
         Element action = doc.createElementNS(NS_GENERAL, "action"); // NOI18N
         action.setAttribute("name", command); // NOI18N
         Element script = doc.createElementNS(NS_GENERAL, "script"); // NOI18N
-        script.appendChild(doc.createTextNode(SCRIPT_PATH));
+        script.appendChild(doc.createTextNode(scriptPath));
         action.appendChild(script);
         Element targetEl = doc.createElementNS(NS_GENERAL, "target"); // NOI18N
         targetEl.appendChild(doc.createTextNode(target));
         action.appendChild(targetEl);
-        Element context = doc.createElementNS(NS_GENERAL, "context"); // NOI18N
-        Element property = doc.createElementNS(NS_GENERAL, "property"); // NOI18N
-        property.appendChild(doc.createTextNode(propertyName));
-        context.appendChild(property);
-        Element folder = doc.createElementNS(NS_GENERAL, "folder"); // NOI18N
-        folder.appendChild(doc.createTextNode(dir));
-        context.appendChild(folder);
-        if (pattern != null) {
-            Element patternEl = doc.createElementNS(NS_GENERAL, "pattern"); // NOI18N
-            patternEl.appendChild(doc.createTextNode(pattern));
-            context.appendChild(patternEl);
-        }
-        Element formatEl = doc.createElementNS(NS_GENERAL, "format"); // NOI18N
-        formatEl.appendChild(doc.createTextNode(format));
-        context.appendChild(formatEl);
-        Element arity = doc.createElementNS(NS_GENERAL, "arity"); // NOI18N
-        if (separator != null) {
-            Element separatorEl = doc.createElementNS(NS_GENERAL, "separated-files"); // NOI18N
-            separatorEl.appendChild(doc.createTextNode(separator));
-            arity.appendChild(separatorEl);
+        if (propertyName != null) {
+            Element context = doc.createElementNS(NS_GENERAL, "context"); // NOI18N
+            Element property = doc.createElementNS(NS_GENERAL, "property"); // NOI18N
+            property.appendChild(doc.createTextNode(propertyName));
+            context.appendChild(property);
+            Element folder = doc.createElementNS(NS_GENERAL, "folder"); // NOI18N
+            folder.appendChild(doc.createTextNode(dir));
+            context.appendChild(folder);
+            if (pattern != null) {
+                Element patternEl = doc.createElementNS(NS_GENERAL, "pattern"); // NOI18N
+                patternEl.appendChild(doc.createTextNode(pattern));
+                context.appendChild(patternEl);
+            }
+            Element formatEl = doc.createElementNS(NS_GENERAL, "format"); // NOI18N
+            formatEl.appendChild(doc.createTextNode(format));
+            context.appendChild(formatEl);
+            Element arity = doc.createElementNS(NS_GENERAL, "arity"); // NOI18N
+            if (separator != null) {
+                Element separatorEl = doc.createElementNS(NS_GENERAL, "separated-files"); // NOI18N
+                separatorEl.appendChild(doc.createTextNode(separator));
+                arity.appendChild(separatorEl);
+            } else {
+                arity.appendChild(doc.createElementNS(NS_GENERAL, "one-file-only")); // NOI18N
+            }
+            context.appendChild(arity);
+            action.appendChild(context);
         } else {
-            arity.appendChild(doc.createElementNS(NS_GENERAL, "one-file-only")); // NOI18N
+            // Add a context menu item, since it applies to the project as a whole.
+            // Assume there is already a <context-menu> defined, which is quite likely.
+            Element view = Util.findElement(data, "view", NS_GENERAL); // NOI18N
+            if (view != null) {
+                Element contextMenu = Util.findElement(view, "context-menu", NS_GENERAL); // NOI18N
+                if (contextMenu != null) {
+                    Element ideAction = doc.createElementNS(NS_GENERAL, "ide-action"); // NOI18N
+                    ideAction.setAttribute("name", command); // NOI18N
+                    contextMenu.appendChild(ideAction);
+                }
+            }
         }
-        context.appendChild(arity);
-        action.appendChild(context);
         ideActions.appendChild(action);
         helper.putPrimaryConfigurationData(data, true);
         ProjectManager.getDefault().saveProject(project);
@@ -488,41 +750,76 @@ final class JavaActions implements ActionProvider {
 
     /**
      * Jump to a target in the editor.
-     * @param target the name of the target (in {@link #SCRIPT_PATH})
+     * @param scriptPath the script to open
+     * @param target the name of the target (in scriptPath)
      */
-    private void jumpTo(String target) {
-        FileObject script = helper.getProjectDirectory().getFileObject(SCRIPT_PATH);
-        assert script != null;
+    private void jumpToBuildScript(String scriptPath, String target) {
+        jumpToFile(scriptPath, target, "target", "name"); // NOI18N
+    }
+    
+    /**
+     * Jump to an action binding in the editor.
+     * @param command an {@link ActionProvider} command name found in project.xml
+     */
+    private void jumpToBinding(String command) {
+        jumpToFile(AntProjectHelper.PROJECT_XML_PATH, command, "action", "name"); // NOI18N
+    }
+
+    /**
+     * Jump to some line in an XML file.
+     * @param path project-relative path to the file
+     * @param match {@see #findLine}
+     * @param elementLocalName {@see #findLine}
+     * @param elementAttributeName {@see #findLine}
+     */
+    private void jumpToFile(String path, String match, String elementLocalName, String elementAttributeName) {
+        FileObject file = helper.getProjectDirectory().getFileObject(path);
+        if (file == null) {
+            return;
+        }
         int line;
         try {
-            line = findLine(script, target);
+            line = findLine(file, match, elementLocalName, elementAttributeName);
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return;
         }
         if (line == -1) {
-            return;
+            // Just open it.
+            line = 0;
         }
-        DataObject scriptDO;
+        DataObject fileDO;
         try {
-            scriptDO = DataObject.find(script);
+            fileDO = DataObject.find(file);
         } catch (DataObjectNotFoundException e) {
             throw new AssertionError(e);
         }
-        LineCookie lines = (LineCookie) scriptDO.getCookie(LineCookie.class);
+        LineCookie lines = (LineCookie) fileDO.getCookie(LineCookie.class);
         if (lines != null) {
-            lines.getLineSet().getCurrent(line).show(Line.SHOW_GOTO);
+            try {
+                lines.getLineSet().getCurrent(line).show(Line.SHOW_GOTO);
+            } catch (IndexOutOfBoundsException e) {
+                ErrorManager.getDefault().annotate(e, ErrorManager.UNKNOWN, "path=" + path + " match=" + match + " line=" + line, null, null, null); // NOI18N
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                lines.getLineSet().getCurrent(0).show(Line.SHOW_GOTO);
+            }
         }
     }
     
     /**
-     * Find the line number of a target in an Ant script.
+     * Find the line number of a target in an Ant script, or some other line in an XML file.
+     * Able to find a certain element with a certain attribute matching a given value.
      * See also AntTargetNode.TargetOpenCookie.
+     * @param file an Ant script or other XML file
+     * @param match the attribute value to match (e.g. target name)
+     * @param elementLocalName the (local) name of the element to look for
+     * @param elementAttributeName the name of the attribute to match on
      * @return the line number (0-based), or -1 if not found
      */
-    static int findLine(FileObject script, final String target) throws IOException, SAXException, ParserConfigurationException {
-        InputSource in = new InputSource(script.getURL().toString());
+    static final int findLine(FileObject file, final String match, final String elementLocalName, final String elementAttributeName) throws IOException, SAXException, ParserConfigurationException {
+        InputSource in = new InputSource(file.getURL().toString());
         SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
         SAXParser parser = factory.newSAXParser();
         final int[] line = new int[] {-1};
         class Handler extends DefaultHandler {
@@ -532,7 +829,7 @@ final class JavaActions implements ActionProvider {
             }
             public void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
                 if (line[0] == -1) {
-                    if (qname.equals("target") && target.equals(attr.getValue("name"))) { // NOI18N
+                    if (localname.equals(elementLocalName) && match.equals(attr.getValue(elementAttributeName))) { // NOI18N
                         line[0] = locator.getLineNumber() - 1;
                     }
                 }
@@ -540,6 +837,111 @@ final class JavaActions implements ActionProvider {
         }
         parser.parse(in, new Handler());
         return line[0];
+    }
+    
+    /**
+     * Attempt to find the Ant build script target bound to a given IDE command.
+     * @param command an {@link ActionProvider} command
+     * @return the XML for the target if it could be found (and there was no more than one target bound), else null
+     */
+    Element findExistingBuildTarget(String command) throws IOException, SAXException {
+        String[] binding = findCommandBinding(command);
+        if (binding == null) {
+            return null;
+        }
+        String scriptName = binding[0];
+        assert scriptName != null;
+        String targetName;
+        if (binding.length == 1) {
+            targetName = null;
+        } else if (binding.length == 2) {
+            targetName = binding[1];
+        } else {
+            // Too many bindings; we do not support this.
+            return null;
+        }
+        String scriptPath = evaluator.evaluate(scriptName);
+        if (scriptPath == null) {
+            return null;
+        }
+        File scriptFile = helper.resolveFile(scriptPath);
+        String scriptURI = scriptFile.toURI().toString();
+        Document doc = XMLUtil.parse(new InputSource(scriptURI), false, true, null, null);
+        if (targetName == null) {
+            targetName = doc.getDocumentElement().getAttribute("default"); // NOI18N
+            if (targetName == null) {
+                return null;
+            }
+        }
+        Iterator/*<Element>*/ targets = Util.findSubElements(doc.getDocumentElement()).iterator();
+        while (targets.hasNext()) {
+            Element target = (Element) targets.next();
+            if (target.getLocalName().equals("target") && targetName.equals(target.getAttribute("name"))) { // NOI18N
+                return target;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find the target binding for some command.
+     * @param command an {@link ActionProvider} command
+     * @return an array of a script name (Ant syntax, never null) and zero or more target names (none means default target)
+     *         or null if no binding could be found for this command
+     */
+    String[] findCommandBinding(String command) {
+        Element data = helper.getPrimaryConfigurationData(true);
+        Element ideActions = Util.findElement(data, "ide-actions", NS_GENERAL); // NOI18N
+        if (ideActions == null) {
+            return null;
+        }
+        String scriptName = "build.xml"; // NOI18N
+        Iterator/*<Element>*/ actions = Util.findSubElements(ideActions).iterator();
+        while (actions.hasNext()) {
+            Element action = (Element) actions.next();
+            assert action.getLocalName().equals("action");
+            if (action.getAttribute("name").equals(command)) {
+                Element script = Util.findElement(action, "script", NS_GENERAL); // NOI18N
+                if (script != null) {
+                    scriptName = Util.findText(script);
+                }
+                List/*<String>*/ scriptPlusTargetNames = new ArrayList();
+                scriptPlusTargetNames.add(scriptName);
+                Iterator/*<Element>*/ targets = Util.findSubElements(action).iterator();
+                while (targets.hasNext()) {
+                    Element target = (Element) targets.next();
+                    if (target.getLocalName().equals("target")) { // NOI18N
+                        scriptPlusTargetNames.add(Util.findText(target));
+                    }
+                }
+                return (String[]) scriptPlusTargetNames.toArray(new String[scriptPlusTargetNames.size()]);
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Check to see if a given Ant target uses a given task once (and only once).
+     * @param target an Ant <code>&lt;target&gt;</code> element
+     * @param taskName the (unqualified) name of an Ant task
+     * @return a task element with that name, or null if there is none or more than one
+     */
+    Element targetUsesTaskExactlyOnce(Element target, String taskName) {
+        // XXX should maybe also look for any other usage of the task in the same script in case there is none in the mentioned target
+        Iterator/*<Element>*/ tasks = Util.findSubElements(target).iterator();
+        Element foundTask = null;
+        while (tasks.hasNext()) {
+            Element task = (Element) tasks.next();
+            if (task.getLocalName().equals(taskName)) {
+                if (foundTask != null) {
+                    // Duplicate.
+                    return null;
+                } else {
+                    foundTask = task;
+                }
+            }
+        }
+        return foundTask;
     }
 
 }

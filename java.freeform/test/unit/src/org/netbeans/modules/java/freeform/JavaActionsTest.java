@@ -14,8 +14,10 @@
 package org.netbeans.modules.java.freeform;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -131,7 +133,10 @@ public class JavaActionsTest extends TestBase {
     
     public void testGetSupportedActions() throws Exception {
         assertEquals("initially all context-sensitive actions supported",
-            Collections.singletonList(ActionProvider.COMMAND_COMPILE_SINGLE),
+            Arrays.asList(new String[] {
+                ActionProvider.COMMAND_COMPILE_SINGLE,
+                ActionProvider.COMMAND_DEBUG,
+            }),
             Arrays.asList(ja.getSupportedActions()));
         /* Not really necessary; once there is a binding, the main ant/freeform Actions will mask this anyway:
         ja.addBinding(ActionProvider.COMMAND_COMPILE_SINGLE, "target", "prop", "${dir}", null, "relative-path", null);
@@ -163,7 +168,7 @@ public class JavaActionsTest extends TestBase {
     }
     
     public void testAddBinding() throws Exception {
-        ja.addBinding("some.action", "special-target", "selection", "${some.src.dir}", "\\.java$", "relative-path", ",");
+        ja.addBinding("some.action", "special.xml", "special-target", "selection", "${some.src.dir}", "\\.java$", "relative-path", ",");
         Element data = prj.helper().getPrimaryConfigurationData(true);
         assertNotNull(data);
         Element ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
@@ -173,7 +178,7 @@ public class JavaActionsTest extends TestBase {
         String expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"some.action\">\n" +
-            "    <script>nbproject/ide-targets.xml</script>\n" +
+            "    <script>special.xml</script>\n" +
             "    <target>special-target</target>\n" +
             "    <context>\n" +
             "        <property>selection</property>\n" +
@@ -186,7 +191,7 @@ public class JavaActionsTest extends TestBase {
             "    </context>\n" +
             "</action>\n";
         assertEquals(expectedXml, xmlToString(lastAction));
-        ja.addBinding("some.other.action", "special-target", "selection", "${some.src.dir}", null, "relative-path", null);
+        ja.addBinding("some.other.action", "special.xml", "special-target", "selection", "${some.src.dir}", null, "relative-path", null);
         data = prj.helper().getPrimaryConfigurationData(true);
         ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
         actions = Util.findSubElements(ideActions);
@@ -194,7 +199,7 @@ public class JavaActionsTest extends TestBase {
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"some.other.action\">\n" +
-            "    <script>nbproject/ide-targets.xml</script>\n" +
+            "    <script>special.xml</script>\n" +
             "    <target>special-target</target>\n" +
             "    <context>\n" +
             "        <property>selection</property>\n" +
@@ -206,6 +211,30 @@ public class JavaActionsTest extends TestBase {
             "    </context>\n" +
             "</action>\n";
         assertEquals(expectedXml, xmlToString(lastAction));
+        // Non-context-sensitive bindings have no <context> but need to add a view item.
+        ja.addBinding("general.action", "special.xml", "special-target", null, null, null, null, null);
+        data = prj.helper().getPrimaryConfigurationData(true);
+        ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
+        actions = Util.findSubElements(ideActions);
+        lastAction = (Element) actions.get(actions.size() - 1);
+        expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"general.action\">\n" +
+            "    <script>special.xml</script>\n" +
+            "    <target>special-target</target>\n" +
+            "</action>\n";
+        assertEquals(expectedXml, xmlToString(lastAction));
+        Element view = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL);
+        assertNotNull(view);
+        Element contextMenu = Util.findElement(view, "context-menu", FreeformProjectType.NS_GENERAL);
+        assertNotNull(contextMenu);
+        // Currently (no FPG to help) it is always added as the last item.
+        List/*<Element>*/ contextMenuActions = Util.findSubElements(contextMenu);
+        Element lastContextMenuAction = (Element) contextMenuActions.get(contextMenuActions.size() - 1);
+        expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<ide-action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"general.action\"/>\n";
+        assertEquals(expectedXml, xmlToString(lastContextMenuAction));
     }
     
     public void testCreateCompileSingleTarget() throws Exception {
@@ -225,17 +254,17 @@ public class JavaActionsTest extends TestBase {
     }
     
     public void testReadWriteCustomScript() throws Exception {
-        Document script = ja.readCustomScript();
+        Document script = ja.readCustomScript(JavaActions.FILE_SCRIPT_PATH);
         String expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<project basedir=\"..\" name=\"Simple Freeform Project-IDE\"/>\n";
+            "<project name=\"Simple Freeform Project-IDE\"/>\n";
         assertEquals(expectedXml, xmlToString(script.getDocumentElement()));
         script.getDocumentElement().appendChild(script.createElement("foo"));
-        ja.writeCustomScript(script);
-        script = ja.readCustomScript();
+        ja.writeCustomScript(script, JavaActions.FILE_SCRIPT_PATH);
+        script = ja.readCustomScript(JavaActions.FILE_SCRIPT_PATH);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<project basedir=\"..\" name=\"Simple Freeform Project-IDE\">\n" +
+            "<project name=\"Simple Freeform Project-IDE\">\n" +
             "    <foo/>\n" +
             "</project>\n";
         assertEquals(expectedXml, xmlToString(script.getDocumentElement()));
@@ -254,7 +283,7 @@ public class JavaActionsTest extends TestBase {
     }
     
     public void testFindLine() throws Exception {
-        Document script = ja.readCustomScript();
+        Document script = ja.readCustomScript("special.xml");
         Element target = script.createElement("target");
         target.setAttribute("name", "targ1");
         target.appendChild(script.createElement("task1"));
@@ -264,8 +293,8 @@ public class JavaActionsTest extends TestBase {
         target.setAttribute("name", "targ2");
         target.appendChild(script.createElement("task3"));
         script.getDocumentElement().appendChild(target);
-        ja.writeCustomScript(script);
-        FileObject scriptFile = prj.getProjectDirectory().getFileObject(JavaActions.SCRIPT_PATH);
+        ja.writeCustomScript(script, "special.xml");
+        FileObject scriptFile = prj.getProjectDirectory().getFileObject("special.xml");
         assertNotNull(scriptFile);
         //0 <?xml?>
         //1 <project>
@@ -277,9 +306,200 @@ public class JavaActionsTest extends TestBase {
         //7         <task3/>
         //8     </>
         //9 </>
-        assertEquals(2, JavaActions.findLine(scriptFile, "targ1"));
-        assertEquals(6, JavaActions.findLine(scriptFile, "targ2"));
-        assertEquals(-1, JavaActions.findLine(scriptFile, "no-such-targ"));
+        assertEquals(2, JavaActions.findLine(scriptFile, "targ1", "target", "name"));
+        assertEquals(6, JavaActions.findLine(scriptFile, "targ2", "target", "name"));
+        assertEquals(-1, JavaActions.findLine(scriptFile, "no-such-targ", "target", "name"));
+        // Try w/ project.xml which uses namespaces, too.
+        FileObject pxml = prj.getProjectDirectory().getFileObject("nbproject/project.xml");
+        assertNotNull(pxml);
+        assertTrue(JavaActions.findLine(pxml, "build", "action", "name") != -1);
+        assertEquals(-1, JavaActions.findLine(pxml, "nonexistent", "action", "name"));
+    }
+    
+    public void testFindCommandBinding() throws Exception {
+        String[] binding = ja.findCommandBinding(ActionProvider.COMMAND_RUN);
+        assertNotNull(binding);
+        assertEquals(Arrays.asList(new String[] {"build.xml", "start"}), Arrays.asList(binding));
+        binding = ja.findCommandBinding(ActionProvider.COMMAND_REBUILD);
+        assertNotNull(binding);
+        assertEquals(Arrays.asList(new String[] {"build.xml", "clean", "jar"}), Arrays.asList(binding));
+        binding = ja.findCommandBinding("bogus");
+        assertNull(binding);
+    }
+    
+    public void testFindExistingBuildTarget() throws Exception {
+        Element target = ja.findExistingBuildTarget(ActionProvider.COMMAND_RUN);
+        assertNotNull("found a target for 'run'", target);
+        assertEquals("found correct target", "start", target.getAttribute("name"));
+    }
+    
+    public void testTargetUsesTaskExactlyOnce() throws Exception {
+        Element runTarget = ja.findExistingBuildTarget(ActionProvider.COMMAND_RUN);
+        Element javaTask = ja.targetUsesTaskExactlyOnce(runTarget, "java");
+        assertNotNull("found <java>", javaTask);
+        assertEquals("java", javaTask.getLocalName());
+        assertEquals("org.foo.myapp.MyApp", javaTask.getAttribute("classname"));
+        assertNull("no <javac> here", ja.targetUsesTaskExactlyOnce(runTarget, "javac"));
+        Element cleanTarget = ja.findExistingBuildTarget(ActionProvider.COMMAND_CLEAN);
+        assertNotNull(cleanTarget);
+        assertNull(">1 <delete> found so skipping", ja.targetUsesTaskExactlyOnce(cleanTarget, "delete"));
+    }
+    
+    public void testEnsurePropertiesCopied() throws Exception {
+        Document doc = XMLUtil.createDocument("project", null, null, null);
+        Element root = doc.getDocumentElement();
+        ja.ensurePropertiesCopied(root);
+        String expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<project basedir=\"..\">\n" +
+            "    <property name=\"build.properties\" value=\"build.properties\"/>\n" +
+            "    <property file=\"${build.properties}\"/>\n" +
+            "</project>\n";
+        assertEquals("Correct code generated", expectedXml, xmlToString(root));
+        ja.ensurePropertiesCopied(root);
+        assertEquals("Idempotent", expectedXml, xmlToString(root));
+    }
+    
+    public void testEnsureImports() throws Exception {
+        // Start with the simple case:
+        Element root = XMLUtil.createDocument("project", null, null, null).getDocumentElement();
+        ja.ensureImports(root, "build.xml");
+        String expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<project basedir=\"..\">\n" +
+            "    <import file=\"../build.xml\"/>\n" +
+            "</project>\n";
+        assertEquals("Correct code generated", expectedXml, xmlToString(root));
+        ja.ensureImports(root, "build.xml");
+        assertEquals("Idempotent", expectedXml, xmlToString(root));
+        // Test strange locations too. Make a script somewhere different.
+        File testdir = getWorkDir();
+        File subtestdir = new File(testdir, "sub");
+        subtestdir.mkdir();
+        File script = new File(subtestdir, "external.xml");
+        Document doc = XMLUtil.createDocument("project", null, null, null);
+        doc.getDocumentElement().setAttribute("basedir", "..");
+        OutputStream os = new FileOutputStream(script);
+        try {
+            XMLUtil.write(doc, os, "UTF-8");
+        } finally {
+            os.close();
+        }
+        root = XMLUtil.createDocument("project", null, null, null).getDocumentElement();
+        String scriptPath = script.getAbsolutePath();
+        ja.ensureImports(root, scriptPath);
+        expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<project basedir=\"" + testdir.getAbsolutePath() + "\">\n" +
+            "    <import file=\"" + scriptPath + "\"/>\n" +
+            "</project>\n";
+        assertEquals("Correct code generated for external script", expectedXml, xmlToString(root));
+        // And also with locations defined as special properties in various ways...
+        Element data = prj.helper().getPrimaryConfigurationData(true);
+        Element properties = Util.findElement(data, "properties", JavaActions.NS_GENERAL);
+        assertNotNull(properties);
+        Element property = data.getOwnerDocument().createElementNS(JavaActions.NS_GENERAL, "property");
+        property.setAttribute("name", "external.xml");
+        property.appendChild(data.getOwnerDocument().createTextNode(scriptPath));
+        properties.appendChild(property);
+        property = data.getOwnerDocument().createElementNS(JavaActions.NS_GENERAL, "property");
+        property.setAttribute("name", "subtestdir");
+        property.appendChild(data.getOwnerDocument().createTextNode(subtestdir.getAbsolutePath()));
+        properties.appendChild(property);
+        property = data.getOwnerDocument().createElementNS(JavaActions.NS_GENERAL, "property");
+        property.setAttribute("name", "testdir");
+        property.appendChild(data.getOwnerDocument().createTextNode(testdir.getAbsolutePath()));
+        properties.appendChild(property);
+        prj.helper().putPrimaryConfigurationData(data, true);
+        ProjectManager.getDefault().saveProject(prj); // ease of debugging
+        root = XMLUtil.createDocument("project", null, null, null).getDocumentElement();
+        ja.ensureImports(root, "${external.xml}");
+        expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<project basedir=\"" + testdir.getAbsolutePath() + "\">\n" +
+            "    <import file=\"" + scriptPath +  "\"/>\n" +
+            "</project>\n";
+        assertEquals("Correct code generated for ${external.xml}", expectedXml, xmlToString(root));
+        root = XMLUtil.createDocument("project", null, null, null).getDocumentElement();
+        ja.ensureImports(root, "${subtestdir}/external.xml");
+        expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<project basedir=\"" + testdir.getAbsolutePath() + "\">\n" +
+            "    <import file=\"" + scriptPath +  "\"/>\n" +
+            "</project>\n";
+        assertEquals("Correct code generated for ${subtestdir}/external.xml", expectedXml, xmlToString(root));
+        root = XMLUtil.createDocument("project", null, null, null).getDocumentElement();
+        ja.ensureImports(root, "${testdir}/sub/external.xml");
+        expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<project basedir=\"" + testdir.getAbsolutePath() + "\">\n" +
+            "    <import file=\"" + scriptPath +  "\"/>\n" +
+            "</project>\n";
+        assertEquals("Correct code generated for ${testdir}/sub/external.xml", expectedXml, xmlToString(root));
+        // XXX try also <import file="somewhere-relative/build.xml"/>
+    }
+    
+    public void testCreateDebugTargetFromTemplate() throws Exception {
+        Document doc = XMLUtil.createDocument("project", null, null, null);
+        Document origDoc = XMLUtil.createDocument("target", null, null, null);
+        Element origTarget = origDoc.getDocumentElement();
+        origTarget.setAttribute("name", "ignored");
+        origTarget.setAttribute("depends", "compile");
+        origTarget.appendChild(origDoc.createElement("task1"));
+        Element task = origDoc.createElement("java");
+        // XXX also test nested <classpath>:
+        task.setAttribute("classpath", "${cp}");
+        task.appendChild(origDoc.createElement("stuff"));
+        origTarget.appendChild(task);
+        origTarget.appendChild(origDoc.createElement("task2"));
+        Element genTarget = ja.createDebugTargetFromTemplate("debug", origTarget, task, doc);
+        doc.getDocumentElement().appendChild(genTarget);
+        String expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<project>\n" +
+            "    <target depends=\"compile\" name=\"debug\">\n" +
+            "        <task1/>\n" +
+            "        <nbjpdastart addressproperty=\"jpda.address\" name=\"Simple Freeform Project\" transport=\"dt_socket\">\n" +
+            "            <classpath path=\"${cp}\"/>\n" +
+            "        </nbjpdastart>\n" +
+            "        <java classpath=\"${cp}\">\n" +
+            "            <stuff/>\n" +
+            "            <jvmarg value=\"-Xdebug\"/>\n" +
+            "            <jvmarg value=\"-Xnoagent\"/>\n" +
+            "            <jvmarg value=\"-Djava.compiler=none\"/>\n" +
+            "            <jvmarg value=\"-Xrunjdwp:transport=dt_socket,address=${jpda.address}\"/>\n" +
+            "        </java>\n" +
+            "        <task2/>\n" +
+            "    </target>\n" +
+            "</project>\n";
+        assertEquals(expectedXml, xmlToString(doc.getDocumentElement()));
+    }
+    
+    public void testCreateDebugTargetFromScratch() throws Exception {
+        Document doc = XMLUtil.createDocument("project", null, null, null);
+        Element genTarget = ja.createDebugTargetFromScratch("debug", doc);
+        doc.getDocumentElement().appendChild(genTarget);
+        String expectedXml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<project>\n" +
+            "    <target name=\"debug\">\n" +
+            "        <path id=\"cp\">\n" +
+            "            <!---->\n" +
+            "        </path>\n" +
+            "        <nbjpdastart addressproperty=\"jpda.address\" name=\"Simple Freeform Project\" transport=\"dt_socket\">\n" +
+            "            <classpath refid=\"cp\"/>\n" +
+            "        </nbjpdastart>\n" +
+            "        <!---->\n" +
+            "        <java classname=\"some.main.Class\">\n" +
+            "            <classpath refid=\"cp\"/>\n" +
+            "            <jvmarg value=\"-Xdebug\"/>\n" +
+            "            <jvmarg value=\"-Xnoagent\"/>\n" +
+            "            <jvmarg value=\"-Djava.compiler=none\"/>\n" +
+            "            <jvmarg value=\"-Xrunjdwp:transport=dt_socket,address=${jpda.address}\"/>\n" +
+            "        </java>\n" +
+            "    </target>\n" +
+            "</project>\n";
+        assertEquals(expectedXml, xmlToString(doc.getDocumentElement()));
     }
     
     /**

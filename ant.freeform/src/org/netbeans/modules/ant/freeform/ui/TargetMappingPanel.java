@@ -7,17 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.ant.freeform.ui;
 
-import java.awt.Cursor;
 import java.awt.Frame;
-import java.awt.Toolkit;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,7 +30,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.WindowConstants;
 import javax.swing.table.AbstractTableModel;
-import org.netbeans.api.javahelp.Help;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.Util;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
@@ -44,13 +39,12 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  * @author  David Konecny
  */
-public class TargetMappingPanel extends javax.swing.JPanel implements MouseListener, ActionListener, HelpCtx.Provider {
+public class TargetMappingPanel extends javax.swing.JPanel implements java.awt.event.ActionListener, org.openide.util.HelpCtx.Provider {
 
     public static String BUILD_ACTION = "build"; // NOI18N
     public static String CLEAN_ACTION = "clean"; // NOI18N
@@ -58,7 +52,6 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
     public static String JAVADOC_ACTION = "javadoc"; // NOI18N
     public static String RUN_ACTION = "run"; // NOI18N
     public static String TEST_ACTION = "test"; // NOI18N
-    public static String DEBUG_ACTION = "debug"; // NOI18N
 
     private static List DEFAULT_BUILD_TARGETS = Arrays.asList(new String[]{"build", "compile", "jar", "dist", "all", ".*jar.*"}); // NOI18N
     private static List DEFAULT_CLEAN_TARGETS = Arrays.asList(new String[]{"clean", ".*clean.*"}); // NOI18N
@@ -66,7 +59,6 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
     private static List DEFAULT_JAVADOC_TARGETS = Arrays.asList(new String[]{"javadoc", "javadocs", "docs", "doc", ".*javadoc.*", ".*doc.*"}); // NOI18N
     private static List DEFAULT_RUN_TARGETS = Arrays.asList(new String[]{"run", "start", ".*run.*", ".*start.*"}); // NOI18N
     private static List DEFAULT_TEST_TARGETS = Arrays.asList(new String[]{"test", ".*test.*"}); // NOI18N
-    private static List DEFAULT_DEBUG_TARGETS = Arrays.asList(new String[]{"debug", ".*debug.*"});; // NOI18N
     
     private List/*<String>*/ targetNames;
     private List/*<TargetMapping>*/ targetMappings;
@@ -96,8 +88,6 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
         custTargets = new ArrayList();
         customTargetsModel = new CustomTargetsModel();
         customTargets.setModel(customTargetsModel);
-        
-        link.setCursor(Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
         
         addTargets(extraTargets);
         showAdvancedPart(advancedPart);
@@ -139,9 +129,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
         targetDescs.add(new TargetDescriptor(RUN_ACTION, DEFAULT_RUN_TARGETS, null, null));
         combos.add(testCombo);
         targetDescs.add(new TargetDescriptor(TEST_ACTION, DEFAULT_TEST_TARGETS, null, null));
-        combos.add(debugCombo);
-        targetDescs.add(new TargetDescriptor(DEBUG_ACTION, DEFAULT_DEBUG_TARGETS, null, null));
-        int y = 6;
+        int y = 5;
         Iterator it = extraTargets.iterator();
         while (it.hasNext()) {
             TargetDescriptor desc = (TargetDescriptor)it.next();
@@ -178,15 +166,11 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
     }
     
     private void showAdvancedPart(boolean show) {
-        debugInfoLabel.setVisible(show);
-        link.setVisible(show);
         additionalTargetsLabel.setVisible(show);
         jScrollPane1.setVisible(show);
         customTargets.setVisible(show);
         add.setVisible(show);
         remove.setVisible(show);
-        debugCombo.setVisible(show);
-        debugLabel.setVisible(show);
         // handle panel resizing:
         remainder.setVisible(show);
         specialRemainder.setVisible(!show);
@@ -398,9 +382,6 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
         java.awt.GridBagConstraints gridBagConstraints;
 
         mainLabel = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        link = new javax.swing.JLabel();
-        debugInfoLabel = new javax.swing.JLabel();
         additionalTargetsLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         customTargets = new javax.swing.JTable();
@@ -408,7 +389,6 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
         remove = new javax.swing.JButton();
         remainder = new javax.swing.JPanel();
         targetsPanel = new javax.swing.JPanel();
-        debugCombo = new javax.swing.JComboBox();
         buildLabel = new javax.swing.JLabel();
         cleanLabel = new javax.swing.JLabel();
         runLabel = new javax.swing.JLabel();
@@ -419,7 +399,6 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
         javadocCombo = new javax.swing.JComboBox();
         runCombo = new javax.swing.JComboBox();
         testCombo = new javax.swing.JComboBox();
-        debugLabel = new javax.swing.JLabel();
         specialRemainder = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -435,39 +414,6 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(mainLabel, gridBagConstraints);
         mainLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "ACSD_TargetMappingPanel_jLabel1"));
-
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        link.setForeground(new java.awt.Color(102, 102, 153));
-        org.openide.awt.Mnemonics.setLocalizedText(link, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "URL_TargetMappingPanel_link"));
-        link.addMouseListener(this);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(link, gridBagConstraints);
-
-        debugInfoLabel.setLabelFor(link);
-        org.openide.awt.Mnemonics.setLocalizedText(debugInfoLabel, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_jLabel8"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(debugInfoLabel, gridBagConstraints);
-        debugInfoLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "ACSD_TargetMappingPanel_jLabel8"));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
-        add(jPanel1, gridBagConstraints);
 
         additionalTargetsLabel.setLabelFor(customTargets);
         org.openide.awt.Mnemonics.setLocalizedText(additionalTargetsLabel, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_jLabel10"));
@@ -524,15 +470,6 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
 
         targetsPanel.setLayout(new java.awt.GridBagLayout());
 
-        debugCombo.setEditable(true);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        targetsPanel.add(debugCombo, gridBagConstraints);
-
         buildLabel.setLabelFor(buildCombo);
         org.openide.awt.Mnemonics.setLocalizedText(buildLabel, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_jLabel2"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -549,6 +486,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         targetsPanel.add(cleanLabel, gridBagConstraints);
         cleanLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "ACSD_TargetMappingPanel_jLabel4"));
 
@@ -628,16 +566,6 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         targetsPanel.add(testCombo, gridBagConstraints);
 
-        debugLabel.setLabelFor(debugCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(debugLabel, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_jLabel9"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
-        targetsPanel.add(debugLabel, gridBagConstraints);
-        debugLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "ACSD_TargetMappingPanel_jLabel9"));
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -665,34 +593,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
         else if (evt.getSource() == remove) {
             TargetMappingPanel.this.removeActionPerformed(evt);
         }
-    }
-
-    public void mouseClicked(java.awt.event.MouseEvent evt) {
-    }
-
-    public void mouseEntered(java.awt.event.MouseEvent evt) {
-    }
-
-    public void mouseExited(java.awt.event.MouseEvent evt) {
-    }
-
-    public void mousePressed(java.awt.event.MouseEvent evt) {
-    }
-
-    public void mouseReleased(java.awt.event.MouseEvent evt) {
-        if (evt.getSource() == link) {
-            TargetMappingPanel.this.linkMouseReleased(evt);
-        }
     }//GEN-END:initComponents
-
-    private void linkMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkMouseReleased
-        Help help = (Help)Lookup.getDefault().lookup(Help.class);
-        if (help != null) {
-            help.showHelp(new HelpCtx("org.netbeans.modules.ant.freeform.ui.TargetMappingPanel#debug")); // NOI18N
-        } else {
-            Toolkit.getDefaultToolkit().beep();
-        }
-    }//GEN-LAST:event_linkMouseReleased
 
     private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeActionPerformed
         int index = customTargets.getSelectedRow();
@@ -786,14 +687,9 @@ public class TargetMappingPanel extends javax.swing.JPanel implements MouseListe
     private javax.swing.JComboBox cleanCombo;
     private javax.swing.JLabel cleanLabel;
     private javax.swing.JTable customTargets;
-    private javax.swing.JComboBox debugCombo;
-    private javax.swing.JLabel debugInfoLabel;
-    private javax.swing.JLabel debugLabel;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JComboBox javadocCombo;
     private javax.swing.JLabel javadocLabel;
-    private javax.swing.JLabel link;
     private javax.swing.JLabel mainLabel;
     private javax.swing.JPanel remainder;
     private javax.swing.JButton remove;
