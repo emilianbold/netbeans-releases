@@ -63,7 +63,10 @@ class JavadocSearchEngineImpl extends JavadocSearchEngine {
             try {
                 JavaDocFSSettings setting = JavaDocFSSettings.getSettingForFS( docSystems[i].getIndexFile().getFileSystem() );
                 //System.out.println(setting.getSearchTypeEngine().getName());
-                IndexSearchThread searchThread = setting.getSearchTypeEngine().getSearchThread( toFind,  docSystems[i].getIndexFile() , diiConsumer );
+                JavadocSearchType st = setting.getSearchTypeEngine();
+                if (st == null)
+                    continue;
+                IndexSearchThread searchThread = st.getSearchThread( toFind,  docSystems[i].getIndexFile() , diiConsumer );
 
                 tasks.add( searchThread );
                 searchThread.go();

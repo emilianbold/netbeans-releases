@@ -171,11 +171,14 @@ public class IndexBuilder implements Runnable, RepositoryListener {
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                 }
-                c.add(fs);
                 JavaDocFSSettings fss = JavaDocFSSettings.getSettingForFS(fs);
                 if (title[0] != null && fss != null) {
-                    title[0] = fss.getSearchTypeEngine().getOverviewTitleBase(title[0]);
+                    JavadocSearchType st = fss.getSearchTypeEngine();
+                    if (st == null)
+                        continue;
+                    title[0] = st.getOverviewTitleBase(title[0]);
                 }
+                c.add(fs);
                 Info info = new Info();
                 info.title = title[0] == null ? fs.getDisplayName() : title[0];
                 info.indexFileName = index.getPath();

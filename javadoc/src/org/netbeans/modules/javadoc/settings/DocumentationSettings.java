@@ -251,8 +251,12 @@ public class DocumentationSettings extends SystemOption {
             if (isWriteExternal()) {
                 return null;
             }
-            return (JavadocSearchType)Lookup.getDefault().lookup(org.netbeans.modules.javadoc.search.Jdk12SearchType.class);
-	}
+            type = (JavadocSearchType)Lookup.getDefault().lookup(org.netbeans.modules.javadoc.search.Jdk12SearchType.class);
+            if (type != null)
+                return type;
+            // find ANY search engine
+            type = (JavadocSearchType)Lookup.getDefault().lookup(JavadocSearchType.class);
+	    }
         return type;        
     }    
     
