@@ -96,6 +96,21 @@ Microsystems, Inc. All Rights Reserved.
       </folder>
     </folder>
   </folder>
+  <folder name="Actions">
+    <folder name="Help">
+      <file name="org-apache-tools-ant-module-mainpage.xml">
+        <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpctx PUBLIC
+          "-//NetBeans//DTD Help Context 1.0//EN"
+          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
+<helpctx id="org.apache.tools.ant.module.ant-docs"/>
+]]>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+        <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="false"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+      </file>
+    </folder>
+  </folder>
   <!-- Mount documentation automatically. -->
   <folder name="Mount">
     <folder name="Javadoc">

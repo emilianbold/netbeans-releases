@@ -55,6 +55,21 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    <folder name="Actions">
+        <folder name="Help">
+            <file name="org-netbeans-modules-usersguide-mainpage.xml">
+                <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpctx PUBLIC
+          "-//NetBeans//DTD Help Context 1.0//EN"
+          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
+<helpctx id="ide.welcome"/>
+]]>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
+                <attr boolvalue="false" name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/usersguide/helpset.gif"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Services">
         <folder name="JavaHelp">
             <!-- Now the help set. -->
