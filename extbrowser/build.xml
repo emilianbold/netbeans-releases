@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
           <include name="openide*.jar" />
         </fileset>
         <pathelement location="../httpserver/netbeans/modules/httpserver.jar"/>
-        <pathelement location="../core/release/lib/ext/servlet.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/servlet.jar"/>
       </classpath>
     </javac>
   </target>
