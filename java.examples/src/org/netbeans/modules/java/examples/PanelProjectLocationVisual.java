@@ -33,7 +33,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     public PanelProjectLocationVisual(PanelConfigureProject panel) {
         initComponents();
         this.panel = panel;
-        projectNameTextField.setEditable(false);
         
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
@@ -194,7 +193,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             projectLocation = projectLocation.getParentFile();
         
         projectLocationTextField.setText(projectLocation.getAbsolutePath());
-        projectLocationTextField.selectAll();
         
         String formater = null;
         String projectName = (String) settings.getProperty(WizardProperties.NAME);
@@ -210,8 +208,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 baseCount++;
 //            settings.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
         }
-        
-        projectNameTextField.setText(projectName);                
+        projectNameTextField.setText(projectName);
+        projectNameTextField.selectAll();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
