@@ -6,6 +6,8 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/netbeans/modules/form/FormEditorModule.class
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1, org.netbeans.modules.clazz/1, org.openidex.util/1
 OpenIDE-Module-Layer: org/netbeans/modules/form/resources/layer.xml
+OpenIDE-Module-Short-Description: Supports visual design of AWT and Swing applications.
+OpenIDE-Module-Long-Description: The Form Editor module enables you to visually design AWT and Swing applications.
 
 Name: org/netbeans/modules/form/FormDataLoader.class
 OpenIDE-Module-Class: Loader

@@ -1,6 +1,7 @@
 OpenIDE-Module: org.netbeans.modules.httpserver/1
 OpenIDE-Module-Name: HTTP Server
 OpenIDE-Module-Display-Category: Web
+OpenIDE-Module-Short-Description: Internal HTTP server with servlet support.
 OpenIDE-Module-Long-Description: Internal HTTP server with servlet support.
 OpenIDE-Module-Install: org/netbeans/modules/httpserver/HttpServerModule.class
 OpenIDE-Module-Specification-Version: 1.6

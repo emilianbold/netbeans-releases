@@ -6,6 +6,9 @@ OpenIDE-Module-Layer: org/netbeans/modules/beans/resources/mf-layer.xml
 OpenIDE-Module-Specification-Version: 1.6
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1
+OpenIDE-Module-Short-Description: Support for creating JavaBeans(TM) components.
+OpenIDE-Module-Long-Description: The Bean Patterns module provides support for developing
+  JavaBeans(TM) components in the IDE, such as generation of properties, event sets, and BeanInfo.
 
 Name: org/netbeans/modules/beans/AddPropertyAction.class
 OpenIDE-Module-Class: Action

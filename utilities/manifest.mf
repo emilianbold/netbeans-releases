@@ -7,6 +7,10 @@ OpenIDE-Module-Install: org/netbeans/modules/utilities/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/utilities/Layer.xml
 OpenIDE-Module-Module-Dependencies: org.openidex.util/1 > 1.2
 OpenIDE-Module-Package-Dependencies: org.apache.regexp[RE]
+OpenIDE-Module-Short-Description: Support for file searching, bookmarks, and groups of objects.
+OpenIDE-Module-Long-Description: The User Utilities module provides miscellaneous pieces of functionality such as support 
+  for URLs (bookmarks), groups of objects, and file searching. It also provides the open file feature, 
+  which helps you open a file in a previously unmounted filesystem.
 Main-Class: org.netbeans.modules.openfile.Main
 
 Name: org/netbeans/modules/search/types/FullTextType.class

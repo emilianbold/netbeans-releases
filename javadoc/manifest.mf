@@ -6,6 +6,9 @@ OpenIDE-Module-Layer: org/netbeans/modules/javadoc/resources/mf-layer.xml
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1, org.openidex.util/1 > 1.0
 OpenIDE-Module-Specification-Version: 1.6
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Short-Description: Supports Javadoc creation and searches.
+OpenIDE-Module-Long-Description: The Javadoc module enables you to search and browse Javadoc
+  documentation from within the IDE and helps you create Javadoc comments in your source code.
 
 Name: org/netbeans/modules/javadoc/settings/DocumentationSettings.class
 OpenIDE-Module-Class: Option
