@@ -138,8 +138,10 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
         if (container instanceof JScrollPane) {
             JScrollPane scrollPane = (JScrollPane) container;
             Component comp = scrollPane.getViewport().getView();
-            if (comp != null)
+            if (comp != null) {
                 comp.removeNotify();
+                comp.setBounds(0, 0, 0, 0);
+            }
             scrollPane.setViewportView(null);
             return true;
         }

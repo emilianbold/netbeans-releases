@@ -553,6 +553,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
                                                 Component component)
     {
         containerDelegate.remove(component);
+        component.setBounds(0, 0, 0, 0);
         return true;
     }
 
@@ -566,7 +567,10 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     public boolean clearContainer(Container container,
                                   Container containerDelegate)
     {
+        Component[] components = containerDelegate.getComponents();
         containerDelegate.removeAll();
+        for (int i=0; i < components.length; i++)
+            components[i].setBounds(0, 0, 0, 0);
         return true;
     }
 
