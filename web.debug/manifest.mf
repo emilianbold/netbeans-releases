@@ -1,6 +1,5 @@
 OpenIDE-Module: org.netbeans.modules.web.debug/1
-OpenIDE-Module-Name: JSP/Servlet Breakpoint Support
-OpenIDE-Module-Display-Category: Web
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/debug/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/web/debug/DebugModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/web/debug/layer.xml
 OpenIDE-Module-Specification-Version: 1.0
