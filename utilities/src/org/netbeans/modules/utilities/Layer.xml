@@ -190,7 +190,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="template" boolValue="true"/>
                 </file>
 
-                <file name="org-netbeans-modules-search-ModificationDateType.settings" url="../search/ModificationDateType.settings"/>
+                <file name="org-netbeans-modules-search-ModificationDateType.settings" url="../search/ModificationDateType.settings">
                     <attr name="template" boolValue="true"/>
                 </file>
 
