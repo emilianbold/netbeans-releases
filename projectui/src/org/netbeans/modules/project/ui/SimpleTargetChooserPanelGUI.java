@@ -22,6 +22,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.SourceGroup;
 import org.netbeans.spi.project.Sources;
 import org.openide.filesystems.FileObject;
@@ -52,7 +53,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     }
     
     public void initValues( Project p, FileObject template, String preselectedFolder ) {
-        projectTextField.setText( p.getDisplayName() );                               
+        projectTextField.setText(ProjectUtils.getInformation(p).getDisplayName());
+        // XXX document value of this field: native file sep or '/'?
         folderTextField.setText( preselectedFolder == null ? "" : preselectedFolder ); // NOI18N
         
         String ext = template == null ? "" : template.getExt(); // NOI18N
@@ -67,6 +69,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             return null;
         }
         else {
+            // XXX have to account for FU.tF returning null
             File folder = new File( FileUtil.toFile( project.getProjectDirectory() ), text );
             return folder.getPath();
         }
@@ -252,16 +255,20 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     
     // DocumentListener implementation -----------------------------------------
     
-    public void changedUpdate(javax.swing.event.DocumentEvent e) {        
-        File tmpFile = new File( project.getProjectDirectory().getPath(), folderTextField.getText() );
-        
-        String documentName = documentNameTextField.getText().trim();
-        
-        if ( documentName.length() == 0 ) {
-            fileTextField.setText( tmpFile.getPath() );
-        }
-        else {
-            fileTextField.setText( tmpFile.getPath() + java.io.File.separatorChar +  documentName + expectedExtension );
+    public void changedUpdate(javax.swing.event.DocumentEvent e) {
+        File projdirFile = FileUtil.toFile(project.getProjectDirectory());
+        if (projdirFile != null) {
+            String documentName = documentNameTextField.getText().trim();
+            if (documentName.length() == 0) {
+                fileTextField.setText(""); // NOI18N
+            } else {
+                File newFile = new File(new File(projdirFile, folderTextField.getText().replace('/', File.separatorChar)),
+                                        documentName + expectedExtension);
+                fileTextField.setText(newFile.getAbsolutePath());
+            }
+        } else {
+            // Not on disk.
+            fileTextField.setText(""); // NOI18N
         }
         fireChange();
     }    
