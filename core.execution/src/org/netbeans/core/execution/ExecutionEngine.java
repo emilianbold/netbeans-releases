@@ -215,6 +215,7 @@ public final class
             ExecutionListener l = (ExecutionListener) iter.next();
             l.finishedExecution(ev);
         }
+        ev.getProcess().destroyThreadGroup(base);
     }
 
     static void putWindow(java.awt.Window w, TaskThreadGroup tg) {

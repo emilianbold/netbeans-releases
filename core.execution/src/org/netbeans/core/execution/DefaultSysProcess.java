@@ -87,4 +87,22 @@ final class DefaultSysProcess extends ExecutorTask {
     public String getName() {
         return name;
     }
+    
+    /** destroy the thread group this process was handled from. Not that simple
+     * as it seems, since the ThreadGroup can't be destroyed from inside.
+     */
+    void destroyThreadGroup(ThreadGroup base) {
+        new Thread(base, new Runnable() {
+            public void run() {
+                try {
+                    while (group.activeCount() > 0) {
+                        Thread.sleep(1000);
+                    }
+                } catch (InterruptedException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+                if (!group.isDestroyed()) group.destroy();
+            }
+        }).start();
+    }
 }
