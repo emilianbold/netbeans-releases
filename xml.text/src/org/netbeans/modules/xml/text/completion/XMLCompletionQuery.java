@@ -241,7 +241,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
      */
     private List query(SyntaxNode element, TokenItem token, String text) {
         int id = token.getTokenID().getNumericID();
-        
+
         switch ( id) {
             case XMLDefaultTokenContext.TEXT_ID:
                 if ( text.endsWith("<" )) {
@@ -333,7 +333,25 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         return queryValues();                        
                     }
                 } else {
-                    ctx.init(element, text);
+                    // This is probably an attribute value
+                    // Let's find the matching attribute node and use it to initialize the context
+                    NamedNodeMap attrs = element.getAttributes();
+                    int maxOffsetLessThanCurrent = -1;
+                    Node curAttrNode = null;
+                    for (int ind = 0; ind < attrs.getLength(); ind++) {
+                        AttrImpl attr = (AttrImpl)attrs.item(ind);
+                        int attrTokOffset = attr.getFirstToken().getOffset();
+                        if (attrTokOffset > maxOffsetLessThanCurrent && attrTokOffset < token.getOffset()) {
+                            maxOffsetLessThanCurrent = attrTokOffset;
+                            curAttrNode = attr;
+                        }
+                    }
+                
+                    if (curAttrNode != null) {
+                        ctx.init(curAttrNode, text);
+                    } else {
+                        ctx.init(element, text);
+                    }
                     return queryValues();
                 }
                 break;
