@@ -74,11 +74,15 @@ final class ViewHierarchy {
     
     private final MainWindow mainWindow = new MainWindow();
 
+    private final MainWindowListener mainWindowListener;
+    
     
     /** Creates a new instance of ViewHierarchy. */
     public ViewHierarchy(Controller controller, WindowDnDManager windowDnDManager) {
         this.controller = controller;
         this.windowDnDManager = windowDnDManager;
+        
+        this.mainWindowListener = new MainWindowListener(controller, this);
     }
     
 
@@ -88,6 +92,16 @@ final class ViewHierarchy {
     
     public MainWindow getMainWindow() {
         return mainWindow;
+    }
+    
+    public void installMainWindowListeners() {
+        mainWindow.addComponentListener(mainWindowListener);
+        mainWindow.addWindowStateListener(mainWindowListener);
+    }
+    
+    public void uninstallMainWindowListeners() {
+        mainWindow.removeComponentListener(mainWindowListener);
+        mainWindow.removeWindowStateListener(mainWindowListener);
     }
     
     /** Updates the view hierarchy according to new structure. */
@@ -712,7 +726,54 @@ final class ViewHierarchy {
         
         return sb.toString();
     }
+
+    private void setStateOfSeparateViews(int state) {
+        if(editorAreaFrame != null) {
+            editorAreaFrame.setExtendedState(state);
+        }
+
+        for(Iterator it = separateModeViews.keySet().iterator(); it.hasNext(); ) {
+            ModeView mv = (ModeView)it.next();
+            Component comp = mv.getComponent();
+            if(comp instanceof Frame) {
+                ((Frame)comp).setExtendedState(state);
+            }
+        }
+    }
+
     
+    /** Main window listener. */
+    private static class MainWindowListener extends ComponentAdapter
+    implements WindowStateListener {
+        
+        private final Controller controller;
+        private final ViewHierarchy hierarchy;
+        
+        public MainWindowListener(Controller controller, ViewHierarchy hierarchy) {
+            this.controller = controller;
+            this.hierarchy  = hierarchy;
+        }
+        
+        public void componentResized(ComponentEvent evt) {
+            controller.userResizedMainWindow(evt.getComponent().getBounds());
+        }
+        
+        public void componentMoved(ComponentEvent evt) {
+            controller.userMovedMainWindow(evt.getComponent().getBounds());
+        }
+        
+        public void windowStateChanged(WindowEvent evt) {
+            int oldState = evt.getOldState();
+            int newState = evt.getNewState();
+            controller.userChangedFrameStateMainWindow(newState);
+            
+            if(oldState == Frame.NORMAL && newState == Frame.ICONIFIED) {
+                hierarchy.setStateOfSeparateViews(Frame.ICONIFIED);
+            } else if(oldState == Frame.ICONIFIED && newState == Frame.NORMAL) {
+                hierarchy.setStateOfSeparateViews(Frame.NORMAL);
+            }
+        }
+    } // End of main window listener.
     
 }
 

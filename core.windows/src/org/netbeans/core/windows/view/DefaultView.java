@@ -63,8 +63,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     
     private final ControllerHandler controllerHandler;
     
-    private final MainWindowListener mainWindowListener = new MainWindowListener(this);
-    
     private final Set showingTopComponents = new WeakSet(10);
 
     
@@ -333,12 +331,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     private void windowSystemVisibilityChanged(boolean visible, WindowSystemAccessor wsa) {
         if(visible) {
             showWindowSystem(wsa);
-            // PENDING better handling with listening needed
-            hierarchy.getMainWindow().addComponentListener(mainWindowListener);
-            hierarchy.getMainWindow().addWindowStateListener(mainWindowListener);
         } else {
-            hierarchy.getMainWindow().removeComponentListener(mainWindowListener);
-            hierarchy.getMainWindow().removeWindowStateListener(mainWindowListener);
             hideWindowSystem();
         }
     }
@@ -402,11 +395,15 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             updateEditorAreaBoundsHelp();
             updateSeparateBoundsForView(hierarchy.getSplitRootElement());
         }
+
+        hierarchy.installMainWindowListeners();
         
         debugLog("Init view 5="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
     }
     
     private void hideWindowSystem() {
+        hierarchy.uninstallMainWindowListeners();
+        
         hierarchy.setSeparateModesVisible(false);
         hierarchy.getMainWindow().setVisible(false);
         // Release all.
@@ -718,28 +715,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         Debug.log(DefaultView.class, message);
     }
 
-    /** Main window listener. */
-    private static class MainWindowListener extends ComponentAdapter
-    implements WindowStateListener {
-        
-        private final Controller controller;
-        
-        public MainWindowListener(Controller controller) {
-            this.controller = controller;
-        }
-
-        public void componentResized(ComponentEvent evt) {
-            controller.userResizedMainWindow(evt.getComponent().getBounds());
-        }
-        
-        public void componentMoved(ComponentEvent evt) {
-            controller.userMovedMainWindow(evt.getComponent().getBounds());
-        }
-        
-        public void windowStateChanged(WindowEvent evt) {
-            controller.userChangedFrameStateMainWindow(evt.getNewState());
-        }
-    } // End of main window listener.
 
 }
 
