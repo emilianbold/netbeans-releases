@@ -19,6 +19,9 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.FileObject;
 
 import java.beans.Customizer;
 import java.io.IOException;
@@ -130,15 +133,22 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             boolean first = true;
             for (Iterator rootsIt=roots.iterator(); rootsIt.hasNext();) {
                 URL url = (URL) rootsIt.next();
-                try {
-                    File f = new File (new URI(url.toExternalForm()));
-                    if (!first) {
-                        propValue.append(File.pathSeparatorChar);
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo != null) {
+                    File f = FileUtil.toFile(fo);
+                    if (f != null) {
+                        if (!first) {
+                            propValue.append(File.pathSeparatorChar);
+                        }
+                        first = false;
+                        propValue.append (f.getAbsolutePath());
                     }
-                    first = false;
-                    propValue.append (f.getAbsolutePath());
-                } catch (URISyntaxException e) {
-                    ErrorManager.getDefault().notify(e);
+                    else {
+                        ErrorManager.getDefault().log ("J2SELibraryTypeProvider: Can not resolve URL: "+url);
+                    }
+                }
+                else {
+                    ErrorManager.getDefault().log ("J2SELibraryTypeProvider: Can not resolve URL: "+url);
                 }
             }
             if (propValue.length()>0) {

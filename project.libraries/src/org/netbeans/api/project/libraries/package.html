@@ -118,14 +118,12 @@ The library format is given by the following DTD.
 <font CLASS="COMMENT"> classpath, javadoc and src </font><font CLASS="COMMENT">--&gt;</font>
 &lt;!<font CLASS="ID">ELEMENT</font> type (<font CLASS="ID">#PCDATA</font>) &gt;
 
-<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT">- Volume resource coded as either absolute or relative URI</font>
-<font CLASS="COMMENT"> In the case of absolute URI the URI is used as a absolute path.</font>
-
-<font CLASS="COMMENT"> In the case of relative URI the URI is resolved from the NetBeans installation</font>
+<font CLASS="COMMENT">&lt;!--</font><font CLASS="COMMENT">- Volume resource coded as an URL</font>
+<font CLASS="COMMENT"> In the case of URL with nbinst protocol the URL is resolved from the NetBeans installation</font>
 <font CLASS="COMMENT"> dircetory.</font>
 <font CLASS="COMMENT"> Example:</font>
 <font CLASS="COMMENT"> file:///usr/lib/java/xerces.jar is resolved to /usr/lib/java/xerces.jar</font>
-<font CLASS="COMMENT"> modules/ext/junit.jar is resolved to ${ide</font><font CLASS="COMMENT">.home</font><font CLASS="COMMENT">}</font><font CLASS="COMMENT">/modules/ext/junit.jar</font>
+<font CLASS="COMMENT"> nbinst:///modules/ext/junit.jar is resolved to ${netbeans</font><font CLASS="COMMENT">.home</font><font CLASS="COMMENT">}</font><font CLASS="COMMENT">/modules/ext/junit.jar</font>
 
  <font CLASS="COMMENT">--&gt;</font>
 &lt;!<font CLASS="ID">ELEMENT</font> resource (<font CLASS="ID">#PCDATA</font>) &gt;

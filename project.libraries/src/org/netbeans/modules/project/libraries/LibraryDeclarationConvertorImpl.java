@@ -26,22 +26,10 @@ public class LibraryDeclarationConvertorImpl implements LibraryDeclarationConver
     
     public URL parseResource(final String data) throws SAXException {
         try {
-            URI uri = new URI (data);
-            if (!uri.isAbsolute()) {
-                java.io.File file = org.openide.modules.InstalledFileLocator.getDefault().locate(
-                    data.toString(), null, true);
-                if (file == null) {
-                    throw new SAXException ("Invalid resource URI: "+ data.trim () +")");
-                }
-                uri = file.toURI();                
-            }
-            return uri.toURL();
+            return new URL (data);
         } catch (MalformedURLException ex) {
             throw new SAXException("Invalid resource URI: " + data.trim() + ")", ex);  // NOI18N
         }
-		catch (URISyntaxException ex) {
-			throw new SAXException("Invalid resource URI: " + data.trim() + ")", ex);  // NOI18N
-		}
     }
     
     public URL parseLocation(String data) throws SAXException {
