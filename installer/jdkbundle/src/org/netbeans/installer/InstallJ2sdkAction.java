@@ -406,12 +406,24 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
      * JRE can be installed on another disk so it is split. */
     public long getCheckSum() {
         if (Util.isWindowsOS()) {
-            return 130000000L;
-        }
-        else if (Util.isSunOS()) {
-            return 140000000L;
-        }
-        else if (Util.isLinuxOS()) {
+            if (Util.isJDKAlreadyInstalled() && Util.isJREAlreadyInstalled()) {
+                return 0L;
+            } else if (!Util.isJDKAlreadyInstalled() && Util.isJREAlreadyInstalled()) {
+                //Install only JDK, JRE is already installed
+                return 124000000L;
+            } else if (Util.isJDKAlreadyInstalled() && !Util.isJREAlreadyInstalled()) {
+                //We cannot install JRE if JDK is already installed, as we do not know if
+                //JRE installer is installed with JDK
+                return 0L;
+            } else if (!Util.isJDKAlreadyInstalled() && !Util.isJREAlreadyInstalled()) {
+                //Install JDK and JRE (124+72)
+                return 196000000L;
+            }
+        } else if (Util.isLinuxOS()) {
+            return 150000000L;
+        } else if (Util.isSolarisSparc()) {
+            return 148000000L;
+        } else if (Util.isSolarisX86()) {
             return 140000000L;
         }
         return 0L;
@@ -437,31 +449,49 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         
         if (Util.isWindowsNT() || Util.isWindows98()) {
             //TMP dir is by default on system disk and we are unable to change it #48281
-	    //The j2se base image directory goes in the system drive and also cache of installer
-            //is stored to Local Settings folder it is 130MB
+	    //Cache of JDK installer is stored to Local Settings folder. It is 55MB.
             //TMP is used by bundled JVM and MSI to store its cache temporarily about 170MB
             //when it is checked here bundled JVM is already present in TMP so only about
             //additional 50MB is necessary ie.130MB+50MB=180MB at system dir.
 	    String sysDir = new String( (new Character(getWinSystemDrive())).toString().concat(":\\"));
             logEvent(this, Log.DBG, "sysDir: " + sysDir);
-	    req.addBytes(sysDir, 180000000L);
+            req.addBytes(sysDir, 55000000L);
+            req.addBytes(sysDir, 50000000L);
+            
+            //Base images in common folder
+            String commonDir = resolveString("$D(common)");
+            if (!Util.isJDKAlreadyInstalled() && Util.isJREAlreadyInstalled()) {
+                //Install only JDK, JRE is already installed
+                req.addBytes(commonDir, 72000000L);
+            } else if (!Util.isJDKAlreadyInstalled() && !Util.isJREAlreadyInstalled()) {
+                //Install JDK and JRE (72+30)
+                req.addBytes(commonDir, 102000000L);
+            }
         } else if (Util.isWindowsOS()) {
-	    //The j2se base image directory goes in the system drive and also cache of installer
-            //is stored to Local Settings folder it is 130MB
+            //Cache of JDK installer is stored to Local Settings folder. It is 55MB.
             //TMP is used by bundled JVM and MSI to store its cache temporarily about 170MB
             //when it is checked here bundled JVM is already present in TMP so only about
             //additional 50MB is necessary
 	    String sysDir = new String( (new Character(getWinSystemDrive())).toString().concat(":\\"));
             logEvent(this, Log.DBG, "sysDir: " + sysDir);
-	    req.addBytes(sysDir, 130000000L);
+	    req.addBytes(sysDir, 55000000L);
+            req.addBytes(tempDir, 50000000L);
             
             if (!Util.isJREAlreadyInstalled()) {
                 jreInstallDir = resolveString("$D(install)") + "\\Java\\"
                 + resolveString("$L(org.netbeans.installer.Bundle,JRE.defaultInstallDirectory)");
                 req.addBytes(jreInstallDir,70000000L);
             }
-
-            req.addBytes(tempDir, 50000000L);
+            
+            //Base images in common folder
+            String commonDir = resolveString("$D(common)");
+            if (!Util.isJDKAlreadyInstalled() && Util.isJREAlreadyInstalled()) {
+                //Install only JDK, JRE is already installed
+                req.addBytes(commonDir, 72000000L);
+            } else if (!Util.isJDKAlreadyInstalled() && !Util.isJREAlreadyInstalled()) {
+                //Install JDK and JRE (72+30)
+                req.addBytes(commonDir, 102000000L);
+            }
 	}
 	logEvent(this, Log.DBG, "Total (not necessarily on one disk when tempdir is redirected) Mbytes = " + (req.getTotalBytes()>>20));
         logEvent(this, Log.DBG, "RequiredBytesTable: " + req);

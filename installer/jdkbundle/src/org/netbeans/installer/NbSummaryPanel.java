@@ -294,11 +294,9 @@ public class NbSummaryPanel extends TextDisplayPanel
             size = table.getBytes(nbInstallDir) >> 20;
             logEvent(this, Log.DBG, "Size of NetBeans: " + size);
             
-            if (!Util.isJDKAlreadyInstalled()) {
-                j2seSize = getJ2SESize() >> 20;
-                logEvent(this, Log.DBG, "Adjusted size of J2SE: " + j2seSize);
-                size = size +j2seSize;
-            }
+            j2seSize = getJ2SESize() >> 20;
+            logEvent(this, Log.DBG, "Adjusted size of J2SE: " + j2seSize);
+            size = size + j2seSize;
         } catch (ServiceException e) {
             logEvent(this, Log.ERROR, e);
         }
@@ -310,14 +308,31 @@ public class NbSummaryPanel extends TextDisplayPanel
         return mBytes + " MB";  //NOI18N
     }
     
-    private long getJ2SESize() {
+    /* Data installed in Documents and Settings are included in this estimate. Waiting for response
+     * from JDK team if we can safely delete it. It is about 55mB.
+     */
+    private long getJ2SESize () {
         if (Util.isWindowsOS()) {
-            return 135000000L;
+            if (Util.isJDKAlreadyInstalled() && Util.isJREAlreadyInstalled()) {
+                return 0L;
+            } else if (!Util.isJDKAlreadyInstalled() && Util.isJREAlreadyInstalled()) {
+                //Install only JDK, JRE is already installed
+                return 251000000L;
+            } else if (Util.isJDKAlreadyInstalled() && !Util.isJREAlreadyInstalled()) {
+                //We cannot install JRE if JDK is already installed, as we do not know if
+                //JRE installer is installed with JDK
+                return 0L;
+            } else if (!Util.isJDKAlreadyInstalled() && !Util.isJREAlreadyInstalled()) {
+                //Install JDK and JRE
+                return 353000000L;
+            }
         } else if (Util.isLinuxOS()) {
-            return 140000000L;
-        } else if (Util.isSunOS()) {
+            return 150000000L;
+        } else if (Util.isSolarisSparc()) {
+            return 148000000L;
+        } else if (Util.isSolarisX86()) {
             return 140000000L;
         }
-        return 100000000L;
+        return 0L;
     }
 }
