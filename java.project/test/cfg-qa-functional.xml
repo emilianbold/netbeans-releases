@@ -19,6 +19,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="projects/TestCreateProject.class"/>
                 <include name="projects/TestFreeformProject.class"/>
+                <exclude name="projects/TestCreateProject.class/testCreateProject_6"/>
             </patternset>
         </testset>
     </testbag>
