@@ -15,7 +15,7 @@ package org.netbeans.modules.form.palette;
 
 import java.util.*;
 import java.io.*;
-import java.beans.BeanInfo;
+import java.beans.*;
 
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
@@ -284,7 +284,7 @@ class PaletteItemDataObject extends MultiDataObject {
     // -------
 
     /** DataLoader for the palette item files. */
-    static final class PaletteItemDataLoader extends UniFileLoader {
+    public static final class PaletteItemDataLoader extends UniFileLoader {
 
         static final String ITEM_EXT = "palette_item"; // NOI18N
 
@@ -295,12 +295,43 @@ class PaletteItemDataObject extends MultiDataObject {
             ext.addExtension(ITEM_EXT);
             setExtensions(ext);
         }
+        
+        /** Gets default display name. Overides superclass method. */
+        protected String defaultDisplayName() {
+            return NbBundle.getBundle(PaletteItemDataObject.class)
+            .getString("PROP_PaletteItemLoader_Name"); // NOI18N
+        }
+        
 
         protected MultiDataObject createMultiObject(FileObject primaryFile)
             throws DataObjectExistsException, IOException
         {
             return new PaletteItemDataObject(primaryFile, this);
         }
+    }
+    
+    public static final class PaletteItemDataLoaderBeanInfo extends SimpleBeanInfo {
+        private static String iconURL = "org/netbeans/modules/form/resources/palette.gif"; // NOI18N
+        private static String icon32URL = "org/netbeans/modules/form/resources/palette32.gif"; // NOI18N
+        
+        public BeanInfo[] getAdditionalBeanInfo() {
+            try {
+                return new BeanInfo[] { Introspector.getBeanInfo(UniFileLoader.class) };
+            } catch (IntrospectionException ie) {
+                org.openide.ErrorManager.getDefault().notify(ie);
+                return null;
+            }
+        }
+        
+        public java.awt.Image getIcon(final int type) {
+            if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
+            (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
+                return Utilities.loadImage(iconURL);
+            } else {
+                return Utilities.loadImage(icon32URL);
+            }
+        }
+        
     }
 
     // --------
