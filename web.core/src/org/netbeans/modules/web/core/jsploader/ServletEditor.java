@@ -284,36 +284,60 @@ public class ServletEditor extends CloneableEditorSupport
             ServletEditor se = (ServletEditor)cloneableEditorSupport();
             if (se != null) {
                 JspDataObject jspdo = se.jspEnv().getJspDataObject();
-                JspServletDataObject servlet = jspdo.getServletDataObject();
-                if (servlet==null) {
+                if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+                    setNodes(jspdo, offset);
+                }
+                else{
+                    System.out.println("nutno proplanovat");
+                    javax.swing.SwingUtilities.invokeLater(new NodesThread(jspdo, offset));
+                }
+            }
+        }
+        
+        private class NodesThread implements Runnable {
+            JspDataObject jspdo;
+            int offset;
+            
+            NodesThread (JspDataObject jspdo, int offset){
+                this.jspdo = jspdo;
+                this.offset = offset;
+            }
+            
+            public void run() {
+                setNodes(jspdo, offset);
+            }
+        }
+        
+        private void setNodes (JspDataObject jspdo, final int offset){
+            JspServletDataObject servlet = jspdo.getServletDataObject();
+            if (servlet==null) {
                     setActivatedNodes(new Node[] { jspdo.getNodeDelegate() });
                     return;
                 }
-                SourceCookie.Editor seditor = (SourceCookie.Editor)servlet.getCookie(SourceCookie.Editor.class);
+            SourceCookie.Editor seditor = (SourceCookie.Editor)servlet.getCookie(SourceCookie.Editor.class);
 
-                org.openide.src.Element element = seditor.findElement(offset);
-                org.openide.src.nodes.ElementNodeFactory factory = JavaDataObject.getExplorerFactory();
-                Node n = null;
-                if (element instanceof org.openide.src.MethodElement) {
-                    n = factory.createMethodNode((org.openide.src.MethodElement)element);
-                }
-                else if (element instanceof org.openide.src.ClassElement) {
-                    n = factory.createClassNode((org.openide.src.ClassElement)element);
-                }
-                else if (element instanceof org.openide.src.ConstructorElement) {
-                    n = factory.createConstructorNode((org.openide.src.ConstructorElement)element);
-                }
-                else if (element instanceof org.openide.src.FieldElement) {
-                    n = factory.createFieldNode((org.openide.src.FieldElement)element);
-                }
-                else if (element instanceof org.openide.src.InitializerElement) {
-                    n = factory.createInitializerNode((org.openide.src.InitializerElement)element);
-                }
-                else if (element instanceof org.openide.src.SourceElement) {
-                    n = servlet.getNodeDelegate();
-                }
-                setActivatedNodes((n != null) ? new Node[] { n } : new Node[] { jspdo.getNodeDelegate() });
+            org.openide.src.Element element = seditor.findElement(offset);
+            org.openide.src.nodes.ElementNodeFactory factory = JavaDataObject.getExplorerFactory();
+            Node n = null;
+            if (element instanceof org.openide.src.MethodElement) {
+                n = factory.createMethodNode((org.openide.src.MethodElement)element);
             }
+            else if (element instanceof org.openide.src.ClassElement) {
+                n = factory.createClassNode((org.openide.src.ClassElement)element);
+            }
+            else if (element instanceof org.openide.src.ConstructorElement) {
+                n = factory.createConstructorNode((org.openide.src.ConstructorElement)element);
+            }
+            else if (element instanceof org.openide.src.FieldElement) {
+                n = factory.createFieldNode((org.openide.src.FieldElement)element);
+            }
+            else if (element instanceof org.openide.src.InitializerElement) {
+                n = factory.createInitializerNode((org.openide.src.InitializerElement)element);
+            }
+            else if (element instanceof org.openide.src.SourceElement) {
+                n = servlet.getNodeDelegate();
+            }
+            setActivatedNodes((n != null) ? new Node[] { n } : new Node[] { jspdo.getNodeDelegate() });
         }
         
         /** Obtain a support for this component 
