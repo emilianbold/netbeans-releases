@@ -351,6 +351,18 @@ public final class NbMainExplorer extends CloneableTopComponent
     public void readExternal (ObjectInput in)
     throws IOException, ClassNotFoundException {
         super.readExternal(in);
+        //System.out.println("READING old main explorer..."); // NOI18N
+        // read explorer panels (and managers)
+        int cnt = in.readInt ();
+        for (int i = 0; i < cnt; i++) {
+            in.readObject();
+        }
+        in.readObject();
+        // read property sheet switcher state...
+        in.readBoolean ();
+        in.readBoolean ();
+        in.readInt();
+        in.readInt();
     }
 
     //Temporary solution for bugfix #9352. There is currently
