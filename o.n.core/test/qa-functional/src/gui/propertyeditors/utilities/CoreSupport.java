@@ -14,18 +14,13 @@
 package gui.propertyeditors.utilities;
 
 import java.io.PrintStream;
-import java.awt.Component;
 import java.io.IOException;
+import java.awt.Component;
 import javax.swing.JDialog;
 
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.JDialogOperator;
-
-
-//J2 import org.netbeans.test.oo.gui.jelly.JellyException;
-//J2 import org.netbeans.test.oo.gui.jelly.FormEditorWindow;
-//J2 import org.netbeans.test.oo.gui.jello.JelloBundle;
 
 import org.netbeans.junit.NbTestCase;
 

@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -103,7 +103,8 @@ Microsystems, Inc. All Rights Reserved.
 
 
 <!-- Start Property Editors testbag -->
-    <testbag testattribs="platform" executor="platform" name="Property Editors - platform" resultsprocessor="unit">
+
+    <testbag testattribs="validation or full or ide or pe" executor="ide" name="Property Editors tests" resultsprocessor="unit">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_BooleanO.class"/>
@@ -111,12 +112,10 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="gui/propertyeditors/PropertyType_Character.class"/>
 		<include name="gui/propertyeditors/PropertyType_Class.class"/>
 		<include name="gui/propertyeditors/PropertyType_DoubleO.class"/>
-		<include name="gui/propertyeditors/PropertyType_ElementFormat.class"/>
 		<include name="gui/propertyeditors/PropertyType_FloatO.class"/>
 		<include name="gui/propertyeditors/PropertyType_Integer.class"/>
 		<include name="gui/propertyeditors/PropertyType_LongO.class"/>
 		<include name="gui/propertyeditors/PropertyType_ShortO.class"/>
-		<include name="gui/propertyeditors/PropertyType_Type.class"/>
 		<include name="gui/propertyeditors/PropertyType_URL.class"/>
 		<include name="gui/propertyeditors/PropertyType_boolean.class"/>
 		<include name="gui/propertyeditors/PropertyType_byte.class"/>
@@ -127,7 +126,68 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="gui/propertyeditors/PropertyType_long.class"/>
 		<include name="gui/propertyeditors/PropertyType_short.class"/>
                 
-            </patternset>
+<!--		<include name="gui/propertyeditors/PropertyType_ElementFormat.class"/>
+		<include name="gui/propertyeditors/PropertyType_Type.class"/>
+-->	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="validation or full or ide or pe" executor="ide" name="Property Customizers tests" resultsprocessor="unit">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/propertyeditors/PropertyType_Color.class"/>
+		<include name="gui/propertyeditors/PropertyType_CompilerType.class"/>
+		<include name="gui/propertyeditors/PropertyType_Dimension.class"/>
+		<include name="gui/propertyeditors/PropertyType_Executor.class"/>
+		<include name="gui/propertyeditors/PropertyType_ExtensionList.class"/>
+		<include name="gui/propertyeditors/PropertyType_File.class"/>
+		<include name="gui/propertyeditors/PropertyType_Filesystem.class"/>
+		<include name="gui/propertyeditors/PropertyType_Font.class"/>
+		<include name="gui/propertyeditors/PropertyType_HTMLBrowser.class"/>
+		<include name="gui/propertyeditors/PropertyType_IndentEngine.class"/>
+		<include name="gui/propertyeditors/PropertyType_Insets.class"/>
+		<include name="gui/propertyeditors/PropertyType_NbClassPath.class"/>
+		<include name="gui/propertyeditors/PropertyType_NbProcessDescriptor.class"/>
+		<include name="gui/propertyeditors/PropertyType_Point.class"/>
+		<include name="gui/propertyeditors/PropertyType_Properties.class"/>
+		<include name="gui/propertyeditors/PropertyType_Rectangle.class"/>
+		<include name="gui/propertyeditors/PropertyType_ServiceType.class"/>
+		<include name="gui/propertyeditors/PropertyType_String.class"/>
+		<include name="gui/propertyeditors/PropertyType_StringArray.class"/>
+                
+<!--		<include name="gui/propertyeditors/PropertyType_IdentifierArray.class"/>
+		<include name="gui/propertyeditors/PropertyType_DebuggerType.class"/>
+                
+		<include name="gui/propertyeditors/PropertyType_Icon.class"/>
+-->	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="platform" executor="platform" name="Property Editors - platform" resultsprocessor="unit">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/propertyeditors/PropertyType_BooleanO.class"/>
+		<include name="gui/propertyeditors/PropertyType_ByteO.class"/>
+		<include name="gui/propertyeditors/PropertyType_Character.class"/>
+		<include name="gui/propertyeditors/PropertyType_Class.class"/>
+		<include name="gui/propertyeditors/PropertyType_DoubleO.class"/>
+		<include name="gui/propertyeditors/PropertyType_FloatO.class"/>
+		<include name="gui/propertyeditors/PropertyType_Integer.class"/>
+		<include name="gui/propertyeditors/PropertyType_LongO.class"/>
+		<include name="gui/propertyeditors/PropertyType_ShortO.class"/>
+		<include name="gui/propertyeditors/PropertyType_URL.class"/>
+		<include name="gui/propertyeditors/PropertyType_boolean.class"/>
+		<include name="gui/propertyeditors/PropertyType_byte.class"/>
+		<include name="gui/propertyeditors/PropertyType_char.class"/>
+		<include name="gui/propertyeditors/PropertyType_double.class"/>
+		<include name="gui/propertyeditors/PropertyType_float.class"/>
+		<include name="gui/propertyeditors/PropertyType_int.class"/>
+		<include name="gui/propertyeditors/PropertyType_long.class"/>
+		<include name="gui/propertyeditors/PropertyType_short.class"/>
+                
+<!--		<include name="gui/propertyeditors/PropertyType_ElementFormat.class"/>
+		<include name="gui/propertyeditors/PropertyType_Type.class"/>
+-->            </patternset>
         </testset>
     </testbag>
     
@@ -140,8 +200,6 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="gui/propertyeditors/PropertyType_File.class"/>
 		<include name="gui/propertyeditors/PropertyType_Filesystem.class"/>
 		<include name="gui/propertyeditors/PropertyType_Font.class"/>
-		<include name="gui/propertyeditors/PropertyType_Icon.class"/>
-		<include name="gui/propertyeditors/PropertyType_IdentifierArray.class"/>
 		<include name="gui/propertyeditors/PropertyType_Insets.class"/>
 		<include name="gui/propertyeditors/PropertyType_NbClassPath.class"/>
 		<include name="gui/propertyeditors/PropertyType_NbProcessDescriptor.class"/>
@@ -152,14 +210,9 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="gui/propertyeditors/PropertyType_StringArray.class"/>
                 
 		<include name="gui/propertyeditors/PropertyType_CompilerType.class/testByCombo"/>
-		<include name="gui/propertyeditors/PropertyType_CompilerType.class/varifyCustomizer"/>
+		<include name="gui/propertyeditors/PropertyType_CompilerType.class/verifyCustomizer"/>
 <!--		<include name="gui/propertyeditors/PropertyType_CompilerType.class/testCustomizerCancel_platform"/>
 		<include name="gui/propertyeditors/PropertyType_CompilerType.class/testCustomizerOk_platform"/>
--->                
-		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testByCombo"/>
-		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/verifyCustomizer"/>
-<!--		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testCustomizerCancel_platform"/>
-		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testCustomizerOk_platform"/>
 -->                
 		<include name="gui/propertyeditors/PropertyType_Executor.class/testByCombo"/>
 		<include name="gui/propertyeditors/PropertyType_Executor.class/verifyCustomizer"/>
@@ -178,62 +231,15 @@ Microsystems, Inc. All Rights Reserved.
 <!--		<include name="gui/propertyeditors/PropertyType_ServiceType.class/testCustomizerCancel_platform"/>
 		<include name="gui/propertyeditors/PropertyType_ServiceType.class/testCustomizerOk_platform"/>
 -->                
-	    </patternset>
-	</testset>
-    </testbag>
 
-    <testbag testattribs="validation or full or ide or pe" executor="ide" name="Property Editors tests - validation" resultsprocessor="unit">
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/propertyeditors/PropertyType_BooleanO.class"/>
-		<include name="gui/propertyeditors/PropertyType_ByteO.class"/>
-		<include name="gui/propertyeditors/PropertyType_Character.class"/>
-		<include name="gui/propertyeditors/PropertyType_Class.class"/>
-		<include name="gui/propertyeditors/PropertyType_DoubleO.class"/>
-		<include name="gui/propertyeditors/PropertyType_ElementFormat.class"/>
-		<include name="gui/propertyeditors/PropertyType_FloatO.class"/>
-		<include name="gui/propertyeditors/PropertyType_Integer.class"/>
-		<include name="gui/propertyeditors/PropertyType_LongO.class"/>
-		<include name="gui/propertyeditors/PropertyType_ShortO.class"/>
-		<include name="gui/propertyeditors/PropertyType_Type.class"/>
-		<include name="gui/propertyeditors/PropertyType_URL.class"/>
-		<include name="gui/propertyeditors/PropertyType_boolean.class"/>
-		<include name="gui/propertyeditors/PropertyType_byte.class"/>
-		<include name="gui/propertyeditors/PropertyType_char.class"/>
-		<include name="gui/propertyeditors/PropertyType_double.class"/>
-		<include name="gui/propertyeditors/PropertyType_float.class"/>
-		<include name="gui/propertyeditors/PropertyType_int.class"/>
-		<include name="gui/propertyeditors/PropertyType_long.class"/>
-		<include name="gui/propertyeditors/PropertyType_short.class"/>
-	    </patternset>
-	</testset>
-    </testbag>
 
-    <testbag testattribs="validation or full or ide or pe" executor="ide" name="Property Customizers tests - validation" resultsprocessor="unit">
-	<testset dir="qa-functional/src">
-	    <patternset>
-		<include name="gui/propertyeditors/PropertyType_Color.class"/>
-		<include name="gui/propertyeditors/PropertyType_CompilerType.class"/>
-		<include name="gui/propertyeditors/PropertyType_DebuggerType.class"/>
-		<include name="gui/propertyeditors/PropertyType_Dimension.class"/>
-		<include name="gui/propertyeditors/PropertyType_Executor.class"/>
-		<include name="gui/propertyeditors/PropertyType_ExtensionList.class"/>
-		<include name="gui/propertyeditors/PropertyType_File.class"/>
-		<include name="gui/propertyeditors/PropertyType_Filesystem.class"/>
-		<include name="gui/propertyeditors/PropertyType_Font.class"/>
-		<include name="gui/propertyeditors/PropertyType_HTMLBrowser.class"/>
+<!--		<include name="gui/propertyeditors/PropertyType_IdentifierArray.class"/>
 		<include name="gui/propertyeditors/PropertyType_Icon.class"/>
-		<include name="gui/propertyeditors/PropertyType_IdentifierArray.class"/>
-		<include name="gui/propertyeditors/PropertyType_IndentEngine.class"/>
-		<include name="gui/propertyeditors/PropertyType_Insets.class"/>
-		<include name="gui/propertyeditors/PropertyType_NbClassPath.class"/>
-		<include name="gui/propertyeditors/PropertyType_NbProcessDescriptor.class"/>
-		<include name="gui/propertyeditors/PropertyType_Point.class"/>
-		<include name="gui/propertyeditors/PropertyType_Properties.class"/>
-		<include name="gui/propertyeditors/PropertyType_Rectangle.class"/>
-		<include name="gui/propertyeditors/PropertyType_ServiceType.class"/>
-		<include name="gui/propertyeditors/PropertyType_String.class"/>
-		<include name="gui/propertyeditors/PropertyType_StringArray.class"/>
+		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testByCombo"/>
+		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/verifyCustomizer"/>
+		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testCustomizerCancel_platform"/>
+		<include name="gui/propertyeditors/PropertyType_DebuggerType.class/testCustomizerOk_platform"/>
+-->
 	    </patternset>
 	</testset>
     </testbag>
@@ -245,7 +251,7 @@ Microsystems, Inc. All Rights Reserved.
 	    </patternset>
 	</testset>
     </testbag>
-								
+
 <!-- END Property Editors testbag -->
     
     <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
@@ -259,7 +265,7 @@ Microsystems, Inc. All Rights Reserved.
     <executor name="platform" antfile="build-qa-functional.xml" target="runplatformtest"/>
 
     <compiler name="QAcompiler" antfile="build-qa-functional.xml" target="QAcompiler" default="true"/>
-
+    
     <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
 
 </mconfig>

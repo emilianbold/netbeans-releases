@@ -18,17 +18,14 @@ import gui.propertyeditors.data.PropertiesTest;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NbFrameOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 
-import org.netbeans.jellytools.properties.ComboBoxProperty;
 import org.netbeans.jellytools.properties.Property;
+import org.netbeans.jellytools.properties.ComboBoxProperty;
+import org.netbeans.jellytools.properties.TextFieldProperty;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jellytools.properties.PropertySheetTabOperator;
-import org.netbeans.jellytools.properties.TextFieldProperty;
 
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
@@ -38,19 +35,19 @@ import org.netbeans.jemmy.operators.Operator;
 
 
 /**
+ * JellyTestCase test case with implemented Property Editors Test support stuff
  *
- * @author  Marian.Mirilovic@Sun.Com
+ * @author  mmirilovic@netbeans.org
  */
 public abstract class PropertyEditorsTest extends JellyTestCase {
     
-    protected PrintStream err;
-    protected PrintStream log;
+    protected static PrintStream err;
+    protected static PrintStream log;
     
     public String propertyInitialValue;
-//    public String propertyName;
     public String propertyValue;
     
-    protected NbDialogOperator propertyCustomizer;
+    protected static NbDialogOperator propertyCustomizer;
     
     //protected static NbDialogOperator beanCustomizer = null;
     protected static FrameOperator propertiesWindow = null;
@@ -76,8 +73,10 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         }
     }
     
-    
-    
+    /** Open Property Customizer for <b>propertyName</b>, set value by customizer and press Ok button, verify value with <b>expectance</b>.
+     * @param propertyName name of property to be customized
+     * @param expectance true- new value must be the same as expected value, false-value needn't be the same as expected
+     */    
     public void setByCustomizerOk(String propertyName, boolean expectance){
         try {
             err.println(CAPTION + " Trying to set value by customizer-ok {name="+propertyName+" / value="+propertyValue+"} .");
@@ -96,8 +95,10 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         }
     }
     
-    
-    
+    /** Open Property Customizer for <b>propertyName</b>, set value by customizer and press Cancel button, verify value with <b>expectance</b>.
+     * @param propertyName name of property to be customized
+     * @param expectance true- new value must be the same as expected value, false-value needn't be the same as expected
+     */    
     public void setByCustomizerCancel(String propertyName, boolean expectance) {
         try {
             err.println(CAPTION + " Trying to set value by customizer-cancel {name="+propertyName+" / value="+propertyValue+"} .");
@@ -116,8 +117,11 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         }
     }
     
-    
-    
+    /** Set value <b>propertyValue</b> of property <b>propertyName</b> by in-place, verify value with <b>expectance</b>.
+     * @param propertyName name of property to be changed
+     * @param propertyValue new value of property 
+     * @param expectance true- new value must be the same as expected value, false-value needn't be the same as expected
+     */    
     public void setByInPlace(String propertyName, String propertyValue, boolean expectance) {
         try {
             err.println(CAPTION + " Trying to set value by in-place {name="+propertyName+" / value="+propertyValue+"} .");
@@ -135,8 +139,11 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         }
     }
     
-    
-    
+    /** Set value <b>propertyValue</b> of property <b>propertyName</b> by combobox, verify value with <b>expectance</b>.
+     * @param propertyName name of property to be changed
+     * @param propertyValue new value of property 
+     * @param expectance true- new value must be the same as expected value, false-value needn't be the same as expected
+     */    
     public void setByCombo(String propertyName, String propertyValue, boolean expectance) {
         try {
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValue+"} .");
@@ -154,8 +161,11 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         }
     }
     
-    
-    
+    /** Set indexed value <b>propertyValueIndex</b> of property <b>propertyName</b> by combobox, verify value with <b>expectance</b>.
+     * @param propertyName name of property to be changed
+     * @param propertyValueIndex index of new value in combobox
+     * @param expectance true- new value must be the same as expected value, false-value needn't be the same as expected
+     */    
     public void setByCombo(String propertyName, int propertyValueIndex, boolean expectance) {
         try {
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValueIndex+"} .");
@@ -173,6 +183,9 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         }
     }
     
+    /** Verify customizer layout for property <b>propertyName</b>.
+     * @param propertyName name of property to be changed
+     */    
     public void verifyCustomizer(String propertyName){
         try {
             err.println(CAPTION + " Trying to verify customizer {name="+propertyName+"} .");
@@ -189,24 +202,34 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         }
     }
     
-    private NbDialogOperator openAndGetPropertyCustomizer(String propertyName) {
+    /** Open property customizer for property <b>propertyName</b>.
+     * @param propertyName name of property to be changed
+     * @return Property Customizer 
+     */    
+    public static NbDialogOperator openAndGetPropertyCustomizer(String propertyName) {
         // open Property Editor
-        err.println(CAPTION + " Trying to open Property Customizer{"+JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout")+"}.");
+        //err.println(CAPTION + " Trying to open Property Customizer{"+JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout")+"}.");
 
         //H1 PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
         //H1 new Property(propertiesTab, propertyName).openEditor();
         findProperty(propertyName, "").openEditor();
         
-        err.println(CAPTION + " Trying to open Property Customizer - finished.");
+        //err.println(CAPTION + " Trying to open Property Customizer - finished.");
         propertyCustomizer = findPropertyCustomizer(propertyName);
         
         return propertyCustomizer;
     }
     
+    /** Return Property Customizer.
+     * @return Property Customizer.
+     */    
     public NbDialogOperator getPropertyCustomizer() {
         return propertyCustomizer;
     }
     
+    /** Return Informational dialog
+     * @return Informational dialog
+     */    
     public NbDialogOperator getInformationDialog() {
         String title = "Information";
         err.println(CAPTION + " Waiting dialog {"+title+"} .");
@@ -215,7 +238,10 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         return dialog;
     }
     
-    
+    /** Get value of property <b>propertyName</b>
+     * @param propertyName name of property asked for value
+     * @return value of property 
+     */    
     public String getValue(String propertyName) {
         String returnValue;
         
@@ -228,17 +254,24 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         return returnValue;
     }
     
-    
-    /* find Property Customizer 
-     */
-    private NbDialogOperator findPropertyCustomizer(String propertyName){
-        err.println(CAPTION + " Trying to find Property Customizer.");
+    /** Find Property Cusotmizer by name of property <b>propertyName</b>
+     * @param propertyName name of property 
+     * @return founded Property Customizer
+     */    
+    private static NbDialogOperator findPropertyCustomizer(String propertyName){
+        //err.println(CAPTION + " Trying to find Property Customizer.");
         NbDialogOperator propertyCustomizer = new NbDialogOperator(propertyName);
-        err.println(CAPTION + " Trying to find Property Customizer - finished.");
+        //err.println(CAPTION + " Trying to find Property Customizer - finished.");
         return propertyCustomizer;
     }
     
-    
+    /** Verify exceptation value.
+     * @param propertyName name of property 
+     * @param expectation true - expected value must be the same as new value, false - expected value should not be the same
+     * @param propertyValueExpectation expected value
+     * @param propertyValue new value
+     * @param waitDialog true - after changing value Informational dialog about impissibility to set invalid value arise
+     */    
     public void verifyExpectationValue(String propertyName, boolean expectation, String propertyValueExpectation, String propertyValue, boolean waitDialog){
         
         // Dialog isn't used for informing user about Invalid new value: Class,
@@ -276,33 +309,57 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     }
     
     
-    public void initializeWorkplace() {
-        openPropertySheet();
+    public static FrameOperator reInitializeWorkplace() {
+        propertiesWindow = null;
+        return openPropertySheet();
     }
     
+    /* Initialize Workplace.
+     */
+    public static FrameOperator initializeWorkplace() {
+        return openPropertySheet();
+    }
     
-    private void openPropertySheet() {
-        err.println(CAPTION + " Trying to run PropertiesTest");
+    /* Open property sheet (bean customizer).
+     */
+    private static FrameOperator openPropertySheet() {
+        String waitFrameTimeout = "FrameWaiter.WaitFrameTimeout";
+        long findTimeout = JemmyProperties.getCurrentTimeout(waitFrameTimeout);
+        JemmyProperties.setCurrentTimeout(waitFrameTimeout, 3000);
+
+        try{
+            propertiesWindow = new FrameOperator("Properties of TestNode");
+        }catch(org.netbeans.jemmy.TimeoutExpiredException exception){
+           new PropertiesTest();
+           propertiesWindow = new FrameOperator("Properties of TestNode");
+        }
         
+        JemmyProperties.setCurrentTimeout(waitFrameTimeout, findTimeout);
+        
+/*        
         if(propertiesWindow==null){
             new PropertiesTest();
             // beanCustomizer = new TopComponentOperator(Bundle.getString("org.openide.nodes.Bundle", "Properties"));
             //beanCustomizer = new TopComponentOperator(Bundle.getString("org.netbeans.core.Bundle","CTL_FMT_LocalProperties",new Object[] {new Integer(1), "TestN"}));
-            propertiesWindow = new FrameOperator("Properties of Tes");
+            propertiesWindow = new FrameOperator("Properties of TestNode");
             
             // Next code doesn't work because seDefaultStringComparator sets comparator for all Operators
             // PropertySheetOperator.setDefaultStringComparator(new Operator.DefaultStringComparator(true, true));
         }
-        err.println(CAPTION + " Trying to run PropertiesTest - finished.");
+        //err.println(CAPTION + " Trying to run PropertiesTest - finished.");
+*/        
+        return propertiesWindow;
     }
     
     
-    /* 
+    /* H1
      * Find Property in Property Sheet and return them. 
      * This is first hack for new Jelly2, because it isn't possible to set String Comparator only for one operator.
-     * H1
-     */
-    private Property findProperty(String propertyName, String type) {
+     * @param propertyName name of property
+     * @param type  TextFieldProperty - textfield property, ComboBoxProperty - combobox property
+     * @return property by <b>propertyName</b> and <b>type</b>.
+     */    
+    public static Property findProperty(String propertyName, String type) {
         Operator.StringComparator oldComparator = Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(new Operator.DefaultStringComparator(true, true));
         
@@ -355,14 +412,20 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
          */
     }
     
-    private void failTest(Exception exc, String message) {
-        makeIDEScreenshot(this);
+    /** Print full stack trace to log files, get message and log to test results if test fails.
+     * @param exc Exception logged to description
+     * @param message written to test results
+     */    
+    protected void failTest(Exception exc, String message) {
         err.println("################################");
         exc.printStackTrace(err);
         err.println("################################");
         fail(message);
     }
     
+    /** Make IDE screenshot of whole IDE 
+     * @param testCase it is needed for locate destination directory of saving screenshot file 
+     */    
     public static void makeIDEScreenshot(JellyTestCase testCase) {
         try{                                                                                                                                           
             testCase.getWorkDir();                                                                                                                     
