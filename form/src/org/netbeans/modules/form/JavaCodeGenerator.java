@@ -695,6 +695,18 @@ public class JavaCodeGenerator extends CodeGenerator {
       regenerateInitializer ();
     }
 
+    /** Called when any layout property of specified component on given container changes
+    * @param container the visual container on which layout the change happened
+    * @param component the component which layout property changed or null if layout's own property changed
+    * @param propertyName name of changed property
+    * @param oldValue old value of changed property
+    * @param newValue new value of changed property
+    */
+    public void layoutChanged (RADVisualContainer container, RADVisualComponent component, String propertyName, Object oldValue, Object newValue) {
+      // 1. regenerate initializer
+      regenerateInitializer ();
+    }
+    
     /** Called when an event handler is added to a component on the form
     * @param evt the event object describing the event
     */
@@ -723,6 +735,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  24   Gandalf   1.23        6/10/99  Ian Formanek    Regeneration on layout 
+ *       changes
  *  23   Gandalf   1.22        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  22   Gandalf   1.21        6/8/99   Ian Formanek    Fixed bugs 1856 - The 
