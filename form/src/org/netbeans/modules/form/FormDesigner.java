@@ -31,8 +31,6 @@ import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.explorer.ExplorerPanel;
 
-import org.netbeans.lib.awtextra.AbsoluteConstraints;
-
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.*;
 import org.netbeans.modules.form.layoutsupport.*;
@@ -703,6 +701,8 @@ public class FormDesigner extends TopComponent
                     designer.compToMetaComp.put(cb, c);
                 }
 
+                walkVisualComps(cb, c, designer);
+
                 if (comp instanceof RADVisualContainer
                     && bean instanceof Container
                     && c instanceof RADVisualComponent
@@ -713,7 +713,6 @@ public class FormDesigner extends TopComponent
                                             (RADVisualComponent) c,
                                             (Component) cb);
                 }
-                walkVisualComps(cb, c, designer);
             }
 
             if (comp instanceof RADVisualContainer) {
@@ -728,7 +727,7 @@ public class FormDesigner extends TopComponent
     private static void setContainerLayout(Container cont,
                                            LayoutSupport laySup) {
         if (laySup != null) {
-            if (laySup instanceof NullLayoutSupport)
+            if (laySup.getClass() == NullLayoutSupport.class)
                 cont.setLayout(null);
             else {
                 LayoutManager lm = laySup.cloneLayoutInstance(cont);
@@ -772,6 +771,22 @@ public class FormDesigner extends TopComponent
                 }
             }
         }
+        else if (container instanceof JLayeredPane) {
+            LayoutSupport.ConstraintsDesc desc =
+                    radcomp.getConstraintsDesc(JLayeredPaneSupport.class);
+            if (desc instanceof JLayeredPaneSupport.LayeredConstraintsDesc) {
+                Rectangle bounds =
+                    ((JLayeredPaneSupport.LayeredConstraintsDesc)desc)
+                        .getBounds();
+                if (bounds.width == -1)
+                    bounds.width = comp.getPreferredSize().width;
+                if (bounds.height == -1)
+                    bounds.height = comp.getPreferredSize().height;
+
+                container.add(comp, desc.getConstraintsObject());
+                comp.setBounds(bounds);
+            }
+        }
         else {//if (isContainer(container))
             LayoutSupport layoutSupp = radcontainer.getLayoutSupport();
             if (layoutSupp == null) { // this should not happen
@@ -793,15 +808,13 @@ public class FormDesigner extends TopComponent
                     root.add(comp, constr);
             }
             else if (constrDesc instanceof AbsoluteLayoutSupport.AbsoluteConstraintsDesc) {
-                AbsoluteConstraints ac = (AbsoluteConstraints)
-                                         constrDesc.getConstraintsObject();
-                Rectangle bounds = new Rectangle();
-                bounds.x = ac.x;
-                bounds.y = ac.y;
-                bounds.width = ac.width > -1 ?
-                               ac.width : comp.getPreferredSize().width;
-                bounds.height = ac.height > -1 ?
-                                ac.height : comp.getPreferredSize().height;
+                Rectangle bounds =
+                    ((AbsoluteLayoutSupport.AbsoluteConstraintsDesc)constrDesc)
+                        .getBounds();
+                if (bounds.width == -1)
+                    bounds.width = comp.getPreferredSize().width;
+                if (bounds.height == -1)
+                    bounds.height = comp.getPreferredSize().height;
                 root.add(comp);
                 comp.setBounds(bounds);
             }

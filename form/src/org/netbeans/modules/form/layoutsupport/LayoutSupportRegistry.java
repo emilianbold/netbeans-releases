@@ -35,6 +35,8 @@ public class LayoutSupportRegistry {
     public static Class getLayoutSupportForContainer(Class containerClass) {
         String className = (String)
             getContainersMap().get(containerClass.getName());
+        if (className == null)
+            className = findSuperClass(getContainersMap(), containerClass);
 
         if (className != null) {
             try {
@@ -48,12 +50,22 @@ public class LayoutSupportRegistry {
     }
 
     public static String getLayoutSupportForContainer(String containerClassName) {
-        return (String) getContainersMap().get(containerClassName);
+        String className = (String) getContainersMap().get(containerClassName);
+        if (className == null) {
+            try {
+                className = findSuperClass(getContainersMap(),
+                                           Class.forName(containerClassName));
+            }
+            catch (ClassNotFoundException e) {} // ignore
+        }
+        return className;
     }
 
     public static Class getLayoutSupportForLayout(Class layoutClass) {
         String className = (String)
             getLayoutsMap().get(layoutClass.getName());
+        if (className == null)
+            className = findSuperClass(getLayoutsMap(), layoutClass);
 
         if (className != null) {
             try {
@@ -69,7 +81,15 @@ public class LayoutSupportRegistry {
     }
 
     public static String getLayoutSupportForLayout(String layoutClassName) {
-        return (String) getLayoutsMap().get(layoutClassName);
+        String className = (String) getLayoutsMap().get(layoutClassName);
+        if (className == null) {
+            try {
+                className = findSuperClass(getLayoutsMap(),
+                                           Class.forName(layoutClassName));
+            }
+            catch (ClassNotFoundException e) {} // ignore
+        }
+        return className;
     }
 
     public static Node.Property[] getLayoutProperties(LayoutSupport ls) {
@@ -153,6 +173,20 @@ public class LayoutSupportRegistry {
     // -----------
     // private methods
 
+    private static String findSuperClass(Map map, Class subClass) {
+        for (Iterator it=map.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry en = (Map.Entry) it.next();
+            String className = (String) en.getKey();
+            try {
+                Class keyClass = Class.forName(className);
+                if (keyClass.isAssignableFrom(subClass))
+                    return (String) en.getValue();
+            }
+            catch (Exception ex) {}
+        }
+        return null;
+    }
+
     private static Map getContainersMap() {
         if (containerToLayoutSupport == null) {
             containerToLayoutSupport = new HashMap();
@@ -166,6 +200,9 @@ public class LayoutSupportRegistry {
             containerToLayoutSupport.put(
                 "javax.swing.JTabbedPane",
                 "org.netbeans.modules.form.layoutsupport.dedicated.JTabbedPaneSupport");
+            containerToLayoutSupport.put(
+                "javax.swing.JLayeredPane",
+                "org.netbeans.modules.form.layoutsupport.dedicated.JLayeredPaneSupport");
         }
         return containerToLayoutSupport;
     }

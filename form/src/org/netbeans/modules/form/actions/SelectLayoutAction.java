@@ -82,7 +82,7 @@ public class SelectLayoutAction extends NodeAction
 
             LayoutSupport ls = container.getLayoutSupport();
             if (ls != null && ls.getLayoutClass() == null
-                    && !(ls instanceof NullLayoutSupport))
+                    && ls.getClass() != NullLayoutSupport.class)
                 return false;
 
             FormDesigner designer = container.getFormModel().getFormDesigner();

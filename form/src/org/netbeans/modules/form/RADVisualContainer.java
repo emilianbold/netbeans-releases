@@ -182,7 +182,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         if (layoutSupport == null)
             return false; // throw new IllegalStateException();
 
-        boolean nullLayout = layoutSupport instanceof NullLayoutSupport;
+        boolean nullLayout = layoutSupport.getClass() == NullLayoutSupport.class;
         if (layoutSupport.getLayoutClass() == null && !nullLayout)
             return false; // dedicated LayoutSupport
 
@@ -192,7 +192,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
         if (defaultLM == null)
             return !nullLayout;
-        if (defaultLM.getClass() != layoutSupport.getLayoutClass())
+        if (layoutSupport.getLayoutClass().isAssignableFrom(defaultLM.getClass()))
             return true;
 
         Node.Property[] props =

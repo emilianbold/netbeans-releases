@@ -363,7 +363,7 @@ class HandleLayer extends JPanel
         LayoutSupport layoutSupport = metacont.getLayoutSupport();
         if (layoutSupport != null
                 && layoutSupport.getLayoutClass() == null
-                && !(layoutSupport instanceof NullLayoutSupport))
+                && layoutSupport.getClass() != NullLayoutSupport.class)
             return; // layout cannot be changed
 
         layoutSupport = null;

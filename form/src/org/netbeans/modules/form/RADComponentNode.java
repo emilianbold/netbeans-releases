@@ -200,7 +200,7 @@ public class RADComponentNode extends AbstractNode
 
                 LayoutSupport ls = ((RADVisualContainer)component).getLayoutSupport();
                 if (ls == null || ls.getLayoutClass() != null
-                        || ls instanceof NullLayoutSupport) {
+                        || ls.getClass() == NullLayoutSupport.class) {
                     actions.add(SystemAction.get(SelectLayoutAction.class));
                     actions.add(SystemAction.get(CustomizeLayoutAction.class));
                     actions.add(null);
