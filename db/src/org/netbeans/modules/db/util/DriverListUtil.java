@@ -200,6 +200,23 @@ public class DriverListUtil {
         names.add("Sybase (DataDirect Connect for JDBC)");
         drivers.add("com.ddtek.jdbc.sybase.SybaseDriver");
         urls.add("jdbc:datadirect:sybase://<HOST>:<PORT>[;databaseName=<DB>]");
+
+        // Following four entries for drivers to be included in Java Studio Enterprise 7 (Bow)
+        names.add("Microsoft SQL Server Driver");
+        drivers.add("com.sun.sql.jdbc.sqlserver.SQLServerDriver");
+        urls.add("jdbc:sun:sqlserver://server_name[:portNumber]");        
+        
+        names.add("DB2 Driver");
+        drivers.add("com.sun.sql.jdbc.db2.DB2Driver");
+        urls.add("jdbc:sun:db2://server_name:portNumber;databaseName=DATABASENAME");  
+        
+        names.add("Oracle Driver");
+        drivers.add("com.sun.sql.jdbc.oracle.OracleDriver");
+        urls.add("jdbc:sun:oracle://server_name[:portNumber][;SID=DATABASENAME]");  
+        
+        names.add("Sybase Driver");
+        drivers.add("com.sun.sql.jdbc.sybase.SybaseDriver");
+        urls.add("jdbc:sun:sybase://server_name[:portNumber]");          
     }
     
     public static Set getDrivers() {

@@ -87,9 +87,18 @@ public class DatabaseConnection implements DBConnection {
     public static final String PROP_DRIVERNAME = "drivername"; //NOI18N
     public static final String PROP_NAME = "name"; //NOI18N
 
+    OpenConnectionInterface openConnection;
+
     /** Default constructor */
     public DatabaseConnection() {
         propertySupport = new PropertyChangeSupport(this);
+
+        // For Java Studio Enterprise. Create instanceof OpenConnection
+        try {
+            openConnection =  (OpenConnectionInterface) Class.forName(bundle.getString("CLASS_open_connection")).newInstance();
+        } catch(Exception ex) {
+            org.openide.ErrorManager.getDefault().notify(ex);
+        }
     }
 
     /** Advanced constructor
@@ -285,6 +294,10 @@ public class DatabaseConnection implements DBConnection {
             propertySupport.firePropertyChange("connecting", null, null);
             Connection connection;
             JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDriver(drv);
+            
+            // For Java Studio Enterprise.
+            openConnection.enable();
+            
             if (drvs.length == 0) {
                 Class.forName(drv);
                 connection = DriverManager.getConnection(db, dbprops);
@@ -302,6 +315,9 @@ public class DatabaseConnection implements DBConnection {
             }
             propertySupport.firePropertyChange("connected", null, null);
             
+            // For Java Studio Enterprise.
+            openConnection.disable();
+
             return connection;
         } catch (SQLException e) {
             String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
@@ -313,6 +329,10 @@ public class DatabaseConnection implements DBConnection {
 //                    message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, db}); // NOI18N
 
             propertySupport.firePropertyChange("failed", null, null);
+            
+            // For Java Studio Enterprise.
+            openConnection.disable();
+
             throw new DDLException(message);
         } catch (Exception exc) {
             String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, exc.getMessage()}); // NOI18N
@@ -334,6 +354,10 @@ public class DatabaseConnection implements DBConnection {
 
                 try {
                     propertySupport.firePropertyChange("connecting", null, null);
+
+                    // For Java Studio Enterprise.
+                    openConnection.enable();
+
                     Connection connection;
                     JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDriver(drv);
                     if (drvs.length == 0) {
@@ -353,6 +377,10 @@ public class DatabaseConnection implements DBConnection {
                     }
                     setConnection(connection);
                     propertySupport.firePropertyChange("connected", null, null);
+
+                    // For Java Studio Enterprise.
+                    openConnection.disable();
+
                 } catch (SQLException e) {
                     String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
 
@@ -363,9 +391,17 @@ public class DatabaseConnection implements DBConnection {
 //                            message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, db}); // NOI18N
 
                     propertySupport.firePropertyChange("failed", null, null);
+
+                    // For Java Studio Enterprise.
+                    openConnection.disable();
+
                     sendException(new DDLException(message));
                 } catch (Exception exc) {
                     propertySupport.firePropertyChange("failed", null, null);
+
+                    // For Java Studio Enterprise.
+                    openConnection.disable();
+
                     sendException(exc);
                 }
             }
