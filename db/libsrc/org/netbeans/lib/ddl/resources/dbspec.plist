@@ -1814,4 +1814,152 @@
     };
   };
 
+//  ********************************************************************************
+//
+//  SYBASE Adaptive Server Enterprise 11 (JDBC type 4)
+//
+//  ********************************************************************************/
+
+  "Adaptive Server Enterprise" = {
+    DatabaseProductName = "Adaptive Server Enterprise";
+    DatabaseProductVersion = 11.5.1;
+    TriggerEventListDelimiter = ", ";
+    TypeMap = {
+      java.sql.Types.BIT = BIT;
+      java.sql.Types.BLOB = IMAGE;  //JDBC 2.0 A type representing an SQL Binary Large Object
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.CLOB = TEXT;  //JDBC 2.0 A type representing an SQL Character Large Object
+      java.sql.Types.DATE = DATETIME;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DOUBLE = "DOUBLE PRECISION";
+      java.sql.Types.FLOAT = FLOAT;
+      java.sql.Types.INTEGER = INT;
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.REAL = REAL;
+      java.sql.Types.SMALLINT = SMALLINT;
+      java.sql.Types.TINYINT = TINYINT;
+      java.sql.Types.VARCHAR = VARCHAR;
+    };
+    ProcedureArgumentMap = {
+      IN = IN;
+      OUT = OUT;
+      INOUT = INOUT;
+    };
+    TriggerEventMap = {
+      INSERT = INSERT;
+      UPDATE = UPDATE;
+      DELETE = DELETE;
+    };
+    SizelessTypes = (BIT,IMAGE,TEXT,DATETIME,"DOUBLE PRECISION",INT,REAL,SMALLINT,TINYINT);
+    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
+    CharacterTypes = (CHAR,VARCHAR);
+
+//
+// Definice sloupcu
+//
+    Column = {
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not] null[ default {default.value}][ check ({check.condition})]";
+    };
+
+//    ColumnTypeless = {
+//      Class = org.netbeans.lib.ddl.impl.TableColumn;
+//      Format = "{column.name}[ {column.notnull}not] null[ default {default.value}][ check ({check.condition})]";
+//    };
+
+//    UniqueColumnTypeless = {
+//      Class = org.netbeans.lib.ddl.impl.TableColumn;
+//      Format = "{column.name}[ {column.notnull}not] null[ default {default.value}][ check ({check.condition})] unique";
+//    };
+
+//    CheckColumnTypeless = {
+//      Class = org.netbeans.lib.ddl.impl.TableColumn;
+//      Format = "{column.name}[ {column.notnull}not] null[ default {default.value}] check ({check.condition})";
+//    };
+
+//
+// Definice prikazu
+//
+
+    AddColumnCommand = {
+      Class = org.netbeans.lib.ddl.impl.AddColumn;
+      Format = "alter table [{object.owner}.]{object.name} add {columns}";
+      Binding = {
+        COLUMN = Column;
+      };
+    };
+
+    CommentTableCommand = {
+      Class = org.netbeans.lib.ddl.impl.CommentTable;
+      Format = "comment on table [{object.owner}.]{object.name} is {comment}";
+    };
+
+//    RenameColumnCommand = {
+//      Class = org.netbeans.lib.ddl.impl.RenameColumn;
+//      Format = "alter table [{object.owner}.]{object.name} rename {column} to {column.newname}";
+//      Binding = {
+//        COLUMN = ColumnName;
+//      };
+//    };
+
+//    ModifyColumnCommand = {
+//      Class = org.netbeans.lib.ddl.impl.ModifyColumn;
+//      Format = "alter table [{object.owner}.]{object.name} modify {column}";
+//      Binding = {
+//        COLUMN = ColumnTypeless;
+//        UNIQUE = UniqueColumnTypeless;
+//        CHECK = CheckColumnTypeless;
+//      };
+//    };
+
+    CommentViewCommand = {
+      Class = org.netbeans.lib.ddl.impl.CommentView;
+      Format = "comment on view [{object.owner}.]{object.name} is {comment}";
+    };
+
+//    RenameTableCommand = {
+//      Class = org.netbeans.lib.ddl.impl.RenameTable;
+//      Format = "alter table [{object.owner}.]{object.name} rename {object.newname}";
+//    };
+
+    CreateProcedureCommand = {
+      Class = org.netbeans.lib.ddl.impl.CreateProcedure;
+      Format = "create procedure [{object.owner}.]{object.name} [({arguments})] as\n{body}";
+      Binding = {
+        ARGUMENT = ProcedureArgument;
+      };
+    };
+
+    DropProcedureCommand = {
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
+      Format = "drop procedure [{object.owner}.]{object.name}";
+    };
+
+    CreateFunctionCommand = {
+      Class = org.netbeans.lib.ddl.impl.CreateFunction;
+      Format = "create function [{object.owner}.]{object.name} [({arguments})] returns {return.type} as\n{body}";
+      Binding = {
+        ARGUMENT = ProcedureArgument;
+      };
+    };
+
+    DropFunctionCommand = {
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
+      Format = "drop function [{object.owner}.]{object.name}";
+    };
+
+    CreateTriggerCommand = {
+      Class = org.netbeans.lib.ddl.impl.CreateTrigger;
+      Format = "create trigger [{object.owner}.]{object.name}\n{trigger.timing} {trigger.events}\non {table.name}\nreferencing old as old_{object.name} new as new_{object.name}[\n{each.row}for each row][\nwhen {trigger.condition}\n{trigger.body}";
+      Binding = {
+        EVENT = TriggerEvent;
+      };
+    };
+
+    DropTriggerCommand = {
+      Class = org.netbeans.lib.ddl.impl.AbstractCommand;
+      Format = "drop trigger [{object.owner}.]{object.name}";
+    };
+  };
+
 }
