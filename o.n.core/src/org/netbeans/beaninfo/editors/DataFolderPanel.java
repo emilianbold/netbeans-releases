@@ -36,6 +36,7 @@ import javax.swing.SwingUtilities;
 import org.openide.TopManager;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
+import org.openide.Places;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
@@ -45,8 +46,8 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.filesystems.*;
 import org.openide.util.UserCancelException;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 import org.openide.util.enum.*;
 import org.openide.windows.TopComponent;
 
@@ -63,7 +64,7 @@ class DataFolderPanel extends TopComponent implements
     static java.awt.Dimension PREF_DIM = new java.awt.Dimension (450, 250);
                     
     /** format to for default package */
-    private static MessageFormat defaultPackageName;
+    private static MessageFormat defaultFolderName;
 
     /** listener to changes in the panel */
     private ChangeListener listener;
@@ -79,6 +80,10 @@ class DataFolderPanel extends TopComponent implements
 
     /** */
     private DataFolderEditor editor;
+    
+    private static final String PATH_TOKEN_DELIMITER = "/" + java.io.File.separatorChar; // NOI18N
+    
+    private String last_suggestion = "";
     
     public DataFolderPanel(DataFolderEditor ed) {
         this();
@@ -138,7 +143,7 @@ class DataFolderPanel extends TopComponent implements
     /** Creates node that displays all packages.
     */
     private Node createPackagesNode () {
-        return TopManager.getDefault().getPlaces().nodes ().repository(
+        return ((Places)Lookup.getDefault ().lookup( Places.class )).nodes ().repository(
                    this
                );
     }
@@ -331,7 +336,7 @@ class DataFolderPanel extends TopComponent implements
                                                 String text = packageName.getText ();
                                                 if (text != null) {
                                                     if (isValid()) {
-                                                        setTargetFolder (text);
+                                                        setTargetFolder (text, false);
                                                         updatePropertyEditor();
                                                     }
                                                     updateDirectory ();
@@ -348,26 +353,26 @@ class DataFolderPanel extends TopComponent implements
         // changedUpdate (p1);
         if (p1.getDocument () == packageName.getDocument ()) {
             SwingUtilities.invokeLater(new Runnable () {
-                                           public void run () {
-                                               if (packageName.getText ().length () == 0) {
-                                                   FileSystem fs = (FileSystem)system.get ();
-                                                   if (fs != null) {
-                                                       DataFolder df = DataFolder.findFolder (fs.getRoot ());
-                                                       setTargetFolder (df);
-                                                       packageName.selectAll ();
-                                                   }
-                                              }
+                                            public void run () {
+                                                if (packageName.getText ().length () == 0) {
+                                                    FileSystem fs = (FileSystem)system.get ();
+                                                    if (fs != null) {
+                                                        DataFolder df = DataFolder.findFolder (fs.getRoot ());
+                                                        setTargetFolder (df);
+                                                        packageName.selectAll ();
+                                                    }
+                                                }
                                                 String text = packageName.getText ();
                                                 if (text != null) {
                                                     if (isValid()) {
-                                                        setTargetFolder (text);
+                                                        setTargetFolder (text, true);
                                                         updatePropertyEditor();
-                                                    }
-                                                    updateDirectory ();
-                                                }
-                                                enableCreateButton();
-                                           }
-                                       });
+                                                   }
+                                                   updateDirectory ();
+                                               }
+                                               enableCreateButton();
+                                            }
+                                        });
         }
     }
     
@@ -396,17 +401,6 @@ class DataFolderPanel extends TopComponent implements
             }
         }
 
-        if (text.equals (defaultPackageName ((FileSystem)system.get ()))) {
-            return true;
-        }
-
-        StringTokenizer tok = new StringTokenizer (text, "."); // NOI18N
-        while (tok.hasMoreElements ()) {
-            String pkg = tok.nextToken ();
-            if (!Utilities.isJavaIdentifier (pkg)) {
-                return false;
-            }
-        }
         return true;
     }
 
@@ -488,9 +482,9 @@ class DataFolderPanel extends TopComponent implements
         
         if (f != null) {
             FileObject fo = f.getPrimaryFile ();
-            name = fo.getPackageName('.');
+            name = fo.getPath();
 
-            StringTokenizer st = new StringTokenizer (name, "."); // NOI18N
+            StringTokenizer st = new StringTokenizer (name, PATH_TOKEN_DELIMITER);
             try {
                 FileSystem fs = fo.getFileSystem ();
 
@@ -518,7 +512,7 @@ class DataFolderPanel extends TopComponent implements
                 n = ex.getClosestNode();
                 DataFolder df = (DataFolder)n.getCookie (DataFolder.class);
                 if (df != null) {
-                    name = df.getPrimaryFile ().getPackageName ('.');
+                    name = df.getPrimaryFile ().getPath ();
                 } else {
                     name = ""; // NO-I18N // NOI18N
                 }
@@ -568,8 +562,7 @@ class DataFolderPanel extends TopComponent implements
                 DataFolder folder = DataFolder.findFolder (fs.getRoot ());
                 String currentName = packageName.getText();
                 if (currentName.length () > 0) {
-                    String f = currentName.replace ('.', '/');
-                    folder = DataFolder.create (folder, f);
+                    folder = DataFolder.create (folder, currentName);
                 }
                 df = folder;
                 return folder;
@@ -582,7 +575,7 @@ class DataFolderPanel extends TopComponent implements
     * @param f the name of target folder
     * @return true if succeeded
     */
-    private boolean setTargetFolder (final String f) {
+    private boolean setTargetFolder (final String f, boolean afterDelete) {
         Node n = null;
         NodeNotFoundException closest = null;
 
@@ -600,7 +593,7 @@ class DataFolderPanel extends TopComponent implements
         for (int i = 0; i < arr.length; i++) {
             Node root = arr[i];
 
-            StringTokenizer st = new StringTokenizer (f, "."); // NOI18N
+            StringTokenizer st = new StringTokenizer (f, PATH_TOKEN_DELIMITER);
 
             try {
                 n = NodeOp.findPath (root, st);
@@ -655,12 +648,16 @@ class DataFolderPanel extends TopComponent implements
         // change the text if we want to add suggestion
         if (closest != null) {
             Node[] first = new Node[1];
-            final String sugg = computeSuggestion (
+            String sugg = computeSuggestion (
                                     closest.getClosestNode (),
                                     closest.getMissingChildName(),
                                     first
                                 );
 
+            if ( afterDelete && sugg != null && sugg.equals( last_suggestion ) )
+                sugg = null;
+            
+            last_suggestion = sugg;
             if (sugg != null) {
                 packageName.getDocument ().removeDocumentListener (
                     DataFolderPanel.this
@@ -715,16 +712,16 @@ class DataFolderPanel extends TopComponent implements
     * @param fs the file system
     * @return localized name of default package
     */
-    private static String defaultPackageName (FileSystem fs) {
-        if (defaultPackageName == null) {
-            defaultPackageName = new MessageFormat(
-                getString ("FMT_TemplateDefaultPackageName")
+    private static String defaultFolderName (FileSystem fs) {
+        if (defaultFolderName == null) {
+            defaultFolderName = new MessageFormat(
+                getString ("FMT_TemplateDefaultFolderName")
             );
         }
 
         String n = fs == null ? "" : fs.getDisplayName (); // NOI18N
 
-        return defaultPackageName.format (new Object[] { n });
+        return defaultFolderName.format (new Object[] { n });
     }
 
     /** Updates directory name
@@ -736,12 +733,12 @@ class DataFolderPanel extends TopComponent implements
             sb.append (fs.getDisplayName ());
         }
         String name = packageName.getText ();
-        if (name.equals (defaultPackageName (fs))) {
+        if (name.equals (defaultFolderName (fs))) {
             name = ""; // NOI18N
         }
         if (name.length () > 0) {
             sb.append (java.io.File.separatorChar);
-            sb.append (name.replace ('.', java.io.File.separatorChar));
+            sb.append (name.replace ('/', java.io.File.separatorChar));
         }
         directoryName.setText (sb.toString ());
     }
@@ -751,7 +748,7 @@ class DataFolderPanel extends TopComponent implements
         if (editor != null) {
             try {
                 DataFolder newF = getTargetFolder(false);
-                String name = newF.getPrimaryFile ().getPackageName ('.');
+                String name = newF.getPrimaryFile ().getPath ();
                 if (name.equals(packageName.getText())) {
                     editor.setDataFolder(df);
                 } else {
@@ -767,7 +764,7 @@ class DataFolderPanel extends TopComponent implements
     private void enableCreateButton() {
         String name = null;
         if (df != null) {
-            name = df.getPrimaryFile ().getPackageName ('.');
+            name = df.getPrimaryFile ().getPath ();
         } else {
             name = ""; // NOI18N
         }
