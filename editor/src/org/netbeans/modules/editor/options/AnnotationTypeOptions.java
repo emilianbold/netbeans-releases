@@ -45,6 +45,14 @@ public class AnnotationTypeOptions {
         delegate.setHighlight(col);
     }
     
+    public boolean isUseHighlightColor() {
+        return delegate.isUseHighlightColor();
+    }
+
+    public void setUseHighlightColor(boolean use) {
+        delegate.setUseHighlightColor(use);
+    }
+
     public Color getForegroundColor() {
         return delegate.getForegroundColor();
     }
@@ -60,13 +68,21 @@ public class AnnotationTypeOptions {
     public void setInheritForegroundColor(boolean inherit) {
         delegate.setInheritForegroundColor(inherit);
     }
-    
-    public boolean isUseHighlightColor() {
-        return delegate.isUseHighlightColor();
+
+    public Color getWaveUnderlineColor() {
+        return delegate.getWaveUnderlineColor();
     }
 
-    public void setUseHighlightColor(boolean use) {
-        delegate.setUseHighlightColor(use);
+    public void setWaveUnderlineColor(Color col) {
+        delegate.setWaveUnderlineColor(col);
     }
-    
+
+    public boolean isUseWaveUnderlineColor() {
+        return delegate.isUseWaveUnderlineColor();
+    }
+
+    public void setUseWaveUnderlineColor(boolean use) {
+        delegate.setUseWaveUnderlineColor(use);
+    }
+
 }

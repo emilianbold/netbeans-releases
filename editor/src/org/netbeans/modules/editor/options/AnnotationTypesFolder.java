@@ -145,6 +145,10 @@ public class AnnotationTypesFolder extends FolderInstance{
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_GLYPH, type.getGlyph().toExternalForm());
         if (type.getProp(AnnotationType.PROP_HIGHLIGHT_COLOR) != null && type.isUseHighlightColor())
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_HIGHLIGHT, "0x"+Integer.toHexString(type.getHighlight().getRGB() & 0x00FFFFFF));
+
+        if (type.getProp(AnnotationType.PROP_WAVEUNDERLINE_COLOR) != null && type.isUseWaveUnderlineColor())
+            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_WAVEUNDERLINE, "0x"+Integer.toHexString(type.getWaveUnderlineColor().getRGB() & 0x00FFFFFF));
+
         if (type.getProp(AnnotationType.PROP_FOREGROUND_COLOR) != null && !type.isInheritForegroundColor())
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_FOREGROUND, "0x"+Integer.toHexString(type.getForegroundColor().getRGB() & 0x00FFFFFF));
         if (type.getProp(AnnotationType.PROP_ACTIONS_FOLDER) != null)

@@ -18,6 +18,7 @@ Document type declaration for AnnotationType.
 <!ATTLIST type glyph CDATA #IMPLIED>
 <!ATTLIST type highlight CDATA #IMPLIED>
 <!ATTLIST type foreground CDATA #IMPLIED>
+<!ATTLIST type waveunderline CDATA #IMPLIED>
 
 <!ATTLIST type type (line|linepart) #IMPLIED>
 <!-- The type=line by default -->

@@ -58,6 +58,7 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
     static final String ATTR_TYPE_GLYPH = "glyph"; // NOI18N
     static final String ATTR_TYPE_HIGHLIGHT = "highlight"; // NOI18N
     static final String ATTR_TYPE_FOREGROUND = "foreground"; // NOI18N
+    static final String ATTR_TYPE_WAVEUNDERLINE = "waveunderline"; // NOI18N
     static final String ATTR_TYPE_TYPE = "type"; // NOI18N
     static final String ATTR_TYPE_CONTENTTYPE = "contenttype"; // NOI18N
     static final String ATTR_TYPE_ACTIONS = "actions"; // NOI18N
@@ -205,6 +206,14 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                             at.setInheritForegroundColor(false);
                         } else {
                             at.setInheritForegroundColor(true);
+                        }
+
+                        color = amap.getValue(ATTR_TYPE_WAVEUNDERLINE);
+                        if (color != null) {
+                            at.setWaveUnderlineColor(Color.decode(color));
+                            at.setUseWaveUnderlineColor(true);
+                        } else {
+                            at.setUseWaveUnderlineColor(false);
                         }
                     } catch (NumberFormatException ex) {
                         rethrow(ex);

@@ -42,6 +42,8 @@ public class AnnotationTypeOptionsBeanInfo extends SimpleBeanInfo {
                                   new PropertyDescriptor("useHighlightColor", AnnotationTypeOptions.class), // NOI18N
                                   new PropertyDescriptor("foregroundColor", AnnotationTypeOptions.class), // NOI18N
                                   new PropertyDescriptor("inheritForegroundColor", AnnotationTypeOptions.class), // NOI18N
+                                  new PropertyDescriptor("waveUnderlineColor", AnnotationTypeOptions.class), // NOI18N
+                                  new PropertyDescriptor("useWaveUnderlineColor", AnnotationTypeOptions.class), // NOI18N
                                   new PropertyDescriptor("wholeLine", AnnotationTypeOptions.class, "isWholeLine", null) // NOI18N
                               };
                 ResourceBundle bundle;
@@ -55,8 +57,12 @@ public class AnnotationTypeOptionsBeanInfo extends SimpleBeanInfo {
                 descriptors[2].setShortDescription(bundle.getString("HINT_AT_FOREGROUND")); // NOI18N
                 descriptors[3].setDisplayName(bundle.getString("PROP_AT_INHERIT_FOREGROUND")); // NOI18N
                 descriptors[3].setShortDescription(bundle.getString("HINT_AT_INHERIT_FOREGROUND")); // NOI18N
-                descriptors[4].setDisplayName(bundle.getString("PROP_AT_WHOLELINE")); // NOI18N
-                descriptors[4].setShortDescription(bundle.getString("HINT_AT_WHOLELINE")); // NOI18N
+                descriptors[4].setDisplayName(bundle.getString("PROP_AT_WAVEUNDERLINE")); // NOI18N
+                descriptors[4].setShortDescription(bundle.getString("HINT_AT_WAVEUNDERLINE")); // NOI18N
+                descriptors[5].setDisplayName(bundle.getString("PROP_AT_USE_WAVEUNDERLINE")); // NOI18N
+                descriptors[5].setShortDescription(bundle.getString("HINT_AT_USE_WAVEUNDERLINE")); // NOI18N
+                descriptors[6].setDisplayName(bundle.getString("PROP_AT_WHOLELINE")); // NOI18N
+                descriptors[6].setShortDescription(bundle.getString("HINT_AT_WHOLELINE")); // NOI18N
                               
             } catch (Exception e) {
                 descriptors = new PropertyDescriptor[0];
