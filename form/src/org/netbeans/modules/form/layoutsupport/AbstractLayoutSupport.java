@@ -747,15 +747,6 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
                                  FormUtils.CHANGED_ONLY
                                    | FormUtils.DISABLE_CHANGE_FIRING);
 
-        try {
-            clone.acceptContainerLayoutChange(
-                    new PropertyChangeEvent(this, null, null, null));
-        }
-        catch (PropertyVetoException ex) {
-            ex.printStackTrace();
-            return null;
-        }            
-
         int compCount = getComponentCount();
         LayoutConstraints[] constraints = new LayoutConstraints[compCount];
         for (int i=0; i < compCount; i++) {
