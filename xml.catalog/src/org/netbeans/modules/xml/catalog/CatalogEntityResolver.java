@@ -17,6 +17,7 @@ import java.io.*;
 
 import org.xml.sax.*;
 import org.netbeans.modules.xml.catalog.spi.*;
+import org.netbeans.modules.xml.catalog.lib.*;
 import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
 
 import org.netbeans.modules.xml.core.tree.ModuleEntityResolver;
@@ -79,5 +80,24 @@ public class CatalogEntityResolver implements ModuleEntityResolver {
         
         return result;
         
-    }        
+    }
+    
+    /**
+     * Return all known public IDs.
+     */
+    public Iterator getPublicIDs() {
+        
+        IteratorIterator ret = new IteratorIterator();
+        
+        CatalogSettings mounted = CatalogSettings.getDefault();
+        Iterator it = mounted.getCatalogs( new Class[] {CatalogReader.class});
+
+        while (it.hasNext()) {
+            CatalogReader next = (CatalogReader) it.next();
+            ret.add(next.getPublicIDs());            
+        }
+        
+        return ret;
+    }    
+    
 }
