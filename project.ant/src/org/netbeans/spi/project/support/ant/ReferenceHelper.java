@@ -119,7 +119,7 @@ public final class ReferenceHelper {
      * @param create if true, create an empty element if it was missing, else leave as null
      */
     private Element loadReferences(boolean create) {
-        //assert ProjectManager.mutex().canRead();
+        assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         Element references = aux.getConfigurationFragment(REFS_NAME, REFS_NS, true);
         if (references == null && create) {
             references = XMLUtil.createDocument("ignore", null, null, null).createElementNS(REFS_NS, REFS_NAME); // NOI18N
@@ -131,7 +131,7 @@ public final class ReferenceHelper {
      * Store <references> to project.xml (i.e. to memory and mark project modified).
      */
     private void storeReferences(Element references) {
-        //assert ProjectManager.mutex().canWrite();
+        assert ProjectManager.mutex().isWriteAccess();
         assert references != null && references.getLocalName().equals(REFS_NAME) && REFS_NS.equals(references.getNamespaceURI());
         aux.putConfigurationFragment(references, true);
     }

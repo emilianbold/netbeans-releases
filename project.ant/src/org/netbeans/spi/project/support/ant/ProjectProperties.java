@@ -28,17 +28,19 @@ import java.util.Map;
 import java.util.Properties;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ant.FileChangeSupport;
 import org.netbeans.modules.project.ant.FileChangeSupportEvent;
 import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.netbeans.modules.project.ant.UserQuestionHandler;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 
@@ -124,6 +126,8 @@ final class ProjectProperties {
     }
     
     private static final class PP implements PropertyProvider, FileChangeSupportListener {
+        
+        private static final RequestProcessor RP = new RequestProcessor("ProjectProperties.PP.RP"); // NOI18N
         
         // XXX lock any loaded property files while the project is modified, to prevent manual editing,
         // and reload any modified files if the project is unmodified
@@ -276,16 +280,35 @@ final class ProjectProperties {
         }
         
         private void fireChange() {
-            ChangeListener[] ls;
+            final ChangeListener[] ls;
             synchronized (this) {
                 if (listeners.isEmpty()) {
                     return;
                 }
                 ls = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
             }
-            ChangeEvent ev = new ChangeEvent(this);
-            for (int i = 0; i < ls.length; i++) {
-                ls[i].stateChanged(ev);
+            final ChangeEvent ev = new ChangeEvent(this);
+            final Mutex.Action action = new Mutex.Action() {
+                public Object run() {
+                    for (int i = 0; i < ls.length; i++) {
+                        ls[i].stateChanged(ev);
+                    }
+                    return null;
+                }
+            };
+            if (ProjectManager.mutex().isWriteAccess()) {
+                // Run it right now. postReadRequest would be too late.
+                ProjectManager.mutex().readAccess(action);
+            } else if (ProjectManager.mutex().isReadAccess()) {
+                // Run immediately also. No need to switch to read access.
+                action.run();
+            } else {
+                // Not safe to acquire a new lock, so run later in read access.
+                RP.post(new Runnable() {
+                    public void run() {
+                        ProjectManager.mutex().readAccess(action);
+                    }
+                });
             }
         }
         

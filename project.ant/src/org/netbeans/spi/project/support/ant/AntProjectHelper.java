@@ -363,7 +363,7 @@ public final class AntProjectHelper {
      * @param expected true if the result of an API-initiated change, false if from external causes
      */
     private void fireChange(String path, boolean expected) {
-        //assert ProjectManager.mutex().canWrite();
+        assert ProjectManager.mutex().isWriteAccess();
         final AntProjectListener[] _listeners;
         synchronized (listeners) {
             if (listeners.isEmpty()) {
@@ -480,11 +480,15 @@ public final class AntProjectHelper {
      *             {@link #PROJECT_PROPERTIES_PATH} or {@link #PRIVATE_PROPERTIES_PATH}
      * @return a set of properties
      */
-    public EditableProperties getProperties(String path) {
+    public EditableProperties getProperties(final String path) {
         if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
             throw new IllegalArgumentException("Attempt to load properties from a project XML file"); // NOI18N
         }
-        return properties.getProperties(path);
+        return (EditableProperties) ProjectManager.mutex().readAccess(new Mutex.Action() {
+            public Object run() {
+                return properties.getProperties(path);
+            }
+        });
     }
     
     /**
@@ -500,13 +504,18 @@ public final class AntProjectHelper {
      *             {@link #PROJECT_PROPERTIES_PATH} or {@link #PRIVATE_PROPERTIES_PATH}
      * @param props a set of properties to store, or null to delete any existing properties file there
      */
-    public void putProperties(String path, EditableProperties props) {
+    public void putProperties(final String path, final EditableProperties props) {
         if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
             throw new IllegalArgumentException("Attempt to store properties from a project XML file"); // NOI18N
         }
-        if (properties.putProperties(path, props)) {
-            modifying(path);
-        }
+        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            public Object run() {
+                if (properties.putProperties(path, props)) {
+                    modifying(path);
+                }
+                return null;
+            }
+        });
     }
     
     /**
@@ -517,11 +526,15 @@ public final class AntProjectHelper {
      *             {@link #PROJECT_PROPERTIES_PATH} or {@link #PRIVATE_PROPERTIES_PATH}
      * @return a property provider implementation
      */
-    public PropertyProvider getPropertyProvider(String path) {
+    public PropertyProvider getPropertyProvider(final String path) {
         if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
             throw new IllegalArgumentException("Attempt to store properties from a project XML file"); // NOI18N
         }
-        return properties.getPropertyProvider(path);
+        return (PropertyProvider) ProjectManager.mutex().readAccess(new Mutex.Action() {
+            public Object run() {
+                return properties.getPropertyProvider(path);
+            }
+        });
     }
     
     /**
@@ -678,16 +691,20 @@ public final class AntProjectHelper {
      * @param shared to use project.xml vs. private.xml
      * @return true if anything was actually removed
      */
-    boolean removeConfigurationFragment(String elementName, String namespace, boolean shared) {
-        Element root = getConfigurationDataRoot(shared);
-        Element data = Util.findElement(root, elementName, namespace);
-        if (data != null) {
-            root.removeChild(data);
-            modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
-            return true;
-        } else {
-            return false;
-        }
+    boolean removeConfigurationFragment(final String elementName, final String namespace, final boolean shared) {
+        return ((Boolean) ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            public Object run() {
+                Element root = getConfigurationDataRoot(shared);
+                Element data = Util.findElement(root, elementName, namespace);
+                if (data != null) {
+                    root.removeChild(data);
+                    modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
+                    return Boolean.TRUE;
+                } else {
+                    return Boolean.FALSE;
+                }
+            }
+        })).booleanValue();
     }
     
     /**

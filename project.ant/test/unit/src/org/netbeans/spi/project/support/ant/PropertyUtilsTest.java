@@ -32,11 +32,14 @@ import java.util.Map;
 import java.util.Properties;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import junit.framework.TestResult;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 
 /**
@@ -55,6 +58,15 @@ public class PropertyUtilsTest extends NbTestCase {
         assertEquals("correct build.properties location",
             FileUtil.normalizeFile(new File(System.getProperty("java.io.tmpdir"), "build.properties")),
             PropertyUtils.USER_BUILD_PROPERTIES);
+    }
+    
+    public void run(final TestResult result) {
+        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            public Object run() {
+                PropertyUtilsTest.super.run(result);
+                return null;
+            }
+        });
     }
     
     protected void setUp() throws Exception {

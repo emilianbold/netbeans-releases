@@ -137,6 +137,7 @@ public class FreeformProjectGenerator {
      * @return list of TargetMapping instances
      */
     public static List/*<TargetMapping>*/ getTargetMappings(AntProjectHelper helper) {
+        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element genldata = helper.getPrimaryConfigurationData(true);
         Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
@@ -246,6 +247,7 @@ public class FreeformProjectGenerator {
      * @param mappings list of <TargetMapping> instances to store
      */
     public static void putTargetMappings(AntProjectHelper helper, List/*<TargetMapping>*/ mappings) {
+        //assert ProjectManager.mutex().isWriteAccess();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element actions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
@@ -335,6 +337,7 @@ public class FreeformProjectGenerator {
      *     menu actions will be created
      */
     public static void putContextMenuAction(AntProjectHelper helper, List/*<TargetMapping>*/ mappings) {
+        //assert ProjectManager.mutex().isWriteAccess();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
@@ -376,6 +379,7 @@ public class FreeformProjectGenerator {
      * @return list of CustomTarget instances
      */
     public static List/*<CustomTarget>*/ getCustomContextMenuActions(AntProjectHelper helper) {
+        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element genldata = helper.getPrimaryConfigurationData(true);
         Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
@@ -435,6 +439,7 @@ public class FreeformProjectGenerator {
      * @param list of <CustomTarget> instances to store
      */
     public static void putCustomContextMenuActions(AntProjectHelper helper, List/*<CustomTarget>*/ customTargets) {
+        //assert ProjectManager.mutex().isWriteAccess();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
@@ -662,6 +667,7 @@ public class FreeformProjectGenerator {
      * @return list of SourceFolder instances; style value will be always null
      */
     public static List/*<SourceFolder>*/ getSourceFolders(AntProjectHelper helper, String type) {
+        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Element foldersEl = Util.findElement(data, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
@@ -712,6 +718,7 @@ public class FreeformProjectGenerator {
      *    without type are overriden only when type == null.
      */
     public static void putSourceFolders(AntProjectHelper helper, List/*<SourceFolder>*/ sources, String type) {
+        //assert ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -778,6 +785,7 @@ public class FreeformProjectGenerator {
      * @return list of SourceFolder instances; type value will be always null
      */
     public static List getSourceViews(AntProjectHelper helper, String style) {
+        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
@@ -824,6 +832,7 @@ public class FreeformProjectGenerator {
      *    Useful for overriding just one style of source view.
      */
     public static void putSourceViews(AntProjectHelper helper, List/*<SourceFolder>*/ sources, String style) {
+        //assert ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -903,6 +912,7 @@ public class FreeformProjectGenerator {
      */
     public static List/*<JavaCompilationUnit>*/ getJavaCompilationUnits(
             AntProjectHelper helper, AuxiliaryConfiguration aux) {
+        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = aux.getConfigurationFragment("java-data", FreeformProjectType.NS_JAVA, true); // NOI18N
         if (data == null) {
@@ -957,6 +967,7 @@ public class FreeformProjectGenerator {
      */
     public static void putJavaCompilationUnits(AntProjectHelper helper, 
             AuxiliaryConfiguration aux, List/*<JavaCompilationUnit>*/ compUnits) {
+        //assert ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = aux.getConfigurationFragment("java-data", FreeformProjectType.NS_JAVA, true); // NOI18N
         if (data == null) {
@@ -1021,6 +1032,7 @@ public class FreeformProjectGenerator {
      */
     public static List/*<WebModule>*/ getWebmodules (
             AntProjectHelper helper, AuxiliaryConfiguration aux) {
+        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = aux.getConfigurationFragment("web-data", FreeformProjectType.NS_WEB, true); // NOI18N
         List/*<Element>*/ wms = Util.findSubElements(data);
@@ -1061,6 +1073,7 @@ public class FreeformProjectGenerator {
      */
     public static void putWebModules(AntProjectHelper helper, 
             AuxiliaryConfiguration aux, List/*<WebModule>*/ webModules) {
+        //assert ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = aux.getConfigurationFragment("web-data", FreeformProjectType.NS_WEB, true); // NOI18N
         if (data == null) {
@@ -1149,6 +1162,7 @@ public class FreeformProjectGenerator {
      * @return Ant script FileObject or null if it cannot be found
      */
     public static FileObject getAntScript(AntProjectHelper helper, PropertyEvaluator ev) {
+        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         String antScript = ev.getProperty(PROP_ANT_SCRIPT);
         if (antScript != null) {
             File f= helper.resolveFile(antScript);
@@ -1170,6 +1184,7 @@ public class FreeformProjectGenerator {
      * @return location of original project base folder
      */
     public static File getProjectLocation(FreeformProject proj) {
+        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         String loc = proj.evaluator().getProperty(PROP_PROJECT_LOCATION);
         if (loc != null) {
             return proj.helper().resolveFile(loc);
@@ -1233,6 +1248,7 @@ public class FreeformProjectGenerator {
      */
     public static List/*<Export>*/ guessExports(PropertyEvaluator evaluator,
             List/*<TargetMapping>*/ targetMappings, List/*<JavaCompilationUnit>*/ javaCompilationUnits) {
+        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         List/*<Export>*/ exports = new ArrayList();
         String targetName = null;
         String scriptName = null;
@@ -1289,6 +1305,7 @@ public class FreeformProjectGenerator {
      * @param exports list of Export instances
      */
     public static void putExports(AntProjectHelper helper, List/*<Export>*/ exports) {
+        //assert ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -1334,6 +1351,7 @@ public class FreeformProjectGenerator {
      */
     public static List/*<String>*/ guessSubprojects(PropertyEvaluator evaluator,
             List/*<JavaCompilationUnit>*/ javaCompilationUnits, File projectBase, File freeformBase) {
+        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         Set/*<String>*/ subprojs = new HashSet();
         Iterator it = javaCompilationUnits.iterator();
         while (it.hasNext()) {
@@ -1372,6 +1390,7 @@ public class FreeformProjectGenerator {
      * @param exports list of Export instances
      */
     public static void putSubprojects(AntProjectHelper helper, List/*<String>*/ subprojects) {
+        //assert ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();

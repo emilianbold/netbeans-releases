@@ -49,6 +49,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.RequestProcessor;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -195,6 +196,8 @@ public class PropertyUtils {
      */
     private static final class FilePropertyProvider implements PropertyProvider, FileChangeSupportListener {
         
+        private static final RequestProcessor RP = new RequestProcessor("PropertyUtils.FilePropertyProvider.RP"); // NOI18N
+        
         private final File properties;
         private final List/*<ChangeListener>*/ listeners = new ArrayList();
         private Map/*<String,String>*/ cached = null;
@@ -236,16 +239,35 @@ public class PropertyUtils {
         
         private void fireChange() {
             cachedTime = -1L; // force reload
-            ChangeListener[] ls;
+            final ChangeListener[] ls;
             synchronized (this) {
                 if (listeners.isEmpty()) {
                     return;
                 }
                 ls = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
             }
-            ChangeEvent ev = new ChangeEvent(this);
-            for (int i = 0; i < ls.length; i++) {
-                ls[i].stateChanged(ev);
+            final ChangeEvent ev = new ChangeEvent(this);
+            final Mutex.Action action = new Mutex.Action() {
+                public Object run() {
+                    for (int i = 0; i < ls.length; i++) {
+                        ls[i].stateChanged(ev);
+                    }
+                    return null;
+                }
+            };
+            if (ProjectManager.mutex().isWriteAccess()) {
+                // Run it right now. postReadRequest would be too late.
+                ProjectManager.mutex().readAccess(action);
+            } else if (ProjectManager.mutex().isReadAccess()) {
+                // Run immediately also. No need to switch to read access.
+                action.run();
+            } else {
+                // Not safe to acquire a new lock, so run later in read access.
+                RP.post(new Runnable() {
+                    public void run() {
+                        ProjectManager.mutex().readAccess(action);
+                    }
+                });
             }
         }
         
@@ -642,9 +664,16 @@ public class PropertyUtils {
     
     /**
      * Create a property evaluator based on a series of definitions.
+     * <p>
      * Each batch of definitions can refer to properties within itself
      * (so long as there is no cycle) or any previous batch.
      * However the special first provider cannot refer to properties within itself.
+     * </p>
+     * <p>
+     * This implementation acquires {@link ProjectManager#mutex} for all operations, in read mode,
+     * and fires changes synchronously. It also expects changes to be fired from property
+     * providers in read (or write) access.
+     * </p>
      * @param preprovider an initial context (may be null)
      * @param providers a sequential list of property groups
      * @return an evaluator
@@ -653,19 +682,22 @@ public class PropertyUtils {
         return new SequentialPropertyEvaluator(preprovider, providers);
     }
     
-    private static final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeListener, Runnable {
+    private static final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeListener {
         
         private final PropertyProvider preprovider;
         private final PropertyProvider[] providers;
         private Map/*<String,String>*/ defs;
         private final List/*<PropertyChangeListener>*/ listeners = new ArrayList();
-        private boolean dirty = false;
         
-        public SequentialPropertyEvaluator(PropertyProvider preprovider, PropertyProvider[] providers) {
+        public SequentialPropertyEvaluator(final PropertyProvider preprovider, final PropertyProvider[] providers) {
             this.preprovider = preprovider;
             this.providers = providers;
             // XXX defer until someone asks for them
-            defs = compose(preprovider, providers);
+            defs = (Map) ProjectManager.mutex().readAccess(new Mutex.Action() {
+                public Object run() {
+                    return compose(preprovider, providers);
+                }
+            });
             // XXX defer until someone is listening?
             if (preprovider != null) {
                 preprovider.addChangeListener(WeakListeners.change(this, preprovider));
@@ -675,52 +707,55 @@ public class PropertyUtils {
             }
         }
         
-        public String getProperty(String prop) {
-            run();
-            if (defs == null) {
-                return null;
+        public String getProperty(final String prop) {
+            return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
+                public Object run() {
+                    if (defs == null) {
+                        return null;
+                    }
+                    return (String) defs.get(prop);
+                }
+            });
+        }
+        
+        public String evaluate(final String text) {
+            return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
+                public Object run() {
+                    if (text == null) {
+                        throw new NullPointerException("Attempted to pass null to PropertyEvaluator.evaluate"); // NOI18N
+                    }
+                    if (defs == null) {
+                        return null;
+                    }
+                    Object result = subst(text, defs, Collections.EMPTY_SET);
+                    assert result instanceof String : "Unexpected result " + result + " from " + text + " on " + defs;
+                    return (String) result;
+                }
+            });
+        }
+        
+        public Map/*<String,String>*/ getProperties() {
+            return (Map) ProjectManager.mutex().readAccess(new Mutex.Action() {
+                public Object run() {
+                    return defs;
+                }
+            });
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            synchronized (listeners) {
+                listeners.add(listener);
             }
-            return (String)defs.get(prop);
         }
         
-        public String evaluate(String text) {
-            run();
-            if (text == null) {
-                throw new NullPointerException("Attempted to pass null to PropertyEvaluator.evaluate"); // NOI18N
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            synchronized (listeners) {
+                listeners.remove(listener);
             }
-            if (defs == null) {
-                return null;
-            }
-            Object result = subst(text, defs, Collections.EMPTY_SET);
-            assert result instanceof String : "Unexpected result " + result + " from " + text + " on " + defs;
-            return (String)result;
-        }
-        
-        public Map getProperties() {
-            run();
-            return defs;
-        }
-        
-        public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-            listeners.add(listener);
-        }
-        
-        public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-            listeners.remove(listener);
         }
         
         public void stateChanged(ChangeEvent e) {
-            // Can be called many times in a row (e.g. after adding/removing many JARs: #47910).
-            // Need to avoid firing a property change each and every time, since it is expensive.
-            dirty = true;
-            ProjectManager.mutex().postReadRequest(this);
-        }
-        
-        public void run() {
-            if (!dirty) {
-                return;
-            }
-            dirty = false;
+            assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
             Map/*<String,String>*/ newdefs = compose(preprovider, providers);
             // compose() may return null upon circularity errors
             Map/*<String,String>*/ _defs = defs != null ? defs : Collections.EMPTY_MAP;
@@ -760,6 +795,7 @@ public class PropertyUtils {
         }
         
         private static Map/*<String,String>*/ compose(PropertyProvider preprovider, PropertyProvider[] providers) {
+            assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
             Map/*<String,String>*/ predefs;
             if (preprovider != null) {
                 predefs = preprovider.getProperties();
