@@ -560,7 +560,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tasklist/suggestions..."/>
     <ant dir="../tasklist/suggestions" target="netbeans"/>
   </target>
-  <target name="all-tasklist/docscan" depends="all-openide,all-tasklist/api,all-tasklist/core">
+  <target name="all-tasklist/suggestions/ui" depends="all-tasklist/api,all-tasklist/core,all-tasklist/suggestions">
+    <echo message="Building module tasklist/suggestions/ui..."/>
+    <ant dir="../tasklist/suggestions/ui" target="netbeans"/>
+  </target>
+  <target name="all-tasklist/docscan" depends="all-openide,all-tasklist/api,all-tasklist/core,all-tasklist/suggestions">
     <echo message="Building module tasklist/docscan..."/>
     <ant dir="../tasklist/docscan" target="netbeans"/>
   </target>
