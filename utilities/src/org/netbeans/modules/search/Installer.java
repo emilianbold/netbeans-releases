@@ -20,6 +20,8 @@ import org.openide.loaders.*;
 import org.openidex.util.*;
 
 import com.netbeans.developer.modules.search.res.*;
+import com.netbeans.developer.modules.search.types.*;
+
 /** 
 * During restored() hooks SearchPresenter on FindAction. 
 * During uninstalled() frees such hook.
@@ -33,12 +35,13 @@ public class Installer extends ModuleInstall {
   private final static long serialVersionUID = 1;
   
   private final String MENU = "Tools";
+  private final String MENUITEM = "Settings";
   private final String ACTION = "RepositorySearchAction";
 
   /** Holds hooking code. */
   private SearchHook hook;
 
-  /** Install in tools menu.
+  /** Install in tools menu. Place after Settings separated by separator.
   */
   public void installed() {
 
@@ -50,7 +53,7 @@ public class Installer extends ModuleInstall {
           TopManager.getDefault ().getPlaces ().folders ().menus (), 
           MENU
         ), 
-        MENU, false, false, false, false
+        MENUITEM, true, true, true, false
       );
 
 
@@ -69,6 +72,8 @@ public class Installer extends ModuleInstall {
       if (System.getProperty ("netbeans.debug.exceptions") != null) 
         ex.printStackTrace ();      
     }
+    
+    Registry.reorderBy(new Class[] {ObjectNameType.class, FullTextType.class} );
     
     restored();
   }
@@ -115,6 +120,7 @@ public class Installer extends ModuleInstall {
 
 /* 
 * Log
+*  6    Gandalf   1.5         12/23/99 Petr Kuzel      Architecture improved.
 *  5    Gandalf   1.4         12/17/99 Petr Kuzel      Bundling.
 *  4    Gandalf   1.3         12/16/99 Petr Kuzel      
 *  3    Gandalf   1.2         12/15/99 Petr Kuzel      

@@ -15,6 +15,7 @@ package com.netbeans.developer.modules.search;
 
 import java.awt.*;
 import java.util.*;
+import java.text.*;
 
 import javax.swing.event.*;
 
@@ -101,8 +102,15 @@ public class ResultModel implements NodeAcceptor, TaskListener {
   */
   public void taskFinished(final org.openide.util.Task task) {
     
-    if (found>0) root.setDisplayName("Found " + found + " nodes.");
-    else root.setDisplayName("No matching node found.");
+    if (found>0) 
+      root.setDisplayName (
+        MessageFormat.format(
+          Res.text("MSG_FOUND_X_NODES"), 
+          new Object[] {new Integer(found)}
+        )
+      );
+    else 
+      root.setDisplayName(Res.text("NO_MATCHING_NODE_FOUND"));
     done = true;
 
     fireChange();
@@ -141,7 +149,7 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     public ResultRootNode () {
       super(new Children.Array());
       
-      setDisplayName("Searching...");      
+      setDisplayName(Res.text("SEARCHING___"));      
     }
     
     /** @return universal search icon.
@@ -156,6 +164,7 @@ public class ResultModel implements NodeAcceptor, TaskListener {
 
 /* 
 * Log
+*  6    Gandalf   1.5         12/23/99 Petr Kuzel      Architecture improved.
 *  5    Gandalf   1.4         12/17/99 Petr Kuzel      Bundling.
 *  4    Gandalf   1.3         12/16/99 Petr Kuzel      
 *  3    Gandalf   1.2         12/15/99 Petr Kuzel      
