@@ -124,7 +124,9 @@ public class BridgeImpl implements BridgeInterface {
             if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 AntModule.err.log("CCL when configureProject is called: " + Thread.currentThread().getContextClassLoader());
             }
-            ProjectHelper.configureProject(project, buildFile);
+            ProjectHelper projhelper = ProjectHelper.getProjectHelper();
+            project.addReference("ant.projectHelper", projhelper); // NOI18N
+            projhelper.parse(project, buildFile);
             //writer.println("#3"); // NOI18N
             
             String inputHandlerName = AntSettings.getDefault().getInputHandler();
