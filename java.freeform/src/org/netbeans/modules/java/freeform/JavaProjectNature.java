@@ -38,6 +38,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -275,13 +276,35 @@ public class JavaProjectNature implements ProjectNature {
         
     }
     
-    private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates {
+    private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates, RecommendedTemplates {
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
             "Templates/Classes/Class.java", // NOI18N
             "Templates/Classes/Package", // NOI18N
             "Templates/Classes/Interface.java", // NOI18N
         };
+        
+        // List of primarily supported templates = J2SEProject.LIBRARY_TYPES + J2SEProject.APPLICATION_TYPES
+        private static final String[] RECOMENDED_TYPES = new String[] { 
+            "java-classes",         // NOI18N
+            "java-main-class",      // NOI18N
+            "java-forms",           // NOI18N
+            "gui-java-application", // NOI18N
+            "java-beans",           // NOI18N
+            "oasis-XML-catalogs",   // NOI18N
+            "XML",                  // NOI18N
+            "ant-script",           // NOI18N
+            "ant-task",             // NOI18N
+            "servlet-types",        // NOI18N
+            // "web-types",         // NOI18N
+            "junit",                // NOI18N
+            // "MIDP",              // NOI18N
+            "simple-files"          // NOI18N
+        };
+        
+        public String[] getRecommendedTypes() {            
+            return RECOMENDED_TYPES;
+        }
         
         public String[] getPrivilegedTemplates() {
             return PRIVILEGED_NAMES;
