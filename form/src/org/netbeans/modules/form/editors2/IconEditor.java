@@ -29,7 +29,6 @@ import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.propertysheet.*;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
@@ -922,21 +921,17 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
         
     } // end of IconPanel
     
-    private static class ResourceSelector extends JPanel {
+    private static class ResourceSelector extends JPanel implements ExplorerManager.Provider {
         /** Manages the tree. */
-        private ExplorerManager manager;
+        private ExplorerManager manager = new ExplorerManager();
                 
         public ResourceSelector(Node root, Node selectedNode) {
             ResourceBundle bundle = NbBundle.getBundle(ResourceSelector.class);
             
-            ExplorerPanel ep = new ExplorerPanel();
-            setLayout(new BorderLayout());
-            add(ep, BorderLayout.CENTER);
-            ep.setLayout(new BorderLayout(0, 5));
-            ep.setBorder(new EmptyBorder(12, 12, 0, 11));
-            ep.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ResourceSelector")); // NOI18N
-            ep.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ResourceSelector")); // NOI18N
-            manager = ep.getExplorerManager();
+            setLayout(new BorderLayout(0, 5));
+            setBorder(new EmptyBorder(12, 12, 0, 11));
+            getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ResourceSelector")); // NOI18N
+            getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ResourceSelector")); // NOI18N
             manager.setRootContext(root);
             try {
                 selectedNode = (selectedNode == null) ? root : selectedNode;
@@ -952,7 +947,7 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
             tree.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
             tree.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ResourceSelectorView")); // NOI18N
             tree.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ResourceSelectorView")); // NOI18N
-            ep.add(tree, BorderLayout.CENTER);
+            add(tree, BorderLayout.CENTER);
         }
         
         /**
@@ -971,7 +966,11 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
         public Node[] getNodes() {
             return manager.getSelectedNodes();
         }
-                
+        
+        public ExplorerManager getExplorerManager() {
+            return manager;
+        }
+        
     }
         
     // XMLPropertyEditor implementation ...........................................................
