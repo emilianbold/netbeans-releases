@@ -58,7 +58,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="validation or ide or ws" executor="ide" name="Main Window tests - validation" resultsprocessor="unit">
+    <testbag testattribs="(validation and not full) or ide or ws" executor="ide" name="Main Window tests - validation" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/windowsystem/mainwindow/MainMenu.class/testMainMenuMnemonicsCollision"/>
@@ -81,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="validation or ide or ws" executor="ide" name="MDI Workspaces tests - validation" resultsprocessor="unit">
+    <testbag testattribs="(validation and not full) or ide or ws" executor="ide" name="MDI Workspaces tests - validation" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/windowsystem/mdi/WorkspacesTest.class/testSwitchingWorkspacesByMenu"/>
@@ -103,7 +103,7 @@ Microsystems, Inc. All Rights Reserved.
 
 
 <!-- Start Property Editors testbag -->
-    <testbag testattribs="validation or ide or pe" executor="ide" name="Property Editors tests - validation" resultsprocessor="unit">
+    <testbag testattribs="(validation and not full) or ide or pe" executor="ide" name="Property Editors tests - validation" resultsprocessor="unit">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_BooleanO.class/testByComboTrue"/>
@@ -130,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="validation or ide or pe" executor="ide" name="Property Customizers tests - validation" resultsprocessor="unit">
+    <testbag testattribs="(validation and not full) or ide or pe" executor="ide" name="Property Customizers tests - validation" resultsprocessor="unit">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_Color.class/testCustomizerOk"/>
