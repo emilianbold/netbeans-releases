@@ -44,6 +44,10 @@ Microsystems, Inc. All Rights Reserved.
         <tstamp/>
         <property name="buildnumber" value="${DSTAMP}${TSTAMP}"/>
         <echo message="buildnumber = ${buildnumber}"/>
+
+        <property file="${xml_root}/spec-vers.properties"/>
+        <filter token="SPEC_VERS_SUBST" value="${xml.specification.version}"/>
+        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     </target>
 
     <target name="xml-core.compile">
@@ -67,7 +71,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="jars" depends="init,compile">
         <mkdir dir="netbeans/modules"/>
 
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
         <locjar jarfile="netbeans/modules/xml-tools.jar"
                 manifest="manifest-subst.mf"
@@ -107,9 +110,9 @@ Microsystems, Inc. All Rights Reserved.
         <genlist targetname="nbm" outputfiledir="${nbext_root}/netbeans"/>
     </target>
 
-    <target name="reload" depends="compile" description="Test module inside running IDE (API Support with Ant required).">
+    <target name="reload" depends="init,compile" description="Test module inside running IDE (API Support with Ant required).">
         <mkdir dir="test"/>
-        <filter token="BUILD_NUMBER_SUBST" value="testing"/>
+
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
         <jar jarfile="test/xml-tools-test.jar" manifest="manifest-subst.mf" compress="false">
             <fileset dir="src" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
