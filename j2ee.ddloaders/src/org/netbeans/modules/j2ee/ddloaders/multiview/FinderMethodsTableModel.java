@@ -48,13 +48,11 @@ class FinderMethodsTableModel extends QueryMethodsTableModel {
         if (result) {
             helper.updateFinderMethod(methodElement, aQuery, customizer.finderReturnIsSingle(),
                     customizer.publishToLocal(), customizer.publishToRemote());
-            //fireTableRowsUpdated(row, row);
         }
     }
 
     public int addRow() {
         queries.addFinderMethod();
-        //fireTableRowsInserted(-1, -1);
         return getRowCount() - 1;
     }
 
@@ -83,11 +81,33 @@ class FinderMethodsTableModel extends QueryMethodsTableModel {
         return null;
     }
 
+    public void setValueAt(Object value, int rowIndex, int columnIndex) {
+        QueryMethodHelper helper = getQueryMethodHelper(rowIndex);
+        boolean publishToLocal = helper.localMethod != null;
+        boolean publishToRemote = helper.remoteMethod != null;
+        boolean returnsCollection = helper.returnsCollection();
+        MethodElement methodElement = (MethodElement) helper.getPrototypeMethod().clone();
+        Query query = (Query) queries.getFinderMethod(rowIndex).clone();
+        switch (columnIndex) {
+            case 1:
+                returnsCollection = Boolean.TRUE.equals(value);
+                break;
+            case 4:
+                query.setDescription((String) value);
+                break;
+        }
+        helper.updateFinderMethod(methodElement, query, !returnsCollection, publishToLocal, publishToRemote);
+    }
+
     public Class getColumnClass(int columnIndex) {
         return columnIndex == 1 ? Boolean.class : String.class;
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return super.isCellEditable(rowIndex, columnIndex);
+        if (columnIndex == 1 || columnIndex == 4) {
+            return true;
+        } else {
+            return super.isCellEditable(rowIndex, columnIndex);
+        }
     }
 }
