@@ -92,8 +92,9 @@ public class BeansTemplates extends JellyTestCase {
     }
     
     private void writeResult(String name) {
-        new EventTool().waitNoEvent(500);
+        new EventTool().waitNoEvent(1000);
         ref(Utilities.unify(Utilities.getAsString(name+".java")));
+        new EventTool().waitNoEvent(500);
     }
     
     public void testBeanInfo() {
