@@ -112,7 +112,7 @@ public class Arch extends Task implements ErrorHandler {
         Source qSource;
         try {
             javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance ();
-            factory.setValidating(true);
+            factory.setValidating(!generateTemplate);
             
             javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
             builder.setErrorHandler(this);

@@ -159,7 +159,7 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         execute ("GarbageUnderPackages.xml", new String[] { "-Djavadoc.pac=some",  "-Dproject.file=" + f, "withjavadoc" });
     }
     
-    private final static java.io.File extractString (String res) throws Exception {
+    final static java.io.File extractString (String res) throws Exception {
         java.io.File f = java.io.File.createTempFile ("res", ".xml");
         f.deleteOnExit ();
         
@@ -175,7 +175,7 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         return f;
     }
     
-    private final static java.io.File extractResource (String res) throws Exception {
+    final static java.io.File extractResource (String res) throws Exception {
         java.net.URL u = PublicPackagesInProjectizedXMLTest.class.getResource (res);
         assertNotNull ("Resource should be found " + res, u);
         
@@ -248,7 +248,7 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
         }
     }
     
-    private static class ExecutionError extends AssertionFailedError {
+    static class ExecutionError extends AssertionFailedError {
         public final int exitCode;
         
         public ExecutionError (String msg, int e) {

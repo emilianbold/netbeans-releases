@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="unit-executor" name="projectized">
         <testset dir="unit/src">
             <patternset>
-                <include name="**/*Projectized*Test.class"/>
+                <include name="**/nbbuild/*Test.class"/>
             </patternset>
         </testset>
     </testbag>
