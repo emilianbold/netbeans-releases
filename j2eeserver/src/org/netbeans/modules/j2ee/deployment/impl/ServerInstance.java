@@ -503,6 +503,7 @@ public class ServerInstance implements Node.Cookie {
                 return false;
             
             managerStartedByIde = true;
+            refresh(true);
             return true;
             
         } finally {
