@@ -8,10 +8,11 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="Jemmy" default="compile" basedir=".">
+  <import file="../nbbuild/default.xml"/> 
 
   <property name="src" value="src"/>
   <property name="modulesrc" value="modulesrc"/>
@@ -41,6 +42,16 @@ Microsystems, Inc. All Rights Reserved.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="${nbext}/standard-nbm-license.txt"/>
+
+    <target name="init" depends="default.init">
+      <patternset id="jemmy.files">
+        <!-- All files created for NBM -->
+        <include name="${nb.modules.dir}/jemmy-module.jar"/>
+        <include name="${nb.system.dir}/ParserDB/Jemmy*"/>
+        <include name="${nb.docs.dir}/jemmy-api.zip"/>
+        <include name="${nb.modules.dir}/ext/jemmy.jar"/>
+      </patternset>
+    </target>
 
   <target name="java">
     <echo message="Using ${java.vm.version} java"/>
@@ -89,16 +100,14 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
 
-  <target name="jars" depends="jar,javadoc,parser-db">
-    <mkdir dir="netbeans/docs"/>
-    <copy file="${javadoc}.zip" todir="netbeans/docs" filtering="off"/>
-    <mkdir dir="netbeans/modules/ext"/>
-    <copy file="${jar}" todir="netbeans/modules/ext" filtering="off"/>
+  <target name="jars" depends="init,jar,javadoc,parser-db">
+    <copy file="${javadoc}.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}" filtering="off"/>
+    <copy file="${jar}" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext" filtering="off"/>
     <property file="${build}/org/netbeans/jemmy/version_info"/>
     <filter token="VERSION_SUBST" value="${Jemmy-MajorVersion}.${Jemmy-MinorVersion}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="netbeans/modules/jemmy-module.jar" manifest="manifest-subst.mf" basedir="${modulesrc}"/>
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/jemmy-module.jar" manifest="manifest-subst.mf" basedir="${modulesrc}"/>
   </target>
 
   <target name="jarsrc" depends="compile,jar">
@@ -127,16 +136,19 @@ Microsystems, Inc. All Rights Reserved.
   <target name="zipall" depends="zipapi,zipsrc">
   </target>
 
-  <target name="clean">
+  <target name="clean" depends="init">
     <delete dir="${build}/org"/>
     <delete dir="javadoc"/>
-    <delete dir="netbeans"/>
-    <delete dir="Info"/>
     <delete dir="${testbuild}"/>
     <delete file="${jar}"/>
     <delete file="${zip}"/>
     <delete file="manifest-subst.mf"/>
     <delete file="jemmy.nbm"/>
+    <delete>
+        <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+            <patternset refID="jemmy.files"/>
+        </fileset>
+    </delete>
   </target>
 
   <target name="test" depends="compiletest">
@@ -168,16 +180,23 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
   </target>
 
-  <target name="nbm" depends="jars">
-    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
-    <makenbm file="jemmy.nbm" topdir="." module="netbeans/modules/jemmy-module.jar"
-     homepage="http://jemmy.${homepage.base}" distribution="http://${dist.base}/jemmy.nbm">
-    <license file="${license.file}"/>
+  <target name="nbm" depends="netbeans">
+    <makenbm file="jemmy.nbm"
+             productdir="${netbeans.dest.dir}/${cluster.dir}"
+             module="${nb.modules.dir}/jemmy-module.jar"
+             homepage="http://jemmy.${homepage.base}"
+             distribution="http://${dist.base}/jemmy.nbm">
+      <license file="${license.file}"/>
 <!--      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/> -->
     </makenbm>
   </target>
 
   <target name="netbeans" depends="jars">
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/jemmy-module.jar">
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="jemmy.files"/>
+      </fileset>
+    </genlist>
   </target>
 
   <target name="release"/>
