@@ -43,45 +43,13 @@
 <mapID target="proj_free_debug" url="project/proj_free_debug.html" />
 <mapID target="proj_stand_customize" url="project/proj_stand_customize.html" />
 
-<mapID target="explorer" url="objects/explorer.html" />
-
-<mapID target="objects.file-extensions" url="objects/objects_file-extensions.html" />
-<mapID target="objects.icons" url="objects/objects_icons.html" />
-<mapID target="objects.opening" url="objects/objects_opening.html" />
-<mapID target="objects.packages" url="objects/objects_packages.html" />
-<mapID target="objects.properties" url="objects/objects_properties.html" />
-<mapID target="objects.refresh" url="objects/objects_refreshing.html" />
-<mapID target="objects.redisplaying" url="objects/objects_redisplaying.html" />
-<mapID target="objects.runtime" url="objects/objects_runtime.html" />
-<mapID target="objects.saving" url="objects/objects_saving.html" />
-<mapID target="objects.new" url="objects/objects_new.html" />
-<mapID target="objects.show-extensions" url="objects/objects_show-extensions.html" />
-<mapID target="objects.specify-extension" url="objects/objects_specify-extension.html" />
-
 <mapID target="files.diff" url="files/files_diff.html" />
 <mapID target="files.icons" url="files/files_icons.html" />
 <mapID target="files.ignore-files" url="files/files_ignore-files.html" />
 <mapID target="files.search" url="files/files_search.html" />
 <mapID target="files.template" url="files/files_template.html" />
 <mapID target="files.unknown" url="files/files_unknown.html" />
-
-<mapID target="search" url="objects/search/search.html" />
-<mapID target="search.combo" url="objects/search/search_combo.html" />
-<mapID target="search.date" url="objects/search/search_date.html" />
-<mapID target="search.filetype" url="objects/search/search_filetype.html" />
-<mapID target="search.modify" url="objects/search/search_modifying.html" />
-<mapID target="search.name" url="objects/search/search_name.html" />
-<mapID target="search.predefine" url="objects/search/search_predefining.html" />
-<mapID target="search.window" url="objects/search/search_results-window.html" />
-<mapID target="search.status" url="objects/search/search_status.html" />
-<mapID target="search.text" url="objects/search/search_text.html" />
-
-<mapID target="template.new" url="objects/templates/template_new.html" />
-<mapID target="template.group" url="objects/templates/template_group.html" />
-<mapID target="template.macros" url="objects/templates/template_macros.html" />
-<mapID target="template.modifying" url="objects/templates/template_modifying.html" />
-
-<mapID target="objects.group" url="objects/objects_group.html" />
+<mapID target="files.runtime" url="files/files_runtime.html" />
 
 <!--begin GUI Form Editor section-->
 <mapID target="gui.about" url="gui/gui_about.html" />
@@ -271,7 +239,7 @@
 <mapID target="debug.threads" url="debug/debug_threads.html" />
 <mapID target="debug.source" url="debug/debug_source.html" />
 <mapID target="debug.step" url="debug/debug_step.html" />
-<mapID target="debug.remote" url="debug/debug_remote.html" />
+<mapID target="debug.remote" url="debug/debug_remote.html" /> 
 
 <!-- Javadoc IDs -->
 
