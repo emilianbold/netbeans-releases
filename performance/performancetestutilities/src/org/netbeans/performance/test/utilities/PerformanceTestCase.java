@@ -21,7 +21,7 @@ import java.util.ListIterator;
 
 import org.netbeans.jellytools.JellyTestCase;
 
-import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -234,8 +234,6 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
         log("----------------------- DISPATCHING MODEL = "+JemmyProperties.getCurrentDispatchingModel());
         
-        EventTool et = new EventTool();
-        
         tr.startNewEventList("test beggining"); // XXX add test name
         tr.add(tr.TRACK_APPLICATION_MESSAGE, "expectedTime "+expectedTime+", "+
                 "repeat "+repeat+", "+
@@ -258,19 +256,25 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     tr.startNewEventList("test iteration no."+i); // XXX add test name
                     tr.connectToAWT(true);
                     prepare();
-                    rm.waitNoEvent(WAIT_AFTER_PREPARE);
+                    waitNoEvent(WAIT_AFTER_PREPARE);
                     
                     // Uncomment if you want to run with analyzer tool
                     // com.sun.forte.st.collector.CollectorAPI.resume ();
-                    Robot robo = new Robot();
-                    robo.waitForIdle();
+                    
+                    // to be sure EventQueue is empty
+                    new QueueTool().waitEmpty();
+                    
+                    logMemoryUsage();
+                    
                     tr.add(tr.TRACK_START, "before open");
                     testedComponentOperator = open();
                     
                     // this is to optimize delays
                     long wait_time = (wait_after_open_heuristic>WAIT_AFTER_OPEN)?WAIT_AFTER_OPEN:wait_after_open_heuristic;
                     tr.add(tr.TRACK_APPLICATION_MESSAGE, "wait_after_open_heuristic "+wait_time);
-                    rm.waitNoEvent(wait_time);
+                    waitNoEvent(wait_time);
+                    
+                    logMemoryUsage();
                     
                     // PENDING need to check this
 //                    if(testedComponentOperator != null) {
@@ -279,7 +283,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 //                        waitUntilPainted(comp);
 //                        java.awt.EventQueue.writeOutput("</wait_until_painted>");
 //                    }
-                    new org.netbeans.jemmy.QueueTool().waitEmpty();
+                    new QueueTool().waitEmpty();
                     
                     measuredTime[i] = getMeasuredTime();
                     tr.add(tr.TRACK_APPLICATION_MESSAGE, "measured time "+measuredTime[i]);
@@ -309,7 +313,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                         close();
                         
                         closeAllModal();
-                        rm.waitNoEvent(WAIT_AFTER_CLOSE);
+                        waitNoEvent(WAIT_AFTER_CLOSE);
                         
                     }catch(Exception e){ // catch for close()
                         log("------- [ "+i+" ] ---------------- Exception rises while closing tested component :"+e.getMessage());
@@ -676,10 +680,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      */
     protected void waitNoEvent(long time) {
         if(repeat_memory!=-1){
-            new EventTool().waitNoEvent(time);
+            new QueueTool().waitEmpty(time);
         }else{
             // XXX need to reimplement
-            rm.waitNoEvent(time);
+            rm.waitNoPaintEvent(time);
         }
     }
     

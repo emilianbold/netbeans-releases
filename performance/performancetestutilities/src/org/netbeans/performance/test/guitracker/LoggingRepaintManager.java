@@ -114,7 +114,6 @@ public class LoggingRepaintManager extends RepaintManager {
      */
     public synchronized void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
         String log = "addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h;
-        
         if (w > 10 && h > 18) { // painted region isn't cursor (or painted region is greater than cursor)
             if (regionFilter != null) {
                 if (regionFilter.accept(c)) {
@@ -165,11 +164,18 @@ public class LoggingRepaintManager extends RepaintManager {
      */
     public void paintDirtyRegions() {
         super.paintDirtyRegions();
-        lastPaint = System.currentTimeMillis();
         if (tr != null && hasDirtyMatches) {
+            lastPaint = System.currentTimeMillis();
             tr.add(tr.TRACK_PAINT, "Done painting");
             hasDirtyMatches = false;
         }
+    }
+    
+    /** 
+     * @deprecated use waitNoPaintEvent instead
+     */
+    public long waitNoEvent(long timeout) {
+        return waitNoPaintEvent(timeout, false);
     }
     
     /** waits and returns when there is at least timeout millies without any
@@ -177,8 +183,8 @@ public class LoggingRepaintManager extends RepaintManager {
      *
      * @return time of last painting
      */
-    public long waitNoEvent(long timeout) {
-        return waitNoEvent(timeout, false);
+    public long waitNoPaintEvent(long timeout) {
+        return waitNoPaintEvent(timeout, false);
     }
     
     /** waits and returns when there is at least timeout millies without any
@@ -189,7 +195,7 @@ public class LoggingRepaintManager extends RepaintManager {
      *
      * @return time of last painting
      */
-    private long waitNoEvent(long timeout, boolean afterPaint) {
+    private long waitNoPaintEvent(long timeout, boolean afterPaint) {
         long current = System.currentTimeMillis();
         long first = current;
         while (((current - lastPaint) < timeout) || ((lastPaint == 0L) && afterPaint)) {
@@ -220,7 +226,7 @@ public class LoggingRepaintManager extends RepaintManager {
         rm.setEnabled(true);
 //        leq = new LoggingEventQueue(tr);
 //        leq.setEnabled(true);
-        long time = rm.waitNoEvent(waitAfterStartup, true);
+        long time = rm.waitNoPaintEvent(waitAfterStartup, true);
         rm.setEnabled(false);
         return time;
     }
