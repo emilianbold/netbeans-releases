@@ -19,10 +19,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JSplitPane;
 
 import org.netbeans.api.javahelp.Help;
 import org.openide.awt.HtmlBrowser;
-import org.openide.awt.SplittedPanel;
 import org.openide.windows.TopComponent;
 import org.openide.util.RequestProcessor;
 import org.openide.NotifyDescriptor;
@@ -81,7 +81,7 @@ public class IndexSearch
     private javax.swing.JList resultsList;
     //private HtmlBrowser.BrowserComponent quickBrowser;
     private HtmlBrowser quickBrowser;
-    private org.openide.awt.SplittedPanel splitPanel;
+    private JSplitPane splitPanel;
 
     /** Button titles */
 
@@ -128,29 +128,9 @@ public class IndexSearch
                                  );
 
         // Split panel
-
-        splitPanel = new org.openide.awt.SplittedPanel ();
-        //splitPanel.setLayout (new java.awt.FlowLayout ());
-        splitPanel.setSplitType( org.openide.awt.SplittedPanel.VERTICAL );
-        splitPanel.setSplitAbsolute( false );
-        splitPanel.setSplitPosition( oldSplit );
-        splitPanel.setSplitDragable( true );
-        splitPanel.setSplitTypeChangeEnabled( true );
+        splitPanel = new JSplitPane (JSplitPane.VERTICAL_SPLIT);
         splitPanel.setPreferredSize(PREFFERED_SIZE);
-        splitPanel.addSplitChangeListener( new SplittedPanel.SplitChangeListener() {
-                                               public void splitChanged (SplittedPanel.SplitChangeEvent evt) {
-                                                   int value = evt.getNewValue();
-                                                   ds.setIdxSearchSplit( value );
-                                                   if ( value == 100 ) {
-                                                       quickViewButton.setSelected( false );
-                                                       ds.setIdxSearchNoHtml( true );
-                                                   }
-                                                   else {
-                                                       quickViewButton.setSelected( true );
-                                                       ds.setIdxSearchNoHtml( false );
-                                                   }
-                                               }
-                                           } );
+        splitPanel.setDividerLocation(oldSplit / 100.0);
 
         java.awt.GridBagConstraints gridBagConstraints1 = new java.awt.GridBagConstraints ();
         gridBagConstraints1.gridwidth = 0;
@@ -180,7 +160,7 @@ public class IndexSearch
 
         resultsScrollPane.setViewportView (resultsList);
 
-        splitPanel.add( resultsScrollPane, org.openide.awt.SplittedPanel.ADD_FIRST );
+        splitPanel.setTopComponent(resultsScrollPane);
 
         // Quick browser component
         quickBrowser = new HtmlBrowser( true, false );//.BrowserComponent( true, false );
@@ -188,7 +168,7 @@ public class IndexSearch
         quickBrowser.setEnableHome( false );
         //browser buttons without border are too top
         quickBrowser.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 0, 0, 0)));
-        splitPanel.add( quickBrowser, org.openide.awt.SplittedPanel.ADD_SECOND );
+        splitPanel.setBottomComponent(quickBrowser);
 
         DefaultListModel listModel = new DefaultListModel(); // PENDING: Change to SortedArrayList
         resultsList.setModel( listModel );
@@ -240,7 +220,7 @@ public class IndexSearch
         
         initAccessibility();
     }
-
+    
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
@@ -416,14 +396,14 @@ public class IndexSearch
 
     private void quickViewButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quickViewButtonActionPerformed
         if ( quickViewButton.isSelected() ) {
-            splitPanel.setSplitPosition( oldSplit == 100 ? 50 : oldSplit );
+            splitPanel.setDividerLocation( oldSplit == 100 ? 0.5 : oldSplit / 100.0 );
             ds.setIdxSearchSplit( oldSplit == 100 ? 50 : oldSplit );
             ds.setIdxSearchNoHtml( false );
             showHelp( true );
         }
         else {
-            oldSplit = splitPanel.getSplitPosition();
-            splitPanel.setSplitPosition( 100 );
+            oldSplit = (int) (splitPanel.getDividerLocation() / splitPanel.getSize().getHeight() * 100);
+            splitPanel.setDividerLocation( 1.0 );
             ds.setIdxSearchSplit( 100 );
             ds.setIdxSearchNoHtml( true );
         }
@@ -464,7 +444,7 @@ public class IndexSearch
     /** Invokes the browser with help */
     private void showHelp( boolean quick ) {
 
-        if (quick && splitPanel.getSplitPosition() == 100 )
+        if (quick && splitPanel.getDividerLocation() == 100 )
             return;
 
         if (  resultsList.getMinSelectionIndex() < 0 )
@@ -644,7 +624,7 @@ public class IndexSearch
 
                                                         quickViewButton.setSelected( !noHtml );
 
-                                                        splitPanel.setSplitPosition( split );
+                                                        splitPanel.setDividerLocation(split / 100.0);
                                                     }
                                                 } );
     }
