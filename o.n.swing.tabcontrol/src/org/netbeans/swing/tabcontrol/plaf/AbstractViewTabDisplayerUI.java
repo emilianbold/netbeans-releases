@@ -312,7 +312,17 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         normalIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-west.gif");
         normalIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-south.gif");
         normalIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-center.gif");
-        return new PinButton(normalIcons, null, null);
+        Map pressedIcons = new HashMap(6);
+        pressedIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-east.gif");
+        pressedIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-west.gif");
+        pressedIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-south.gif");
+        pressedIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-center.gif");
+        Map rolloverIcons = new HashMap(6);
+        rolloverIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-east.gif");
+        rolloverIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-west.gif");
+        rolloverIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-south.gif");
+        rolloverIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-center.gif");
+        return new PinButton(normalIcons, pressedIcons, rolloverIcons);
     }
 
     /** Reaction to pin button / pin shortcut toggle. Does nothing itself,but
