@@ -41,16 +41,19 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
     private EditorOperator editor;
     private JEditorPaneOperator txtOper;
     private int WAIT_MAX_MILIS_FOR_FIND_OPERATION = 5000;
-    
-    
-    public static final int MATCH_CASE          = 0x00000001;
-    public static final int WHOLE_WORDS         = 0x00000002;
-    public static final int REGULAR_EXPRESSIONS = 0x00000004;
-    public static final int HIGHLIGHT_RESULTS   = 0x00000008;
-    public static final int WRAP_AROUND         = 0x00000010;
-    public static final int SEARCH_SELECTION    = 0x00000020;
-    public static final int SEARCH_BACKWARDS    = 0x00000040;
-    public static final int INCREMENTAL_SEARCH  = 0x00000080;
+
+    public static final int NO_OPERATION              = 0x00000000;    
+    public static final int MATCH_CASE                = 0x00000001;
+    public static final int WHOLE_WORDS               = 0x00000002;
+    public static final int REGULAR_EXPRESSIONS       = 0x00000004;
+    public static final int HIGHLIGHT_RESULTS         = 0x00000008;
+    public static final int WRAP_AROUND               = 0x00000010;
+    public static final int SEARCH_SELECTION          = 0x00000020;
+    public static final int SEARCH_BACKWARDS          = 0x00000040;
+    public static final int INCREMENTAL_SEARCH        = 0x00000080;
+    public static final int ALL_UNCHECKED             = 0x10000000;
+    public static final int NO_RESET                  = 0x20000000;
+    public static final int NO_RESET_SEARCH_SELECTION = 0x40000000;    
     
     /** Creates a new instance of Main */
     public SearchAndReplaceTest(String testMethodName) {
@@ -135,13 +138,15 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
         }
     }
     
-    private void resetFindProperties(Find find){
+    private void resetFindProperties(Find find, boolean resetSearchSelection){
         find.cbMatchCase().setSelected(false);
         find.cbMatchWholeWordsOnly().setSelected(false);
         find.cbRegularExpressions().setSelected(false);
         find.cbHighlightSearch().setSelected(false);
         find.cbWrapSearch().setSelected(false);
-        find.cbBlockSearch().setSelected(false);
+        if (resetSearchSelection) {
+            find.cbBlockSearch().setSelected(false);
+        }
         find.cbBackwardSearch().setSelected(false);
         find.cbIncrementalSearch().setSelected(false);
         find.cboFindWhat().typeText("");
@@ -150,7 +155,9 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
     protected Find openFindDialog(String text, int modifiers){
         new FindAction().perform();
         Find find = new Find();
-        resetFindProperties(find);
+        if (modifiers != 0 && (modifiers & NO_RESET) == 0) {
+            resetFindProperties(find, (modifiers & NO_RESET_SEARCH_SELECTION) == 0);
+        }
         if ((modifiers & MATCH_CASE) != 0){
             find.cbMatchCase().setSelected(true);
         }
@@ -181,7 +188,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
         return find;
     }
 
-    private ValueResolver getFindResolver(final JEditorPaneOperator txtOper, final int startEtalon, final int endEtalon){
+    private ValueResolver getSelectionResolver(final JEditorPaneOperator txtOper, final int startEtalon, final int endEtalon){
         
         ValueResolver clipboardValueResolver = new ValueResolver(){
             public Object getValue(){
@@ -243,7 +250,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
         }
         Find find = openFindDialog(text, modifiers);
         find.find();
-        waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_FIND_OPERATION, getFindResolver(txtOper, startEtalon, endEtalon), Boolean.TRUE);
+        waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_FIND_OPERATION, getSelectionResolver(txtOper, startEtalon, endEtalon), Boolean.TRUE);
         int selectionStart = txtOper.getSelectionStart();
         int selectionEnd = txtOper.getSelectionEnd();
         if (selectionStart == selectionEnd){
@@ -290,6 +297,24 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
         }
     }
     
+    private void preselect(JEditorPaneOperator txtOper, int start, int end){
+        txtOper.setSelectionStart(start);
+        txtOper.setSelectionEnd(end);
+    }
+    
+    private void checkSelection(JEditorPaneOperator txtOper, int startEtalon, int endEtalon, String errorMessage){
+        waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_FIND_OPERATION, getSelectionResolver(txtOper, startEtalon, endEtalon), Boolean.TRUE);
+        int selectionStart = txtOper.getSelectionStart();
+        int selectionEnd = txtOper.getSelectionEnd();
+        if (selectionStart == selectionEnd){
+            selectionStart = -1;
+            selectionEnd = -1;
+        }
+        if (selectionStart != startEtalon || selectionEnd != endEtalon){
+            fail(errorMessage+" Selected text: "+selectionStart+" - "+selectionEnd+" >>> Expected values: "+startEtalon+" - "+endEtalon); //NOI18N
+        }
+    }
+    
     public void testSearch(){
         openDefaultProject();
         openDefaultSampleFile();
@@ -297,7 +322,7 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             editor = getDefaultSampleEditorOperator();
             txtOper = editor.txtEditorPane();
 
-            find("searchText", 0, 161, 171, 0);
+            find("searchText", ALL_UNCHECKED, 161, 171, 0);
             find("SeArCHText", MATCH_CASE, 175, 185, 0);
             find("SeArCHText", WHOLE_WORDS, 275, 285, 206);
             find("SeArCHText", MATCH_CASE | WHOLE_WORDS, 289, 299, 206);
@@ -332,6 +357,114 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             checkIncrementalSearch(find, "e", 275, 283);
             checkIncrementalSearch(find, "x", 275, 284);
             checkIncrementalSearch(find, "T", -1, -1);
+            find.close();
+            
+            //#53536 - CTRL-F & friends cancel selection
+            txtOper.setSelectionStart(1);
+            txtOper.setSelectionEnd(100);
+            // NO_OPERATION - no check box reset, no checkbox set by default.
+            final Find blockFind = openFindDialog(null, NO_OPERATION);
+
+            // check if the "search selection" checkbox was checked
+            waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_FIND_OPERATION, new ValueResolver(){
+                public Object getValue(){
+                    return Boolean.valueOf(blockFind.cbBlockSearch().isSelected());
+                }
+            }, Boolean.TRUE);
+            if (!blockFind.cbBlockSearch().isSelected()){
+                fail("Search Selection checkbox was not checked automaticaly after invoking " +
+                        "Find dialog over selected text"); //NOI18N
+            }
+            
+            blockFind.close();
+            //check if the selection persists
+            checkSelection(txtOper, 1, 100, "Issue #53536 testing failed!");
+            
+            //test find in selection
+            find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
+            find.close();
+            preselect(txtOper, 46, 132);
+            // make sure that text outside the selection is not found
+            find("searchText", NO_OPERATION, -1, -1, -1);
+
+            // selection begins at ublic. 'p' is not selected. Next public
+            // should be found
+            preselect(txtOper, 47, 123);
+            find("public", NO_RESET, 105, 111, -1);
+            
+            preselect(txtOper, 161, 544);
+            find("SeArCHText", NO_RESET_SEARCH_SELECTION | MATCH_CASE, 175, 185, -1);
+            preselect(txtOper, 206, 544);
+            find("SeArCHText", NO_RESET_SEARCH_SELECTION | WHOLE_WORDS, 275, 285, -1);
+            preselect(txtOper, 206, 544);
+            find("SeArCHText", NO_RESET_SEARCH_SELECTION | MATCH_CASE | WHOLE_WORDS, 289, 299, -1);
+            preselect(txtOper, 161, 544);
+            find("searchText", NO_RESET_SEARCH_SELECTION | SEARCH_BACKWARDS, 469, 479, -1);
+            preselect(txtOper, 161, 544);
+            find("searchText", NO_RESET_SEARCH_SELECTION | SEARCH_BACKWARDS | MATCH_CASE, 455, 465, -1);
+            preselect(txtOper, 161, 544);
+            find("search", NO_RESET_SEARCH_SELECTION | SEARCH_BACKWARDS | WHOLE_WORDS, 318, 324, -1);
+            preselect(txtOper, 161, 544);
+            find("search", NO_RESET_SEARCH_SELECTION | SEARCH_BACKWARDS | MATCH_CASE | WHOLE_WORDS, 311, 317, -1);
+
+            // wrap around block forwardSearch testing
+            find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
+            find.close();
+            preselect(txtOper, 409, 465);
+            find = openFindDialog("searchText", NO_OPERATION); // search selection should be checked automatically
+            find.find();
+            checkSelection(txtOper, 410, 420, "Wrap around block testing failed!");
+            find.find();
+            checkSelection(txtOper, 423, 433, "Wrap around block testing failed!");
+            find.find();
+            checkSelection(txtOper, 455, 465, "Wrap around block testing failed!");
+            find.find();
+            checkSelection(txtOper, -1, -1, "Wrap around block testing failed!"); // should find, because wrap around is not checked yet
+            find.cbWrapSearch().setSelected(true);
+            find.find();
+            checkSelection(txtOper, 410, 420, "Wrap around block testing failed!");
+            find.close();
+
+            // wrap around block bacwardSearch testing
+            find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
+            find.close();
+            preselect(txtOper, 409, 465);
+            find = openFindDialog("searchText", NO_RESET_SEARCH_SELECTION | SEARCH_BACKWARDS);
+            find.find();
+            checkSelection(txtOper, 455, 465, "Wrap around block testing failed!");
+            find.find();
+            checkSelection(txtOper, 423, 433, "Wrap around block testing failed!");
+            find.find();
+            checkSelection(txtOper, 410, 420, "Wrap around block testing failed!");
+            find.find();
+            checkSelection(txtOper, -1, -1, "Wrap around block testing failed!"); // should find, because wrap around is not checked yet
+            find.cbWrapSearch().setSelected(true);
+            find.find();
+            checkSelection(txtOper, 455, 465, "Wrap around block testing failed!");
+            find.close();
+            
+            //incremental search in selected block
+            find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
+            find.close();
+            preselect(txtOper, 325, 360);
+            find = openFindDialog(null, NO_RESET_SEARCH_SELECTION | INCREMENTAL_SEARCH);
+            checkIncrementalSearch(find, "t", 325, 326);
+            checkIncrementalSearch(find, "e", 325, 327);
+            checkIncrementalSearch(find, "x", 325, 328);
+            checkIncrementalSearch(find, "t", 325, 329);
+            checkIncrementalSearch(find, "x", -1, -1); // inc should fail
+            find.close();
+
+            //incremental search backwards + Match case in selected block
+            find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
+            find.close();
+            preselect(txtOper, 251 , 350);
+            find = openFindDialog(null, NO_RESET_SEARCH_SELECTION | INCREMENTAL_SEARCH | MATCH_CASE | SEARCH_BACKWARDS);
+            checkIncrementalSearch(find, "T", 347, 348);
+            checkIncrementalSearch(find, "e", 347, 349);
+            checkIncrementalSearch(find, "x", 347, 350);
+            checkIncrementalSearch(find, "t", 295, 299);
+            checkIncrementalSearch(find, "X", -1, -1); // fails - behind selected area
             find.close();
             
         } finally {
