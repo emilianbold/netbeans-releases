@@ -140,11 +140,7 @@
 	<BR/>
 	<HR width="90%"/>
 
-	<P>
-		<H5><I>Please note, this is a pilot project of XTest, so the layout and functionality of these pages may not be final and can change anytime. If you 
-		are interested in the project, please see details at 
-		<A HREF="http://xtest.netbeans.org">XTest homepage</A>.</I></H5>
-	</P>
+
 </xsl:template>
 
 
