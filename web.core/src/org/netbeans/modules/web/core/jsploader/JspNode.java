@@ -82,8 +82,8 @@ public class JspNode extends DataNode {
         ps.put(new PropertySupport.ReadWrite (
                    JspDataObject.PROP_CONTENT_LANGUAGE,
                    String.class,
-                   NbBundle.getBundle(LanguageEditor.class).getString("PROP_contentLanguage"),
-                   NbBundle.getBundle(LanguageEditor.class).getString("HINT_contentLanguage")
+                   NbBundle.getBundle(JspNode.class).getString("PROP_contentLanguage"),
+                   NbBundle.getBundle(JspNode.class).getString("HINT_contentLanguage")
                ) {
                    public Object getValue() {
                        return ((JspDataObject)getDataObject()).getContentLanguage();
@@ -117,8 +117,8 @@ public class JspNode extends DataNode {
         ps.put(new PropertySupport.ReadWrite (
                    JspDataObject.PROP_SCRIPTING_LANGUAGE,
                    String.class,
-                   NbBundle.getBundle(LanguageEditor.class).getString("PROP_scriptingLanguage"),
-                   NbBundle.getBundle(LanguageEditor.class).getString("HINT_scriptingLanguage")
+                   NbBundle.getBundle(JspNode.class).getString("PROP_scriptingLanguage"),
+                   NbBundle.getBundle(JspNode.class).getString("HINT_scriptingLanguage")
                ) {
                    public Object getValue() {
                        return ((JspDataObject)getDataObject()).getScriptingLanguage();
