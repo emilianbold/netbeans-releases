@@ -213,6 +213,13 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         return o == NODE_NOT_CREATED ? null : (PackageNode)o;
     }
     
+    private boolean contains( FileObject fo ) {
+        String path = FileUtil.getRelativePath( root, fo );        
+        assert path != null : "Asking for wrong folder" + fo;
+        Object o = names2nodes.get( path );
+        return o != null;
+    }
+    
     private boolean exists( FileObject fo ) {
         String path = FileUtil.getRelativePath( root, fo );
         return names2nodes.get( path ) != null;
@@ -238,7 +245,8 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         FileObject fo = fe.getFile();        
         if ( FileUtil.isParentOf( root, fo ) ) {
             cleanEmptyKeys( fo );                
-            add( fo );
+            //add( fo );
+            findNonExcludedPackages( fo );
             refreshKeys();
         }
     }
@@ -248,11 +256,11 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         if ( FileUtil.isParentOf( root, fo ) ) {
             FileObject parent = fo.getParent();
             PackageNode n = get( parent );
-            if ( n == null ) {
+            if ( n == null && !contains( parent ) ) {                
                 add( parent );
                 refreshKeys();
             }
-            else {
+            else if ( n != null ) {
                 n.updateChildren();
             }
         }
