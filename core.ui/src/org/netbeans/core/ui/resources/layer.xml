@@ -78,13 +78,13 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-CloseViewAction.instance"/>
             <file name="org-openide-actions-CustomizeAction.instance"/>
-            <file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
+            <!--<file name="org-openide-actions-OpenLocalExplorerAction.instance"/>-->
             <file name="org-netbeans-core-actions-ViewFilesystemsTabAction.shadow">
                 <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
             </file>
             <file name="org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
-            <file name="org-openide-actions-PropertiesAction.instance"/>
+            <!--<file name="org-openide-actions-PropertiesAction.instance"/>-->
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
         </folder>        
         
