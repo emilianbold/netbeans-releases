@@ -790,6 +790,7 @@ public class NbEditorKit extends ExtKit {
                 getString("Menu/View/CodeFolds");
             JMenu menu = new JMenu(menuText);
             Mnemonics.setLocalizedText(menu, menuText);
+            setAddSeparatorBeforeNextAction(false);
             addAction(target, menu, BaseKit.collapseFoldAction);
             addAction(target, menu, BaseKit.expandFoldAction);
             setAddSeparatorBeforeNextAction(true);
