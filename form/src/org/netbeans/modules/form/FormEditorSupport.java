@@ -20,7 +20,7 @@ import java.util.*;
 import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.awt.UndoRedo;
-import org.openide.cookies.EditCookie;
+import org.openide.cookies.*;
 import org.openide.loaders.*;
 import org.openide.util.Utilities;
 import org.openide.util.SharedClassObject;
@@ -743,11 +743,15 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                     if (nodes == null || nodes.length != 1)
                         return;
 
-                    String componentName = tc.getName();
-                    if (componentName.endsWith("*"))
-                        componentName = componentName.substring(0,componentName.length()-2);
-                    componentName.trim();
-                    boolean ext = componentName.endsWith(".java"); // NOI18N
+                    SourceCookie srcCookie =
+                        (SourceCookie) nodes[0].getCookie(SourceCookie.class);
+                    if (srcCookie == null)
+                        return;
+
+                    DataObject dobj = (DataObject)
+                        srcCookie.getSource().getCookie(DataObject.class);
+                    if (dobj == null)
+                        return;
 
                     FormEditorSupport selectedForm =
                         ComponentInspector.getInstance().getFocusedForm();
@@ -755,11 +759,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                     Iterator it = openForms.values().iterator();
                     while (it.hasNext()) {
                         FormEditorSupport fes = (FormEditorSupport) it.next();
-                        String formName = fes.getFormDataObject().getName();
-                        if (ext)
-                            formName += ".java"; // NOI18N
-                        if (formName.equals(componentName)) {
-                            // this is the form for the activated TopComponent
+                        if (fes.getFormDataObject() == dobj) {
                             if (fes != selectedForm) {
                                 fes.gotoForm();
                                 ComponentInspector.getInstance().focusForm(fes);
