@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- ======== -->
   
   <!-- QA functional tests for Netbeans and FFJ CE -->
-  <config name="qa-functional-nb-ffjce">
+  <config name="qa-functional-nb">
       <module name="debuggercore" testtypes="qa-functional" attributes="stable"/>
   </config>
 
