@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,40 +16,23 @@ package org.netbeans.modules.project.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.project.ui.actions.Actions;
-import org.openide.actions.NewTemplateAction;
-import org.openide.actions.RenameAction;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 
 /**
  * Various hacks that should be solved better later.
  */
 public class Hacks {
-    
-    /** @author Petr Hrebejk */
-    static void hackFolderActions() {
-  /*      
-        DataLoaderPool dataLoaderPool = DataLoaderPool.getDefault ();
-        DataLoader folderLoader = dataLoaderPool.firstProducerOf(DataFolder.class);
-
-        ArrayList actions = new ArrayList(Arrays.asList(folderLoader.getActions()));
-        int index = actions.indexOf(RenameAction.findObject(NewTemplateAction.class));
-        if (index >= 0) {
-            actions.set(index , SystemAction.get(Actions.SystemNewFile.class));
-            folderLoader.setActions((SystemAction[])actions.toArray(new SystemAction[actions.size()]));
-        }
-*/
-    }
     
     private static Object windowSystemImpl = null;
     private static Method setProjectName = null;
@@ -96,8 +79,9 @@ public class Hacks {
                         }
                         String pname;
                         if (projects.size() == 1) {
-                            pname = ProjectUtils.getInformation((Project)projects.iterator().next()).getDisplayName();
-                            assert pname != null;
+                            Project p = (Project) projects.iterator().next();
+                            pname = ProjectUtils.getInformation(p).getDisplayName();
+                            assert pname != null : p;
                         } else if (projects.isEmpty()) {
                             pname = null;
                         } else {
