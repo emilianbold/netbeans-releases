@@ -105,8 +105,8 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="netbeans"/>
         <delete dir="Info"/>
         <delete dir="javadoc"/>
-        <delete dir="XmlAPIs"/>
-        <delete file="XmlAPIs.zip"/>
+        <delete dir="XML-APIs"/>
+        <delete file="XML-APIs.zip"/>
     </target>
 
     <target name="real-clean" depends="clean">
@@ -120,15 +120,15 @@ Microsystems, Inc. All Rights Reserved.
     <target name="javadoc" depends="apichanges,xml-apis">
         <copy todir="javadoc">
             <fileset dir=".">
-                <include name="XmlAPIs/**"/>
-                <include name="XmlAPIs.zip"/>
+                <include name="XML-APIs/**"/>
+                <include name="XML-APIs.zip"/>
             </fileset>
         </copy>
     </target>
 
     <target name="xml-apis">
-        <delete dir="XmlAPIs"/>
-        <mkdir dir="XmlAPIs"/>
+        <delete dir="XML-APIs"/>
+        <mkdir dir="XML-APIs"/>
         
         <!-- external JavaDocs -->
         <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
@@ -136,9 +136,9 @@ Microsystems, Inc. All Rights Reserved.
         <property name="openide-docs-location" value="http://www.netbeans.org/download/apis"/>
         
         
-        <javadoc destdir="XmlAPIs"
+        <javadoc destdir="XML-APIs"
                  packagenames="org.netbeans.api.xml.*,org.netbeans.spi.xml.*"
-                 doctitle="NetBeans XML Tools  APIs"
+                 doctitle="NetBeans XML Tools APIs"
                  windowtitle="NetBeans XML Tools APIs"
                  overview="doc/overview.html"
         >
@@ -166,10 +166,10 @@ Microsystems, Inc. All Rights Reserved.
                   packagelistLoc="doc/external/openide"
             />            
         </javadoc>                
-        <copy todir="XmlAPIs/doc-files/">
+        <copy todir="XML-APIs/doc-files/">
             <fileset dir="doc/doc-files/"/>
         </copy>
-        <zip zipfile="XmlAPIs.zip" basedir="XmlAPIs"/>
+        <zip zipfile="XML-APIs.zip" basedir="XML-APIs"/>
     </target>
     
     <target name="apichanges">
