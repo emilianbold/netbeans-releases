@@ -164,13 +164,13 @@ public class RADMenuItemComponent extends RADComponent {
 
     // to find existing menu if caller does not know about formModel
     public static Object findDesignTimeMenu(Object awtMenu) {
-        Object result;
-        for (java.util.Iterator it = menusByFM.keySet().iterator(); it.hasNext();) {
-            DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.get(it.next());
-            if ((result = dtm.getDesignTime(awtMenu)) != null) {
-                return result;
-            }
+        Object[] keys = menusByFM.keySet().toArray();
+        
+        for (int i=0; i<keys.length; i++) {
+            DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.get(keys[i]);
+            if (dtm.designTimeMenus.containsKey(awtMenu)) return dtm.designTimeMenus.get(awtMenu);
         }
+        
         return null;
     }
 
