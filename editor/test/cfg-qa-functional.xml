@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
         
     <!-- Code completion Validation tests: -->
-    <testbag testattribs="all,validation,full,completion" name="Completion-Validation">
+    <testbag testattribs="all,validation,full,completion" name="Completion-Validation" compiler="qa-functional-compiler-completion" >
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/completion/*Performer.class"/>
@@ -44,10 +44,70 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="all,completion-15" name="JDK1.5 Completion">
+    <testbag testattribs="all,completion-15" name="JDK1.5 Completion" compiler="qa-functional-compiler-completion">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15*" />
+
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biiiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest5biiiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest7biiunsorted" />
+
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest1iunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest1iiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest2iunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest2iiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest13iunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest13iiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest14iunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest14iiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9iiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9iiiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10iiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10iiiunsorted" />
+            </patternset>
+        </testset>
+    </testbag>
+
+    <!--These tests represent testcases, that are currently failing, but the golden files are known, and so should
+        start passing once the problems are fixed.
+      -->
+    <testbag testattribs="all,completion-15-should-pass" name="JDK1.5 Completion Should Pass" compiler="qa-functional-compiler-completion">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biiiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest5biiiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest7biiunsorted" />
+            </patternset>
+        </testset>
+    </testbag>
+
+    <!--These tests represent testcases, that are currently failing and will require some work to make them pass (the golden file
+        are not known for these testcases.
+      -->
+    <testbag testattribs="all,completion-15-will-fail" name="JDK1.5 Completion Will Fail" compiler="qa-functional-compiler-completion">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest1iunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest1iiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest2iunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest2iiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest13iunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest13iiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest14iunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest14iiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9iiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9iiiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10iiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10iiiunsorted" />
             </patternset>
         </testset>
     </testbag>
@@ -78,7 +138,7 @@ Microsystems, Inc. All Rights Reserved.
                         
     <!-- Code completion non-validation tests: (and three from test editor application) -->
     
-    <testbag testattribs="all,failing" name="completion-failing">
+    <testbag testattribs="all,failing" name="completion-failing" compiler="qa-functional-compiler-completion">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
@@ -87,7 +147,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="all,experimental" name="completion-experimental">
+    <testbag testattribs="all,experimental" name="completion-experimental" compiler="qa-functional-compiler-completion">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIunsorted" />
@@ -141,4 +201,5 @@ Microsystems, Inc. All Rights Reserved.
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true" />
+    <compiler name="qa-functional-compiler-completion" antfile="build-qa-functional.xml" target="qa-functional-compiler-completion" default="false" />
 </mconfig>
