@@ -590,7 +590,7 @@ public class IndexSearch
         if ( indexSearch == null ) {
             indexSearch = new IndexSearch ();
             Workspace workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
-
+            org.netbeans.modules.javadoc.JavadocModule.registerTopComponent(indexSearch);
             /*
             Mode myMode = workspace.createMode(
               "JavaDocSearch", //NOI8N // NOI18N
