@@ -49,9 +49,6 @@ import org.openide.windows.Workspace;
  */
 public class I18nManager {
     
-    /** Internationalization mode. */
-    public static final String I18N_MODE = "internationalization"; // NOI18N
-    
     /** Singleton instance of I18nManager. */
     private static I18nManager manager;
 
@@ -62,7 +59,7 @@ public class I18nManager {
     private WeakReference i18nPanelWRef = new WeakReference(null);
     
     /** Weak reference to top component in which internationalizing will be provided. */
-    private WeakReference topComponentWRef = new WeakReference(null);
+    private WeakReference dialogWRef = new WeakReference(null);
     
     /** Weak reference to caret in editor pane. */
     private WeakReference caretWRef;
@@ -259,7 +256,7 @@ public class I18nManager {
     /** Gets dialog. In our case it is a top component. 
      * @param name name of top component */
     private void getDialog(String name) {
-        TopComponent topComponent = (TopComponent)topComponentWRef.get();
+        Dialog dialog = (Dialog) dialogWRef.get();
         I18nPanel i18nPanel = (I18nPanel)i18nPanelWRef.get();
 
         Mode createdMode = null;
@@ -295,35 +292,30 @@ public class I18nManager {
             // Reset weak reference.
             i18nPanelWRef = new WeakReference(i18nPanel);
         }
-        
+
         // Set default i18n string.
         i18nPanel.setI18nString(support.getDefaultI18nString());
-        
-        if(topComponent == null) {
-            String title = Util.getString("CTL_I18nDialogTitle");
-            URL icon = getClass().getResource("i18nAction.gif");                // NOI18N
-            topComponent = I18nUtil.createTopComponent(i18nPanel, name, title, icon);
-                
-            // Reset weak reference.
-            topComponentWRef = new WeakReference(topComponent);
+
+        if (dialog == null) {
+            String title = Util.getString("CTL_I18nDialogTitle"); // NOI18N
+            DialogDescriptor dd = new DialogDescriptor(
+                i18nPanel, title, false, new Object[] {}, null,
+                DialogDescriptor.DEFAULT_ALIGN, null, null);
+            dialog = DialogDisplayer.getDefault().createDialog(dd);
+            dialog.setLocation(80, 80);
+            dialogWRef = new WeakReference(dialog);
         }
-        
-        topComponent.open();
-        topComponent.requestFocus();
-        
+
+        dialog.show();
     }
     
     /** Shows dialog. In our case opens top component if it is necessary and
      * sets caret visible in editor part. */
     private void showDialog() {
-        // Open top component if it is not already.
-        TopComponent topComponent = (TopComponent)topComponentWRef.get();
-        if(topComponent != null) {
-            if(!topComponent.isOpened()) {
-                topComponent.open();
-                topComponent.requestFocus();
-            }
-        }
+        // Open dialog if available
+        Dialog dialog = (Dialog) dialogWRef.get();
+        if (dialog != null)
+            dialog.show();
 
         // Set caret visible.
         Caret caret = (Caret)caretWRef.get();
@@ -336,10 +328,9 @@ public class I18nManager {
     /** Closes dialog. In our case removes <code>I18nPanel</code> from top component
      * and 'reconstruct it' to it's original layout. */
     private void closeDialog() {
-        TopComponent topComponent = (TopComponent)topComponentWRef.get();
-        
-        if(topComponent != null)
-            topComponent.close();
+        Dialog dialog = (Dialog) dialogWRef.get();
+        if (dialog != null)
+            dialog.hide();
     }
 
 }
