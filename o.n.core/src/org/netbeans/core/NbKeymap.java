@@ -38,7 +38,7 @@ final class NbKeymap implements Keymap {
   /** Default constructor
   */
   NbKeymap() {
-    this("Default", null);
+    this("Default", null); // NOI18N
   }
 
   NbKeymap(final String name, final Keymap parent) {
@@ -182,7 +182,7 @@ final class NbKeymap implements Keymap {
   /** Returns string representation - can be looong.
   */
   public String toString() {
-    return "Keymap[" + name + "]" + bindings;
+    return "Keymap[" + name + "]" + bindings; // NOI18N
   }
 
   void fireChangeEvent (final ChangeEvent che) {
@@ -193,6 +193,7 @@ final class NbKeymap implements Keymap {
 
 /*
 * Log
+*  10   src-jtulach1.9         1/13/00  Jaroslav Tulach I18N
 *  9    src-jtulach1.8         1/5/00   Ian Formanek    Removed obsoleted field
 *  8    src-jtulach1.7         12/21/99 Ian Formanek    Optimized adding multiple
 *       <action, shortcut> pairs into Keymap

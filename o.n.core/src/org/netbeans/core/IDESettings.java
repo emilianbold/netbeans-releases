@@ -36,19 +36,19 @@ public class IDESettings extends SystemOption {
   static final long serialVersionUID = 801136840705717911L;
 
   /** showTipsOnStartup property name */
-  public static final String PROP_SHOW_TIPS_ON_STARTUP = "showTipsOnStartup";
+  public static final String PROP_SHOW_TIPS_ON_STARTUP = "showTipsOnStartup"; // NOI18N
   /** lastTip property name */
-  public static final String PROP_LAST_TIP = "lastTip";
+  public static final String PROP_LAST_TIP = "lastTip"; // NOI18N
   /** confirmDelete property name */
-  public static final String PROP_CONFIRM_DELETE = "confirmDelete";
+  public static final String PROP_CONFIRM_DELETE = "confirmDelete"; // NOI18N
   /** home page property name */
-  public static final String PROP_HOME_PAGE = "homePage";
+  public static final String PROP_HOME_PAGE = "homePage"; // NOI18N
   /** use proxy property name */
-  public static final String PROP_USE_PROXY = "useProxy";
+  public static final String PROP_USE_PROXY = "useProxy"; // NOI18N
   /** proxy host property name */
-  public static final String PROP_PROXY_HOST = "proxyHost";
+  public static final String PROP_PROXY_HOST = "proxyHost"; // NOI18N
   /** proxy port property name */
-  public static final String PROP_PROXY_PORT = "proxyPort";
+  public static final String PROP_PROXY_PORT = "proxyPort"; // NOI18N
 
 
 // ------------------------------------------
@@ -161,7 +161,7 @@ public class IDESettings extends SystemOption {
   */
   public boolean getUseProxy () {
     String host = System.getProperty ("proxySet");
-    if ((host != null) && (host.equals ("true"))) return true;
+    if ((host != null) && (host.equals ("true"))) return true; // NOI18N
     else return false;
   }
   
@@ -169,9 +169,9 @@ public class IDESettings extends SystemOption {
   */
   public void setUseProxy (boolean value) {
     if (value) {
-      System.setProperty ("proxySet", "true");
+      System.setProperty ("proxySet", "true"); // NOI18N
     } else {
-      System.setProperty ("proxySet", "false");
+      System.setProperty ("proxySet", "false"); // NOI18N
     }
   }
 
@@ -179,33 +179,34 @@ public class IDESettings extends SystemOption {
   */
   public String getProxyHost () {
     String host = System.getProperty ("proxyHost");
-    if (host == null) host = "";
+    if (host == null) host = ""; // NOI18N
     return host;
   }
   
   /** Setter for proxy host.
   */
   public void setProxyHost (String value) {
-    System.setProperty ("proxyHost", value);
+    System.setProperty ("proxyHost", value); // NOI18N
   }
 
   /** Getter for proxy port.
   */
   public String getProxyPort () {
     String port = System.getProperty ("proxyPort");
-    if (port == null) port = "";
+    if (port == null) port = ""; // NOI18N
     return port;
   }
   
   /** Setter for proxy port.
   */
   public void setProxyPort (String value) {
-    System.setProperty ("proxyPort", value);
+    System.setProperty ("proxyPort", value); // NOI18N
   }
 }
 
 /*
  * Log
+ *  15   Gandalf   1.14        1/13/00  Jaroslav Tulach I18N
  *  14   Gandalf   1.13        1/10/00  Ian Formanek    Look&Feel property 
  *       removed
  *  13   Gandalf   1.12        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

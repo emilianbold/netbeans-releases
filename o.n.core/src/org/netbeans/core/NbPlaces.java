@@ -31,7 +31,7 @@ import com.netbeans.developer.impl.execution.ExecutionEngine;
 */
 final class NbPlaces extends Object implements Places, Places.Nodes, Places.Folders {
   /** session settings icon base */
-  private static final String SESSION_SETTINGS_ICON_BASE="/com/netbeans/developer/impl/resources/sessionSettings";
+  private static final String SESSION_SETTINGS_ICON_BASE="/com/netbeans/developer/impl/resources/sessionSettings"; // NOI18N
   
   /** default */
   private static NbPlaces places;
@@ -193,43 +193,43 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
   /** Default folder for templates.
   */
   public DataFolder templates () {
-    return findSessionFolder ("Templates");
+    return findSessionFolder ("Templates"); // NOI18N
   }
 
   /** Default folder for toolbars.
   */
   public DataFolder toolbars () {
-    return findSessionFolder ("Toolbars");
+    return findSessionFolder ("Toolbars"); // NOI18N
   }
 
   /** Default folder for menus.
   */
   public DataFolder menus () {
-    return findSessionFolder ("Menu");
+    return findSessionFolder ("Menu"); // NOI18N
   }
 
   /** Default folder for actions pool.
   */
   public DataFolder actions () {
-    return findSessionFolder ("Actions");
+    return findSessionFolder ("Actions"); // NOI18N
   }
 
   /** Default folder for bookmarks.
   */
   public DataFolder bookmarks () {
-    return findSessionFolder ("Bookmarks");
+    return findSessionFolder ("Bookmarks"); // NOI18N
   }
 
   /** Default folder for projects.
   */
   public DataFolder projects () {
-    return findSessionFolder ("Projects");
+    return findSessionFolder ("Projects"); // NOI18N
   }
 
   /** Startup folder.
   */
   public DataFolder startup () {
-    return findSessionFolder ("Startup");
+    return findSessionFolder ("Startup"); // NOI18N
   }
 
   /**
@@ -249,7 +249,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
       DataFolder df = DataFolder.findFolder(fo);
       return df;
     } catch (java.io.IOException ex) {
-      throw new InternalError ("Folder not found and cannot be created: " + name);
+      throw new InternalError ("Folder not found and cannot be created: " + name); // NOI18N
     }
   }
 
@@ -257,6 +257,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  33   Gandalf   1.32        1/13/00  Jaroslav Tulach I18N
 *  32   Gandalf   1.31        11/29/99 Jaroslav Tulach new packages 
 *       implementation.
 *  31   Gandalf   1.30        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 

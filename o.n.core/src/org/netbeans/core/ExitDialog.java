@@ -186,7 +186,7 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
             exitOptions,                                                     // options
             secondaryExitOptions [0],                                        // initial value
             DialogDescriptor.RIGHT_ALIGN,                                    // option align
-            new org.openide.util.HelpCtx (ExitDialog.class.getName () + ".dialog"), // HelpCtx
+            new org.openide.util.HelpCtx (ExitDialog.class.getName () + ".dialog"), // HelpCtx // NOI18N
             exitComponent                                                    // Action Listener
         );
         exitDlgDescriptor.setAdditionalOptions (secondaryExitOptions);
@@ -214,7 +214,7 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
     public ExitDlgListCellRenderer() {
       setOpaque(true);
       setBorder(noFocusBorder);
-      hasFocusBorder = new LineBorder(UIManager.getColor("List.focusCellHighlight"));
+      hasFocusBorder = new LineBorder(UIManager.getColor("List.focusCellHighlight")); // NOI18N
       noFocusBorder = new EmptyBorder(1, 1, 1, 1);
     }
 
@@ -233,8 +233,8 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
 
       setText(node.getDisplayName());
       if (isSelected){
-        setBackground(UIManager.getColor("List.selectionBackground"));
-        setForeground(UIManager.getColor("List.selectionForeground"));
+        setBackground(UIManager.getColor("List.selectionBackground")); // NOI18N
+        setForeground(UIManager.getColor("List.selectionForeground")); // NOI18N
       }
       else {
         setBackground(list.getBackground());
@@ -250,6 +250,7 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
 
 /*
 * Log
+*  2    Gandalf   1.1         1/13/00  Jaroslav Tulach I18N
 *  1    Gandalf   1.0         12/1/99  Petr Hrebejk    
 * $
 */

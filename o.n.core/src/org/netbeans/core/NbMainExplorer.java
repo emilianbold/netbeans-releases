@@ -123,7 +123,6 @@ public final class NbMainExplorer extends CloneableTopComponent
     } else {
       // old explorer open request
       Workspace workspace = (Workspace)context;
-      System.out.println("Opening old main explorer on " + workspace.getName());
       super.open(workspace);
       close(workspace);
       // now open new main explorer top components 
@@ -324,7 +323,7 @@ public final class NbMainExplorer extends CloneableTopComponent
   public void readExternal (ObjectInput in)
               throws IOException, ClassNotFoundException {
     super.readExternal(in);
-    System.out.println("READING old main explorer...");
+    System.out.println("READING old main explorer..."); // NOI18N
     // read explorer panels (and managers)
     int cnt = in.readInt ();
     for (int i = 0; i < cnt; i++) {
@@ -336,7 +335,6 @@ public final class NbMainExplorer extends CloneableTopComponent
     in.readBoolean ();
     in.readInt();
     in.readInt();
-    System.out.println("Old explorer read.");
   }
 
   /** Finds the right panel for given node.
@@ -371,7 +369,7 @@ public final class NbMainExplorer extends CloneableTopComponent
       result = workspace.createMode(
         WellKnownModeNames.EXPLORER, displayName,
         NbMainExplorer.class.getResource(
-          "/com/netbeans/developer/impl/resources/frames/explorer.gif"
+          "/com/netbeans/developer/impl/resources/frames/explorer.gif" // NOI18N
         )
       );
     }
@@ -789,6 +787,7 @@ public final class NbMainExplorer extends CloneableTopComponent
 
 /*
 * Log
+*  52   Gandalf   1.51        1/13/00  Jaroslav Tulach I18N
 *  51   Gandalf   1.50        1/11/00  David Simonek   projects tab now second 
 *       tab in main explorer
 *  50   Gandalf   1.49        1/9/00   David Simonek   modified initialization 

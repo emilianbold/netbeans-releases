@@ -35,7 +35,7 @@ final class EnvironmentNode extends AbstractNode {
   /** generated Serialized Version UID */
   static final long serialVersionUID = 4782447107972624693L;
   /** icon base for icons of this node */
-  private static final String EN_ICON_BASE = "/com/netbeans/developer/impl/resources/environment";
+  private static final String EN_ICON_BASE = "/com/netbeans/developer/impl/resources/environment"; // NOI18N
 
   /** base instance of the node */
   private static EnvironmentNode node;
@@ -107,6 +107,7 @@ static final long serialVersionUID =-850350968366553370L;
 
 /*
  * Log
+ *  22   Gandalf   1.21        1/13/00  Jaroslav Tulach I18N
  *  21   Gandalf   1.20        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  20   Gandalf   1.19        8/9/99   Ian Formanek    Generated Serial Version

@@ -25,17 +25,17 @@ public class DataLoaderBeanInfo extends SimpleBeanInfo {
   
   public PropertyDescriptor[] getPropertyDescriptors () {
     try {
-      PropertyDescriptor representationClass = new PropertyDescriptor ("representationClass", DataLoader.class, "getRepresentationClass", null);
+      PropertyDescriptor representationClass = new PropertyDescriptor ("representationClass", DataLoader.class, "getRepresentationClass", null); // NOI18N
       representationClass.setDisplayName (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("PROP_representationClass"));
       representationClass.setShortDescription (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("HINT_representationClass"));
       representationClass.setExpert (true);
-      PropertyDescriptor actions = new PropertyDescriptor ("actions", DataLoader.class);
+      PropertyDescriptor actions = new PropertyDescriptor ("actions", DataLoader.class); // NOI18N
       actions.setDisplayName (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("PROP_actions"));
       actions.setShortDescription (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("HINT_actions"));
       actions.setPropertyEditorClass (ActionsEditor.class);
       return new PropertyDescriptor[] { actions, representationClass };
     } catch (IntrospectionException ie) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
         ie.printStackTrace ();
       return null;
     }
@@ -45,10 +45,10 @@ public class DataLoaderBeanInfo extends SimpleBeanInfo {
   private static Image icon32;
   public Image getIcon (int type) {
     if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-      if (icon == null) icon = loadImage ("/com/netbeans/developer/impl/resources/objectTypes.gif");
+      if (icon == null) icon = loadImage ("/com/netbeans/developer/impl/resources/objectTypes.gif"); // NOI18N
       return icon;
     } else {
-      if (icon32 == null) icon32 = loadImage ("/com/netbeans/developer/impl/resources/objectTypes32.gif");
+      if (icon32 == null) icon32 = loadImage ("/com/netbeans/developer/impl/resources/objectTypes32.gif"); // NOI18N
       return icon32;
     }
   }
@@ -69,6 +69,7 @@ public class DataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  4    Gandalf   1.3         1/13/00  Jaroslav Tulach I18N
  *  3    Gandalf   1.2         1/13/00  Jesse Glick     DataLoader.actions now 
  *       editable.
  *  2    Gandalf   1.1         11/25/99 Jesse Glick     representationClass 

@@ -25,7 +25,7 @@ public class UniFileLoaderBeanInfo extends SimpleBeanInfo {
     try {
       return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
     } catch (IntrospectionException ie) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
         ie.printStackTrace ();
       return null;
     }
@@ -33,12 +33,12 @@ public class UniFileLoaderBeanInfo extends SimpleBeanInfo {
   
   public PropertyDescriptor[] getPropertyDescriptors () {
     try {
-      PropertyDescriptor extensions = new PropertyDescriptor ("extensions", UniFileLoader.class);
+      PropertyDescriptor extensions = new PropertyDescriptor ("extensions", UniFileLoader.class); // NOI18N
       extensions.setDisplayName (NbBundle.getBundle (UniFileLoaderBeanInfo.class).getString ("PROP_UniFileLoader_extensions"));
       extensions.setShortDescription (NbBundle.getBundle (UniFileLoaderBeanInfo.class).getString ("HINT_UniFileLoader_extensions"));
       return new PropertyDescriptor[] { extensions };
     } catch (IntrospectionException ie) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
         ie.printStackTrace ();
       return null;
     }
@@ -48,6 +48,7 @@ public class UniFileLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/13/00  Jaroslav Tulach I18N
  *  2    Gandalf   1.1         11/25/99 Jesse Glick     representationClass 
  *       expert loader property.
  *  1    Gandalf   1.0         11/3/99  Jesse Glick     

@@ -247,7 +247,7 @@ private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FI
       if (! SystemAction.class.isAssignableFrom (clazz)) return null;
       return (SystemAction) inst.instanceCreate ();
     } catch (Exception e) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
         e.printStackTrace ();
       return null;
     }
@@ -321,6 +321,7 @@ private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FI
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/13/00  Jaroslav Tulach I18N
  *  1    Gandalf   1.0         1/13/00  Jesse Glick     
  * $
  */

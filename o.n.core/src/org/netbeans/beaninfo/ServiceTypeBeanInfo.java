@@ -25,15 +25,15 @@ public class ServiceTypeBeanInfo extends SimpleBeanInfo {
   
   public PropertyDescriptor[] getPropertyDescriptors () {
     try {
-      PropertyDescriptor name = new PropertyDescriptor ("name", ServiceType.class);
+      PropertyDescriptor name = new PropertyDescriptor ("name", ServiceType.class); // NOI18N
       name.setDisplayName (NbBundle.getBundle (ServiceTypeBeanInfo.class).getString ("PROP_ServiceType_name"));
       name.setShortDescription (NbBundle.getBundle (ServiceTypeBeanInfo.class).getString ("HINT_ServiceType_name"));
       // Is there an easier way to prevent this from appearing??
-      PropertyDescriptor helpCtx = new PropertyDescriptor ("helpCtx", ServiceType.class, "getHelpCtx", null);
+      PropertyDescriptor helpCtx = new PropertyDescriptor ("helpCtx", ServiceType.class, "getHelpCtx", null); // NOI18N
       helpCtx.setHidden (true);
       return new PropertyDescriptor[] { name, helpCtx };
     } catch (IntrospectionException ie) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
         ie.printStackTrace ();
       return null;
     }
@@ -43,6 +43,7 @@ public class ServiceTypeBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/13/00  Jaroslav Tulach I18N
  *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  1    Gandalf   1.0         10/1/99  Jesse Glick     

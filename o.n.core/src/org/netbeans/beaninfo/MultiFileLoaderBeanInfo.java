@@ -23,7 +23,7 @@ public class MultiFileLoaderBeanInfo extends SimpleBeanInfo {
     try {
       return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
     } catch (IntrospectionException ie) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
         ie.printStackTrace ();
       return null;
     }
@@ -33,6 +33,7 @@ public class MultiFileLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/13/00  Jaroslav Tulach I18N
  *  1    Gandalf   1.0         1/13/00  Jesse Glick     
  * $
  */

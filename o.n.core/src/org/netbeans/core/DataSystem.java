@@ -53,7 +53,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     fileSystemPool = fsp;
     this.filter = filter;
     initialize();
-    setIconBase ("/com/netbeans/developer/impl/resources/repository");
+    setIconBase ("/com/netbeans/developer/impl/resources/repository"); // NOI18N
     setName (NbBundle.getBundle (DataSystem.class).getString ("dataSystemName"));
     setShortDescription (NbBundle.getBundle (DataSystem.class).getString ("CTL_Repository_Hint"));
     getCookieSet().add(fsp);
@@ -176,7 +176,7 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
   static class DSMap extends Children.Keys implements PropertyChangeListener {
 
     public void propertyChange (PropertyChangeEvent ev) {
-      //System.out.println ("Property change");
+      //System.out.println ("Property change"); // NOI18N
       DataSystem ds = getDS ();
       if (ds == null) return;
       
@@ -235,6 +235,7 @@ static final long serialVersionUID =-2266375092419944364L;
 
 /*
  * Log
+ *  26   Gandalf   1.25        1/13/00  Jaroslav Tulach I18N
  *  25   Gandalf   1.24        12/22/99 Ian Formanek    Fixed order of actions 
  *       in popup menu
  *  24   Gandalf   1.23        11/29/99 Petr Kuzel      Repository node tagged 

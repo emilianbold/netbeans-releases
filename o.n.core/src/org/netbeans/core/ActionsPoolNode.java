@@ -51,7 +51,7 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
     //JST: it displays only Menu as name!    super.setDisplayName(NbBundle.getBundle (ActionsPoolNode.class).getString("CTL_Actions_name"));
     super.setShortDescription(NbBundle.getBundle (ActionsPoolNode.class).getString("CTL_Actions_hint"));
 
-    super.setIconBase ("/com/netbeans/developer/impl/resources/actions");
+    super.setIconBase ("/com/netbeans/developer/impl/resources/actions"); // NOI18N
   }
 
   public HelpCtx getHelpCtx () {
@@ -132,12 +132,12 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
           (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
         if (itemIcon == null)
           itemIcon = Toolkit.getDefaultToolkit ().getImage (
-            getClass ().getResource ("/com/netbeans/developer/impl/resources/action.gif"));
+            getClass ().getResource ("/com/netbeans/developer/impl/resources/action.gif")); // NOI18N
         return itemIcon;
       } else {
         if (itemIcon32 == null)
           itemIcon32 = Toolkit.getDefaultToolkit ().getImage (
-            getClass ().getResource ("/com/netbeans/developer/impl/resources/action32.gif"));
+            getClass ().getResource ("/com/netbeans/developer/impl/resources/action32.gif")); // NOI18N
         return itemIcon32;
       }
     }
@@ -175,7 +175,7 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
     /** Creates properties for this node */
     public Node.PropertySet[] getPropertySets () {
       ResourceBundle bundle = NbBundle.getBundle(ActionsPoolNode.class);
-      // default sheet with "properties" property set
+      // default sheet with "properties" property set // NOI18N
       Sheet sheet = Sheet.createDefault();
       sheet.get(Sheet.PROPERTIES).put(
         new PropertySupport.Name(
@@ -194,6 +194,7 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
 
 /*
 * Log
+*  5    Gandalf   1.4         1/13/00  Jaroslav Tulach I18N
 *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.

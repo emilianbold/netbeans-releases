@@ -131,7 +131,7 @@ public class NbTopManager extends TopManager {
       HtmlBrowser htmlViewer = new HtmlBrowser ();
       htmlViewer.setURL (url);
       JDialog d1 = new JDialog (d);
-      d1.getContentPane ().add ("Center", htmlViewer);
+      d1.getContentPane ().add ("Center", htmlViewer); // NOI18N
       d1.setModal (true);
       d1.setTitle (Main.getString ("CTL_Help"));
       d1.pack ();
@@ -214,7 +214,7 @@ public class NbTopManager extends TopManager {
   */
   public ExClipboard getClipboard () {
     if (clipboard == null) {
-      clipboard = new CoronaClipboard ("");
+      clipboard = new CoronaClipboard (""); // NOI18N
     }
     return clipboard;
   }

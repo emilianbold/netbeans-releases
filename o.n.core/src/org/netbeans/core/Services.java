@@ -223,7 +223,7 @@ final class Services extends ServiceType.Registry {
         if (debug ()) ex.printStackTrace();
       } catch (RuntimeException e) {
         if ((e.getClass() != RuntimeException.class) ||
-            (e.getMessage().indexOf("java.lang.RuntimeException: Platform") < 0)) {
+            (e.getMessage().indexOf("java.lang.RuntimeException: Platform") < 0)) { // NOI18N
           throw e;
         } // else ignore
       }
@@ -291,7 +291,7 @@ final class Services extends ServiceType.Registry {
       try {
         stype = section.getServiceType();
       } catch (InstantiationException e) {
-        if (e.getMessage().indexOf("java.lang.RuntimeException: Platform") >= 0) {
+        if (e.getMessage().indexOf("java.lang.RuntimeException: Platform") >= 0) { // NOI18N
           ///// [PENDING] hack
           return;
         } else {
@@ -561,7 +561,7 @@ final class Services extends ServiceType.Registry {
       }
       
 
-//System.out.println("Into: " + this + " adding: " +s.getName ());
+//System.out.println("Into: " + this + " adding: " +s.getName ()); // NOI18N
 
       try {
         add (s);
@@ -720,6 +720,7 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  16   Gandalf   1.15        1/13/00  Jaroslav Tulach I18N
 *  15   Gandalf   1.14        12/21/99 Jaroslav Tulach serviceTypes r/w property
 *  14   Gandalf   1.13        12/20/99 Jesse Glick     No more "default 
 *       services", all are freely reorderable.

@@ -35,21 +35,21 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
     try {
       desc = new PropertyDescriptor[] {
         new PropertyDescriptor (IDESettings.PROP_SHOW_TIPS_ON_STARTUP, IDESettings.class,
-                                "getShowTipsOnStartup", "setShowTipsOnStartup"),
+                                "getShowTipsOnStartup", "setShowTipsOnStartup"), // NOI18N
         new PropertyDescriptor (IDESettings.PROP_LAST_TIP, IDESettings.class,
-                                "getLastTip", "setLastTip"),
+                                "getLastTip", "setLastTip"), // NOI18N
         new PropertyDescriptor (IDESettings.PROP_CONFIRM_DELETE, IDESettings.class,
-                                "getConfirmDelete", "setConfirmDelete"),
-        new PropertyDescriptor ("loadedBeans", IDESettings.class,
-                                "getLoadedBeans", "setLoadedBeans"),
+                                "getConfirmDelete", "setConfirmDelete"), // NOI18N
+        new PropertyDescriptor ("loadedBeans", IDESettings.class, // NOI18N
+                                "getLoadedBeans", "setLoadedBeans"), // NOI18N
         new PropertyDescriptor (IDESettings.PROP_HOME_PAGE, IDESettings.class,
-                                "getHomePage", "setHomePage"),
+                                "getHomePage", "setHomePage"), // NOI18N
         new PropertyDescriptor (IDESettings.PROP_USE_PROXY, IDESettings.class,
-                                "getUseProxy", "setUseProxy"),
+                                "getUseProxy", "setUseProxy"), // NOI18N
         new PropertyDescriptor (IDESettings.PROP_PROXY_HOST, IDESettings.class,
-                                "getProxyHost", "setProxyHost"),
+                                "getProxyHost", "setProxyHost"), // NOI18N
         new PropertyDescriptor (IDESettings.PROP_PROXY_PORT, IDESettings.class,
-                                "getProxyPort", "setProxyPort"),
+                                "getProxyPort", "setProxyPort"), // NOI18N
       };
 
       desc[0].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
@@ -87,8 +87,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
   /** Returns the IDESettings' icon */
   public Image getIcon(int type) {
     if (icon == null) {
-      icon = loadImage("/com/netbeans/developer/impl/resources/ideSettings.gif");
-      icon32 = loadImage ("/com/netbeans/developer/impl/resources/ideSettings32.gif");
+      icon = loadImage("/com/netbeans/developer/impl/resources/ideSettings.gif"); // NOI18N
+      icon32 = loadImage ("/com/netbeans/developer/impl/resources/ideSettings32.gif"); // NOI18N
     }
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
       return icon;
@@ -101,6 +101,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  14   Gandalf   1.13        1/13/00  Jaroslav Tulach I18N
  *  13   Gandalf   1.12        1/10/00  Ian Formanek    Removed Look&Feel 
  *       property
  *  12   Gandalf   1.11        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

@@ -29,7 +29,7 @@ public class XMLDataObject {
       try {
         return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
       } catch (IntrospectionException ie) {
-        if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
           ie.printStackTrace ();
         return null;
       }
@@ -37,10 +37,10 @@ public class XMLDataObject {
     
     public Image getIcon (int type) {
       if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-        if (icon == null) icon = loadImage ("/org/openide/resources/xmlObject.gif");
+        if (icon == null) icon = loadImage ("/org/openide/resources/xmlObject.gif"); // NOI18N
         return icon;
       } else {
-        if (icon32 == null) icon32 = loadImage ("/org/openide/resources/xmlObject.gif");
+        if (icon32 == null) icon32 = loadImage ("/org/openide/resources/xmlObject.gif"); // NOI18N
         return icon32;
       }
     }
@@ -51,6 +51,7 @@ public class XMLDataObject {
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/13/00  Jaroslav Tulach I18N
  *  1    Gandalf   1.0         1/13/00  Jesse Glick     
  * $
  */

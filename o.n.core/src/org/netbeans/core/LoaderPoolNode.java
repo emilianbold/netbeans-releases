@@ -50,7 +50,7 @@ import org.openide.actions.ReorderAction;
 public final class LoaderPoolNode extends AbstractNode {
   /** Default icon base for loader pool node.*/
   private static final String LOADER_POOL_ICON_BASE =
-    "/com/netbeans/developer/impl/resources/loaderPool";
+    "/com/netbeans/developer/impl/resources/loaderPool"; // NOI18N
   /** The only instance of the LoaderPoolNode class in the system.
   * This value is returned from the getLoaderPoolNode() static method */
   private static LoaderPoolNode loaderPoolNode;
@@ -213,10 +213,10 @@ public final class LoaderPoolNode extends AbstractNode {
         // Compute resulting order.
         if (mustbe12) {
           if (mustbe21) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
               // PLEASE DO NOT COMMENT OUT:
               System.err.println ("Warning: mutually contradictory loader ordering will be ignored; " +
-                                  l1 + " and " + l2);
+                                  l1 + " and " + l2); // NOI18N
             return 0;
           } else {
             return -1;
@@ -239,7 +239,7 @@ public final class LoaderPoolNode extends AbstractNode {
     try {
       loaders = Utilities.partialSort (loaders, c, true);
     } catch (Utilities.UnorderableException uue) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
         uue.printStackTrace ();
       // leave order as it was
     }
@@ -413,7 +413,7 @@ public final class LoaderPoolNode extends AbstractNode {
     loadersArray = null;
     
     if (loaderPool != null && notifications == 0) {
-      Thread t = new Thread ("Loader Pool Change Notification") {
+      Thread t = new Thread ("Loader Pool Change Notification") { // NOI18N
         public void run () {
           loaderPool.superFireChangeEvent(
             new ChangeEvent(loaderPool)
@@ -584,7 +584,7 @@ public final class LoaderPoolNode extends AbstractNode {
       try {
         return new Node[] { new LoaderPoolItemNode ((DataLoader)loader) };
       } catch (IntrospectionException e) {
-        if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
           e.printStackTrace ();
         return new Node[] { };
       }
@@ -638,7 +638,7 @@ public final class LoaderPoolNode extends AbstractNode {
    */
     void superFireChangeEvent (ChangeEvent che) {
       super.fireChangeEvent(che);
-      //System.out.println ("Loaders Change event fired....");
+      //System.out.println ("Loaders Change event fired...."); // NOI18N
     }
     
     
@@ -716,6 +716,7 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  34   Gandalf   1.33        1/13/00  Jaroslav Tulach I18N
 *  33   Gandalf   1.32        1/13/00  Jesse Glick     All loaders are displayed
 *       and persisted, incl. system ones, though these cannot be reordered.
 *  32   Gandalf   1.31        12/2/99  Jesse Glick     Loaders cannot be removed
