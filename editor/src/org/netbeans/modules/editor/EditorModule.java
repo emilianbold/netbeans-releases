@@ -13,10 +13,16 @@
 
 package org.netbeans.modules.editor;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
@@ -25,8 +31,10 @@ import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.DialogSupport;
+import org.netbeans.editor.FindSupport;
 import org.netbeans.editor.ImplementationProvider;
 import org.netbeans.editor.LocaleSupport;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.AllOptions;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
@@ -56,6 +64,8 @@ public class EditorModule extends ModuleInstall {
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.kits");
 
     static boolean inited = false;
+    private PropertyChangeListener searchSelectedPatternListener;
+    private PropertyChangeListener editorHistoryChangeListener;
 
     
     public static void init(){
@@ -68,6 +78,13 @@ public class EditorModule extends ModuleInstall {
         BasePrintOptions bpo = (BasePrintOptions) BasePrintOptions.findObject(BasePrintOptions.class, true);
         bpo.init();
     }
+    
+    private boolean getFindBooleanProperty(String name){
+        FindSupport fs = FindSupport.getFindSupport();
+        Boolean prop = (Boolean) fs.getFindProperty(name);
+        return (prop!=null) ? prop.booleanValue() : false;
+    }
+    
     
     /** Module installed again. */
     public void restored () {
@@ -136,13 +153,114 @@ public class EditorModule extends ModuleInstall {
 //            );
 //        }
 
+         /*   [TEMP]
+         searchSelectedPatternListener = new PropertyChangeListener(){
+             
+             public void propertyChange(PropertyChangeEvent evt){
+                 if (evt == null || !SearchHistory.LAST_SELECTED_SEARCH_PATTERN.equals(evt.getPropertyName())){
+                     return;
+                 }
+                 System.out.println("");
+                 System.out.println("API -> editor:");                
+                 FindSupport fs = FindSupport.getFindSupport();
+                 SearchPattern sp = SearchHistory.getDefault().getLastSelected();
+                 if (sp==null){
+                     return;
+                 }
+                 
+                 Map map = new HashMap();
+                 map.put(SettingsNames.FIND_WHAT, sp.getSearchExpression());
+                 map.put(SettingsNames.FIND_MATCH_CASE, Boolean.valueOf(sp.isMatchCase()));
+                 map.put(SettingsNames.FIND_REG_EXP, Boolean.valueOf(sp.isRegExp()));
+                 map.put(SettingsNames.FIND_WHOLE_WORDS, Boolean.valueOf(sp.isWholeWords()));
+                 List searchPatterns = SearchHistory.getDefault().getSearchPatterns();
+                 List searchTexts = new ArrayList();
+ 
+                 for (int i = 0; i<searchPatterns.size(); i++){
+                     String histString = ((SearchPattern)searchPatterns.get(i)).getSearchExpression();
+                     System.out.println("histString:"+histString);
+                     searchTexts.add(histString);
+                 }
+                 fs.putFindProperty(SettingsNames.FIND_HISTORY, null);
+                 map.put(SettingsNames.FIND_HISTORY, searchTexts);
+                 fs.putFindProperties(map);
+ 
+             }
+         };
+         
+         editorHistoryChangeListener =  new PropertyChangeListener(){
+             public void propertyChange(PropertyChangeEvent evt){
+                 
+                 if (evt == null || !SettingsNames.FIND_HISTORY.equals(evt.getPropertyName())){
+                     return;
+                 }
+ 
+                 System.out.println("");
+                 System.out.println("editor -> API");
+                 
+                 FindSupport fs = FindSupport.getFindSupport();
+                 List list = (List) fs.getFindProperty(SettingsNames.FIND_HISTORY);
+                 if (list != null && list.size() > 0){
+                     boolean matchCase = getFindBooleanProperty(SettingsNames.FIND_MATCH_CASE);
+                     boolean regExp = getFindBooleanProperty(SettingsNames.FIND_REG_EXP);
+                     boolean wholeWords = getFindBooleanProperty(SettingsNames.FIND_WHOLE_WORDS);
+                     String searchExp = (String)list.get(0);
+                     System.out.println("searchExp:"+searchExp);
+                     if (searchExp == null || searchExp.length() == 0) return;
+                     SearchPattern sp = SearchPattern.create(searchExp, wholeWords, matchCase, regExp );
+                     SearchPattern oldSP = SearchHistory.getDefault().getLastSelected();
+                     if (oldSP != null){
+                         System.out.println("oldSP == null");
+                         System.out.println("searchExp:"+searchExp);
+                         System.out.println("oldSP.getSearchExpression:"+oldSP.getSearchExpression());
+                         if (searchExp.equals(oldSP.getSearchExpression()) && matchCase == oldSP.isMatchCase() &&
+                                 regExp == oldSP.isRegExp() && wholeWords == oldSP.isWholeWords()){
+                             return;
+                         }
+                     }
+                     System.out.println("put to API:"+searchExp);
+                     SearchHistory.getDefault().add(sp);
+                     SearchHistory.getDefault().setLastSelected(sp);
+                 }
+             }
+         };
+ 
+         SearchHistory.getDefault().addPropertyChangeListener(searchSelectedPatternListener);
+         FindSupport.getFindSupport().addPropertyChangeListener(editorHistoryChangeListener);
+         
+         // TEMP start
+         
+         final int fired[] = new int[1];
+         fired[0] = 0;
+         
+         Timer timer;
+         timer = new Timer(15000, new ActionListener(){
+                 public void actionPerformed(ActionEvent e){
+                    SearchPattern p;
+                     p = SearchPattern.create(String.valueOf(fired[0]),false,false,false);
+                     SearchHistory.getDefault().add(p);                    
+                     SearchHistory.getDefault().setLastSelected(p);
+                     fired[0] ++;
+                 }
+         });
+         timer.start();
+         
+         //TEMP end
+         */
+            
     }
 
     /** Called when module is uninstalled. Overrides superclass method. */
     public void uninstalled() {
 
         AllOptionsFolder.unregisterModuleRegListener();
-        
+
+        /* [TEMP]
+        if (searchSelectedPatternListener!=null){
+            SearchHistory.getDefault().removePropertyChangeListener(searchSelectedPatternListener);
+        }
+        */
+         
         // unregister our registry
         try {
             Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
