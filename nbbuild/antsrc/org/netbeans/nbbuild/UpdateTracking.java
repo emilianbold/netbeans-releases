@@ -72,19 +72,19 @@ class UpdateTracking {
         return version;
     }
     
-    public String[] getListOfNBM( String codeName ) {
+    public String[] getListOfNBM( String codeName ) throws BuildException {
         module = new Module();
         module.setCodename( codeName );
         File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
         trackingFile = new File(directory, getTrackingFileName());
 
         if (!trackingFile.exists() || !trackingFile.isFile())
-            return null;
+            throw new BuildException ("Tracking file " + trackingFile.getAbsolutePath() + " cannot be found for module codenamebase " + codeName );
         
         read();
         
         if ( module.getVersions().size() != 1 ) 
-            return null;
+            throw new BuildException ("Module with codenamebase " + codeName + " has got " + module.getVersions().size() + " specification versions. Correct number is 1.");
         
         List files = ((Version) module.getVersions().get(0)).getFiles();
         String [] listFiles = new String[ files.size() ];
@@ -111,7 +111,7 @@ class UpdateTracking {
             }
     }
     
-    void write( ) {
+    void write( ) throws BuildException{
         Document document = XMLUtil.createDocument(ELEMENT_MODULE);  
         Element e_module = document.getDocumentElement();
         e_module.setAttribute(ATTR_CODENAME, module.getCodename());
@@ -151,14 +151,16 @@ class UpdateTracking {
         }        
     }
 
-    public String getTrackingFileName() {
+    public String getTrackingFileName() throws BuildException {
         String trackingFileName = module.getCodenamebase();
+        if ( ( trackingFileName == null ) || ( trackingFileName.length() == 0 ) )
+            throw new BuildException ("Empty codenamebase, unable to locate tracking file");
         trackingFileName = trackingFileName.replace('.', '-') + ".xml";
         return trackingFileName;
     }
 
     /** Scan through org.w3c.dom.Document document. */
-    private void read() {
+    private void read() throws BuildException {
         /** org.w3c.dom.Document document */
         org.w3c.dom.Document document;
         if (trackingFile.exists()) {
@@ -172,14 +174,10 @@ class UpdateTracking {
                 is.close();
             }
             catch ( org.xml.sax.SAXException e ) {
-                System.out.println("Bad update_tracking" ); // NOI18N
-                e.printStackTrace();
-                return;
+                throw new BuildException ("Update tracking file " + trackingFile.getAbsolutePath() + " is not well formatted XML document.", e);
             }
             catch ( java.io.IOException e ) {
-                System.out.println("Missing update_tracking" ); // NOI18N
-                e.printStackTrace();
-                return;
+                throw new BuildException ("I/O error while accessing tracking file " + trackingFile.getAbsolutePath(), e);
             }
             
             org.w3c.dom.Element element = document.getDocumentElement();
