@@ -220,7 +220,9 @@ else System.err.println( "Inside token " + item.getTokenID() );
                     // automatically null but that does not mean that the
                     // completion should return null. Only if element is null
                     // also for offset-1...
-                    if (elem == null) {
+                    // + bugfix of #52909 - the > is recognized as SyntaxElement.TAG so we need to 
+                    // get a syntax element before, when cc is called before > in a tag e.g. <table w|>
+                    if (elem == null || (elem.getType() == SyntaxElement.TYPE_TAG && ">".equals(elem.getText())) ) {
                         elem = sup.getElementChain( offset - 1 );
                     }
                     
