@@ -264,16 +264,23 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         if (width < curWidth) {
             return "..";
         }
+        int threeDotsWidth = curWidth;
+        String replacement = null;
+        curWidth = 0;
         for (int i = 0; i < text.length(); i++) {
             curWidth += fm.charWidth(text.charAt(i));
-            if (width < curWidth) {
+            if (width < (curWidth + threeDotsWidth) && replacement == null) {
                 // text doesn't fit, include portion of the text and finishing dots
                 if (i == 0) {
-                    return "...";
+                    replacement = "...";
+                } else {
+                    StringBuffer buf = new StringBuffer(text.substring(0, i));
+                    buf.append("...");
+                    replacement = buf.toString();
                 }
-                StringBuffer buf = new StringBuffer(text.substring(0, i));
-                buf.append("...");
-                return buf.toString();
+            }
+            if (width < curWidth) {
+                return replacement;
             }
         }
         // OK, text all fits, no need to modify it
