@@ -145,9 +145,9 @@ public class BrowserDisplayer extends JButton implements ActionListener, ViewAwa
 	textAttribs.addAttribute(StyleConstants.FontSize,
 				 new Integer(font.getSize()));
 	textAttribs.addAttribute(StyleConstants.Bold,
-				 new Boolean(font.isBold()));
+				 Boolean.valueOf(font.isBold()));
 	textAttribs.addAttribute(StyleConstants.Italic,
-				 new Boolean(font.isItalic()));
+				 Boolean.valueOf(font.isItalic()));
     }
     
     /**
@@ -272,7 +272,7 @@ public class BrowserDisplayer extends JButton implements ActionListener, ViewAwa
      * </ul>
      */
     public void setTextFontSize(String size) {
-	int newsize, tmp;
+	int newsize;
 	StyleSheet css = doc.getStyleSheet();
 	try {
 	    if (size.equals("xx-small")) {
@@ -335,7 +335,7 @@ public class BrowserDisplayer extends JButton implements ActionListener, ViewAwa
 	    isBold = false;
 	}
 	textAttribs.removeAttribute(StyleConstants.Bold);
-	textAttribs.addAttribute(StyleConstants.Bold, new Boolean(isBold));
+	textAttribs.addAttribute(StyleConstants.Bold, Boolean.valueOf(isBold));
 	setFont(getAttributeSetFont(textAttribs));
 	Font font = getFont();
     }
@@ -366,7 +366,7 @@ public class BrowserDisplayer extends JButton implements ActionListener, ViewAwa
 	    isItalic = false;
 	}
 	textAttribs.removeAttribute(StyleConstants.Italic);
-	textAttribs.addAttribute(StyleConstants.Italic, new Boolean(isItalic));
+	textAttribs.addAttribute(StyleConstants.Italic, Boolean.valueOf(isItalic));
 	setFont(getAttributeSetFont(textAttribs));
 	Font font = getFont();
     }
