@@ -70,10 +70,15 @@ Microsystems, Inc. All Rights Reserved.
       <branding name="f4j_ie"/>
     </locjar>	 
     <mkdir dir="netbeans/lib/ext"/>
-    <jar jarfile="netbeans/lib/ext/ddl.jar"         
+    <locjar jarfile="netbeans/lib/ext/ddl.jar"         
          basedir="libsrc"
 	 excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"
-	 compress="false"/>
+	 compress="false">
+      <locale name="ja"/>
+      <branding name="f4j"/>
+      <branding name="f4j_ce"/>
+      <branding name="f4j_ie"/>
+    </locjar>
   </target>
 
   <target name="javahelp">
