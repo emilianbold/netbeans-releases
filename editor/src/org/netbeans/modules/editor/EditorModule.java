@@ -15,7 +15,6 @@ package com.netbeans.developer.modules.text;
 
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
-import com.netbeans.ide.modules.Module;
 
 /**
 * Module installation class for editor
@@ -91,6 +90,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  3    Gandalf   1.2         3/9/99   Ian Formanek    Removed obsoleted import
  *  2    Gandalf   1.1         3/8/99   Jesse Glick     For clarity: Module -> 
  *       ModuleInstall; NetBeans-Module-Main -> NetBeans-Module-Install.
  *  1    Gandalf   1.0         2/4/99   Miloslav Metelka 
