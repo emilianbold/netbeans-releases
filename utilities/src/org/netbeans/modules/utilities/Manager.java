@@ -40,11 +40,13 @@ public final class Manager {
     
     /**
      * Marks that the specified action is activated and informs whether
-     * the same action is already active or not
+     * the same action is already active or not.
      *
+     * @param  a  action to be marked as activated
      * @return  <code>true</code> if the action may be activated
      *          (i.e. was not active at the moment this method was called),
      *          <code>false</code> if it was already active
+     * @see  #actionFinished
      */
     public static boolean actionActivated(SystemAction a) {
         synchronized (activatedActions) {
@@ -58,6 +60,10 @@ public final class Manager {
     }
     
     /**
+     * Marks the specified action finished (i.e. not active any more).
+     *
+     * @param  a  action to be marked as finished
+     * @see  #actionActivated
      */
     public static void actionFinished(SystemAction a) {
         synchronized (activatedActions) {
