@@ -130,10 +130,12 @@ public class TextEditModuleInstall extends ModuleInstall {
         ClassLoader loader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
         
         if (XMLKit.class.getName().equals(JEditorPane.getEditorKitClassNameForContentType(XMLDataObject.MIME_TYPE))) {
+            originalXMLKit = originalXMLKit == null ? "org.netbeans.modules.editor.plain.PlainKit" : originalXMLKit;
             JEditorPane.registerEditorKitForContentType(XMLDataObject.MIME_TYPE, originalXMLKit, loader);
         }
         
-        if (XMLKit.class.getName().equals(JEditorPane.getEditorKitClassNameForContentType(DTDDataObject.MIME_TYPE))) {
+        if (DTDKit.class.getName().equals(JEditorPane.getEditorKitClassNameForContentType(DTDDataObject.MIME_TYPE))) {
+            originalDTDKit = originalDTDKit == null ? "org.netbeans.modules.editor.plain.PlainKit" : originalDTDKit;
             JEditorPane.registerEditorKitForContentType(DTDDataObject.MIME_TYPE, originalDTDKit, loader);
         }
         
