@@ -1,5 +1,6 @@
 OpenIDE-Module: org.netbeans.modules.xml.text/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/text/resources/Bundle.properties
+OpenIDE-Module-Description: org.netbeans.modules.xml.text.docs.helpset
 OpenIDE-Module-Install: org/netbeans/modules/xml/text/TextEditModuleInstall.class
 OpenIDE-Module-Layer: org/netbeans/modules/xml/text/resources/mf-layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
