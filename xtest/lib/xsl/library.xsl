@@ -55,6 +55,10 @@
 	    	.fail {
 			    font-weight:bold; background:#EEEEE0; color:red;
     		}
+    		.unknown {
+			    font-weight:bold; background:#EEEEE0; color:red;
+    		}
+    		
     		.pass {
 		    	background:#EEEEE0;
 	    	}

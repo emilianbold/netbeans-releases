@@ -318,6 +318,17 @@ public class RegenerateXMLTask extends Task{
         testRun.xmlel_TestBag = testBags;
         // give the run ID
         testRun.xmlat_runID = testRunRoot.getName();
+        
+        // check if there is log directory (available when running from 
+        //  instance )
+        File logDir = new File(testRunRoot,PEConstants.ANT_LOGDIR_LOCATION);
+        if (logDir.isDirectory()) {
+            testRun.xmlat_antLogs = true;
+        } else {
+            testRun.xmlat_antLogs = false;
+        }
+        
+        
         // now serialize the new test run
         if (!produceBigReportOnly) {
             TestBag[] testBagsWithFailures = new TestBag[testBagsDirs.length];

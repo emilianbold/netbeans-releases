@@ -48,6 +48,8 @@ public class PEConstants {
     
     public static final String IDE_USERDIR_LOCATION = "sys/ide";
     
+    public static final String ANT_LOGDIR_LOCATION = "logs";
+    
     public static final String XTEST_WORKDIR = "xtest.workdir";
     public static final String XTEST_RESULTS = "xtest.results";
 }

@@ -195,6 +195,10 @@ public class TestRun extends XMLBean {
     public long     xmlat_testsError;
     public String   xmlat_runID;
     
+    // flag indicating whether this testreport includes
+    // logs from ant running tests
+    public boolean  xmlat_antLogs=false;
+    
     // child elements
     public TestBag[]    xmlel_TestBag;
 
