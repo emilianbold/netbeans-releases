@@ -801,6 +801,7 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
                 <pathelement location="build/test/unit/classes" />
                 <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
                 <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
+                <pathelement location="${nb_all}/xtest/lib/insanelib.jar"/>
                 <fileset dir="${netbeans.dest.dir}" >
                     <patternset refid="openide.files" />
                 </fileset>
@@ -819,6 +820,7 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
                 <pathelement location="build/test/unit/classes" />
                 <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
                 <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
+                <pathelement location="${nb_all}/xtest/lib/insanelib.jar"/>
             </classpath>
             <arg line="${test.class}"/>
         </java>
