@@ -94,14 +94,18 @@ class FileMapStorage implements Storage {
                     outdir));
                 throw ise;
             }
-            String fname = outdir + "output" + Long.toString(System.currentTimeMillis()); //NOI18N
-            outfile = new File (fname);
-            while (outfile.exists()) {
-                fname += "1";
-                outfile = new File(fname);
+            //#47196 - if user holds down F9, many threads can enter this method
+            //simultaneously and all try to create the same file
+            synchronized (FileMapStorage.class) {
+                String fname = outdir + "output" + Long.toString(System.currentTimeMillis()); //NOI18N
+                outfile = new File (fname);
+                while (outfile.exists()) {
+                    fname += "x"; //NOI18N
+                    outfile = new File(fname);
+                }
+                outfile.createNewFile();
+                outfile.deleteOnExit();
             }
-            outfile.createNewFile();
-            outfile.deleteOnExit();
         }
     }
 
