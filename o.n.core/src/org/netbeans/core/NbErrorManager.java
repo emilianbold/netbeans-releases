@@ -16,8 +16,7 @@ package org.netbeans.core;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 import org.openide.ErrorManager;
@@ -39,8 +38,11 @@ final class NbErrorManager extends ErrorManager {
     */
     private Map lastException = new WeakHashMap (27);
 
-    /** Minimum value of severity to write exception to the log file*/
-    private int minLogSeverity = ErrorManager.UNKNOWN;
+    /** Minimum value of severity to write message to the log file*/
+    private int minLogSeverity = ErrorManager.INFORMATIONAL;
+
+    /** Prefix preprended to customized loggers, if any. */
+    private String prefix = null;
     
     /** Creates new NbExceptionManager. */
     public NbErrorManager() {
@@ -125,35 +127,34 @@ final class NbErrorManager extends ErrorManager {
         Exc ex = new Exc (t, severity, ann);
 
 
-        PrintWriter ps = new PrintWriter (
-                             TopLogging.getLogOutputStream ()
-                         );
+        PrintWriter ps = getLogWriter ();
 
-	// [PENDING] does not seem to work, nothing is printed...?
+        if (prefix != null) ps.print ("[" + prefix + "] "); // NOI18N
         ps.println ("*********** Exception occurred ************"); // NOI18N
+        ps.flush ();
 
 
         /** If netbeans.debug.exceptions is set, print the exception to console */
-	// [PENDING] if it is a severe error, shouldn't it be printed in any case?
         if (System.getProperty ("netbeans.debug.exceptions") != null) { // NOI18N
             PrintWriter pw = new PrintWriter (System.err);
             ex.printStackTrace (pw);
             pw.flush();
+            // This will show up in the log too, of course.
+        } else {
+            ex.printStackTrace(ps);
         }
-
-        // log into the log file
-        ex.printStackTrace(ps);
 
         ps.flush();
 
-        if (ex.getSeverity () != INFORMATIONAL) {
+        if (ex.getSeverity () > INFORMATIONAL) {
             NotifyException.notify (ex);
         }
     }
 
-    /** */
     public void log(int severity, String s) {
         if(severity >= minLogSeverity) {
+            if (prefix != null)
+                getLogWriter ().print ("[" + prefix + "] "); // NOI18N
             getLogWriter().println(s);
             getLogWriter().flush(); 
         }
@@ -165,14 +166,30 @@ final class NbErrorManager extends ErrorManager {
      */
     public final ErrorManager getInstance(String name) {
         // TODO: change this to create a hierarchy
+        // [jglick] is the following enough or is more needed?
         NbErrorManager newEM = new NbErrorManager();
-        if (System.getProperty (name) != null) {
-            try {
-                newEM.minLogSeverity = Integer.parseInt(System.getProperty (name));                    
-            } catch (NumberFormatException nfe) {
-                newEM.minLogSeverity = ErrorManager.UNKNOWN;
+        newEM.prefix = (prefix == null) ? name : prefix + '.' + name;
+        newEM.minLogSeverity = minLogSeverity;
+        String prop = newEM.prefix;
+        while (prop != null) {
+            String value = System.getProperty (prop);
+            //System.err.println ("Trying; prop=" + prop + " value=" + value);
+            if (value != null) {
+                try {
+                    newEM.minLogSeverity = Integer.parseInt (value);                    
+                } catch (NumberFormatException nfe) {
+                    notify (WARNING, nfe);
+                }
+                break;
+            } else {
+                int idx = prop.lastIndexOf ('.');
+                if (idx == -1)
+                    prop = null;
+                else
+                    prop = prop.substring (0, idx);
             }
         }
+        //System.err.println ("getInstance: prefix=" + prefix + " mls=" + minLogSeverity + " name=" + name + " prefix2=" + newEM.prefix + " mls2=" + newEM.minLogSeverity);
         return newEM;
     }    
 
@@ -181,6 +198,9 @@ final class NbErrorManager extends ErrorManager {
     * @return array of annotations or null
     */
     public synchronized Annotation[] findAnnotations (Throwable t) {
+        // [PENDING] probably this should work recursively?
+        // Or Exc should look for its own sub-annotations and deal
+        // with them sensibly.
         List l = (List)map.get (t);
         Annotation[] arr;
         if (l == null) {
@@ -349,7 +369,34 @@ final class NbErrorManager extends ErrorManager {
                 }
             }
             // ok, print trace of the original exception too
-            t.printStackTrace(pw);
+            //t.printStackTrace(pw);
+            // Attempt to show an annotation indicating where the exception
+            // was caught. Not 100% reliable but often helpful.
+            String[] tLines = decompose (t);
+            String[] hereLines = decompose (new Throwable ());
+            int idx = -1;
+            for (int i = 1; i <= Math.min (tLines.length, hereLines.length); i++) {
+                if (! tLines[tLines.length - i].equals (hereLines[hereLines.length - i])) {
+                    idx = tLines.length - i;
+                    break;
+                }
+            }
+            for (int i = 0; i < tLines.length; i++) {
+                if (i == idx) pw.print ("[catch]"); // NOI18N
+                pw.println (tLines[i]);
+            }
+        }
+
+        /** Get a throwable's stack trace, decomposed into individual lines. */
+        private static String[] decompose (Throwable t) {
+            StringWriter sw = new StringWriter ();
+            t.printStackTrace (new PrintWriter (sw));
+            StringTokenizer tok = new StringTokenizer (sw.toString (), "\n"); // NOI18N
+            int c = tok.countTokens ();
+            String[] lines = new String[c];
+            for (int i = 0; i < c; i++)
+                lines[i] = tok.nextToken ();
+            return lines;
         }
 
         /** Method that iterates over annotations to find out
@@ -427,12 +474,3 @@ final class NbErrorManager extends ErrorManager {
     }
 
 }
-
-/*
-* Log
-*  3    Jaga      1.2         4/10/00  Ales Novak      #6120
-*  2    Jaga      1.1         4/5/00   Jaroslav Tulach Works even there is no 
-*       annotation associated with the exception.
-*  1    Jaga      1.0         4/4/00   Jaroslav Tulach 
-* $ 
-*/ 
