@@ -377,15 +377,17 @@ is divided into following sections:
             </target>
 
             <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service|/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">
-				<target name="wscompile-init" depends="init">
-					<taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
-					  <classpath path="${{wscompile.classpath}}"/>
-					</taskdef>
-					<mkdir dir="${{classes.dir}}/META-INF/wsdl"/>
-					<mkdir dir="${{build.generated.dir}}/wssrc"/>
-                    <mkdir dir="${{meta.inf}}/wsdl"/>
-				</target>
-			</xsl:if>
+            <target name="wscompile-init" depends="init">
+                <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
+                    <classpath path="${{wscompile.classpath}}"/>
+                </taskdef>
+                <mkdir dir="${{classes.dir}}/META-INF/wsdl"/>
+                <mkdir dir="${{build.generated.dir}}/wsclient"/>
+                <mkdir dir="${{build.generated.dir}}/wsservice"/>
+                <mkdir dir="${{build.generated.dir}}/wsbinary"/>
+                <mkdir dir="${{meta.inf}}/wsdl"/>
+                </target>
+            </xsl:if>
 
             <xsl:for-each select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
               <xsl:variable name="wsname">
@@ -403,7 +405,7 @@ is divided into following sections:
                      verbose="true" 
                      xPrintStackTrace="true" 
                      xSerializable="true"
-                     base="${{build.generated.dir}}/wssrc" 
+                     base="${{build.generated.dir}}/wsbinary"
                      sourceBase="${{src.dir}}" 
                      keep="true" 
                      fork="true" />
@@ -415,14 +417,15 @@ is divided into following sections:
                      server="true"
                      fork="true"
                      keep="true"
-                     base="${{build.generated.dir}}/wssrc"
+                     base="${{build.generated.dir}}/wsbinary"
                      xPrintStackTrace="true"
                      verbose="true"
                      nonClassDir="${{classes.dir}}/META-INF/wsdl"
                      classpath="${{wscompile.classpath}}:${{classes.dir}}:${{javac.classpath}}"
                      mapping="${{classes.dir}}/META-INF/wsdl/${{{$wsname}.mapping}}"
                      config="${{{$wsname}.config.name}}"
-                     features="${{wscompile.service.{$wsname}.features}}">
+                     features="${{wscompile.service.{$wsname}.features}}"
+                     sourceBase="${{build.generated.dir}}/wsservice">
                   </wscompile>
                 </target>
               </xsl:otherwise>
@@ -450,10 +453,10 @@ is divided into following sections:
                     </xsl:choose>
                 </xsl:variable>
 
-                <target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
+                <target name="{$wsclientname}-client-wscompile" depends="wscompile-init">
                     <property name="config_target" location="${{meta.inf}}/wsdl"/>
                     <copy file="${{meta.inf}}/wsdl/{$wsclientname}-config.xml"
-                        tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
+                        tofile="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml" filtering="on">
                         <filterset>
                             <!-- replace token with reference to WSDL file in source tree, not build tree, since the
                                  the file probably has not have been copied to the build tree yet. -->
@@ -465,32 +468,38 @@ is divided into following sections:
                         client="{$useclient}" import="{$useimport}"
                         features="${{wscompile.client.{$wsclientname}.features}}"
                         base="${{classes.dir}}"
-                        sourceBase="${{build.generated.dir}}/wssrc"
+                        sourceBase="${{build.generated.dir}}/wsclient"
                         classpath="${{wscompile.classpath}}:${{javac.classpath}}"
                         mapping="${{classes.dir}}/META-INF/wsdl/{$wsclientname}-mapping.xml"
-                        config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
+                        config="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml">
                     </wscompile>
                 </target>
             </xsl:for-each>
                         
-            <target name="-pre-pre-compile">
-                <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
-                <mkdir dir="${{build.classes.dir}}"/>
-                <mkdir dir="${{build.ear.classes.dir}}"/>
-            </target>
-            
-            <target name="-pre-compile">
                 <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">
+                <target name="web-service-client-generate">
                     <xsl:attribute name="depends">
                         <xsl:for-each select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">
                             <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
                             <xsl:variable name="wsname2">
                                 <xsl:value-of select="ejbjarproject3:web-service-client-name"/>
                             </xsl:variable>
-                            <xsl:value-of select="ejbjarproject3:web-service-client-name"/><xsl:text>_client_wscompile</xsl:text>
+                            <xsl:value-of select="ejbjarproject3:web-service-client-name"/><xsl:text>-client-wscompile</xsl:text>
                         </xsl:for-each>
                     </xsl:attribute>
+                </target>
+                <target name="web-service-client-compile" depends="web-service-client-generate">
+                    <ejbjarproject2:javac srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}"/>
+                </target>
                 </xsl:if>
+
+            <target name="-pre-pre-compile">
+                <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">,web-service-client-generate</xsl:if></xsl:attribute>
+                <mkdir dir="${{build.classes.dir}}"/>
+                <mkdir dir="${{build.ear.classes.dir}}"/>
+            </target>
+
+            <target name="-pre-compile">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
@@ -618,7 +627,7 @@ is divided into following sections:
             </target>
             
             <target name="-do-compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
                     <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
                     <delete> 

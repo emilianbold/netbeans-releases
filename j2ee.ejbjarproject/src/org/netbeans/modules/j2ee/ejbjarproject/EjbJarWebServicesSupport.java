@@ -550,11 +550,6 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
                 projectPropertiesChanged = true;
             }
         }
-        // Set websvc.generated.dir property, if not set.
-        if(projectProperties.getProperty(WEBSVC_GENERATED_DIR) == null) {
-            projectProperties.setProperty(WEBSVC_GENERATED_DIR, "${build.generated.dir}/wssrc");
-            projectPropertiesChanged = true;
-        }
         
         // set tools.jar property if not set
         if(projectProperties.getProperty(WSCOMPILE_TOOLS_CLASSPATH) == null) {
