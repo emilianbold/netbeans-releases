@@ -231,7 +231,11 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         
         long[] measuredTime = new long[repeat+1];
         //        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+        
+        // issue 56091 and applied workarround on the next line 
+        // JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+        
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.getCurrentDispatchingModel()|JemmyProperties.ROBOT_MODEL_MASK);
         JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
         log("----------------------- DISPATCHING MODEL = "+JemmyProperties.getCurrentDispatchingModel());
         
@@ -288,7 +292,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     
                     measuredTime[i] = getMeasuredTime();
                     tr.add(tr.TRACK_APPLICATION_MESSAGE, "measured time "+measuredTime[i]);
-                    // negative HEURISTIC_FACTOR disables heuristic
+                    // negative HEURISTIC_FACTOR disables heuristic
                     if (HEURISTIC_FACTOR > 0) {
                         wait_after_open_heuristic = (long) (measuredTime[i] * HEURISTIC_FACTOR);
                     }
@@ -305,6 +309,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                 }catch(Exception exc){ // catch for prepare(), open()
                     log("------- [ "+i+" ] ---------------- Exception rises while measuring performance :"+exc.getMessage());
                     exc.printStackTrace(getLog());
+                    getScreenshot("exception_during_open");
                     exceptionDuringMeasurement = true;
                     // throw new JemmyException("Exception arises during measurement:"+exc.getMessage());
                 }finally{ // finally for prepare(), open()
