@@ -41,6 +41,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FileSystemAction;
 import org.openide.awt.StatusDisplayer;
+import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.ViewCookie;
@@ -182,7 +183,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
      * Activates the specified cookie, thus opening a file.
      * The file is specified by the cookie, because the cookie was obtained
      * from it. The cookie must be one of <code>EditorCookie</code>
-     * <code>OpenCookie</code>, <code>ViewCookie</code>.
+     * <code>OpenCookie</code>, <code>EditCookie</code>,
+     * <code>ViewCookie</code>.
      *
      * @param  cookie  cookie to activate
      * @param  cookieClass  type of the cookie - specifies action to activate
@@ -229,6 +231,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
             }
         } else if (cookieClass == OpenCookie.class) {
             ((OpenCookie) cookie).open();
+        } else if (cookieClass == EditCookie.class) {
+            ((EditCookie) cookie).edit();
         } else if (cookieClass == ViewCookie.class) {
             ((ViewCookie) cookie).view();
         } else {
@@ -239,7 +243,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
     
     /**
      * Tries to open the specified file, using one of <code>EditorCookie</code>,
-     * <code>OpenCookie</code>, <code>ViewCookie</code> (in the same order).
+     * <code>OpenCookie</code>, <code>EditCookie</code>, <code>ViewCookie</code>
+     * (in the same order).
      * If the client of the open file server wants, waits until the file is
      * closed and notifies the client.
      *
@@ -255,6 +260,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
         Class cookieClass;
         if ((line != -1 && (cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null)
                 || (cookie = dataObject.getCookie(cookieClass = OpenCookie.class)) != null
+                || (cookie = dataObject.getCookie(cookieClass = EditCookie.class)) != null
                 || (cookie = dataObject.getCookie(cookieClass = ViewCookie.class)) != null) {
             return openByCookie(cookie, cookieClass, line);
         }
@@ -352,7 +358,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
             return false;
         }
         
-        /* Try to grab an editor/open/view cookie and open the object: */
+        /* Try to grab an editor/open/edit/view cookie and open the object: */
         setStatusLineOpening(fileName, waiter != null);
         boolean success = openDataObjectByCookie(dataObject, line);
         clearStatusLine();
