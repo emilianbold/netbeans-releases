@@ -196,6 +196,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         Font f = jLabel1.getFont();
         css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
                     .append("pt; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+        
+        categoriesPanel.requestFocus ();
     }
     
     /** This method is called from within the constructor to
