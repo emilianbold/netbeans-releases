@@ -62,7 +62,7 @@ Microsystems, Inc. All Rights Reserved.
                  homepage="http://ant.netbeans.org/"
                  needsrestart="false"
                  distribution="http://${dist.base}/browsetask.jar">
-            <license file="/space/src/nb_all/nbbuild/standard-nbm-license.txt"/>
+            <license file="../../nbbuild/standard-nbm-license.txt"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
     </target>
