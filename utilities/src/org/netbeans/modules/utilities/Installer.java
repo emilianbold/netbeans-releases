@@ -50,7 +50,7 @@ public class Installer extends ModuleInstall {
         // Don't ask.
         RequestProcessor.postRequest(new Runnable() {
             public void run() {
-                Settings.DEFAULT.isRunning();
+                Settings.getDefault().isRunning();
                 }
             }, 60000
         );
