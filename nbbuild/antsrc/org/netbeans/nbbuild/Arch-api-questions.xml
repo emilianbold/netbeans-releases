@@ -280,6 +280,27 @@
             still API and consider rewrite of it.
             </hint>
         </question>
+        
+        <question id="exec-process">
+            Do you execute an external process from your module? How do you ensure
+            that the result is the same on different platforms? Do you parse output?
+            Do you depend on result code?
+            <hint>
+            If you feed an input, parse the output please declare that as an API.
+            </hint>
+        </question>
+        
+        <question id="exec-introspection">
+            Does your module use any kind of runtime type informations (instanceof,
+            work with java.lang.Class, etc.)?
+            <hint>
+            Check for cases when you have an object of type A and you also
+            expect it to (possibly) be of type B and do some special action. That
+            should be documented. The same applies on operations in meta-level
+            (Class.isInstance(...), Class.isAssignableFrom(...), etc.).
+            </hint>
+        </question>
+        
     </category>
     
     <category id="format" name="Format of files and protocols">
