@@ -29,6 +29,7 @@ import javax.swing.border.*;
 
 import com.netbeans.ide.util.datatransfer.ExClipboard;
 import com.netbeans.ide.*;
+import com.netbeans.ide.awt.HtmlBrowser;
 import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.cookies.SaveCookie;
@@ -69,7 +70,7 @@ public class NbTopManager extends TopManager {
   private com.netbeans.ide.compiler.CompilationEngine compilationEngine;
 
   /** WWW browser window. */
-  static HtmlViewer htmlViewer;
+  static HtmlBrowser.BrowserComponent htmlViewer;
 
 
   /** nodeOperation */
@@ -122,7 +123,9 @@ public class NbTopManager extends TopManager {
   * @param url Url of WWW document to be showen.
   */
   public void showUrl (URL url) {
-    if (htmlViewer == null) htmlViewer = new HtmlViewer ();
+    if (htmlViewer == null) htmlViewer = new HtmlBrowser.BrowserComponent ();
+    htmlViewer.open ();
+    htmlViewer.requestFocus ();
     htmlViewer.setURL (url);
   }
 
@@ -149,7 +152,7 @@ public class NbTopManager extends TopManager {
 
   /** Provides support for www documents.
   */
-  static HtmlViewer getWWWBrowser () {
+  static HtmlBrowser.BrowserComponent getWWWBrowser () {
     return htmlViewer;
   }
 
