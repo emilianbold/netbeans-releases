@@ -110,7 +110,7 @@ public class ComponentInspector extends TopComponent
         javax.swing.ActionMap map = getActionMap ();
         map.put(DefaultEditorKit.copyAction, copyActionPerformer);
         map.put(DefaultEditorKit.cutAction, cutActionPerformer);
-        map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(explorerManager));
+        //map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(explorerManager));
         map.put("delete", deleteActionPerformer); // NOI18N
 
         lookup = ExplorerUtils.createLookup(explorerManager, map);
