@@ -48,6 +48,7 @@ import javax.swing.text.StyledDocument;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.openide.ErrorManager;
@@ -163,13 +164,14 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
     /** Creates new form ComponentsEditorPanel
      * @param gen ComponentGenerator instance */
     public ConfigCustomizerPanel(XMLDataObject dob) {
-        try {
+//        try {
             this.dob=dob;
-            StyledDocument stdoc=((EditorCookie)dob.getCookie(EditorCookie.class)).openDocument();
-            DocumentBuilder builder=DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            builder.setEntityResolver(EntityCatalog.getDefault());
-            this.doc=builder.parse(new ReaderInputStream(new StringReader(stdoc.getText(0, stdoc.getLength()))));
-            //this.doc=dob.getDocument();
+            this.doc=((AntProjectCookie)(dob.getCookie(AntProjectCookie.class))).getDocument();
+//            StyledDocument stdoc=((EditorCookie)dob.getCookie(EditorCookie.class)).openDocument();
+//            DocumentBuilder builder=DocumentBuilderFactory.newInstance().newDocumentBuilder();
+//            builder.setEntityResolver(EntityCatalog.getDefault());
+//            this.doc=builder.parse(new ReaderInputStream(new StringReader(stdoc.getText(0, stdoc.getLength()))));
+//            this.doc=dob.getDocument();
             TreeNode rootNode=createNode(doc.getDocumentElement());
             initComponents();
             MyCellRenderer rend = new MyCellRenderer();
@@ -184,6 +186,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             });
             for (int i=0; i<tree.getRowCount(); i++) tree.expandRow(i);
             tree.setEditable(true);
+/*
         } catch (IOException ioe) {
             fail(ioe);
         } catch (SAXException saxe) {
@@ -193,6 +196,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         } catch (BadLocationException ble) {
             fail(ble);
         }
+ */
     }
     
     void nodeChanged(TreePath paths[]) {
@@ -339,7 +343,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         if (action.equals("Add ResultProcessor")) return parent.getOwnerDocument().createElement("resultsprocessor");
         return null;
     }
-    
+/*    
     protected void setModified() {
         try {
             EditorCookie cookie=(EditorCookie)dob.getCookie(EditorCookie.class);
@@ -366,7 +370,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             fail(ble);
         }
     }
-    
+*/    
     public class Unknown extends DefaultMutableTreeNode implements ActionListener {
         public Unknown(Element e) {
             super(e);
@@ -390,7 +394,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
                 ((Element)getUserObject()).setAttribute(name, value);
             }
             ((DefaultTreeModel)tree.getModel()).nodeChanged(this);
-            setModified();
+//            setModified();
         }
         public String toString() {
             //return className()+" "+getAttribute("name");
@@ -400,7 +404,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             Element e=((Element)getUserObject());
             e.getParentNode().removeChild(e);
             ((DefaultTreeModel)tree.getModel()).removeNodeFromParent(this);
-            setModified();
+//            setModified();
         }
         private JPopupMenu popupMenu;
         public JPopupMenu getPopupMenu() {
@@ -422,7 +426,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
                 Element el=(Element)getUserObject();
                 Unknown node=createNode((Element)el.appendChild(createElement(el, ae.getActionCommand())));
                 ((DefaultTreeModel)tree.getModel()).insertNodeInto(node, this, getChildCount());
-                setModified();
+//                setModified();
             } else if (ae.getActionCommand().equals("Delete")) {
                 delete();
             } else if (ae.getActionCommand().equals("Rename")) {

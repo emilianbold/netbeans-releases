@@ -21,6 +21,8 @@ package org.netbeans.modules.testtools;
 
 import java.awt.Component;
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.SimpleBeanInfo;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,6 +30,7 @@ import java.io.InputStreamReader;
 import javax.swing.JLabel;
 import org.openide.actions.*;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
@@ -122,14 +125,25 @@ public class ConfigDataLoader extends UniFileLoader {
         return new ConfigDataObject(primaryFile, this);
     }
 
-    public static class ConfigDataObject extends XMLDataObject {
+    public static class ConfigDataObject extends XMLDataObject implements PropertyChangeListener {
         
         public ConfigDataObject (FileObject fo, MultiFileLoader loader) throws DataObjectExistsException {
             super(fo, loader);
+            getCookieSet().add(new XTestProjectSupport(getPrimaryFile()));
+            addPropertyChangeListener(ConfigDataLoader.ConfigDataObject.this);
         }
         
         protected Node createNodeDelegate() {
             return new ConfigDataNode(super.createNodeDelegate(), this);
+        }
+
+        /** handles change of some property
+         * @param ev PropertyChangeEvent */    
+        public void propertyChange(PropertyChangeEvent ev) {
+            String prop = ev.getPropertyName();
+            if(prop == null || prop.equals(DataObject.PROP_PRIMARY_FILE)) {
+               ((XTestProjectSupport) getCookie(XTestProjectSupport.class)).setFileObject(getPrimaryFile());
+            }
         }
     }
     
