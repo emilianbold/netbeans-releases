@@ -231,7 +231,8 @@
   	 </tocitem>
 	 <tocitem text="Creating and Editing Web Services" >
 	        <tocitem text="Creating a Project for a Web Service" target="create_ws_project" />
-		<tocitem text="Creating a Web Service" target="create_ws" />
+		<tocitem text="Creating a Web Service from Scratch" target="create_ws" />
+		<tocitem text="Creating a Web Service from a WSDL File" target="create_ws_fromwsdl" />
     	        <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
 	        <tocitem text="Adding a SOAP Message Handler" target="add_soap_message" />
 	</tocitem>

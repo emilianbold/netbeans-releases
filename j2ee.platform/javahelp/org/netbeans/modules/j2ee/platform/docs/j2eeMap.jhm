@@ -88,6 +88,7 @@
         <mapID target="select_wscompile_wsc" url="web/webservice/select_wscompile_wsc.html" />
 	<mapID target="ws_process" url="web/webservice/ws_process.html" />
 	<mapID target="create_ws" url="web/webservice/create_ws.html" />
+	<mapID target="create_ws_fromwsdl" url="web/webservice/create_ws_fromwsdl.html" />
 	<mapID target="create_ws_project" url="web/webservice/create_ws_project.html" />
 	<mapID target="add_ws_operation" url="web/webservice/add_ws_operation.html" />
 	<mapID target="webservicesxml" url="web/webservice/webservicesxml.html" />
