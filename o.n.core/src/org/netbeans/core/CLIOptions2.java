@@ -63,13 +63,6 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
         // moves it to front and requests focus
         f.toFront ();
         f.requestFocus ();
-        
-        // on KDE the only way how to select a window on different desktop
-        // is to show a dialog the window is parent of
-        java.awt.Dialog d = new java.awt.Dialog (f, false);
-        d.setSize (0, 0);
-        d.show ();
-        d.hide ();
     }
     
     
