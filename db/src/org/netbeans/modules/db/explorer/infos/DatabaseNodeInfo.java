@@ -124,7 +124,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		Vector rsnames = (Vector)nfo.get(DatabaseNodeInfo.RESULTSET);
 		Iterator rsnames_i = rsnames.iterator();
 		Hashtable data = new Hashtable();
-		while (rsnames_i.hasNext()) {
+		while (rsnames_i.hasNext())
 			try {
 				key = (String)rsnames_i.next();
 				if (!key.equals("unused")) {
@@ -133,8 +133,9 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 				}
 				colidx++;
 			} catch (SQLException ex) {
-			}	
-		}
+        System.out.println("createNodeInfo: "ex);
+		  }
+		
 		nfo.putAll(data);
 		nfo.put(nodecode, nfo.getName());
 		if (parent != null && parent.isReadOnly()) nfo.setReadOnly(true);
@@ -657,6 +658,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 }
 /*
  * <<Log>>
+ *  18   Gandalf   1.17        11/15/99 Radko Najman    
  *  17   Gandalf   1.16        11/8/99  Radko Najman    ConnectionNode name 
  *       refresh
  *  16   Gandalf   1.15        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
