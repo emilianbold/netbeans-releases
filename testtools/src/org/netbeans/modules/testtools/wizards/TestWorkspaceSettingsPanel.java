@@ -48,8 +48,8 @@ public class TestWorkspaceSettingsPanel extends JPanel {
     private boolean stop=true;
     private static final String netbeansPath="../../../nb_all/nbbuild/netbeans"; // NOI18N
     private static final String xtestPath="../../../nb_all/xtest"; // NOI18N
-    private static final String jemmyPath="../../../nbextra/jemmy"; // NOI18N
-    private static final String jellyPath="../../../nbextra/jellytools"; // NOI18N
+    private static final String jemmyPath="../../../nb_all/jemmy/builds"; // NOI18N
+    private static final String jellyPath="../../../na_all/jellytools/builds"; // NOI18N
     private String jemmyHome=jemmyPath;
     private String jellyHome=jellyPath;
     private TemplateWizard wizard;
