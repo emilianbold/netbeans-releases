@@ -302,7 +302,7 @@ class OpenFile extends Object {
   * @param dirToMount 0th elt will contain the directory to mount (null to cancel the mount)
   * @param mountPackage 0th elt will contain the name of the package (possibly empty, not null) the file will be in
   */
-  private static void askForMountPoint (File f, int pkgLevel, File[] dirToMount, String[] mountPackage) {
+  private static void askForMountPoint (File f, int pkgLevel, final File[] dirToMount, final String[] mountPackage) {
     final JPanel panel = new JPanel ();
     panel.setLayout (new BorderLayout ());
     
@@ -315,7 +315,7 @@ class OpenFile extends Object {
     textArea.setWrapStyleWord (true);
     panel.add (textArea, BorderLayout.NORTH);
     
-    Vector dirs = new Vector (); // list of mountable dir names; Vector<File>
+    final Vector dirs = new Vector (); // list of mountable dir names; Vector<File>
     final Vector pkgs = new Vector (); // list of resulting package names; Vector<String>
     String pkg = "";
     for (File dir = f.getParentFile (); dir != null; dir = dir.getParentFile ()) {
@@ -332,66 +332,59 @@ class OpenFile extends Object {
     
     final JLabel label = new JLabel ();
     label.setFont (new Font ("Monospaced", Font.PLAIN, 12));
-    updateLabelFromList (label, list, pkgs);
     panel.add (label, BorderLayout.SOUTH);
     panel.setPreferredSize (new Dimension (450, 300));
+
+    final JButton okButton = new JButton (SettingsBeanInfo.getString ("LBL_okButton"));
+    JButton cancelButton = new JButton (SettingsBeanInfo.getString ("LBL_cancelButton"));
     
-    WizardDescriptor wiz = new WizardDescriptor (new WizardDescriptor.Panel[] { new WizardDescriptor.Panel () {
-      private final Set listeners = new HashSet (); // Set<ChangeListener>
-      private final WizardDescriptor.Panel _this = this; // WizardDescriptor.Panel.this is a syntax error?!
-      private final ListSelectionListener listener = new ListSelectionListener () {
-        public void valueChanged (ListSelectionEvent ev) {
-          updateLabelFromList (label, list, pkgs);
-          ChangeEvent myEv = new ChangeEvent (_this);
-          Iterator it = listeners.iterator ();
-          while (it.hasNext ())
-            ((ChangeListener) it.next ()).stateChanged (myEv);
-        }
-      };
-      {
-        list.addListSelectionListener (listener);
+    list.addListSelectionListener (new ListSelectionListener () {
+      public void valueChanged (ListSelectionEvent ev) {
+        updateLabelEtcFromList (label, list, pkgs, okButton);
       }
-      protected void finalize () throws Exception {
-        list.removeListSelectionListener (listener);
-      }
-      public Component getComponent () {
-        return panel;
-      }
-      public HelpCtx getHelp () {
-        return new HelpCtx (OpenFile.class.getName () + ".dialog");
-      }
-      public boolean isValid () {
-        return list.getSelectedIndex () != -1;
-      }
-      public void readSettings (Object settings) {}
-      public void storeSettings (Object settings) {}
-      public void addChangeListener (ChangeListener l) {
-        listeners.add (l);
-      }
-      public void removeChangeListener (ChangeListener l) {
-        listeners.remove (l);
-      }
-    }});
-    wiz.setTitleFormat (new MessageFormat (SettingsBeanInfo.getString ("LBL_wizTitle")));
-    Object result = TopManager.getDefault ().notify (wiz);
+    });
+    updateLabelEtcFromList (label, list, pkgs, okButton);
+
+    final Dialog[] dialog = new Dialog[1];
+    dialog[0] = TopManager.getDefault ().createDialog
+      (new DialogDescriptor
+       (panel,                   // object
+        SettingsBeanInfo.getString ("LBL_wizTitle"), // title
+        true,                    // modal
+        new Object[] { okButton, cancelButton }, // options
+        okButton,                // initial
+        DialogDescriptor.DEFAULT_ALIGN, // align
+        new HelpCtx (OpenFile.class.getName () + ".dialog"), // help
+        new ActionListener () { // listener
+          public void actionPerformed (ActionEvent evt) {
+            dialog[0].dispose ();
+            if (evt.getSource () == okButton) {
+              int idx = list.getSelectedIndex ();
+              if (idx != -1) {
+                dirToMount[0] = (File) dirs.elementAt (idx);
+                mountPackage[0] = (String) pkgs.elementAt (idx);
+              } else {
+                System.err.println ("Should not have accepted OK button");
+              }
+            }
+          }
+        }));
+    dialog[0].show ();
     
-    int idx = list.getSelectedIndex ();
-    if (idx != -1 && ! result.equals (NotifyDescriptor.CANCEL_OPTION)) {
-      dirToMount[0] = (File) dirs.elementAt (idx);
-      mountPackage[0] = (String) pkgs.elementAt (idx);
-    }
   }
 
-  private static void updateLabelFromList (JLabel label, JList list, Vector pkgs) {
+  private static void updateLabelEtcFromList (JLabel label, JList list, Vector pkgs, JButton okButton) {
     int idx = list.getSelectedIndex ();
     if (idx == -1) {
       label.setText (" ");
+      okButton.setEnabled (false);
     } else {
       String pkg = (String) pkgs.elementAt (idx);
       if (pkg.equals (""))
         label.setText (SettingsBeanInfo.getString ("LBL_packageWillBeDefault"));
       else
         label.setText (SettingsBeanInfo.getString ("LBL_packageWillBe", pkg));
+      okButton.setEnabled (true);
     }
   }
   
