@@ -48,7 +48,6 @@ import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.view.ListView;
-import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
@@ -66,10 +65,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListener;
-
-import org.netbeans.core.execution.ExecutionEngine;
-import org.netbeans.core.execution.ExecutionEvent;
-import org.netbeans.core.execution.ExecutionListener;
 
 /** Dialog which lets the user select which open files to close.
  *
@@ -229,26 +224,16 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
     /** Opens the ExitDialog for unsaved files in filesystems marked 
      * for unmount and blocks until it's closed. If dialog doesm't
      * exists it creates new one. Returns true if the IDE should be closed.
-     * It also shows dialog with pending tasks afterwards with the same 
-     * policy if <code>showPending</code> is set to <code>true</code>.
-     */
-    static boolean showDialog(Node[] activatedNodes, boolean showPending) {
-        return innerShowDialog(activatedNodes, showPending);
-    }
-
-    /** Opens the ExitDialog for unsaved files in filesystems marked 
-     * for unmount and blocks until it's closed. If dialog doesm't
-     * exists it creates new one. Returns true if the IDE should be closed.
      */
     static boolean showDialog(Node[] activatedNodes) {
-        return innerShowDialog( activatedNodes, false );        
+        return innerShowDialog(activatedNodes);
     }
     
     /** Opens the ExitDialog and blocks until it's closed. If dialog doesm't
      * exists it creates new one. Returns true if the IDE should be closed.
      */
     static boolean showDialog() {
-        return innerShowDialog( null, false );        
+        return innerShowDialog(null);        
     }
 
     /** Returns modified set of DataObjects in filesystems marked 
@@ -276,23 +261,10 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
     }
 
 
-    /** After showing dialog with unclosed objects, shows also 
-     * dialog with running tasks if there are some. */
-    private static boolean innerShowDialog(Node[] activatedNodes, boolean showPending) {
-        boolean shutdown = innerShowDialogImpl(activatedNodes);
-        
-        if(shutdown && showPending) {
-            return showPendingTasks();
-        }
-        else {
-            return shutdown;
-        }
-    }
-    
     /** Opens the ExitDialog for activated nodes or for
      * whole repository.
      */
-    private static boolean innerShowDialogImpl(Node[] activatedNodes) {
+    private static boolean innerShowDialog(Node[] activatedNodes) {
         java.util.Set set = null;
         if (activatedNodes != null)
             set = getModifiedActSet (activatedNodes);
@@ -355,316 +327,6 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             return true;
     }
 
-    /** Creates dialod for showing pending tasks. */
-    private static ExplorerPanel createExplorerPanel() {
-        ExplorerPanel panel = new ExplorerPanel();
-        
-        panel.setLayout(new GridBagLayout());
-        
-        GridBagConstraints cons = new GridBagConstraints();
-        cons.gridx = 0;
-        cons.gridy = 0;
-        cons.weightx = 1.0D;
-        cons.fill = GridBagConstraints.HORIZONTAL;
-        cons.insets = new Insets(11, 11, 0, 12);
-
-        JLabel label = new JLabel(NbBundle.getBundle(ExitDialog.class)
-            .getString("LAB_PendingTasks"));
-        label.setDisplayedMnemonic(NbBundle.getBundle(ExitDialog.class)
-            .getString("LAB_PendingTasksMnem").charAt(0));
-        
-        panel.add(label, cons);
-        
-        cons.gridy = 1;
-        cons.weighty = 1.0D;
-        cons.fill = GridBagConstraints.BOTH;
-        cons.insets = new Insets(7, 11, 0, 12);
-
-        ListView view = new ListView();
-        label.setLabelFor(view);
-        
-        panel.add(view, cons);
-        
-        view.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ExitDialog.class)
-            .getString("ACSD_PendingTasks"));
-        panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ExitDialog.class)
-            .getString("ACSD_PendingTitle"));
-
-        return panel;
-    }
-    
-    /** Shows dialog which waits for finishing of pending tasks,
-     * (currently actions only) and offers to user to leave IDE 
-     * immediatelly interrupting those tasks.
-     * @return <code>true</code> if to continue with the action
-     * <code>false</code> if the action to cancel
-     */
-    public static boolean showPendingTasks() {
-        if(getPendingTasks().isEmpty()) {
-            return true;
-        }
-  
-        ExplorerPanel panel = createExplorerPanel();
-        
-        final Dialog[] dialog = new Dialog[1];
-        final Node root = new AbstractNode(new PendingChildren());
-
-        panel.getExplorerManager().setRootContext(root);
-        panel.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                // Listen on changes of pending tasks and if all has finished
-                // close the dialog.
-                if(ExplorerManager.PROP_EXPLORED_CONTEXT.equals(evt.getPropertyName())) {
-                    if(dialog[0] != null && getPendingTasks().isEmpty()) {
-                        dialog[0].setVisible(false);
-                    }
-                }
-            }
-        });
-
-        final JButton exitOption = new JButton(
-            NbBundle.getBundle(ExitDialog.class).getString("LAB_EndTasks"));
-        exitOption.setMnemonic(NbBundle.getBundle(ExitDialog.class).
-            getString("LAB_EndTasksMnem").charAt(0));
-        // No default button.
-        exitOption.setDefaultCapable(false);
-        exitOption.getAccessibleContext().setAccessibleDescription(
-            NbBundle.getBundle(ExitDialog.class).getString("ACSD_EndTasks"));
-        
-        DialogDescriptor dd = new DialogDescriptor(
-            panel,
-            NbBundle.getBundle(ExitDialog.class).getString("CTL_PendingTitle"),
-            true, // modal
-            new Object[] {
-                exitOption,
-                DialogDescriptor.CANCEL_OPTION
-            },
-            null,
-            DialogDescriptor.DEFAULT_ALIGN,
-            new HelpCtx(ExitDialog.class.getName () + ".pending"), // NOI18N
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    if(evt.getSource() == exitOption) {
-                        killPendingTasks();
-                        dialog[0].setVisible(false);
-                    }
-                }
-            }
-        );
-
-        if(!getPendingTasks().isEmpty()) {
-            root.addNodeListener(new NodeAdapter() {
-                public void childrenRemoved(NodeMemberEvent evt) {
-                    if(dialog[0] != null && getPendingTasks().isEmpty()) {
-                        dialog[0].setVisible(false);
-                    }
-                }
-            });
-
-            dialog[0] = org.openide.DialogDisplayer.getDefault().createDialog(dd);
-            
-            dialog[0].addWindowListener(new java.awt.event.WindowAdapter() {
-                public void windowOpened(java.awt.event.WindowEvent evt) {
-                    // Dialog was opened but pending tasks could disappear
-                    // inbetween.
-                    if(getPendingTasks().isEmpty()) {
-                        dialog[0].setVisible(false);
-                    }
-                }
-            });
-            
-            dialog[0].show();
-            dialog[0].dispose();
-
-            if(dd.getValue() == DialogDescriptor.CANCEL_OPTION
-            || dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
-                return false;
-            }
-            
-        }
-        
-        return true;
-    }
- 
-    /** Gets pending (running) tasks. Used as keys 
-     * for pending dialog root node children. Currently it gets pending
-     * actions only. */
-    private static Collection getPendingTasks() {
-        
-        ArrayList pendingTasks = new ArrayList( 10 );
-        pendingTasks.addAll(ModuleActions.getDefault().getRunningActions());
-        
-        if ( !Boolean.getBoolean( "netbeans.full.hack" ) ) { // NOI18N
-            // Avoid showing the tasks in the dialog when running internal tests
-            ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
-            if (ee != null) {
-                pendingTasks.addAll(ee.getRunningTasks());
-            }
-        }
-        
-        // [PENDING] When it'll be added another types of tasks (locks etc.)
-        // add them here to the list. Then you need to create also a nodes
-        // for them in PendingChildren.createNodes.
-        
-        return pendingTasks;
-    }
-    
-    /** Ends penidng tasks. */
-    private static void killPendingTasks() {
-        // [PENDING] For actions, here should be tried
-        // to stop the running request processor, create
-        // ans implement ModuleActions.killRunningActions, but be aware
-        // for some specialities, e.g. not to stop task with 
-        // unmounting FS action when actually doing the unmounting.
-        ModuleActions.getDefault().killRunningActions();
-        killRunningExecutors();
-        
-        // [PENDING] When it'll be added another types of tasks (locks etc.)
-        // kill them here.
-   }
-    
-   /** Tries to kill running executions */
-   private static void killRunningExecutors() {
-       ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
-       if (ee == null) {
-           return;
-       }
-       ArrayList tasks = new ArrayList(ee.getRunningTasks());
-       
-       for ( Iterator it = tasks.iterator(); it.hasNext(); ) {
-           ExecutorTask et = (ExecutorTask) it.next();
-           if ( !et.isFinished() ) {
-               et.stop();
-           }
-       }
-       
-   }
-
-    /** Children showing pending tasks. */
-    private static class PendingChildren extends Children.Keys implements ExecutionListener {
-
-        /** Listens on changes of sources from getting the tasks from.
-         * Currently on module actions only. */
-        private PropertyChangeListener propertyListener;
-        
-        
-        /** Constructs new children. */
-        public PendingChildren() {
-            propertyListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (ModuleActions.PROP_RUNNING_ACTIONS.equals(evt.getPropertyName())) {
-                        setKeys(getPendingTasks());
-                    }
-                }
-            };
-
-            ModuleActions.getDefault().addPropertyChangeListener(
-                WeakListener.propertyChange(propertyListener, ModuleActions.getDefault())
-            );
-            
-            ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
-            if (ee != null) {
-                ee.addExecutionListener(this);
-            }
-        }
-
-        /** Implements superclass abstract method. Creates nodes from key.
-         * @return <code>PendingActionNode</code> if key is of 
-         * <code>Action</code> type otherwise <code>null</code> */
-        protected Node[] createNodes(Object key) {
-            Node n = null;
-            if(key instanceof Action) {
-                n = new PendingActionNode((Action)key);
-            }
-            else if ( key instanceof ExecutorTask ) {
-                AbstractNode an = new AbstractNode( Children.LEAF );
-                an.setName(key.toString());
-                an.setDisplayName(NbBundle.getMessage(ExitDialog.class, "CTL_PendingExternalProcess2", 
-                    // getExecutionEngine() had better be non-null, since getPendingTasks gave an ExecutorTask:
-                    ExecutionEngine.getExecutionEngine().getRunningTaskName((ExecutorTask) key)));
-                an.setIconBase( "org/netbeans/core/resources/execution" ); //NOI18N
-                n = an;
-            }
-            return n == null ? null : new Node[] { n };
-        }
-
-        /** Implements superclass abstract method. */
-        protected void addNotify() {
-            setKeys(getPendingTasks());
-            super.addNotify();            
-        }
-        
-        /** Implements superclass abstract method. */
-        protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
-            super.removeNotify();
-            ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
-            if (ee != null) {
-                ee.removeExecutionListener(this);
-            }
-        }
-        
-        // ExecutionListener implementation ------------------------------------
-        
-        public void startedExecution( ExecutionEvent ev ) {
-            setKeys(getPendingTasks());
-        }
-        
-        public void finishedExecution( ExecutionEvent ev ) {
-            setKeys(getPendingTasks());
-        }
-        
-    } //  End of class PendingChildren.
-
-    
-    /** Node representing pending action task. */
-    private static class PendingActionNode extends AbstractNode {
-
-        /** Icon retrieved from action if it is 
-         * of <code>SystemAction</code> instance. */
-        private Icon icon;
-        
-        /** Creates node for action. */
-        public PendingActionNode(Action action) {
-            super(Children.LEAF);
-            
-            String actionName = org.openide.awt.Actions.cutAmpersand((String)action.getValue(Action.NAME));
-            setName(actionName);
-            setDisplayName(actionName + " " // NOI18N
-                + NbBundle.getBundle(ExitDialog.class)
-                    .getString("CTL_ActionInProgress"));
-            
-            if(action instanceof SystemAction) {
-                this.icon = ((SystemAction)action).getIcon();
-            }
-        }
-
-        /** Overrides superclass method. */
-        public Image getIcon(int type) {
-            if(icon != null) {
-                Image im = new BufferedImage(
-                    icon.getIconWidth(),
-                    icon.getIconHeight(),
-                    BufferedImage.TYPE_INT_ARGB
-                );
-
-                icon.paintIcon(null, im.getGraphics(), 0, 0);
-                
-                return im;
-            } else {
-                return super.getIcon(type);
-            }
-        }
-
-        /** Overrides superclass method.
-         * @return empty array of actions */
-        protected SystemAction[] createActions() {
-            return new SystemAction[0];
-        }
-        
-    } // End of class PendingActionNode.
-    
-    
     /** Renderer used in list box of exit dialog
      */
     private class ExitDlgListCellRenderer extends JLabel implements ListCellRenderer {

@@ -72,12 +72,12 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import java.util.Set;
 import java.util.HashSet;
-import org.openide.execution.NbClassPath;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import java.io.File;
 import java.awt.Dimension;
 import java.awt.RenderingHints;
+import org.openide.filesystems.FileUtil;
 
 
 
@@ -240,9 +240,9 @@ public class BaseOptions extends OptionSupport {
         
         FileObject optionFO = TopManager.getDefault().getRepository().getDefaultFileSystem().
         findResource(AllOptionsFolder.FOLDER+"/"+contentType+"/"+AllOptionsFolder.OPTION_FILE_NAME); //NOI18N
-        if (optionFO!=null && NbClassPath.toFile(optionFO)!=null){
+        if (optionFO!=null && FileUtil.toFile(optionFO)!=null){
             try{
-                NbClassPath.toFile(optionFO).delete();
+                FileUtil.toFile(optionFO).delete();
             }catch (SecurityException se){
             }
         }
@@ -250,7 +250,7 @@ public class BaseOptions extends OptionSupport {
         folderFO.addFileChangeListener(new FileChangeAdapter(){
             private void delete(FileObject fo){
                 if (fo.getNameExt().equals(AllOptionsFolder.OPTION_FILE_NAME)){
-                    File settingsFile = NbClassPath.toFile(fo);
+                    File settingsFile = FileUtil.toFile(fo);
                     if (settingsFile != null) {
                         settingsFile.delete();
                     }

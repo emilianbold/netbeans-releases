@@ -22,7 +22,6 @@ import java.net.*;
 import java.util.*;
 
 import org.openide.ErrorManager;
-import org.openide.execution.NbfsStreamHandlerFactory;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -33,10 +32,14 @@ import org.openide.util.NbBundle;
  */
 final class NbDocsStreamHandler extends URLStreamHandler {
     
-    static {
-        // XXX #13529: register this from layer when possible...
-        Installer.err.log("Registering nbdocs: protocol");
-        NbfsStreamHandlerFactory.getDefault().register("nbdocs", new NbDocsStreamHandler()); // NOI18N
+    public static final class Factory implements URLStreamHandlerFactory {
+        public URLStreamHandler createURLStreamHandler(String protocol) {
+            if (protocol.equals("nbdocs")) { // NOI18N
+                return new NbDocsStreamHandler();
+            } else {
+                return null;
+            }
+        }
     }
     
     /** Make a URLConnection for nbdocs: URLs.

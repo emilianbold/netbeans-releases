@@ -31,6 +31,7 @@ Microsystems, Inc. All Rights Reserved.
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <pathelement location="../core/netbeans/lib/core.jar"/>
         <pathelement location="../properties/netbeans/modules/properties.jar"/>

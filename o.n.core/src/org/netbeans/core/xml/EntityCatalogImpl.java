@@ -102,7 +102,8 @@ public final class EntityCatalogImpl extends EntityCatalog {
 
         public InputSource resolveEntity(String pid, String sid) {
             if (EntityCatalog.PUBLIC_ID.equals(pid)) {
-                return new InputSource("nbres:/org/openide/xml/EntityCatalog.dtd"); // NOI18N
+                // Don't use a nbres: URL here; can deadlock NbURLStreamHandlerFactory during startup
+                return new InputSource(EntityCatalogImpl.class.getClassLoader().getResource("org/openide/xml/EntityCatalog.dtd").toExternalForm()); // NOI18N
             }
             return null;
         }

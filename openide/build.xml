@@ -44,7 +44,6 @@ Microsystems, Inc. All Rights Reserved.
     <path id="openide-cp">
       <fileset dir="../core/external">
         <include name="xml-apis*.jar"/>
-        <include name="regexp*.jar"/>
       </fileset>
     </path>
   </target>
@@ -121,14 +120,6 @@ Microsystems, Inc. All Rights Reserved.
             </patch>
 	    <patch class="org/openide/explorer/view/BeanTreeView" > 
                 <member name="selectionChanged" />
-            </patch>
-	    <patch class="org/openide/compiler/ExternalCompiler" > 
-                <member name="isUpToDate" />
-            </patch>
-            <!-- making the members non-final -->
-	    <patch class="org/openide/compiler/CompilerGroup" > 
-                <member name="addCompilerListener" />
-                <member name="removeCompilerListener" />
             </patch>
 
             <!-- superclass changed in order to implement MouseInputListener -->
@@ -260,7 +251,6 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="jars" depends="compile,13javac-workaround,vers-prep,patchsuper" description="Create JAR files.">
     <mkdir dir="netbeans/lib"/>
-    <filter token="Class-Path" value="Class-Path"/>
     <filter token="OpenIDE-Module" value="OpenIDE-Module"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/lib/openide.jar"
@@ -559,21 +549,21 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- Open API documentation. -->
   <target name="open-apis-check-existence-1" unless="open-apis-force-rebuild">
-    <available property="open-apis-exists" file="OpenAPIs.zip"/>
+    <available property="open-apis-exists" file="javadoc/OpenAPIs.zip"/>
   </target>
   <target name="open-apis-check-existence" depends="open-apis-check-existence-1" unless="open-apis-exists">
     <property name="open-apis-force-rebuild" value="true"/>
     <echo message="Open APIs are not built at all, will be created."/>
   </target>
   <target name="open-apis-check-timestamps-1" depends="open-apis-check-existence" unless="open-apis-force-rebuild">
-    <uptodate property="open-apis-up-to-date" targetfile="OpenAPIs.zip">
+    <uptodate property="open-apis-up-to-date" targetfile="javadoc/OpenAPIs.zip">
       <srcfiles dir="src">
         <include name="org/openide/**/*.java"/>
       </srcfiles>
       <srcfiles dir="api/doc">
         <include name="org/openide/"/>
         <include name="overview.html"/>
-        <include name="open-apis.css"/>
+        <include name="*.css"/>
       </srcfiles>
     </uptodate>
   </target>
@@ -589,23 +579,19 @@ use -Dopen-apis-up-to-date=true
 To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
 </echo>
   </target>
-  <target name="javadoc" depends="open-apis">
-    <copy todir="javadoc">
-      <fileset dir=".">
-        <include name="OpenAPIs/**"/>
-	<include name="OpenAPIs.zip"/>
-      </fileset>
-    </copy>
-  </target>
-  <target name="open-apis" depends="init,open-apis-check-timestamps,open-apis-maybe-skip" if="open-apis-force-rebuild"
+  <target name="javadoc" depends="init,open-apis-check-timestamps,open-apis-maybe-skip" if="open-apis-force-rebuild"
           description="Create Open API documentation.">
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
+    <property name="execution-docs-location" value="http://www.netbeans.org/download/dev/javadoc/ExecutionAPI"/>
+    <property name="io-docs-location" value="http://www.netbeans.org/download/dev/javadoc/InputOutputAPI"/>
+    <!-- XXX delete (and @COMPILER@ token below too) when deprecated by Projects: -->
+    <property name="compiler-docs-location" value="http://www.netbeans.org/download/dev/javadoc/CompilerAPI"/>
     <tstamp/>
     <property name="open-apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2002 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
     <echo message="Build Open API documentation..."/>
-    <mkdir dir="OpenAPIs"/>
-    <javadoc destdir="OpenAPIs"
-             packagenames="org.openide,org.openide.actions,org.openide.awt,org.openide.compiler,org.openide.cookies,org.openide.execution,org.openide.explorer,org.openide.explorer.propertysheet,org.openide.explorer.propertysheet.editors,org.openide.explorer.view,org.openide.filesystems,org.openide.loaders,org.openide.modules,org.openide.nodes,org.openide.options,org.openide.text,org.openide.util,org.openide.util.actions,org.openide.util.datatransfer,org.openide.util.enum,org.openide.util.io,org.openide.util.lookup,org.openide.windows,org.openide.xml"
+    <mkdir dir="javadoc/OpenAPIs"/>
+    <javadoc destdir="javadoc/OpenAPIs"
+             packagenames="org.openide,org.openide.actions,org.openide.awt,org.openide.cookies,org.openide.explorer,org.openide.explorer.propertysheet,org.openide.explorer.propertysheet.editors,org.openide.explorer.view,org.openide.filesystems,org.openide.loaders,org.openide.modules,org.openide.nodes,org.openide.options,org.openide.text,org.openide.util,org.openide.util.actions,org.openide.util.datatransfer,org.openide.util.enum,org.openide.util.io,org.openide.util.lookup,org.openide.windows,org.openide.xml"
              doctitle="NetBeans Open APIs"
              windowtitle="NetBeans APIs"
              overview="api/doc/overview.html"
@@ -642,10 +628,6 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              packages="org.openide.explorer:org.openide.explorer.propertysheet:org.openide.explorer.propertysheet.editors:org.openide.explorer.view"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/actions/doc-files/api.html&quot;&gt;Actions API&lt;/a&gt;"
              packages="org.openide.actions:org.openide.util.actions"/>
-      <group title="&lt;a href=&quot;@TOP@org/openide/compiler/doc-files/api.html&quot;&gt;Compiler API&lt;/a&gt;"
-             packages="org.openide.compiler"/>
-      <group title="&lt;a href=&quot;@TOP@org/openide/execution/doc-files/api.html&quot;&gt;Execution API&lt;/a&gt;"
-             packages="org.openide.execution"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/text/doc-files/api.html&quot;&gt;Editor API&lt;/a&gt;"
              packages="org.openide.text"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/windows/doc-files/api.html&quot;&gt;Window System API&lt;/a&gt;"
@@ -655,47 +637,49 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       <group title="&lt;a href=&quot;@TOP@org/openide/util/doc-files/api.html&quot;&gt;Utility Classes&lt;/a&gt;"
              packages="org.openide.awt:org.openide.util:org.openide.util.enum:org.openide.util.io:org.openide.xml"/>
     </javadoc>
-    <copy todir="OpenAPIs">
+    <copy todir="javadoc/OpenAPIs">
       <fileset dir="api/doc">
         <include name="*.css"/>
       </fileset>
     </copy>
-    <replace dir="OpenAPIs" token="@JDK@" value="${jdk-docs-location}">
+    <replace dir="javadoc/OpenAPIs">
       <include name="**/doc-files/*.html"/>
       <include name="**/package-summary.html"/>
+      <replacefilter token="@JDK@" value="${jdk-docs-location}"/>
+      <replacefilter token="@EXECUTION@" value="${execution-docs-location}"/>
+      <replacefilter token="@IO@" value="${io-docs-location}"/>
+      <replacefilter token="@COMPILER@" value="${compiler-docs-location}"/>
+      <replacefilter token="@FOOTER@" value="${open-apis-footer}"/>
     </replace>
-    <replace dir="OpenAPIs" token="@FOOTER@" value="${open-apis-footer}">
-      <include name="**/doc-files/*.html"/>
-    </replace>
-    <replace file="OpenAPIs/overview-summary.html" token="@DATE@" value="${TODAY}"/>
-    <replace dir="OpenAPIs" token="@TOP@" value="">
+    <replace file="javadoc/OpenAPIs/overview-summary.html" token="@DATE@" value="${TODAY}"/>
+    <replace dir="javadoc/OpenAPIs" token="@TOP@" value="">
       <include name="*.html"/>
     </replace>
-    <replace dir="OpenAPIs" token="@TOP@" value="../">
+    <replace dir="javadoc/OpenAPIs" token="@TOP@" value="../">
       <include name="*/*.html"/>
     </replace>
-    <replace dir="OpenAPIs" token="@TOP@" value="../../">
+    <replace dir="javadoc/OpenAPIs" token="@TOP@" value="../../">
       <include name="*/*/*.html"/>
     </replace>
-    <replace dir="OpenAPIs" token="@TOP@" value="../../../">
+    <replace dir="javadoc/OpenAPIs" token="@TOP@" value="../../../">
       <include name="*/*/*/*.html"/>
     </replace>
-    <replace dir="OpenAPIs" token="@TOP@" value="../../../../">
+    <replace dir="javadoc/OpenAPIs" token="@TOP@" value="../../../../">
       <include name="*/*/*/*/*.html"/>
     </replace>
-    <replace dir="OpenAPIs" token="@TOP@" value="../../../../../">
+    <replace dir="javadoc/OpenAPIs" token="@TOP@" value="../../../../../">
       <include name="*/*/*/*/*/*.html"/>
     </replace>
-    <replace dir="OpenAPIs" token="@TOP@" value="../../../../../../">
+    <replace dir="javadoc/OpenAPIs" token="@TOP@" value="../../../../../../">
       <include name="*/*/*/*/*/*/*.html"/>
     </replace>
     <!-- [PENDING] fuller check mode too, checking on-line links and more HTML files? -->
-    <checklinks basedir="OpenAPIs" checkexternal="false">
+    <checklinks basedir="javadoc/OpenAPIs" checkexternal="false">
       <include name="overview-summary.html"/>
       <include name="**/package-summary.html"/>
       <include name="**/doc-files/**/*.html"/>
     </checklinks>
-    <zip zipfile="OpenAPIs.zip" basedir="OpenAPIs"/>
+    <zip zipfile="javadoc/OpenAPIs.zip" basedir="javadoc/OpenAPIs"/>
   </target>
   <target name="apis-tidy" description="Run the Tidy HTML checker on API prose documents.">
     <apply parallel="true" failonerror="true" executable="tidy">
@@ -912,10 +896,7 @@ Set jmf.home to the location of your JMF installation to continue."/>
     </delete>
     <delete dir="netbeans"/>
     <delete file="openide-13javac-workaround.jar"/>
-    <delete dir="OpenAPIs"/>
-    <delete file="OpenAPIs.zip"/>
-    <delete file="OpenAPIs.tar.gz"/>
-    <delete file="OpenAPIs.tar.bz2"/>
+    <delete dir="javadoc"/>
     <delete file="nb-api-tutorial.zip"/>
     <delete dir="examplemodules"/>
     <delete dir="standalone"/>

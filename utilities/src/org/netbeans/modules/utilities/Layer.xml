@@ -163,12 +163,12 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="entities">
             <folder name="NetBeans">
                 <!-- public ID for pdf link xml -->
-                <file name="DTD_PDF_Document_Menu_Link_1_0" url="nbrescurr:/org/netbeans/modules/pdf/pdf_link.dtd"/>
+                <file name="DTD_PDF_Document_Menu_Link_1_0" url="nbres:/org/netbeans/modules/pdf/pdf_link.dtd"/>
             </folder> <!-- NetBeans -->
 
             <folder name="NetBeans_org_netbeans_modules_pdf">
                 <file name="DTD_XML_PDFSettings_1_0"
-                      url="nbresboot:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
+                      url="nbres:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
                     <attr name="hint.originalPublicID"
                           stringvalue="-//NetBeans org.netbeans.modules.pdf//DTD XML PDFSettings 1.0//EN"/>
                 </file>

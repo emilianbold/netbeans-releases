@@ -298,9 +298,9 @@ Microsystems, Inc. All Rights Reserved.
 
 
         <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.home}/lib"/>
-        <copy file="${xtest.home}/lib/xtest-ext.jar" todir="${netbeans.home}/lib"/>
+        <copy file="${xtest.home}/lib/xtest-ext.jar" todir="${netbeans.home}/modules/patches/org-apache-tools-ant-module"/>
         <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.home}/lib"/>
-        <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.home}/lib"/>
+        <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.home}/modules/patches/org-apache-tools-ant-module"/>
 
         <antcall target="copy-user-jars"/>
 
@@ -317,9 +317,9 @@ Microsystems, Inc. All Rights Reserved.
         </ideexec>
 
         <delete file="${netbeans.home}/lib/xtest.jar"/>
-        <delete file="${netbeans.home}/lib/xtest-ext.jar"/>
+        <delete file="${netbeans.home}/modules/patches/org-apache-tools-ant-module/xtest-ext.jar"/>
         <delete file="${netbeans.home}/lib/junit.jar"/>
-        <delete file="${netbeans.home}/lib/junit-ext.jar"/>
+        <delete file="${netbeans.home}/modules/patches/org-apache-tools-ant-module/junit-ext.jar"/>
         
         <antcall target="delete-user-jars"/>
         

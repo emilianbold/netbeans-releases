@@ -20,6 +20,7 @@ import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLStreamHandlerFactory;
 import java.util.Enumeration;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -43,10 +44,7 @@ import org.openide.filesystems.JarFileSystem;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
 import org.openide.windows.WindowManager;
-import org.openide.windows.OutputWriter;
-import org.openide.windows.InputOutput;
 import org.openide.windows.TopComponent;
-import org.openide.windows.IOProvider;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.util.*;
@@ -55,9 +53,8 @@ import org.openide.nodes.*;
 import org.openide.util.lookup.*;
 
 import org.netbeans.core.actions.*;
-import org.netbeans.core.output.OutputTabTerm;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.execution.TopSecurityManager;
+import org.netbeans.TopSecurityManager;
 import org.netbeans.core.modules.Module;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleManager;
@@ -120,7 +117,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
         Object ignoreme = FileSystem.class;
         Package p = Package.getPackage ("org.openide.filesystems"); // NOI18N
         
-        putSystemProperty ("org.openide.specification.version", p.getSpecificationVersion (), "3.14"); // NOI18N
+        putSystemProperty ("org.openide.specification.version", p.getSpecificationVersion (), "3.17"); // NOI18N
         putSystemProperty ("org.openide.version", p.getImplementationVersion (), "OwnBuild"); // NOI18N
         putSystemProperty ("org.openide.major.version", p.getSpecificationTitle (), "IDE/1"); // NOI18N
         putSystemProperty ("netbeans.buildnumber", p.getImplementationVersion (), "OwnBuild"); // NOI18N
@@ -158,8 +155,14 @@ public abstract class NbTopManager /*extends TopManager*/ {
         readEnvMap ();
 
         // initialize the URL factory
-        // XXX(-ttran) why this?
-        Object o = org.openide.execution.NbClassLoader.class;
+        URLStreamHandlerFactory fact = new NbURLStreamHandlerFactory();
+        try {
+            URL.setURLStreamHandlerFactory(fact);
+        } catch (Error e) {
+            // Can happen if we try to start NB twice in the same VM.
+            // Print the error but try to continue.
+            System.err.println("While calling URL.setURLStreamHandlerFactory, got: " + e);
+        }
     }
     
     /** Puts a property into the system ones, but only if the value is not null.
@@ -495,30 +498,6 @@ public abstract class NbTopManager /*extends TopManager*/ {
         }
     }
 
-    /** Print output writer.
-    * @return default system output printer
-    */
-    public OutputWriter getStdOut () {
-        return OutputTabTerm.getStdOut ();
-    }
-
-    /** creates new OutputWriter
-    * @param name is a name of the writer
-    * @return new OutputWriter with given name
-    */
-    public InputOutput getIO(String name, boolean newIO) {
-        return OutputTabTerm.getIO (name, newIO);
-    }
-    
-    public static final class NbIOProvider extends IOProvider {
-        public InputOutput getIO(String name, boolean newIO) {
-            return NbTopManager.get().getIO(name, newIO);
-        }
-        public OutputWriter getStdOut() {
-            return NbTopManager.get().getStdOut();
-        }
-    }
-
     /** saves all opened objects */
     public void saveAll () {
         DataObject dobj = null;
@@ -568,7 +547,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
         }
         // save all open files
         try {
-            if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog(null, false) ) {
+            if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog(null) ) {
                 if (getModuleSystem().shutDown()) {
                     // hide windows explicitly, they are of no use during exit process
                     WindowUtils.hideAllFrames();
@@ -634,24 +613,6 @@ public abstract class NbTopManager /*extends TopManager*/ {
     
     /** Get the module subsystem. */
     public abstract ModuleSystem getModuleSystem();
-
-    /** Someone running NonGuiMain might want to set this to true.
-     * This variable is read from CompilationEngineImpl to determine
-     * whether to do synchronous compile.
-     */
-    public static boolean compileSync = false;
-    
-    /** Sets the compileSync static variable.
-     */
-    public static void setCompileSync(boolean sync) {
-        compileSync = sync;
-    }
-
-    /** Provides support for www documents.
-    *
-    static HtmlBrowser.BrowserComponent getWWWBrowser () {
-      return htmlViewer;
-}
 
     /** Reads system properties from a file on a disk and stores them 
      * in System.getPropeties ().

@@ -19,6 +19,7 @@ import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
 import java.net.URL;
+import java.security.*;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.Set;
@@ -30,7 +31,7 @@ import java.lang.reflect.Method;
 
 import org.openide.util.datatransfer.ExClipboard;
 import org.openide.*;
-import org.openide.cookies.ExecCookie;
+import org.openide.awt.StatusDisplayer;
 import org.openide.loaders.*;
 import org.openide.actions.*;
 import org.openide.actions.PropertiesAction;
@@ -51,14 +52,13 @@ import org.openide.util.io.*;
 import org.openide.nodes.*;
 import org.openide.util.Utilities;
 
+import org.netbeans.TopSecurityManager;
+
 import org.netbeans.core.actions.*;
 import org.netbeans.core.projects.ModuleLayeredFileSystem;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.projects.TrivialProjectManager;
 import org.netbeans.core.modules.ModuleSystem;
-import org.netbeans.core.execution.ExecutionSettings;
-import org.netbeans.core.execution.TopSecurityManager;
-import org.openide.awt.StatusDisplayer;
 
 /** This class is a TopManager for Corona environment.
 *
@@ -495,11 +495,6 @@ public class NonGui extends NbTopManager implements Runnable {
         StartLog.logProgress ("Project opened"); // NOI18N
         Main.incrementSplashProgressBar(10);
 
-        // load neccessary SystemOptions because of ExecuteAction setup
-        SharedClassObject.findObject (ExecutionSettings.class, true);
-        StartLog.logProgress ("ExecutionSettings loaded"); // NOI18N
-        Main.incrementSplashProgressBar(10);
-
         LoaderPoolNode.installationFinished ();
         StartLog.logProgress ("LoaderPool notified"); // NOI18N
         Main.incrementSplashProgressBar(10);
@@ -545,12 +540,11 @@ public class NonGui extends NbTopManager implements Runnable {
         // -----------------------------------------------------------------------------------------------------
         // 8. Advance Policy
 
-        java.security.Policy.getPolicy().getPermissions(new java.security.CodeSource(null, null)).implies(new java.security.AllPermission());
+        Policy.getPolicy().getPermissions(new CodeSource(null, null)).implies(new AllPermission());
 
         // set security manager
 
-        org.netbeans.core.execution.TopSecurityManager secman =
-            new org.netbeans.core.execution.TopSecurityManager();
+        SecurityManager secman = new TopSecurityManager();
 
         // XXX(-trung) workaround for IBM JDK 1.3 Linux bug in
         // java.net.URLClassLoader.findClass().  The IBM implementation of this
@@ -574,13 +568,6 @@ public class NonGui extends NbTopManager implements Runnable {
         // install java.net.Authenticator
         java.net.Authenticator.setDefault (new NbAuthenticator ());
         StartLog.logProgress ("Security managers installed"); // NOI18N
-        Main.incrementSplashProgressBar();
-
-        // run classes int Startup folder
-
-        // Could be places = NbPlaces.getDefault();
-        startFolder(NbPlaces.getDefault().startup ());
-        StartLog.logProgress ("StartFolder content started"); // NOI18N
         Main.incrementSplashProgressBar();
     }
 
@@ -626,14 +613,6 @@ public class NonGui extends NbTopManager implements Runnable {
     }
 
 
-
-    /** Starts a folder by executing all of its executable children
-    * @param f the folder
-    */
-    private static void startFolder (DataFolder f) {
-        DataObject[] obj = f.getChildren ();
-        org.openide.actions.ExecuteAction.execute(obj, true);
-    }
 
     /** Get the module subsystem.  */
     public ModuleSystem getModuleSystem() {

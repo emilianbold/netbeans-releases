@@ -58,15 +58,6 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         return new HelpCtx (HtmlLoader.class.getName () + ".Obj"); // NOI18N
     }
     
-    /** return a cookie for given Class */
-    public Node.Cookie getCookie(Class klass) {
-        if (org.openide.cookies.CompilerCookie.class.isAssignableFrom(klass)) {
-            return null;
-        }
-        
-        return super.getCookie(klass);
-    }
-
     /** Creates new Cookie */
     public Node.Cookie createCookie(Class klass) {
         if (klass.isAssignableFrom (HtmlEditorSupport.class)) {

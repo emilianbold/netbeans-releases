@@ -18,9 +18,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import org.openide.*;
-import org.openide.compiler.CompilerType;
 import org.openide.explorer.*;
-import org.openide.execution.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;

@@ -33,6 +33,8 @@ Microsystems, Inc. All Rights Reserved.
           <include name="junit*.jar"/>
         </fileset>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <!-- XXX -->
+        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
       </classpath>
     </javac>
   </target>
@@ -67,6 +69,8 @@ Microsystems, Inc. All Rights Reserved.
           <fileset dir="external">
             <include name="junit*.jar"/>
           </fileset>
+            <!-- XXX -->
+            <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         </classpath>
       </javadoc>
       <mkdir dir="netbeans/docs"/>
@@ -90,6 +94,9 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
         <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
+        <!-- XXX -->
+        <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <fileset dir="external">
           <include name="junit*.jar"/>
         </fileset>

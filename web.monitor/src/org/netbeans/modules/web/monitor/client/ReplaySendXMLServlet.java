@@ -25,8 +25,6 @@ import org.netbeans.modules.web.monitor.data.MonitorData;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 
-import org.openide.execution.NbClassPath;
-
 /*
  * Send the xml file for a transaction back to the replay filter/interceptor.
  */

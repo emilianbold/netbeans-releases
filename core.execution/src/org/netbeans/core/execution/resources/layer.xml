@@ -22,32 +22,32 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Build">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-ExecuteAction.instance"/>
-            <file name="org-netbeans-core-actions-SetArgumentsAction.instance"/>
+            <file name="org-netbeans-core-execution-SetArgumentsAction.instance"/>
         </folder>
         
         <folder name="View">
-            <file name="org-netbeans-core-actions-ExecutionViewAction.instance"/>
+            <file name="org-netbeans-core-execution-ExecutionViewAction.instance"/>
         </folder>
         
     </folder>    
     
     <folder name="Menu">
         <folder name="View">
-            <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-core-actions-ExecutionViewAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-ExecutionViewAction.instance"/>
-            <attr name="org-netbeans-core-actions-ExecutionViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-output-OutputWindowAction.instance/org-netbeans-core-execution-ExecutionViewAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-execution-ExecutionViewAction.instance"/>
+            <attr name="org-netbeans-core-execution-ExecutionViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
         </folder>
         
         <attr name="View/Build" boolvalue="true" />
         <folder name="Build">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          <attr name="org-netbeans-core-actions-PreviousOutJumpAction.instance/Separator5.instance" boolvalue="true" />
+          <attr name="org-netbeans-core-output-PreviousOutJumpAction.instance/Separator5.instance" boolvalue="true" />
           <file name="Separator5.instance">
 	      <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	  </file>
-          <attr name="Separator5.instance/org-netbeans-core-actions-SetArgumentsAction.instance" boolvalue="true" />
-          <file name="org-netbeans-core-actions-SetArgumentsAction.instance"/>
-          <attr name="org-netbeans-core-actions-SetArgumentsAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
+          <attr name="Separator5.instance/org-netbeans-core-execution-SetArgumentsAction.instance" boolvalue="true" />
+          <file name="org-netbeans-core-execution-SetArgumentsAction.instance"/>
+          <attr name="org-netbeans-core-execution-SetArgumentsAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
           <file name="org-openide-actions-ExecuteAction.instance"/>
         </folder>
         <attr name="Build/Tools" boolvalue="true" />
@@ -56,14 +56,14 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Toolbars">
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-core-actions-ExecutionViewAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-ExecutionViewAction.instance"/>
-            <attr name="org-netbeans-core-actions-ExecutionViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-output-OutputWindowAction.instance/org-netbeans-core-execution-ExecutionViewAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-execution-ExecutionViewAction.instance"/>
+            <attr name="org-netbeans-core-execution-ExecutionViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
         </folder>
     
         <folder name="Build">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <attr name="org-netbeans-core-actions-NextOutJumpAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-output-NextOutJumpAction.instance/org-openide-actions-ExecuteAction.instance" boolvalue="true" />
             <file name="org-openide-actions-ExecuteAction.instance"/>
         </folder>    
     </folder>
@@ -74,7 +74,7 @@ Microsystems, Inc. All Rights Reserved.
 	</file>
 
         <file name="C-6.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.ExecutionViewAction"/>
+	    <attr name="instanceClass" stringvalue="org.netbeans.core.execution.ExecutionViewAction"/>
 	</file>
     </folder>
     
@@ -82,14 +82,13 @@ Microsystems, Inc. All Rights Reserved.
         <!-- templates for services in Lookup, should have the same subdirectory as objects under the -->
         <folder name="Services">
                 
-            <folder name="DebuggerType">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/debuggerTypes.gif" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-                <attr name="SystemFileSystem.layer" stringvalue="project"/>
-            </folder>
-
             <folder name="Executor">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionTypes.gif" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            </folder>
+            
+            <folder name="ScriptType">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
             </folder>
         </folder>
@@ -97,13 +96,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- register services with Lookup -->
     <folder name="Services">
-        <folder name="DebuggerType">
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/debuggerTypes.gif" />
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-            <attr name="helpID" stringvalue="org.netbeans.core.services.DebuggerTypes"/>
-        </folder>
-
         <folder name="Executor">
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionTypes.gif" />
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
@@ -111,11 +103,27 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="helpID" stringvalue="org.netbeans.core.services.ExecutorTypes"/>
         </folder>
         
+        <folder name="ScriptType">
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
+            <attr name="helpID" stringvalue="org.netbeans.core.services.ScriptTypes"/>
+        </folder>
+        
         <file name="org-netbeans-core-execution-ExecutionSettings.settings" url="ExecutionSettings.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionSettings.gif" />
         </file>
         
+        <folder name="NoOps">
+            <file name="NoExecutor.instance">
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.beaninfo.editors.Bundle"/>
+              <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/editors/resources/noExecutor.gif"/>
+              <attr name="instanceOf" stringvalue="org.openide.ServiceType,org.openide.execution.Executor,org.netbeans.core.execution.beaninfo.editors.ExecutorEditor$NoExecutor"/>
+              <attr name="instanceClass" stringvalue="org.netbeans.core.execution.beaninfo.editors.ExecutorEditor$NoExecutor"/>
+              <attr name="instanceCreate" methodvalue="org.netbeans.core.execution.beaninfo.editors.ExecutorEditor.getNoExecutor"/>
+            </file>
+        </folder>
     </folder>
     
     <folder name="UI">
@@ -131,10 +139,6 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="DebuggingAndExecuting">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
-                <file name="DebuggerTypes.shadow">
-                    <attr name="originalFile" stringvalue="Services/DebuggerType"/>
-                </file>
-
                 <file name="org-netbeans-core-execution-ExecutionSettings.shadow">
                     <attr name="originalFile" stringvalue="Services/org-netbeans-core-execution-ExecutionSettings.settings"/>
                 </file>
@@ -145,6 +149,14 @@ Microsystems, Inc. All Rights Reserved.
 
             </folder> <!-- DebuggingAndExecuting -->
 
+            <folder name="IDEConfiguration">
+                <folder name="ServerAndExternalToolSettings">
+                    <file name="ScriptTypes.shadow">
+                        <attr name="originalFile" stringvalue="Services/ScriptType"/>
+                    </file>
+                </folder>
+            </folder>
+                
         </folder> <!-- Services -->
 
     </folder> <!-- UI -->

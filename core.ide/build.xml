@@ -40,10 +40,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jars" depends="compile">
-        <mkdir dir="netbeans/lib"/>
+        <mkdir dir="netbeans/modules"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/lib/core-ide.jar"
+        <locjar jarfile="netbeans/modules/core-ide.jar"
                 basedir="src"
                 manifest="manifest-subst.mf"
                 excludesfile="../../nbbuild/standard-jar-excludes.txt"
@@ -65,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="netbeans">
         <makenbm file="core-ide.nbm"
                  topdir="."
-                 module="netbeans/lib/core-ide.jar"
+                 module="netbeans/modules/core-ide.jar"
                  homepage="http://core.${homepage.base}/"
                  distribution="http://${dist.base}/core-ide.nbm">
             <license file="${license.file}"/>

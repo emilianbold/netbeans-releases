@@ -53,6 +53,7 @@ Microsystems, Inc. All Rights Reserved.
             <classpath>
                 <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
                 <pathelement location="${nbroot}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+                <pathelement location="${nbroot}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
                 <fileset dir="${nbroot}/core/external">
                     <include name="xml-apis*.jar"/>
                 </fileset>

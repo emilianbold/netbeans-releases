@@ -739,7 +739,8 @@ public final class NbErrorManager extends ErrorManager {
     {
         /** The name MUST be handle and MUST be public */
         public static void handle(Throwable t) {
-            if (t instanceof org.netbeans.core.execution.ExitSecurityException) {
+            // Either org.netbeans or org.netbeans.core.execution pkgs:
+            if (t.getClass().getName().endsWith(".ExitSecurityException")) { // NOI18N
                 return;
             }
             ErrorManager.getDefault().notify((ERROR << 1), t);

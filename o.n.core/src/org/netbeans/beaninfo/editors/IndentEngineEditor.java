@@ -19,7 +19,6 @@ import java.lang.reflect.Array;
 import java.io.*;
 import java.text.MessageFormat;
 
-import org.openide.compiler.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.loaders.*;
@@ -33,7 +32,7 @@ import org.openide.text.IndentEngine;
 public class IndentEngineEditor extends ServiceTypeEditor {
 
     public IndentEngineEditor () {
-        super (IndentEngine.class, "LAB_ChooseIndentEngine", IndentEngine.getDefault()); // NOI18N
+        super (IndentEngine.class, "LAB_ChooseIndentEngine"); // NOI18N
     }
 
 }

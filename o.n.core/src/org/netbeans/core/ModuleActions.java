@@ -43,7 +43,7 @@ public class ModuleActions extends ActionManager
 /*implements PropertyChangeListener*/ {
     
     /** Property name of currently running actions. */
-    static String PROP_RUNNING_ACTIONS = "runningActions"; // NOI18N
+    public static String PROP_RUNNING_ACTIONS = "runningActions"; // NOI18N
     
     /** array of all actions added by modules */
     private static SystemAction[] array;
@@ -142,7 +142,7 @@ public class ModuleActions extends ActionManager
     }
 
     /** Gets collection of currently running actions. */
-    Collection getRunningActions() {
+    public Collection getRunningActions() {
         synchronized(runningActions) {
             return new ArrayList(runningActions.values());
         }
@@ -150,7 +150,7 @@ public class ModuleActions extends ActionManager
     
     /** Tries to stop all processors executing currently running
      * action tasks. */
-    void killRunningActions() {
+    public void killRunningActions() {
 	rp.stop();
     }
     

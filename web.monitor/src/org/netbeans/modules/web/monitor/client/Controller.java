@@ -54,9 +54,9 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.execution.NbClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -264,7 +264,7 @@ public class Controller  {
 	    tm.getRepository().getDefaultFileSystem().getRoot();
 	if(debug) {
 	    log("Root directory is " +  rootdir.getName()); // NOI18N
-	    File rootF = NbClassPath.toFile(rootdir);
+	    File rootF = FileUtil.toFile(rootdir);
 	    log("Root directory abs path " + // NOI18N
 		rootF.getAbsolutePath());
 	}

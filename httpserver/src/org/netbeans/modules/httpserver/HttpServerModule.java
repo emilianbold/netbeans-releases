@@ -22,7 +22,6 @@ import java.net.InetAddress;
 import java.lang.reflect.InvocationTargetException;
 
 import org.openide.modules.ModuleInstall;
-import org.openide.execution.Executor;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;

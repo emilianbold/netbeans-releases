@@ -30,10 +30,6 @@ import org.openide.util.LookupListener;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Lookup.Template;
 
-import org.netbeans.beaninfo.editors.ExecutorEditor;
-//import org.netbeans.beaninfo.editors.CompilerTypeEditor;
-//import org.netbeans.beaninfo.editors.DebuggerTypeEditor;
-
 /** Works with all service types.
 *
 * @author Jaroslav Tulach
@@ -58,14 +54,10 @@ public final class Services extends ServiceType.Registry implements LookupListen
         name2Service = new HashMap();
     }
     
-    /** Override to specially look up no-op services. */
-    public ServiceType find (Class clazz) {
-        if (clazz == null)
-            return null;
-        else
-            return (ServiceType) Lookup.getDefault().lookup(clazz);
+    public ServiceType find(Class clazz) {
+        return (ServiceType)Lookup.getDefault().lookup(clazz);
     }
-
+    
     /** Override to specially look up no-op services. */
     public ServiceType find (String name) {
         Map lookupMap = name2Service;

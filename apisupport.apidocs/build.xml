@@ -38,12 +38,21 @@ Microsystems, Inc. All Rights Reserved.
         <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../../nbbuild/nbantext.jar"/>
         <mkdir dir="netbeans/system/ParserDB"/>
         <makeparserdb db="netbeans/system/ParserDB/OpenAPIs" sources="../../openide/src" nbroot="../.."/>
+        <makeparserdb db="netbeans/system/ParserDB/CompilerAPI" sources="../../openide/compiler/src" nbroot="../.."/>
+        <makeparserdb db="netbeans/system/ParserDB/ExecutionAPI" sources="../../openide/execution/src" nbroot="../.."/>
+        <makeparserdb db="netbeans/system/ParserDB/InputOutputAPI" sources="../../openide/io/src" nbroot="../.."/>
     </target>
 
     <target name="open-apis">
-        <ant dir="../../openide" target="open-apis"/>
+        <ant dir="../../openide" target="javadoc"/>
         <mkdir dir="netbeans/docs"/>
-        <copy file="../../openide/OpenAPIs.zip" tofile="netbeans/docs/OpenAPIs.zip"/>
+        <copy file="../../openide/javadoc/OpenAPIs.zip" tofile="netbeans/docs/OpenAPIs.zip"/>
+        <ant dir="../../openide/io" target="javadoc"/>
+        <copy file="../../openide/io/javadoc/InputOutputAPI.zip" tofile="netbeans/docs/InputOutputAPI.zip"/>
+        <ant dir="../../openide/execution" target="javadoc"/>
+        <copy file="../../openide/execution/javadoc/ExecutionAPI.zip" tofile="netbeans/docs/ExecutionAPI.zip"/>
+        <ant dir="../../openide/compiler" target="javadoc"/>
+        <copy file="../../openide/compiler/javadoc/CompilerAPI.zip" tofile="netbeans/docs/CompilerAPI.zip"/>
     </target>
 
     <target name="netbeans" depends="jars,parser-db,open-apis" description="Build complete module.">

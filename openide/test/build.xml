@@ -242,6 +242,11 @@ Microsystems, Inc. All Rights Reserved.
  	      -->
                 <pathelement location="../openide-13javac-workaround.jar"/>
                 <pathelement location="../netbeans/lib/openide.jar"/>
+                <!-- XXX -->
+                <pathelement location="../compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+                <pathelement location="../execution/netbeans/modules/autoload/openide-execution.jar"/>
+                <pathelement location="../io/netbeans/modules/autoload/openide-io.jar"/>
+
                 <fileset dir="../../core/netbeans/lib">
             		<include name="core.jar"/>
             		<include name="ext/*.jar"/>
@@ -260,6 +265,11 @@ Microsystems, Inc. All Rights Reserved.
  	      -->
                 <pathelement location="../openide-13javac-workaround.jar"/>
                 <pathelement location="../src/"/>
+                <!-- XXX -->
+                <pathelement location="../compiler/src/"/>
+                <pathelement location="../execution/src/"/>
+                <pathelement location="../io/src/"/>
+                
                 <pathelement location="../../core/src/"/>
                 <fileset dir="../../core/netbeans/lib">
             		<include name="ext/*.jar"/>
@@ -281,6 +291,12 @@ Microsystems, Inc. All Rights Reserved.
                         <include name="openide.jar"/>
             		<include name="ext/*.jar"/>
              </fileset>             
+             <!-- XXX -->
+             <fileset dir="${netbeans.home}/modules/autoload">
+                     <include name="openide-*.jar"/>
+                     <include name="core-*.jar"/>
+             </fileset>
+             
    	</path>
     </target>
     
@@ -300,6 +316,11 @@ Microsystems, Inc. All Rights Reserved.
  	      -->
                 <pathelement location="../openide-13javac-workaround.jar"/>
                 <pathelement location="../netbeans/lib/openide.jar"/>
+                <!-- XXX -->
+                <pathelement location="../compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+                <pathelement location="../execution/netbeans/modules/autoload/openide-execution.jar"/>
+                <pathelement location="../io/netbeans/modules/autoload/openide-io.jar"/>
+                
                 <fileset dir="../../core/netbeans/lib">
             		<include name="core.jar"/>
             		<include name="ext/*.jar"/>
@@ -322,6 +343,11 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="../openide-13javac-workaround.jar"/>
                 <pathelement location="../src/"/>
                 <pathelement location="../../core/src/"/>
+                <!-- XXX -->
+                <pathelement location="../compiler/src/"/>
+                <pathelement location="../execution/src/"/>
+                <pathelement location="../io/src/"/>
+                
                 <fileset dir="../../core/netbeans/lib">
             		<include name="core.jar"/> <!-- for the manifest -->
             		<include name="ext/*.jar"/>
@@ -349,6 +375,11 @@ Microsystems, Inc. All Rights Reserved.
                         <include name="openide.jar"/>
             		<include name="ext/*.jar"/>
              </fileset>             
+             <!-- XXX -->
+             <fileset dir="${netbeans.home}/modules/autoload">
+                     <include name="openide-*.jar"/>
+                     <include name="core-*.jar"/>
+             </fileset>
 
         </path>
     </target>

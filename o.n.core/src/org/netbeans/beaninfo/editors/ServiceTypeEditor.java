@@ -19,7 +19,6 @@ import java.util.Enumeration;
 
 import org.openide.filesystems.Repository;
 import org.openide.ServiceType;
-import org.openide.execution.Executor;
 import org.openide.explorer.propertysheet.*;
 import org.openide.util.Lookup;
 
@@ -57,15 +56,14 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
     /** constructs new property editor.
     */
     public ServiceTypeEditor() {
-        this (ServiceType.class, "LAB_ChooseServiceType", null);   // NOI18N
+        this (ServiceType.class, "LAB_ChooseServiceType"); // NOI18N
     }
 
     /** constructs new property editor.
      * @param clazz the class to use 
      * @param message the message for custom editor
-     * @param none the service type representing "none"; null to not provide this option
      */
-    public ServiceTypeEditor(Class clazz, String message, ServiceType none) {
+    public ServiceTypeEditor(Class clazz, String message) {
         this.clazz = clazz;
         this.message = message;
     }

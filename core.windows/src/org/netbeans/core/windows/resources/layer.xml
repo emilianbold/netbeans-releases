@@ -98,7 +98,12 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         
     </folder>
-	
+
+    <folder name="Toolbars">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/core/resources/toolbarsOption.gif"/>
+    </folder>
+
 	<folder name="xml">
 		<folder name="entities">
         	<folder name="NetBeans_IDE">

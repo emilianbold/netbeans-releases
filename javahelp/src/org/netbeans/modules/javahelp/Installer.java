@@ -18,7 +18,6 @@ import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 
 import org.openide.ErrorManager;
-import org.openide.execution.NbfsStreamHandlerFactory;
 import org.openide.modules.ModuleInstall;
 
 import org.netbeans.api.javahelp.Help;
@@ -30,8 +29,6 @@ public class Installer extends ModuleInstall {
 
     public void restored() {
         err.log("restored module");
-        // Register nbdocs: protocol.
-        Object ignore = NbDocsStreamHandler.class;
         // This ensures the static block will be called ASAP, hence that
         // the AWT listener will actually be started quickly and there
         // will already have been interesting mouse-entered events
@@ -50,7 +47,6 @@ public class Installer extends ModuleInstall {
     
     public void uninstalled() {
         err.log("uninstalled module");
-        NbfsStreamHandlerFactory.getDefault().deregister("nbdocs"); // NOI18N
         if (help != null) {
             help.deactivate();
         }

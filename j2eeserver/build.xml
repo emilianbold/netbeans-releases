@@ -165,6 +165,9 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
         <pathelement location="${nbroot}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+        <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+        <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/> <!-- used indirectly, not imported -->
         <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <pathelement location="${jdkhome}/lib/tools.jar"/>
         <!-- orion_ea requires logger !!!

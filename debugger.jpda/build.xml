@@ -64,6 +64,9 @@ ToDo:
         <pathelement location="${jdkhome}/lib/tools.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+        <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+        <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
 	<pathelement location="../debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
       </classpath>

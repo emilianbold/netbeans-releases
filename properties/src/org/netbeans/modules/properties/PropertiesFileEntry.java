@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.TreeSet;
 
-import org.openide.cookies.CompilerCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;

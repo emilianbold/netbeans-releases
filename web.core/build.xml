@@ -73,6 +73,9 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement path="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" />
         <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
         <pathelement location="${nb_root}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+        <pathelement location="${nb_root}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+        <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+        <pathelement location="${nb_root}/openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <pathelement location="${nb_root}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <pathelement location="${nb_root}/openidex/netbeans/modules/autoload/openidex.jar"/>
         <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/j2eeserver.jar"/>

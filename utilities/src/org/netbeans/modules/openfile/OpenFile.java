@@ -38,7 +38,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.ViewCookie;
 import org.openide.DialogDescriptor;
-import org.openide.execution.NbClassPath;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;

@@ -362,7 +362,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     // Accessibility problem. We hack default behaviour here.
     /** Creates hacked fileChooser, responding on Enter the way it
      * performs folder change. */
-    static JFileChooser createHackedFileChooser() {
+    public static JFileChooser createHackedFileChooser() {
         final JFileChooser chooser = new JFileChooser();
 
         chooser.getAccessibleContext().setAccessibleDescription( getString("ACSD_FileEditor") );

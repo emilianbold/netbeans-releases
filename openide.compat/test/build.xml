@@ -62,6 +62,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="generate" depends="init">
         <echo>Generating compatibility APIs from ${netbeans.home}/lib/openide.jar</echo>
         <patchclass library="${netbeans.home}/lib/ext/boot.jar" source="${netbeans.home}/lib/openide.jar" targetdir="gensrc" />
+        <patchclass library="${netbeans.home}/lib/ext/boot.jar" source="${netbeans.home}/modules/autoload/openide-compiler.jar" targetdir="gensrc" />
     </target>
     
     <!-- This calls common clean process. -->

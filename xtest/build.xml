@@ -29,13 +29,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile" depends="init,prepare-junit-extensions">
-    <javac srcdir="src" destdir="src"
-           deprecation="${build.compiler.deprecation}"
-           debug="${build.compiler.debug}">
-      <exclude name="org/netbeans/junit/**"/>
-      <exclude name="org/netbeans/xtest/pe/server/**"/>
-      <exclude name="org/netbeans/xtest/util/NetUtils.java"/>
-      <classpath>
+    <path id="basecp">
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
@@ -54,6 +48,33 @@ Microsystems, Inc. All Rights Reserved.
           <include name="junit*.jar"/>
         </fileset>
 	<pathelement location="lib/junit-ext.jar"/>
+    </path>
+    <javac srcdir="src" destdir="src"
+           deprecation="${build.compiler.deprecation}"
+           debug="${build.compiler.debug}">
+      <exclude name="org/netbeans/junit/**"/>
+      <exclude name="org/netbeans/xtest/pe/server/**"/>
+      <exclude name="org/netbeans/xtest/util/NetUtils.java"/>
+      <exclude name="org/netbeans/xtest/ide/MainWithExec.java"/>
+      <classpath refid="basecp"/>
+    </javac>
+    <!-- Compile just MainWithExec with other openide/core modules in CP. -->
+    <!-- It is referred to only indirectly using reflection and can access any module. -->
+    <javac srcdir="src" destdir="src"
+           deprecation="${build.compiler.deprecation}"
+           debug="${build.compiler.debug}">
+      <include name="org/netbeans/xtest/ide/MainWithExec.java"/>
+      <classpath>
+        <path refid="basecp"/>
+        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+        <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
+        <pathelement location="../core/output/netbeans/modules/autoload/core-output.jar"/>
+        <pathelement location="../core/execution/netbeans/modules/autoload/core-execution.jar"/>
+        <!-- Not needed: -->
+        <!--
+        <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+        <pathelement location="../core/compiler/netbeans/modules/autoload/core-compiler.jar"/>
+        -->
       </classpath>
     </javac>
   </target>

@@ -15,8 +15,8 @@ package org.netbeans.modules.pdf;
 
 import java.io.File;
 
-import org.openide.execution.NbClassPath;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.*;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
@@ -35,7 +35,7 @@ public class PDFDataObject extends MultiDataObject {
         super (pf, loader);
         CookieSet cookies = getCookieSet ();
         // [PENDING] try also Java-implemented reader
-        File f = NbClassPath.toFile (pf);
+        File f = FileUtil.toFile (pf);
         if (f != null)
             cookies.add (new PDFOpenSupport (f));
     }

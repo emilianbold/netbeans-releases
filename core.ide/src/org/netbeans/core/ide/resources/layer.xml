@@ -24,26 +24,11 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
-    <folder name="Shortcuts">
-        <file name="S-F8.instance"> <!-- PENDING Debugger -->
-	    <attr name="instanceClass" stringvalue="org.openide.actions.ToggleBreakpointAction"/>
-	</file>
-        <file name="CS-F7.instance">
-	    <attr name="instanceClass" stringvalue="org.openide.actions.AddWatchAction"/>
-	</file>
-    </folder>
-    
     <folder name="Startup">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
     </folder>
         
     <folder name="Services">
-        <folder name="ScriptType">
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
-            <attr name="helpID" stringvalue="org.netbeans.core.services.ScriptTypes"/>
-        </folder>
         <folder name="IndentEngine">
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
@@ -53,10 +38,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Templates">
         <folder name="Services">
-            <folder name="ScriptType">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            </folder>
             <folder name="IndentEngine">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/indentEngines.gif" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
@@ -74,12 +55,6 @@ Microsystems, Inc. All Rights Reserved.
 
                 <folder name="LookAndFeel"> 
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-                </folder>
-                
-                <folder name="ServerAndExternalToolSettings">
-                    <file name="ScriptTypes.shadow">
-                        <attr name="originalFile" stringvalue="Services/ScriptType"/>
-                    </file>
                 </folder>
                 
             </folder>        

@@ -82,7 +82,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-FocusNextWorkspaceAction.instance"/>
             <file name="org-netbeans-core-actions-NextWorkspaceAction.instance"/>
             <file name="org-netbeans-core-actions-WorkspaceExplorerAction.instance"/>
-            <file name="org-netbeans-core-actions-OutputWindowAction.instance"/>
             <file name="org-openide-actions-PropertiesAction.instance"/>
             <file name="org-netbeans-core-actions-StatusLineAction.instance"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
@@ -175,9 +174,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
             <attr name="org-netbeans-core-actions-GlobalPropertiesAction.instance/org-netbeans-core-actions-EditorViewAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-EditorViewAction.instance"/>
-            <attr name="org-netbeans-core-actions-EditorViewAction.instance/org-netbeans-core-actions-OutputWindowAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-OutputWindowAction.instance"/>
-            <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-EditorViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
             <attr name="org-netbeans-core-actions-HTMLViewAction.instance/org-netbeans-core-actions-ViewRuntimeTabAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
@@ -233,8 +230,6 @@ Microsystems, Inc. All Rights Reserved.
             Adding actions into subfolders of this folder in the XML layer
             of your module will customize the main window toolbars.
         -->
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/core/resources/toolbarsOption.gif" />
         <folder name="Data">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-FindAction.instance"/>
@@ -257,7 +252,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-netbeans-core-actions-OutputWindowAction.instance"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
         </folder>
         <folder name="System">
@@ -351,10 +345,6 @@ Microsystems, Inc. All Rights Reserved.
     
         <file name="A-LEFT.instance"> 
 	    <attr name="instanceClass" stringvalue="org.openide.actions.PreviousTabAction"/>
-	</file>
-
-        <file name="C-4.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.OutputWindowAction"/>
 	</file>
 
         <file name="C-F4.instance">

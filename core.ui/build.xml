@@ -36,10 +36,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jars" depends="compile">
-        <mkdir dir="netbeans/lib"/>
+        <mkdir dir="netbeans/modules"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="netbeans/lib/core-ui.jar"
+        <locjar jarfile="netbeans/modules/core-ui.jar"
                 basedir="src"
                 manifest="manifest-subst.mf"
                 excludesfile="../../nbbuild/standard-jar-excludes.txt"
@@ -55,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="netbeans">
         <makenbm file="core-ui.nbm"
                  topdir="."
-                 module="netbeans/lib/core-ui.jar"
+                 module="netbeans/modules/core-ui.jar"
                  homepage="http://core.${homepage.base}/"
                  distribution="http://${dist.base}/core-ui.nbm">
             <license file="${license.file}"/>

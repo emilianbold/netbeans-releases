@@ -28,7 +28,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import org.openide.actions.OpenAction;
-import org.openide.cookies.CompilerCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.*;

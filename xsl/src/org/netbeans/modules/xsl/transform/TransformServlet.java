@@ -27,7 +27,7 @@ import org.openide.util.SharedClassObject;
 import org.openide.util.HttpServer;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.execution.NbfsURLConnection;
+import org.openide.filesystems.URLMapper;
 
 import org.netbeans.api.xml.cookies.*;
 import org.netbeans.spi.xml.cookies.*;
@@ -216,9 +216,9 @@ public class TransformServlet extends HttpServlet {
 
         try {
             URL url = new URL (systemId);
-            FileObject fo = NbfsURLConnection.decodeURL (url);
-            if ( fo != null ) {
-                name = TransformUtil.getURLName (fo);
+            FileObject[] fos = URLMapper.findFileObjects (url);
+            if ( fos.length > 0 ) {
+                name = TransformUtil.getURLName (fos[0]);
             }
         } catch (Exception exc) {
             // ignore it -> use systemId
