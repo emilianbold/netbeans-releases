@@ -520,13 +520,24 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Hacking toolbars -->    
     <folder name="Toolbars">
     
-        <folder name="System">
+        <folder name="File">
+
+            <file name="org-netbeans-modules-project-ui-NewFile.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
+            </file>
+
+            <file name="org-netbeans-modules-project-ui-NewProject.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
+            </file>
+
             <file name="org-netbeans-modules-project-ui-OpenProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
             </file>
             
             <attr name="org-netbeans-modules-project-ui-OpenProject.shadow/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true"/>
-            
+            <attr name="org-netbeans-modules-project-ui-NewFile.shadow/org-netbeans-modules-openfile-NewProject.shadow" boolvalue="true"/>
+            <attr name="org-netbeans-modules-project-ui-NewProject.shadow/org-netbeans-modules-openfile-OpenProject.shadow" boolvalue="true"/>
+            <attr name="org-netbeans-modules-project-ui-NewProject.shadow/org-openide-actions-SaveAllAction.instance" boolvalue="true"/> 
         </folder>
     
         <folder name="Build">            
@@ -540,23 +551,22 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RebuildMainProject.instance"/>
             </file>
             
-            <attr name="org-netbeans-modules-project-ui-RebuildMainProject.shadow/org-netbeans-core-output-NextOutJumpAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-project-ui-RebuildMainProject.shadow/org-netbeans-modules-project-ui-RunMainProject.shadow" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-project-ui-RunMainProject.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
+            </file>
+
+            <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-project-ui-DebugMainProject.shadow" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-project-ui-DebugMainProject.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
+            </file>
+    
         </folder>
         
         <folder name="Debug">
         
-            <file name="org-netbeans-modules-project-ui-RunMainProject.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
-            </file>
-            
-            <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-project-ui-DebugMainProject.shadow" boolvalue="true"/>
-                            
-            <file name="org-netbeans-modules-project-ui-DebugMainProject.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
-            </file>
-
-            <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/org-netbeans-modules-project-ui-FinishSessions.shadow" boolvalue="true"/>
-                        
             <file name="org-netbeans-modules-project-ui-FinishSessions.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-support-actions-FinishAction.instance"/>
             </file>
@@ -571,29 +581,6 @@ Microsystems, Inc. All Rights Reserved.
                                                  
         </folder>
         
-        <folder name="DebugFull">
-            <file name="org-netbeans-modules-project-ui-RunMainProject.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
-            </file>
-            
-            <attr name="org-netbeans-modules-project-ui-RunMainProject.shadow/org-netbeans-modules-project-ui-DebugMainProject.shadow" boolvalue="true"/>
-                            
-            <file name="org-netbeans-modules-project-ui-DebugMainProject.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
-            </file>
-         
-            <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/org-netbeans-modules-debugger-support-actions-FinishAction.instance" boolvalue="true"/>
-            
-           
-            <attr name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance/org-netbeans-modules-project-ui-DebugFix.shadow" boolvalue="true"/>
-            
-            <file name="org-netbeans-modules-project-ui-DebugFix.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugFix.instance"/>
-            </file>
-            
-            <attr name="org-netbeans-modules-project-ui-DebugFix.shadow/org-netbeans-modules-debugger-support-actions-AddWatchAction.instance" boolvalue="true"/>
-        </folder>
-    
     </folder>
         
     <!-- Shortcuts for the new actions -->    

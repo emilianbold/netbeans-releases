@@ -37,6 +37,7 @@ public class OpenProject extends BasicAction {
     /** Creates a new instance of BrowserAction */
     public OpenProject() {
         super( NAME, ICON );
+        putValue("iconBase","org/netbeans/modules/project/ui/resources/openProject.gif"); //NOI18N
     }
 
     public void actionPerformed( ActionEvent evt ) {

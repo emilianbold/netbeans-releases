@@ -41,6 +41,7 @@ public class NewProject extends BasicAction {
 
     public NewProject() {
         super( NAME, ICON );
+        putValue("iconBase","org/netbeans/modules/project/ui/resources/newProject.gif"); //NOI18N
     }
 
     public void actionPerformed( ActionEvent evt ) {

@@ -57,7 +57,8 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     }
     
     public NewFile( Lookup context ) {
-        super( (String)null, NAME, ICON, context ); //NOI18N        
+        super( (String)null, NAME, ICON, context ); //NOI18N    
+        putValue("iconBase","org/netbeans/modules/project/ui/resources/newFile.gif"); //NOI18N
         OpenProjectList.getDefault().addPropertyChangeListener( this );
         refresh( getLookup() );
     }

@@ -170,31 +170,39 @@ public class Actions implements ActionsFactory {
     
     
     public static Action buildMainProject() {
-        return new MainProjectAction (
+        Action a = new MainProjectAction (
             ActionProvider.COMMAND_BUILD, 
             NbBundle.getMessage(Actions.class, "LBL_BuildMainProjectAction_Name" ),
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/buildProject.gif" ) ) ); 
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/buildProject.gif" ) ) );  //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/buildProject.gif"); //NOI18N
+        return a;
     }
     
     public static Action rebuildMainProject() {
-        return new MainProjectAction(
+        Action a = new MainProjectAction(
             ActionProvider.COMMAND_REBUILD,
             NbBundle.getMessage(Actions.class, "LBL_RebuildMainProjectAction_Name"),  // NOI18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/rebuildProject.gif" ) ) ); //NOI18N                
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/rebuildProject.gif" ) ) ); //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/rebuildProject.gif"); //NOI18N
+        return a;
     }
         
     public static Action runMainProject() {
-        return new MainProjectAction(
+        Action a = new MainProjectAction(
             "run", // XXX Define standard 
             NbBundle.getMessage(Actions.class, "LBL_RunMainProjectAction_Name"), // NO18N
             new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/runProject.gif" ) ) ); //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runProject.gif"); //NOI18N
+        return a;
     }
     
     public static Action debugMainProject() {
-        return new MainProjectAction(
+        Action a = new MainProjectAction(
             "debug", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_DebugMainProjectAction_Name" ), // NOI18N
             new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/debugProject.gif" ) ) ); //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/debugProject.gif"); //NOI18N
+        return a;
     }
         
 
