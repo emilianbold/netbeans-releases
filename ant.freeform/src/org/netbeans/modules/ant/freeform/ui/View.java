@@ -15,6 +15,7 @@ package org.netbeans.modules.ant.freeform.ui;
 
 import java.awt.Image;
 import java.util.Collections;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -40,6 +41,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
@@ -78,7 +80,7 @@ public final class View implements LogicalViewProvider {
         
         protected void addNotify() {
             super.addNotify();
-            updateKeys();
+            updateKeys(false);
             p.helper().addAntProjectListener(this);
             // XXX should probably listen to project.evaluator also?
         }
@@ -89,12 +91,22 @@ public final class View implements LogicalViewProvider {
             super.removeNotify();
         }
         
-        private void updateKeys() {
+        private void updateKeys(boolean fromListener) {
             Element genldata = p.helper().getPrimaryConfigurationData(true);
             Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
             if (viewEl != null) {
                 Element itemsEl = Util.findElement(viewEl, "items", FreeformProjectType.NS_GENERAL); // NOI18N
-                setKeys(Util.findSubElements(itemsEl));
+                final List keys = Util.findSubElements(itemsEl);
+                if (fromListener) {
+                    // #50328 - post setKeys to different thread to prevent deadlocks
+                    RequestProcessor.getDefault().post(new Runnable() {
+                            public void run() {
+                                setKeys(keys);
+                            }
+                        });
+                } else {
+                    setKeys(keys);
+                }
             } else {
                 setKeys(Collections.EMPTY_SET);
             }
@@ -142,7 +154,7 @@ public final class View implements LogicalViewProvider {
         }
 
         public void configurationXmlChanged(AntProjectEvent ev) {
-            updateKeys();
+            updateKeys(true);
         }
 
         public void propertiesChanged(AntProjectEvent ev) {

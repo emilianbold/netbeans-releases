@@ -99,6 +99,8 @@ public class ViewTest extends TestBase {
         assertNotNull("have <source-file>", sourceFile);
         items.removeChild(sourceFile);
         extsrcroot.helper().putPrimaryConfigurationData(data, true);
+        // children keys are updated asynchronously. give them a time
+        Thread.sleep(500);
         assertFalse("got some changes in children", l.probeChanges().isEmpty());
         kids = ch.getNodes(true);
         assertEquals("one child node", 1, kids.length);
