@@ -56,9 +56,11 @@ public final class ScheduledRequestTest extends NbTestCase {
         Object obj1 = new Object();
         sr.schedule(obj1);
         assertNotNull("none file lock", sr.getFileLock());
-        Thread.sleep(2500);
-        assertNull("file lock", sr.getFileLock());
-        assertTrue("scheduled request was not performed yet", toRun.finished);
+        for (int i = 0; i < 2 && !toRun.finished; i++) {
+            Thread.sleep(2500);    
+        }
+        assertTrue("scheduled request was not performed yet", toRun.finished);        
+        assertNull("file is still locked", sr.getFileLock());
     }
     
     public void testCancel() throws Exception {
