@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Editors"> 
+        <folder name="text">
+            <folder name="xml">
+                <folder name="ToolTips">
+                    <file name="org-netbeans-modules-debugger-ant-ToolTipAnnotation.instance"/>
+                </folder>
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                    </file>
+                </folder>
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>                    
+                    <attr name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+        <folder name="AnnotationTypes">
+            <file name="CurrentPCLinePart.xml" url="CurrentPCLinePart.xml"/>
+            <file name="CurrentPC2.xml" url="CurrentPC2.xml"/>
+            <file name="CurrentPC2LinePart.xml" url="CurrentPC2LinePart.xml"/>
+            <file name="NextTargetName.xml" url="NextTargetName.xml"/>
+        </folder>
+    </folder>
+</filesystem>
