@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,6 +51,18 @@ public class ViewTest extends TestBase {
         assertEquals("one child of ../src", 1, kids2.length);
         assertEquals("correct name of #1's kid", "org.foo", kids2[0].getName());
         // Do not test node #2; supplied by ant/freeform.
+    }
+    
+    public void testFindPath() throws Exception {
+        LogicalViewProvider lpp2 = (LogicalViewProvider) simple.getLookup().lookup(LogicalViewProvider.class);
+        assertNotNull(lpp2);
+        Node root = lpp2.createLogicalView();
+        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lpp2, root, simple, "src/org/foo/myapp/MyApp.java");
+        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lpp2, root, simple, "src/org/foo/myapp");
+        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathNegative(lpp2, root, simple, "src/org/foo");
+        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathNegative(lpp2, root, simple, "src/org");
+        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lpp2, root, simple, "src");
+        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lpp2, root, simple, "antsrc/org/foo/ant/SpecialTask.java");
     }
     
 }

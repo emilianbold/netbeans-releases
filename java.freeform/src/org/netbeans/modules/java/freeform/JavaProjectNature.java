@@ -118,8 +118,7 @@ public class JavaProjectNature implements ProjectNature {
     }
 
     public org.openide.nodes.Node findSourceFolderViewPath(Project project, org.openide.nodes.Node root, Object target) {
-        // XXX
-        return null;
+        return PackageView.findPath(root, target);
     }
 
     private static Lookup initLookup(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {

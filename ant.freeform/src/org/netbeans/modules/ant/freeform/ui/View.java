@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,6 +17,7 @@ import java.awt.Image;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -32,6 +33,7 @@ import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
@@ -41,6 +43,8 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeNotFoundException;
+import org.openide.nodes.NodeOp;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -66,7 +70,42 @@ public final class View implements LogicalViewProvider {
     }
     
     public Node findPath(Node root, Object target) {
-        // XXX use ProjectNature.findPath
+        // Check each child node in turn.
+        Node[] kids = root.getChildren().getNodes(true);
+        for (int i = 0; i < kids.length; i++) {
+            // First ask natures.
+            Iterator/*<ProjectNature>*/ natures = Lookup.getDefault().lookup(new Lookup.Template(ProjectNature.class)).allInstances().iterator();
+            while (natures.hasNext()) {
+                ProjectNature nature = (ProjectNature) natures.next();
+                Node n = nature.findSourceFolderViewPath(project, kids[i], target);
+                if (n != null) {
+                    return n;
+                }
+            }
+            // Otherwise, check children and look for <source-folder>/<source-file> matches.
+            if (target instanceof DataObject) {
+                DataObject d = (DataObject) kids[i].getLookup().lookup(DataObject.class);
+                if (d == null) {
+                    continue;
+                }
+                // Copied from org.netbeans.spi.java.project.support.ui.TreeRootNode.PathFinder.findPath:
+                FileObject kidFO = d.getPrimaryFile();
+                FileObject targetFO = ((DataObject) target).getPrimaryFile();
+                if (kidFO == targetFO) {
+                    return kids[i];
+                } else if (FileUtil.isParentOf(kidFO, targetFO)) {
+                    String relPath = FileUtil.getRelativePath(kidFO, targetFO);
+                    List/*<String>*/ path = Collections.list(new StringTokenizer(relPath, "/")); // NOI18N
+                    // XXX see original code for justification
+                    path.set(path.size() - 1, targetFO.getName());
+                    try {
+                        return NodeOp.findPath(kids[i], Collections.enumeration(path));
+                    } catch (NodeNotFoundException e) {
+                        return null;
+                    }
+                }
+            }
+        }
         return null;
     }
     
