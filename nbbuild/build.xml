@@ -42,6 +42,7 @@ workspaceswitcher
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
         <!-- For running inside IDE, to pick up ant.jar -->
         <pathelement location="${binroot}/nbbuild/lib/ant.jar"/>
+        <pathelement location="${binroot}/nbbuild/lib/jhall.jar"/>
       </classpath>
     </javac>
     <jar jarfile="nbantext.jar" basedir="antsrc">

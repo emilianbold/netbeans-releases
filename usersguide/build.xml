@@ -119,4 +119,14 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="src/org/netbeans/modules/usersguide/demosrc.zip"/>
   </target>
 
+  <!-- See #13931: -->
+  <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
+    <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets" classpath="../nbbuild/nbantext.jar:${binroot}/core/release/lib/ext/regexp.jar:${binroot}/nbbuild/lib/jhall.jar"/>
+    <checkhelpsets>
+      <fileset dir="javahelp">
+        <include name="org/netbeans/modules/usersguide/ide.hs"/>
+      </fileset>
+    </checkhelpsets>
+  </target>
+
 </project>
