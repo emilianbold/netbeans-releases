@@ -198,7 +198,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
     * @param ev ignored
     */
     public void actionPerformed (java.awt.event.ActionEvent e) {
-        assert false;
+        assert false : "ActionEvt: " + e;
     }
     
     /** Implements <code>ContextAwareAction</code> interface method. */
