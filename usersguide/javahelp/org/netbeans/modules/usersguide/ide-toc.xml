@@ -221,6 +221,7 @@
       <tocitem text="Threads View" target="debug.window.threads"></tocitem>
       <tocitem text="Call Stack View" target="debug.window.callstack"></tocitem>
       <tocitem text="Local Variables View" target="debug.window.variables"></tocitem>
+      <tocitem text="All in One View" target="debug.window.allinone"></tocitem>
       <tocitem text="Watches View" target="debug.window.watches"></tocitem>
       <tocitem text="Classes View" target="debug.window.classes"></tocitem>
       <tocitem text="Breakpoints View" target="debug.window.breakpoints"></tocitem>

@@ -371,6 +371,7 @@
 <mapID target="debug.window.all" url="debug/environment/debug_window.html" />
 <mapID target="debug.window.sessions" url="debug/environment/sessions_view.html" />
 <mapID target="debug.window.breakpoints" url="debug/environment/breakpoints_view.html" />
+<mapID target="debug.window.allinone" url="debug/environment/allinone_view.html" />
 <mapID target="debug.window.threads" url="debug/environment/threads_view.html" />
 <mapID target="debug.window.callstack" url="debug/environment/callstack_view.html" />
 <mapID target="debug.window.classes" url="debug/environment/classes_view.html" />
@@ -450,6 +451,8 @@
 <mapID target="debug.debugger.template" url="debug/debugger/template.html" />
 <mapID target="debug.debugger.assertion" url="debug/debugger/assertion.html" />
 <mapID target="debug.debugger.bootclasspath" url="debug/debugger/bootclasspath.html" />
+<mapID target="debug.debugger.window" url="debug/environment/debug_window.html" />
+
 
 <mapID target="javadoc.jump" url="javadoc/javadoc_jump.html" />
 <mapID target="javadoc.search" url="javadoc/search.html" />
