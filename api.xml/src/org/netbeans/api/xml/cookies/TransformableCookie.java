@@ -40,8 +40,8 @@ public interface TransformableCookie extends Node.Cookie {
      * @param outputResult result of transformation.
      * @param observer optional notifier (<code>null</code> allowed)
      *                 giving judgement details via {@link XMLProcessorDetail}s.
+     * @throws TransformerException if an unrecoverable error occurs during the course of the transformation
      */
-    public void transform (Source transformSource, Result outputResult, CookieObserver observer)
-        throws IOException, TransformerConfigurationException, TransformerException;
+    public void transform (Source transformSource, Result outputResult, CookieObserver observer) throws TransformerException;
     
 }
