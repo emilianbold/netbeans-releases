@@ -122,8 +122,6 @@ public class MakeUpdateDesc extends MatchingTask {
     public void execute () throws BuildException {
         Group root = new Group();
         root.setName("root"); //NOI18N
-        // add fileset from MatchingTask (nested includes/excludes)
-        root.addFileSet(fileset);
         for (int i=0; i < filesets.size(); i++) {
             root.addFileSet((FileSet) filesets.elementAt(i));
         }
