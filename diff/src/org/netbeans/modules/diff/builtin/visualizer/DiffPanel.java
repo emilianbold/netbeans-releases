@@ -882,14 +882,14 @@ public class DiffPanel extends org.openide.windows.TopComponent {
     
     public void addEmptyLines1(int line, int numLines) {
         StyledDocument doc = (StyledDocument) jEditorPane1.getDocument();
-        System.out.println("addEmptyLines1: line = "+line+", numLines = "+numLines); // NOI18N
+        //System.out.println("addEmptyLines1: line = "+line+", numLines = "+numLines); // NOI18N
         addEmptyLines(doc, line, numLines);
         linesComp1.addEmptyLines(line, numLines);
     }
     
     public void addEmptyLines2(int line, int numLines) {
         StyledDocument doc = (StyledDocument) jEditorPane2.getDocument();
-        System.out.println("addEmptyLines2: line = "+line+", numLines = "+numLines); // NOI18N
+        //System.out.println("addEmptyLines2: line = "+line+", numLines = "+numLines); // NOI18N
         addEmptyLines(doc, line, numLines);
         linesComp2.addEmptyLines(line, numLines);
     }
