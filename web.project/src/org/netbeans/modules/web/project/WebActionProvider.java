@@ -75,6 +75,7 @@ class WebActionProvider implements ActionProvider {
         COMMAND_RUN, 
         COMMAND_RUN_SINGLE, 
         COMMAND_DEBUG, 
+        COMMAND_DEBUG_SINGLE, 
         JavaProjectConstants.COMMAND_JAVADOC, 
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_COMPILE,
@@ -100,6 +101,7 @@ class WebActionProvider implements ActionProvider {
             commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
             commands.put(COMMAND_RUN_SINGLE, new String[] {"run"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
+            commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug"}); // NOI18N
             commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
             commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
             commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
@@ -121,6 +123,7 @@ class WebActionProvider implements ActionProvider {
         Properties p;
         String[] targetNames = (String[])commands.get(command);
         
+        //EXECUTION PART
         if (command.equals (COMMAND_RUN) || command.equals (COMMAND_RUN_SINGLE)) {
             if (!isSelectedServer ()) {
                 return;
@@ -154,7 +157,12 @@ class WebActionProvider implements ActionProvider {
                     return;
                 }
             }
-        } else if (command.equals (COMMAND_DEBUG)) {
+            
+        //DEBUGGING PART
+        } else if (command.equals (COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE)) {
+            if (!isSelectedServer ()) {
+                return;
+            }
             if (isDebugged()) {
                 NotifyDescriptor nd;
                 nd = new NotifyDescriptor.Confirmation(
@@ -180,11 +188,29 @@ class WebActionProvider implements ActionProvider {
             }
             
             p = new Properties();
-            p.setProperty("client.urlPart", project.getWebModule().getUrl());
             p.setProperty("jpda.transport", transport);
             p.setProperty("jpda.host", h);
             p.setProperty("jpda.address", address);
+        
+            if (command.equals (COMMAND_DEBUG)) {
+                p.setProperty("client.urlPart", project.getWebModule().getUrl());
+            } else { //COMMAND_DEBUG_SINGLE
+                FileObject[] files = findJsps( context );
+                try {
+                    URLCookie uc = (URLCookie) DataObject.find (files [0]).getCookie (URLCookie.class);
+                    if (uc != null) {
+                        p.setProperty("client.urlPart", uc.getURL ());
+                    } else {
+                        return;
+                    }
+                } catch (DataObjectNotFoundException e) {
+                    ErrorManager.getDefault ().notify (e);
+                    return;
+                }
+            }
             
+            
+        //COMPILATION PART
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] files = findJavaSources( context );
             p = new Properties();
