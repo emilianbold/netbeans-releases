@@ -108,10 +108,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     }
 
     // 1. show the ComponentInspector
-    FormEditor.getComponentInspector().focusForm (getFormManager ());
     boolean isEditingWorkspace = isCurrentWorkspaceEditing ();
     if (!isEditingWorkspace) attachWorkspacesListener ();
-    if (isEditingWorkspace) FormEditor.getComponentInspector().open ();
 
     // 2. open editor
     super.open();
@@ -121,6 +119,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       getFormTopComponent ().open ();
       getFormTopComponent ().requestFocus ();
     }
+
+    FormEditor.getComponentInspector().focusForm (getFormManager ());
+    if (isEditingWorkspace) FormEditor.getComponentInspector().open ();
     
     // clear status line
     TopManager.getDefault ().setStatusText (""); // NOI18N
@@ -444,6 +445,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  40   Gandalf   1.39        1/8/00   Ian Formanek    Fixes problem with 
+ *       corrupted hierarchy in Component Inspector after (re)opening form
  *  39   Gandalf   1.38        1/5/00   Ian Formanek    NOI18N
  *  38   Gandalf   1.37        12/8/99  Pavel Buzek     FormEditor and 
  *       ComponentInspector windows open on Visual workspace
