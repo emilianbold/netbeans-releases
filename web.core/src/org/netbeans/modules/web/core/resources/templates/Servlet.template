@@ -40,7 +40,7 @@ public class Servlet extends HttpServlet {
     throws ServletException, IOException {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
-        /* output your page here
+        /* TODO output your page here
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Servlet</title>");  

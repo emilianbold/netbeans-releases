@@ -23,6 +23,9 @@ import org.apache.tools.ant.types.*;
  */
 public class CustomTask extends Task {
 
+   // TODO customize method names to match custom task
+   // property and type (handled by inner class) names
+
     /* For a simple option:
     private boolean opt;
     public void setOpt(boolean b) {
@@ -147,8 +150,7 @@ public class CustomTask extends Task {
     */
 
     public void execute() throws BuildException {
-        // What the task actually does:
-        // WRITEME
+        // TODO code here what the task actually does:
 
         // To log something:
         // log("Some message");

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="all" name="changeme">
     <target name="all">
-        <!-- WRITEME -->
+        <!-- TODO define script. See Help menu or http://ant.apache.org/ -->
     </target>
 </project>
