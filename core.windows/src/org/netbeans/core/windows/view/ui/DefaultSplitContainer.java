@@ -91,7 +91,9 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
     
     public boolean isActive() {
         Window window = SwingUtilities.getWindowAncestor(panel);
-        return window.isActive();
+        // #54791 and #56613 - just a doublecheck, IMHO should not happen anymore
+        // after the winsys reenetrancy fix.
+        return window != null ? window.isActive() : false;
     }
 
     protected boolean isAttachingPossible() {
