@@ -29,7 +29,7 @@ import javax.swing.border.*;
 import org.openide.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
-import org.openide.loaders.DataObject;
+import org.openide.loaders.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import com.netbeans.developer.modules.loaders.form.FormLoaderSettings;
@@ -146,6 +146,8 @@ public final class BeanInstaller extends Object {
     while (it.hasNext()) {
       String key = (String) it.next();
       String value = ((Attributes) entries.get(key)).getValue("Java-Bean");
+//System.out.println ("Key: >"+key+"<");
+//System.out.println ("Value: >"+value+"<");
       if ((value != null) && value.equalsIgnoreCase("True")) {
         if (key.endsWith(".class")) {
           String wholeName = key.substring(0, key.length() - 6).replace('/', '.').replace('\\', '.');
@@ -161,6 +163,24 @@ public final class BeanInstaller extends Object {
             name = wholeName.substring(lastDot + 1);
           }
           FileObject fo = jar.find(pack, name, "class");
+          if (fo != null) {
+            foundJB.add(fo);
+          }
+        } else if (key.endsWith(".ser")) {
+          String wholeName = key.substring(0, key.length() - 4).replace('/', '.').replace('\\', '.');
+          int lastDot = wholeName.lastIndexOf('.');
+          String pack;
+          String name;
+          if (lastDot == -1) {
+            pack = "";
+            name = wholeName;
+          }
+          else {
+            pack = wholeName.substring(0, lastDot);
+            name = wholeName.substring(lastDot + 1);
+          }
+          FileObject fo = jar.find(pack, name, "ser");
+//System.out.println ("Find fo: >"+fo+"<"+ ", : "+pack+", "+name);
           if (fo != null) {
             foundJB.add(fo);
           }
@@ -207,11 +227,16 @@ public final class BeanInstaller extends Object {
       Object obj = it.next();
       String name = null;
       if (obj instanceof FileObject) {
-        name = ((FileObject)obj).getPackageName('.');
+        if ("class".equals (((FileObject)obj).getExt ())) {
+          name = ((FileObject)obj).getPackageName('.');
+          if (name != null) createInstance(category, name, null);
+        } else {
+          createShadow (category, (FileObject)obj);
+        }
       } else if (obj instanceof InstanceCookie) {
         name = ((InstanceCookie)obj).instanceName ();
+        if (name != null) createInstance(category, name, null);
       } 
-      if (name != null) createInstance(category, name, null);
     }
   }
 
@@ -230,6 +255,18 @@ public final class BeanInstaller extends Object {
         jar.setHidden(true);
         rep.addFileSystem(jar);
       }
+    }
+  }
+
+  private static void createShadow (FileObject folder, FileObject original) {
+    try {
+      DataObject originalDO = DataObject.find (original);
+//      System.out.println ("createShadow: "+folder + ", : " + original +", : "+originalDO);
+      if (originalDO != null) {
+        new DataShadow (DataFolder.findFolder (folder), originalDO);
+      }
+    } catch (IOException e) {
+      TopManager.getDefault ().notifyException (e);
     }
   }
 
@@ -316,8 +353,14 @@ public final class BeanInstaller extends Object {
     {
       File f = chooser.getSelectedFile();
       lastDirectory = chooser.getCurrentDirectory();
-      if ((f != null) && (f.isFile()) && f.getName ().endsWith(JAR_EXT)) {
-        return f;
+      if ((f != null) && f.isFile()) {
+        if (f.getName ().endsWith(JAR_EXT)) {
+          return f;
+        } else {
+          TopManager.getDefault().notify(new NotifyDescriptor.Message(
+            bundle.getString("MSG_noBeansInJar"), NotifyDescriptor.INFORMATION_MESSAGE)
+          );
+        }
       }
     }
     return null;
@@ -473,6 +516,9 @@ public final class BeanInstaller extends Object {
             clPack = token.substring(0, lastDot);
           }
           FileObject fo = jar.find(clPack, clName, "class");
+          if (fo == null) { // if not found, try ser
+            fo = jar.find(clPack, clName, "ser");
+          }
           if (fo != null) {
             Iterator it = list.iterator ();
             while (it.hasNext()) {
@@ -484,6 +530,8 @@ public final class BeanInstaller extends Object {
           }
         }
         finishInstall(jar, dest, paletteCategory);
+      } else {
+        finishInstall(jar, list, paletteCategory);
       }
       return true;
     }
@@ -627,6 +675,11 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  18   Gandalf   1.17        9/26/99  Ian Formanek    Fixed bug 4018 - If a 
+ *       JAR archive is added to the beans folder, the beans are not 
+ *       automatically installed on IDE startup if they are not explicitly 
+ *       mentioned in the beans.properties file. and bug 1906 - Bean Installer 
+ *       should better notify if selected file does not contain any beans.
  *  17   Gandalf   1.16        9/23/99  Ian Formanek    Better notification in 
  *       case that the JAR Archive does not contain any JavaBeans.
  *  16   Gandalf   1.15        9/9/99   Ian Formanek    Exceptions notification
