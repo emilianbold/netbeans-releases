@@ -63,6 +63,7 @@ import org.netbeans.core.execution.TopSecurityManager;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleManager;
 import org.netbeans.core.modules.ModuleSystem;
+import org.netbeans.core.windows.util.WindowUtils;
 import org.openide.xml.EntityCatalog;
 import org.openide.loaders.Environment;
 
@@ -692,6 +693,8 @@ public abstract class NbTopManager extends TopManager {
         try {
             if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog(null, false) ) {
                 if (getModuleSystem().shutDown()) {
+                    // hide windows explicitly, they are of no use during exit process
+                    WindowUtils.hideAllFrames();
                     try {
                         // save project
                         NbProjectOperation.storeLastProject ();
