@@ -23,11 +23,11 @@ import org.openide.nodes.Node;
 import org.openide.text.PositionBounds;
 
 
-/** Base class for representations of elements in the
-* properties files.
-*
-* @author Petr Jiricka
-*/
+/** 
+ * Base class for representations of elements in properties files.
+ *
+ * @author Petr Jiricka
+ */
 public abstract class Element extends Object implements Serializable {
 
     /** Property change support */
@@ -56,10 +56,10 @@ public abstract class Element extends Object implements Serializable {
     }
 
     /** Fires property change event.
-    * @param name property name
-    * @param o old value
-    * @param n new value
-    */
+     * @param name property name
+     * @param o old value
+     * @param n new value
+     */
     protected final void firePropertyChange(String name, Object o, Object n) {
         if (support != null) {
             support.firePropertyChange (name, o, n);
@@ -87,8 +87,8 @@ public abstract class Element extends Object implements Serializable {
     }
 
     /** Prints this element (and all its subelements)
-    *   by calling <code>bounds.setText(...)</code>
-    */
+     *   by calling <code>bounds.setText(...)</code>
+     */
     public void print() {
         try {
             bounds.setText(printString());
@@ -102,19 +102,19 @@ public abstract class Element extends Object implements Serializable {
     }
 
     /** Get a string representation of the element for printing.
-    * @return the string
-    */
+     * @return the string
+     */
     public abstract String printString();
 
     /** Get a value string of the element.
-    * @return the string
-    */
+     * @return the string
+     */
     public String toString() {
         return (bounds == null) ? "(no bounds)" : "(" + bounds.getBegin().getOffset() + ", " + bounds.getEnd().getOffset() + ")"; // NOI18N
     }
 
     
-    /** Nested class, general for basic elements, which contain value directly */
+    /** General class for basic elements, which contain value directly. */
     public static abstract class Basic extends Element {
 
         /** Parsed value of the element */
@@ -127,23 +127,23 @@ public abstract class Element extends Object implements Serializable {
         }
 
         /** Updates the element fields. This method is called after reparsing.
-        * @param bounds the carrier of new information.
-        */
+         * @param bounds the carrier of new information.
+         */
         void update(Element elem) {
             super.update(elem);
             this.value = ((Basic)elem).value;
         }
 
         /** Get a string representation of the element.
-        * @return the string + bounds
-        */
+         * @return the string + bounds
+         */
         public String toString() {
             return value + "   " + super.toString(); // NOI18N
         }
 
         /** Get a value of the element.
-        * @return the string
-        */
+         * @return the string
+         */
         public String getValue() {
             return value;
         }
@@ -156,7 +156,7 @@ public abstract class Element extends Object implements Serializable {
     } // End of nested class Basic.
 
 
-    /** Nested class for key elements. */
+    /** Class representing key element in properties file. */
     public static class KeyElem extends Basic {
 
         /** Generated serial version UID. */
@@ -179,7 +179,7 @@ public abstract class Element extends Object implements Serializable {
     } // End of nested class KeyElem.
     
 
-    /** Nested class for value elements. */
+    /** Class representing value element in properties files. */
     public static class ValueElem extends Basic {
 
         /** Generated serial version UID. */
@@ -199,7 +199,7 @@ public abstract class Element extends Object implements Serializable {
         }
     } // End of nested class ValueElem.
 
-    /** Nested class for comment elements. <code>null</code> values of the string are legal and indicate that the comment is empty. */
+    /** Class representing comment element in properties files. <code>null</code> values of the string are legal and indicate that the comment is empty. */
     public static class CommentElem extends Basic {
 
         /** Genererated serial version UID. */
@@ -252,9 +252,9 @@ public abstract class Element extends Object implements Serializable {
 
 
     /** 
-    * Nested class properties file elements, each of them contains a comment (preceding the property),
-    * a key and a value.
-    */
+     * Class representing element in  properties file. Each element contains comment (preceding the property),
+     * key and value subelement.
+     */
     public static class ItemElem extends Element implements Node.Cookie {
 
         /** Key element.  */
@@ -375,11 +375,13 @@ public abstract class Element extends Object implements Serializable {
         }
 
         /** Set the value of this item
-        *  @param newValue the new value
-        */                        
+         *  @param newValue the new value
+         */                        
         public void setValue(String newValue) {
             String oldValue = value.getValue();
             if (!oldValue.equals(newValue)) {
+                // Reprint key as well for the case it's alone yet and doesn't have seprator (= : or whitespace)
+                key.print();
                 value.setValue(newValue);
                 getParent().itemChanged(this);
                 this.firePropertyChange(PROP_ITEM_VALUE, oldValue, newValue);
@@ -392,8 +394,8 @@ public abstract class Element extends Object implements Serializable {
         }
 
         /** Set the comment for this item
-        *  @param newComment the new comment
-        */                        
+         *  @param newComment the new comment
+         */                        
         public void setComment(String newComment) {
             String oldComment = comment.getValue();
             if (!oldComment.equals(newComment)) {
