@@ -72,7 +72,7 @@ public class SetSystemPropertiesAction extends WizardAction {
                 logEvent(this, Log.DBG,"-- installedJRE NOT FOUND");
             }
 	}
-        //It is used to create file 'nb40/conf
+        //It is used to create file 'nb4.1/config/productid'
         Util.setStringPropertyValue("ProductID","NBJDK");
     }
 
