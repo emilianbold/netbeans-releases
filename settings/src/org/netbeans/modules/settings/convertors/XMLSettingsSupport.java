@@ -121,7 +121,7 @@ final class XMLSettingsSupport {
             sb.append(" spec=\"").append(spec.toString()).append('"');// NOI18N
         }
         sb.append("/>"); // NOI18N
-        pw.print(sb.toString());
+        pw.println(sb.toString());
     }
     
     
