@@ -22,7 +22,7 @@ workspaceswitcher
 -->
 
 <project name="nbbuild" default="all" basedir=".">
-<!--  <property name="build.sysclasspath" value="ignore"/>-->
+  <property name="build.sysclasspath" value="ignore"/>
 
   <!-- To make people happy who want to do `ant clean all': -->
   <target name="all" depends="build,sanity-check" description="Build the IDE and run a sanity check."/>
@@ -318,7 +318,7 @@ workspaceswitcher
     <ant dir="../javacvs" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html">
+  <target name="all-web" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html, all-jarpackager, all-debuggercore">
     <echo message="Building module web..."/>
     <ant dir="../web" target="netbeans"/>
   </target>
