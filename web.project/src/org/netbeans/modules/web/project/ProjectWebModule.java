@@ -45,11 +45,13 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public static final String FOLDER_CLASSES = "classes";//NOI18N
     public static final String FOLDER_LIB     = "lib";//NOI18N
     public static final String FILE_DD        = "web.xml";//NOI18N
-    
+
     private WebProject project;
     private AntProjectHelper helper;
     private Set versionListeners = null;
     private String fakeServerInstId = null; // used to get access to properties of other servers
+
+    private long notificationTimeout = 0; // used to suppress repeating the same messages
 
     ProjectWebModule (WebProject project, AntProjectHelper helper) {
         this.project = project;
@@ -64,40 +66,53 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
         FileObject dd = webInfFo.getFileObject (FILE_DD);
         if (dd == null) {
-            DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebXmlNotFound", webInfFo.getPath()),
-                                             NotifyDescriptor.ERROR_MESSAGE));
+            showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebXmlNotFound", //NOI18N
+                    webInfFo.getPath()));
         }
         return dd;
     }
 
     public String getContextPath () {
+        if(getDeploymentDescriptor() == null) {
+            return null;
+        }
         return getConfigSupport ().getWebContextRoot ();
     }
     
     public void setContextPath (String path) {
-        getConfigSupport ().setWebContextRoot (path);
+        if (getDeploymentDescriptor() != null) {
+            getConfigSupport ().setWebContextRoot (path);
+        }
     }
     
     public String getContextPath (String serverInstId) {
         fakeServerInstId = serverInstId;
-        String result = getConfigSupport ().getWebContextRoot ();
+        String result = getContextPath();
         fakeServerInstId = null;
         return result;
     }
     
     public void setContextPath (String serverInstId, String path) {
         fakeServerInstId = serverInstId;
-        getConfigSupport ().setWebContextRoot (path);
+        setContextPath(path);
         fakeServerInstId = null;
     }
     
+    private void showErrorMessage(String message) {
+        if(new Date().getTime() > notificationTimeout) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            // set timeout to suppress the same messages during next 20 seconds (feel free to adjust the timeout
+            // using more suitable value)
+            notificationTimeout = new Date().getTime() + 20000;
+        }
+    }
+
     public FileObject getDocumentBase () {
-        FileObject docBase = getFileObject("web.docbase.dir"); // NOI18N
+        FileObject docBase = getFileObject(WebProjectProperties.WEB_DOCBASE_DIR);
         if (docBase == null) {
-            DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(ProjectWebModule.class,"MSG_DocBase_Corrupted"),
-                                             NotifyDescriptor.ERROR_MESSAGE));
+            String path = helper.resolvePath(helper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR));
+            showErrorMessage(NbBundle.getMessage(ProjectWebModule.class, "MSG_DocBase_Corrupted", //NOI18N
+                    project.getName(), path));
         }
         return docBase;
     }
@@ -105,7 +120,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public ClassPath getJavaSources () {
         ClassPathProvider cpp = (ClassPathProvider) project.getLookup ().lookup (ClassPathProvider.class);
         if (cpp != null) {
-            return cpp.findClassPath (getFileObject ("src.dir"), ClassPath.SOURCE);
+            return cpp.findClassPath (getFileObject ("src.dir"), ClassPath.SOURCE); //NOI18N
         }
         return null;
     }
@@ -117,9 +132,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
         FileObject webInf = documentBase.getFileObject (FOLDER_WEB_INF);
         if (webInf == null) {
-                DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted", documentBase.getPath()),
-                                             NotifyDescriptor.ERROR_MESSAGE));
+                showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted", //NOI18N
+                        documentBase.getPath()));
         }
         return webInf;
     }
@@ -157,11 +171,41 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter getModuleChangeReporter () {
         return this;
     }
-    
+
+    public FileObject findDeploymentConfigurationFile(String name) {
+        if (name == null) {
+            return null;
+        }
+        name = getConfigSupport().getContentRelativePath(name);
+        if (name == null) {
+            return null;
+        }
+        FileObject documentBase = getDocumentBase();
+        if (documentBase == null) {
+            return null;
+        }
+        return documentBase.getFileObject(name);
+    }
+
+    public File getDeploymentConfigurationFile(String name) {
+        if (name == null) {
+            return null;
+        }
+        String path = getConfigSupport().getContentRelativePath(name);
+        if (path == null) {
+            path = name;
+        }
+        FileObject documentBase = getDocumentBase();
+        if (documentBase == null) {
+            return null;
+        }
+        return new File(FileUtil.toFile(documentBase), path);
+    }
+
     public FileObject getModuleFolder () {
         return getDocumentBase ();
     }
-    
+
     public boolean useDefaultServer () {
         return false;
     }
@@ -213,8 +257,10 @@ public final class ProjectWebModule extends J2eeModuleProvider
 
     public void uncacheDescriptors() {
         this.getConfigSupport().resetStorage();
+        // reset timeout when closing the project
+        notificationTimeout = 0;
     }
-    
+
     private WebApp getWebApp () {
         try {
             FileObject deploymentDescriptor = getDeploymentDescriptor ();
@@ -288,7 +334,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public void setUrl (String url) {
-        throw new UnsupportedOperationException ("Cannot customize URL of web module");
+        throw new UnsupportedOperationException ("Cannot customize URL of web module"); //NOI18N
     }
 
     public boolean ejbsChanged () {

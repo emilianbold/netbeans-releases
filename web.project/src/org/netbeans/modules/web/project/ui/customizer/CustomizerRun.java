@@ -84,6 +84,8 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
                     webProperties.new PropertyInfo(propertyDescriptor, contextPath, contextPath);
             webProperties.initProperty(WebProjectProperties.CONTEXT_PATH, propertyInfo);
         }
+        // disable editing context path if deployment descriptor does not exist
+        jTextFieldContextPath.setEnabled(wm.getDeploymentDescriptor() != null);
 
         vps.register(jTextFieldContextPath, WebProjectProperties.CONTEXT_PATH);
 
