@@ -1206,7 +1206,7 @@
 		infoclass = org.netbeans.modules.db.explorer.infos.TableNodeInfo;
 		creator = tablelist;
 		iconbase = "/org/netbeans/modules/db/resources/table";
-		children = (ilist);
+		children = (ilist,fklist);
 /*		resultset = (catalog,schema,name,type,remarks); */
 		resultset = (catalog,schema,name,type);
 		options = {
@@ -1661,23 +1661,13 @@
 		class = org.netbeans.modules.db.explorer.nodes.ColumnNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ForeignColumnNodeInfo;
 		iconbase = "/org/netbeans/modules/db/resources/columnForeign";
+		resultset = (unused,pktable_schem,pktable_table,pkcolumn_name,unused,unused,unused,name,key_seq);
 		options = {
 			cut = NO;
 			copy = NO;
-			delete = YES;
+			delete = NO;
 		};
 		actions = (
-			{
-				name = "AddColumn";
-				class = org.netbeans.modules.db.explorer.actions.AddColumnAction;
-				perm = "write";
-				node = table;
-			},
-			delimiter,
-			{
-				name = "ViewData";
-				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
-			},
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
@@ -1699,13 +1689,6 @@
 				perm = "write";
 				system = YES;
 			},
-			delimiter,
-			{
-				name = "RemoveColumn";
-				class = org.openide.actions.DeleteAction;
-				perm = "write";
-				system = YES;
-			}
 		);
 		properties = (
 			{
@@ -1713,52 +1696,28 @@
 				writable = NO;
 			},
 			{
-				code = type;
-				name = "Type";
+				code = pktable_schem;
+				name = "Referenced schema";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
-				code = isnullable;
-				name = "Null";
-				class = java.lang.Boolean;
-				writable = NO;
-			},
-			{
-				code = datatype;
-				name = "Datatype";
-				class = java.lang.Integer;
-				writable = YES;
-			},
-			{
-				code = coldef;
-				name = "Default";
+				code = pktable_table;
+				name = "Referenced table";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
-				code = columnsize;
-				name = "ColumnSize";
-				class = java.lang.Integer;
-				writable = NO;
-			},
-			{
-				code = decdigits;
-				name = "DecimalDigits";
-				class = java.lang.Integer;
-				writable = NO;
-			},
-			{
-				code = ordpos;
-				name = "Position";
-				class = java.lang.Integer;
-				writable = NO;
-			},
-			{
-				code = remarks;
-				name = "Remarks";
+				code = pkcolumn_name;
+				name = "Referenced column";
 				class = java.lang.String;
-				writable = YES;
+				writable = NO;
+			},
+			{
+				code = key_seq;
+				name = "Position in foreign key";
+				class = java.lang.Integer;
+				writable = NO;
 			}
 		);
 	};
@@ -1772,6 +1731,27 @@
 		properties = ();
 		options = {};
 		actions = ();
+	};
+
+	fklist = {
+		name = "Foreign keys";
+		class = org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.ForeignKeyListNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/folder";
+		children = ();
+		properties = ();
+		options = {
+			cut = NO;
+			copy = NO;
+			delete = NO;
+		};
+		actions = (
+			{
+				name = "ExecuteCommand";
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
+			},
+			delimiter
+		);
 	};
 
 	ilist = {
@@ -1935,6 +1915,49 @@
 				writable = NO;
 			}
 		);
+	};
+
+	fkey = {
+		name = "Foreign Key";
+		class = org.netbeans.modules.db.explorer.nodes.ForeignKeyNode;
+		infoclass = org.netbeans.modules.db.explorer.infos.ForeignKeyNodeInfo;
+		iconbase = "/org/netbeans/modules/db/resources/foreignKey";
+		resultset = (unused,unused,unused,unused,unused,unused,unused,unused,unused,unused,unused,name);
+		children = ();
+		options = {
+			cut = NO;
+			copy = NO;
+			delete = NO;
+		};
+		actions = (
+			{
+				name = "ExecuteCommand";
+				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
+			},
+			delimiter,
+			{
+				name = "Refresh";
+				class = org.netbeans.modules.db.explorer.actions.RefreshChildrenAction;
+			},
+			delimiter,
+			{
+				name = "Cut";
+				class = org.openide.actions.CutAction;
+				system = YES;
+			},
+			{
+				name = "Copy";
+				class = org.openide.actions.CopyAction;
+				system = YES;
+			},
+			{
+				name = "Paste";
+				class = org.openide.actions.PasteAction;
+				perm = "write";
+				system = YES;
+			}
+		);
+		properties = ();
 	};
 
 	ekey = {
