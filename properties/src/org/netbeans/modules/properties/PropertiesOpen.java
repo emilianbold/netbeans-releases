@@ -225,6 +225,8 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     private transient PropertyChangeListener cookieL;
     private transient JPanel mainPanel;
 
+    private static Image icon = null;
+
     /** The string which will be appended to the name of top component
     * when top component becomes modified */
     protected String modifiedAppendix = " *";
@@ -242,6 +244,13 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       initMe();
     }
     
+    public Image getIcon () {
+      if (icon == null)
+        icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource (
+          "/com/netbeans/developer/modules/loaders/properties/propertiesEditorMode.gif"));      
+      return icon;
+    }
+
     private void initMe() {
       // add to OpenSupport - patch for a bug in deserialization
       dobj.getOpenSupport().setRef(getReference());
