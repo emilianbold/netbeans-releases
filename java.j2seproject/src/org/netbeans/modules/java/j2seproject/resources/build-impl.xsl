@@ -205,7 +205,9 @@ is divided into following sections:
                             <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
                             <xsl:attribute name="debug">@{debug}</xsl:attribute>
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
-                            <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                            <xsl:if test ="not(/p:project/p:configuration/j2se:data/j2se:explicit-platform/@explicit-source-supported ='false')">                            
+                                <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                            </xsl:if>
                             <xsl:attribute name="target">${javac.target}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
                                 <xsl:attribute name="fork">yes</xsl:attribute>
@@ -591,17 +593,22 @@ is divided into following sections:
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}"/>
                 <!-- XXX do an up-to-date check first -->
-                <javadoc destdir="${{dist.javadoc.dir}}" source="${{javac.source}}"
-                         notree="${{javadoc.notree}}"
-                         use="${{javadoc.use}}"
-                         nonavbar="${{javadoc.nonavbar}}"
-                         noindex="${{javadoc.noindex}}"
-                         splitindex="${{javadoc.splitindex}}"
-                         author="${{javadoc.author}}"
-                         version="${{javadoc.version}}"
-                         windowtitle="${{javadoc.windowtitle}}"
-                         private="${{javadoc.private}}" >
-                         <!-- encoding="${{javadoc.encoding}}" -->
+                <javadoc>
+                
+                    <xsl:attribute name="destdir">${dist.javadoc.dir}</xsl:attribute>
+                    <xsl:if test ="not(/p:project/p:configuration/j2se:data/j2se:explicit-platform/@explicit-source-supported ='false')">                            
+                        <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                    </xsl:if>
+                    <xsl:attribute name="notree">${javadoc.notree}</xsl:attribute>
+                    <xsl:attribute name="use">${javadoc.use}</xsl:attribute>
+                    <xsl:attribute name="nonavbar">${javadoc.nonavbar}</xsl:attribute>
+                    <xsl:attribute name="noindex">${javadoc.noindex}</xsl:attribute>
+                    <xsl:attribute name="splitindex">${javadoc.splitindex}</xsl:attribute>
+                    <xsl:attribute name="author">${javadoc.author}</xsl:attribute>
+                    <xsl:attribute name="version">${javadoc.version}</xsl:attribute>
+                    <xsl:attribute name="windowtitle">${javadoc.windowtitle}</xsl:attribute>
+                    <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
+                    
                     <classpath>
                         <path path="${{javac.classpath}}"/>
                     </classpath>
@@ -613,7 +620,7 @@ is divided into following sections:
                             <path path="${{platform.bootcp}}"/>
                         </bootclasspath>
                     </xsl:if>
-                    <fileset dir="${{src.dir}}"/>
+                    <fileset dir="${{src.dir}}"/>                
                 </javadoc>
             </target>
 
