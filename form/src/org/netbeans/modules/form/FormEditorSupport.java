@@ -732,6 +732,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                     componentName.trim();
                     boolean ext = componentName.endsWith(".java"); // NOI18N
 
+                    FormEditorSupport selectedForm =
+                        ComponentInspector.getInstance().getFocusedForm();
+
                     Iterator it = openForms.values().iterator();
                     while (it.hasNext()) {
                         FormEditorSupport fes = (FormEditorSupport) it.next();
@@ -739,8 +742,11 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                         if (ext)
                             formName += ".java"; // NOI18N
                         if (formName.equals(componentName)) {
-                            fes.gotoForm();
-                            ComponentInspector.getInstance().focusForm(fes);
+                            // this is the form for the activated TopComponent
+                            if (fes != selectedForm) {
+                                fes.gotoForm();
+                                ComponentInspector.getInstance().focusForm(fes);
+                            }
                             break;
                         }
                     }
@@ -768,7 +774,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     public void gotoForm() {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                if (formModel.getFormDesigner().isOpened())
+                if (formModel != null && formModel.getFormDesigner().isOpened())
                     formModel.getFormDesigner().requestVisible();
             }
         });
