@@ -107,6 +107,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                
 
     public void changeGUI(ViewEvent[] viewEvents, WindowSystemSnapshot snapshot) {
+        try {
         if (reentryFlag) {
             // winsys is not reentrant. having the later snapshot proceesed before the
             // original one causes problems.
@@ -457,8 +458,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             TopComponent tc = (TopComponent)it.next();
             WindowManagerImpl.getInstance().componentHidden(tc);
         }
-        
-        reentryFlag = false;
+        } finally {
+            reentryFlag = false;
+        }
     }
     
     /** Whether the window system should show or hide its GUI. */
