@@ -274,6 +274,11 @@ workspaceswitcher
     <echo message="Building module vcscore..."/>
     <ant dir="../vcscore" target="netbeans"/>
   </target>
+  <target name="all-javacvs" depends="all-openide,all-openidex,all-vcscore">
+    <echo message="Building module javacvs..."/>
+    <ant dir="../javacvs" target="netbeans"/>
+  </target>
+
   <!-- XXX illegal dependence on core! -->
   <target name="all-web" depends="all-openide,all-openidex,all-java,all-core,all-editor">
     <echo message="Building module web..."/>
