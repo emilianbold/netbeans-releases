@@ -80,7 +80,7 @@ public class HtmlLoader extends UniFileLoader {
       }
       
       protected com.netbeans.ide.nodes.Node createNodeDelegate () {
-        DataNode n = new DataNode (MultiDataObject.this, Children.LEAF);
+        DataNode n = new DataNode (Obj.this, Children.LEAF);
         n.setIconBase ("/com/netbeans/developer/modules/loaders/html/htmlObject");
         return n;
       }
@@ -173,6 +173,7 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  10   Gandalf   1.9         3/17/99  Ian Formanek    Made compilable
 *  9    Gandalf   1.8         3/17/99  Jaroslav Tulach No setIconBase
 *  8    Gandalf   1.7         3/14/99  Jaroslav Tulach Change of 
 *       MultiDataObject.Entry.
