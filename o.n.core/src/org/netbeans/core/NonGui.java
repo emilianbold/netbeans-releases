@@ -471,7 +471,14 @@ public class NonGui extends NbTopManager implements Runnable {
         // -----------------------------------------------------------------------------------------------------
         // Upgrade
         try {
-            if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+            boolean dontshowisw = false;
+            File dontshowiswfile = new java.io.File(new java.io.File(System.getProperty("netbeans.user"), "system"), "dontshowisw");
+            if (dontshowiswfile.exists()) {
+                dontshowiswfile.delete();
+                dontshowisw = true;
+            }
+            
+            if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null) && !dontshowisw) {
                 System.setProperty("import.canceled", "false"); // NOI18N
                 
                 
