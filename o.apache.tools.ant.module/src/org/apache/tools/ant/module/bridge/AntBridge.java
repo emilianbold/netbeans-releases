@@ -380,7 +380,7 @@ public final class AntBridge {
             String resource = cnb.replace('.', '/') + "/antlib.xml"; // NOI18N
             URL antlib = l.getResource(resource);
             if (antlib == null) {
-                throw new IOException("Could not find " + antlib + " in ant/nblib/" + cnb.replace('.', '-') + ".jar"); // NOI18N
+                throw new IOException("Could not find " + resource + " in ant/nblib/" + cnb.replace('.', '-') + ".jar"); // NOI18N
             }
             Document doc;
             try {
