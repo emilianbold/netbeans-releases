@@ -1064,10 +1064,17 @@ implements Serializable, DataObject.Container {
 
         public Node.Cookie getCookie (Class clazz) {
             if (clazz == org.openide.nodes.Index.class || clazz == Index.class) {
-                return new Index (DataFolder.this, this);
-            } else {
-                return super.getCookie (clazz);
+                //#33130 - enable IndexCookie only on SystemFileSystem
+                try {
+                    if (DataFolder.this.getPrimaryFile().getFileSystem() == 
+                            Repository.getDefault().getDefaultFileSystem()) {
+                        return new Index (DataFolder.this, this);
+                    }
+                } catch (FileStateInvalidException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
             }
+            return super.getCookie (clazz);
         }
 
         /* Adds properties for sorting.
