@@ -68,6 +68,7 @@ import org.netbeans.modules.editor.options.OptionUtilities;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.MacrosEditorPanel;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -676,6 +677,7 @@ public class NbEditorKit extends ExtKit {
                     if (itemText != null) {
                         item = new JMenuItem(itemText);
                         item.addActionListener(a);
+                        Mnemonics.setLocalizedText(item, itemText);
                         addAcceleretors(a, item, target);
                         item.setEnabled(a.isEnabled() && foldingEnabled);
                         Object helpID = a.getValue ("helpID");
