@@ -17,6 +17,7 @@ package org.netbeans.modules.form;
 import java.beans.*;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.awt.*;
 
 import org.openide.TopManager;
 import org.openide.util.HelpCtx;
@@ -94,7 +95,11 @@ public class PropertyPicker extends javax.swing.JDialog {
         updateButtons();
 
         pack();
-        org.openidex.util.Utilities2.centerWindow(this);
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension dialogSize = getSize();
+        setLocation((screenSize.width - dialogSize.width) / 2,
+                    (screenSize.height - dialogSize.height) / 2);
 
         HelpCtx.setHelpIDString(getRootPane(), PropertyPicker.class.getName());
     }

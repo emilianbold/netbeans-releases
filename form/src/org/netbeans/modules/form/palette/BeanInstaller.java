@@ -37,7 +37,6 @@ import org.openide.util.SharedClassObject;
 
 import org.netbeans.modules.form.FormLoaderSettings;
 import org.netbeans.modules.form.GlobalJarFileSystem;
-import org.netbeans.modules.clazz.ClassDataObject;
 
 /**
  * Bean Installer
@@ -104,14 +103,19 @@ public final class BeanInstaller
 
         ArrayList list = new ArrayList(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
-            DataObject dobj = (DataObject) nodes[i].getCookie(ClassDataObject.class);
-            if (dobj != null)
-                list.add(dobj);
-            else {
-                InstanceCookie ic =
-                    (InstanceCookie) nodes[i].getCookie(InstanceCookie.class);
-                if (ic != null)
+            DataObject dobj = (DataObject)
+                               nodes[i].getCookie(DataObject.class);
+            InstanceCookie ic = (InstanceCookie)
+                                nodes[i].getCookie(InstanceCookie.class);
+
+            if (dobj != null && ic != null) {
+                FileObject fo = dobj.getPrimaryFile();
+                if ("instance".equals(fo.getExt())
+                        || "java".equals(fo.getExt())
+                        || "class".equals(fo.getExt()))
                     list.add(ic);
+                else
+                    list.add(fo);
             }
         }
         installBeans(null, list, cat);
@@ -212,14 +216,6 @@ public final class BeanInstaller
                             name = ((InstanceCookie) obj).instanceName();
                             if (name != null)
                                 createInstance(categoryFolder, name);
-                        }
-                        else if (obj instanceof ClassDataObject) {
-                            try {
-                                ((ClassDataObject)obj).createShadow(
-                                    DataFolder.findFolder(categoryFolder));
-                            } catch (IOException ex) {
-                                TopManager.getDefault().notifyException(ex);
-                            }
                         }
                     }
                 }
