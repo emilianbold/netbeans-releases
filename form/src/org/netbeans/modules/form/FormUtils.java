@@ -313,6 +313,29 @@ public class FormUtils
         { javax.swing.JFrame.class, CLASS_AND_SUBCLASSES,
               "defaultCloseOperation", new Integer(FormProperty.DETACHED_WRITE) }
     };
+    
+    /** Table defining order of dependent properties. */
+    private static Object[][] propertyOrder = {
+        { javax.swing.text.JTextComponent.class,
+            "document", "text" },
+        { javax.swing.JSpinner.class,
+            "model", "editor" },
+        { javax.swing.AbstractButton.class,
+            "action", "actionCommand",
+            "action", "enabled",
+            "action", "mnemonic",
+            "action", "icon",
+            "action", "text",
+            "action", "toolTipText" },
+        { javax.swing.JMenuItem.class,
+            "action", "accelerator" },
+        { javax.swing.JList.class,
+            "model", "selectedIndex",
+            "model", "selectedValues" },
+        { javax.swing.JComboBox.class,
+            "model", "selectedIndex",
+            "model", "selectedItem" }
+    };
 
     /** List of components that should never be containers; some of them are
      * not specified in original Swing beaninfos. */
@@ -944,6 +967,65 @@ public class FormUtils
 
         return sb.toString();
     }
+    
+    static void sortProperties(Node.Property[] properties) {
+        Arrays.sort(properties, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                String n1 =((Node.Property)o1).getDisplayName();
+                String n2 =((Node.Property)o2).getDisplayName();
+                return n1.compareTo(n2);
+            }
+        });
+    }
+    
+    static void reorderProperties(Class beanClass, RADProperty[] properties) {
+        sortProperties(properties);
+        Object[] order = collectPropertiesOrder(beanClass, propertyOrder);
+        for (int i=0; i<order.length/2; i++) {
+            updatePropertiesOrder(properties, (String)order[2*i], (String)order[2*i+1]);
+        }
+    }
+    
+    private static void updatePropertiesOrder(RADProperty[] properties,
+        String firstProp, String secondProp) {
+        int firstIndex = findPropertyIndex(properties, firstProp);
+        int secondIndex = findPropertyIndex(properties, secondProp);
+        if ((firstIndex != -1) && (secondIndex != -1) && (firstIndex > secondIndex)) {
+            // Move the first one before the second
+            RADProperty first = properties[firstIndex];
+            for (int i=firstIndex; i>secondIndex; i--) {
+                properties[i] = properties[i-1];
+            }
+            properties[secondIndex] = first;
+        }
+    }
+    
+    private static int findPropertyIndex(RADProperty[] properties, String property) {
+        int index = -1;
+        for (int i=0; i<properties.length; i++) {
+            if (property.equals(properties[i].getName())) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+    
+    private static Object[] collectPropertiesOrder(Class beanClass, Object[][] table) {
+        java.util.List list = new LinkedList();
+        for (int i=0; i < table.length; i++) {
+            Object[] order = table[i];
+            Class refClass = (Class)order[0];
+
+            if (refClass.isAssignableFrom(beanClass)) {
+                for (int j=1; j<order.length; j++) {
+                    list.add(order[j]);
+                }
+            }
+        }
+        return list.toArray();
+    }
+
 
     // -----------------------------------------------------------------------------
     // Visual utility methods

@@ -999,6 +999,9 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
             }
             else beanProperties2 = new RADProperty[0];
         }
+        
+        FormUtils.reorderProperties(beanClass, beanProperties1);
+        FormUtils.reorderProperties(beanClass, beanProperties2);
 
         knownBeanProperties = new RADProperty[beanProperties1.length
                                               + beanProperties2.length];
@@ -1012,13 +1015,6 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
     private void createEventProperties() {
         EventSetDescriptor[] eventSets = getBeanInfo().getEventSetDescriptors();
-//        Arrays.sort(eventSets, new Comparator() {
-//            public int compare(Object o1, Object o2) {
-//                String n1 =((EventSetDescriptor)o1).getName();
-//                String n2 =((EventSetDescriptor)o2).getName();
-//                return n1.compareTo(n2);
-//            }
-//        });
 
         List eventPropList = new ArrayList(eventSets.length * 5);
 
@@ -1041,6 +1037,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         for (int i=0; i < eventProps.length; i++)
             knownEvents[i] = eventProps[i].getEvent();
 
+        FormUtils.sortProperties(eventProps);
         eventProperties = eventProps;
     }
 
