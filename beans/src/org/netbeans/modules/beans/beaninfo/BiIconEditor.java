@@ -130,7 +130,7 @@ class BiIconEditor extends PropertyEditorSupport {
             else {
                 ClassPath cp = ClassPath.getClassPath( sourceFileObject, ClassPath.SOURCE );                
                 
-                URL url = cp.findResource( string ).getURL();
+                URL url = cp.findResource( string.substring(1) ).getURL();
                 ii = new BiImageIcon(url, string);
             }
         } catch (Throwable e) {
@@ -399,7 +399,7 @@ class BiIconEditor extends PropertyEditorSupport {
             try {
                 if (rbClasspath.isSelected() && s.length() != 0 ) {                    
                     ClassPath cp = ClassPath.getClassPath( sourceFileObject, ClassPath.SOURCE );
-                    FileObject f = cp.findResource( s );
+                    FileObject f = cp.findResource( s.substring(1) );
                     try{
                         ii = new BiImageIcon(f.getURL(), s);
                     }
