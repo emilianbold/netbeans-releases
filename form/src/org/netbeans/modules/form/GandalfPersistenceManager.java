@@ -239,6 +239,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         // find out what's the form base class
+        String formBaseClassName = null;
         Class formBaseClass = null;
         Throwable formBaseClassEx = null;
         try {
@@ -250,10 +251,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     break;
                 }
 
-            if (superclass != null)
+            if (superclass != null) {
+                formBaseClassName = superclass.getFullName();
                 formBaseClass = TopManager.getDefault().currentClassLoader()
-                                           .loadClass(superclass.getFullName());
-            else formBaseClass = Object.class;
+                                           .loadClass(formBaseClassName);
+            }
+            else {
+                formBaseClass = Object.class;
+                formBaseClassName = formBaseClass.getName();
+            }
 
             formModel.setFormBaseClass(formBaseClass);
         }
@@ -292,7 +298,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                                  + substClass.getName());
                     String msg = FormUtils.getFormattedBundleString(
                         "FMT_FormTypeFallsBack", // NOI18N
-                        new Object[] { substClass.getName(),
+                        new Object[] { formBaseClassName,
+                                       substClass.getName(),
                                        new java.io.File(System.getProperty(
                                                                "netbeans.user"), // NOI18N
                                                         "system") }); // NOI18N
@@ -311,12 +318,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (formModel.getFormBaseClass() == null) {
                 // after all, we still cannot determine the form base class
                 String annotation;
-                if (formBaseClass != null) {
+                if (formBaseClassName != null) {
                     // the class from java source can be loaded, but cannot be
                     // used as the form base class; no substitute available
                     annotation = FormUtils.getFormattedBundleString(
                                      "FMT_ERR_InvalidBaseClass", // NOI18N
-                                     new Object[] { formBaseClass.getName() });
+                                     new Object[] { formBaseClassName });
                 }
                 else { // cannot determine form base class at all;
                        // no substitute available

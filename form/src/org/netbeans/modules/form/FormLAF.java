@@ -16,7 +16,7 @@ package org.netbeans.modules.form;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.plaf.metal.*;
-import org.openide.util.Mutex;
+import org.openide.util.*;
 
 /**
  *
@@ -38,31 +38,36 @@ class FormLAF
                                          final Mutex.ExceptionAction act)
         throws Exception
     {
-        return Mutex.EVENT.readAccess(
-            new Mutex.ExceptionAction () {
-                public Object run() throws Exception {
-                    boolean restoreAfter = true;
-                    UIDefaults defaults = UIManager.getDefaults();
-                    synchronized (defaults) {
-                        try {
-                            if (lafclassname.equals(lastLAFName))
-                                restoreAfter = false;
-                            else {
-                                lastLAFName = lafclassname;
-                                useLookAndFeel(lafclassname);
-                                restoreAfter = true;
+        try {
+            return Mutex.EVENT.readAccess(
+                new Mutex.ExceptionAction () {
+                    public Object run() throws Exception {
+                        boolean restoreAfter = true;
+                        UIDefaults defaults = UIManager.getDefaults();
+                        synchronized (defaults) {
+                            try {
+                                if (lafclassname.equals(lastLAFName))
+                                    restoreAfter = false;
+                                else {
+                                    lastLAFName = lafclassname;
+                                    useLookAndFeel(lafclassname);
+                                    restoreAfter = true;
+                                }
+                                return act.run();
                             }
-                            return act.run();
-                        }
-                        finally {
-                            if (restoreAfter) {
-                                useIDELookAndFeel();
-                                lastLAFName = null;
+                            finally {
+                                if (restoreAfter) {
+                                    useIDELookAndFeel();
+                                    lastLAFName = null;
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
+        }
+        catch (MutexException ex) {
+            throw ex.getException();
+        }
     }
     
     private static boolean checkUseIdeLaf() {
