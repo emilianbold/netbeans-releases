@@ -291,7 +291,7 @@ public class BundleEditPanel extends JPanel {
           
         
           textComment.setLineWrap(true);
-            textComment.setRows(2);
+            textComment.setRows(3);
             textComment.setEditable(false);
             textComment.setEnabled(false);
             jScrollPane2.setViewportView(textComment);
@@ -316,7 +316,7 @@ public class BundleEditPanel extends JPanel {
           
         
           textValue.setLineWrap(true);
-            textValue.setRows(2);
+            textValue.setRows(3);
             textValue.setEditable(false);
             textValue.setEnabled(false);
             jScrollPane3.setViewportView(textValue);
@@ -336,7 +336,6 @@ public class BundleEditPanel extends JPanel {
         gridBagConstraints1.gridy = 1;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints1.weightx = 1.0;
-        gridBagConstraints1.weighty = 1.0;
         add(valuePanel, gridBagConstraints1);
         
         
@@ -495,9 +494,11 @@ public class BundleEditPanel extends JPanel {
         /** Overrides superclass method. Adds painting ascending/descending marks for sorted column header. */
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
+            
+            int sortIndex = table.convertColumnIndexToView(obj.getBundleStructure().getSortIndex());
 
-            // If the column is the sorted one draw mark on it header.
-            if(column == obj.getBundleStructure().getSortIndex() ) {
+            // If the column is the sorted one draw mark on its header.
+            if(column == sortIndex ) {
 
                 Color oldColor = g.getColor();
 

@@ -75,14 +75,14 @@ public class PropertiesTableModel extends AbstractTableModel {
             case PropertyBundleEvent.CHANGE_ALL:
                 cancelEditingInTables(getDefaultCancelSelector());
                 // reset all header values as well
-                Object[] list = getListenerList();
+                Object[] list = PropertiesTableModel.super.listenerList.getListenerList();
                 for (int i = 0; i < list.length; i++) {
                     if (list[i] instanceof JTable) {
                         JTable jt = (JTable)list[i];
 
                         for (int j=0 ; j < jt.getColumnModel().getColumnCount(); j++) {
                             TableColumn column = jt.getColumnModel().getColumn(j);
-                            column.setHeaderValue(jt.getModel().getColumnName(j));
+                            column.setHeaderValue(jt.getModel().getColumnName(column.getModelIndex()));
                         }
                     }
                 }
@@ -189,28 +189,27 @@ public class PropertiesTableModel extends AbstractTableModel {
             return new StringPair(item.getComment(), item.getValue());
     }
 
-    /** Helper method. By-passes strange error of JVM when accessing inherited field in non-static inner class. */
-    private Object[] getListenerList() {
-        return listenerList.getListenerList();
-    }
-    
-    /** Returns the name for a column */
-    public String getColumnName(final int column) {
+    /** Gets name for column.
+     * @param column model index of column
+     * @return name for column */
+    public String getColumnName(int column) {
         String leading;
+        
+        // Construct label.
         if(column == obj.getBundleStructure().getSortIndex())
             // Place for drawing ascending/descending mark in renderer.
             leading = "     "; // NOI18N
         else
             leading = " "; // NOI18N
         
-        switch (column) {
-        case 0:
-            return leading+NbBundle.getBundle(PropertiesTableModel.class).getString("LAB_KeyColumnLabel");
-        default:
-            if (obj.getBundleStructure().getEntryCount() == 1)
-                return leading+NbBundle.getBundle(PropertiesTableModel.class).getString("LBL_ColumnValue");
-            else
-                return leading+Util.getLocaleLabel (obj.getBundleStructure().getNthEntry(column - 1));
+        switch(column) {
+            case 0:
+                return leading+NbBundle.getBundle(PropertiesTableModel.class).getString("LAB_KeyColumnLabel");
+            default:
+                if(obj.getBundleStructure().getEntryCount() == 1)
+                    return leading+NbBundle.getBundle(PropertiesTableModel.class).getString("LBL_ColumnValue");
+                else
+                    return leading+Util.getLocaleLabel(obj.getBundleStructure().getNthEntry(column - 1));
         }
     }
 
@@ -299,7 +298,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                 JTable jt = (JTable)list[i];
                 try {
                     TableColumn column = jt.getColumnModel().getColumn(index);
-                    column.setHeaderValue(jt.getModel().getColumnName(index));
+                    column.setHeaderValue(jt.getModel().getColumnName(column.getModelIndex()));
                 } catch (ArrayIndexOutOfBoundsException abe) {
                     // only catch exception
                 }
