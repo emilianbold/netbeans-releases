@@ -86,8 +86,9 @@ public class BaseTest extends JellyTestCase {
         String packageName = "data";
         FormNode node = new FormNode("src|data|clear_JFrame"); 
         node.open();
-        ewo = new EditorWindowOperator();
-        editor = ewo.getEditor("clear_JFrame");
+        editor = new EditorOperator("clear_JFrame");
+        //ewo = new EditorWindowOperator();
+        //editor = ewo.getEditor("clear_JFrame");
 
         formDesigner = new FormDesignerOperator(fileName);
         palette = new ComponentPaletteOperator();
@@ -286,7 +287,8 @@ public class BaseTest extends JellyTestCase {
     
     
     boolean checkEditor(String regexp) {
-        editor = ewo.getEditor("clear_JFrame");
+        //editor = ewo.getEditor("clear_JFrame");
+        editor = new EditorOperator("clear_JFrame");
         sleep(300);
         String editortext = editor.getText();
         // text without escape characters
