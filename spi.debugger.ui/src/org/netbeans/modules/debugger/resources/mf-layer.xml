@@ -83,6 +83,13 @@
             <attr name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance/org-openide-actions-AddWatchAction.instance" boolvalue="true" />
 
         </folder>
+
+        <folder name="View">
+            <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance" />
+            <attr name="org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance/org-netbeans-core-actions-ExecutionViewAction.instance" boolvalue="true" />
+        </folder>
+
     </folder>
 
   <folder name="Shortcuts">
