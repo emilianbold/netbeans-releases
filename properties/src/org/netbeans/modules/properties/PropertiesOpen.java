@@ -263,7 +263,7 @@ System.out.println("closing ...");
       dobj.addPropertyChangeListener(new WeakListener.PropertyChange(cookieL =
         new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName() == DataObject.PROP_COOKIE)
+            if (DataObject.PROP_COOKIE.equals(evt.getPropertyName()))
               setName(dobj.getNodeDelegate().getDisplayName());
           }
         }));
@@ -391,7 +391,7 @@ System.out.println("closing ...");
     */
     public void propertyChange(PropertyChangeEvent ev) {
       if ((ev.getSource() == obj) &&
-          (ev.getPropertyName() == DataObject.PROP_MODIFIED)) {
+          (DataObject.PROP_MODIFIED.equals(ev.getPropertyName()))) {
         
         if (((Boolean) ev.getNewValue()).booleanValue()) {
           addSaveCookie();
