@@ -163,39 +163,53 @@ public class SelectFileDialog extends JPanel {
     }
 
     public FileObject getFileObject () throws IOException {
-        TopManager.getDefault().createDialog (selectDD).show();
-        if (selectDD.getValue() != DialogDescriptor.OK_OPTION) {
-            throw new UserCancelException();
-        }
-        final String newName = fileField.getText();
-        
-        FileObject newFO = folder.getFileObject (newName, ext);
-        
-        if ( ( newFO == null ) ||
-             ( newFO.isVirtual() == true ) ) {
+        FileObject newFO = null;
 
-            FileSystem fs = folder.getFileSystem();
-            final FileObject tempFile = newFO;
-
-            fs.runAtomicAction (new FileSystem.AtomicAction () {
-                public void run () throws IOException {
-
-                    if ( ( tempFile != null ) &&
-                         tempFile.isVirtual() ) {
-                        tempFile.delete();
-                    }
-                    folder.createData (newName, ext);                    
-                }
-            });
-
-            newFO = folder.getFileObject (newName, ext);
-
-        } else if (newFO != null) {
-            if (!!! GuiUtil.confirmAction (MessageFormat.format (Util.THIS.getString ("PROP_replaceMsg"),
-                                                                new String [] { newName, ext })) ) {
+        while ( newFO == null ) {
+            TopManager.getDefault().createDialog (selectDD).show();
+            if (selectDD.getValue() != DialogDescriptor.OK_OPTION) {
                 throw new UserCancelException();
             }
-        }
+            final String newName = fileField.getText();
+        
+            newFO = folder.getFileObject (newName, ext);
+        
+            if ( ( newFO == null ) ||
+                 ( newFO.isVirtual() == true ) ) {
+
+                FileSystem fs = folder.getFileSystem();
+                final FileObject tempFile = newFO;
+                
+                fs.runAtomicAction (new FileSystem.AtomicAction () {
+                        public void run () throws IOException {
+
+                            if ( ( tempFile != null ) &&
+                                 tempFile.isVirtual() ) {
+                                tempFile.delete();
+                            }
+
+                            try {
+                                folder.createData (newName, ext);
+                            } catch (IOException exc) {
+                                NotifyDescriptor desc = new NotifyDescriptor.Message
+                                    (Util.THIS.getString ("MSG_cannot_create_data", newName + "." + ext), NotifyDescriptor.WARNING_MESSAGE);
+                                TopManager.getDefault().notify (desc);
+
+                                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
+                            }
+                        }
+                    });
+                
+                newFO = folder.getFileObject (newName, ext);
+
+            } else if (newFO != null) {
+                if (!!! GuiUtil.confirmAction (MessageFormat.format (Util.THIS.getString ("PROP_replaceMsg"),
+                                                                new String [] { newName, ext })) ) {
+                    throw new UserCancelException();
+                }
+            }
+        } // while
+
         return newFO;
     }
 
