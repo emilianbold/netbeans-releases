@@ -363,7 +363,7 @@ public class AddTableColumnDialog
 								
 								cbuff.execute();
 							} catch (Exception e) {
-								System.out.println(e);
+								e.printStackTrace();
 								result = false;
 							}
 						} 

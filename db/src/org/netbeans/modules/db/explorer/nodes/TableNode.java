@@ -42,6 +42,7 @@ public class TableNode extends DatabaseNode
 			cmd.execute();
 			super.setName(newname);
 			info.put(DatabaseNode.TABLE, newname);
+		} catch (CommandNotSupportedException ex) {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

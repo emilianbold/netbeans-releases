@@ -18,6 +18,7 @@
 		ColumnListHeader = "";
 		ColumnListDelimiter = ",\n\t";
 		ArgumentListDelimiter = ", ";
+		TypeMap = {};
 		
 		Column = {
 			Class = com.netbeans.ddl.impl.TableColumn;
@@ -429,14 +430,14 @@
 			Format = "comment on view [{object.owner}.]{object.name} is {comment}";
 		};
 
-		RenameColumnCommand = {
+/*		RenameColumnCommand = {
 			Class = com.netbeans.ddl.impl.RenameColumn;
 			Format = "alter table [{object.owner}.]{object.name} rename {column} to {column.newname}";
 			Binding = {
 				COLUMN = ColumnName;
 			};
 		};
-
+*/
 		RemoveColumnCommand = {
 			Class = com.netbeans.ddl.impl.RemoveColumn;
 			Format = "alter table [{object.owner}.]{object.name} delete {column}";

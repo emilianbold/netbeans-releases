@@ -34,7 +34,6 @@ public class ColumnNode extends LeafNode
 	protected PropertySupport createPropertySupport(String name, Class type, String displayName, String shortDescription, DatabaseNodeInfo rep, boolean writable)
 	{
 		PropertySupport ps;
-		System.out.println("writable "+name+": "+writable);
 		if (name.equals("datatype") && writable) {
 			ps = new DatabaseTypePropertySupport(name, type, displayName, shortDescription, rep, writable);
 		} else ps = super.createPropertySupport(name, type, displayName, shortDescription, rep, writable);
@@ -51,6 +50,7 @@ public class ColumnNode extends LeafNode
 			cmd.renameColumn(info.getName(), newname);
 			cmd.execute();
 			super.setName(newname);
+		} catch (CommandNotSupportedException ex) {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

@@ -212,11 +212,9 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 						else pc = Class.forName(pclass);
 
 						try {
-							pdesc = bundle.getString(pname+"Description");
+						//	pdesc = bundle.getString(pname+"Description");
 							pname = bundle.getString(pname);
 						} catch (MissingResourceException e) {
-							System.out.println(pname);
-							System.out.println(pdesc);
 							pdesc = "";
 						}
 						

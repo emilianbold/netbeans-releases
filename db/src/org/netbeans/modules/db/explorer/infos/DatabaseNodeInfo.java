@@ -133,7 +133,6 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 				}
 				colidx++;
 			} catch (SQLException ex) {
-				System.out.println("unable to read key "+key+", "+ex);
 			}	
 		}
 		nfo.putAll(data);

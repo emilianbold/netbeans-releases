@@ -68,6 +68,7 @@ implements ConnectionOwnerOperations
 				((ConnectionNodeInfo)cnode.getInfo()).connect();
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new DatabaseException(e.getMessage());
 		}
 	}

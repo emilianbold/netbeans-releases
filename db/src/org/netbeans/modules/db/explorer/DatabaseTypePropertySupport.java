@@ -29,16 +29,24 @@ public class DatabaseTypePropertySupport extends DatabasePropertySupport
 		super(name, type, displayName, shortDescription, rep, writable);
 		repository = rep;
     	int i = 0;
-		Map tmap = ((Specification)((DatabaseNodeInfo)repository).getSpecification()).getTypeMap();
-		Iterator enu = tmap.keySet().iterator();
-		types = new int[tmap.size()];
-		names = new String[tmap.size()];
-		while(enu.hasNext()) {
-			String key = (String)enu.next();
-			int xtype = Specification.getType(key);
-			String code = (String)tmap.get(key);
-			types[i] = xtype;
-			names[i++] = code;
+    	
+    	Specification spec = (Specification)((DatabaseNodeInfo)repository).getSpecification();
+    	if (spec != null && writable) {
+			Map tmap = ((Specification)((DatabaseNodeInfo)repository).getSpecification()).getTypeMap();
+			if (tmap == null) tmap = new HashMap(1);
+			Iterator enu = tmap.keySet().iterator();
+			types = new int[tmap.size()];
+			names = new String[tmap.size()];
+			while(enu.hasNext()) {
+				String key = (String)enu.next();
+				int xtype = Specification.getType(key);
+				String code = (String)tmap.get(key);
+				types[i] = xtype;
+				names[i++] = code;
+			}
+		} else {
+			types = new int[] {0};
+			names = new String[] {name};
 		}
 	}
 	

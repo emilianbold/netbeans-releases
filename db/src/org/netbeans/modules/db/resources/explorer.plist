@@ -295,67 +295,639 @@
 		);
 		properties = (
 			{
-				code = name;
-				writable = YES;
-			},
-			{
-				code = db;
-				name = "DatabaseURL";
-				class = java.lang.String;
-				writable = YES;
-			},
-			{
-				code = driver;
-				name = "DriverURL";
-				class = java.lang.String;
-				writable = YES;
-			},
-			{
-				code = user;
-				name = "User";
-				class = java.lang.String;
-				writable = YES;
-			},
-			{
-				code = readonlydatabase;
-				name = "ReadOnly";
+				code = proceduresAreCallable;
+				name = proceduresAreCallable;
 				class = java.lang.Boolean;
 				writable = NO;
 			},
 			{
-				code = groupbysupport;
-				name = "GroupBy";
+				code = tablesAreSelectable;
+				name = tablesAreSelectable;
 				class = java.lang.Boolean;
 				writable = NO;
 			},
 			{
-				code = outerjoinsupport;
-				name = "OuterJoin";
+				code = readOnly;
+				name = readOnly;
 				class = java.lang.Boolean;
 				writable = NO;
 			},
 			{
-				code = unionsupport;
-				name = "UnionSupport";
+				code = localFiles;
+				name = localFiles;
 				class = java.lang.Boolean;
 				writable = NO;
 			},
 			{
-				code = dbproduct;
-				name = "DatabaseProduct";
+				code = localFilePerTable;
+				name = localFilePerTable;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = mixedCaseIdentifiers;
+				name = mixedCaseIdentifiers;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = mixedCaseQuotedIdentifiers;
+				name = mixedCaseQuotedIdentifiers;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = alterTableWithAddColumn;
+				name = alterTableWithAddColumn;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = alterTableWithDropColumn;
+				name = alterTableWithDropColumn;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = columnAliasing;
+				name = columnAliasing;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = nullPlusNonNullIsNull;
+				name = nullPlusNonNullIsNull;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = convert;
+				name = convert;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = tableCorrelationNames;
+				name = tableCorrelationNames;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = differentTableCorrelationNames;
+				name = differentTableCorrelationNames;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = expressionsInOrderBy;
+				name = expressionsInOrderBy;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = orderByUnrelated;
+				name = orderByUnrelated;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = groupBy;
+				name = groupBy;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = groupByUnrelated;
+				name = groupByUnrelated;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = groupByBeyondSelect;
+				name = groupByBeyondSelect;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = likeEscapeClause;
+				name = likeEscapeClause;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = multipleResultSets;
+				name = multipleResultSets;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = multipleTransactions;
+				name = multipleTransactions;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = nonNullableColumns;
+				name = nonNullableColumns;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = minimumSQLGrammar;
+				name = minimumSQLGrammar;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = coreSQLGrammar;
+				name = coreSQLGrammar;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = extendedSQLGrammar;
+				name = extendedSQLGrammar;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = ANSI92EntryLevelSQL;
+				name = ANSI92EntryLevelSQL;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = ANSI92IntermediateSQL;
+				name = ANSI92IntermediateSQL;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = ANSI92FullSQL;
+				name = ANSI92FullSQL;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = IntegrityEnhancementFacility;
+				name = IntegrityEnhancementFacility;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = outerJoins;
+				name = outerJoins;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = fullOuterJoins;
+				name = fullOuterJoins;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = limitedOuterJoins;
+				name = limitedOuterJoins;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = catalogAtStart;
+				name = catalogAtStart;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = schemasInDataManipulation;
+				name = schemasInDataManipulation;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = schemasInProcedureCalls;
+				name = schemasInProcedureCalls;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = schemasInTableDefinitions;
+				name = schemasInTableDefinitions;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = schemasInIndexDefinitions;
+				name = schemasInIndexDefinitions;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = schemasInPrivilegeDefinitions;
+				name = schemasInPrivilegeDefinitions;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = catalogsInDataManipulation;
+				name = catalogsInDataManipulation;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = catalogsInProcedureCalls;
+				name = catalogsInProcedureCalls;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = catalogsInTableDefinitions;
+				name = catalogsInTableDefinitions;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = catalogsInIndexDefinitions;
+				name = catalogsInIndexDefinitions;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = catalogsInPrivilegeDefinitions;
+				name = catalogsInPrivilegeDefinitions;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = positionedDelete;
+				name = positionedDelete;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = positionedUpdate;
+				name = positionedUpdate;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = selectForUpdate;
+				name = selectForUpdate;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = storedProcedures;
+				name = storedProcedures;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = subqueriesInComparisons;
+				name = subqueriesInComparisons;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = subqueriesInExists;
+				name = subqueriesInExists;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = subqueriesInIns;
+				name = subqueriesInIns;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = subqueriesInQuantifieds;
+				name = subqueriesInQuantifieds;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = correlatedSubqueries;
+				name = correlatedSubqueries;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = union;
+				name = union;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = unionAll;
+				name = unionAll;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = openCursorsAcrossCommit;
+				name = openCursorsAcrossCommit;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = openCursorsAcrossRollback;
+				name = openCursorsAcrossRollback;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = openStatementsAcrossCommit;
+				name = openStatementsAcrossCommit;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = openStatementsAcrossRollback;
+				name = openStatementsAcrossRollback;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = maxRowSizeIncludeBlobs;
+				name = maxRowSizeIncludeBlobs;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = transactions;
+				name = transactions;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = dataDefinitionAndDataManipulationTransactions;
+				name = dataDefinitionAndDataManipulationTransactions;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = dataManipulationTransactionsOnly;
+				name = dataManipulationTransactionsOnly;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = dataDefinitionCausesTransactionCommit;
+				name = dataDefinitionCausesTransactionCommit;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = dataDefinitionIgnoredInTransactions;
+				name = dataDefinitionIgnoredInTransactions;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = batchUpdates;
+				name = batchUpdates;
+				class = java.lang.Boolean;
+				writable = NO;
+			},
+			{
+				code = nullSort;
+				name = nullSort;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = identifierStore;
+				name = identifierStore;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = quotedIdentifierStore;
+				name = quotedIdentifierStore;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxBinaryLiteralLength;
+				name = maxBinaryLiteralLength;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxCharLiteralLength;
+				name = maxCharLiteralLength;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxColumnNameLength;
+				name = maxColumnNameLength;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxColumnsInGroupBy;
+				name = maxColumnsInGroupBy;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxColumnsInIndex;
+				name = maxColumnsInIndex;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxColumnsInOrderBy;
+				name = maxColumnsInOrderBy;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxColumnsInSelect;
+				name = maxColumnsInSelect;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxColumnsInTable;
+				name = maxColumnsInTable;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxConnections;
+				name = maxConnections;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxCursorNameLength;
+				name = maxCursorNameLength;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxIndexLength;
+				name = maxIndexLength;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxSchemaNameLength;
+				name = maxSchemaNameLength;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxProcedureNameLength;
+				name = maxProcedureNameLength;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxCatalogNameLength;
+				name = maxCatalogNameLength;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxRowSize;
+				name = maxRowSize;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxStatementLength;
+				name = maxStatementLength;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxStatements;
+				name = maxStatements;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxTableNameLength;
+				name = maxTableNameLength;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxTablesInSelect;
+				name = maxTablesInSelect;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = maxUserNameLength;
+				name = maxUserNameLength;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = defaultTransactionIsolation;
+				name = defaultTransactionIsolation;
+				class = java.lang.Integer;
+				writable = NO;
+			},
+			{
+				code = driverName;
+				name = driverName;
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
-				code = dbversion;
-				name = "DatabaseVersion";
+				code = driverVersion;
+				name = driverVersion;
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
-				code = rememberpwd;
-				name = "RememberPassword";
-				class = java.lang.Boolean;
+				code = driverMajorVersion;
+				name = driverMajorVersion;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = driverMinorVersion;
+				name = driverMinorVersion;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = identifierQuoteString;
+				name = identifierQuoteString;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = SQLKeywords;
+				name = SQLKeywords;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = numericFunctions;
+				name = numericFunctions;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = stringFunctions;
+				name = stringFunctions;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = systemFunctions;
+				name = systemFunctions;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = timeDateFunctions;
+				name = timeDateFunctions;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = searchStringEscape;
+				name = searchStringEscape;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = extraNameCharacters;
+				name = extraNameCharacters;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = schemaTerm;
+				name = schemaTerm;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = procedureTerm;
+				name = procedureTerm;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = catalogTerm;
+				name = catalogTerm;
+				class = java.lang.String;
+				writable = NO;
+			},
+			{
+				code = catalogSepa;
+				name = catalogSepa;
+				class = java.lang.String;
 				writable = NO;
 			}
 		);

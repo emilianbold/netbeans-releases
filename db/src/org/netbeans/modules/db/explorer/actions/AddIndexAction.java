@@ -70,7 +70,6 @@ public class AddIndexAction extends DatabaseAction
 					icmd.specifyColumn((String)enu.next());
 				}
 				
-				System.out.println(icmd.getCommand());
 				icmd.execute();
 				nfo.addIndex(dlg.getIndexName());
 			}

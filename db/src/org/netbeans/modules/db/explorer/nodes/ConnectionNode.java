@@ -219,6 +219,50 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 					info.put(DefaultAdaptor.PROP_DDL_AND_DML_TRANSACTIONS, new Boolean(dmd.supportsDataDefinitionAndDataManipulationTransactions()));
 					info.put(DefaultAdaptor.PROP_DML_TRANSACTIONS_ONLY, new Boolean(dmd.supportsDataManipulationTransactionsOnly()));
 
+					info.put(DefaultAdaptor.PROP_MAX_BINARY_LITERAL_LENGTH, new Integer(dmd.getMaxBinaryLiteralLength()));
+					info.put(DefaultAdaptor.PROP_MAX_CHAR_LITERAL_LENGTH, new Integer(dmd.getMaxCharLiteralLength()));
+					info.put(DefaultAdaptor.PROP_MAX_COLUMN_NAME_LENGTH, new Integer(dmd.getMaxColumnNameLength()));
+					info.put(DefaultAdaptor.PROP_MAX_COLUMNS_IN_GROUPBY, new Integer(dmd.getMaxColumnsInGroupBy()));
+					info.put(DefaultAdaptor.PROP_MAX_COLUMNS_IN_INDEX, new Integer(dmd.getMaxColumnsInIndex()));
+					info.put(DefaultAdaptor.PROP_MAX_COLUMNS_IN_ORDERBY, new Integer(dmd.getMaxColumnsInOrderBy()));
+					info.put(DefaultAdaptor.PROP_MAX_COLUMNS_IN_SELECT, new Integer(dmd.getMaxColumnsInSelect()));
+					info.put(DefaultAdaptor.PROP_MAX_COLUMNS_IN_TABLE, new Integer(dmd.getMaxColumnsInTable()));
+					info.put(DefaultAdaptor.PROP_MAX_CONNECTIONS, new Integer(dmd.getMaxConnections()));
+					info.put(DefaultAdaptor.PROP_MAX_CURSORNAME_LENGTH, new Integer(dmd.getMaxCursorNameLength()));
+					info.put(DefaultAdaptor.PROP_MAX_INDEX_LENGTH, new Integer(dmd.getMaxIndexLength()));
+					info.put(DefaultAdaptor.PROP_MAX_SCHEMA_NAME, new Integer(dmd.getMaxSchemaNameLength()));
+					info.put(DefaultAdaptor.PROP_MAX_PROCEDURE_NAME, new Integer(dmd.getMaxProcedureNameLength()));
+					info.put(DefaultAdaptor.PROP_MAX_CATALOG_NAME, new Integer(dmd.getMaxCatalogNameLength()));
+					info.put(DefaultAdaptor.PROP_MAX_ROW_SIZE, new Integer(dmd.getMaxRowSize()));
+					info.put(DefaultAdaptor.PROP_MAX_STATEMENT_LENGTH, new Integer(dmd.getMaxStatementLength()));
+					info.put(DefaultAdaptor.PROP_MAX_STATEMENTS, new Integer(dmd.getMaxStatements()));
+					info.put(DefaultAdaptor.PROP_MAX_TABLENAME_LENGTH, new Integer(dmd.getMaxTableNameLength()));
+					info.put(DefaultAdaptor.PROP_MAX_TABLES_IN_SELECT, new Integer(dmd.getMaxTablesInSelect()));
+					info.put(DefaultAdaptor.PROP_MAX_USERNAME, new Integer(dmd.getMaxUserNameLength()));
+					info.put(DefaultAdaptor.PROP_DEFAULT_ISOLATION, new Integer(dmd.getDefaultTransactionIsolation()));
+									
+					info.put(DefaultAdaptor.PROP_URL, dmd.getURL());
+					info.put(DefaultAdaptor.PROP_USERNAME, dmd.getUserName());
+					info.put(DefaultAdaptor.PROP_PRODUCTNAME, dmd.getDatabaseProductName());
+					info.put(DefaultAdaptor.PROP_PRODUCTVERSION, dmd.getDatabaseProductVersion());
+					info.put(DefaultAdaptor.PROP_DRIVERNAME, dmd.getDriverName());
+					info.put(DefaultAdaptor.PROP_DRIVER_VERSION, dmd.getDriverVersion());
+					info.put(DefaultAdaptor.PROP_DRIVER_MAJOR_VERSION, new Integer(dmd.getDriverMajorVersion()));
+					info.put(DefaultAdaptor.PROP_DRIVER_MINOR_VERSION, new Integer(dmd.getDriverMinorVersion()));
+					info.put(DefaultAdaptor.PROP_IDENTIFIER_QUOTE, dmd.getIdentifierQuoteString());
+					info.put(DefaultAdaptor.PROP_SQL_KEYWORDS, dmd.getSQLKeywords());
+									
+					info.put(DefaultAdaptor.PROP_NUMERIC_FUNCTIONS, dmd.getNumericFunctions());
+					info.put(DefaultAdaptor.PROP_STRING_FUNCTIONS, dmd.getStringFunctions());
+					info.put(DefaultAdaptor.PROP_SYSTEM_FUNCTIONS, dmd.getSystemFunctions());
+					info.put(DefaultAdaptor.PROP_TIME_FUNCTIONS, dmd.getTimeDateFunctions());
+					info.put(DefaultAdaptor.PROP_STRING_ESCAPE, dmd.getSearchStringEscape());
+					info.put(DefaultAdaptor.PROP_EXTRA_CHARACTERS, dmd.getExtraNameCharacters());
+					info.put(DefaultAdaptor.PROP_SCHEMA_TERM, dmd.getSchemaTerm());
+					info.put(DefaultAdaptor.PROP_PROCEDURE_TERM, dmd.getProcedureTerm());
+					info.put(DefaultAdaptor.PROP_CATALOG_TERM, dmd.getCatalogTerm());
+					info.put(DefaultAdaptor.PROP_CATALOGS_SEPARATOR, dmd.getCatalogSeparator());
+
 				} catch (Exception ex) {
 					ex.printStackTrace();				
 				}

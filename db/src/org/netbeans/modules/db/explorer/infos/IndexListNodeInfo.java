@@ -64,7 +64,6 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 			ResultSet rs = dmd.getIndexInfo(catalog,getUser(),table, true, false);
 			while (rs.next()) {
 				String findex = rs.getString("INDEX_NAME");
-				System.out.println(findex);
 				if (findex != null) {
 					if (findex.equals(name)) {
 						IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rs);

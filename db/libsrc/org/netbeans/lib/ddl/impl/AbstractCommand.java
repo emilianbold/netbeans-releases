@@ -149,11 +149,19 @@ static final long serialVersionUID =-560515030304320086L;
 			throw new DDLException("unable to format a command "+format+": "+e.getMessage());
 		}
 				
+		System.out.println(fcmd);		
 		// In case of debug mode, you simply print command and don't execute
 		if (spec.getSpecificationFactory().isDebugMode()) {
-			OutputWriter ow = TopManager.getDefault().getStdOut();
-			if (ow != null) ow.println(fcmd);
-			else System.out.println(fcmd);
+			
+			try {
+			
+				OutputWriter ow = TopManager.getDefault().getStdOut();
+				if (ow != null) ow.println(fcmd);
+				else throw new Exception();	
+					
+			} catch (Exception ex) {	
+				System.out.println(fcmd);
+			}
 		}
 		
 		try {
@@ -216,6 +224,7 @@ static final long serialVersionUID =-560515030304320086L;
 
 /*
 * <<Log>>
+*  10   Gandalf   1.9         9/13/99  Slavek Psenicka 
 *  9    Gandalf   1.8         9/10/99  Slavek Psenicka 
 *  8    Gandalf   1.7         8/17/99  Ian Formanek    Generated serial version 
 *       UID

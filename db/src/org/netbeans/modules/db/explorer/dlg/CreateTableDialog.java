@@ -251,7 +251,7 @@ public class CreateTableDialog
 								cbuff.execute();
 								
 							} catch (Exception e) {
-								System.out.println(e);
+								e.printStackTrace();
 								disres = false;
 							}
 						} else {

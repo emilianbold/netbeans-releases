@@ -48,7 +48,6 @@ implements ConnectionOperations
 			if (dbsys != null) {
 				spec = (Specification)factory.createSpecification(con, dbsys, connection);
 			} else spec = (Specification)factory.createSpecification(con, connection);
-			System.out.println("Spec: "+spec);
 			setSpecification(spec);
 			setConnection(connection); // fires change
 		} catch (DatabaseProductNotFoundException e) {
@@ -62,6 +61,7 @@ implements ConnectionOperations
 			}
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new DatabaseException(e.getMessage());	
 		}
 	}
