@@ -46,6 +46,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/ValidateLayer*Test.class"/> 
                 <!-- Can throw OutOfMemoryError: <include name="org/netbeans/core/ValidateClassLinkageTest.class"/> -->
                 <exclude name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
+                <include name="org/netbeans/core/execution/TaskThreadGroupGCTest.class"/>
             </patternset>
         </testset>
     </testbag>
