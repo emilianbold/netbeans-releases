@@ -212,6 +212,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
     public void setFormMenu(String value) {
         setAuxValue(AUX_MENU_COMPONENT, value);
+
+        if (!getFormModel().isFormLoaded())
+            return;
+
         FormDesigner designer = getFormModel().getFormDesigner();
         
         if (value == null) {
@@ -234,9 +238,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             if (menu == null)
                 return;
             
-            if (!getFormModel().isFormLoaded())
-                return;
-
             Object menubar = menu.getBeanInstance();
             
             if (formInfo instanceof JMenuBarContainer
