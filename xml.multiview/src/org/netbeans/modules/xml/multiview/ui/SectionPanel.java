@@ -327,9 +327,12 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
             tf.getDocument().addDocumentListener(new TextListener(tf));
             tf.addFocusListener(new java.awt.event.FocusAdapter() {
                 private String orgValue;
+                private boolean viewIsBuggy;
 
                 public void focusGained(java.awt.event.FocusEvent evt) {
                     orgValue = tf.getText();
+                    if (sectionView.getErrorPanel().getError()!=null) viewIsBuggy=true;
+                    else viewIsBuggy=false;
                 }
 
                 public void focusLost(java.awt.event.FocusEvent evt) {
@@ -365,6 +368,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
                         if (!tf.getText().equals(orgValue)) {
                             setValue(tf, tf.getText());
                             sectionView.validateView();
+                        } else {
+                            if (viewIsBuggy) sectionView.validateView();
                         }
                     }
                 }
