@@ -1,0 +1,113 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.api.xml.parsers;
+
+import java.io.*;
+import java.net.URL;
+import java.util.*;
+
+import javax.swing.text.Document;
+
+import org.xml.sax.InputSource;
+
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
+
+/**
+ * Let Swing's Document looks like InputSource.
+ *
+ * @author  Petr Kuzel
+ * @deprecated XML tools API candidate
+ */
+public final class DocumentInputSource extends InputSource {
+    
+    private final Document doc;
+     
+    /** 
+     * Creates a new instance of DocumentInputSource. Callie should
+     * set system ID if avalable otherwise default one is derived.
+     * @param doc Swing document used to be wrapped
+     */
+    public DocumentInputSource(Document doc) {
+        this.doc = doc;
+    }
+
+    public Reader getCharacterStream() {
+        String text = documentToString(doc);
+        return new StringReader(text);
+    }
+    
+    public void setCharacterStream(Reader reader) {
+        // do nothing
+    }
+    
+    public String getSystemId() {
+        
+        String system = super.getSystemId();;
+        
+        // XML module specifics property, promote into this API
+//        String system = (String) doc.getProperty(TextEditorSupport.PROP_DOCUMENT_URL);        
+        
+        if (system == null) {
+            Object obj = doc.getProperty(Document.StreamDescriptionProperty);        
+            if (obj instanceof DataObject) {
+                try { 
+                        DataObject dobj = (DataObject) obj;
+                        FileObject fo = dobj.getPrimaryFile();
+                        URL url = fo.getURL();
+                        system = url.toExternalForm();
+                } catch (IOException io) {
+                    ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
+                    emgr.notify(io);
+                }
+            } else {
+                ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
+                emgr.log("XML:DocumentInputSource:Unknown stream description:" + obj);
+            }
+        }
+        
+        return system;
+    }
+        
+    
+    /**
+     * @return current state of Document as string
+     */
+    private static String documentToString(final Document doc) {
+        
+        final String[] str = new String[1];
+
+        // safely take the text from the document
+        Runnable run = new Runnable() {
+            public void run () {
+                try {
+                    str[0] = doc.getText(0, doc.getLength());
+                } catch (javax.swing.text.BadLocationException e) {
+                    // impossible
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        doc.render(run);
+        return str[0];
+        
+    }
+    
+    public String toString() {
+        return "DocumentInputSource SID:" + getSystemId();
+    }
+}
