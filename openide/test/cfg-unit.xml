@@ -28,6 +28,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="code" name="testbag_1" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
+                <include name="org/openide/actions/*Test.class"/>
                 <include name="org/openide/filesystems/*.class"/>
                 <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileDataCreatedEvent"/>
                 <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileFolderCreatedEvent"/>
@@ -68,9 +69,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/nodes/*.class"/>
 		<exclude name="org/openide/nodes/FilterNodeTest.class/testChangeOriginalLeafToArray"/>
                 <include name="org/openide/util/*.class"/>
-                <!-- XXX #17333: something in XTest forces TopManager to be precreated:
                 <include name="org/openide/util/actions/*Test.class"/>
-                -->
                 <include name="org/openide/xml/*.class"/>
             </patternset>
         </testset>      
