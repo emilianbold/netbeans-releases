@@ -71,6 +71,7 @@ public class EditorModule extends ModuleInstall {
     Settings.addPropertyChangeListener(settingsListener);
   }
 
+  static final long serialVersionUID =-929863607593944237L;
   private static void registerIndents() {
     IndentEngine.register(MIME_JAVA,
         new FilterIndentEngine(Formatter.getFormatter(JavaKit.class)));
@@ -154,6 +155,7 @@ public class EditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  36   Gandalf   1.35        11/27/99 Patrik Knakal   
  *  35   Gandalf   1.34        11/9/99  Miloslav Metelka 
  *  34   Gandalf   1.33        11/8/99  Miloslav Metelka 
  *  33   Gandalf   1.32        10/29/99 Jaroslav Tulach Does not cast to 

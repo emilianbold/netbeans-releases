@@ -32,6 +32,7 @@ import org.openide.actions.RenameAction;
 * @version  0.13, Apr 26, 1999
 */
 public class LangRenameAction extends RenameAction {
+  static final long serialVersionUID =-6548687347804513177L;
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = 1261145028106838566L;
 
@@ -81,6 +82,7 @@ public class LangRenameAction extends RenameAction {
 
 /*
  * <<Log>>
+ *  5    Gandalf   1.4         11/27/99 Patrik Knakal   
  *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  3    Gandalf   1.2         6/10/99  Petr Jiricka    

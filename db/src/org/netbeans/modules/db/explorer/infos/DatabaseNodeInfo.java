@@ -152,6 +152,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	private PropertyChangeSupport driverpcs = null;
 	private Set driverpcsKeys = null;
 
+        static final long serialVersionUID =1176243907461868244L;
 	public DatabaseNodeInfo()	
 	{
 		super();
@@ -658,6 +659,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 }
 /*
  * <<Log>>
+ *  20   Gandalf   1.19        11/27/99 Patrik Knakal   
  *  19   Gandalf   1.18        11/15/99 Radko Najman    
  *  18   Gandalf   1.17        11/15/99 Radko Najman    
  *  17   Gandalf   1.16        11/8/99  Radko Najman    ConnectionNode name 

@@ -30,6 +30,7 @@ public class FormDataLoader extends JavaDataLoader {
   /* The standard extensions of the recognized files */
   public static final String FORM_EXTENSION = "form";
 
+  static final long serialVersionUID =7259146057404524013L;
   /** Constructs a new FormDataLoader */
   public FormDataLoader () {
     super (FormDataObject.class);
@@ -143,6 +144,7 @@ public class FormDataLoader extends JavaDataLoader {
 
 /*
  * Log
+ *  20   Gandalf   1.19        11/27/99 Patrik Knakal   
  *  19   Gandalf   1.18        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  18   Gandalf   1.17        8/31/99  Ian Formanek    Correctly provides 

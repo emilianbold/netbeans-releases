@@ -21,6 +21,7 @@ import javax.swing.AbstractListModel;
 public class ListModelEditor extends Object {
 
   public static class NbListModel extends AbstractListModel implements java.io.Serializable {
+    static final long serialVersionUID =-1806930448622666787L;
     public NbListModel (String[] data) {
       this.data = data;
     }
@@ -35,6 +36,7 @@ public class ListModelEditor extends Object {
 
 /*
  * Log
+ *  3    Gandalf   1.2         11/27/99 Patrik Knakal   
  *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  1    Gandalf   1.0         4/12/99  Ian Formanek    

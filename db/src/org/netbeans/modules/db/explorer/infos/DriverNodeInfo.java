@@ -32,6 +32,7 @@ import com.netbeans.enterprise.modules.db.explorer.nodes.RootNode;
 
 public class DriverNodeInfo extends DriverListNodeInfo 
 {
+  static final long serialVersionUID =6994829681095273161L;
 	public DatabaseDriver getDatabaseDriver()
 	{
 		return (DatabaseDriver)get(DatabaseNodeInfo.DBDRIVER);
@@ -62,6 +63,7 @@ public class DriverNodeInfo extends DriverListNodeInfo
 }
 /*
  * <<Log>>
+ *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         9/8/99   Slavek Psenicka adaptor changes

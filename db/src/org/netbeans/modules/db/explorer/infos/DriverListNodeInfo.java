@@ -31,6 +31,7 @@ import com.netbeans.enterprise.modules.db.explorer.nodes.RootNode;
 public class DriverListNodeInfo extends DatabaseNodeInfo 
 implements DriverOperations
 {	
+  static final long serialVersionUID =-7948529055260667590L;
 	protected void initChildren(Vector children)
 	throws DatabaseException
 	{
@@ -71,6 +72,7 @@ implements DriverOperations
 }
 /*
  * <<Log>>
+ *  9    Gandalf   1.8         11/27/99 Patrik Knakal   
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         9/8/99   Slavek Psenicka adaptor changes

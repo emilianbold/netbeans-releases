@@ -26,6 +26,7 @@ import javax.swing.DefaultListCellRenderer;
 */
 class IndexListCellRenderer extends DefaultListCellRenderer {
 
+  static final long serialVersionUID =543071118545614229L;
 	public Component getListCellRendererComponent( JList list, 
                                 Object value, 
                                 int index, 
@@ -48,6 +49,7 @@ class IndexListCellRenderer extends DefaultListCellRenderer {
 
 /* 
  * Log
+ *  4    Gandalf   1.3         11/27/99 Patrik Knakal   
  *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         6/23/99  Petr Hrebejk    HTML doc view & sort 

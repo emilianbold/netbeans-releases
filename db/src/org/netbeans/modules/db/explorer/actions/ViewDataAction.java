@@ -23,6 +23,7 @@ import com.netbeans.enterprise.modules.db.explorer.dataview.*;
 
 public class ViewDataAction extends DatabaseAction
 {
+  static final long serialVersionUID =-894644054833609687L;
 	protected boolean enable(Node[] activatedNodes)
 	{
 		Node node;
@@ -84,6 +85,7 @@ public class ViewDataAction extends DatabaseAction
 }
 /*
  * <<Log>>
+ *  6    Gandalf   1.5         11/27/99 Patrik Knakal   
  *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         9/8/99   Slavek Psenicka adaptor changes

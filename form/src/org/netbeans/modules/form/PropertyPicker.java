@@ -32,6 +32,7 @@ public class PropertyPicker extends javax.swing.JDialog {
   public static final int CANCEL = 0;
   public static final int OK = 1;
 
+  static final long serialVersionUID =5689122601606238081L;
   /** Initializes the Form */
   public PropertyPicker (java.awt.Frame parent, FormManager2 manager, RADComponent componentToSelect, Class requiredType) {
     super (parent != null ? parent : TopManager.getDefault ().getWindowManager ().getMainWindow (), true);
@@ -312,6 +313,7 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  15   Gandalf   1.14        11/27/99 Patrik Knakal   
  *  14   Gandalf   1.13        11/25/99 Ian Formanek    Uses Utilities module
  *  13   Gandalf   1.12        11/5/99  Jesse Glick     Context help jumbo 
  *       patch.

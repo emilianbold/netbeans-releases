@@ -174,6 +174,7 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
     transient private boolean needsInit = false; // used for deserialization init if type = TYPE_PROPERTY or TYPE_METHOD or TYPE_BEAN
     transient private FormManager2 formManager;  // used for deserialization init if type = TYPE_PROPERTY or TYPE_METHOD or TYPE_BEAN
     
+    static final long serialVersionUID =147134837271021412L;
     RADConnectionDesignValue (RADComponent comp) {
       radComponent = comp;
       radComponentName = radComponent.getName ();

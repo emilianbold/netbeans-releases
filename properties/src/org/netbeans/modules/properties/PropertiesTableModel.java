@@ -57,6 +57,7 @@ public class PropertiesTableModel extends AbstractTableModel {
   /** Listens to changes on the bundle structure */
   private PropertyBundleListener pbl;
   
+  static final long serialVersionUID =23879742006423050L;
   /** Create a data node for a given data object.
   * The provided children object will be used to hold all child nodes.
   * @param obj object to work with
@@ -356,6 +357,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     private boolean keyType;
     private boolean commentEditable;
      
+    static final long serialVersionUID =-463968846283787181L;
     /** Constructs with empty comment and value. */
     public StringPair() {
       this (null, "", false);

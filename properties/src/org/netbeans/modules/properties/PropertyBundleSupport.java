@@ -28,6 +28,7 @@ public class PropertyBundleSupport implements Serializable {
      */
     private Object source;
 
+    static final long serialVersionUID =-655481419012858008L;
     /**
      * Constructs a <code>PropertyBundleSupport</code> object.
      *
@@ -107,6 +108,7 @@ public class PropertyBundleSupport implements Serializable {
 
 /*
  * <<Log>>
+ *  7    Gandalf   1.6         11/27/99 Patrik Knakal   
  *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  5    Gandalf   1.4         9/10/99  Petr Jiricka    

@@ -158,6 +158,7 @@ implements Serializable {
   /** Class for key elements */
   public static class KeyElem extends Basic {
               
+    static final long serialVersionUID =6828294289485744331L;
     /** Create a new key element. */
     protected KeyElem(PositionBounds bounds, String value) {
       super(bounds, value);
@@ -175,6 +176,7 @@ implements Serializable {
   /** Class for value elements */
   public static class ValueElem extends Basic {
               
+    static final long serialVersionUID =4662649023463958853L;
     /** Create a new value element. */
     protected ValueElem(PositionBounds bounds, String value) {
       super(bounds, value);
@@ -192,6 +194,7 @@ implements Serializable {
   /** Class for comment elements. <code>null</code> values of the string are legal and indicate that the comment is empty. */
   public static class CommentElem extends Basic {
               
+    static final long serialVersionUID =2418308580934815756L;
     /** Create a new comment element. */
     protected CommentElem(PositionBounds bounds, String value) {
       super(bounds, value);
@@ -257,6 +260,7 @@ implements Serializable {
     /** Name of the Comment property */
     public static final String PROP_ITEM_COMMENT = "comment";
     
+    static final long serialVersionUID =1078147817847520586L;
     /** Create a new basic element. <code>key</code> and <code>value</code> may be null, 
     *  then <code>justComment</code> will be set to true.
     */
@@ -400,6 +404,7 @@ implements Serializable {
 
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         8/18/99  Petr Jiricka    Nothing

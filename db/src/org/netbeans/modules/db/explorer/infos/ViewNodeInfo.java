@@ -27,6 +27,7 @@ import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 
 public class ViewNodeInfo extends DatabaseNodeInfo
 {
+  static final long serialVersionUID =8370676447530973161L;
 	public void initChildren(Vector children)
 	throws DatabaseException
 	{				
@@ -100,6 +101,7 @@ else
 }
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
  *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

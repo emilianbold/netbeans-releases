@@ -24,6 +24,7 @@ public class CustomCodeEditor extends javax.swing.JDialog {
 
   private PropertySupport propertySupport;
   
+  static final long serialVersionUID =-7413680598253484271L;
   /** Creates new form CustomCodeEditor */
   public CustomCodeEditor(PropertySupport propertySupport) {
     super (new javax.swing.JFrame (), true);
@@ -142,6 +143,7 @@ private void cancelButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN
 
 /*
  * Log
+ *  3    Gandalf   1.2         11/27/99 Patrik Knakal   
  *  2    Gandalf   1.1         11/25/99 Ian Formanek    Uses Utilities module
  *  1    Gandalf   1.0         11/15/99 Pavel Buzek     
  * $

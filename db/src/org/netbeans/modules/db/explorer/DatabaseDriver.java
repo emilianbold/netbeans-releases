@@ -28,6 +28,7 @@ public class DatabaseDriver extends Object implements Externalizable
 	private String prefix;
 	private String adaptor;
 
+        static final long serialVersionUID =7937512184160164098L;
 	public DatabaseDriver()
 	{
 	}
@@ -134,6 +135,7 @@ public class DatabaseDriver extends Object implements Externalizable
 }
 /*
  * <<Log>>
+ *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         10/12/99 Radko Najman    debug messages removed

@@ -309,6 +309,7 @@ public class CreateTableDialog
 
 	class DataTable extends JTable
 	{
+          static final long serialVersionUID =1222037401669064863L;
 		public DataTable(TableModel model)	
 		{
 			super(model);
@@ -341,6 +342,7 @@ public class CreateTableDialog
 
 	class DataCellEditor extends DefaultCellEditor 
 	{
+          static final long serialVersionUID =3855371868128838794L;
     	public DataCellEditor(final JTextField x)  
     	{        
     		super(x);  
@@ -357,6 +359,7 @@ public class CreateTableDialog
 }
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         11/18/99 Radko Najman    dmd.getUserName()
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

@@ -46,6 +46,7 @@ import org.openide.windows.CloneableTopComponent;
 public class HtmlLoader extends UniFileLoader {
 
 
+  static final long serialVersionUID =-5809935261731217882L;
   public HtmlLoader() {
     super (HtmlDataObject.class);
     setDisplayName(NbBundle.getBundle(HtmlLoader.class).
@@ -93,6 +94,7 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  25   Gandalf   1.24        11/27/99 Patrik Knakal   
 *  24   Gandalf   1.23        11/25/99 Jesse Glick     Fixed bogus 
 *       representation class.
 *  23   Gandalf   1.22        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 

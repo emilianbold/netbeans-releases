@@ -49,6 +49,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
   private ListSelectionModel rowSelections;
   private ListSelectionModel columnSelections;
 
+  static final long serialVersionUID =-843810329041244483L;
     /** Creates new form BundleEditPanel */
   public BundleEditPanel(final DataObject obj, PropertiesTableModel ptm) {
     this.dobj = obj;

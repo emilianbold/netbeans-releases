@@ -42,6 +42,7 @@ public class PropertyBundleEvent extends EventObject {
   /** Type of the change that occurred. */                         
   protected int changeType;
   
+  static final long serialVersionUID =1702449038200791321L;
   /** Everything has changed, specify the change type */
   public PropertyBundleEvent(Object source, int changeType) {
     super(source);

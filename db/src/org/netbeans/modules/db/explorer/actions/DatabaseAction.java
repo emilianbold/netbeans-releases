@@ -30,6 +30,7 @@ public class DatabaseAction extends CookieAction
 	protected String aname;
 	protected String nodename;
 	
+        static final long serialVersionUID =2711301279685474175L;
 	public String getName()
 	{
 		return aname;

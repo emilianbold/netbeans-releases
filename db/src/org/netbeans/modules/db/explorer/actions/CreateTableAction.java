@@ -24,6 +24,7 @@ import com.netbeans.enterprise.modules.db.explorer.dlg.CreateTableDialog;
 
 public class CreateTableAction extends DatabaseAction
 {
+  static final long serialVersionUID =-7008851466327604724L;
 	public void performAction (Node[] activatedNodes) 
 	{
 		Node node;
@@ -43,6 +44,7 @@ public class CreateTableAction extends DatabaseAction
 }
 /*
  * <<Log>>
+ *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 

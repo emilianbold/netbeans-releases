@@ -23,6 +23,7 @@ import com.netbeans.enterprise.modules.db.explorer.infos.*;
 
 public class CreateViewAction extends DatabaseAction
 {
+  static final long serialVersionUID =-1640355770860785644L;
 	public void performAction (Node[] activatedNodes) 
 	{
 		Node node;
@@ -52,6 +53,7 @@ public class CreateViewAction extends DatabaseAction
 }
 /*
  * <<Log>>
+ *  7    Gandalf   1.6         11/27/99 Patrik Knakal   
  *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 

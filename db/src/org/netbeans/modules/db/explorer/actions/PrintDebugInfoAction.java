@@ -21,6 +21,7 @@ import com.netbeans.enterprise.modules.db.explorer.infos.*;
 
 public class PrintDebugInfoAction extends DatabaseAction
 {
+  static final long serialVersionUID =-5779258956367451253L;
 	public void performAction (Node[] activatedNodes) 
 	{
 		Node node;
@@ -31,6 +32,7 @@ public class PrintDebugInfoAction extends DatabaseAction
 }
 /*
  * <<Log>>
+ *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         6/15/99  Slavek Psenicka debug prints

@@ -67,6 +67,7 @@ public class BundleStructure extends PropertyChangeSupport {
   /** Listens to changes on the underlying dataobject */
   private PropertyChangeListener pcl;
   
+  static final long serialVersionUID =-7537975919604619884L;
   /** Create a data node for a given data object.
   * The provided children object will be used to hold all child nodes.
   * @param obj object to work with

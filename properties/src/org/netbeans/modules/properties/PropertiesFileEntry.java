@@ -64,6 +64,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
   protected String basicName;
   transient protected StructHandler propStruct;
            
+  static final long serialVersionUID =-3882240297814143015L;
   /** Creates new PropertiesFileEntry */
   PropertiesFileEntry(MultiDataObject obj, FileObject file) {
     super(obj, file);
@@ -294,6 +295,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
 
 /*
  * <<Log>>
+ *  17   Gandalf   1.16        11/27/99 Patrik Knakal   
  *  16   Gandalf   1.15        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  15   Gandalf   1.14        10/12/99 Petr Jiricka    

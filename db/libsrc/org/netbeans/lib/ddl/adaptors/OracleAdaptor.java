@@ -17,6 +17,7 @@ import java.sql.*;
 
 public class OracleAdaptor extends DefaultAdaptor
 {
+  static final long serialVersionUID =750800980444527256L;
 }
 
 
@@ -24,6 +25,7 @@ public class OracleAdaptor extends DefaultAdaptor
 
 /*
  * <<Log>>
+ *  3    Gandalf   1.2         11/27/99 Patrik Knakal   
  *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  1    Gandalf   1.0         9/10/99  Slavek Psenicka 

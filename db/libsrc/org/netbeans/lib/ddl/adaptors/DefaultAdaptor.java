@@ -185,6 +185,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	
 	public static final String PROP_CAPITALIZE_USERNAME = "capitializeUsername";
 
+        static final long serialVersionUID =2490518619095829944L;
 	public DefaultAdaptor()
 	{
 		propertySupport = new PropertyChangeSupport(this);
@@ -3934,6 +3935,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 
 /*
  * <<Log>>
+ *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
  *  7    Gandalf   1.6         11/1/99  Radko Najman    dmd.getDatabaseProductName().trim()
  *       
  *  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

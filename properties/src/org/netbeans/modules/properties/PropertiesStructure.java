@@ -33,6 +33,7 @@ public class PropertiesStructure extends Element {
   /** If active, contains link to its handler (parent) */
   private StructHandler handler;
               
+  static final long serialVersionUID =-78380271920882131L;
   /** Constructs a new PropertiesStructure for the given bounds and items. */
   public PropertiesStructure(PositionBounds bounds, ArrayMapList items) {
     super(bounds);                                                    

@@ -33,6 +33,7 @@ public class ImageViewer extends CloneableTopComponent {
   private ImageDataObject storedObject;
   private javax.swing.JLabel label;
 
+  static final long serialVersionUID =6960127954234034486L;
   /** Create a new image viewer.
   * @param obj the data object holding the image
   */
@@ -80,6 +81,7 @@ public class ImageViewer extends CloneableTopComponent {
 
 /*
  * Log
+ *  13   Gandalf   1.12        11/27/99 Patrik Knakal   
  *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  11   Gandalf   1.10        10/9/99  Ian Formanek    Fixed bug 4309 - opening

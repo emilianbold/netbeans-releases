@@ -32,6 +32,7 @@ import org.openide.util.Utilities;
 */
 public class ParametersPicker extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
 
+  static final long serialVersionUID =1116033799965380000L;
   /** Initializes the Form */
   public ParametersPicker(FormManager2 manager, RADComponent sourceComponent, Class requiredType) {
     initComponents ();
@@ -554,6 +555,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
 /*
  * Log
+ *  16   Gandalf   1.15        11/27/99 Patrik Knakal   
  *  15   Gandalf   1.14        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  14   Gandalf   1.13        10/10/99 Ian Formanek    Removed debug printlns

@@ -231,6 +231,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     * when top component becomes modified */
     protected String modifiedAppendix = " *";
                       
+    static final long serialVersionUID =2836248291419024296L;
     /** Default constructor for deserialization */                  
     public PropertiesCloneableTopComponent() {
     }

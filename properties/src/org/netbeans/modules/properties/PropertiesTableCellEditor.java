@@ -20,6 +20,7 @@ import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
                                               
 public class PropertiesTableCellEditor extends DefaultCellEditor {
+  static final long serialVersionUID =-5292598860635851664L;
   /** Constructs a PropertiesTableCellEditor that uses a text field.
   * @param x  a JTextField object ...
   */
@@ -43,6 +44,7 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
       JTextComponent commentComponent;           
       JTextComponent valueComponent;           
       
+      static final long serialVersionUID =9082979978712223677L;
       public PropertiesEditorDelegate(JTextComponent commentComponent, JTextComponent valueComponent) {
         this.commentComponent = commentComponent;
         this.valueComponent = valueComponent;

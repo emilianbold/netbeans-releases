@@ -27,10 +27,12 @@ import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 
 public class ViewColumnNodeInfo extends DatabaseNodeInfo
 {
+  static final long serialVersionUID =-2886978539961014673L;
 }
 
 /*
  * <<Log>>
+ *  4    Gandalf   1.3         11/27/99 Patrik Knakal   
  *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 

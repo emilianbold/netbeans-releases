@@ -53,6 +53,7 @@ public class PaletteItem implements java.io.Serializable {
     this.beanClass = instanceCookie.instanceClass ();
   }
 
+  static final long serialVersionUID =6553170650531136255L;
   /** Creates a new PaletteItem */
   public PaletteItem (InstanceDataObject ido) throws ClassNotFoundException, java.io.IOException {
     this.beanClass = ido.instanceClass ();
@@ -176,6 +177,7 @@ public class PaletteItem implements java.io.Serializable {
 
 /*
  * Log
+ *  14   Gandalf   1.13        11/27/99 Patrik Knakal   
  *  13   Gandalf   1.12        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  12   Gandalf   1.11        7/23/99  Ian Formanek    isContainer property of 

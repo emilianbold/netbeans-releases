@@ -323,6 +323,7 @@ public final class ColorEditor implements PropertyEditor {
     /** Reference to model which holds the color selected in the color chooser */
     final ColorSelectionModel selectionModel;
 
+    static final long serialVersionUID =-3773767121760181847L;
     public NbColorChooser (final ColorEditor editor,
                            final JColorChooser chooser) {
       this.editor = editor;
@@ -469,6 +470,7 @@ public final class ColorEditor implements PropertyEditor {
       boolean selected, hasFocus;
       int index;
 
+      static final long serialVersionUID =-5812182171891176528L;
       /** Creates a new MyListCellRenderer */
       public MyListCellRenderer () {
         setOpaque (true);
@@ -536,6 +538,7 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  5    Gandalf   1.4         11/27/99 Patrik Knakal   
  *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.

@@ -41,6 +41,7 @@ public class FormEditorModule extends ModuleInstall {
   private static final String LAYOUTS_CATEGORY_NAME = "Layouts";
   private static final String BORDERS_CATEGORY_NAME = "Borders";
 
+  static final long serialVersionUID =1573432625099425394L;
   /** Module installed for the first time. */
   public void installed () {
 //    System.out.println("FormEditorModule: installed");
@@ -448,6 +449,7 @@ public class FormEditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  37   Gandalf   1.36        11/27/99 Patrik Knakal   
  *  36   Gandalf   1.35        11/25/99 Ian Formanek    Uses Utilities module
  *  35   Gandalf   1.34        10/27/99 Ian Formanek    Fixed bug 4596 - There 
  *       should be no separator in View menu between Component Inspector and 

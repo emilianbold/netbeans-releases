@@ -26,6 +26,7 @@ import com.netbeans.enterprise.modules.db.explorer.infos.*;
 
 public class AddToIndexAction extends DatabaseAction
 {
+  static final long serialVersionUID =-1416260930649261633L;
 	public void performAction (Node[] activatedNodes) 
 	{
 		Node node;
@@ -112,6 +113,7 @@ else
 }
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
  *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

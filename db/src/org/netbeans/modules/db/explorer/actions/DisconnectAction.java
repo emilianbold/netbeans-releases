@@ -21,6 +21,7 @@ import com.netbeans.enterprise.modules.db.explorer.infos.*;
 
 public class DisconnectAction extends DatabaseAction
 {
+  static final long serialVersionUID =-5994051723289754485L;
 	protected boolean enable(Node[] activatedNodes)
 	{
 		Node node;
@@ -49,6 +50,7 @@ public class DisconnectAction extends DatabaseAction
 }
 /*
  * <<Log>>
+ *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 

@@ -23,6 +23,7 @@ import org.openide.NotifyDescriptor;
  */
 public class EventCustomEditor extends javax.swing.JPanel {
 
+  static final long serialVersionUID =-4825059521634962952L;
   /** Creates new form EventCustomEditor */
   public EventCustomEditor(RADComponent.EventProperty eventProperty) {
     this.eventProperty = eventProperty;

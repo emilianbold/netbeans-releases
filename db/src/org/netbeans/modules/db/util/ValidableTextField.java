@@ -20,6 +20,7 @@ public class ValidableTextField extends JTextField
 {
 	private TextFieldValidator validator = null;
 	
+        static final long serialVersionUID =3686208002682293243L;
 	public ValidableTextField(TextFieldValidator val)
 	{
 		super();
@@ -53,6 +54,7 @@ public class ValidableTextField extends JTextField
 }
 /*
  * <<Log>>
+ *  4    Gandalf   1.3         11/27/99 Patrik Knakal   
  *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version

@@ -81,6 +81,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   /** Properties Settings */
   static final PropertiesSettings settings = new PropertiesSettings();
                                  
+  static final long serialVersionUID =1787354011149868490L;
   /** Constructor */
   public PropertiesEditorSupport(PropertiesFileEntry entry) {
     super (entry);
@@ -123,6 +124,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   
   public static class SerialProxy implements Serializable {
     
+    static final long serialVersionUID =2675098551717845346L;
     public SerialProxy(PropertiesFileEntry serialEntry) {
       this.serialEntry = serialEntry;
     }
@@ -456,6 +458,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     /** Listener for entry's name changes */
     private transient NodeAdapter nodeL;
            
+    static final long serialVersionUID =-2702087884943509637L;
     /** Constructor for deserialization */       
     public PropertiesEditor() {
       super();

@@ -27,6 +27,7 @@ import com.netbeans.ddl.impl.*;
 
 public class GrabTableAction extends DatabaseAction
 {
+  static final long serialVersionUID =-7685449970256732671L;
 	public void performAction (Node[] activatedNodes)
 	{
 		Node node;
@@ -88,6 +89,7 @@ public class GrabTableAction extends DatabaseAction
 }
 /*
  * <<Log>>
+ *  13   Gandalf   1.12        11/27/99 Patrik Knakal   
  *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  11   Gandalf   1.10        10/12/99 Radko Najman    debug messages removed

@@ -49,6 +49,7 @@ public class DataViewWindow extends TopComponent
 	private String schema;
 	private ResourceBundle bundle;
 	
+        static final long serialVersionUID =6855188441469780252L;
 	public DataViewWindow(DBConnection dbcon, String user, String query)
 	throws SQLException
 	{
@@ -271,6 +272,7 @@ public class DataViewWindow extends TopComponent
 		Vector commands;
 		Object selected;
 		
+                static final long serialVersionUID =-5831993904798984334L;
 		public ComboModel() 
 		{
 			this(new Vector(1));
@@ -422,6 +424,7 @@ public class DataViewWindow extends TopComponent
 		Vector data;
 		boolean editable = false;
 		
+                static final long serialVersionUID =7729426847826999963L;
 		/** Constructor */
 		public DataModel(DBConnection dbcon)
 		throws SQLException
@@ -614,6 +617,7 @@ public class DataViewWindow extends TopComponent
 
 /*
  * <<Log>>
+ *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         10/10/99 Radko Najman    setName("Data View")

@@ -31,6 +31,7 @@ import org.openide.TopManager;
 public class ConnectionNodeInfo extends DatabaseNodeInfo
 implements ConnectionOperations
 {
+  static final long serialVersionUID =-8322295510950137669L;
 	public void connect(String dbsys)
 	throws DatabaseException
 	{
@@ -110,6 +111,7 @@ implements ConnectionOperations
 }
 /*
  * <<Log>>
+ *  14   Gandalf   1.13        11/27/99 Patrik Knakal   
  *  13   Gandalf   1.12        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  12   Gandalf   1.11        9/23/99  Slavek Psenicka Bug #3311

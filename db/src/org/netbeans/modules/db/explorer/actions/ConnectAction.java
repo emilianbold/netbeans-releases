@@ -29,6 +29,7 @@ import com.netbeans.enterprise.modules.db.explorer.dlg.*;
 
 public class ConnectAction extends DatabaseAction
 {
+  static final long serialVersionUID =-6822218300035053411L;
 	protected boolean enable(Node[] activatedNodes)
 	{
 		Node node;
@@ -99,6 +100,7 @@ public class ConnectAction extends DatabaseAction
 }
 /*
  * <<Log>>
+ *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         7/21/99  Slavek Psenicka update option off

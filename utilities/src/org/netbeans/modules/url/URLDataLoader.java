@@ -24,6 +24,7 @@ import org.openide.util.NbBundle;
 */
 public class URLDataLoader extends UniFileLoader {
 
+  static final long serialVersionUID =-7407252842873642582L;
   /** Creates new URLDataLoader without the extension. */
   public URLDataLoader() {
     super(URLDataObject.class);
@@ -75,6 +76,7 @@ public class URLDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  8    Gandalf   1.7         10/1/99  Jaroslav Tulach Loaders extends 

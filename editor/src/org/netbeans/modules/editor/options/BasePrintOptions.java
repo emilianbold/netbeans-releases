@@ -49,6 +49,7 @@ public class BasePrintOptions extends OptionSupport {
     PRINT_COLORING_ARRAY_PROP,
   };
 
+    static final long serialVersionUID =7740651671176408299L;
   public BasePrintOptions() {
     this(BaseKit.class, BASE);
   }
@@ -83,6 +84,7 @@ public class BasePrintOptions extends OptionSupport {
 
 /*
  * Log
+ *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
  *  7    Gandalf   1.6         11/5/99  Jesse Glick     Context help jumbo 
  *       patch.
  *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

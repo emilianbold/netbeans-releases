@@ -30,6 +30,7 @@ import com.netbeans.developerx.loaders.form.formeditor.layouts.support.DesignSup
 * @author   Ian Formanek
 */
 public class SelectLayoutAction extends CookieAction {
+  static final long serialVersionUID =4760011790717781801L;
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = -5280204757097896304L;
 
@@ -203,6 +204,7 @@ public class SelectLayoutAction extends CookieAction {
 }
 /*
  * Log
+ *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
  *  9    Gandalf   1.8         11/1/99  Pavel Buzek     display correct name for
  *       layout (DisplayName not Name)
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

@@ -44,6 +44,7 @@ public class DataModel extends AbstractTableModel
 	/** Column data */
 	private Vector data;
 
+        static final long serialVersionUID =4162743695966976536L;
 	public DataModel()
 	{
 		super();
@@ -184,6 +185,7 @@ public class DataModel extends AbstractTableModel
 
 /*
  * <<Log>>
+ *  6    Gandalf   1.5         11/27/99 Patrik Knakal   
  *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         7/21/99  Slavek Psenicka array bounds check

@@ -25,6 +25,7 @@ import com.netbeans.developer.modules.loaders.form.palette.BeanInstaller;
 * @author   Ian Formanek
 */
 public class InstallToPaletteAction extends CookieAction {
+  static final long serialVersionUID =-7793615112675198529L;
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = -5280204757097896304L;
 
@@ -102,6 +103,7 @@ public class InstallToPaletteAction extends CookieAction {
 
 /*
  * Log
+ *  4    Gandalf   1.3         11/27/99 Patrik Knakal   
  *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  2    Gandalf   1.1         7/22/99  Ian Formanek    Is enabled only on 

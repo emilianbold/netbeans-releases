@@ -135,6 +135,7 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
     UnknownBorderNode unknownBorder;
     Node root;
 
+    static final long serialVersionUID =-2613206277499334010L;
     BorderPanel() {
       root = new AbstractNode (new Children.Array ());
       noBorder = new NoBorderNode();
@@ -430,6 +431,7 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
 
 /*
  * Log
+ *  13   Gandalf   1.12        11/27/99 Patrik Knakal   
  *  12   Gandalf   1.11        11/24/99 Pavel Buzek     added support for saving
  *       in XML format
  *  11   Gandalf   1.10        11/5/99  Jesse Glick     Context help jumbo 

@@ -63,6 +63,7 @@ public class DatabaseConnection extends Object implements DBConnection
 	public static final String PROP_DRIVERNAME = "drivername";
 	public static final String PROP_NAME = "name";
 
+        static final long serialVersionUID =4554639187416958735L;
 	/** Default constructor */
 	public DatabaseConnection()
 	{
@@ -305,6 +306,7 @@ public class DatabaseConnection extends Object implements DBConnection
 
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         9/23/99  Slavek Psenicka Bug #3311

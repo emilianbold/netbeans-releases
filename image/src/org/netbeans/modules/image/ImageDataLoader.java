@@ -24,6 +24,7 @@ import org.openide.util.NbBundle;
 */
 public class ImageDataLoader extends UniFileLoader {
 
+  static final long serialVersionUID =-8188309025795898449L;
   /** Create a new loader. */
   public ImageDataLoader() {
     // Set the representation class.
@@ -75,6 +76,7 @@ public class ImageDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         8/8/99   Ian Formanek    Added filesystem action 

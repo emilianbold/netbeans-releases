@@ -49,6 +49,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
   private static Thread serverThread;
   private static boolean inSetRunning = false;
   
+  static final long serialVersionUID =8562026516563511530L;
   /** Module installed again.
   * Add applet executor
   */
@@ -290,6 +291,7 @@ System.out.println("security check OK 2");
 
 /*
  * Log
+ *  33   Gandalf   1.32        11/27/99 Patrik Knakal   
  *  32   Gandalf   1.31        11/25/99 Petr Jiricka    - Another 
  *       security-related fix - for URLs starting with an allowed substring but 
  *       continuing further on.  - Relaxed security to allow executing arbitrary

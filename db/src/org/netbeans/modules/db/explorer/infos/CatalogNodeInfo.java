@@ -25,9 +25,11 @@ import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 
 public class CatalogNodeInfo extends DatabaseNodeInfo
 {
+  static final long serialVersionUID =-2415636395795933849L;
 }
 /*
  * <<Log>>
+ *  5    Gandalf   1.4         11/27/99 Patrik Knakal   
  *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 

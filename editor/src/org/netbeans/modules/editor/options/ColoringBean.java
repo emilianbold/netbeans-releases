@@ -29,6 +29,7 @@ public class ColoringBean implements java.io.Serializable {
   /** example text */
   transient String example;
 
+  static final long serialVersionUID =7093605647730152393L;
   public ColoringBean() {
   }
   
@@ -45,6 +46,7 @@ public class ColoringBean implements java.io.Serializable {
 
 /*
  * Log
+ *  5    Gandalf   1.4         11/27/99 Patrik Knakal   
  *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  3    Gandalf   1.2         7/20/99  Miloslav Metelka 

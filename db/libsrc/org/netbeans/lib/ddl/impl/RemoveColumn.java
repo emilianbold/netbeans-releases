@@ -25,6 +25,7 @@ import com.netbeans.ddl.impl.*;
 
 public class RemoveColumn extends ColumnCommand 
 {
+  static final long serialVersionUID =2845249943586553892L;
 	/** Remove simple column 
 	* @param name Column name
 	*/
@@ -77,6 +78,7 @@ public class RemoveColumn extends ColumnCommand
 
 /*
 * <<Log>>
+*  4    Gandalf   1.3         11/27/99 Patrik Knakal   
 *  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version

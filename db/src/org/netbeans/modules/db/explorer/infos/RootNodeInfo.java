@@ -35,6 +35,7 @@ import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 public class RootNodeInfo extends DatabaseNodeInfo
 implements ConnectionOwnerOperations
 {
+  static final long serialVersionUID =-8079386805046070315L;
 	public void initChildren(Vector children)
 	throws DatabaseException
 	{
@@ -97,6 +98,7 @@ implements ConnectionOwnerOperations
 }
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
  *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         9/27/99  Slavek Psenicka Adding Database/Adaptors

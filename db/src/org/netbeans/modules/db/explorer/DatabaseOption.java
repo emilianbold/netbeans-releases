@@ -45,6 +45,7 @@ public class DatabaseOption extends SystemOption
 	public static final String PROP_FETCH_LIMIT = "fetchLimit";
 	public static final String PROP_FETCH_STEP = "fetchStep";
 
+        static final long serialVersionUID =-13629330831657810L;
 	public DatabaseOption()
 	{
 		super();

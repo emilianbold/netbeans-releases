@@ -56,6 +56,7 @@ public class StructHandler extends Element /*implements TaskListener*/ {
 
   // ======================== Public part ====================================
 
+  static final long serialVersionUID =-3367087822606643886L;
   /** Constructs the implementation of source element for the given
   * java data object.
   */
@@ -352,6 +353,7 @@ public class StructHandler extends Element /*implements TaskListener*/ {
 
 /*
  * <<Log>>
+ *  15   Gandalf   1.14        11/27/99 Patrik Knakal   
  *  14   Gandalf   1.13        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  13   Gandalf   1.12        9/23/99  Petr Jiricka    Fixed calling 

@@ -31,6 +31,7 @@ public class MethodPicker extends javax.swing.JDialog {
   public static final int CANCEL = 0;
   public static final int OK = 1;
 
+  static final long serialVersionUID =7355140527892160804L;
   /** Initializes the Form */
   public MethodPicker(java.awt.Frame parent, FormManager2 manager, RADComponent componentToSelect, Class requiredType) {
     super (parent != null ? parent : TopManager.getDefault ().getWindowManager ().getMainWindow (), true);
@@ -335,6 +336,7 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  14   Gandalf   1.13        11/27/99 Patrik Knakal   
  *  13   Gandalf   1.12        11/25/99 Ian Formanek    Uses Utilities module
  *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

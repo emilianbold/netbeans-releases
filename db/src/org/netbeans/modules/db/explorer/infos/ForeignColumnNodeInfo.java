@@ -25,9 +25,11 @@ import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 
 public class ForeignColumnNodeInfo extends ColumnNodeInfo
 {
+  static final long serialVersionUID =5724448383581029249L;
 }
 /*
  * <<Log>>
+ *  5    Gandalf   1.4         11/27/99 Patrik Knakal   
  *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 

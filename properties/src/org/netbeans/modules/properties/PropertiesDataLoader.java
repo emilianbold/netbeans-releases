@@ -39,6 +39,7 @@ public final class PropertiesDataLoader extends UniFileLoader {
   /** Character used to separate parts of bundle properties file name */                                                                                     
   public static final char PRB_SEPARATOR_CHAR = '_';
 
+  static final long serialVersionUID =4384899552891479449L;
   /** Creates new PropertiesDataLoader */
   public PropertiesDataLoader() {
     super(PropertiesDataObject.class);
@@ -134,6 +135,7 @@ public final class PropertiesDataLoader extends UniFileLoader {
 
 /*
 * <<Log>>
+*  15   Gandalf   1.14        11/27/99 Patrik Knakal   
 *  14   Gandalf   1.13        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  13   Gandalf   1.12        10/8/99  Petr Jiricka    Fixed serialization of 

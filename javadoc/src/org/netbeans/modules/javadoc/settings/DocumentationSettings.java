@@ -67,6 +67,7 @@ public class DocumentationSettings extends ContextSystemOption //implements View
   }
 
 
+  static final long serialVersionUID =-574331845406968391L;
   /** Constructor for DocumentationSettings adds optipn's children */
   public DocumentationSettings () {
     addOption( javadocSettings );
@@ -196,6 +197,7 @@ public class DocumentationSettings extends ContextSystemOption //implements View
 
 /*
  * Log
+ *  9    Gandalf   1.8         11/27/99 Patrik Knakal   
  *  8    Gandalf   1.7         11/5/99  Jesse Glick     Context help jumbo 
  *       patch.
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

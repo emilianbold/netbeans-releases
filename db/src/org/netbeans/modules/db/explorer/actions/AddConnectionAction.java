@@ -35,6 +35,7 @@ public class AddConnectionAction extends DatabaseAction
 	private final static String CLASS_NOT_FOUND = "EXC_ClassNotFound";
 	private final static String BUNDLE_PATH = "com.netbeans.enterprise.modules.db.resources.Bundle";
 	
+        static final long serialVersionUID =5370365696803042542L;
 	public void performAction (Node[] activatedNodes) 
 	{
 		Node node;
@@ -65,6 +66,7 @@ public class AddConnectionAction extends DatabaseAction
 }
 /*
  * <<Log>>
+ *  9    Gandalf   1.8         11/27/99 Patrik Knakal   
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         9/8/99   Slavek Psenicka adaptor changes

@@ -32,6 +32,7 @@ public class DatabaseModule extends ModuleInstall
 {
 	private ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
 	
+        static final long serialVersionUID =5426465356344170725L;
 	public void installed() 
 	{
 		TopManager tm = TopManager.getDefault();
@@ -60,6 +61,7 @@ public class DatabaseModule extends ModuleInstall
 
 /*
 * <<Log>>
+*  9    Gandalf   1.8         11/27/99 Patrik Knakal   
 *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  7    Gandalf   1.6         10/12/99 Radko Najman    debug messages removed
