@@ -3,6 +3,7 @@ OpenIDE-Module-Name: Utilities
 OpenIDE-Module-Specification-Version: 0.9.1
 OpenIDE-Module-Implementation-Version: 0.9.1
 OpenIDE-Module-Install: com/netbeans/developer/modules/utilities/Installer.class
+Class-Path: ext/regexp.jar
 
 Name: com/netbeans/developer/modules/search/types/FullTextType.class
 OpenIDE-Module-Class: Service
