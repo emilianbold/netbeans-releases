@@ -130,15 +130,20 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             return;
         }
         
-        boolean moved = false;
-        if ((ev instanceof OperationEvent.Rename)
-                || (ev instanceof OperationEvent.Move))
-            moved = true;
+        DataObject changed = null;
+        if (
+            (ev instanceof OperationEvent.Rename) || 
+            (ev instanceof OperationEvent.Move)
+        ) {
+            changed = ((OperationEvent)ev).getObject();
+        }
         
         int size = all.size();
         for (int i = 0; i < size; i++) {
-            Object obj = all.get(i);
-            ((DataShadow) obj).refresh(moved);
+            DataShadow obj = (DataShadow)all.get(i);
+            // if original was renamed or moved update 
+            // the file with the link
+            obj.refresh (obj.getOriginal () == changed);
         }
     }
     
