@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -455,9 +455,9 @@ public class TopComponentOperator extends JComponentOperator {
         Point p = tabsComp.getLocation();
         int x = mdl.getX(index) + p.x;
         int y = mdl.getY(index) + p.y;
-        // TODO - remove 4 when 36190 fixed
+        
         // need a constant to satisfy that we are in tab
-        new JPopupMenuOperator(JPopupMenuOperator.callPopup(tabsComp, x+4, y)).pushMenu(popupPath);
+        new JPopupMenuOperator(JPopupMenuOperator.callPopup(tabsComp, x+1, y)).pushMenu(popupPath);
     }
     
     /** Returns TabbedAdapter component from parents hierarchy. 

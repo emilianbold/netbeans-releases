@@ -7,22 +7,21 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
 
-import java.awt.Rectangle;
-import java.lang.reflect.Method;
 import java.util.Iterator;
+import javax.swing.JComponent;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
-import org.netbeans.core.windows.view.ui.tabcontrol.ViewTabUI;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.QueueTool;
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComponentOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.openide.windows.TopComponent;
@@ -52,6 +51,11 @@ import org.openide.windows.TopComponent;
  */
 public class EditorWindowOperator extends JFrameOperator {
     
+    /** Components operators. */
+    private JButtonOperator _btLeft;
+    private JButtonOperator _btRight;
+    private JButtonOperator _btDown;
+    
     /** Creates new instance of EditorWindowOperator. It waits for frame underlying
      * of editor mode. It can be a JFrame with title Editor or MainWindow frame
      * depending on state of window system.
@@ -71,7 +75,43 @@ public class EditorWindowOperator extends JFrameOperator {
     public EditorWindowOperator() {
         super(NbFrameOperator.waitJFrame("editor")); // NOI18N
     }
+
+    /** Returns operator of left arrow button in top right corner intended to 
+     * move tabs to be visible left ones.
+     * @return JButtonOperator instance
+     */
+    public JButtonOperator btLeft() {
+        if(_btLeft == null) {
+            _btLeft = new JButtonOperator(
+                        new ContainerOperator(getEditor().findTabbedAdapter()), 0);
+        }
+        return _btLeft;
+    }
+
+    /** Returns operator of right arrow button in top right corner intended to 
+     * move tabs to be visible right ones.
+     * @return JButtonOperator instance
+     */
+    public JButtonOperator btRight() {
+        if(_btRight == null) {
+            _btRight = new JButtonOperator(
+                        new ContainerOperator(getEditor().findTabbedAdapter()), 1);
+        }
+        return _btRight;
+    }
     
+    /** Returns operator of down arrow button in top right corner intended to 
+     * show list of opened documents and selects a document in the list.
+     * @return JButtonOperator instance
+     */
+    public JButtonOperator btDown() {
+        if(_btDown == null) {
+            _btDown = new JButtonOperator(
+                        new ContainerOperator(getEditor().findTabbedAdapter()), 2);
+        }
+        return _btDown;
+    }
+
     /** Close all opened documents and discard all changes.
      * It works also if no file is modified, so it is a safe way how to close
      * documents and no block further execution.
@@ -145,30 +185,16 @@ public class EditorWindowOperator extends JFrameOperator {
 
     /********************** Control buttons ********************************/
     
-    /** Pushes left arrow button in top left corner intended to jump to the first
-     * hidden document's tab on the left from currently opened document. If 
-     * there is no hidden tab, the arrow button is not visible and this method
-     * does nothing.
-     * @return true if left arrow button was visible and pushed, false otherwise
+    /** If the leftmost visible tab is partially hidden, it clicks on it. 
+     * Otherwise it does nothing.
+     * @return true if tabs were moved, false otherwise
      */
     public boolean jumpLeft() {
         TabbedAdapter ta = getEditor().findTabbedAdapter();
-        ViewTabUI tabsUI = ta.getTabsDisplayer().getTabsUI();
-        Rectangle arrowButtonRect = new Rectangle();
-        try {
-            Class clazz = Class.forName("org.netbeans.core.windows.view.ui.tabcontrol.ScrollableTabsUI");  // NOI18N
-            Method methodArrowButtonRect = clazz.getDeclaredMethod("arrowButtonRect", 
-                                                                   new Class[] {Rectangle.class});
-            methodArrowButtonRect.setAccessible(true);
-            methodArrowButtonRect.invoke(tabsUI, new Object[] {arrowButtonRect});
-        } catch (Exception e) {
-            throw new JemmyException("ScrollableTabsUI.arrowButtonRect() by reflection failed.", e);
-        }
-        if(arrowButtonRect.width > 0) {
-            // only when width > 0, i.e. arrow button is visible, click on it
-            new JComponentOperator(ta.getTabsDisplayer().getComponent()).
-                                            clickMouse(arrowButtonRect.width/2, 
-                                                       arrowButtonRect.height/2, 1);
+        JComponent tabsComp = ta.getTabsDisplayer().getComponent();
+        if(btLeft().isEnabled()) {
+            // click left corner
+            new JComponentOperator(tabsComp).clickMouse(tabsComp.getX()+1, tabsComp.getY(), 1);
             return true;
         }
         return false;
@@ -179,7 +205,7 @@ public class EditorWindowOperator extends JFrameOperator {
      * it does nothing.
      */
     public void moveTabsRight() {
-        clickControlButton(2);
+        btRight().push();
     }
 
     /** Pushes left arrow control button in top right corner intended to 
@@ -187,14 +213,14 @@ public class EditorWindowOperator extends JFrameOperator {
      * it does nothing.
      */
     public void moveTabsLeft() {
-        clickControlButton(0);
+        btLeft().push();
     }
 
     /** Pushes down arrow control button in top right corner intended to 
      * show list of opened documents and selects index-th documents in the list.
      */
     public void selectDocument(int index) {
-        clickControlButton(1);
+        btDown().push();
         JTableOperator tableOper = new JTableOperator(MainWindowOperator.getDefault());
         tableOper.selectCell(index, 0);
     }
@@ -204,7 +230,7 @@ public class EditorWindowOperator extends JFrameOperator {
      * in the list.
      */
     public void selectDocument(String name) {
-        clickControlButton(1);
+        btDown().push();
         JTableOperator tableOper = new JTableOperator(MainWindowOperator.getDefault());
         int row = tableOper.findCellRow(name);
         if(row > -1) {
@@ -212,31 +238,6 @@ public class EditorWindowOperator extends JFrameOperator {
         } else {
             throw new JemmyException("Cannot select document \""+name+"\".");
         }
-    }
-    
-    private void clickControlButton(int index) {
-        // TODO - test when fixed 36183
-        TabbedAdapter ta = getEditor().findTabbedAdapter();
-        ViewTabUI tabsUI = ta.getTabsDisplayer().getTabsUI();
-        Rectangle controlButtonRect = new Rectangle();
-        Rectangle tabsControlsRect = new Rectangle();
-        JComponentOperator jComponentOper = new JComponentOperator(ta.getTabsDisplayer().getComponent());
-        try {
-            Class clazz = Class.forName("org.netbeans.core.windows.view.ui.tabcontrol.ScrollableTabsUI");
-            Method method = clazz.getDeclaredMethod("tabsControlsRect", new Class[] {Rectangle.class});
-            method.setAccessible(true);
-            method.invoke(tabsUI, new Object[] {tabsControlsRect});
-
-            // This should return valid coordinates for control button 
-            // but it doesn't work
-            method = clazz.getDeclaredMethod("controlButtonRect", new Class[] {int.class, Rectangle.class});
-            method.setAccessible(true);
-            method.invoke(tabsUI, new Object[] {new Integer(0), controlButtonRect});
-        } catch (Exception e) {
-            throw new JemmyException("ScrollableTabsUI.controlButtonRect() by reflection failed.", e);
-        }
-        jComponentOper.clickMouse(tabsControlsRect.x+tabsControlsRect.width/2+(index-1)*controlButtonRect.width, 
-                                  tabsControlsRect.y+tabsControlsRect.height/2, 1);
     }
     
     /** Performs verification by accessing all sub-components */    
