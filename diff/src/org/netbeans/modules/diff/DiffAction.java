@@ -118,7 +118,7 @@ public class DiffAction extends NodeAction {
     }
     
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(DiffAction.class);
     }
 
 }
