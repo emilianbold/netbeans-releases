@@ -485,17 +485,17 @@ final class Services extends ServiceType.Registry {
   * of the same class.
   */
   static final class InstanceLevel extends Children.Keys
-  implements Level, Comparator {
+  implements Level {
     /** the section */
     private ManifestSection.ServiceSection section;
     /** all copied executors */
-    private SortedSet all;
+    private List all;
     /** current default, or null */
     private ServiceType def;
   
     public InstanceLevel () {
       setBefore (true);
-      all = new TreeSet (this);
+      all = new LinkedList ();
       def = null;
     }
     
@@ -504,7 +504,7 @@ final class Services extends ServiceType.Registry {
     protected Node[] createNodes (Object key) {
       try {
         return new Node[] {
-          new ServicesNode.InstanceLevel ((ServiceType)key, key == all.first ())
+          new ServicesNode.InstanceLevel ((ServiceType)key)
         };
       } catch (IntrospectionException ex) {
         if (debug ()) ex.printStackTrace();
@@ -570,11 +570,9 @@ final class Services extends ServiceType.Registry {
     //
     
     /** Creates new instance.
-    * @param proto if true, try to use prototype
     */
-    void create (boolean proto) throws Exception {
-      ServiceType type = (! proto || def == null) ? section.createServiceType () : def;
-      add (uniquify (type));
+    void create () throws Exception {
+      add (uniquify (section.createServiceType ()));
     }
     
     /** Test whether the services repository contains the supplied name. */
@@ -608,7 +606,7 @@ final class Services extends ServiceType.Registry {
         s = (ServiceType)m.get ();
       }
       all.add (s);
-      def = (ServiceType) all.first ();
+      def = (ServiceType) all.get (0);
       setKeys (all);
       
       firePropertyChange ();
@@ -617,7 +615,7 @@ final class Services extends ServiceType.Registry {
     /** Destroys the service */
     public void destroy (ServiceType s) {
       all.remove (s);
-      def = all.isEmpty () ? null : (ServiceType) all.first ();
+      def = all.isEmpty () ? null : (ServiceType) all.get (0);
       setKeys (all);
       
       firePropertyChange ();
@@ -653,10 +651,8 @@ final class Services extends ServiceType.Registry {
       // Again weird but errors otherwise... --jglick
       if (!ll.isEmpty ()) {
         // update current state
-        def = ll.isEmpty () ? null : (ServiceType) ll.get (0);
-        all = new TreeSet (this);
-        all.addAll (ll);
-        setKeys (all);
+        def = (ServiceType) ll.get (0);
+        setKeys (all = ll);
 
         it = all.iterator ();
         while (it.hasNext ()) refreshKey (it.next ());
@@ -666,31 +662,31 @@ final class Services extends ServiceType.Registry {
       
     }
     
-    /** Compares two ServiceTypes.
-    */
-    public int compare(Object o1, Object o2) {
-      ServiceType s1 = (ServiceType)o1;
-      ServiceType s2 = (ServiceType)o2;
-
-      if (s1 == def) {
-        return -1;
-      }
-      
-      if (s2 == def) {
-        return 1;
-      }
-      
-      int byName = s1.getName ().compareTo (s2.getName ());
-      if (byName != 0)
-        return byName;
-      else
-        return System.identityHashCode (s1) - System.identityHashCode (s2);
+    /** Get an index support capable of rearranging the instances. */
+    public Index getIndex () {
+      return new Index.Support () {
+        public Node[] getNodes () {
+          return InstanceLevel.this.getNodes ();
+        }
+        public int getNodesCount () {
+          return getNodes ().length;
+        }
+        public void reorder (int[] perm) {
+          ServiceType[] nue = new ServiceType[perm.length];
+          for (int i = 0; i < perm.length; i++)
+            nue[i] = ((ServicesNode.InstanceLevel) getNodes () [perm[i]]).getService ();
+          changeAll (new ArrayList (Arrays.asList (nue)));
+        }
+      };
     }
+    
   }
 }
 
 /*
 * Log
+*  14   Gandalf   1.13        12/20/99 Jesse Glick     No more "default 
+*       services", all are freely reorderable.
 *  13   Gandalf   1.12        11/16/99 Ales Novak      RuntimeException Platform
 *       catched
 *  12   Gandalf   1.11        11/10/99 Ales Novak      InstanceLevel.add - 
