@@ -77,8 +77,7 @@ Microsystems, Inc. All Rights Reserved.
         <include name="regexp*.jar"/>
       </fileset>
     </copy>
-    <!-- [PENDING] may according to wishes give another attribute: eof="add" -->
-    <fixcrlf srcdir="netbeans/bin" cr="add">
+    <fixcrlf srcdir="netbeans/bin" eol="crlf">
       <include name="**/*.bat"/>
       <include name="**/*.cmd"/>
     </fixcrlf>
