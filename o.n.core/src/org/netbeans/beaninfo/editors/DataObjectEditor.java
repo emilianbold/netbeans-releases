@@ -62,7 +62,7 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
     /** A property stored between calls to atachEnv and getCustomEditor() */
     private Node rootNode;
     /** A property stored between calls to atachEnv and getCustomEditor() */
-    private DataFolder currentFolder;
+    private DataObject currentFolder;
     /** A property stored between calls to atachEnv and getCustomEditor() */
     private Class[] cookies;
     /** A property stored between calls to atachEnv and getCustomEditor() */
@@ -91,8 +91,8 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
     public void attachEnv(PropertyEnv env) {
         this.env = env;
         Object newObj = env.getFeatureDescriptor().getValue(PROPERTY_CURRENT_FOLDER);
-        if (newObj instanceof DataFolder) {
-            currentFolder = (DataFolder)newObj;
+        if (newObj instanceof DataObject) {
+            currentFolder = (DataObject)newObj;
         }
         newObj = env.getFeatureDescriptor().getValue(PROPERTY_ROOT_FOLDER);
         if (newObj instanceof DataFolder) {
@@ -166,14 +166,12 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         } else {
             customEditor.setDataFilter(dataFilter);
         }
-        if (currentFolder != null) {
-            customEditor.setDataObject(currentFolder);
+        Object value = getValue();
+        if ( value != null && value instanceof DataObject) {
+            customEditor.setDataObject( (DataObject)value );
         }
-        else {
-            Object value = getValue();
-            if ( value != null && value instanceof DataObject) {
-                customEditor.setDataObject( (DataObject)value );
-            }
+        else if (currentFolder != null) {
+            customEditor.setDataObject(currentFolder);
         }
         if (label != null) {
             customEditor.setText(label);
