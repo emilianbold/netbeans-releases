@@ -31,6 +31,7 @@ import org.netbeans.modules.xml.text.completion.XMLCompletionQuery;
 import org.netbeans.modules.xml.text.completion.GrammarManager;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
 import org.openide.windows.TopComponent;
 
 /**
@@ -100,7 +101,7 @@ public class NodeSelector {
     }
     
     /** Selects element at the given position. */
-    void selectElementsAtOffset(final int offset) {
+    synchronized void selectElementsAtOffset(final int offset) {
         if (syntaxSupport == null) {
             Document doc = pane.getDocument();
             if (doc instanceof BaseDocument) {
@@ -153,7 +154,7 @@ public class NodeSelector {
         
         HintContext hintContext;
         
-        Node.PropertySet nodePropertySet;
+        Sheet propSheet;
         
         public DelegatingNode(Node peer, GrammarQuery grammarQuery, HintContext hintContext) {
             super(peer);
@@ -178,53 +179,42 @@ public class NodeSelector {
         }
         
         public Node.PropertySet[] getPropertySets() {
-            if (nodePropertySet == null) {
-                nodePropertySet = new Node.PropertySet("Node properties", "Node properties",
-                "Shows properties specific for the selected node in the text editor") {
-                    public Node.Property[] getProperties() {
-                        if (grammarQuery != null && hintContext != null) {
-                            Node.Property[] nodeProperties = grammarQuery.getProperties(hintContext);
-                            if (nodeProperties != null && nodeProperties.length > 0) {
-                                // The GrammarQuery controls the properties
-                                return nodeProperties;
-                            }
-                        }
-                        
-                        // By default, we try to create properties from the attributes of the
-                        // selected element.
-                        org.w3c.dom.Element attributeOwningElem = null;
-                        if (hintContext != null) {
-                            if (hintContext.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                                attributeOwningElem = (org.w3c.dom.Element)hintContext;
-                            } else if (hintContext.getNodeType() == org.w3c.dom.Node.ATTRIBUTE_NODE) {
-                                attributeOwningElem = (org.w3c.dom.Element)((org.w3c.dom.Attr)hintContext).getOwnerElement();
-                            }
-                        }
-                        
-                        if (attributeOwningElem != null) {
-                            // We have a selected element that might have attributes 
-                            org.w3c.dom.NamedNodeMap attributes = attributeOwningElem.getAttributes();
-                            Node.Property[] nodeProperties = new Node.Property[attributes.getLength()];
-                            for (int ind = 0; ind < attributes.getLength(); ind++) {
-                                org.w3c.dom.Node node = attributes.item(ind);
-                                nodeProperties[ind] = new AttributeProperty(attributeOwningElem, node.getNodeName());          
-                            }
-                            
-                            return nodeProperties;
-                        }
-                        
-                        return new Node.Property[0];
+            if (propSheet == null) {
+                propSheet = Sheet.createDefault();
+                Sheet.Set nodePropertySet = propSheet.get(Sheet.PROPERTIES);
+                
+                if (grammarQuery != null && hintContext != null) {
+                    Node.Property[] nodeProperties = grammarQuery.getProperties(hintContext);
+                    if (nodeProperties != null && nodeProperties.length > 0) {
+                        // The GrammarQuery controls the properties
+                        nodePropertySet.put(nodeProperties);
+                        return propSheet.toArray();
                     }
-                };
+                }
+                
+                // By default, we try to create properties from the attributes of the
+                // selected element.
+                org.w3c.dom.Element attributeOwningElem = null;
+                if (hintContext != null) {
+                    if (hintContext.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                        attributeOwningElem = (org.w3c.dom.Element)hintContext;
+                    } else if (hintContext.getNodeType() == org.w3c.dom.Node.ATTRIBUTE_NODE) {
+                        attributeOwningElem = (org.w3c.dom.Element)((org.w3c.dom.Attr)hintContext).getOwnerElement();
+                    }
+                }
+                
+                if (attributeOwningElem != null) {
+                    // We have a selected element that might have attributes
+                    org.w3c.dom.NamedNodeMap attributes = attributeOwningElem.getAttributes();
+                    for (int ind = 0; ind < attributes.getLength(); ind++) {
+                        org.w3c.dom.Node node = attributes.item(ind);
+                        nodePropertySet.put(new AttributeProperty(attributeOwningElem, node.getNodeName()));
+                    }
+                    
+                }
             }
             
-            Node.PropertySet[] parentPropSets = super.getPropertySets();
-            Node.PropertySet[] newPropSets = new Node.PropertySet[parentPropSets.length + 1];
-            for (int ind = 0; ind < parentPropSets.length; ind++) {
-                newPropSets[ind] = parentPropSets[ind];
-            }
-            newPropSets[parentPropSets.length] = nodePropertySet;
-            return newPropSets;
+            return propSheet.toArray();
         }
     }
     
