@@ -13,6 +13,7 @@
 
 package org.netbeans.core;
 
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.lang.ref.*;
 import java.util.*;
@@ -70,8 +71,17 @@ class ModuleActions extends ActionManager
         //System.err.println ("invokeAction -> run: rp=" + rp);
         Runnable r = new Runnable () {
                 public void run () {
-                    //System.err.println ("invokeAction -> run: " + a);
-                    a.actionPerformed (e);
+                    if (a.isEnabled ()) {
+                        //System.err.println ("invokeAction -> run: " + a);
+                        a.actionPerformed (e);
+                    } else {
+                        //System.err.println ("invokeAction -> beep: " + a);
+                        Mutex.EVENT.readAccess (new Runnable () {
+                                public void run () {
+                                    Toolkit.getDefaultToolkit ().beep ();
+                                }
+                            });
+                    }
                     //System.err.println ("invokeAction -> run done: " + a);
                     releaseRequestProcessor (rp);
                 }
