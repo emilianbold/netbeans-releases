@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbroot" location="${xml_root}/.."/>
     <property name="binroot" location="${nbroot}/../nbextra"/>
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
+    <property name="libs_root" location="${nbroot}/libs"/>
 
     <property name="xml-apis" location="${binroot}/core/release/lib/ext/xml-apis.jar" />
 
@@ -49,6 +50,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="compile">
+        <property file="${libs_root}/public.properties"/>
+
         <echo message="Compiling XSL module classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>        
@@ -62,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!--Servlet API-->
                 <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar" />
                 <!--Xalan-->
-                <pathelement location="${binroot}/libs/xalan/release/modules/autoload/ext/xalan-2.3.1.jar" />
+                <pathelement location="${binroot}/${libs.xalan.jar.path}" />
             </classpath>
         </javac>
     </target>
