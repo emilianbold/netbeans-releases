@@ -119,7 +119,7 @@ public class SearchTest extends EditorTestCase {
             editor.setCaretPosition(0);
             new FindAction().perform();
             Find find = new Find();
-            find.cboFindWhat().getTextField().setText("public");
+            find.cboFindWhat().getTextField().setText("package");
             find.find();
             new EventTool().waitNoEvent(1000);
             find.close();
@@ -133,7 +133,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(1000);
             find2.close();
             
-            // search for an item from history - word "public"
+            // search for an item from history - word "package"
             editor.setCaretPosition(0);
             new EventTool().waitNoEvent(1000);
             new FindAction().perform();
@@ -144,7 +144,7 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(1000);
             find3.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(), "'public' found at 16:5");
+            assertEquals(editor.lblStatusBar().getText(), "'package' found at 7:1");
                         
         } finally {
             closeFileWithDiscard();
