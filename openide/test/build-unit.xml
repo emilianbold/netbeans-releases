@@ -42,7 +42,7 @@
     <!-- ========= -->
     
     <target name="unit-compiler">
-        <buildTests srcDir="unit/src">
+        <buildTests srcDir="unit/src" compileexcludes="**/data/**">
             <classpath refid="compiletest.classpath"/>
         </buildTests>
     </target>
