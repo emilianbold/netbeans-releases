@@ -19,6 +19,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import java.beans.*;
+import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
@@ -32,6 +33,7 @@ import com.netbeans.ide.awt.SplittedPanel;
 import com.netbeans.ide.awt.ToolbarToggleButton;
 import com.netbeans.ide.windows.TopComponent;
 import com.netbeans.ide.nodes.Node;
+import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.actions.SystemAction;
 
 /** Default explorer which contains toolbar with cut/copy/paste,
@@ -40,11 +42,16 @@ import com.netbeans.ide.util.actions.SystemAction;
 * @author Ian Formanek, David Simonek
 */
 public final class NbMainExplorer extends TopComponent implements ItemListener {
+  /** The message formatter for Explorer title */
+  private static MessageFormat formatExplorerTitle;
+
   /** ExplorerManagers for roots */
   private transient ExplorerManager[] managers;
   private transient ExplorerManager sheetManager;
   private transient ExplorerManager currentManager;
-  
+
+  private transient PropertyChangeListener listener;
+
   /** Switchable property view panel */
   private transient ExplorerPanel sheetPanel;
   /** Splitted panel containing tree view and property view */
@@ -68,30 +75,35 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     final JTabbedPane tabs = new JTabbedPane ();
     tabs.setTabPlacement (SwingConstants.BOTTOM);
 
+    listener = new PropertyChangeListener () {
+      public void propertyChange (PropertyChangeEvent evt) {
+        if (evt.getSource () == currentManager) {
+          if (sheetVisible && (sheetManager != null)) {
+            if (ExplorerManager.PROP_ROOT_CONTEXT.equals (evt.getPropertyName ())) {
+              sheetManager.setRootContext (currentManager.getRootContext ());
+            } else if (ExplorerManager.PROP_EXPLORED_CONTEXT.equals (evt.getPropertyName ())) {
+              sheetManager.setExploredContext (currentManager.getExploredContext ());
+            } else if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName ())) {
+              try {
+                sheetManager.setSelectedNodes (currentManager.getSelectedNodes ());
+              } catch (PropertyVetoException e) {
+                throw new InternalError ("Property Sheet must not not veto selection");
+              }
+            }
+          }
+          setActivatedNodes (currentManager.getSelectedNodes ());
+          updateTitle ();
+        }
+      }
+    };
+
     Node[] roots = getRoots ();
     managers = new ExplorerManager[roots.length];
     for (int i = 0; i < roots.length; i++) {
       ExplorerPanel panel = new ExplorerPanel ();
       managers[i] = panel.getExplorerManager ();
       managers[i].setRootContext (roots[i]);
-      managers[i].addPropertyChangeListener (new PropertyChangeListener () {
-          public void propertyChange (PropertyChangeEvent evt) {
-            if ((evt.getSource () == currentManager) && sheetVisible && (sheetManager != null)) {
-              if (ExplorerManager.PROP_ROOT_CONTEXT.equals (evt.getPropertyName ())) {
-                sheetManager.setRootContext (currentManager.getRootContext ());
-              } else if (ExplorerManager.PROP_EXPLORED_CONTEXT.equals (evt.getPropertyName ())) {
-                sheetManager.setExploredContext (currentManager.getExploredContext ());
-              } else if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName ())) {
-                try {
-                  sheetManager.setSelectedNodes (currentManager.getSelectedNodes ());
-                } catch (PropertyVetoException e) {
-                  throw new InternalError ("Property Sheet must not not veto selection");
-                }
-              }
-            }
-          }
-        }
-      );
+      managers[i].addPropertyChangeListener (listener); // synchronization of property sheet, activated nodes, title
       BeanTreeView treeView = new BeanTreeView ();
       panel.setLayout (new BorderLayout ());
       panel.add (treeView);
@@ -221,21 +233,35 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     }
   }
 
+  private void updateTitle () {
+    String name = currentManager.getExploredContext().getDisplayName();
+    if (name == null) {
+      name = "";
+    }
+    if (formatExplorerTitle == null) {
+      formatExplorerTitle = new MessageFormat (
+        NbBundle.getBundle (NbMainExplorer.class).getString ("FMT_MainExplorerTitle")
+      );
+    }
+    setName(formatExplorerTitle.format (
+      new Object[] { name }
+    ));
+  }
+  
   /** Adds listener to the explorer panel.
   */
   public void open () {
     super.open ();
-//    managerListener = new PropL ();
-//    explorer.addPropertyChangeListener (managerListener);
-//    setActivatedNodes (explorer.getSelectedNodes ());
-//    updateTitle ();
+    setActivatedNodes (currentManager.getSelectedNodes ());
+    updateTitle ();
   }
 
   /** Removes listeners.
   */
   public boolean close () {
+    for (int i = 0; i < managers.length; i++)
+      managers[i].removePropertyChangeListener (listener);
     super.close ();
-//    explorer.removePropertyChangeListener (managerListener);
     return true;
   }
 
@@ -274,6 +300,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  2    Gandalf   1.1         3/15/99  Ian Formanek    Added formatting of 
+*       title, updating activatedNodes
 *  1    Gandalf   1.0         3/14/99  Ian Formanek    
 * $
 */
