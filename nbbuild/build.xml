@@ -2771,28 +2771,19 @@ Tag:
     <delete file="NetBeans-${buildnum}-build-extra-data.zip"/>
 
     <property name="nb-extra-files" value="*.built,test/**,extra/**"/>
-<!--
-    <patternset id="nb-extra-files">
-        <exclude name="*.built" />
-        <exclude name="test/**"/>
-        <exclude name="extra/**"/>
-    </patternset>
--->
+
     <!-- package the zip file -->
     <zip destfile="NetBeans-${buildnum}.zip" update="true" duplicate="preserve">
       <zipfileset file="${netbeans.dest.dir}/bin/netbeans" filemode="755" prefix="${netbeans.dest}/bin"/>
       <zipfileset file="${netbeans.dest.dir}/${nb.cluster.platform.dir}/${nb.bin.dir}/nbexec" filemode="755" prefix="${netbeans.dest}/${nb.cluster.platform.dir}/${nb.bin.dir}"/>
+      <zipfileset dir="${netbeans.dest.dir}/${nb.cluster.ide.dir}/ant/bin" filemode="755" prefix="${netbeans.dest}/${nb.cluster.ide.dir}/ant/bin">
+        <exclude name="*.bat"/>
+        <exclude name="*.cmd"/>
+      </zipfileset>
       <zipfileset dir="${netbeans.dest.dir}" filemode="755" prefix="${netbeans.dest}">
         <include name="**/*.sh"/>
       </zipfileset>
       <zipfileset dir="${netbeans.dest.dir}" prefix="${netbeans.dest}" excludes="${nb-extra-files}"/>
-<!--
-        <patternset excludes="${nb-extra-files}"/>
-        <exclude name="*.built"/>
-        <exclude name="test/**"/>
-        <exclude name="extra/**"/>
-      </zipfileset>
--->
     </zip>
     
     <!-- package the zip file with extra files not to be included in regular product package-->
@@ -2938,6 +2929,11 @@ the ${netbeans.dest}/bin/ directory.
     <zip destfile="${netbeans.build.dir}/zips/${clusters.prefix}-${zipcluster.file}-${buildnum}.zip" update="true" duplicate="preserve">
       <zipfileset dir="${netbeans.dest.dir}" filemode="755">
         <include name="${one.cluster.dir}/${nb.bin.dir}/nbexec"/>
+      </zipfileset>
+      <zipfileset dir="${netbeans.dest.dir}" filemode="755">
+        <include name="${one.cluster.dir}/ant/bin/*"/>
+        <exclude name="${one.cluster.dir}/ant/bin/*.bat"/>
+        <exclude name="${one.cluster.dir}/ant/bin/*.cmd"/>
       </zipfileset>
       <zipfileset dir="${netbeans.dest.dir}">
         <patternset refID="${one.cluster.name}.files"/>
