@@ -77,6 +77,10 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     */
     protected abstract boolean updateModelFromDocument() throws java.io.IOException ;
     
+    /** Update text document from data model. Called when something is changed in visual editor.
+    */
+    protected abstract String generateDocumentFromModel();
+    
     protected boolean isModelUpdated() {
         return modelUpdated;
     }
@@ -177,6 +181,42 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         }
     }
     
+    protected void updateDocument() {
+        //System.out.println("restart Gen");           
+        final String newDoc = generateDocumentFromModel();
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    javax.swing.text.Document doc = getEditorSupport().openDocument();
+                    Utils.replaceDocument(doc,newDoc);
+                    //setDocumentValid(true);
+                    //if (saveAfterNodeChanges){
+                        SaveCookie savec = (SaveCookie) getCookie(SaveCookie.class);
+                        if (savec!=null) savec.save();
+                    //}
+                    // this is necessary for correct undo behaviour
+                    //getEditorSupport().getUndo().discardAllEdits();
+                }
+                catch (javax.swing.text.BadLocationException e) {
+                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+                }
+
+                catch (IOException e) {
+                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+                }
+                finally {
+                    changedFromUI=false;
+                    /*
+                    synchronized (DD2beansDataObject.this) {
+                        numberOfStartedGens--;
+                        if (numberOfStartedGens==0) nodeDirty=false;
+                    } 
+                     */                               
+                }
+            }
+        });
+    }
+    
     /** Display Name for MultiView editor
      */
     protected abstract String getDisplayName();
@@ -185,7 +225,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
      */
     protected abstract String getIconBase();
     
-    public void UIUpdated() {
+    public void modelUpdatedFromUI() {
         changedFromUI=true;
         if(getCookie(SaveCookie.class) == null) {
             getCookieSet0().add(getEditorSupport().saveCookie);

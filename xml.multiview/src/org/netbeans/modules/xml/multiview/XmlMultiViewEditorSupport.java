@@ -60,7 +60,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         Runnable r = new Runnable() {
             public void run() {
                 dObj.updateModelFromSource();
-                dObj.changedFromUI=false;
             }
 	};
         if (parsingDocumentTask==null || parsingDocumentTask.isFinished() || 
@@ -78,10 +77,8 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
     protected boolean notifyModified () {
         if (!super.notifyModified()) 
             return false;
-
         addSaveCookie();
         if (!dObj.isChangedFromUI()) restartTimer();
-        else dObj.changedFromUI = false;
         return true;
     }
 
@@ -129,6 +126,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         
         // #45665 - dock into editor mode if possible..
         Mode editorMode = WindowManager.getDefault().findMode(org.openide.text.CloneableEditorSupport.EDITOR_MODE);
+
         if (editorMode != null) {
             editorMode.dockInto(mvtc);
         }
@@ -144,26 +142,18 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
     */
     public void edit () {
         if (java.awt.EventQueue.isDispatchThread()) {
-            openInAWT(xmlMultiViewIndex);
+            openInAWT(-1);
         } else {
             java.awt.EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    openInAWT(xmlMultiViewIndex);
+                    openInAWT(-1);
                 }
             });
         }
     }
     
-    private void openInAWT(int index) {
-        CloneableTopComponent mvtc = openCloneableTopComponent();
-        mvtc.requestActive();
-        MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
-        handler.requestActive(handler.getPerspectives()[index]);
-    }
-    
     /** Overrides superclass method
      */
-    
     public void open() {
         if (java.awt.EventQueue.isDispatchThread()) {
             openInAWT(0);
@@ -174,6 +164,13 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
                 }
             });
         }
+    }
+    
+    private void openInAWT(int index) {
+        CloneableTopComponent mvtc = openCloneableTopComponent();
+        mvtc.requestActive();
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
+        handler.requestActive(handler.getPerspectives()[index<0?xmlMultiViewIndex:index]);
     }
     
     /** A description of the binding between the editor support and the object.
