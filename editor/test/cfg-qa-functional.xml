@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="all,completion-15" name="JDK1.5 Completion" compiler="qa-functional-compiler-completion">
+    <testbag testattribs="all,completion-15,completion-15-all" name="JDK1.5 Completion" compiler="qa-functional-compiler-completion">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15*" />
@@ -52,17 +52,8 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biiunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biiiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest5biiiunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest7biiunsorted" />
 
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest1iunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest1iiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest2iunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest2iiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest13iunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest13iiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest14iunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest14iiunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiiunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9biiunsorted" />
@@ -76,13 +67,12 @@ Microsystems, Inc. All Rights Reserved.
     <!--These tests represent testcases, that are currently failing, but the golden files are known, and so should
         start passing once the problems are fixed.
       -->
-    <testbag testattribs="all,completion-15-should-pass" name="JDK1.5 Completion Should Pass" compiler="qa-functional-compiler-completion">
+    <testbag testattribs="all,completion-15-should-pass,completion-15-all" name="JDK1.5 Completion Should Pass" compiler="qa-functional-compiler-completion">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biunsorted" />
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biiunsorted" />
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest4biiiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest5biiiunsorted" />
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest7biiunsorted" />
             </patternset>
         </testset>
@@ -91,17 +81,9 @@ Microsystems, Inc. All Rights Reserved.
     <!--These tests represent testcases, that are currently failing and will require some work to make them pass (the golden file
         are not known for these testcases.
       -->
-    <testbag testattribs="all,completion-15-will-fail" name="JDK1.5 Completion Will Fail" compiler="qa-functional-compiler-completion">
+    <testbag testattribs="all,completion-15-will-fail,completion-15-all" name="JDK1.5 Completion Will Fail" compiler="qa-functional-compiler-completion">
         <testset dir="qa-functional/src">
             <patternset>
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest1iunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest1iiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest2iunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest2iiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest13iunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest13iiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest14iunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest14iiunsorted" />
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiunsorted" />
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiiunsorted" />
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9biiunsorted" />
