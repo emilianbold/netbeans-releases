@@ -141,6 +141,8 @@ public final class SlideBarContainer extends AbstractModeContainer {
             this.modeContainer = modeContainer;
             // To be able to activate on mouse click.
             enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
+            // have minimum size, to avoid gridbag layout to place the empty component at [0,0] location.
+            // clashes with the dnd
             setMinimumSize(new Dimension(1,1));
         }
         
