@@ -22,6 +22,7 @@ import javax.servlet.http.*;
 
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
+import javax.servlet.ServletOutputStream;
 
 /**
  *
@@ -88,7 +89,7 @@ public class WrapperServlet extends NbBaseServlet {
         
         // output your page here
         String path = request.getPathInfo ();
-        java.io.PrintWriter out = response.getWriter();;
+        ServletOutputStream out = response.getOutputStream ();
         try {
             
             // resource name
@@ -111,7 +112,7 @@ public class WrapperServlet extends NbBaseServlet {
             int len;
 
             while ((len = in.read (buff)) != -1) {
-                out.print (new String (buff, 0, len));
+                out.write (buff, 0, len);
                 out.flush();
             }
             in.close ();
