@@ -7,10 +7,9 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 
 package org.netbeans.core;
 
@@ -50,15 +49,8 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
 import org.openide.windows.WindowManager;
 
-//import org.netbeans.core.windows.ModeImpl; // TEMP
-//import org.netbeans.core.windows.WellKnownModeNames; // TEMP
-//import org.netbeans.core.windows.WindowManagerImpl; // TEMP
-
-// XXX Before as org.netbeans.core.NbNodeOperation.Sheet.
-
-/** Default view for properties.
- *
- * @author  Ian Formanek
+/**
+ * Default view for properties.
  */
 public final class NbSheet extends TopComponent {
     
@@ -83,7 +75,6 @@ public final class NbSheet extends TopComponent {
     private PropertySheet propertySheet;
     /** the nodes that are displayed in the property sheet */
     private Node[] nodes = new Node[0];
-    /** */
 
     /** Constructor for new sheet.
     * The sheet does not listen to global changes */
