@@ -29,6 +29,8 @@ import org.openide.nodes.Node;
 */
 public class StringEditor extends PropertyEditorSupport implements ExPropertyEditor
 {
+    private static boolean useRaw = System.getProperty("netbeans.stringEditor.useRawCharacters") != null;
+    
    // bugfix# 9219 added editable field and isEditable() "getter" to be used in StringCustomEditor    
     private boolean editable=true;   
     /** gets information if the text in editor should be editable or not */
@@ -69,7 +71,7 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
                 //        case '\'': buf.append("\\'"); break; // NOI18N
             case '\\': buf.append("\\\\"); break; // NOI18N
             default:
-                if (c >= 0x0020)
+                if (c >= 0x0020 && (useRaw || c <= 0x007f))
                     buf.append(c);
                 else {
                     buf.append("\\u"); // NOI18N
