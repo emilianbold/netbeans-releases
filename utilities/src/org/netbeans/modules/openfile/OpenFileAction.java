@@ -51,7 +51,7 @@ public class OpenFileAction extends CallableSystemAction {
     }
 
     protected String iconResource() {
-        return "org/netbeans/modules/openfile/openFile.gif"; // NOI18N
+        return "org/netbeans/modules/openfile/openFile.png"; // NOI18N
     }
 
     /**

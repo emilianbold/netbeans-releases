@@ -113,11 +113,14 @@ public class Actions implements ActionsFactory {
     }
     
     public static Action testProject() {        
-        return new ProjectAction (
+        Action a = new ProjectAction (
             "test", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_TestProjectAction_Name" ), // NOI18N
-            null,
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/testProject.png" ) ), //NOI18N
             null ); 
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/testProject.png"); //NOI18N
+        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        return a;
     }
         
     
@@ -154,43 +157,58 @@ public class Actions implements ActionsFactory {
     // 1-off actions -----------------------------------------------------------
     
     public static Action compileSingle() {
-        return new FileCommandAction (
+        Action a = new FileCommandAction (
             "compile.single", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_CompileSingleAction_Name" ),// NOI18N
-            (Icon)null,
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/compileSingle.png" ) ), //NOI18N
             null ); //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/compileSingle.png"); //NOI18N
+        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        return a;
     }
     
     public static Action runSingle() {
-        return new FileCommandAction (
+        Action a = new FileCommandAction (
             "run.single", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_RunSingleAction_Name"), // NOI18N
-            (Icon)null,
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/runSingle.png" ) ), //NOI18N
             null);
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runSingle.png"); //NOI18N
+        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        return a;
     }
     
     public static Action debugSingle() {
-        return new FileCommandAction (
+        Action a = new FileCommandAction (
             "debug.single", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_DebugSingleAction_Name"), // NOI18N
-            (Icon)null,
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/debugSingle.png" ) ), //NOI18N
             null);
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/debugSingle.png"); //NOI18N
+        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        return a;
     }
     
     public static Action testSingle() {
-        return new FileCommandAction (
+        Action a = new FileCommandAction (
             "test.single", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_TestSingleAction_Name" ),// NOI18N
-            (Icon)null,
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/testSingle.png" ) ), //NOI18N
             null ); //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/testSingle.png"); //NOI18N
+        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        return a;
     }
     
     public static Action debugTestSingle()  {
-        return new FileCommandAction (
+        Action a = new FileCommandAction (
             "debug.test.single", // XXX Define standard
             NbBundle.getMessage(Actions.class, "LBL_DebugTestSingleAction_Name" ),// NOI18N
-            (Icon)null,
+            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/debugTestSingle.png" ) ), //NOI18N
             null ); //NOI18N
+        a.putValue("iconBase","org/netbeans/modules/project/ui/resources/debugTestSingle.png"); //NOI18N
+        a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        return a;
     }
         
     // Main Project actions ----------------------------------------------------
