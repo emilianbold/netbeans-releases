@@ -875,7 +875,7 @@ public final class TestCreator {
         
         //body.append("//" + GENERATED_SUITE_BLOCK_START + "\n");
         //body.append(NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.suiteBlock.comment")+"\n");
-        body.append("junit.framework.TestSuite suite = new junit.framework.TestSuite(\"" + testName + "\");\n");
+        body.append("TestSuite suite = new TestSuite(\"" + testName + "\");\n");
         
         li = members.listIterator();
         TypeClass typeClass = pkg.getType();
