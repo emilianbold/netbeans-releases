@@ -138,6 +138,7 @@ public class PlatformUiSupport {
         }
         
         public Object getSelectedItem () {
+            this.getPlatformNames(); //Force setting of selectedPlatform if it is not alredy done
             return this.selectedPlatform;
         }
         
