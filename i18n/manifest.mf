@@ -6,6 +6,7 @@ OpenIDE-Module-Specification-Version: 1.6
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/netbeans/modules/i18n/I18nModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/i18n/Layer.xml
+OpenIDE-Module-Package-Dependencies: org.apache.regexp[RE]
 
 Name: org/netbeans/modules/i18n/LocaleExecutor.class
 OpenIDE-Module-Class: Service
