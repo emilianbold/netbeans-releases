@@ -30,14 +30,16 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="Window">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="CloneDocumentAction.shadow">
-                <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-windows-actions-CloneDocumentAction.instance"/>
-            </file>
+            <file name="org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-CloneDocumentAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-DocumentsAction.instance"/>
             <file name="org-netbeans-core-windows-actions-NextTabAction.instance"/>
             <file name="org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
-            <file name="RecentViewListAction.shadow">
-                <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
-            </file>
+            <file name="org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
             <file name="org-openide-actions-UndockAction.instance"/>
         </folder>    
     </folder>
@@ -58,28 +60,42 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator3.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
-            <attr name="Separator3.instance/org-netbeans-core-windows-actions-RecentViewListAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-windows-actions-RecentViewListAction.instance" />
-            <attr name="org-netbeans-core-windows-actions-RecentViewListAction.instance/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance" />
-            <attr name="org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance/Separator4.instance" boolvalue="true" />
+            <attr name="Separator3.instance/RecentViewListAction.shadow" boolvalue="true" />
+            <file name="RecentViewListAction.shadow" >
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance" />
+            </file>
+            <attr name="RecentViewListAction.shadow/SwitchToRecentDocumentAction.shadow" boolvalue="true" />
+            <file name="SwitchToRecentDocumentAction.shadow">
+                <attr name="originalFile" stringvalue="org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance" />
+            </file>
+            <attr name="SwitchToRecentDocumentAction.shadow/Separator4.instance" boolvalue="true" />
             <file name="Separator4.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
-            <attr name="Separator4.instance/org-netbeans-core-windows-actions-CloseWindowAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-windows-actions-CloseWindowAction.instance" />
-            <attr name="org-netbeans-core-windows-actions-CloseWindowAction.instance/org-netbeans-core-windows-actions-MaximizeWindowAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-windows-actions-MaximizeWindowAction.instance" />
-            <attr name="org-netbeans-core-windows-actions-MaximizeWindowAction.instance/Separator5.instance" boolvalue="true" />
+            <attr name="Separator4.instance/CloseWindowAction.shadow" boolvalue="true" />
+            <file name="CloseWindowAction.shadow" >
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance" />
+            </file>
+            <attr name="CloseWindowAction.shadow/MaximizeWindowAction.shadow" boolvalue="true" />
+            <file name="MaximizeWindowAction.shadow" >
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance" />
+            </file>
+            <attr name="MaximizeWindowAction.shadow/Separator5.instance" boolvalue="true" />
             <file name="Separator5.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
-            <attr name="Separator5.instance/org-netbeans-core-windows-actions-CloneDocumentAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-windows-actions-CloneDocumentAction.instance" />
-            <attr name="org-netbeans-core-windows-actions-CloneDocumentAction.instance/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance" />
-            <attr name="org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance/org-netbeans-core-windows-actions-DocumentsAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-windows-actions-DocumentsAction.instance" />
+            <attr name="Separator5.instance/CloneDocumentAction.shadow" boolvalue="true" />
+            <file name="CloneDocumentAction.shadow" >
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloneDocumentAction.instance" />
+            </file>
+            <attr name="CloneDocumentAction.shadow/CloseAllDocumentsAction.shadow" boolvalue="true" />
+            <file name="CloseAllDocumentsAction.shadow" >
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance" />
+            </file>
+            <attr name="CloseAllDocumentsAction.shadow/DocumentsAction.shadow" boolvalue="true" />
+            <file name="DocumentsAction.shadow" >
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance" />
+            </file>
         </folder>
     </folder>
 
@@ -97,22 +113,22 @@ Microsystems, Inc. All Rights Reserved.
 	</file>
         
         <file name="C-F4.shadow">
-	    <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
 	</file>
         <file name="S-ESCAPE.shadow">
-	    <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
 	</file>
         <file name="C-BACK_QUOTE.shadow">
-            <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance"/>
         </file>
         <file name="C-0.shadow">
-            <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance"/>
         </file>
         <file name="CS-F4.shadow">
-            <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
         </file>
         <file name="S-F4.shadow">
-	    <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
 	</file>
     </folder>
 
