@@ -25,6 +25,7 @@ import java.awt.Image;
 import java.beans.PropertyEditor;
 import java.beans.PropertyChangeEvent;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.ref.WeakReference;
 
 /** Filters nodes under the session node (displayed in Options dialog), adds special
  * properties to Nodes of particular settings to show/edit positions wher the
@@ -147,9 +148,14 @@ public final class SettingChildren extends FilterNode.Children {
     /** Filter node used for adding special status related properties to setting nodes. */
     private static final class SettingFilterNode extends FilterNode {
         private Sheet sheet = null;
-
+        private FSL weakL = null;
+        
         public SettingFilterNode (Node original) {
             super (original);
+
+            FileObject pf = ((InstanceDataObject) getCookie (InstanceDataObject.class)).getPrimaryFile ();
+            weakL = new FSL (this);
+            FilePositionManager.getDefault ().addFileStatusListener (weakL, pf);
         }
         
         public PropertySet[] getPropertySets () {
@@ -159,9 +165,12 @@ public final class SettingChildren extends FilterNode.Children {
             return sheet.toArray ();
         }
 
+        protected NodeListener createNodeListener () {
+            return new NA (this);
+        }
+        
         private Sheet cloneSheet (PropertySet orig []) {
             Sheet s = new Sheet ();
-            Sheet.Set hidden = null;
             for (int i = 0; i < orig.length; i++) {
                 Sheet.Set ss = new Sheet.Set ();
                 ss.put (orig[i].getProperties ());
@@ -171,47 +180,23 @@ public final class SettingChildren extends FilterNode.Children {
                 ss.setHidden (orig[i].isHidden ());
                 ss.setExpert (orig[i].isExpert ());
                 ss.setPreferred (orig[i].isPreferred ());
-
-                // modifies the set if it contains name of object property
-                if (ss.isHidden ())
-                    hidden = ss;
-
                 s.put (ss);
             }
 
-            if (hidden == null) {
-                hidden = new Sheet.Set ();
-                hidden.setHidden (true);
-                s.put (hidden);
-            }
+            Sheet.Set hidden = new Sheet.Set ();
+            hidden.setHidden (!Boolean.getBoolean ("netbeans.options.sheet"));
+            s.put (hidden);
 
-            hidden.setHidden (false);
-
-            Node.Property p = hidden.get (PROP_INDICATOR);
-            if (p == null) {
-                InstanceDataObject ido = (InstanceDataObject) getCookie (InstanceDataObject.class);
-                hidden.put (new IndicatorProperty (ido.getPrimaryFile ()));
-            }
-
-            addProperty (hidden, PROP_LAYER_PROJECT, FilePositionManager.LAYER_PROJECT);
-            addProperty (hidden, PROP_LAYER_SESSION, FilePositionManager.LAYER_SESSION);
-            addProperty (hidden, PROP_LAYER_MODULES, FilePositionManager.LAYER_MODULES);
+            FileObject pf = ((InstanceDataObject) getCookie (InstanceDataObject.class)).getPrimaryFile ();
+            
+            hidden.put (new IndicatorProperty (pf));
+            hidden.put (new FileStateProperty (pf, FilePositionManager.LAYER_PROJECT, PROP_LAYER_PROJECT, true));
+            hidden.put (new FileStateProperty (pf, FilePositionManager.LAYER_SESSION, PROP_LAYER_SESSION, true));
+            hidden.put (new FileStateProperty (pf, FilePositionManager.LAYER_MODULES, PROP_LAYER_MODULES, true));
 
             return s;
         }
 
-        private void addProperty (Sheet.Set s, String propName, int layer) {
-            Node.Property p = s.get (propName);
-            if (p == null) {
-                InstanceDataObject ido = (InstanceDataObject) getCookie (InstanceDataObject.class);
-                s.put (new FileStateProperty (ido.getPrimaryFile (), layer, propName, true));
-            }
-        }
-        
-        protected NodeListener createNodeListener () {
-            return new NA (this);
-        }
-        
         private static class NA extends NodeAdapter {
             public NA (SettingFilterNode sfn) {
                 super (sfn);
@@ -222,6 +207,25 @@ public final class SettingChildren extends FilterNode.Children {
                     ((SettingFilterNode)fn).sheet = null;
                 }
                 super.propertyChange (fn, ev);
+            }
+        }
+        
+        private static class FSL implements FilePositionManager.FileStatusListener {
+            WeakReference node = null;
+            public FSL (SettingFilterNode sfn) {
+                node = new WeakReference (sfn);
+            }
+            public void fileStatusChanged (FileObject mfo) {
+                SettingFilterNode n = (SettingFilterNode) node.get ();
+                if (n == null) {
+                    FilePositionManager.getDefault ().removeFileStatusListener (this, null);
+                    return;
+                }
+                
+                n.firePropertyChange (PROP_LAYER_PROJECT, null, null);
+                n.firePropertyChange (PROP_LAYER_SESSION, null, null);
+                n.firePropertyChange (PROP_LAYER_MODULES, null, null);
+                n.firePropertyChange (PROP_INDICATOR, null, null);
             }
         }
     }
