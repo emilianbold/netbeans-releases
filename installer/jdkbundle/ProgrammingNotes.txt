@@ -8,19 +8,21 @@ Prerequisites
  - bundled JVM for IS (all four supported platforms are necessary - Win,
    Linux, Solaris-sparc are available at IS web, Solaris-x86 must be created)
    I can provide all 4 bundled JVM. JVM from IS are JRE 1.4.2, Solaris-x86
-   is JRE 1.4.2_05). JVMs are placed at:
-   $ISMP/jvms/win32/Windows-Sun-1.4.2.exe
-   $ISMP/jvms/linux/Linux-Sun-1.4.2.bin
-   $ISMP/jvms/solaris/Solaris-Sun-1.4.2.bin
-   $ISMP/jvms/solaris/sunjre142_05-solaris-x86-installer.bin
+   is JRE 1.4.2_05). Location of bundled JVMs is given by alias bundled.jvm.
+   Names of used JVMs:
+      Windows-Sun-1.4.2.exe
+      Linux-Sun-1.4.2.bin
+      Solaris-Sun-1.4.2.bin
+      sunjre142_05-solaris-x86-installer.bin
  - installers of JDK 1.5.0 for all 4 supported platforms
 
 To build from command line run ant as usual with
 
  -Dismp.home=<home dir of ISMP5>
  -Dnb.dir=../../nbbuild/netbeans
- -Dinstaller.basename=NetBeans-dev-20040622
+ -Dinstaller.basename=NetBeans-jdkbundle-20040622
  -Djdk.installer=/mnt/local/jdk.dir.linux/jdk-1_5_0-beta3-bin-b61-linux-i586-02_aug_2004.bin
+ -Dbundled.jvm=/mnt/local/jvms/Linux-Sun-1.4.2.bin
 
 As there is different command line option for every platform it must be run
 separately for every platform.

@@ -65,6 +65,8 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="jdk.installer=${jdk.installer}"/>
       <arg value="-alias"/>
       <arg value="scripts.dir=build/scripts"/>
+      <arg value="-alias"/>
+      <arg value="bundled.jvm=${bundled.jvm}"/>
       <classpath>
         <pathelement path="build/classes" />      
         <path refid="ismp.cp"/>
@@ -88,7 +90,9 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="jdk.installer=${jdk.installer}"/>
       <arg value="-alias"/>
       <arg value="scripts.dir=build/scripts"/>
-       <classpath>
+      <arg value="-alias"/>
+      <arg value="bundled.jvm=${bundled.jvm}"/>
+      <classpath>
         <pathelement path="build/classes" />
         <path refid="ismp.cp"/>
       </classpath>
@@ -111,7 +115,9 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="jdk.installer=${jdk.installer}"/>
       <arg value="-alias"/>
       <arg value="scripts.dir=build/scripts"/>
-       <classpath>
+      <arg value="-alias"/>
+      <arg value="bundled.jvm=${bundled.jvm}"/>
+      <classpath>
         <pathelement path="build/classes" />
         <path refid="ismp.cp"/>
       </classpath>
@@ -134,7 +140,9 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="jdk.installer=${jdk.installer}"/>
       <arg value="-alias"/>
       <arg value="scripts.dir=build/scripts"/>
-       <classpath>
+      <arg value="-alias"/>
+      <arg value="bundled.jvm=${bundled.jvm}"/>
+      <classpath>
         <pathelement path="build/classes" />
         <path refid="ismp.cp"/>
       </classpath>
