@@ -87,6 +87,7 @@ public class CreateProject extends testUtilities.PerformanceTestCase {
         wizard.selectProject(project);
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
+        wizard_location.txtProjectLocation().setText(System.getProperty("xtest.tmpdir"));
         project_name = wizard_location.txtProjectName().getText();
     }
     
