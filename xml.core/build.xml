@@ -83,13 +83,10 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
     <makenbm file="../xml-core.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/xml-core.jar"
 	     homepage="http://${homepage.base}/xml-core.html"
 	     distribution="${dist.base}/xml-core.nbm">
       <license file="${license.file}"/>
-      <description>
-        The module is a base for all XML related modules. It recognizes XML and DTD documents, which can be opened in text editor. It supports parsing of those documents into TAX (Tree API for XML) representation. It supports synchronization among document representations. It also holds all settings shared among all XML related modules.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

@@ -96,7 +96,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   <target name="nbm" depends="netbeans" description="Build module NBM file.">
     <makenbm file="ant.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/ant.jar"
 	     homepage="http://ant.${homepage.base}/"
 	     distribution="http://${dist.base}/ant.nbm">
       <license name="ant-license.txt">
@@ -105,9 +105,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
 	For the Ant runtime and manual:
 	<file location="Ant_License"/>
       </license>
-      <description>
-        Support for Ant build scripts.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

@@ -103,13 +103,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="db.nbm"
              topdir="."
-             manifest="manifest-subst.mf"
+             module="netbeans/modules/db.jar"
              homepage="http://${homepage.base}/db.html"
              distribution="${dist.base}/db.nbm">
       <license file="${license.file}"/>
-      <description>
-        Database Explorer
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

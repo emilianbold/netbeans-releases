@@ -58,14 +58,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="utilities.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/utilities.jar"
 	     homepage="http://utilities.${homepage.base}/"
 	     distribution="http://${dist.base}/utilities.nbm">
       <license file="${license.file}"/>
-      <description>
-        Various smaller features collected: groups of files, open
-        file, searching, URL bookmarks.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

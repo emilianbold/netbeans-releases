@@ -62,23 +62,11 @@ public class MakeListOfNBM extends Task {
                 } catch (Exception ex) {
                     throw new BuildException( "Can't get fileset of NBM", ex, location );
                 }
-                File manifest = null;
+                Attributes attr;
                 try {
-                    manifest = (File)nbms[i].getClass().getMethod("getManifest",null).invoke(nbms[i],null);
+                    attr = (Attributes)nbms[i].getClass().getMethod("getAttributes",null).invoke(nbms[i],null);
                 } catch (Exception ex) {
-                    throw new BuildException( "Can't get name of manifest file", ex, location );
-                }
-                
-                Attributes attr = null;
-        	try {
-                    InputStream manifestStream = new FileInputStream (manifest);
-                    try {
-                        attr = new Manifest (manifestStream).getMainAttributes ();
-                    } finally {
-                        manifestStream.close ();
-                    }
-                } catch (IOException e) {
-                    throw new BuildException ("exception when reading manifest " + manifest, e, location);
+                    throw new BuildException( "Can't get manifest attributes", ex, location );
                 }
                 
 		String codenamebase = attr.getValue ("OpenIDE-Module");
@@ -101,6 +89,7 @@ public class MakeListOfNBM extends Task {
                 
                 String include[] = ds.getIncludedFiles();
                 for( int j=0; j < include.length; j++ ){
+                    if (include[j].equals("Info/info.xml")) continue;
                     try {
                         File inFile = new File( ds.getBasedir(), include[j] );
                         FileInputStream inFileStream = new FileInputStream( inFile );
@@ -109,8 +98,10 @@ public class MakeListOfNBM extends Task {
                         inFileStream.read( array );
 			inFileStream.close();
                         crc.update( array );
-
-                        version.addFileWithCrc( inFile.getAbsolutePath().substring((ds.getBasedir().getAbsolutePath() + "/netbeans/").length() ), Long.toString( crc.getValue() ) );
+                        String abs = inFile.getAbsolutePath();
+                        String prefix = ds.getBasedir().getAbsolutePath() + "/netbeans/";
+                        if (! abs.startsWith(prefix)) throw new IllegalStateException(abs);
+                        version.addFileWithCrc(abs.substring(prefix.length()), Long.toString( crc.getValue() ) );
 //                        log( "File : " + inFile.getAbsolutePath().substring((ds.getBasedir().getAbsolutePath() + "/netbeans/").length() ) + " has CRC " + crc.getValue() );
                     } catch (IOException ex) {
                         log ( ex.toString() );

@@ -67,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="junit.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/junit.jar"
 	     homepage="http://junit.netbeans.org/"
 	     distribution="http://www.netbeans.org/download/nbms/40/junit.nbm">
       <license name="junit-license.txt">

@@ -54,13 +54,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="image.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/image.jar"
 	     homepage="http://image.${homepage.base}/"
 	     distribution="http://${dist.base}/image.nbm">
       <license file="${license.file}"/>
-      <description>
-        Provides support for viewing images such as GIFs and JPEGs in the IDE.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

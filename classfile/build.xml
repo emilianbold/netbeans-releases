@@ -46,13 +46,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="classfile.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/autoload/classfile.jar"
 	     homepage="http://classfile.${homepage.base}/"
 	     distribution="http://${dist.base}/classfile.nbm">
       <license file="${license.file}"/>
-      <description>
-        Query all aspects of specified classfiles.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

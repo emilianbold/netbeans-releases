@@ -70,13 +70,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="form.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/form.jar"
 	     homepage="http://form.${homepage.base}/"
 	     distribution="http://${dist.base}/form.nbm">
       <license file="${license.file}"/>
-      <description>
-        The visual Form Editor.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

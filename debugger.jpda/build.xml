@@ -72,15 +72,10 @@ ToDo:
   <target name="nbm" depends="check,netbeans" if="jpda">
     <makenbm file="debuggerjpda.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/jpdaDebugger.jar"
 	     homepage="http://debuggerjpda.${homepage.base}/"
 	     distribution="http://${dist.base}/debuggerjpda.nbm">
       <license file="${license.file}"/>
-      <description>
-        JPDA (Java Platform Debugger Architecture) debugger support.
-        Requires that you have jpda.jar installed (or are using JDK
-        1.3).
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

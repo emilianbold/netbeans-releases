@@ -57,13 +57,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="debuggercore.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/autoload/debuggerCore.jar"
 	     homepage="http://debuggercore.${homepage.base}/"
 	     distribution="http://${dist.base}/debuggercore.nbm">
       <license file="${license.file}"/>
-      <description>
-        Foundation for the IDE's debugger.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

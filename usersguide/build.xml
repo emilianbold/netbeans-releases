@@ -94,13 +94,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="usersguide.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/usersguide.jar"
 	     homepage="http://usersguide.${homepage.base}/"
 	     distribution="http://${dist.base}/usersguide.nbm">
       <license file="${license.file}"/>
-      <description>
-        Online help for the IDE in JavaHelp format.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

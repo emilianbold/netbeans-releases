@@ -84,13 +84,10 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
     <makenbm file="../xml-tools.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/xml-tools.jar"
 	     homepage="http://${homepage.base}/xml-tools.html"
 	     distribution="${dist.base}/xml-tools.nbm">
       <license file="${license.file}"/>
-      <description>
-        The module contains various actions, generators and tools. Especially action to generate simple DTD from XML document, or wizard which generate SAX handler implementation according to selected DTD document.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

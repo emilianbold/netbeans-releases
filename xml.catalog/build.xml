@@ -80,13 +80,10 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
     <makenbm file="../xml-catalog.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/xml-catalog.jar"
 	     homepage="http://${homepage.base}/xml-catalog.html"
 	     distribution="${dist.base}/xml-catalog.nbm">
       <license file="${license.file}"/>
-      <description>
-        The module allows to persistently mount entity catalogs. This implementation support NetBeans native catalog and standard XML catalog. Module also offer SPI to support another catalog implementation plug in.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

@@ -59,13 +59,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="javadoc.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/javadoc.jar"
 	     homepage="http://javadoc.${homepage.base}/"
 	     distribution="http://${dist.base}/javadoc.nbm">
       <license file="${license.file}"/>
-      <description>
-        View and generate Javadoc class documentation.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

@@ -58,14 +58,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="openidex.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/autoload/openidex.jar"
 	     homepage="http://openidex.${homepage.base}/"
 	     distribution="http://${dist.base}/openidex.nbm">
       <license file="${license.file}"/>
-      <description>
-        Common utility classes needed by many other modules. API
-        extensions.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

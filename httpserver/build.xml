@@ -68,7 +68,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="httpserver.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/httpserver.jar"
 	     homepage="http://httpserver.${hompage.base}/"
 	     distribution="http://${dist.base}/httpserver.nbm">
       <license file="${license.file}"/>

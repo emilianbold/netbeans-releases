@@ -57,14 +57,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="beans.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/beans.jar"
 	     homepage="http://beans.${homepage.base}/"
 	     distribution="http://${dist.base}/beans.nbm">
       <license file="${license.file}"/>
-      <description>
-        Development of JavaBeans components, including bean
-	properties, info, and event sets.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>

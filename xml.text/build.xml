@@ -84,13 +84,10 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
     <makenbm file="../xml-text-edit.nbm"
              topdir="."
-	     manifest="manifest-subst.mf"
+             module="netbeans/modules/xml-text-edit.jar"
 	     homepage="http://${homepage.base}/xml-text-edit.html"
 	     distribution="${dist.base}/xml-text-edit.nbm">
       <license file="${license.file}"/>
-      <description>
-        The module provides text editing capabilities. It adds syntax coloring, abbreviation support and simple indentation engine into text editing of XML and DTD documents.
-      </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>
