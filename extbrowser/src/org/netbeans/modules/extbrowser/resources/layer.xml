@@ -67,6 +67,7 @@ Microsystems, Inc. All Rights Reserved.
     </file>
 
     <attr name="SimpleExtBrowser.settings/SwingBrowser.ser" boolvalue="true"/>
+    <attr name="SimpleExtBrowser.settings/IceBrowser.settings" boolvalue="true"/>
     <attr name="SimpleExtBrowser.settings/IceBrowser.ser" boolvalue="true"/>
     <attr name="UnixWebBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
     <attr name="WinWebBrowser.settings/SimpleExtBrowser.settings" boolvalue="true"/>
