@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.VariablesFilterAdapter;
@@ -52,10 +53,21 @@ public class EnumConstantsFilter extends VariablesFilterAdapter {
         return true;
     }
     
-    public Object getValueAt(TableModel original, Variable variable, String columnID) throws ComputingException, UnknownTypeException {
+    public Object getValueAt (
+        TableModel original, 
+        Variable variable, 
+        String columnID
+    ) throws ComputingException, UnknownTypeException {
+        
         ObjectVariable ov = (ObjectVariable) variable;
-        if (columnID == Constants.LOCALS_VALUE_COLUMN_ID || columnID == Constants.WATCH_VALUE_COLUMN_ID) {
-            return ov.getToStringValue();
+        if ( columnID == Constants.LOCALS_VALUE_COLUMN_ID || 
+             columnID == Constants.WATCH_VALUE_COLUMN_ID
+        ) {
+            try {
+                return ov.getToStringValue ();
+            } catch (InvalidExpressionException ex) {
+                return ex.getLocalizedMessage ();
+            }
         } else if (columnID == Constants.LOCALS_TYPE_COLUMN_ID || columnID == Constants.WATCH_TYPE_COLUMN_ID) {
             String typeName = ov.getType();
             int idx = typeName.lastIndexOf("$");

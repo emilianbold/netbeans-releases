@@ -15,6 +15,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.util.HashSet;
 import org.netbeans.api.debugger.jpda.Field;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.VariablesFilterAdapter;
@@ -200,13 +201,21 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
              ( columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
                columnID == Constants.WATCH_VALUE_COLUMN_ID)
         ) {
-            return ov.getToStringValue ();
+            try {
+                return ov.getToStringValue ();
+            } catch (InvalidExpressionException ex) {
+                return ex.getLocalizedMessage ();
+            }
         }
         if (type.equals("java.lang.StringBuffer") &&
              ( columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
                columnID == Constants.WATCH_VALUE_COLUMN_ID)
         ) {
-            return ov.getToStringValue ();
+            try {
+                return ov.getToStringValue ();
+            } catch (InvalidExpressionException ex) {
+                return ex.getLocalizedMessage ();
+            }
         }
         return original.getValueAt (variable, columnID);
     }

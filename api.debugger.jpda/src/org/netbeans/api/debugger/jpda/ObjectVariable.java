@@ -36,7 +36,7 @@ public interface ObjectVariable extends Variable {
      *
      * @return toString () value of this instance
      */
-    public abstract String getToStringValue ();
+    public abstract String getToStringValue () throws InvalidExpressionException;
     
     /**
      * Calls given method in debugged JVM on this instance and returns

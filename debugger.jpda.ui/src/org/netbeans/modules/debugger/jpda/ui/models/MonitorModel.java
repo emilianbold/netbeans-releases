@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import com.sun.jdi.ThreadReference;
 
 import javax.swing.Action;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -110,14 +111,22 @@ NodeActionsProvider {
     public String getShortDescription (Object o) throws UnknownTypeException {
         if (o instanceof ContendedMonitor) {
             ObjectVariable v = ((ContendedMonitor) o).variable;
-            return "(" + v.getType () + ") " + v.getToStringValue ();
+            try {
+                return "(" + v.getType () + ") " + v.getToStringValue ();
+            } catch (InvalidExpressionException ex) {
+                return ex.getLocalizedMessage ();
+            }
         } else
         if (o instanceof OwnedMonitors) {
             return null;
         } else
         if (o instanceof ObjectVariable) {
             ObjectVariable v = (ObjectVariable) o;
-            return "(" + v.getType () + ") " + v.getToStringValue ();
+            try {
+                return "(" + v.getType () + ") " + v.getToStringValue ();
+            } catch (InvalidExpressionException ex) {
+                return ex.getLocalizedMessage ();
+            }
         } else
         throw new UnknownTypeException (o);
     }

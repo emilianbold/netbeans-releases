@@ -14,6 +14,7 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import org.netbeans.api.debugger.LookupProvider;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelListener;
@@ -58,8 +59,12 @@ public class WatchesNodeModel extends VariablesNodeModel {
             if (t == null)
                 return w.getExpression () + " = " + w.getValue ();
             else
-                return w.getExpression () + " = (" + w.getType () + ") " + 
-                    w.getToStringValue ();
+                try {
+                    return w.getExpression () + " = (" + w.getType () + ") " + 
+                        w.getToStringValue ();
+                } catch (InvalidExpressionException ex) {
+                    return ex.getLocalizedMessage ();
+                }
         }
         if (o instanceof FixedWatch) {
             FixedWatch fw = (FixedWatch) o;

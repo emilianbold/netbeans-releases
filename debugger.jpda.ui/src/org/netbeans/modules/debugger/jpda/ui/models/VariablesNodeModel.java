@@ -18,6 +18,7 @@ import java.util.Vector;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.jpda.Field;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -78,11 +79,19 @@ public class VariablesNodeModel implements NodeModel {
                 String type = ((ObjectVariable) o).getType ();
                 String declaredType = ((Field) o).getDeclaredType ();
                 if (type.equals (declaredType))
-                    return "(" + type + ") " + 
-                        ((ObjectVariable) o).getToStringValue ();
+                    try {
+                        return "(" + type + ") " + 
+                            ((ObjectVariable) o).getToStringValue ();
+                    } catch (InvalidExpressionException ex) {
+                        return ex.getLocalizedMessage ();
+                    }
                 else
-                    return "(" + declaredType + ") " + "(" + type + ") " + 
-                        ((ObjectVariable) o).getToStringValue ();
+                    try {
+                        return "(" + declaredType + ") " + "(" + type + ") " + 
+                            ((ObjectVariable) o).getToStringValue ();
+                    } catch (InvalidExpressionException ex) {
+                        return ex.getLocalizedMessage ();
+                    }
             } else
                 return "(" + ((Field) o).getDeclaredType () + ") " + 
                     ((Field) o).getValue ();
@@ -92,11 +101,19 @@ public class VariablesNodeModel implements NodeModel {
                 String type = ((ObjectVariable) o).getType ();
                 String declaredType = ((LocalVariable) o).getDeclaredType ();
                 if (type.equals (declaredType))
-                    return "(" + type + ") " + 
-                        ((ObjectVariable) o).getToStringValue ();
+                    try {
+                        return "(" + type + ") " + 
+                            ((ObjectVariable) o).getToStringValue ();
+                    } catch (InvalidExpressionException ex) {
+                        return ex.getLocalizedMessage ();
+                    }
                 else
-                    return "(" + declaredType + ") " + "(" + type + ") " + 
-                        ((ObjectVariable) o).getToStringValue ();
+                    try {
+                        return "(" + declaredType + ") " + "(" + type + ") " + 
+                            ((ObjectVariable) o).getToStringValue ();
+                    } catch (InvalidExpressionException ex) {
+                        return ex.getLocalizedMessage ();
+                    }
             } else
                 return "(" + ((LocalVariable) o).getDeclaredType () + ") " + 
                     ((LocalVariable) o).getValue ();
@@ -104,8 +121,12 @@ public class VariablesNodeModel implements NodeModel {
         if (o instanceof Super)
             return ((Super) o).getType ();
         if (o instanceof This)
-            return "(" + ((This) o).getType () + ") " + 
-                ((This) o).getToStringValue ();
+            try {
+                return "(" + ((This) o).getType () + ") " + 
+                    ((This) o).getToStringValue ();
+            } catch (InvalidExpressionException ex) {
+                return ex.getLocalizedMessage ();
+            }
         throw new UnknownTypeException (o);
     }
     

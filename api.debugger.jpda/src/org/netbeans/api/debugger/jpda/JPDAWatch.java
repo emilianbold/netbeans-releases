@@ -77,6 +77,6 @@ public interface JPDAWatch {
      *
      * @return toString () value of this instance
      */
-    public abstract String getToStringValue ();
+    public abstract String getToStringValue () throws InvalidExpressionException;
 }
 

@@ -263,21 +263,16 @@ public class AbstractVariable implements Variable {
      *
      * @return toString () value of this instance
      */
-    public String getToStringValue () {
+    public String getToStringValue () throws InvalidExpressionException {
         if (value == null) return null;
         if (!(value.type () instanceof ClassType)) return getValue ();
         Method toStringMethod = ((ClassType) value.type ()).
             concreteMethodByName ("toString", "()Ljava/lang/String;");
-        try {
-            return ((StringReference) model.getDebugger ().invokeMethod (
-                (ObjectReference) value,
-                toStringMethod,
-                new Value [0]
-            )).value ();
-        } catch (InvalidExpressionException e) {
-            e.printStackTrace( );
-            return null;
-        }
+        return ((StringReference) model.getDebugger ().invokeMethod (
+            (ObjectReference) value,
+            toStringMethod,
+            new Value [0]
+        )).value ();
     }
     
     /**

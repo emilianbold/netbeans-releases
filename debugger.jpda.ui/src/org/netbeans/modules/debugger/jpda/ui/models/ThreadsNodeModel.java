@@ -22,6 +22,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
@@ -93,7 +94,11 @@ public class ThreadsNodeModel implements NodeModel {
                     if (ov == null)
                         s = "Waiting on synchronized block";
                     else
-                        s = "Waiting on synchronized block (" + ov.getToStringValue () + ")";
+                        try {
+                            s = "Waiting on synchronized block (" + ov.getToStringValue () + ")";
+                        } catch (InvalidExpressionException ex) {
+                            s = ex.getLocalizedMessage ();
+                        }
                     break;
                 case JPDAThread.STATE_NOT_STARTED:
                     s = "Not Started";
@@ -109,7 +114,11 @@ public class ThreadsNodeModel implements NodeModel {
                     if (ov == null)
                         s = "Waiting";
                     else
-                        s = "Waiting on " + ov.getToStringValue ();
+                        try {
+                            s = "Waiting on " + ov.getToStringValue ();
+                        } catch (InvalidExpressionException ex) {
+                            s = ex.getLocalizedMessage ();
+                        }
                     break;
                 case JPDAThread.STATE_ZOMBIE:
                     s = "State Zombie";
