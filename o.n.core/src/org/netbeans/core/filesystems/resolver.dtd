@@ -72,11 +72,13 @@ Microsystems, Inc. All Rights Reserved.
 <!ATTLIST mime name CDATA #REQUIRED>
 
 <!--- 
-  Look at initial bytes of the file and test for a complete match.
-  E.g. <samp>&lt;magic hex="0aFF00"/&gt;</samp>
+  Look at initial bytes of the file and test for a complete match of masked
+  bits. Default mask is <tt>"FF"</tt> repeated <tt>hex.length</tt> times.
+  E.g. <samp>&lt;magic hex="0a0001"/&gt; mask="FF00FF"</samp>
 -->
 <!ELEMENT magic EMPTY>
 <!ATTLIST magic hex CDATA #REQUIRED>
+<!ATTLIST magic mask CDATA #IMPLIED>
 
 <!---
   Test on <code>FileObject</code> attributes. Matching attributes are converted

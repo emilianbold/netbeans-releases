@@ -56,10 +56,13 @@ Microsystems, Inc. All Rights Reserved.
 <!ATTLIST public-id id CDATA #REQUIRED>
 
 <!---
-  Match root element name. Namespace <code>ns</code> attribute
-  or presence of element combines with <code>name</code> containing local element name,
-  otherwise <code>name</code> contains the full element name ("QName"). One of the namespaces
-  must match.
+  It matches root element name and . 
+  <p>
+  Namespace <code>ns</code> attribute or presence of <code>ns</code> subelements 
+  implies that <code>name</code> attribute represents local element name,
+  otherwise the <code>name</code> attribute represents full element name ("QName").
+  One of the namespaces must match.
+  </p>
 -->
 <!ELEMENT element (ns*, attr*)>
 <!ATTLIST element ns CDATA #IMPLIED>
@@ -78,7 +81,13 @@ XXX unclear:
 or
     <element ns="http://..." name="root"><attr name="localname"/></element>
 ?
+
+A:
+    Attribute in above comment stays for <tt>element</tt> declaration attribute
+    so the second option is correct.
+
 -->
+
 <!---
   Element attribute template, also used for pseudo-attributes in processing instructions.
   <p>
