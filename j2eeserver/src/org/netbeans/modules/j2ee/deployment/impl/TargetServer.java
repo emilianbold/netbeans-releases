@@ -393,6 +393,7 @@ public class TargetServer {
     private class DistributeEventHandler implements ProgressListener {
         DeployProgressUI ui;
         ProgressObject po;
+        boolean deaf = false;
         
         public DistributeEventHandler(DeployProgressUI ui, ProgressObject po) {
             this.ui = ui;
@@ -400,20 +401,26 @@ public class TargetServer {
             ui.setProgressObject(po);
         }
         public void handleProgressEvent(ProgressEvent progressEvent) {
+            if (deaf) {
+                return;
+            }
+            
             DeploymentStatus status = progressEvent.getDeploymentStatus();
             StateType state = status.getState();
-
             if (state == StateType.COMPLETED ||
-                state == StateType.RELEASED) {
+                state == StateType.RELEASED) { //assume released as completed
                 // this check is to avoid NPE is case the handler is misused, e.g.,
                 // firing event multiple times and asynchronously
                 if (po != null) {
                     handleCompletedDistribute(ui, po, false);
                     po = null;
                 }
+                deaf = true;
             } // end of if (state == StateType.COMPLETED)
             else if (state == StateType.FAILED) {
                 wakeUp();
+                po = null;
+                deaf = true;
             } // end of else if (state == StateType.FAILED)
         }
     }
@@ -421,6 +428,7 @@ public class TargetServer {
     private class IncrementalEventHandler implements ProgressListener {
         ProgressObject po;
         DeployProgressUI ui;
+        boolean deaf = false;
         
         public IncrementalEventHandler(DeployProgressUI ui, ProgressObject po) {
             this.po = po;
@@ -428,22 +436,29 @@ public class TargetServer {
             ui.setProgressObject(po);
         }
         public void handleProgressEvent(ProgressEvent progressEvent) {
+            // be deaf to overfiring
+            if (deaf)
+                return;
+            
             StateType state = progressEvent.getDeploymentStatus().getState();
             if (state == StateType.COMPLETED) {
                 if (po != null) {
                     TargetServer.this.handleCompletedDistribute(ui, po, true);
                     po = null;
                 }
+                deaf = true;
             }
             else if (state == StateType.FAILED) {
                 po = null;
                 wakeUp();
+                deaf = true;
             }
         }
     }
     
     private class ProgressHandler implements ProgressListener {
         ProgressObject po;
+        boolean deaf = false;
         
         public ProgressHandler(ProgressObject po) {
             this.po = po;
@@ -451,10 +466,15 @@ public class TargetServer {
         }
         
         public void handleProgressEvent(ProgressEvent progressEvent) {
+            // be deaf to overfiring
+            if (deaf) 
+                return;
+            
             DeploymentStatus status = progressEvent.getDeploymentStatus();
             StateType state = status.getState();
             if (state == StateType.COMPLETED || state == StateType.FAILED) {
                 wakeUp();
+                deaf = true;
             }
         }
         
@@ -463,6 +483,7 @@ public class TargetServer {
                 po.removeProgressListener(this);
                 po = null;
             }
+            deaf = true;
         }
     }
     
