@@ -193,7 +193,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         try {
           compClass = TopManager.getDefault ().systemClassLoader ().loadClass (className);
         } catch (Exception e) {
-          e.printStackTrace ();
+          e.printStackTrace (); // [PENDING - better notification]
+          return false; // failed to load the component!!!
         }
         String compName = findAttribute (node, ATTR_COMPONENT_NAME);
         comp.setComponent (compClass);
@@ -238,7 +239,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
   }
 
   private boolean loadVisualComponent (org.w3c.dom.Node node, FormManager2 formManager2, RADVisualComponent comp, ComponentContainer parentContainer) {
-    loadComponent (node, formManager2, comp, parentContainer);
+    if (!loadComponent (node, formManager2, comp, parentContainer)) {
+      return false;
+    }
 
     if (!(comp instanceof FormContainer)) {
       org.w3c.dom.Node constraintsNode = findSubNode (node, XML_CONSTRAINTS);
@@ -275,9 +278,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
   private boolean loadContainer (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
     if (comp instanceof RADVisualComponent) {
-      loadVisualComponent (node, formManager2, (RADVisualComponent)comp, parentContainer);
+      if (!loadVisualComponent (node, formManager2, (RADVisualComponent)comp, parentContainer)) return false;
     } else {
-      loadComponent (node, formManager2, comp, parentContainer);
+      if (!loadComponent (node, formManager2, comp, parentContainer)) return false;
     }
 
     if (comp instanceof ComponentContainer) {
@@ -291,12 +294,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
           if (XML_COMPONENT.equals (componentNode.getNodeName ())) {  // [PENDING - visual x non-visual]
             RADVisualComponent newComp = new RADVisualComponent ();
-            loadVisualComponent (componentNode, formManager2, newComp, (ComponentContainer)comp);
-            list.add (newComp);
+            if (loadVisualComponent (componentNode, formManager2, newComp, (ComponentContainer)comp)) {
+              list.add (newComp);
+            }
           } else {
             RADVisualContainer newComp = new RADVisualContainer ();
-            loadContainer (componentNode, formManager2, newComp, (ComponentContainer)comp);
-            list.add (newComp);
+            if (loadContainer (componentNode, formManager2, newComp, (ComponentContainer)comp)) {
+              list.add (newComp);
+            }
           }
         }
         RADComponent[] childComps = new RADComponent[list.size ()];
@@ -1193,6 +1198,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  17   Gandalf   1.16        7/18/99  Ian Formanek    More correct handling of
+ *       errors during loading form
  *  16   Gandalf   1.15        7/14/99  Ian Formanek    Fixed saveNodeIntoText 
  *       method
  *  15   Gandalf   1.14        7/13/99  Ian Formanek    Constraints persistence 
