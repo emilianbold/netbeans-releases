@@ -403,14 +403,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
     }
     
     public synchronized FileObject findFileObject(File f) {
-        f = FileUtil.normalizeFile(f);
-        
-        FileObject fos[] = FileUtil.fromFile(f);
-        if (fos.length > 0) {
-            return fos[0];
-        } else {
-            return null;
-        }
+        return FileUtil.toFileObject(FileUtil.normalizeFile(f));
     }
    
 }
