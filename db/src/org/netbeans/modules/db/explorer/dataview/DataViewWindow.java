@@ -175,7 +175,6 @@ public class DataViewWindow extends TopComponent {
     public void executeCommand() {
         try {
             String command = queryarea.getText().trim();
-            System.out.println(command);
             dbadaptor.execute(command);
             RecentCommand rcmd = new RecentCommand(command);
             ((ComboModel)rcmdscombo.getModel()).addElement(rcmd);
