@@ -115,7 +115,7 @@ Microsystems, Inc. All Rights Reserved.
                  module="netbeans/modules/autoload/xml-tax.jar"
                  homepage="http://xml.${homepage.base}/tax/"
                  distribution="http://${dist.base}/xml-tax.nbm">
-             <license name="ant-license.txt">
+             <license name="xml-tax-license.txt">
                  <text>For the Tree API for XML ("TAX") module itself:</text>
                  <file location="${license.file}"/>
                  <text>For the Apache's XML Parser (Xerces):</text>

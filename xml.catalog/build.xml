@@ -113,7 +113,7 @@ Microsystems, Inc. All Rights Reserved.
                  homepage="http://xml.${homepage.base}/catalog/"
                  distribution="http://${dist.base}/xml-catalog.nbm">
             <license file="${license.file}"/>
-            <license name="ant-license.txt">
+            <license name="xml-catalog-license.txt">
                  <text>For the XML Entity Catalog module itself:</text>
                  <file location="${license.file}"/>
                  <text>For the Apache's xml-commons XML Resolver library:</text>
