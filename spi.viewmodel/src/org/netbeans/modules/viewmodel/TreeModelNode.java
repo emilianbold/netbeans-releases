@@ -166,6 +166,7 @@ public class TreeModelNode extends AbstractNode {
         } catch (UnknownTypeException e) {
             e.printStackTrace ();
         } catch (ComputingException e) {
+            setIconBase ("org/openide/resources/actions/empty");
         }
         Children ch = getChildren ();
         if (ch instanceof TreeModelChildren)
@@ -265,9 +266,9 @@ public class TreeModelNode extends AbstractNode {
                 setKeys (new Object [0]);
                 e.printStackTrace ();
             } catch (NoInformationException e) {
-                setKeys (new Object [0]);
+                setKeys (new Object[] {e});
             } catch (ComputingException e) {
-                setKeys (new Object [0]);
+                setKeys (new Object[] {e});
             }
         }
         
@@ -287,6 +288,10 @@ public class TreeModelNode extends AbstractNode {
 //        }
         
         protected Node[] createNodes (Object object) {
+            if (object instanceof Exception)
+                return new Node[] {
+                    new ExceptionNode ((Exception) object)
+                };
             TreeModelNode tmn = new TreeModelNode (
                 model, 
                 treeModelRoot, 
