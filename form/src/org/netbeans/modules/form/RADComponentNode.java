@@ -99,6 +99,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   protected SystemAction [] createActions () {
     ArrayList actions = new ArrayList (15);
 
+    actions.add (SystemAction.get(EventsAction.class));
+    actions.add (null);
     if (component instanceof RADVisualContainer) {
       actions.add (SystemAction.get(SelectLayoutAction.class));
       actions.add (null);
@@ -111,8 +113,16 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
         actions.add (SystemAction.get(MoveDownAction.class));
       }
       actions.add (null);
+      actions.add (SystemAction.get(GotoFormAction.class));
+      actions.add (SystemAction.get(GotoEditorAction.class));
+//      actions.add (SystemAction.get(GotoEditorAction.class)); // [PENDING]
+      actions.add (null);
       actions.add (SystemAction.get(PasteAction.class));
     } else {
+      actions.add (SystemAction.get(GotoFormAction.class));
+      actions.add (SystemAction.get(GotoEditorAction.class));
+//      actions.add (SystemAction.get(GotoEditorAction.class)); // [PENDING]
+      actions.add (null);
       actions.add (SystemAction.get(MoveUpAction.class));
       actions.add (SystemAction.get(MoveDownAction.class));
       actions.add (null);
@@ -189,10 +199,12 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   * @return the cookie or <code>null</code>
   */
   public Node.Cookie getCookie (Class type) {
-    if (SaveCookie.class.equals (type)) {
-      return component.getFormManager ().getFormObject ().getCookie (SaveCookie.class);
+    Node.Cookie inh = super.getCookie (type);
+    if (inh == null) {
+      return component.getFormManager ().getFormObject ().getCookie (type);
+    } else {
+      return inh;
     }
-    return super.getCookie (type);
   }
   
   /** Test whether there is a customizer for this node. If true,
@@ -495,6 +507,9 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  18   Gandalf   1.17        6/27/99  Ian Formanek    Many form actions 
+ *       (compile, save, ...) are now enabled on form and component inspector, 
+ *       EventsAction, Goto actions employed
  *  17   Gandalf   1.16        6/10/99  Ian Formanek    Removed debug prints, 
  *       copy disabled
  *  16   Gandalf   1.15        6/9/99   Ian Formanek    ---- Package Change To 
