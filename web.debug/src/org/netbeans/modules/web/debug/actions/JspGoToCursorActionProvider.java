@@ -10,7 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.debugger.jpda.ui.actions;
+package org.netbeans.modules.web.debug.actions;
 
 import java.beans.*;
 import java.util.*;
@@ -19,6 +19,7 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.spi.debugger.*;
 import org.netbeans.modules.web.debug.Context;
+import org.netbeans.modules.web.debug.util.*;
 
 import org.openide.windows.TopComponent;
 
@@ -35,26 +36,22 @@ public class JspGoToCursorActionProvider extends ActionsProviderSupport implemen
     
     
     public JspGoToCursorActionProvider(LookupProvider lookupProvider) {
-        debugger = (JPDADebugger) lookupProvider.lookupFirst 
-                (JPDADebugger.class);
-        session = (Session) lookupProvider.lookupFirst 
-                (Session.class);
-        debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
-        Context.addPropertyChangeListener (this);
+        debugger = (JPDADebugger) lookupProvider.lookupFirst(JPDADebugger.class);
+        session = (Session) lookupProvider.lookupFirst(Session.class);
+        debugger.addPropertyChangeListener(debugger.PROP_STATE, this);
+        Context.addPropertyChangeListener(this);
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
-//        setEnabled (
-//            DebuggerManager.ACTION_RUN_TO_CURSOR,
-//            (debugger.getState () == debugger.STATE_STOPPED) &&
-//            (Context.getCurrentClassName () != null)
-//        );
-//        if ( (debugger.getState () != debugger.STATE_RUNNING) &&
-//             (breakpoint != null)
-//        ) {
-//            DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
-//            breakpoint = null;
-//        }
+        setEnabled (
+            DebuggerManager.ACTION_RUN_TO_CURSOR,
+            (debugger.getState () == debugger.STATE_STOPPED) &&
+            (Utils.isJsp(Context.getCurrentURL()))
+        );
+        if ((debugger.getState () != debugger.STATE_RUNNING) && (breakpoint != null)) {
+            DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
+            breakpoint = null;
+        }
     }
     
     public Set getActions () {
