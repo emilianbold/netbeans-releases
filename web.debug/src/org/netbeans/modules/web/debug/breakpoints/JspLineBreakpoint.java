@@ -1,7 +1,14 @@
 /*
- * JspLineBreakpoint.java
- *
- * Created on May 3, 2004, 2:12 PM
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.debug.breakpoints;
@@ -12,6 +19,7 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 
 import org.netbeans.modules.web.debug.util.Utils;
+import java.util.*;
 
 /**
  *
@@ -35,8 +43,9 @@ public class JspLineBreakpoint extends Breakpoint {
     public static final String          PROP_CONDITION = LineBreakpoint.PROP_CONDITION;
     
     //private fields
-    private transient PropertyChangeSupport pcs;    
-
+    private PropertyChangeSupport pcs;    
+    private HashSet                     breakpointListeners = new HashSet ();
+    
     private boolean                     enabled = true;
     private boolean                     hidden = false;
     private int                         suspend = SUSPEND_ALL;
@@ -295,4 +304,32 @@ public class JspLineBreakpoint extends Breakpoint {
         this.javalb = javalb;
     }
     
+    /**
+     * Adds a JPDABreakpointListener.
+     *
+     * @param listener the listener to add
+     */
+    public synchronized void addJPDABreakpointListener(JPDABreakpointListener listener) {
+        breakpointListeners.add (listener);
+    }
+  
+    /** 
+     * Removes a JPDABreakpointListener.
+     *
+     * @param listener the listener to remove
+    */
+    public synchronized void removeJPDABreakpointListener(JPDABreakpointListener listener) {
+        breakpointListeners.remove (listener);
+    }
+
+    /**
+     * Fire JPDABreakpointEvent.
+     *
+     * @param event a event to be fired
+     */
+    void fireJPDABreakpointChange (JPDABreakpointEvent event) {
+        Iterator i = ((HashSet) breakpointListeners.clone ()).iterator ();
+        while (i.hasNext ())
+            ((JPDABreakpointListener) i.next ()).breakpointReached (event);
+    }
 }

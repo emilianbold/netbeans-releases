@@ -80,7 +80,7 @@ public class JspBreakpointActionsProvider implements NodeActionsProviderFilter, 
 
     private static void customize (Breakpoint b) {
         JComponent c = null;
-        if (b instanceof LineBreakpoint) {
+        if (b instanceof JspLineBreakpoint) {
             c = new JspBreakpointPanel((JspLineBreakpoint) b);
         }
 

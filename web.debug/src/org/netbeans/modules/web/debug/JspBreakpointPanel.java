@@ -47,14 +47,12 @@ public class JspBreakpointPanel extends JPanel implements Controller {
     /** Creates new form JspBreakpointPanel */
     public JspBreakpointPanel(JspLineBreakpoint b) {
 
-        System.err.println("JspLineBreakpointPanel constructor: " + b);
-
         breakpoint = b;
         initComponents ();
         putClientProperty("HelpID", "jsp_breakpoint");//NOI18N
 
         cboxJspSourcePath.setEditable(false);
-        
+        cboxJspSourcePath.setEnabled(false);
         // a11y
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JspBreakpointPanel.class, "ACSD_LineBreakpointPanel")); // NOI18N
  

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Micro//S ystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Micro//S ystems, Inc. Portions Copyright 1997-2004 Sun
  * Micro//S ystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.web.debug;
@@ -38,10 +38,6 @@ public class Context {
         if (context == null) {
             List l = DebuggerManager.getDebuggerManager().lookup(ContextProvider.class);
             context = (ContextProvider) l.get (0);
-            int i, k = l.size();
-            for (i = 1; i < k; i++) {
-                context = new CompoundContextProvider((ContextProvider)l.get(i), context);
-            }
         }
         return context;
     }
@@ -143,15 +139,7 @@ public class Context {
     public static String getSelectedIdentifier () {
         return getContext ().getSelectedIdentifier ();
     }
-    
-//    public static int getFieldLineNumber (
-//        String sourceName,
-//        String fieldName
-//    ) {
-//        return 0;
-//    }
-    
-    
+        
     // utility methods .........................................................
 
     public static String getFileName (JspLineBreakpoint b) { 
@@ -162,7 +150,7 @@ public class Context {
         }
     }
 
-    public static boolean showSource (JspLineBreakpoint b) {
+    public static boolean showSource(JspLineBreakpoint b) {
         if (b.getLineNumber () < 1)
             return Context.showSource (
                 b.getURL (),
@@ -174,13 +162,11 @@ public class Context {
         );
     }
 
-    public static String getDefaultType () {
+    public static String getDefaultType() {
         return LINE;
     }
 
-    public static Object annotate (
-        JspLineBreakpoint b
-    ) {
+    public static Object annotate(JspLineBreakpoint b) {
         String url = b.getURL ();
         int lineNumber = b.getLineNumber ();
         if (lineNumber < 1) return null;
@@ -199,18 +185,7 @@ public class Context {
             annotationType
         );
     }
-
-//    public static String getRelativePath (
-//        CallStackFrame csf,
-//        String stratumn
-//    ) {
-//        try {
-//            return convertSlash (csf.getSourcePath (stratumn));
-//        } catch (NoInformationException e) {
-//            return getRelativePath (csf.getClassName ());
-//        }
-//    }
-
+    
     public static String getRelativePath (
         String className
     ) {
@@ -224,102 +199,6 @@ public class Context {
     private static String convertSlash (String original) {
         return original.replace (File.separatorChar, '/');
     }
-    
-    
-    // innerclasses ............................................................
-    
-    private static class CompoundContextProvider implements ContextProvider {
 
-        private ContextProvider cp1, cp2;
-        
-        CompoundContextProvider (
-            ContextProvider cp1,
-            ContextProvider cp2
-        ) {
-            this.cp1 = cp1;
-            this.cp2 = cp2;
-        }
-
-        public String getCurrentClassName () {
-            String s = cp1.getCurrentClassName ();
-            if ( (s == null) || (s.trim ().length () < 1))
-                return cp2.getCurrentClassName ();
-            return s;
-        }
-
-        public String getCurrentURL () {
-            String s = cp1.getCurrentURL ();
-            if ( (s == null) || (s.trim ().length () < 1))
-                return cp2.getCurrentURL ();
-            return s;
-        }
-        
-        public String getCurrentFieldName () {
-            String s = cp1.getCurrentFieldName ();
-            if ( (s == null) || (s.trim ().length () < 1))
-                return cp2.getCurrentFieldName ();
-            return s;
-        }
-        
-        public int getCurrentLineNumber () {
-            int i = cp1.getCurrentLineNumber ();
-            if (i < 1)
-                return cp2.getCurrentLineNumber ();
-            return i;
-        }
-        
-        public String getCurrentMethodName () {
-            String s = cp1.getCurrentMethodName ();
-            if ( (s == null) || (s.trim ().length () < 1))
-                return cp2.getCurrentMethodName ();
-            return s;
-        }
-        
-        public String getSelectedIdentifier () {
-            String s = cp1.getSelectedIdentifier ();
-            if ( (s == null) || (s.trim ().length () < 1))
-                return cp2.getSelectedIdentifier ();
-            return s;
-        }
-        
-        public boolean removeAnnotation (Object annotation) {
-            CompoundAnnotation ca = (CompoundAnnotation) annotation;
-            return cp1.removeAnnotation (ca.annotation1) &
-                   cp2.removeAnnotation (ca.annotation2);
-        }
-
-        public Object annotate (
-            String sourceName,
-            int lineNumber,
-            String annotationType
-        ) {
-            CompoundAnnotation ca = new CompoundAnnotation ();
-            ca.annotation1 = cp1.annotate
-                (sourceName, lineNumber, annotationType);
-            ca.annotation2 = cp2.annotate
-                (sourceName, lineNumber, annotationType);
-            return ca;
-        }
-
-        public boolean showSource (String sourceName, int lineNumber) {
-            return cp1.showSource (sourceName, lineNumber) |
-                   cp2.showSource (sourceName, lineNumber);
-        }
-        
-        public void addPropertyChangeListener (PropertyChangeListener l) {
-            cp1.addPropertyChangeListener (l);
-            cp2.addPropertyChangeListener (l);
-        }
-        
-        public void removePropertyChangeListener (PropertyChangeListener l) {
-            cp1.removePropertyChangeListener (l);
-            cp2.removePropertyChangeListener (l);
-        }
-    }
-    
-    private static class CompoundAnnotation {
-        Object annotation1;
-        Object annotation2;
-    }
 }
 
