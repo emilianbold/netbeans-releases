@@ -174,6 +174,10 @@ public class ServerInstance implements Node.Cookie {
         return (ServerTarget) getTargetMap().get(targetName);
     }
     
+    public Target getTarget(String targetName) {
+        return getServerTarget(targetName).getTarget();
+    }
+    
     public StartServer getStartServer() {
         if (startServer == null) {
             startServer = server.getOptionalFactory ().getStartServer (getDeploymentManager ());
