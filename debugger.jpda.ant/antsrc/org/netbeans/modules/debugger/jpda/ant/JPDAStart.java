@@ -236,7 +236,7 @@ public class JPDAStart extends Task implements Runnable {
             new ClassPath[] {
                 sourcePath,
                 (bootclasspath == null) ? 
-                    JavaPlatform.getDefault ().getSourceFolders ():
+                    JavaPlatform.getDefault ().getSourceFolders () :
                     convertToSourcePath (project, bootclasspath)
             }
         );

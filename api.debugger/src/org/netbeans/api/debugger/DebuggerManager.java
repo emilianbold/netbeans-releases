@@ -150,6 +150,10 @@ public final class DebuggerManager {
     /** Action constant for Restart Action. */
     public static final Object              ACTION_RESTART = "restart";
 
+    /** Action constant for Restart Action. */
+    public static final Object              ACTION_TOGGLE_BREAKPOINT = "toggleBreakpoint";
+
+
     
     /** Name of property for the set of breakpoints in the system. */
     public static final String                PROP_BREAKPOINTS_INIT = "breakpointsInit"; // NOI18N

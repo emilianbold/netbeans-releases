@@ -21,13 +21,13 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-debugger-jpda-ui-ToolTipAnnotation.instance"/>
                 </folder>
                 <folder name="GlyphGutterActions">
-                    <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                 </folder>
                 <folder name="Popup">
-                    <attr name="Separator7.instance/org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance" boolvalue="true"/>
+                    <attr name="Separator7.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance" boolvalue="true"/>
 
-                    <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance"/>
-                    <attr name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                    <attr name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true"/>
 
                     <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
                     <attr name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance/Separator8.instance" boolvalue="true"/>
@@ -40,13 +40,13 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Debug">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
-            <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
 
             <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
             <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
             <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
-            <!-- <file name="org-netbeans-modules-debugger-ui-actions-StepIntoMethodAction.instance"/> -->
+            <file name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
             <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
             <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
 
@@ -107,11 +107,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow/org-netbeans-modules-debugger-ui-actions-StepIntoMethodAction.shadow" boolvalue="true" />
-            <!-- <file name="org-netbeans-modules-debugger-ui-actions-StepIntoMethodAction.shadow"> -->
-            <!--     <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoMethodAction.instance"/> -->
-            <!-- </file> -->
-            <attr name="org-netbeans-modules-debugger-ui-actions-StepIntoMethodAction.shadow/Separator3.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow" boolvalue="true" />
+            <!-- <file name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
+            </file> -->
+            <attr name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow/Separator3.instance" boolvalue="true" />
             <file name="Separator3.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
@@ -152,7 +152,11 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
 
-            <attr name="Separator6.instance/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.shadow" boolvalue="true" />
+            <attr name="Separator6.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
             </file>
@@ -168,7 +172,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
         </file>
         <file name="C-F8.shadow">
-            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance"/>
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
         </file>
         <file name="F4.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
@@ -230,11 +234,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow/org-netbeans-modules-debugger-ui-actions-StepIntoMethodAction.shadow" boolvalue="true" />
-            <!-- <file name="org-netbeans-modules-debugger-ui-actions-StepIntoMethodAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoMethodAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow" boolvalue="true" />
+            <!-- <file name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
             </file> -->
-            <attr name="org-netbeans-modules-debugger-ui-actions-StepIntoMethodAction.shadow/org-netbeans-modules-debugger-ui-actions-FixAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow/org-netbeans-modules-debugger-ui-actions-FixAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-FixAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-FixAction.instance"/>
             </file>
