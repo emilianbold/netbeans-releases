@@ -197,17 +197,6 @@ public class Actions implements ActionsFactory {
         return a;
     }
         
-
-    // Unimplemented actions ---------------------------------------------------
-    
-    
-    public static Action stopBuilding() {
-        return new UnimplementedAction (        
-            NbBundle.getMessage(Actions.class, "LBL_StopBuildingAction_Name"), // NOI18N
-            (Icon)null );
-    }
-    
-    
     // Private extra actions
     
     /** New file action which implements the node action - good for the 

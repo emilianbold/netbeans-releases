@@ -67,10 +67,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.compileSingle"/>
             </file>
             
-            <file name="org-netbeans-modules-project-ui-StopBuilding.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.stopBuilding"/>
-            </file>
-                        
             <!-- Running project -->
             <file name="org-netbeans-modules-project-ui-RunMainProject.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.runMainProject"/>
@@ -302,19 +298,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
             
-            <attr name="SeparatorCompileSingle.instance/org-netbeans-modules-project-ui-StopBuilding.shadow" boolvalue="true" />
-            
-            <file name="org-netbeans-modules-project-ui-StopBuilding.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-StopBuilding.instance"/>
-            </file>
-
-            
-            <attr name="org-netbeans-modules-project-ui-StopBuilding.shadow/SeparatorStopBuilding.instance" boolvalue="true" />
-            <file name="SeparatorStopBuilding.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            
-            <attr name="SeparatorStopBuilding.instance/org-netbeans-core-output2-NextOutJumpAction.instance" boolvalue="true" />
+            <attr name="SeparatorCompileSingle.instance/org-netbeans-core-output2-NextOutJumpAction.instance" boolvalue="true" />
             
             <file name="org-netbeans-core-output2-NextOutJumpAction.instance"/>
 
