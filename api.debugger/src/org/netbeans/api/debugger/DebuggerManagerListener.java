@@ -47,10 +47,8 @@ public interface DebuggerManagerListener extends PropertyChangeListener {
 
     /**
      * Called when set of watches is initialized.
-     *
-     * @return initial set of watches
      */
-    public Watch[] initWatches ();
+    public void initWatches ();
 
     /**
      * Called when some watch is added.

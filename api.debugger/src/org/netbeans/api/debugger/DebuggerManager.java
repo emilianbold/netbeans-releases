@@ -743,6 +743,7 @@ public final class DebuggerManager {
     }
 
     private void initWatches () {
+        watchesInitialized = true; 
         initDebuggerManagerListeners ();
         Vector l = (Vector) listener.clone ();
         Vector l1 = (Vector) listeners.get (PROP_WATCHES_INIT);
@@ -752,18 +753,12 @@ public final class DebuggerManager {
         if (l1 != null)
             l1 = (Vector) l1.clone ();
         int i, k = l.size ();
-        for (i = 0; i < k; i++) {
-            watches.addAll (Arrays.asList (
-                ((DebuggerManagerListener) l.elementAt (i)).initWatches ()
-            ));
-            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
-        }
+        for (i = 0; i < k; i++)
+            ((DebuggerManagerListener) l.elementAt (i)).initWatches ();
         if (l1 != null) {
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                watches.addAll (Arrays.asList (
-                    ((DebuggerManagerListener)l1.elementAt (i)).initWatches ()
-                ));
+                ((DebuggerManagerListener)l1.elementAt (i)).initWatches ();
                 ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
             }
         }

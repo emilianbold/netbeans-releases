@@ -26,7 +26,7 @@ import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.debugger.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -84,14 +84,10 @@ public class AbstractVariable implements Variable {
     *
     * @return string representation of type of this variable.
     */
-    public void setValue (String value) {
-        try {
-            setInnerValue (
-                model.getDebugger ().evaluateIn (value)
-            );
-        } catch (InvalidExpressionException e) {
-            e.printStackTrace( );
-        }
+    public void setValue (String value) throws InvalidExpressionException {
+        setInnerValue (
+            model.getDebugger ().evaluateIn (value)
+        );
     }
     
     /**

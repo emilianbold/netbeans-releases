@@ -225,9 +225,14 @@ public class TreeModelNode extends AbstractNode {
             if (!initialezed) return;
             try {
                 Object[] ch = model.getChildren (object, 0, 0);
-                int i, k = ch.length;
+                int i, k = ch.length; 
                 HashMap newObjectToNode = new HashMap ();
                 for (i = 0; i < k; i++) {
+                    if (ch [i] == null) {
+                        System.out.println("model: " + model);
+                        System.out.println("parent: " + object);
+                        throw new NullPointerException ();
+                    }
                     TreeModelNode tmn = (TreeModelNode) objectToNode.get 
                         (ch [i]);
                     if (tmn != null) {

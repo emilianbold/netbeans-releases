@@ -28,7 +28,7 @@ import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
-import org.netbeans.api.debugger.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAWatch;

@@ -39,7 +39,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;

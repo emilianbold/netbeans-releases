@@ -97,7 +97,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
     
 
     public Breakpoint[] initBreakpoints () {return new Breakpoint [0];}
-    public Watch[] initWatches () {return new Watch [0];}
+    public void initWatches () {}
     public void sessionAdded (Session session) {}
     public void sessionRemoved (Session session) {}
     public void watchAdded (Watch watch) {}

@@ -49,6 +49,8 @@ public interface Field extends Variable {
      * Sets value of this field represented as text.
      *
      * @return sets value of this field represented as text
+     * @throws InvalidExpressionException if the expression is not correct
      */
-    public abstract void setValue (String value);
+    public abstract void setValue (String value) 
+    throws InvalidExpressionException;
 }

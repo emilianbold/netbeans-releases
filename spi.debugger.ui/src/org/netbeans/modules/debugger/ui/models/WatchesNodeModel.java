@@ -16,7 +16,6 @@ package org.netbeans.modules.debugger.ui.models;
 import java.util.Vector;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.NoCurrentSessionException;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
