@@ -95,9 +95,9 @@ public class CheckHelpSets extends Task {
         HelpSet.parse(hsfile.toURL(), null, new VerifyHSFactory());
         log("Checking links from help map and between HTML files...");
         Enumeration e = map.getAllIDs();
-        Set okurls = new HashSet(1000); // Set<String>
-        Set badurls = new HashSet(1000); // Set<String>
-        Set cleanurls = new HashSet(1000); // Set<String>
+        Set okurls = new HashSet(1000); // Set<URI>
+        Set badurls = new HashSet(1000); // Set<URI>
+        Set cleanurls = new HashSet(1000); // Set<URI>
         while (e.hasMoreElements()) {
             javax.help.Map.ID id = (javax.help.Map.ID)e.nextElement();
             URL u = map.getURLFromID(id);
@@ -105,7 +105,7 @@ public class CheckHelpSets extends Task {
                 throw new BuildException("Bogus map ID: " + id.id, new Location(hsfile.getAbsolutePath()));
             }
             log("Checking ID " + id.id, Project.MSG_VERBOSE);
-            CheckLinks.scan(this, id.id, u, okurls, badurls, cleanurls, false, 2, Collections.EMPTY_LIST);
+            CheckLinks.scan(this, id.id, "", new URI(u.toExternalForm()), okurls, badurls, cleanurls, false, 2, Collections.EMPTY_LIST);
         }
     }
     

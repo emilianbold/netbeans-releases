@@ -26,8 +26,6 @@ import org.apache.tools.ant.taskdefs.MatchingTask;
 
 import org.apache.tools.ant.types.Mapper;
 
-// XXX would be nice to have line numbers reported in output;
-// see FindBadConstructions for example
 // XXX in Ant 1.6, permit <xmlcatalog> entries to make checking of "external" links
 // work better in the case of cross-links between APIs
 
@@ -73,50 +71,43 @@ public class CheckLinks extends MatchingTask {
         if (! checkexternal) message += " (external URLs will be skipped)";
         log (message);
         String[] files = scanner.getIncludedFiles ();
-        // Set of known-good URLs (including all anchored variants etc.).
-        // We avoid using actual URL objects because URL.hashCode can call InetAddress
-        // methods which can hang (until a timeout) on machines with improperly
-        // configured networks. Anyway we want to compare literal URLs, not normalized
-        // hostnames.
-        // XXX just use URI
-        Set okurls = new HashSet (1000); // Set<String>
-        // Set of known-bad URLs.
-        Set badurls = new HashSet (100); // Set<String>
-        // Set of parsed base HTML URLs known to have had their contents checked.
-        Set cleanurls = new HashSet(100); // Set<String>
+        Set okurls = new HashSet (1000); // Set<URI>
+        Set badurls = new HashSet (100); // Set<URI>
+        Set cleanurls = new HashSet(100); // Set<URI>
         for (int i = 0; i < files.length; i++) {
             File file = new File (basedir, files[i]);
-            URL fileurl;
-            try {
-                fileurl = file.toURL ();
-            } catch (MalformedURLException mfue) {
-                throw new BuildException (mfue, location);
-            }
+            URI fileurl = file.toURI();
             log ("Scanning " + file, Project.MSG_VERBOSE);
             try {
-                scan(this, file.getAbsolutePath(), fileurl, okurls, badurls, cleanurls, checkexternal, 1, mappers);
+                scan(this, getLocation().toString(), "", fileurl, okurls, badurls, cleanurls, checkexternal, 1, mappers);
             } catch (IOException ioe) {
                 throw new BuildException ("Could not scan " + file + ": " + ioe, ioe, location);
             }
         }
     }
     
-    private static Pattern hrefOrAnchor;
-    static {
-        try {
-            hrefOrAnchor = Pattern.compile("<(a|img)(\\s+shape=\"rect\")?\\s+(href|name|src)=\"([^\"#]*)(#[^\"]+)?\"(\\s+shape=\"rect\")?>", Pattern.CASE_INSENSITIVE);
-        } catch (PatternSyntaxException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
+    private static Pattern hrefOrAnchor = Pattern.compile("<(a|img)(\\s+shape=\"rect\")?\\s+(href|name|src)=\"([^\"#]*)(#[^\"]+)?\"(\\s+shape=\"rect\")?>", Pattern.CASE_INSENSITIVE);
+    private static Pattern lineBreak = Pattern.compile("^", Pattern.MULTILINE);
     
-    // recurse:
-    // 0 - just check that it can be opened
-    // 1 - check also that any links from it can be opened
-    // 2 - recurse
-    public static void scan(Task task, String referrer, URL u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, int recurse, List mappers) throws IOException {
+    /**
+     * Scan for broken links.
+     * @param task an Ant task to associate with this
+     * @param referrer the referrer file path (or full URL if not file:)
+     * @param referrerLocation the location in the referrer, e.g. ":38:12", or "" if unavailable
+     * @param u the URI to check
+     * @param okurls a set of URIs known to be fully checked (including all anchored variants etc.)
+     * @param badurls a set of URIs known to be bogus
+     * @param cleanurls a set of (base) URIs known to have had their contents checked
+     * @param checkexternal if true, check external links (all protocols besides file:)
+     * @param recurse one of:
+     *                0 - just check that it can be opened;
+     *                1 - check also that any links from it can be opened;
+     *                2 - recurse
+     * @param mappers a list of Mappers to apply to get source files from HTML files
+     */
+    public static void scan(Task task, String referrer, String referrerLocation, URI u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, int recurse, List mappers) throws IOException {
         //task.log("scan: u=" + u + " referrer=" + referrer + " okurls=" + okurls + " badurls=" + badurls + " cleanurls=" + cleanurls + " recurse=" + recurse, Project.MSG_DEBUG);
-        if (okurls.contains(u.toExternalForm()) && recurse == 0) {
+        if (okurls.contains(u) && recurse == 0) {
             // Yes it is OK.
             return;
         }
@@ -125,18 +116,29 @@ public class CheckLinks extends MatchingTask {
         if (i != -1) {
             b = b.substring(0, i);
         }
-        URL base = new URL(b);
-        String frag = u.getRef();
+        URI base;
+        try {
+            base = new URI(u.getScheme(), u.getUserInfo(), u.getHost(), u.getPort(), u.getPath(), u.getQuery(), /*fragment*/null);
+        } catch (URISyntaxException e) {
+            throw new Error(e);
+        }
+        String frag = u.getFragment();
+        String basepath;
+        if ("file".equals(base.getScheme())) {
+            basepath = new File(base).getAbsolutePath();
+        } else {
+            basepath = base.getPath();
+        }
         //task.log("scan: base=" + base + " frag=" + frag, Project.MSG_DEBUG);
-        if (badurls.contains(u.toExternalForm()) || badurls.contains(base.toExternalForm())) {
-            task.log(normalize(referrer, mappers) + ": broken link (already reported): " + u, Project.MSG_WARN);
+        if (badurls.contains(u) || badurls.contains(base)) {
+            task.log(normalize(referrer, mappers) + referrerLocation + ": broken link (already reported): " + u, Project.MSG_WARN);
             return;
         }
-        if (! checkexternal && ! "file".equals(u.getProtocol())) {
+        if (! checkexternal && ! "file".equals(u.getScheme())) {
             task.log("Skipping external link: " + base, Project.MSG_VERBOSE);
-            cleanurls.add(base.toExternalForm());
-            okurls.add(base.toExternalForm());
-            okurls.add(u.toExternalForm());
+            cleanurls.add(base);
+            okurls.add(base);
+            okurls.add(u);
             return;
         }
         task.log("Checking " + u + " (recursion level " + recurse + ")", Project.MSG_VERBOSE);
@@ -144,7 +146,7 @@ public class CheckLinks extends MatchingTask {
         String mimeType;
         try {
             // XXX for protocol 'file', could more efficiently use a memmapped char buffer
-            URLConnection conn = base.openConnection ();
+            URLConnection conn = base.toURL().openConnection ();
             conn.connect ();
             mimeType = conn.getContentType ();
             InputStream is = conn.getInputStream ();
@@ -164,16 +166,17 @@ public class CheckLinks extends MatchingTask {
                 is.close();
             }
         } catch (IOException ioe) {
-            task.log(normalize(referrer, mappers) + ": broken link: " + base, Project.MSG_WARN);
+            task.log(normalize(referrer, mappers) + referrerLocation + ": broken link: " + base, Project.MSG_WARN);
             task.log("Error: " + ioe, Project.MSG_VERBOSE);
-            badurls.add(base.toExternalForm());
-            badurls.add(u.toExternalForm());
+            badurls.add(base);
+            badurls.add(u);
             return;
         }
-        okurls.add(base.toExternalForm());
-        Set others = null; // Set<String>
-        if (recurse > 0 && cleanurls.add(base.toExternalForm())) {
-            others = new HashSet(100);
+        okurls.add(base);
+        // map from other URIs (hrefs) to line/col info where they occur in this file (format: ":1:2")
+        Map others = null; // Map<URI, String>
+        if (recurse > 0 && cleanurls.add(base)) {
+            others = new HashMap(100);
         }
             if (recurse == 0 && frag == null) {
                 // That is all we wanted to check.
@@ -190,9 +193,13 @@ public class CheckLinks extends MatchingTask {
                         // We have an anchor, therefore refs to it are valid.
                         String name = unescape(m.group(4));
                         if (names.add(name)) {
-                            okurls.add(new URL(base, "#" + name).toExternalForm());
+                            try {
+                                okurls.add(new URI(base.getScheme(), base.getUserInfo(), base.getHost(), base.getPort(), base.getPath(), base.getQuery(), /*fragment*/name));
+                            } catch (URISyntaxException e) {
+                                task.log(normalize(basepath, mappers) + findLocation(content, m.start(4)) + ": bad anchor name: " + e.getMessage(), Project.MSG_WARN);
+                            }
                         } else if (recurse == 1) {
-                            task.log(normalize(referrer, mappers) + ": duplicate anchor name: " + name, Project.MSG_WARN);
+                            task.log(normalize(basepath, mappers) + findLocation(content, m.start(4)) + ": duplicate anchor name: " + name, Project.MSG_WARN);
                         }
                     } else {
                         // A link to some other document: href=, src=.
@@ -200,9 +207,19 @@ public class CheckLinks extends MatchingTask {
                             String otherbase = unescape(m.group(4));
                             String otheranchor = unescape(m.group(5));
                             if (!otherbase.startsWith("mailto:")) {
-                                URL o = new URL(base, (otheranchor == null) ? otherbase : otherbase + otheranchor);
-                                //task.log("href: " + o);
-                                others.add(o.toExternalForm());
+                                String uri = (otheranchor == null) ? otherbase : otherbase + otheranchor;
+                                String location = findLocation(content, m.start(4));
+                                try {
+                                    URI o = base.resolve(new URI(uri));
+                                    //task.log("href: " + o);
+                                    if (!others.containsKey(o)) {
+                                        // Only keep location info for first reference.
+                                        others.put(o, location);
+                                    }
+                                } catch (URISyntaxException e) {
+                                    // Message should contain the URI.
+                                    task.log(normalize(basepath, mappers) + location + ": bad relative URI: " + e.getMessage(), Project.MSG_WARN);
+                                }
                             }
                         } // else we are only checking that this one has right anchors
                     }
@@ -210,14 +227,16 @@ public class CheckLinks extends MatchingTask {
             } else {
                 task.log("Not checking contents of " + base, Project.MSG_VERBOSE);
             }
-        if (! okurls.contains(u.toExternalForm())) {
-            task.log(normalize(referrer, mappers) + ": broken link: " + u, Project.MSG_WARN);
+        if (! okurls.contains(u)) {
+            task.log(normalize(referrer, mappers) + referrerLocation + ": broken link: " + u, Project.MSG_WARN);
         }
         if (others != null) {
-            Iterator it = others.iterator();
+            Iterator it = others.entrySet().iterator();
             while (it.hasNext()) {
-                String other = (String)it.next();
-                scan(task, u.getPath(), new URL(other), okurls, badurls, cleanurls, checkexternal, recurse == 1 ? 0 : 2, mappers);
+                Map.Entry entry = (Map.Entry)it.next();
+                URI other = (URI)entry.getKey();
+                String location = (String)entry.getValue();
+                scan(task, basepath, location, other, okurls, badurls, cleanurls, checkexternal, recurse == 1 ? 0 : 2, mappers);
             }
         }
     }
@@ -275,6 +294,21 @@ public class CheckLinks extends MatchingTask {
             pos = search + repl.length();
         }
         return text;
+    }
+    
+    private static String findLocation(CharSequence content, int pos) {
+        Matcher lbm = lineBreak.matcher(content);
+        int line = 0;
+        int col = 1;
+        while (lbm.find()) {
+            if (lbm.start() <= pos) {
+                line++;
+                col = pos - lbm.start() + 1;
+            } else {
+                break;
+            }
+        }
+        return ":" + line + ":" + col;
     }
     
 }
