@@ -82,7 +82,7 @@ public class BeanInfoGeneration extends NbTestCase {
         MainFrame mf = MainFrame.getMainFrame();
         mf.pushFileMenu("New...");
         JamDialog dialog = new JamDialog("New Wizard");
-        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Classes");
+        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Java Classes");
         node.expand();
         node.getChild("Class").select();
         new JamButton(dialog, "Next >").doClick();

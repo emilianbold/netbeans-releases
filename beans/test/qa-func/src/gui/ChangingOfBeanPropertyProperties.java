@@ -102,7 +102,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
         MainFrame mf = MainFrame.getMainFrame();
         mf.pushFileMenu("New...");
         JamDialog dialog = new JamDialog("New Wizard");
-        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Classes");
+        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Java Classes");
         node.expand();
         node.getChild("Class").select();
         new JamButton(dialog, "Next >").doClick();
@@ -117,7 +117,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
 
         mf = MainFrame.getMainFrame();
         //mf.switchToEditing();
-        mf.pushMenu("Tools|Options...");
+        mf.pushMenu("Tools|Options");
         Options opt = new Options();
         JamUtilities.waitEventQueueEmpty(1500);                
 
@@ -240,7 +240,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
         MainFrame mf = MainFrame.getMainFrame();
         mf.pushFileMenu("New...");
         JamDialog dialog = new JamDialog("New Wizard");
-        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Classes");
+        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Java Classes");
         node.expand();
         node.getChild("Class").select();
         new JamButton(dialog, "Next >").doClick();
@@ -255,7 +255,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
 
         mf = MainFrame.getMainFrame();
         //mf.switchToEditing();
-        mf.pushMenu("Tools|Options...");
+        mf.pushMenu("Tools|Options");
         Options opt = new Options();
         
 //--------------
@@ -341,7 +341,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
         MainFrame mf = MainFrame.getMainFrame();
         mf.pushFileMenu("New...");
         JamDialog dialog = new JamDialog("New Wizard");
-        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Classes");
+        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Java Classes");
         node.expand();
         node.getChild("Class").select();
         new JamButton(dialog, "Next >").doClick();
@@ -356,7 +356,7 @@ public class ChangingOfBeanPropertyProperties  extends NbTestCase {
 
         mf = MainFrame.getMainFrame();
         //mf.switchToEditing();
-        mf.pushMenu("Tools|Options...");
+        mf.pushMenu("Tools|Options");
         Options opt = new Options();
         JamUtilities.waitEventQueueEmpty(1500);                
 

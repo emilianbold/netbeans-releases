@@ -49,6 +49,14 @@ public class CreateNewIndexedProperty extends NbTestCase {
         suite.addTest(new CreateNewIndexedProperty("testGeneratePropertyChangeSupport"));        
         return suite;
     }
+
+    /** testTest method */
+    public void testTest() {
+        Explorer explorer = new Explorer();        
+        explorer = Explorer.find();
+        explorer.switchToFilesystemsTab();
+    }    
+    
     
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
@@ -61,6 +69,7 @@ public class CreateNewIndexedProperty extends NbTestCase {
     /** setUp method  */
     public void setUp() {
         // redirect jemmy trace and error output to a log
+
         JellyProperties.setJemmyOutput(new PrintWriter(getLog(), true), new PrintWriter(getRef(), true));
         JellyProperties.setJemmyDebugTimeouts();
         JellyProperties.setDefaults();
@@ -68,15 +77,33 @@ public class CreateNewIndexedProperty extends NbTestCase {
             new JelloRepository().findOrMount(sampleDir);
             mount = false;
         }        
-        JavaWizard jw = JavaWizard.launch(JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes") + "|" + JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes/Class.java"),
-        sampleDir);
-        jw.setName(NAME_TEST_FILE);        
-        jw.finish();
+  /***/
+        Explorer explorer = new Explorer();
+        explorer = Explorer.find();
+        explorer.switchToFilesystemsTab();
+        explorer.selectNode(sampleDir);
+        MainFrame mf = MainFrame.getMainFrame();
+        mf.pushFileMenu("New...");
+        JamDialog dialog = new JamDialog("New Wizard");
+        DialogNode node = new DialogNode(dialog, new JamTree(dialog), "Templates, Java Classes");
+        node.expand();
+        node.getChild("Class").select();
+        new JamButton(dialog, "Next >").doClick();
+        dialog = new JamDialog("New Wizard - Class");
+        dialog.getJamTextField(0).setText(NAME_TEST_FILE);
+        new JamButton(dialog, "Finish").doClick();                
+/***/      
+
+//        JavaWizard jw = JavaWizard.launch(JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes") + "|" + JelloBundle.getString("org.netbeans.modules.java.Bundle","Templates/Classes/Class.java"),
+//        sampleDir);
+//        jw.setName(NAME_TEST_FILE);        
+//        jw.finish();
         
     }
     
     /** tearDown method */
     public void tearDown() {
+
         Explorer explorer = new Explorer();            
         explorer = Explorer.find();          
         explorer.switchToFilesystemsTab();                                
@@ -90,6 +117,7 @@ public class CreateNewIndexedProperty extends NbTestCase {
             explorer.pushPopupMenu("Unmount Filesystem", sampleDir);            
         }
         JamUtilities.waitEventQueueEmpty(1500);
+ 
     }
 
     
