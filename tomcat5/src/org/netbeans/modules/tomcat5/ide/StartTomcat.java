@@ -112,6 +112,7 @@ public final class StartTomcat extends StartServer implements Runnable, Progress
         startDebugMode = false;
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.RUNNING));
         RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY);
+        isDebugMode = false;
         return this;
     }
     
@@ -148,20 +149,23 @@ public final class StartTomcat extends StartServer implements Runnable, Progress
         if (!running) {
             isDebugMode = false;
         }
+//        System.err.println("IS RUNNING?????????? " + running);
         return running;
     }
 
     /**
      * Returns true if this target is in debug mode.
      */
-    public boolean isDebuggable(Target target) { 
+    public boolean isDebuggable(Target target) {
         if (!isDebugMode) {
+//            System.err.println("IS DEBUG MODE???????? " + isDebugMode);
             return false;
         }
         if (!isRunning()) {
-            return false;
+            isDebugMode = false;
         } 
-        return true;
+//        System.err.println("IS DEBUG MODE???????? " + isDebugMode);
+        return isDebugMode;
     }
 
     /**
@@ -178,6 +182,7 @@ public final class StartTomcat extends StartServer implements Runnable, Progress
         startDebugMode = false;
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.RUNNING));
         RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY);
+        isDebugMode = false;
         return this;
     }
 
@@ -258,6 +263,7 @@ public final class StartTomcat extends StartServer implements Runnable, Progress
         if (command == CommandType.START) {
             try {
                 MonitorSupport.synchronizeMonitorWithFlag(tm, true, true);
+                DebugSupport.allowDebugging(tm);
             }
             catch (IOException e) {
                 // fault, but not a critical one
@@ -271,18 +277,6 @@ public final class StartTomcat extends StartServer implements Runnable, Progress
         
         if (startDebugMode) {
             
-            if (command == CommandType.START) {
-                try {
-                    DebugSupport.allowDebugging(tm);
-                } catch (IOException e) {
-                    // fault, but not a critical one
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                } catch (SAXException e) {
-                    // fault, but not a critical one
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-
             NbProcessDescriptor pd  = defaultDebugDesc (StartTomcat.TAG_DEBUG_CMD, 
                                                         command == CommandType.START ? StartTomcat.TAG_JPDA_STARTUP : StartTomcat.TAG_JPDA_SHUTDOWN);
             try { 
