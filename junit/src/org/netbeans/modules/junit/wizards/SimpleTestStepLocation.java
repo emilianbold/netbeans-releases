@@ -325,6 +325,8 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         /* tune layout of the components within the box: */
         targetPanel.setAlignmentX(0.0f);
         optionsBox.setAlignmentX(0.0f);
+        optCode.setAlignmentX(0.0f);
+        optComments.setAlignmentX(0.0f);
 
         return result;
     }
