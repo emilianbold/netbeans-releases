@@ -48,13 +48,6 @@ public class InstallBeanAction extends CallableSystemAction {
         return new HelpCtx("beans.adding"); // NOI18N
     }
 
-    /** Icon resource.
-     * @return name of resource for icon
-     */
-    protected String iconResource() {
-        return "org/netbeans/modules/form/resources/palette_manager.png"; // NOI18N
-    }
-
     /** This method is called by one of the "invokers" as a result of
      * some user's action that should lead to actual "performing" of the action.
      */

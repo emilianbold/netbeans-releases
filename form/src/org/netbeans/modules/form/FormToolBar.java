@@ -22,6 +22,7 @@ import java.beans.BeanInfo;
 
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.palette.*;
@@ -126,8 +127,16 @@ class FormToolBar extends JToolBar {
 
         InstallBeanAction paletteManagerAction = (InstallBeanAction)
                                       SystemAction.get(InstallBeanAction.class);
-        JButton pmButton = (JButton) paletteManagerAction.getToolbarPresenter();
+        // Issue 46562
+        JButton pmButton = add(paletteManagerAction);
         initButton(pmButton);
+        Icon icon = (Icon)paletteManagerAction.getValue("hidden_icon"); // NOI18N
+        if (icon == null) {
+             Image i = Utilities.loadImage("org/netbeans/modules/form/resources/palette_manager.png", true); // NOI18N
+             icon = new ImageIcon(i);
+             paletteManagerAction.putValue("hidden_icon", icon); // NOI18N
+        }
+        pmButton.setIcon(icon);
 
         add(Box.createHorizontalStrut(4));
         add(separator1);
@@ -155,11 +164,13 @@ class FormToolBar extends JToolBar {
     // --------
     
     private void initButton(AbstractButton button) {
-        button.setBorderPainted(false);
+        if (!"Windows".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+            button.setBorderPainted(false);
+        }
         button.setOpaque(false);
         button.setFocusPainted(false);
     }
-
+    
     void updateDesignerMode(int mode) {
         selectionButton.setSelected(mode == FormDesigner.MODE_SELECT);
         connectionButton.setSelected(mode == FormDesigner.MODE_CONNECT);
