@@ -186,7 +186,7 @@ public final class ReferenceHelper {
                 // Set up the raw reference.
                 File forProjDir = FileUtil.toFile(forProj.getProjectDirectory());
                 assert forProjDir != null : forProj.getProjectDirectory();
-                String projName = PropertyUtils.getUsablePropertyName(ProjectUtils.getInformation(forProj).getName());
+                String projName = getUsableReferenceID(ProjectUtils.getInformation(forProj).getName());
                 String forProjName = findReferenceID(projName, "project.", forProjDir.getAbsolutePath());
                 if (forProjName == null) {
                     forProjName = generateUniqueID(projName, "project.", forProjDir.getAbsolutePath());
@@ -238,7 +238,7 @@ public final class ReferenceHelper {
                     propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
                 }
                 props = h.getProperties(propertiesFile);
-                String refPathProp = "reference." + forProjName + '.' + artifact.getID(); // NOI18N
+                String refPathProp = "reference." + forProjName + '.' + getUsableReferenceID(artifact.getID()); // NOI18N
                 if (!refPath.equals(props.getProperty(refPathProp))) {
                     props.setProperty(refPathProp, refPath);
                     h.putProperties(propertiesFile, props);
@@ -355,12 +355,16 @@ public final class ReferenceHelper {
      *         false if the reference was not there and no property was removed
      */
     public boolean removeReference(final String foreignProjectName, final String id) {
+        return removeReference(foreignProjectName, id, false);
+    }
+    
+    private boolean removeReference(final String foreignProjectName, final String id, final boolean escaped) {
         return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
                 Element references = loadReferences(true);
                 boolean success;
                 try {
-                    success = removeRawReference(foreignProjectName, id, references);
+                    success = removeRawReference(foreignProjectName, id, references, escaped);
                 } catch (IllegalArgumentException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     return Boolean.FALSE;
@@ -395,7 +399,7 @@ public final class ReferenceHelper {
                         }
                     }
                 }
-                String refProp = "reference." + foreignProjectName + '.' + id; // NOI18N
+                String refProp = "reference." + foreignProjectName + '.' + getUsableReferenceID(id); // NOI18N
                 for (int i = 0; i < PROPS_PATHS.length; i++) {
                     EditableProperties props = h.getProperties(PROPS_PATHS[i]);
                     if (props.containsKey(refProp)) {
@@ -465,7 +469,7 @@ public final class ReferenceHelper {
                 Element references = loadReferences(true);
                 boolean success;
                 try {
-                    success = removeRawReference(foreignProjectName, id, references);
+                    success = removeRawReference(foreignProjectName, id, references, false);
                 } catch (IllegalArgumentException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     return Boolean.FALSE;
@@ -480,23 +484,29 @@ public final class ReferenceHelper {
         })).booleanValue();
     }
     
-    private static boolean removeRawReference(String foreignProjectName, String id, Element references) throws IllegalArgumentException {
+    private static boolean removeRawReference(String foreignProjectName, String id, Element references, boolean escaped) throws IllegalArgumentException {
         // As with addRawReference, do a linear search through.
         List/*<Element>*/subEls = Util.findSubElements(references);
         Iterator it = subEls.iterator();
         while (it.hasNext()) {
             Element testRefEl = (Element)it.next();
             RawReference testRef = RawReference.create(testRefEl);
-            if (testRef.getForeignProjectName().compareTo(foreignProjectName) > 0) {
+            String refID = testRef.getID();
+            String refName = testRef.getForeignProjectName();
+            if (escaped) {
+                refID = getUsableReferenceID(testRef.getID());
+                refName = getUsableReferenceID(testRef.getForeignProjectName());
+            }
+            if (refName.compareTo(foreignProjectName) > 0) {
                 // searched past it
                 return false;
             }
-            if (testRef.getForeignProjectName().equals(foreignProjectName)) {
-                if (testRef.getID().compareTo(id) > 0) {
+            if (refName.equals(foreignProjectName)) {
+                if (refID.compareTo(id) > 0) {
                     // again, searched past it
                     return false;
                 }
-                if (testRef.getID().equals(id)) {
+                if (refID.equals(id)) {
                     // Key match, remove it.
                     references.removeChild(testRefEl);
                     return true;
@@ -554,12 +564,17 @@ public final class ReferenceHelper {
      *         or null if none such could be found
      */
     public RawReference getRawReference(final String foreignProjectName, final String id) {
+        return getRawReference(foreignProjectName, id, false);
+    }
+    
+    // not private only to allow unit testing
+    RawReference getRawReference(final String foreignProjectName, final String id, final boolean escaped) {
         return (RawReference)ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
                 Element references = loadReferences(false);
                 if (references != null) {
                     try {
-                        return getRawReference(foreignProjectName, id, references);
+                        return getRawReference(foreignProjectName, id, references, escaped);
                     } catch (IllegalArgumentException e) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     }
@@ -569,13 +584,18 @@ public final class ReferenceHelper {
         });
     }
     
-    private static RawReference getRawReference(String foreignProjectName, String id, Element references) throws IllegalArgumentException {
+    private static RawReference getRawReference(String foreignProjectName, String id, Element references, boolean escaped) throws IllegalArgumentException {
         List/*<Element>*/subEls = Util.findSubElements(references);
         Iterator it = subEls.iterator();
         while (it.hasNext()) {
             RawReference ref = RawReference.create((Element)it.next());
-            if (ref.getForeignProjectName().equals(foreignProjectName) &&
-                    ref.getID().equals(id)) {
+            String refID = ref.getID();
+            String refName = ref.getForeignProjectName();
+            if (escaped) {
+                refID = getUsableReferenceID(ref.getID());
+                refName = getUsableReferenceID(ref.getForeignProjectName());
+            }
+            if (refName.equals(foreignProjectName) && refID.equals(id)) {
                 return ref;
             }
         }
@@ -685,7 +705,7 @@ public final class ReferenceHelper {
         }
         File projDir = FileUtil.toFile(proj.getProjectDirectory());
         assert projDir != null : proj.getProjectDirectory();
-        return findReferenceID(PropertyUtils.getUsablePropertyName(ProjectUtils.getInformation(proj).getName()), "project.", projDir.getAbsolutePath());
+        return findReferenceID(getUsableReferenceID(ProjectUtils.getInformation(proj).getName()), "project.", projDir.getAbsolutePath());
     }
 
     /**
@@ -722,8 +742,17 @@ public final class ReferenceHelper {
     public String createForeignFileReference(AntArtifact artifact) throws IllegalArgumentException {
         addReference(artifact);
         String projID = findReferenceID(artifact);
-        return "${reference." + projID + '.' + artifact.getID() + '}'; // NOI18N
+        return "${reference." + projID + '.' + getUsableReferenceID(artifact.getID()) + '}'; // NOI18N
     }
+
+    /**
+     * Project reference ID cannot contain dot character.
+     * File reference can.
+     */
+    private static String getUsableReferenceID(String ID) {
+        return PropertyUtils.getUsablePropertyName(ID).replace('.', '_');
+    }
+    
     
     private static final Pattern FOREIGN_FILE_REFERENCE = Pattern.compile("\\$\\{reference\\.([^.${}]+)\\.([^.${}]+)\\}"); // NOI18N
     private static final Pattern FOREIGN_PLAIN_FILE_REFERENCE = Pattern.compile("\\$\\{file\\.reference\\.([^${}]+)\\}"); // NOI18N
@@ -742,7 +771,7 @@ public final class ReferenceHelper {
             public Object run() {
                 Matcher m = FOREIGN_FILE_REFERENCE.matcher(reference);
                 if (m.matches()) {
-                    RawReference ref = getRawReference(m.group(1), m.group(2));
+                    RawReference ref = getRawReference(m.group(1), m.group(2), true);
                     if (ref != null) {
                         return ref.toAntArtifact(ReferenceHelper.this);
                     }
@@ -776,7 +805,7 @@ public final class ReferenceHelper {
         if (m.matches()) {
             String forProjName = m.group(1);
             String id = m.group(2);
-            removeReference(forProjName, id);
+            removeReference(forProjName, id, true);
             return;
         }
         m = FOREIGN_PLAIN_FILE_REFERENCE.matcher(reference);

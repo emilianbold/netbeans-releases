@@ -496,6 +496,32 @@ public class ReferenceHelperTest extends NbTestCase {
             props.getProperty("reference.proj2.dojavadoc"));
         // XXX check add ref not coming from project gives IAE
     }
+    
+    public void testReferenceEscaping() throws Exception {
+        // check that artifact reference is correctly escaped. All dot characters
+        // in project name or artifact ID must be escaped, etc.
+        FileObject proj4Folder = FileUtil.createFolder(scratch, "proj4");
+        AntProjectHelper proj4Helper = ProjectGenerator.createProject(proj4Folder, "test", "pro-ject.4");
+        Project p = pm.findProject(projdir);
+        ReferenceHelper referenceHelperProj4 = (ReferenceHelper)p.getLookup().lookup(ReferenceHelper.class);
+        AntArtifact art = proj4Helper.createSimpleAntArtifact("jar", "build.jar", proj4Helper.getStandardPropertyEvaluator(), "do.jar", "clean");
+        String ref = referenceHelperProj4.createForeignFileReference(art);
+        assertEquals("Project reference was not correctly escaped", "${reference.pro-ject_4.do_jar}", ref);
+        
+        // test that it can be found
+        ReferenceHelper.RawReference rr = referenceHelperProj4.getRawReference("pro-ject_4", "do_jar", false);
+        assertNull("Cannot be found because it was escaped", rr);
+        rr = referenceHelperProj4.getRawReference("pro-ject_4", "do_jar", true);
+        assertNotNull("Created reference was not created", rr);
+        assertEquals("do.jar", rr.getID());
+        assertEquals("pro-ject_4", rr.getForeignProjectName());
+        
+        // test deletion
+        referenceHelperProj4.destroyForeignFileReference(ref);
+        rr = referenceHelperProj4.getRawReference("pro-ject_4", "do_jar", true);
+        assertNull("Reference was not deleted", rr);
+    }
+        
 
     /**
      * Check that the {@link SubprojectProvider} implementation behaves correctly.
