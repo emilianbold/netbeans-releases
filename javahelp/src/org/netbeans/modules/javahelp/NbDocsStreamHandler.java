@@ -84,7 +84,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
                 URL target;
                 String ext, basename;
                 int index = resource.lastIndexOf('.');
-                if (index != -1) {
+                if (index != -1 && index > resource.lastIndexOf('/')) {
                     ext = resource.substring(index + 1);
                     basename = resource.substring(0, index).replace('/', '.');
                 } else {
@@ -105,6 +105,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
                         throw ioe;
                     }
                 }
+                //System.err.println("loading from " + target);
                 real = target.openConnection();
                 real.connect();
                 connected = true;
