@@ -163,7 +163,11 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init_cluster_properties">
          <!-- Read moduleCluster.properties and directories.properties from netbeans.dest.dir -->
          <property file="${netbeans.dest.dir}/directories.properties"/>
+         <!-- read from second location -->
+         <property file="${netbeans.dest.dir}/../directories.properties"/>
          <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
+         <!-- read also from this location -->
+         <property file="${netbeans.dest.dir}/netbeans/moduleCluster.properties"/>
     </target>
     
     <!-- ======== -->

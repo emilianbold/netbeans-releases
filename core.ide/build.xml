@@ -19,7 +19,9 @@ Microsystems, Inc. All Rights Reserved.
         <patternset id="module.files">
             <include name="${module.jar}"/>
             <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
+            <!--
             <include name="${nb.bin.dir}/icons/*"/>
+            -->
             <include name="${nb.docs.dir}/NetBeansWeb.html"/>
             <include name="README.html"/>
             <include name="netbeans.css"/>
@@ -36,9 +38,6 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="../../testwww/www/netbeans.css" tofile="release/netbeans.css" failonerror="false"/>
         <copy file="../../www/www/netbeans.css" tofile="release/netbeans.css" failonerror="false"/>
         <!-- Now the regular parts: -->
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" includeEmptyDirs="false">
-            <fileset dir="release/bin" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
-        </copy>
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}" includeEmptyDirs="false">
             <fileset dir="release/docs" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
         </copy>

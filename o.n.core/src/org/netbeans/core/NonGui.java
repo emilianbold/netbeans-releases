@@ -137,6 +137,12 @@ public class NonGui extends NbTopManager implements Runnable {
         }
     }
 
+    /** Directory to place logs into logging.
+    */
+    protected static String getLogDir () {
+        return new File (new File (getUserDir (), "var"), "log").toString ();
+    }
+    
     /** System directory getter.
     */
     protected static String getSystemDir () {

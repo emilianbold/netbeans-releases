@@ -24,12 +24,16 @@ Microsystems, Inc. All Rights Reserved.
             <include name="${nb.bin.dir}/ide.cfg"/>
             <include name="${nb.bin.dir}/ide.policy"/>
             <include name="${nb.bin.dir}/macosx_launcher.dmg"/>
+            <include name="${nb.lib/ext.dir}/boot.jar"/>
+            <include name="${nb.bin.dir}/security.policy"/>
+            <!--
             <include name="${nb.bin.dir}/runide.exe"/>
             <include name="${nb.bin.dir}/runide.sh"/>
             <include name="${nb.bin.dir}/runide_exe_defaults"/>
             <include name="${nb.bin.dir}/runideopenvms.com"/>
             <include name="${nb.bin.dir}/runideos2.cmd"/>
             <include name="${nb.bin.dir}/runidew.exe"/>
+            -->
             <include name="${nb.system.dir}/ModuleAutoDeps/org-netbeans-core.xml"/>
             <include name="CREDITS.html"/>
         </patternset>
@@ -53,10 +57,18 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
+        <copy file="launcher/unix/nbexec" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" />
+        <chmod file="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}/nbexec" perm="ugo+rx"/>
+        <copy file="launcher/windows/nbexec.exe" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}/" />
+        <copy file="launcher/security.policy" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" />
+        <!-- copy file="release/lib/ide.ks" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/keystore.ks" / -->
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" includeEmptyDirs="false">
             <fileset dir="release/bin" excludesfile="../nbbuild/standard-jar-excludes.txt">
                 <!-- These do not currently work anyway: -->
                 <exclude name="unsupported/nbscript*"/>
+                <exclude name="**/runide.sh" />
+                <exclude name="**/ide.policy" />
+                <exclude name="**/ide.ks" />
             </fileset>
         </copy>
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}" includeEmptyDirs="false">

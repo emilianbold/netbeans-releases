@@ -73,16 +73,18 @@ public class Main extends Object {
     ) throws Exception {     
         ArrayList list = new ArrayList ();
 
+        HashSet processedDirs = new HashSet ();
         String home = System.getProperty ("netbeans.home"); // NOI18N
         if (home != null) {
-            build_cp (new File (home), list, false);
+            build_cp (new File (home), list, false, processedDirs);
         }
         // #34069: need to do the same for nbdirs.
         String nbdirs = System.getProperty("netbeans.dirs"); // NOI18N
         if (nbdirs != null) {
             StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
             while (tok.hasMoreTokens()) {
-                build_cp(new File(tok.nextToken()), list, true);
+                // passing false as last argument as we need to initialize openfile-cli.jar
+                build_cp(new File(tok.nextToken()), list, false, processedDirs);
             }
         }
         
@@ -202,11 +204,13 @@ public class Main extends Object {
         File[] arr = dir.listFiles();
         for (int i = 0; i < arr.length; i++) {
             String n = arr[i].getName ();
+            /*
             if (n.equals("updater.jar") || // NOI18N
                 (dir.getName().equals("locale") && n.startsWith("updater_") && n.endsWith(".jar"))) { // NOI18N
                 // Used by launcher, not by us.
                 continue;
             }
+            */
             if (n.endsWith("jar") || n.endsWith ("zip")) { // NOI18N
                 toAdd.add (arr[i]);
             }
@@ -214,10 +218,17 @@ public class Main extends Object {
     }
         
     
-    private static void build_cp(File base, Collection toAdd, boolean localeOnly) {
+    private static void build_cp(File base, Collection toAdd, boolean localeOnly, Set processedDirs) 
+    throws java.io.IOException {
+        base = base.getCanonicalFile ();
+        if (!processedDirs.add (base)) {
+            // already processed
+            return;
+        }
+        
         if (!localeOnly) {
-            append_jars_to_cp (new File (base, "lib/patches"), toAdd);
-            append_jars_to_cp (new File (base, "lib"), toAdd);
+            append_jars_to_cp (new File (base, "core/patches"), toAdd);
+            append_jars_to_cp (new File (base, "core"), toAdd);
         }
         // XXX a minor optimization: exclude any unused locale JARs
         // For example, lib/locale/ might contain:
@@ -231,6 +242,6 @@ public class Main extends Object {
         // [etc.]
         // Only some of these will apply to the current session, based on the
         // current values of Locale.default and NbBundle.branding.
-        append_jars_to_cp (new File (base, "lib/locale"), toAdd);
+        append_jars_to_cp (new File (base, "core/locale"), toAdd);
     }
 }

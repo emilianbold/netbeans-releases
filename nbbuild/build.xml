@@ -267,7 +267,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module a11y..."/>
     <ant dir="../a11y" target="netbeans"/>
   </target>
-  <target name="all-ant" depends="all-openide,all-core/javahelp,all-openide/execution,all-openide/io,all-java/api">
+  <target name="all-ant" depends="all-openide,all-core/javahelp,all-openide/execution,all-openide/io,all-java/api,all-libs/xerces">
     <echo message="Building module ant..."/>
     <ant dir="../ant" target="netbeans"/>
   </target>
@@ -1135,6 +1135,26 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
     <loadproperties srcFile="cluster.properties" />
     <repeat target="create-module-xmls-for-one-cluster" name="one.cluster.name" values="${clusters.list}" /> 
+
+    <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties" />
+        
+    <mkdir dir="${netbeans.dest.dir}/bin" />
+    <copy file="../core/nbide/launcher/unix/netbeans" todir="${netbeans.dest.dir}/bin" />
+    <chmod file="${netbeans.dest.dir}/bin/netbeans" perm="ugo+rx"/>
+    <copy file="../core/nbide/launcher/windows/netbeans.exe" todir="${netbeans.dest.dir}/bin" />
+    <copy file="../core/nbide/launcher/windows/nb.exe" todir="${netbeans.dest.dir}/bin" />
+    <copy file="../core/nbide/launcher/macosx/macosx_launcher.dmg" todir="${netbeans.dest.dir}/bin" />
+
+    <mkdir dir="${netbeans.dest.dir}/etc" />
+    <copy file="../core/nbide/launcher/netbeans.conf" todir="${netbeans.dest.dir}/etc" />
+
+    <echo message="${netbeans.dest.dir}/${nb.cluster.platform.dir}/${nb.bin.dir}/nbexec" />
+    <fixcrlf eol="lf" srcdir="${netbeans.dest.dir}" >
+      <include name="etc/netbeans.conf" />
+      <include name="bin/netbeans" />      
+      <include name="${nb.cluster.platform.dir}/${nb.bin.dir}/nbexec" />      
+    </fixcrlf>
+
     <echo file="${netbeans.dest}/build_info">NetBeans dev build
 ------------------
 Number:   ${buildnumber}
@@ -1142,7 +1162,7 @@ Date:     ${TODAY}
 Branding:
 Branch:   trunk
 Tag:
-</echo>
+    </echo>
   </target>
 
   <target name="build" depends="build-nozip"
@@ -1152,17 +1172,18 @@ Tag:
     <delete file="NetBeans-${buildnum}.zip"/>
     <!-- see issue #35744 http://www.netbeans.org/issues/show_bug.cgi?id=35744 -->
     <delete file="NetBeans-${buildnum}.zip"/>
+
+    <!-- package the zip file -->
     <zip destfile="NetBeans-${buildnum}.zip" update="true" duplicate="preserve">
-      <zipfileset file="${netbeans.dest}/bin/runide.sh" filemode="755" prefix="${netbeans.dest}/bin"/>
-      <zipfileset file="${netbeans.dest}/bin/*.com" filemode="755" prefix="${netbeans.dest}/bin"/>
-      <zipfileset file="${netbeans.dest}/bin/*.exe" filemode="755" prefix="${netbeans.dest}/bin"/>
+      <zipfileset file="${netbeans.dest}/bin/netbeans" filemode="755" prefix="${netbeans.dest}/bin"/>
+      <zipfileset file="${netbeans.dest}/${nb.cluster.platform.dir}/${nb.bin.dir}/nbexec" filemode="755" prefix="${netbeans.dest}/${nb.cluster.platform.dir}/${nb.bin.dir}"/>
       <zipfileset dir="${netbeans.dest}" prefix="${netbeans.dest}"/>
     </zip>
     <echo>Build created; see NetBeans-${buildnum}.zip (in nbbuild/).
 If you like, you may run the IDE straight from
 the ${netbeans.dest}/bin/ directory.
 (For example, type: ant tryme)
-</echo>
+    </echo>
   </target>
 
   <target name="checkXMLs" depends="bootstrap">
@@ -1201,7 +1222,7 @@ the ${netbeans.dest}/bin/ directory.
     </nbmerge>
     <chmod perm="ugo+x">
       <fileset dir="${netbeans.dest}">
-        <include name="bin/**/*.sh"/>
+        <include name="bin/netbeans"/>
         <include name="bin/**/*.pl"/>
         <include name="bin/fastjavac/fastjavac.linux"/>
         <include name="bin/fastjavac/fastjavac.sun"/>
@@ -1223,7 +1244,7 @@ the ${netbeans.dest}/bin/ directory.
     <!-- possibly after filtering for duplicates or something like this. -->
     <!-- Timeout is ten minutes; should be enough for valid start, while preventing -->
     <!-- a deadlock from hanging an automated build: -->
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/runide.exe" failonerror="yes" timeout="600000">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes" timeout="600000">
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
@@ -1231,7 +1252,7 @@ the ${netbeans.dest}/bin/ directory.
       <arg line="${sanitystart.args}"/>
     </exec>
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes" timeout="600000">
-      <arg value="${netbeans.dest}/bin/runide.sh"/>
+      <arg value="${netbeans.dest}/bin/netbeans"/>
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
@@ -1241,8 +1262,8 @@ the ${netbeans.dest}/bin/ directory.
     <echo>Finished starting the IDE, pay attention to any reported errors.</echo>
   </target>
 
-  <target name="check-for-build">
-    <available property="have-build" file="${netbeans.dest}/lib/openide.jar"/>
+  <target name="check-for-build"  >
+    <available property="have-build" file="${openide.dir}/${nb.lib.dir}/openide.jar"/>
   </target>
   <target name="maybe-build-nozip" depends="check-for-build" unless="have-build">
     <ant dir="." target="build-nozip"/>
@@ -1260,7 +1281,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           
           
   <target name="tryme-run" depends="init,maybe-build-nozip" unless="debug.port" >
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/runide.exe" failonerror="yes">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/netbeans.exe" failonerror="yes">
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
@@ -1268,7 +1289,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg line="${tryme.args}"/>
     </exec>
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes">
-      <arg value="${netbeans.dest}/bin/runide.sh"/>
+      <arg value="${netbeans.dest}/bin/netbeans"/>
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
@@ -1280,7 +1301,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="tryme-debug" depends="init,maybe-build-nozip" if="debug.port" >
     <property name="debug.pause" value="n" />
   
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/runide.exe" failonerror="yes">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes">
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
@@ -1289,7 +1310,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg line="-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=y,address=${debug.port}" />
     </exec>
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes">
-      <arg value="${netbeans.dest}/bin/runide.sh"/>
+      <arg value="${netbeans.dest}/bin/netbeans"/>
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
@@ -1461,6 +1482,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="clean" depends="init,cleanall,localclean"
           description="Clean out (almost) all build products.">
     <echo message="Run `ant real-clean' if desired."/>
+    <delete dir="${netbeans.dest}"/>
   </target>
 
 <!-- This section contains properties and targets used to build -->

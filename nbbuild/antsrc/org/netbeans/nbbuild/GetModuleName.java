@@ -43,7 +43,7 @@ public class GetModuleName extends Task {
             throw new BuildException("You must set the root dir", this.getLocation());
         try {
             File dir = this.getProject ().getBaseDir ();
-            if (dir.toString ().endsWith ("/test")) {
+            if (dir.toString ().endsWith (java.io.File.separatorChar + "test")) {
                 // when looking for base dir for tests
                 dir = dir.getParentFile ();
             }

@@ -23,7 +23,7 @@
     <!-- Gets the module name -->
     <getmodulename name="module.name" root="${nb_all}"/>
 
-    <setcluster name="cluster.dir" module="${module.name}" list="${clusters.list}" defaultLocation="netbeans"/>
+    <setcluster name="cluster.dir" module="${module.name}" list="${clusters.list}" defaultLocation="extra"/>
 
     <!-- Creating the output directory -->
     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}"/>

@@ -317,7 +317,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="javahelp" depends="init" if="has.javahelp">
-        <mkdir dir="${build.javahelp.dir}"/>
+        <mkdir dir="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}"/>
         <copy todir="${build.javahelp.dir}">
             <fileset dir="javahelp" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
         </copy>
