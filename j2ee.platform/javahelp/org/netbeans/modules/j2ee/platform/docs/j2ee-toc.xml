@@ -81,7 +81,7 @@
 	 <tocitem text="Configuring Web Service Creation" target="create_ws_customize" />
        </tocitem> <!-- Working With Web Services --> 
        <tocitem text="Web Service Clients">
-         <tocitem text="About Web Service Clients" target="tbd" />
+         <tocitem text="About Web Service Clients" target="about_websvc_client.html" />
 	 <tocitem text="Creating a Web Service Client" target="create_wsc" />
 	 <tocitem text="Invoking a Web Service Operation in a Client" target="tbd" />
          <tocitem text="Running a Web Service Client" target="tbd" />
