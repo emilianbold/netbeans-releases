@@ -19,6 +19,7 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 exclude-result-prefixes="xalan p j2se projdeps">
+<!-- XXX should use namespaces for NB in-VM tasks from ant/browsetask and debuggerjpda/ant (Ant 1.6.1 and higher only) -->
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
 
