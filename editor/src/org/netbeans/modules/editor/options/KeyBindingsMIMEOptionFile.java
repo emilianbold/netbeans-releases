@@ -286,6 +286,10 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
         
         
         int pos = name.lastIndexOf ("-"); //NOI18N
+        if (pos == -1) {
+            //#49590 - key binding like "F11" will not have modifiers
+            return new String[] { name };
+        }
         String keyPart = name.substring (pos);
         String modsPart = org.openide.util.Utilities.replaceString (name.substring (0, pos), "-", ""); //NOI18N
         if (modsPart.length() > 1) {

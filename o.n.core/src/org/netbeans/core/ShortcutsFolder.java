@@ -532,6 +532,10 @@ final class ShortcutsFolder extends FolderInstance {
         
         
         int pos = name.lastIndexOf ("-"); //NOI18N
+        if (pos == -1) {
+            //#49590 - key bindings such as F11 have no modifiers
+            return new String[] { name };
+        }
         String keyPart = name.substring (pos);
         String modsPart = Utilities.replaceString (name.substring (0, pos), "-", ""); //NOI18N
         if (modsPart.length() > 1) {
