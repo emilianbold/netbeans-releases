@@ -29,7 +29,7 @@ public class CleanAll extends Task {
     
     private Vector modules = new Vector (); // Vector<String>
     private String targetname = "clean";
-    private String topdir = "..";
+    private File topdir = null;
     
     public void setModules (String s) {
         StringTokenizer tok = new StringTokenizer (s, ", ");
@@ -42,17 +42,29 @@ public class CleanAll extends Task {
         targetname = s;
     }
     
-    public void setTopdir (String s) {
-        topdir = s;
+    public void setTopdir (File f) {
+        topdir = f;
     }
     
     public void execute () throws BuildException {
+        if (topdir == null) throw new BuildException ("You must set topdir attribute", location);
         for (int i = 0; i < modules.size (); i++) {
             String module = (String) modules.elementAt (i);
 	    Ant ant = (Ant) project.createTask ("ant");
 	    ant.init ();
 	    ant.setLocation (location);
-	    ant.setDir (topdir + '/' + module);
+            try {
+                // This param changed from String to File after Ant 1.1, so to work in both:
+                try {
+                    Ant.class.getMethod ("setDir", new Class[] { File.class }).invoke
+                        (ant, new Object[] { new File (topdir, module) });
+                } catch (NoSuchMethodException nsme) {
+                    Ant.class.getMethod ("setDir", new Class[] { String.class }).invoke
+                        (ant, new Object[] { topdir.getAbsolutePath () + File.separatorChar + module });
+                }
+            } catch (Exception e) {
+                throw new BuildException ("Could not set 'dir' attribute on Ant task", e, location);
+            }
 	    ant.setTarget (targetname);
 	    ant.execute ();
 	}
