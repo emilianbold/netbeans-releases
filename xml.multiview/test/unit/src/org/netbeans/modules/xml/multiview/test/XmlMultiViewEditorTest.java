@@ -75,7 +75,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         
         // wait to see the changes in Design view
         try {
-            Thread.sleep(1000);
+            Thread.sleep(2000);
         } catch (InterruptedException ex){}
         
         XmlMultiViewEditorSupport editor  = (XmlMultiViewEditorSupport)bookDO.getCookie(EditorCookie.class);
@@ -118,7 +118,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         }
         // wait for saving file
         try {
-            Thread.sleep(1000);
+            Thread.sleep(2000);
         } catch (InterruptedException ex){}
         
         try {
@@ -177,7 +177,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
             throw new AssertionFailedErrorException("Lock problem : ",ex);
         }
         try {
-            Thread.sleep(5000);
+            Thread.sleep(2000);
         } catch (InterruptedException ex){}
         
         XmlMultiViewEditorSupport editor  = (XmlMultiViewEditorSupport)bookDO.getCookie(EditorCookie.class);
