@@ -85,11 +85,6 @@ final class ResultView extends TopComponent
     
     /** manages the tree of nodes representing found objects */
     private final ExplorerManager explorerManager;
-    /**
-     * panel for displaying details about an object currently selected
-     * in the tree of found objects
-     */
-    private final DetailsPanel detailsPanel;
 
     /**
      * tree view for displaying found objects
@@ -175,34 +170,10 @@ final class ResultView extends TopComponent
         treeView =  new BeanTreeView();
         treeView.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(ResultView.class, "ACS_TREEVIEW")); //NOI18N
-        treeView.setBorder(Utils.getExplorerViewBorder());
+        treeView.setBorder(BorderFactory.createEmptyBorder());
+        mainPanel.add(treeView, java.awt.BorderLayout.CENTER);
 
-        /* Create the right part of the window: */
-        detailsPanel = new DetailsPanel();
-        detailsPanel.setBorder(BorderFactory.createEmptyBorder(6, 0, 0, 0));
-        
-        /* Put both parts into a split pane: */
-        splitPane.setLeftComponent(treeView);
-        splitPane.setRightComponent(detailsPanel);
-        
-        /* Modify UI of the split pane: */
-        /* 1) remove the border around the whole split pane: */
-        splitPane.setBorder(BorderFactory.createEmptyBorder());
-        /* 2) remove decoration of the splitter: */
-        javax.swing.plaf.basic.BasicSplitPaneDivider divider = null;
-        java.awt.Component[] components = splitPane.getComponents();
-        for (int i = 0; i < components.length; i++) {
-            if (components[i] instanceof
-                    javax.swing.plaf.basic.BasicSplitPaneDivider) {
-                divider = (javax.swing.plaf.basic.BasicSplitPaneDivider)
-                          components[i];
-                break;
-            }
-        }
-        if (divider != null) {
-            divider.setBorder(BorderFactory.createEmptyBorder());
-        }
-        
+
         /* initialize listening for buttons: */
         ActionListener buttonListener = new ButtonListener();
         sortButton.addActionListener(buttonListener);
@@ -213,8 +184,6 @@ final class ResultView extends TopComponent
         
         initAccessibility();
 
-        // TODO remove the code completely
-        detailsPanel.setVisible(false);
     }
     
     /**
@@ -338,13 +307,9 @@ final class ResultView extends TopComponent
 
         setLayout(new java.awt.BorderLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 5, 5)));
         mainPanel.setLayout(new java.awt.BorderLayout());
 
-        mainPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 5, 5)));
-        splitPane.setDividerSize(5);
-        mainPanel.add(splitPane, java.awt.BorderLayout.CENTER);
-
+        mainPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 2, 0)));
         buttonsPanel.setLayout(new javax.swing.BoxLayout(buttonsPanel, javax.swing.BoxLayout.X_AXIS));
 
         buttonsPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 0, 0, 0)));
@@ -405,7 +370,6 @@ final class ResultView extends TopComponent
     private javax.swing.JPanel buttonsPanel;
     private javax.swing.JPanel mainPanel;
     private final javax.swing.JRadioButton sortButton = new javax.swing.JRadioButton();
-    private final javax.swing.JSplitPane splitPane = new javax.swing.JSplitPane();
     private final javax.swing.JRadioButton unsortButton = new javax.swing.JRadioButton();
     // End of variables declaration//GEN-END:variables
     
@@ -440,8 +404,6 @@ final class ResultView extends TopComponent
         btnStop.setEnabled(!resultModel.isDone());
         sortButton.setEnabled(resultModel.isDone());
         unsortButton.setEnabled(resultModel.isDone());
-        
-        showDetails(null);
     }
     
     /* Implements interface ExplorerManager.Provider */
@@ -457,11 +419,6 @@ final class ResultView extends TopComponent
     private void nodeSelectionChanged() {
         Node[] nodes = explorerManager.getSelectedNodes();
         setActivatedNodes(nodes);
-        if (nodes.length == 1 && resultModel != null) {
-            showDetails(nodes[0]);
-        } else {
-            showDetails(null);
-        }
     }
     
     /** (Re)open the dialog window for entering (new) search criteria. */
@@ -526,32 +483,6 @@ final class ResultView extends TopComponent
     private void stopSearching() {
         if (resultModel != null) {
             resultModel.stop();
-        }
-    }
-    
-    /**
-     * Displays a list of matches found within a selected object.
-     * The list of matches is collected from answers of all
-     * {@linkplain SearchType search types}.
-     *
-     * @param  node  node representing an object containing matches
-     *               (if <code>null</code>, displays an empty list)
-     * @see  SearchType#getDetails(Node)
-     */
-    private void showDetails(Node node) {
-        if (node == null) {
-            detailsPanel.showInfo(null, null);
-        } else {
-            SearchType[] searchTypes = resultModel.getSearchGroup()
-                                                  .getSearchTypes();
-            List allDetailNodes = new ArrayList();
-            for (int i = 0; i < searchTypes.length; i++) {
-                Node[] detailNodes = searchTypes[i].getDetails(node);
-                if (detailNodes != null && detailNodes.length != 0) {
-                    allDetailNodes.addAll(Arrays.asList(detailNodes));
-                }
-            }
-            detailsPanel.showInfo(node, allDetailNodes);
         }
     }
     
