@@ -134,6 +134,7 @@ public class FormDataObject extends JavaDataObject {
   public DataObject handleCreateFromTemplate (
     DataFolder df, String name
   ) throws IOException {
+    return super.handleCreateFromTemplate (df, name); // [PENDING temporary]
 /*    if ((name != null) && (!com.netbeans.ide.util.Utilities.isJavaIdentifier (name)))
       throw new IOException ();
 /*          java.text.MessageFormat.format (
@@ -164,7 +165,6 @@ public class FormDataObject extends JavaDataObject {
     fdo.instantiated = true;
     fdo.modifiedInit = true;
     return fdo; */
-    return null;
   }
 
   /** Provides node that should represent this data object. When a node for representation
@@ -196,6 +196,8 @@ public class FormDataObject extends JavaDataObject {
 
 /*
  * Log
+ *  13   Gandalf   1.12        4/4/99   Ian Formanek    Fixed creation from 
+ *       template
  *  12   Gandalf   1.11        3/27/99  Ian Formanek    Removed obsoleted import
  *  11   Gandalf   1.10        3/24/99  Ian Formanek    
  *  10   Gandalf   1.9         3/24/99  Ian Formanek    
