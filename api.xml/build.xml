@@ -111,6 +111,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="real-clean" depends="clean">
         <delete dir="javadoc"/>
+
+        <ant dir="test" target="realclean"/>
     </target>
 
     <target name="all" depends="clean,nbm"/>
@@ -182,6 +184,10 @@ Microsystems, Inc. All Rights Reserved.
                style="${nbroot}/openide/api/doc/changes/apichanges.xsl"
         />    
         <echo message="done"/>
+    </target>
+
+    <target name="test">
+        <ant dir="test"/>
     </target>
 
 </project>

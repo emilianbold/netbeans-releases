@@ -146,6 +146,38 @@ public final class TransformHistory implements Serializable {
         sb.append (", processOutput= ").append (processOutput).append (" ]");
         return sb.toString();
     }
+    
+    public boolean equals (Object obj) {
+        if ( ( obj instanceof TransformHistory ) == false ) {
+            return false;
+        }
+        TransformHistory peer = (TransformHistory)obj;
+        if ( equals (this.xmlOutputMap, peer.xmlOutputMap) == false ) {
+            return false;
+        }
+        if ( equals (this.xslOutputMap, peer.xslOutputMap) == false ) {
+            return false;
+        }
+        if ( this.overwriteOutput != peer.overwriteOutput ) {
+            return false;
+        }
+        if ( this.processOutput != peer.processOutput ) {
+            return false;
+        }
+        return true;
+    }
+    
+    
+    //
+    // utils
+    //
+    static boolean equals (Object obj1, Object obj2) {
+        if ( obj1 != null ) {
+            return (obj1.equals (obj2));
+        } else {
+            return (obj1 == obj2);
+        }
+    }
 
     
     //
@@ -260,7 +292,20 @@ public final class TransformHistory implements Serializable {
             return sb.toString();
         }
 
-
+        public boolean equals (Object obj) {
+            if ( ( obj instanceof ListMap ) == false ) {
+                return false;
+            }
+            ListMap peer = (ListMap)obj;
+            if ( TransformHistory.equals (this.inputList, peer.inputList) == false ) {
+                return false;
+            }
+            if ( TransformHistory.equals (this.inputOutputMap, peer.inputOutputMap) == false ) {
+                return false;
+            }
+            return true;
+        }
+    
         private void readObject (ObjectInputStream ois) throws IOException, ClassNotFoundException {
             ois.defaultReadObject();
 

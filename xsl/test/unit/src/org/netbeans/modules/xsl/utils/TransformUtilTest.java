@@ -19,8 +19,16 @@ import java.beans.PropertyVetoException;
 import junit.framework.*;
 import org.netbeans.junit.*;
 
+import org.xml.sax.*;
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.sax.*;
+import javax.xml.transform.stream.*;
+
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
+
+import org.netbeans.api.xml.cookies.*;
 
 /**
  *
@@ -73,17 +81,65 @@ public class TransformUtilTest extends NbTestCase {
     }
 
     public void testGetAssociatedStylesheet () throws Exception {
-        System.out.println("testGetAssociatedStylesheet -- TBD");
+        System.out.println("testGetAssociatedStylesheet");
+        
+        URL docXMLURL = getClass().getResource("data/doc.xml");
+        URL invalidDocXMLURL = getClass().getResource("data/InvalidDocument.xml");
+        
+        //
+        assertTrue ("doc.xml does NOT have associated stylesheet",     null==TransformUtil.getAssociatedStylesheet(docXMLURL));
+        
+        // FAILS probably because bug in org.apache.xml.utils.URI =>
+        //      "org.apache.xml.utils.URI$MalformedURIException: Path contains invalid character: [" if it is nbfs: URL!
+        //assertTrue ("InvalidDocument.xml DOES have associated stylesheet", null!=TransformUtil.getAssociatedStylesheet(invalidDocXMLURL));
+        
+        // Same URL converted to file: format.
+        FileObject FO = URLMapper.findFileObjects (invalidDocXMLURL)[0];
+        URL url = URLMapper.findURL(FO, URLMapper.EXTERNAL);
+        assertTrue ("InvalidDocument.xml DOES have associated stylesheet", null!=TransformUtil.getAssociatedStylesheet (url));
     }
     
     public void testGuessOutputExt () throws Exception {
-        System.out.println("testGuessOutputExt -- TBD");
+        System.out.println("testGuessOutputExt");
+        
+        URL doc2htmlURL = getClass().getResource("data/doc2html.xsl");
+        URL doc2textURL = getClass().getResource("data/doc2text.xsl");
+        URL doc2xhtmlURL = getClass().getResource("data/doc2xhtml.xsl");
+        
+        assertTrue ("doc2html.xsl produces HTML output!", "html".equals (TransformUtil.guessOutputExt (getSource (doc2htmlURL))));
+        assertTrue ("doc2text.xsl produces TXT output!",  "txt".equals (TransformUtil.guessOutputExt (getSource (doc2textURL))));
+        assertTrue ("doc2xhtml.xsl produces XML output!", "xml".equals (TransformUtil.guessOutputExt (getSource (doc2xhtmlURL))));
     }
     
     public void testTransform () throws Exception {
-        System.out.println("testTransform -- TBD");
+        System.out.println("testTransform");
+        
+        assertTrue ("Correct XML and correct XSLT must pass!",               transform ("data/doc.xml", "data/doc2xhtml.xsl"));
+        assertTrue ("Incorrect XML and correct XSLT must not pass!",  false==transform ("data/InvalidDocument.xml", "data/doc2xhtml.xsl"));
+        assertTrue ("Correct XML and incorrect XSLT must not pass!",  false==transform ("data/doc.xml", "data/InvalidDocument.xml"));
+        assertTrue ("Incrrect XML and incorrect XSLT must not pass!", false==transform ("data/InvalidDocument.xml", "data/InvalidDocument.xml"));
     }
-    
+
+    private boolean transform (String xml, String xslt) {
+        URL xmlURL = getClass().getResource(xml);
+        URL xsltURL = getClass().getResource(xslt);
+        Source xmlSource = new SAXSource (new InputSource (xmlURL.toExternalForm()));
+        Source xsltSource = new SAXSource (new InputSource (xsltURL.toExternalForm()));
+        Result outputResult = new StreamResult (new StringWriter());
+        
+        Observer observer = new Observer(); // not yet used
+        boolean exceptionThrown = false;
+        try {
+            TransformUtil.transform (xmlSource, null, xsltSource, outputResult, observer);
+        } catch (TransformerException exc) {
+            System.err.println("!!! " + exc);
+            exceptionThrown = true;
+        }
+        
+        System.out.println(xml + " & " + xslt + " => " + ( exceptionThrown ? "WRONG" : "OK" ));
+        return exceptionThrown==false;
+    }
+        
     //
     // utils
     //
@@ -119,5 +175,31 @@ public class TransformUtilTest extends NbTestCase {
         
         return dataFS;
     }*/
+    
+    private Source getSource (URL url) throws ParserConfigurationException, SAXException {
+        XMLReader reader = TransformUtil.newXMLReader();
+        reader.setEntityResolver (TransformUtil.getEntityResolver());
+        Source source = new SAXSource (reader, new InputSource (url.toExternalForm()));
+        return source;
+    }
+
+    //
+    // class Observer
+    //
+    
+    private static class Observer implements CookieObserver {
+        private int receives;
+        private int warnings;
+        
+        public void receive(CookieMessage msg) {
+            receives++;
+            if (msg.getLevel() >= msg.WARNING_LEVEL) {
+                warnings++;
+            }
+        }
+        public int getWarnings() {
+            return warnings;
+        }        
+    } // class Observer
     
 }

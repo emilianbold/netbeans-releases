@@ -148,11 +148,14 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="Info"/>
         <delete dir="javahelp/org/netbeans/modules/xml/core/docs/JavaHelpSearch"/>
 
+        <for-each locations="compat"/>
         <for-each locations="../compat"/>
     </target>
 
     <target name="real-clean" depends="clean">
         <delete dir="javadoc"/>
+
+        <ant dir="test" target="realclean"/>
     </target>
 
     <target name="all" depends="clean,nbm"/>
@@ -171,6 +174,10 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Compile all XML sub-modules ..."/>
         <ant dir=".." target="clean"/>
         <ant dir=".." target="compile"/>
+    </target>
+
+    <target name="test">
+        <ant dir="test"/>
     </target>
 
 </project>

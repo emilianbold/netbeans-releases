@@ -156,7 +156,14 @@ public class TransformUtil {
     }
 
 
+    /*  @return associated stylesheet or <code>null</code>.
+     */
     public static Source getAssociatedStylesheet (URL baseURL) {
+        if ( Util.THIS.isLoggable() ) /* then */ {
+            Util.THIS.debug ("TransformUtil.getAssociatedStylesheet:");
+            Util.THIS.debug ("    baseURL = " + baseURL);
+        }
+
         Source xml_stylesheet = null;
 
         try {
@@ -165,8 +172,14 @@ public class TransformUtil {
             SAXSource source = new SAXSource (reader, new InputSource (baseURL.toExternalForm()));
             
             xml_stylesheet = getTransformerFactory().getAssociatedStylesheet (source, null, null, null);
+
+            if ( Util.THIS.isLoggable() ) /* then */ {
+                Util.THIS.debug ("    source = " + source.getSystemId());
+                Util.THIS.debug ("    xml_stylesheet = " + xml_stylesheet);
+            }
         } catch (Exception exc) { // ParserConfigurationException, SAXException, TransformerConfigurationException
             // ignore it
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TransformUtil.getAssociatedStylesheet: !!!", exc); // debug
         }
 
         return xml_stylesheet;

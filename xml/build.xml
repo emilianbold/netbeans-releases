@@ -121,4 +121,8 @@ Microsystems, Inc. All Rights Reserved.
         </validatexml>
     </target>
 
+    <target name="test">
+        <for-each locations="${submodules}"/>
+    </target>
+
 </project>

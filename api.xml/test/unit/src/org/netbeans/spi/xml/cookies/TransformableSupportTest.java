@@ -94,6 +94,6 @@ public class TransformableSupportTest extends NbTestCase {
             return warnings;
         }
         
-    };
+    }
         
 }
