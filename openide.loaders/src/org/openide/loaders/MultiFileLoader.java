@@ -204,7 +204,9 @@ public abstract class MultiFileLoader extends DataLoader {
 
 
         FileObject primary = obj.getPrimaryFile ();
+        assert primary != null : "Object " + obj + " cannot have null primary file"; // NOI18N
         FileObject parent = primary.getParent ();
+        assert parent != null : "Object " + obj + " cannot have null parent file"; // NOI18N
 
         FileObject[] arr = parent.getChildren ();
         for (int i = 0; i < arr.length; i++) {
