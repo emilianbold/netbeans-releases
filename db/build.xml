@@ -47,7 +47,6 @@ Microsystems, Inc. All Rights Reserved.
           <include name="openide*.jar" />
         </fileset>
 	<pathelement location="${nbroot}/openidex/netbeans/lib/ext/openidex.jar"/>
-	<pathelement location="${nbroot}/form/netbeans/modules/form.jar"/>
       </classpath>
     </javac>
   </target>

@@ -34,8 +34,6 @@ import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.dlg.ConnectDialog;
-import org.netbeans.modules.form.RADComponentNode;
-import org.netbeans.modules.form.RADComponent;
 
 /**
 * Node representing open or closed connection to database.
