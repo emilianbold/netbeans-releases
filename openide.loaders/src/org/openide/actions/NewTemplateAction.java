@@ -34,9 +34,12 @@ import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.Mutex;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.*;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -172,7 +175,7 @@ public class NewTemplateAction extends NodeAction {
         return "org/openide/actions/new.gif"; // NOI18N
     }
     
-    public JMenuItem getMenuPresenter() {
+    public JMenuItem getMenuPresenter () {
         return new Actions.MenuItem (this, true) {
                    public void setEnabled (boolean e) {
                        super.setEnabled (true);
@@ -180,7 +183,7 @@ public class NewTemplateAction extends NodeAction {
                };
     }
 
-    public Component getToolbarPresenter() {
+    public Component getToolbarPresenter () {
         return new Actions.ToolbarButton (this) {
                    public void setEnabled (boolean e) {
                        super.setEnabled (true);
@@ -192,30 +195,39 @@ public class NewTemplateAction extends NodeAction {
     * templates.
     */
     public JMenuItem getPopupPresenter() {
-        TemplateWizard tw = getWizard(null);
+        return getPopupPresenter (new Node[0], this);
+    }
+    
+    private JMenuItem getPopupPresenter (Node[] nodes, Action action) {
+        final Node n = (nodes.length == 1) ? nodes[0] : null;
+        TemplateWizard tw = getWizard (n);
+        
         if (tw instanceof DefaultTemplateWizard) {
-            return new MenuWithRecent();
+            return new MenuWithRecent (n);
         } else {
             // The null is correct but depends on the impl of MenuView.Menu
             JMenuItem menu = new MenuView.Menu (null, new TemplateActionListener (), false) {
                 // this is the only place MenuView.Menu needs the node ready
                 // so lets prepare it on-time
-                public JPopupMenu getPopupMenu() {
-                    if (node == null) node = getTemplateRoot();
-                    return super.getPopupMenu();
+                public JPopupMenu getPopupMenu () {
+                    if (node == null) node = getTemplateRoot (n);
+                    return super.getPopupMenu ();
                 }
             };
-            Actions.connect (menu, this, true);
+            Actions.connect (menu, action, true);
             return menu;
         }
     }
+    
 
     private class MenuWithRecent extends JMenuPlus {
         private boolean initialized = false;
+        private Node node;
         
-        public MenuWithRecent() {
+        public MenuWithRecent(Node n) {
             super(); //NewTemplateAction.this.getName());
             Actions.setMenuText(this, NewTemplateAction.this.getName(), false);
+            node = n;
         }
         
         public JPopupMenu getPopupMenu() {
@@ -283,7 +295,7 @@ public class NewTemplateAction extends NodeAction {
             
             /** Invoked when an action occurs. */
             public void actionPerformed(ActionEvent e) {
-                doShowWizard(template);
+                doShowWizard(template, node);
             }
         }
     }
@@ -320,26 +332,26 @@ public class NewTemplateAction extends NodeAction {
         }
     }
 
-    private void doShowWizard(DataObject template) {
+    private void doShowWizard(DataObject template, Node node) {
         targetFolder = null;
-            TemplateWizard wizard = getWizard (null);
-            
-            try {
-                wizard.setTargetName (null);
-                Set created = wizard.instantiate (template, targetFolder);
-                if (created != null && wizard instanceof DefaultTemplateWizard) {
-                    // put the item in the recent list
-                    selectedTemplate = wizard.getTemplate();
-                    if (selectedTemplate != null) {
-                        // bugfix #36604; notify that the list recent used templates changed
-                        recentChanged = addRecent (selectedTemplate);
-                    }
+        TemplateWizard wizard = getWizard (node);
+
+        try {
+            wizard.setTargetName (null);
+            Set created = wizard.instantiate (template, targetFolder);
+            if (created != null && wizard instanceof DefaultTemplateWizard) {
+                // put the item in the recent list
+                selectedTemplate = wizard.getTemplate();
+                if (selectedTemplate != null) {
+                    // bugfix #36604; notify that the list recent used templates changed
+                    recentChanged = addRecent (selectedTemplate);
                 }
-            } catch (IOException e) {
-                ErrorManager em = ErrorManager.getDefault();
-                em.annotate(e, NbBundle.getMessage(DataObject.class, "EXC_TemplateFailed"));
-                em.notify(e);
             }
+        } catch (IOException e) {
+            ErrorManager em = ErrorManager.getDefault();
+            em.annotate(e, NbBundle.getMessage(DataObject.class, "EXC_TemplateFailed"));
+            em.notify(e);
+        }
     }
     
     private DataFolder getRecentFolder () {
@@ -450,9 +462,16 @@ public class NewTemplateAction extends NodeAction {
     * @return a node representing all possible templates
     */
     public static Node getTemplateRoot () {
-        RootChildren ch = new RootChildren ();
+        RootChildren ch = new RootChildren (null);
         // create the root
         return ch.getRootFolder ().new FolderNode (ch);
+    }
+    
+    private static Node getTemplateRoot (Node n) {
+        RootChildren ch = new RootChildren (n);
+        // create the root
+        Node help = ch.getRootFolder ().new FolderNode (ch);
+        return help;
     }
     
     /** Cookie that can be implemented by a node if it wishes to have a 
@@ -536,11 +555,11 @@ public class NewTemplateAction extends NodeAction {
         
         /** Instance not connected to any node.
          */
-        public RootChildren () {
+        public RootChildren (Node n) {
             TopComponent.Registry reg = WindowManager.getDefault ().getRegistry ();
             reg.addPropertyChangeListener (org.openide.util.WeakListeners.propertyChange (this, reg));
             
-            updateWizard (getWizard (null));
+            updateWizard (getWizard (n));
         }
         
         public DataFolder getRootFolder () {
@@ -691,11 +710,11 @@ public class NewTemplateAction extends NodeAction {
                         updateNode (arr[0]);
                     }
                 }
-            }   
+            }
         }
         
     }
-
+    
     /** Filter node children, that stops on data objects (does not go futher)
     */
     private static class TemplateChildren extends FilterNode.Children {
@@ -758,4 +777,104 @@ public class NewTemplateAction extends NodeAction {
         DefaultTemplateWizard() {}
     }
     
+    // delegate action
+    // bugfix 36573, NewTemplateAction provides context aware action
+    private static final Node[] EMPTY_NODE_ARRAY = new Node[0];
+    
+    private class NodeLookupListener implements LookupListener {
+        
+        public void resultChanged (org.openide.util.LookupEvent ev) {
+            updateAction ();
+        }
+    }
+    
+    private void updateAction () {}
+    
+    static private final synchronized Node[] getNodesFromLookup (Lookup lookup) {
+        if (lookup != null) {
+            Lookup.Result nodesResult = lookup.lookup (new Lookup.Template (Node.class));
+            if (nodesResult != null) {
+                return (Node[])nodesResult.allInstances ().toArray (EMPTY_NODE_ARRAY);
+            }
+        }
+        return EMPTY_NODE_ARRAY;
+    }
+    
+    
+    /** Implements <code>ContextAwareAction</code> interface method. */
+    public Action createContextAwareInstance (Lookup actionContext) {
+        Action action = new DelegateAction (this, actionContext);
+        Lookup.Result nodesResult = actionContext.lookup (new Lookup.Template (Node.class));
+        // if a weak listener is used then NewTemplateActionTest fails
+        //LookupListener l = (LookupListener)WeakListeners.create (LookupListener.class, (LookupListener)action, nodesResult);
+        //nodesResult.addLookupListener (l);
+        //l.resultChanged (null);
+        nodesResult.addLookupListener ((LookupListener)action);
+        ((LookupListener)action).resultChanged (null);
+        return action;
+    }
+    
+    private static final class DelegateAction extends Object
+    implements Action, Presenter.Popup, /*Presenter.Menu, Presenter.Toolbar,*/ LookupListener {
+        
+        private NewTemplateAction delegate;
+        private Lookup actionContext;
+        
+        private PropertyChangeSupport support = new PropertyChangeSupport (this);
+        
+        public DelegateAction (NewTemplateAction action, Lookup actionContext) {
+            this.delegate = action;
+            this.actionContext = actionContext;
+        }
+        
+        /** Overrides superclass method, adds delegate description. */
+        public String toString () {
+            return super.toString () + "[delegate=" + delegate + "]"; // NOI18N
+        }
+        
+        public void putValue (String key, Object value) { }
+        
+        public boolean isEnabled () {
+            return delegate.enable (getNodesFromLookup (actionContext));
+        }
+        
+        public Object getValue (String key) {
+            return delegate.getValue (key);
+        }
+        
+        public void setEnabled (boolean b) {
+        }
+        
+        public void actionPerformed (ActionEvent e) {
+        }
+        
+        public void addPropertyChangeListener (PropertyChangeListener listener) {
+            support.addPropertyChangeListener (listener);
+        }
+        
+        public void removePropertyChangeListener (PropertyChangeListener listener) {
+            support.removePropertyChangeListener (listener);
+        }
+        
+        public JMenuItem getPopupPresenter() {
+            Node[] nodes = getNodesFromLookup (actionContext);
+            Node n = (nodes.length == 1) ? nodes[0] : null;
+            return delegate.getPopupPresenter (nodes, this);
+        }
+
+        public void resultChanged (org.openide.util.LookupEvent ev) {
+            getPopupPresenter ();
+//            getMenuPresenter ();
+//            getToolbarPresenter ();
+        }
+        
+//        public JMenuItem getMenuPresenter () {
+//            return delegate.getMenuPresenter ();
+//        }
+//        
+//        public Component getToolbarPresenter () {
+//            return delegate.getToolbarPresenter ();
+//        }
+//        
+    }
 }
