@@ -44,12 +44,10 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
     private final PropertyEvaluator evaluator;
     
     // Option indexes
-    private static final int OPTION_APPLY = 0;
-    private static final int OPTION_OK = OPTION_APPLY + 1;
+    private static final int OPTION_OK = 0;
     private static final int OPTION_CANCEL = OPTION_OK + 1;
     
     // Option command names
-    private static final String COMMAND_APPLY = "APPLY";    // NOI18N
     private static final String COMMAND_OK = "OK";          // NOI18N
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
     
@@ -77,20 +75,17 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
 
         // Create options
         JButton options[] = new JButton[] { 
-            new JButton( NbBundle.getMessage( ProjectCustomizerProvider.class, "LBL_Customizer_Apply_Option") ), // NOI18N
             new JButton( NbBundle.getMessage( ProjectCustomizerProvider.class, "LBL_Customizer_Ok_Option") ), // NOI18N
             new JButton( NbBundle.getMessage( ProjectCustomizerProvider.class, "LBL_Customizer_Cancel_Option" ) ) , // NOI18N
         };
 
         // Set commands
-        options[ OPTION_APPLY ].setActionCommand( COMMAND_APPLY );
         options[ OPTION_OK ].setActionCommand( COMMAND_OK );
         options[ OPTION_CANCEL ].setActionCommand( COMMAND_CANCEL );
 
         ProjectCustomizer pc = new ProjectCustomizer(antProjectHelper);
         // RegisterListener
         ActionListener optionsListener = new OptionListener( project, pc);
-        options[ OPTION_APPLY ].addActionListener( optionsListener );
         options[ OPTION_OK ].addActionListener( optionsListener );
         options[ OPTION_CANCEL ].addActionListener( optionsListener );
 
@@ -132,7 +127,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
         public void actionPerformed( ActionEvent e ) {
             String command = e.getActionCommand();
             
-            if ( COMMAND_OK.equals( command ) || COMMAND_APPLY.equals( command ) ) {
+            if ( COMMAND_OK.equals( command ) ) {
                 projectCustomizer.save();
                 
                 try {
