@@ -16,6 +16,7 @@ import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 import org.netbeans.jellytools.properties.TextFieldProperty;
+import org.netbeans.jemmy.EventTool;
 
 /** Class implementing all necessary methods for handling "Key Bindings" NbDialog.
  *
@@ -258,7 +259,9 @@ public class KeyBindings extends JDialogOperator {
         return ret;
     }
     
-    public List listKeyBindings() {
+    public List listKeyBindings(String actionName) {
+        JListOperator jlist=lstActions();
+        jlist.selectItem(actionName);
         ListModel model = lstKeybindings().getModel();
         List ret=new Vector();
         for (int i=0;i < model.getSize();i++) {
@@ -274,6 +277,7 @@ public class KeyBindings extends JDialogOperator {
     public static KeyBindings invoke(String editorName) {
         OptionsOperator options = OptionsOperator.invoke();
         options.selectOption(ResourceBundle.getBundle("org/netbeans/core/Bundle").getString("UI/Services/Editing")+"|"+ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_all")+"|" + editorName);
+        new EventTool().waitNoEvent(500);
         PropertySheetOperator property = new PropertySheetOperator(options);
         PropertySheetTabOperator psto = new PropertySheetTabOperator(property);
         TextFieldProperty tfp=new TextFieldProperty(psto, ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("PROP_KeyBindings"));
@@ -290,33 +294,53 @@ public class KeyBindings extends JDialogOperator {
         return result;
     }
     
+    public static Hashtable listAllKeyBindings(String editorName) {
+        KeyBindings instance = invoke(editorName);
+        List          result = instance.listActions();
+        Hashtable ret=new Hashtable();
+        for (int i=0;i < result.size();i++) {
+            ret.put(result.get(i).toString(),instance.listKeyBindings(result.get(i).toString()));
+        }
+        instance.oK();
+        return ret;
+    }
+    
     /** Performs simple test of KeyBindings
      * @param args the command line arguments
      */
     public static void main(String args[]) {
         //repeating test
-        String[] names=new String[] {"Plain Editor","HTML Editor","Java Editor"};
+        /*String[] names=new String[] {"Plain Editor","HTML Editor","Java Editor"};
         List list;
         for (int j=0;j < 20;j++) {
-            
+         
             for (int i=0;i < names.length;i++) {
                 list = KeyBindings.listActions(names[i]);
                 System.out.println("step "+j+" output size="+list.size());
             }
-        }
-        /*
-        String name="Plain Editor";
-         
+        }*/
+        
+        String name="Java Editor";
+        Hashtable table;
+        table = KeyBindings.listAllKeyBindings(name);
+        Object[] keys=table.keySet().toArray();
+        Arrays.sort(keys);
+        List list;
         try {
             File out=new File("/tmp/"+name+" actions.lst");
             PrintWriter pw=new PrintWriter(new FileWriter(out));
-            for (int i=0;i < list.size();i++) {
-                pw.println(list.get(i));
+            for (int i=0;i < keys.length;i++) {
+                pw.print(keys[i]+": ");
+                list=(List)table.get(keys[i]);
+                for (int j=0;j < list.size();j++) {
+                    pw.print(list.get(j)+" ");
+                }
+                pw.println();
             }
             pw.close();
         } catch (Exception ex) {
             ex.printStackTrace();
-        }*/
+        }
     }
 }
 
