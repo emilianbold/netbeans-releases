@@ -26,7 +26,10 @@ Microsystems, Inc. All Rights Reserved.
   <target name="precompile">
     <javac srcdir="libsrc" destdir="libsrc">
       <classpath>
-        <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>	
+        <!--<pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>-->
+        <fileset dir="${nbroot}/openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
       </classpath>
     </javac>
   </target>
@@ -35,7 +38,10 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src">
       <classpath>
         <pathelement path="libsrc"/>
-        <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
+        <!--<pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>-->
+        <fileset dir="${nbroot}/openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
 	<pathelement location="${nbroot}/openidex/netbeans/lib/ext/openidex.jar"/>
 	<pathelement location="${nbroot}/form/netbeans/modules/form.jar"/>
       </classpath>
