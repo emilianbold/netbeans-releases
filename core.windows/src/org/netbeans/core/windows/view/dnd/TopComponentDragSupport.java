@@ -81,7 +81,7 @@ implements AWTEventListener, DragSourceListener {
     /** Mime type for <code>TopComponent</code>'s array <code>DataFlavor</code>. */
     public static final String MIME_TOP_COMPONENT_ARRAY =
         DataFlavor.javaJVMLocalObjectMimeType
-        + "; class=org.netbeans.core.windows.dnd.TopComponentDragSupport$TopComponentArray"; // NOI18N
+        + "; class=org.netbeans.core.windows.view.dnd.TopComponentDragSupport$TopComponentArray"; // NOI18N
 
     
     /** 'Copy window' cursor type. */
