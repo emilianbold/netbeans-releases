@@ -529,6 +529,8 @@ Microsystems, Inc. All Rights Reserved.
 
             </catalog>    
             ]]>
+            <!-- Optimization only: -->
+            <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="false"/>
         </file>    
 
 
