@@ -31,13 +31,14 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
         super(s);
     }
 
-    public void testLookup() throws Exception {
+    public void testLookup () throws Exception {
 
         DebuggerManager dm = DebuggerManager.getDebuggerManager();
         TestDebuggerManagerListener dml = new TestDebuggerManagerListener();
         dm.addDebuggerListener(dml);
 
-        TestLazyDebuggerManagerListener ldml = (TestLazyDebuggerManagerListener) dm.lookupFirst(null, LazyDebuggerManagerListener.class);
+        TestLazyDebuggerManagerListener ldml = (TestLazyDebuggerManagerListener) 
+            dm.lookupFirst (null, LazyDebuggerManagerListener.class);
         assertNotNull("Lazy debugger manager listener not loaded", ldml);
 
         Map args = new HashMap();

@@ -231,8 +231,7 @@ public class TreeModelNode extends AbstractNode {
         
         // 1) empty cache
         if (name != null) {
-            htmlDisplayName = "<i>" + name + "</i>";
-            setDisplayName (name + "@");
+            setName (name, true);
             name = null;
         }
         shortDescription = null;
@@ -249,9 +248,7 @@ public class TreeModelNode extends AbstractNode {
                             "Model: " + model + ".getDisplayName (" + object + 
                             ") = null!"
                         ).printStackTrace ();
-                    htmlDisplayName = null;
-                    //setName (name);
-                    setDisplayName (name);
+                    setName (name, false);
                     String iconBase = model.getIconBase (object);
                     if (iconBase != null)
                         setIconBase (iconBase);
@@ -260,10 +257,7 @@ public class TreeModelNode extends AbstractNode {
                 } catch (UnknownTypeException e) {
                     if (object instanceof String) {
                         name = (String) object;
-                        htmlDisplayName = null;
-                        //setName (name);
-                        setDisplayName (name);
-//                        setIconBase ("org/openide/resources/actions/empty");
+                        setName (name, false);
                     } else {
                         e.printStackTrace ();
                         System.out.println (model);
@@ -286,6 +280,20 @@ public class TreeModelNode extends AbstractNode {
         return requestProcessor;
     }
 
+    private void setName (String name, boolean italics) {
+        if (name.startsWith ("<html>")) {
+            if ( italics && !name.contains ("<i>")) {
+                name = "<html><i>" + name.substring (6, name.length () - 7) +
+                    "</i></html>";
+            }
+            htmlDisplayName = name;
+            setDisplayName (name.substring (6, name.length () - 7));
+        } else {
+            htmlDisplayName = null;
+            setDisplayName (name);
+        }
+    }
+    
     
     // innerclasses ............................................................
     
@@ -484,9 +492,18 @@ public class TreeModelNode extends AbstractNode {
                 if (value == null)
                     value = "";
                 else
-                    value = "<html><i>" + value + "</i></html>";
+                    value = i ((String) value);
             }
+            properties.put (id, value);
             return value;
+        }
+        
+        String i (String text) {
+            if (text.startsWith ("<html>")) {
+                if (text.contains ("<i>")) return text;
+                text = text.substring (6, text.length () - 7);
+            }
+            return "<html><i>" + text + "</i></html>";
         }
         
         public void setValue (Object v) throws IllegalAccessException, 

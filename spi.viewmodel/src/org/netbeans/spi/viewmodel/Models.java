@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.AbstractAction;
@@ -122,41 +123,72 @@ public final class Models {
      * @return {@link CompoundModel} encapsulating given list of models
      */
     public static CompoundModel createCompoundModel (List models) {
-        List treeModels =           new ArrayList ();
-        List treeModelFilters =     new ArrayList ();
-        List treeExpansionModels =  new ArrayList ();
-        List nodeModels =           new ArrayList ();
-        List nodeModelFilters =     new ArrayList ();
-        List tableModels =          new ArrayList ();
-        List tableModelFilters =    new ArrayList ();
-        List nodeActionsProviders = new ArrayList ();
-        List nodeActionsProviderFilters = new ArrayList ();
-        List columnModels =         new ArrayList ();
+        LinkedList treeModels =           new LinkedList ();
+        LinkedList treeModelFilters =     new LinkedList ();
+        LinkedList treeExpansionModels =  new LinkedList ();
+        LinkedList nodeModels =           new LinkedList ();
+        LinkedList nodeModelFilters =     new LinkedList ();
+        LinkedList tableModels =          new LinkedList ();
+        LinkedList tableModelFilters =    new LinkedList ();
+        LinkedList nodeActionsProviders = new LinkedList ();
+        LinkedList nodeActionsProviderFilters = new LinkedList ();
+        LinkedList columnModels =         new LinkedList ();
         
         // 1) sort models
         Iterator it = models.iterator ();
         while (it.hasNext ()) {
             Object model = it.next ();
+            boolean first = model.getClass ().getName ().endsWith ("First");
             if (model instanceof TreeModel)
-                treeModels.add (model);
+                if (first)
+                    treeModels.addLast (model);
+                else
+                    treeModels.addFirst (model);
             if (model instanceof TreeModelFilter)
-                treeModelFilters.add (model);
+                if (first)
+                    treeModelFilters.addLast (model);
+                else
+                    treeModelFilters.addFirst (model);
             if (model instanceof TreeExpansionModel)
-                treeExpansionModels.add (model);
+                if (first)
+                    treeExpansionModels.addLast (model);
+                else
+                    treeExpansionModels.addFirst (model);
             if (model instanceof NodeModel)
-                nodeModels.add (model);
+                if (first)
+                    nodeModels.addLast (model);
+                else
+                    nodeModels.addFirst (model);
             if (model instanceof NodeModelFilter)
-                nodeModelFilters.add (model);
+                if (first)
+                    nodeModelFilters.addLast (model);
+                else
+                    nodeModelFilters.addFirst (model);
             if (model instanceof TableModel)
-                tableModels.add (model);
+                if (first)
+                    tableModels.addLast (model);
+                else
+                    tableModels.addFirst (model);
             if (model instanceof TableModelFilter)
-                tableModelFilters.add (model);
+                if (first)
+                    tableModelFilters.addLast (model);
+                else
+                    tableModelFilters.addFirst (model);
             if (model instanceof NodeActionsProvider)
-                nodeActionsProviders.add (model);
+                if (first)
+                    nodeActionsProviders.addLast (model);
+                else
+                    nodeActionsProviders.addFirst (model);
             if (model instanceof NodeActionsProviderFilter)
-                nodeActionsProviderFilters.add (model);
+                if (first)
+                    nodeActionsProviderFilters.addLast (model);
+                else
+                    nodeActionsProviderFilters.addFirst (model);
             if (model instanceof ColumnModel)
-                columnModels.add (model);
+                if (first)
+                    columnModels.addLast (model);
+                else
+                    columnModels.addFirst (model);
         }
         
         if (treeModels.isEmpty ()) treeModels.add (new EmptyTreeModel ());
