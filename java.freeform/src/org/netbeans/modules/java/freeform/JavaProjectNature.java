@@ -216,7 +216,8 @@ public class JavaProjectNature implements ProjectNature {
                     NamedNodeMap attrs = oldElement.getAttributes();
                     int alength = attrs.getLength();
                     for (int j = 0; j < alength; j++) {
-                        newNode.getAttributes().setNamedItemNS(attrs.item(j).cloneNode(false));
+                        org.w3c.dom.Attr oldAttr = (org.w3c.dom.Attr) attrs.item(j);
+                        ((Element)newNode).setAttributeNS(oldAttr.getNamespaceURI(), oldAttr.getName(), oldAttr.getValue());
                     }
                     copyXMLTree(doc, oldElement, (Element) newNode, newNamespace);
                     break;
