@@ -28,6 +28,7 @@ import org.openide.util.WeakListener;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.bridge.*;
+import org.openide.util.Utilities;
 
 /** Represents Ant-style introspection info for a set of classes.
  * There should be one instance which is loaded automatically
@@ -200,6 +201,9 @@ public final class IntrospectedInfo implements Serializable {
         }
     }
     private void fireStateChanged() {
+        if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            AntModule.err.log("IntrospectedInfo.fireStateChanged");
+        }
         synchronized (listeners) {
             if (listeners.isEmpty()) return;
             if (tonotify.isEmpty()) {
@@ -282,6 +286,18 @@ public final class IntrospectedInfo implements Serializable {
         }
     }
     
+    /**
+     * Get tags represented by this class if it is an <code>EnumeratedAttribute</code>.
+     * @param clazz the class name
+     * @return a list of tag names, or null if the class is not a subclass of <code>EnumeratedAttribute</code>
+     * @throws IllegalArgumentException if the class is unknown
+     * @since org.apache.tools.ant.module/3 3.3
+     */
+    public String[] getTags(String clazz) throws IllegalArgumentException {
+        init();
+        return getData(clazz).enumTags;
+    }
+    
     /** Load defs from a properties file. */
     private void load (InputStream is, String kind, ClassLoader cl) throws IOException {
         Properties p = new Properties ();
@@ -302,7 +318,7 @@ public final class IntrospectedInfo implements Serializable {
             String clazzname = (String) entry.getValue ();
             try {
                 Class clazz = cl.loadClass (clazzname);
-                register(name, clazz, kind);
+                register(name, clazz, kind, false);
             } catch (ClassNotFoundException cnfe) {
                 // This is normal, e.g. Ant's taskdefs include optional tasks we don't have.
                 AntModule.err.log ("IntrospectedInfo: skipping " + clazzname + ": " + cnfe);
@@ -352,6 +368,10 @@ public final class IntrospectedInfo implements Serializable {
      * @since 2.4
      */
     public synchronized void register(String name, Class clazz, String kind) {
+        register(name, clazz, kind, true);
+    }
+    
+    private void register(String name, Class clazz, String kind, boolean fire) {
         init();
         synchronized (namedefs) {
             Map m = (Map)namedefs.get(kind);
@@ -361,9 +381,12 @@ public final class IntrospectedInfo implements Serializable {
             }
             m.put(name, clazz.getName());
         }
-        fireStateChanged();
-        analyze (clazz);
+        boolean changed = analyze(clazz, null, false);
+        if (changed && fire) {
+            fireStateChanged();
+        }
     }
+    
     /** Unregister a definition.
      * Removes it from the definition mapping, though structural
      * information about the implementing class (and classes referenced
@@ -384,25 +407,38 @@ public final class IntrospectedInfo implements Serializable {
         fireStateChanged();
     }
     
-    /** Reanalyze a class' structure.
-     * Information about this class' structure (nested elements etc.) will
-     * be reexamined, which may produce different results if this is a different
-     * version of the same class than was last introspected. All referenced classes
-     * which are defined in this <code>IntrospectedInfo</code> (but not traversing
-     * into the default one if different from this one) will also be reanalyzed.
-     * @param clazz the root class to analyze again
-     * @throws various errors if the class could not be resolved, e.g. NoClassDefFoundError
-     * @since ???
-     * /
-    public synchronized void reanalyze(Class clazz) {
-        // XXX
-    }*/
-    
-    private void analyze (Class clazz) {
+    /**
+     * Analyze a particular class and other classes recursively.
+     * Will never try to redefine anything in the default IntrospectedInfo.
+     * For custom IntrospectedInfo's, will never try to redefine anything
+     * if skipReanalysis is null. If not null, will not redefine anything
+     * in that set - so start recursion by passing an empty set, if you wish
+     * to redefine anything you come across recursively that is not in the
+     * default IntrospectedInfo, without causing loops.
+     * Attribute classes are examined just in case they are EnumeratedAttribute
+     * subclasses; they are not checked for subelements etc.
+     * Does not itself fire changes - you should do this if the return value is true.
+     * @param clazz the class to look at
+     * @param skipReanalysis null to do not redefs, or a set of already redef'd classes
+     * @param isAttrType false for an element class, true for an attribute class
+     * @return true if something changed
+     */
+    private boolean analyze(Class clazz, Set/*<Class>*/ skipReanalysis, boolean isAttrType) {
         String n = clazz.getName();
-        if (getDefaults().isKnown(n) || /* #23630 */isKnown(n)) {
-            // Will not try to redefine anything.
-            return;
+        /*
+        if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            AntModule.err.log("IntrospectedInfo.analyze: " + n + " skipping=" + skipReanalysis + " attrType=" + isAttrType);
+        }
+         */
+        if (getDefaults().isKnown(n)) {
+            // Never try to redefine anything in the default IntrospectedInfo.
+            return false;
+        }
+        if ((skipReanalysis == null || !skipReanalysis.add(clazz)) && /* #23630 */isKnown(n)) {
+            // Either we are not redefining anything; or we are, but this class
+            // has already been in the list. Skip it. If we are continuing, make
+            // sure to add this class to the skip list so we do not loop.
+            return false;
         }
         //AntModule.err.log ("IntrospectedInfo.analyze: clazz=" + clazz.getName ());
         //boolean dbg = (clazz == org.apache.tools.ant.taskdefs.Taskdef.class);
@@ -411,9 +447,21 @@ public final class IntrospectedInfo implements Serializable {
         //}
         //if (dbg) AntModule.err.log ("Analyzing <taskdef> attrs...");
         IntrospectedClass info = new IntrospectedClass ();
+        if (isAttrType) {
+            String[] enumTags = AntBridge.getInterface().getEnumeratedValues(clazz);
+            if (enumTags != null) {
+                info.enumTags = enumTags;
+                return !info.equals(clazzes.put(clazz.getName(), info));
+            } else {
+                // Do not store attr clazzes unless they are interesting: EnumAttr.
+                return clazzes.remove(clazz.getName()) != null;
+            }
+            // That's all we do - no subelements etc.
+        }
         IntrospectionHelperProxy helper = AntBridge.getInterface().getIntrospectionHelper(clazz);
         info.supportsText = helper.supportsCharacters ();
         Enumeration e = helper.getAttributes ();
+        Set/*<Class>*/ nueAttrTypeClazzes = new HashSet();
         //if (dbg) AntModule.err.log ("Analyzing <taskdef> attrs...");
         if (e.hasMoreElements ()) {
             info.attrs = new HashMap ();
@@ -421,7 +469,8 @@ public final class IntrospectedInfo implements Serializable {
                 String name = (String) e.nextElement ();
                 //if (dbg) AntModule.err.log ("\tname=" + name);
                 try {
-                    String type = helper.getAttributeType (name).getName ();
+                    Class attrType = helper.getAttributeType(name);
+                    String type = attrType.getName();
                     //if (dbg) AntModule.err.log ("\ttype=" + type);
                     if (hasSuperclass(clazz, "org.apache.tools.ant.Task") && // NOI18N
                         ((name.equals ("location") && type.equals ("org.apache.tools.ant.Location")) || // NOI18N
@@ -436,6 +485,7 @@ public final class IntrospectedInfo implements Serializable {
                     // XXX also handle subclasses of DataType and its standard attrs
                     // incl. creating nicely-named node props for description, refid, etc.
                     info.attrs.put (name, type);
+                    nueAttrTypeClazzes.add(attrType);
                 } catch (RuntimeException re) { // i.e. BuildException; but avoid loading this class
                     AntModule.err.notify (ErrorManager.INFORMATIONAL, re);
                 }
@@ -463,14 +513,18 @@ public final class IntrospectedInfo implements Serializable {
         } else {
             info.subs = null;
         }
-        clazzes.put (clazz.getName (), info);
+        boolean changed = !info.equals(clazzes.put(clazz.getName(), info));
         // And recursively analyze reachable classes for subelements...
         // (usually these will already be known, and analyze will return at once)
         Iterator it = nueClazzes.iterator ();
         while (it.hasNext ()) {
-            analyze ((Class) it.next ());
+            changed |= analyze((Class)it.next(), skipReanalysis, false);
         }
-        fireStateChanged();
+        it = nueAttrTypeClazzes.iterator();
+        while (it.hasNext()) {
+            changed |= analyze((Class)it.next(), skipReanalysis, true);
+        }
+        return changed;
     }
     
     private static boolean hasSuperclass(Class subclass, String superclass) {
@@ -485,7 +539,7 @@ public final class IntrospectedInfo implements Serializable {
     /**
      * Scan an existing (already-run) project to see if it has any new tasks/types.
      * Any new definitions found will automatically be added to the known list.
-     * Currently this will <em>not</em> try to change existing definitions, i.e.
+     * This will try to change existing definitions in the custom set, i.e.
      * if a task is defined to be implemented with a different class, or if a
      * class changes structure.
      * Will not try to define anything contained in the defaults list.
@@ -494,15 +548,23 @@ public final class IntrospectedInfo implements Serializable {
     public void scanProject (Map defs) {
         init();
         Iterator it = defs.entrySet().iterator();
+        Set skipReanalysis = new HashSet();
+        boolean changed = false;
         while (it.hasNext()) {
             Map.Entry e = (Map.Entry)it.next();
-            scanMap((Map)e.getValue(), (String)e.getKey());
+            changed |= scanMap((Map)e.getValue(), (String)e.getKey(), skipReanalysis);
         }
-        AntModule.err.log ("IntrospectedInfo.scanProject: " + this);
+        if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            AntModule.err.log("IntrospectedInfo.scanProject: " + this);
+        }
+        if (changed) {
+            fireStateChanged();
+        }
     }
     
-    private void scanMap (Map/*<String,Class>*/ m, String kind) {
+    private boolean scanMap(Map/*<String,Class>*/ m, String kind, Set/*<Class>*/ skipReanalysis) {
         if (kind == null) throw new IllegalArgumentException();
+        boolean changed = false;
         Iterator it = m.entrySet ().iterator ();
         while (it.hasNext ()) {
             Map.Entry entry = (Map.Entry) it.next ();
@@ -520,12 +582,12 @@ public final class IntrospectedInfo implements Serializable {
             }
             synchronized (this) {
                 Map defaults = getDefaults ().getDefs (kind); // Map<String,String>
-                if (registry.get (name) == null && defaults.get (name) == null) {
-                    registry.put (name, clazz.getName ());
+                if (defaults.get(name) == null) {
+                    changed |= !clazz.getName().equals(registry.put(name, clazz.getName()));
                 }
                 if (! getDefaults ().isKnown (clazz.getName ())) {
                     try {
-                        analyze (clazz);
+                        changed |= analyze(clazz, skipReanalysis, false);
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (NoClassDefFoundError ncdfe) {
@@ -539,7 +601,7 @@ public final class IntrospectedInfo implements Serializable {
                 }
             }
         }
-        fireStateChanged();
+        return changed;
     }
     
     public String toString () {
@@ -554,9 +616,32 @@ public final class IntrospectedInfo implements Serializable {
         public boolean supportsText;
         public Map attrs; // null or name -> class; Map<String,String>
         public Map subs; // null or name -> class; Map<String,String>
+        public String[] enumTags; // null or list of tags
         
         public String toString () {
-            return "IntrospectedClass[text=" + supportsText + ",attrs=" + attrs + ",subs=" + subs + "]"; // NOI18N
+            String tags;
+            if (enumTags != null) {
+                tags = Arrays.asList(enumTags).toString();
+            } else {
+                tags = "null"; // NOI18N
+            }
+            return "IntrospectedClass[text=" + supportsText + ",attrs=" + attrs + ",subs=" + subs + ",enumTags=" + tags + "]"; // NOI18N
+        }
+        
+        public int hashCode() {
+            // XXX
+            return 0;
+        }
+        
+        public boolean equals(Object o) {
+            if (!(o instanceof IntrospectedClass)) {
+                return false;
+            }
+            IntrospectedClass other = (IntrospectedClass)o;
+            return supportsText == other.supportsText &&
+                Utilities.compareObjects(attrs, other.attrs) &&
+                Utilities.compareObjects(subs, other.subs) &&
+                Utilities.compareObjects(enumTags, other.enumTags);
         }
         
     }
