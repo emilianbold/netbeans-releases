@@ -25,8 +25,8 @@
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value=""/>
             <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value=""/>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value=""/>
             <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value=""/>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value=""/>
           </AuxValues>
         </Component>
       </SubComponents>

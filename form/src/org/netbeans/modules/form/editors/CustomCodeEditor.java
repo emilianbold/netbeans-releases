@@ -44,6 +44,7 @@ public class CustomCodeEditor extends javax.swing.JPanel
         jLabel1.setDisplayedMnemonic(
             bundle.getString("CustomCodeEditor.label1.mnemonic").charAt(0)); // NOI18N
         jLabel1.setLabelFor(codeEditorPane);
+        codeEditorPane.setPreferredSize(new java.awt.Dimension(440, 200));
         codeEditorPane.requestFocus();
         codeEditorPane.getCaret().setVisible(codeEditorPane.hasFocus());
         
