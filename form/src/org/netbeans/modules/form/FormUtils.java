@@ -543,8 +543,12 @@ public class FormUtils
                     ex.printStackTrace();
             }
 
-            // can be false only if the attribute is explicitly set to false
-            isCont = isContainerValue instanceof Boolean ?
+            // hack for JDK 1.4 bug: JFormattedTextField has not isContainer set
+            if (isContainerValue == null
+                  && "javax.swing.JFormattedTextField".equals(beanClass.getName())) // NOI18N
+                isCont = false;
+            else // can be false only if the attribute is explicitly set to false
+                isCont = isContainerValue instanceof Boolean ?
                          ((Boolean)isContainerValue).booleanValue() : true;
 
             setIsContainer(beanClass, isCont);
@@ -554,10 +558,10 @@ public class FormUtils
     }
 
     public static void setIsContainer(Class beanClass, boolean isContainer) {
-        Map containerBeans = formSettings.getContainerBeans();
         if (beanClass == null)
             return;
 
+        Map containerBeans = formSettings.getContainerBeans();
         if (containerBeans == null) {
             containerBeans = new HashMap();
             formSettings.setContainerBeans(containerBeans);
