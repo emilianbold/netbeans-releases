@@ -27,10 +27,12 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.modules.junit.TestUtil;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -40,15 +42,30 @@ import org.openide.util.Utilities;
  *
  * @author  Marian Petras
  */
-public class Utils {
-    
-    private Utils() { }
-    
+public final class Utils {
+
     /** */
+    private final Project project;
+    /** <!-- PENDING --> */
+    private boolean sourceGroupsOnly = true;
+    /** <!-- PENDING --> */
+    private SourceGroup[] javaSourceGroups;
+    /** <!-- PENDING --> */
+    private Map sourcesToTestsMap;
+    /** <!-- PENDING --> */
+    private Map foldersToSourceGroupsMap;
+    
+    /**
+     * <!-- PENDING -->
+     */
+    public Utils(Project project) {
+        this.project = project;
+    }
+    
+    /** <!-- PENDING --> */
     static FileObject findTestsRoot(Project project) {
-        SourceGroup[] sourceGroups
-                = ProjectUtils.getSources(project)
-                  .getSourceGroups(EmptyTestCaseWizard.JAVA_SOURCE_GROUPS);
+        final SourceGroup[] sourceGroups
+                = new Utils(project).getJavaSourceGroups();
         for (int i = 0; i < sourceGroups.length; i++) {
             FileObject root = sourceGroups[i].getRootFolder();
             if (root.getName().equals(EmptyTestCaseWizard.TESTS_ROOT_NAME)) {
@@ -70,132 +87,394 @@ public class Utils {
         return folder;
     }
     
-    static Collection getSourceSourceGroups(Project project) {
-        
-        /* 1) get all source groups: */
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
-        
+    /**
+     * Identifies and collects <code>SourceGroup</code>s and folders
+     * of a given project which may serve as target folders for newly created
+     * test classes.
+     *
+     * @param  project  project whose folders are to be checked
+     * @param  sourceGroupsOnly  return only <code>SourceGroup</code>s
+     *                           - ignore target folders not having
+     *                           a corresponding <code>SourceGroup</code>
+     * @return  collection which may contain <code>FileObject</code>s
+     *          or <code>SourceGroup</code>s (or both);
+     *          it may be empty but not <code>null</code>
+     * @author  Marian Petras
+     */
+    static Collection getTestTargets(Project project,
+                                     final boolean sourceGroupsOnly) {
+        final Utils utils = new Utils(project);
+        return utils.getTestTargets(sourceGroupsOnly);
+    }
+    
+    /**
+     * Builds a map that containing relation between <code>SourceGroup</code>s
+     * and their respective test <code>SourceGroup</code>s.
+     * Each entry of the map contains a <code>SourceGroup</code> as a key
+     * and an array of test <code>SourceGroup</code>s returned by
+     * <code>UnitTestForSourceQuery</code> for that <code>SourceGroup</code>
+     * as a value. <code>SourceGroup</code>s that have no test
+     * <code>SourceGroup</code>s assigned are omitted, i.e. the resulting
+     * map does not contain entries that would have empty arrays as their
+     * values.
+     *
+     * @param  project  project whose <code>SourceGroup</code>s are to be
+     *                  checked
+     * @param  sourceGroupsOnly  return only <code>SourceGroup</code>s
+     *                           - ignore test folders not having
+     *                           a corresponding <code>SourceGroup</code>
+     * @return  created map - may be empty, may be unmodifiable
+     *                        never <code>null</code>
+     */
+    static Map getSourcesToTestsMap(Project project,
+                                    final boolean sourceGroupsOnly) {
+        final Utils utils = new Utils(project);
+        return utils.getSourcesToTestsMap(sourceGroupsOnly);
+    }
+    
+    /**
+     * <!-- PENDING -->
+     */
+    Project getProject() {
+        return project;
+    }
+
+    /**
+     * Identifies and collects <code>SourceGroup</code>s and folders
+     * which may serve as target folders for newly created test classes.
+     *
+     * @param  sourceGroupsOnly  return only <code>SourceGroup</code>s
+     *                           (skip target folders without matching
+     *                           <code>SourceGroup</code>)
+     * @return  collection which may contain <code>FileObject</code>s
+     *          or <code>SourceGroup</code>s (or both);
+     *          it may be empty but not <code>null</code>
+     * @see  #getTestTargets(Project, boolean)
+     * @author  Marian Petras
+     */
+    private Collection getTestTargets(final boolean sourceGroupsOnly) {
+
+        /*
+         * Idea:
+         * 1) Get all SourceGroups
+         * 2) For each SourceGroup, ask UnitTestForSourceQuery for its related
+         *    test SourceGroups
+         *
+         * Union of all SourceGroups returned by UnitTestForSourceQuery
+         * are the test SourceGroups.
+         */
+
+        /* .) get all SourceGroups: */
+        final SourceGroup[] sourceGroups = getJavaSourceGroups();
         if (sourceGroups.length == 0) {
             return Collections.EMPTY_LIST;
         }
-        
-        /* 2) in the beginning consider all source groups to contain sources: */
-        Collection srcSourceGroups = new HashSet(sourceGroups.length * 2, .5f);
-        srcSourceGroups.addAll(Arrays.asList(sourceGroups));
-        
-        /* 3) find test SourceGroups and remove them from src. Source Groups: */
-        /* test SourceGroups are those that are recognized as test root folders
-           for at least one SourceGroup: */
-        Iterator i = new ArrayList(Arrays.asList(sourceGroups)).iterator();
-        while (i.hasNext()) {
-            FileObject rootFolder = ((SourceGroup) i.next()).getRootFolder();
-            URL testRootURL = UnitTestForSourceQuery.findUnitTest(rootFolder);
-            if (testRootURL != null) {
-                FileObject testFolder = URLMapper.findFileObject(testRootURL);
-                if (testFolder != null) {
-                    SourceGroup testSourceGroup = findSourceGroup(sourceGroups,
-                                                                  testFolder);
-                    if (testSourceGroup != null) {
-                        srcSourceGroups.remove(testSourceGroup);
-                    }
-                }
-            }
+
+        /* .) */
+        createFoldersToSourceGroupsMap(sourceGroups);
+        Object testTargetsUnion[] = new Object[sourceGroups.length];
+        int size = 0;
+        for (int i = 0; i < sourceGroups.length; i++) {
+            Object[] testTargets = getTestTargets(sourceGroups[i],
+                                                  sourceGroupsOnly);
+            size = merge(testTargets, testTargetsUnion, size);
         }
-        
-        if (srcSourceGroups.size() == 0) {
-            return Collections.EMPTY_LIST;
+
+        if (size != testTargetsUnion.length) {
+            testTargetsUnion = TestUtil.skipNulls(testTargetsUnion);
         }
-        List result = new ArrayList(srcSourceGroups);
-        return Collections.unmodifiableList(result);
+
+        return Collections.unmodifiableCollection(
+                      Arrays.asList(testTargetsUnion));
     }
     
-    static Collection getTestSourceGroups(Project project) {
-        
-        Collection col = getSourceGroupPairs(project);
-        Iterator it = col.iterator();
-        Collection ret = new ArrayList(col.size());
-        while (it.hasNext()) {
-            SourceGroup [] pair = (SourceGroup [])it.next();
-            ret.add(pair[1]);
+    /**
+     * <!-- PENDING -->
+     */
+    Map getSourcesToTestsMap() {
+        if (sourcesToTestsMap == null) {
+            sourcesToTestsMap = createSourcesToTestsMap(sourceGroupsOnly);
         }
-
-        return ret;
+        return sourcesToTestsMap;
+    }
+    
+    /**
+     * <!-- PENDING -->
+     */
+    Map getSourcesToTestsMap(final boolean sourceGroupsOnly) {
+        if (sourceGroupsOnly != this.sourceGroupsOnly) {
+            sourcesToTestsMap = null;
+            this.sourceGroupsOnly = sourceGroupsOnly;
+        }
+        return getSourcesToTestsMap();
     }
 
-    private static Map getFolder2SourceGroupMap(SourceGroup[] sourceGroups) {
+    /**
+     * Builds a map that containing relation between <code>SourceGroup</code>s
+     * and their respective test <code>SourceGroup</code>s.
+     * Each entry of the map contains a <code>SourceGroup</code> as a key
+     * and an array of test <code>SourceGroup</code>s returned by
+     * <code>UnitTestForSourceQuery</code> for that <code>SourceGroup</code>
+     * as a value. <code>SourceGroup</code>s that have no test
+     * <code>SourceGroup</code>s assigned are omitted, i.e. the resulting
+     * map does not contain entries that would have empty arrays as their
+     * values.
+     *
+     * @param  sourceGroupsOnly  return only <code>SourceGroup</code>s
+     *                           - ignore test folders not having
+     *                           a corresponding <code>SourceGroup</code>
+     * @return  created map - may be empty, may be unmodifiable,
+     *                        cannot be <code>null</code>
+     */
+    private Map createSourcesToTestsMap(final boolean sourceGroupsOnly) {
+        
+        /*
+         * Idea:
+         * 1) Get all SourceGroups
+         * 2) For each SourceGroup, ask UnitTestForSourceQuery for its related
+         *    test SourceGroups
+         */
+
+        /* .) get all SourceGroups: */
+        final SourceGroup[] sourceGroups = getJavaSourceGroups();
         if (sourceGroups.length == 0) {
             return Collections.EMPTY_MAP;
         }
-        
-        Map map = new HashMap(2 * sourceGroups.length, .5f);
+
+        /* .) get test SourceGroups for each SourceGroup: */
+        createFoldersToSourceGroupsMap(sourceGroups);
+        Object testTargetsUnion[] = new Object[sourceGroups.length];
+        Map map = new HashMap((int) (sourceGroups.length * 1.33f + 0.5f), .75f);
         for (int i = 0; i < sourceGroups.length; i++) {
-            SourceGroup sourceGroup = sourceGroups[i];
-            map.put(sourceGroup.getRootFolder(), sourceGroup);
+            Object[] testTargets = getTestTargets(sourceGroups[i],
+                                                  sourceGroupsOnly);
+            if (testTargets.length != 0) {
+                map.put(sourceGroups[i], testTargets);
+            }
         }
-        return map;
+        if (map.isEmpty()) {
+            return Collections.EMPTY_MAP;
+        }
+        if (map.size() == 1) {
+            Map.Entry entry = (Map.Entry) map.entrySet().iterator().next();
+            return Collections.singletonMap(entry.getKey(), entry.getValue());
+        }
+
+        final int finalMapSize = map.size();
+        if (finalMapSize >= (sourceGroups.length - 5)) {
+            return map;
+        }
+        
+        final Map targetMap;
+        targetMap = new HashMap((int) (finalMapSize * 1.25f + .5f), .8f);
+        targetMap.putAll(map);
+        return targetMap;
     }
-    
-    static Collection getSourceGroupPairs(Project project) {
+
+    /**
+     * Merges a given set of <code>FileObject</code>s and
+     * <code>SourceGroup</code>s to the given target set (which may contain
+     * same types of elements).
+     * The source set (array) is not modified during merge. The target
+     * set (array) is not modified otherwise than by adding (overwriting
+     * <code>null</code>s) elements from the source set or by replacing elements
+     * with equivalent elements (i.e. pointing to the same folder). Elements are
+     * always added after the last non-<code>null</code> element of the target
+     * set. After the merge, it is guaranteed that all <code>null</code>
+     * elements of the target array are located at the end. The above
+     * constraints can only be fulfilled if parameter
+     * <code>currTargetSetSize</code> is correct and if all <code>null</code>
+     * elements of the target set are placed at the end of the array at the
+     * moment this method is called. The target array must contain enough
+     * <code>null</code> elements so that all elements to be added to the set
+     * can fit.
+     *
+     * @param  setToAdd  elements to be added to the target set
+     *                   - must not contain <code>null</code> elements
+     * @param  targetSet  array to add elements to
+     * @param  currTargetSetSize  current count of non-null elements in the
+     *                            target set (<code>null</code> elements are
+     *                            always at the end of the array)
+     * @return  new size of the target set
+     *          (number of non-<code>null</code> elements)
+     */
+    private static int merge(final Object[] setToAdd,
+                             final Object[] targetSet,
+                             final int currTargetSetSize) {
+        if (setToAdd.length == 0) {
+            return currTargetSetSize;
+        }
+        if (currTargetSetSize == 0) {
+            System.arraycopy(setToAdd, 0, targetSet, 0, setToAdd.length);
+            return setToAdd.length;
+        }
+        int targetSetSize = currTargetSetSize;
+        toAdd:
+        for (int i = 0; i < setToAdd.length; i++) {
+            final Object objToAdd = setToAdd[i];
+            for (int j = 0; j < targetSetSize; j++) {
+                final Object chosen = chooseTarget(targetSet[i], objToAdd);
+                if (chosen != null) {           //both point to the same folder
+                    targetSet[j] = chosen;
+                    continue toAdd;
+                }
+            }
+            targetSet[targetSetSize++] = objToAdd;
+        }
+        return targetSetSize;
+    }
+
+    /**
+     * Finds whether the given two objects defining a target folder are equal
+     * or not and if so, suggests which one is preferred.
+     * Each of the folder targets may be either a <code>SourceGroup<code>
+     * object or a <code>FileObject</code> folder. If both targets point
+     * to the same folder, one of them which is preferred is returned.
+     * Otherwise <code>null</code> is returned.
+     * <p>
+     * If both targets are <code>SourceGroup</code>s, the first target is used.
+     * If none of the targets is a <code>SourceGroup</code>, the first target is
+     * used.
+     * Otherwise (i.e. one target is a <code>SourceGroup</code>,
+     * the other is not), the <code>SourceGroup</code> target is returned.
+     *
+     * @param  target1  one target
+     * @param  target2  second target
+     * @return  <code>null</code> if the two targets define different folders;
+     *          or the preferred one (of the passed targets) if the two
+     *          are equal
+     */
+    private static Object chooseTarget(Object target1, Object target2) {
+        final boolean isGroup1 = target1 instanceof SourceGroup;
+        final boolean isGroup2 = target2 instanceof SourceGroup;
+
+        assert isGroup1 || (target1 instanceof FileObject);
+        assert isGroup2 || (target2 instanceof FileObject);
+
+        final FileObject folder1 = isGroup1
+                                   ? ((SourceGroup) target1).getRootFolder()
+                                   : ((FileObject) target1);
+        final FileObject folder2 = isGroup2
+                                   ? ((SourceGroup) target2).getRootFolder()
+                                   : ((FileObject) target2);
+        if (!(folder1.isFolder())) {
+            throw new IllegalArgumentException("target1: not a folder");//NOI18N
+        }
+        if (!(folder2.isFolder())) {
+            throw new IllegalArgumentException("target2: not a folder");//NOI18N
+        }
+        if (folder1.equals(folder2)) {
+            return (isGroup1 == isGroup2) ? target1
+                                          : (isGroup1 ? target1 : target2);
+        }
+        return null;
+    }
+
+    /**
+     * Returns test targets for the given <code>SourceGroup</code>.
+     * The test targets are folders which are searched when tests for a class
+     * from the <code>SourceGroup</code> are to be found. Each of the returned
+     * test targets may be either <code>SourceGroup</code> (representing
+     * a folder plus additional information such as display name) or simply
+     * a <code>FileObject</code> representing a folder.
+     * If parameter <code>includeSourceGroups</code> is <code>false</code>,
+     * only <code>SourceGroup<code>s are returned (target folders without
+     * corresponding <code>SourceGroup</code>s are ignored).
+     *
+     * @param  src  source group to find test targets for
+     * @param  sourceGroupsOnly  skip target folders without matching
+     *                           <code>SourceGroup</code>
+     * @return  array which may contain <code>FileObject</code>s
+     *          or <code>SourceGroup</code>s (or both);
+     *          it may be empty but not <code>null</code>
+     * @see  TestUtil#getFileObject2SourceGroupMap
+     */
+    public Object[] getTestTargets(SourceGroup sourceGroup,
+                                   final boolean sourceGroupsOnly) {
         
-        /* 1) get all source groups: */
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
-        
-        if (sourceGroups.length == 0) {
-            return Collections.EMPTY_LIST;
+        /* .) get URLs of target SourceGroup's roots: */
+        final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(
+                                       sourceGroup.getRootFolder());
+        if (rootURLs.length == 0) {
+            return new Object[0];
         }
         
-        Map folder2sourceGroup = getFolder2SourceGroupMap(sourceGroups);
-        Collection pairs = new ArrayList(sourceGroups.length / 2);
-        Set processed = new HashSet(sourceGroups.length * 2, .5f);
-        for (int i = 0; i < sourceGroups.length; i++) {
-            SourceGroup sourceGroup = sourceGroups[i];
-            if (processed.contains(sourceGroup)) {
+        /* .) convert the URLs to FileObjects: */
+        FileObject[] sourceRoots = new FileObject[rootURLs.length];
+        int count = 0;
+        for (int i = 0; i < rootURLs.length; i++) {
+            if ((sourceRoots[i] = URLMapper.findFileObject(rootURLs[i]))
+                    == null) {
+                ErrorManager.getDefault().notify(
+                        ErrorManager.INFORMATIONAL,
+                        new IllegalStateException(
+                           "No FileObject found for the following URL: "//NOI18N
+                           + rootURLs[i]));
                 continue;
             }
-            FileObject rootFolder = sourceGroup.getRootFolder();
-            FileObject opposite;
-            URL oppositeURL;
-            
-            boolean reverse = false;
-            SourceGroup oppositeSourceGroup = null;            
-
-            oppositeURL = UnitTestForSourceQuery.findUnitTest(rootFolder);
-            if (oppositeURL == null) {
-                reverse = true;
-                oppositeURL = UnitTestForSourceQuery.findSource(rootFolder);
-            } 
-
-            if (oppositeURL != null) {
-                //PENDING - more checks should be performed
-                opposite = URLMapper.findFileObject(oppositeURL);
-                if (opposite != null) {
-                    oppositeSourceGroup =(SourceGroup)folder2sourceGroup.get(opposite);
-                }
-            } 
-            
-            if (oppositeSourceGroup == null) {
-                oppositeSourceGroup = sourceGroup;
+            if (FileOwnerQuery.getOwner(sourceRoots[i]) != project) {
+                ErrorManager.getDefault().notify(
+                        ErrorManager.INFORMATIONAL,
+                        new IllegalStateException(
+                    "Source root found by FileOwnerQuery points "       //NOI18N
+                    + "to a different project for the following URL: "  //NOI18N
+                    + rootURLs[i]));
+                continue;
             }
-
-
-            if (sourceGroup!=null && oppositeSourceGroup != null) {
-                pairs.add(new SourceGroup[] {
-                    reverse ? oppositeSourceGroup : sourceGroup,
-                    reverse ? sourceGroup : oppositeSourceGroup});
+            count++;
+        }
+        
+        /* .) find SourceGroups corresponding to the FileObjects: */
+        final Object[] targets = new Object[count];
+        int targetIndex = 0;
+        for (int i = 0; i < sourceRoots.length; i++) {
+            final FileObject sourceRoot = sourceRoots[i];
+            if (sourceRoot == null) {
+                continue;
             }
-            processed.add(oppositeSourceGroup);
+            Object srcGroup = foldersToSourceGroupsMap.get(sourceRoot);
+            targets[targetIndex++] = (srcGroup != null)
+                                     ? srcGroup
+                                     : sourceGroupsOnly ? null : sourceRoot;
+        }
+        return TestUtil.skipNulls(targets);
+    }
 
+    /**
+     * Creates a map mapping folders to source groups.
+     * For a folder as a key, the map returns the source group having that
+     * folder as a root. The created map is stored to variable
+     * {@link #foldersToSourceGroupsMap}.
+     *
+     * @param  sourceGroup  source group to create a map from
+     * @author  Marian Petras
+     */
+    private void createFoldersToSourceGroupsMap(
+            final SourceGroup[] sourceGroups) {
+        Map result;
+
+        if (sourceGroups.length == 0) {
+            result = Collections.EMPTY_MAP;
+        } else {
+            result = new HashMap(2 * sourceGroups.length, .5f);
+            for (int i = 0; i < sourceGroups.length; i++) {
+                SourceGroup sourceGroup = sourceGroups[i];
+                result.put(sourceGroup.getRootFolder(), sourceGroup);
+            }
         }
 
-        if (pairs.isEmpty()) {
-            return Collections.EMPTY_LIST;
+        foldersToSourceGroupsMap = result;
+    }
+    
+    /**
+     * <!-- PENDING -->
+     */
+    public SourceGroup[] getJavaSourceGroups() {
+        if (javaSourceGroups == null) {
+            javaSourceGroups = ProjectUtils.getSources(project).getSourceGroups(
+                                        JavaProjectConstants.SOURCES_TYPE_JAVA);
         }
-        List result = new ArrayList(pairs);
-        return Collections.unmodifiableList(result);
+        return javaSourceGroups;
     }
     
     /**
@@ -217,35 +496,6 @@ public class Utils {
             }
         }
         return (SourceGroup) null;
-    }
-    
-    static FileObject getSrcRoot(Project project) {
-        Sources sources = ProjectUtils.getSources(project);
-        
-        //PENDING:
-        // - what about other types of projects?
-        SourceGroup[] sourceGroups = sources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
-        
-        //PENDING:
-        // - what if the array is empty?
-        // - is it OK to return the first element if there are more?
-        return sourceGroups[0].getRootFolder();
-    }
-    
-    static FileObject getTestsRoot(Project project) {
-        
-        //PENDING:
-        // - getSrcRoot() returns at most one source root
-        //    - what if there are more source roots?
-        //    - what if there is no source root?
-        FileObject srcRoot = getSrcRoot(project);
-        URL testRootURL = UnitTestForSourceQuery.findUnitTest(srcRoot);
-        
-        //PENDING:
-        // - what if the URL is null?
-        // - what if the returned FileObject is null?
-        return URLMapper.findFileObject(testRootURL);
     }
     
     static boolean isValidClassName(String className) {

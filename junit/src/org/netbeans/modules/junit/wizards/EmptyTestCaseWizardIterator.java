@@ -47,6 +47,7 @@ import org.netbeans.jmi.javamodel.*;
 import org.netbeans.modules.javacore.api.JavaModel;
 
 /**
+ * @author  Marian Petras
  */
 public class EmptyTestCaseWizardIterator
         implements TemplateWizard.Iterator {
@@ -152,9 +153,9 @@ public class EmptyTestCaseWizardIterator
     }
 
     private WizardDescriptor.Panel getTargetPanel() {
-        Project project = Templates.getProject(wizard);
+        final Project project = Templates.getProject(wizard);
         if (targetPanel == null || project != lastSelectedProject) {
-            Collection sourceGroups = Utils.getTestSourceGroups(project);
+            Collection sourceGroups = Utils.getTestTargets(project, true);
             if (sourceGroups.isEmpty()) {
                 targetPanel = new StepProblemMessage(
                         project,

@@ -162,9 +162,9 @@ public class TestSuiteWizardIterator
      * @return  existing panel or a newly created panel if it did not exist
      */
     private WizardDescriptor.Panel getTargetPanel() {
-        Project project = Templates.getProject(wizard);
+        final Project project = Templates.getProject(wizard);
         if (targetPanel == null || project != lastSelectedProject) {
-            Collection sourceGroups = Utils.getTestSourceGroups(project);
+            Collection sourceGroups = Utils.getTestTargets(project, true);
             if (sourceGroups.isEmpty()) {
                 targetPanel = new StepProblemMessage(
                         project,

@@ -25,9 +25,8 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.modules.junit.wizards.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -569,9 +568,8 @@ public class TestUtil {
      */
     private static SourceGroup findSourceGroupOwner(FileObject file) {
         final Project project = FileOwnerQuery.getOwner(file);
-        final Sources sources = ProjectUtils.getSources(project);
-        final SourceGroup[] sourceGroups = sources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        final SourceGroup[] sourceGroups
+                = new Utils(project).getJavaSourceGroups();
         for (int i = 0; i < sourceGroups.length; i++) {
             SourceGroup srcGroup = sourceGroups[i];
             FileObject root = srcGroup.getRootFolder();
@@ -581,6 +579,46 @@ public class TestUtil {
             }
         }
         return null;
+    }
+    
+    /**
+     * Finds all <code>SourceGroup</code>s of the given project
+     * containing a class of the given name.
+     *
+     * @param  project  project to be searched for matching classes
+     * @param  className  class name pattern
+     * @return  unmodifiable collection of <code>SourceGroup</code>s
+     *          which contain files corresponding to the given name
+     *          (may be empty but not <code>null</code>)
+     * @author  Marian Petras
+     */
+    public static Collection findSourceGroupOwners(
+            final Project project,
+            final String className) {
+        final SourceGroup[] sourceGroups
+                = new Utils(project).getJavaSourceGroups();
+        if (sourceGroups.length == 0) {
+            return Collections.EMPTY_LIST;
+        }
+        
+        final String relativePath = className.replace('.', '/')
+                                    + ".java";                          //NOI18N
+        
+        ArrayList result = new ArrayList(4);
+        for (int i = 0; i < sourceGroups.length; i++) {
+            SourceGroup srcGroup = sourceGroups[i];
+            FileObject root = srcGroup.getRootFolder();
+            FileObject file = root.getFileObject(relativePath);
+            if (file != null && FileUtil.isParentOf(root, file)
+                             && srcGroup.contains(file)) {
+                result.add(srcGroup);
+            }
+        }
+        if (result.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        }
+        result.trimToSize();
+        return Collections.unmodifiableList(result);
     }
     
     /**
@@ -623,9 +661,8 @@ public class TestUtil {
      * @author  Marian Petras
      */
     public static Map getFileObject2SourceGroupMap(Project project) {
-        final Sources sources = ProjectUtils.getSources(project);
-        final SourceGroup[] sourceGroups = sources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        final SourceGroup[] sourceGroups
+                = new Utils(project).getJavaSourceGroups();
         
         if (sourceGroups.length == 0) {
             return Collections.EMPTY_MAP;

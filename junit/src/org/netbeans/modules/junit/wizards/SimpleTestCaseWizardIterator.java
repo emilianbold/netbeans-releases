@@ -15,9 +15,11 @@ package org.netbeans.modules.junit.wizards;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
@@ -67,8 +69,10 @@ public class SimpleTestCaseWizardIterator
     private int current;
     /** registered change listeners */
     private List changeListeners;
+    /** */
+    private Project lastSelectedProject = null;
     /** panel for choosing name and target location of the test class */
-    private SimpleTestStepLocation classChooserPanel;
+    private WizardDescriptor.Panel classChooserPanel;
 
     /**
      */
@@ -155,10 +159,22 @@ public class SimpleTestCaseWizardIterator
      * @return  existing panel or a newly created panel if it did not exist
      */
     private WizardDescriptor.Panel getClassChooserPanel() {
-        if (classChooserPanel == null) {
-            classChooserPanel = new SimpleTestStepLocation();
+        final Project project = Templates.getProject(wizard);
+        if (classChooserPanel == null || project != lastSelectedProject) {
+            final Utils utils = new Utils(project);
+            if (utils.getSourcesToTestsMap(true).isEmpty()) {
+                classChooserPanel = new StepProblemMessage(
+                        project,
+                        NbBundle.getMessage(EmptyTestCaseWizardIterator.class,
+                                            "MSG_NoTestSourceGroup"));  //NOI18N
+            } else {
+                if (classChooserPanel == null) {
+                    classChooserPanel = new SimpleTestStepLocation();
+                }
+                ((SimpleTestStepLocation) classChooserPanel).setUp(utils);
+            }
         }
-        classChooserPanel.setProject(Templates.getProject(wizard));
+        lastSelectedProject = project;
         return classChooserPanel;
     }
 
@@ -238,9 +254,16 @@ public class SimpleTestCaseWizardIterator
      * <!-- PENDING -->
      */
     public void uninitialize(TemplateWizard wiz) {
-        this.wizard = null;
+        if ((classChooserPanel != null)
+                && !(classChooserPanel instanceof StepProblemMessage)) {
+            
+            assert classChooserPanel instanceof SimpleTestStepLocation;
+            
+            ((SimpleTestStepLocation) classChooserPanel).cleanUp();
+        }
         classChooserPanel = null;
         changeListeners = null;
+        this.wizard = null;
     }
 
     public Set instantiate(TemplateWizard wiz) throws IOException {

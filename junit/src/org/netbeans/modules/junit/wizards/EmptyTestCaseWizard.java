@@ -47,8 +47,6 @@ public class EmptyTestCaseWizard extends TemplateWizard {
     static final String PROP_CLASS_NAME = "className";                  //NOI18N
     
     // PENDING - should not be hard-coded:
-    static final String JAVA_SOURCE_GROUPS = "java";            //NOI18N
-    // PENDING - should not be hard-coded:
     static final String TESTS_ROOT_NAME = "test";               //NOI18N
     
     /**

@@ -13,21 +13,37 @@
 
 package org.netbeans.modules.junit.wizards;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
@@ -36,28 +52,50 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.MouseInputListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.NavigationFilter;
+import javax.swing.text.Position;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.junit.GuiUtils;
+import org.netbeans.modules.junit.JUnitCfgOfCreate;
+import org.netbeans.modules.junit.MessageStack;
 import org.netbeans.modules.junit.NamedObject;
 import org.netbeans.modules.junit.SizeRestrictedPanel;
 import org.netbeans.modules.junit.TestCreator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
@@ -70,7 +108,21 @@ import org.openide.util.UserCancelException;
  *
  * @author  Marian Petras
  */
-public class SimpleTestStepLocation implements WizardDescriptor.Panel {
+public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
+    
+    /**
+     * message layer for displaying messages about problems with checkbox
+     * selection
+     *
+     * @see  MessageStack
+     */
+    private static final int MSG_LAYER_CHECKBOXES = 0;
+    /**
+     * message layer for displaying messages about problems with classname
+     *
+     * @see  MessageStack
+     */
+    private static final int MSG_LAYER_CLASSNAME = 1;
     
     private final String testClassNameSuffix
             = NbBundle.getMessage(TestCreator.class,
@@ -93,25 +145,211 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
     private JCheckBox chkMethodBodies;
     private JCheckBox chkJavadoc;
     private JCheckBox chkHints;
+
+    /** message stack for displaying error messages */
+    private final MessageStack msgStack = new MessageStack(2);
+    private String msgClassNameInvalid;
+    private String msgClassToTestDoesNotExist;
+    private String msgChkBoxesInvalid;
+
     
+    /**
+     * project to create a test class in
+     */
     private Project project;
-    private SourceGroup srcSourceGroup;
-    private SourceGroup testSourceGroup;
-    private FileObject srcRootFolder;
-    private FileObject testRootFolder;
+    private TemplateWizard wizard;
+    
+
+    // focus change detection mechanism
+    
+    /**
+     * true, if the current chosen project have multiple testable SourceGroups.
+     * If it does, class name entered in the Class to Test textfield must be
+     * checked agains all of them (to detect ambiguity) and if there are
+     * multiple classes matching, the user must be forced to choose one
+     * before leaving the textfield.
+     * <p>
+     * The focus change detection mechanism is activated by the
+     * {@link #hierarchyListener} after this wizard panel is added
+     * to the wizard dialog. The listener activates the mechanism
+     * only if the mechanism is
+     * {@linkplain #focusChangeDetectionEnabled enabled}.
+     *
+     * @see  #setUp
+     */
+    private boolean multipleSourceRoots;
+    /**
+     * true if the focus change detection mechanism is enabled.
+     * Being it enabled does not mean that it is activated
+     * - it cannot be activated until the visual component is added
+     * to the wizard dialog
+     */
+    private boolean interactionRestrictionsEnabled = false;
+    /**
+     * true if the focus change detection mechanism is active
+     */
+    private boolean interactionRestrictionsActive = false;
+    /** */
+    private boolean focusChangeDetectionActive = false;
+    /** <!-- PENDING --> */
+    private boolean interactionRestrictionsSuspended = false;
+    /** */
+    private boolean mouseClicksBlocked = false;
+    /**
+     * hierarchy listener that detects when the visual component
+     * is added to the wizard dialog. Once it is added to the dialog,
+     * the focus change detection mechanism can be activated.
+     *
+     * @see  #focusChangeDetectionEnabled
+     */
+    private HierarchyListener displayabilityListener;
+    /** root pane of the wizard dialog */
+    private JRootPane rootPane;
+    /**
+     * default button of the wizard.
+     * It is actually the default button of the dialog's {@link #rootPane}.
+     */
+    private JButton defaultButton;
+    /**
+     * action key of the root pane's original default action
+     * <!-- PENDING -->
+     */
+    private String rootPaneDefaultActionKey;
+    /**
+     * root pane's original default action
+     * <!-- PENDING -->
+     */
+    private Action rootPaneDefaultAction;
+    /**
+     * mouse listener of the wizard dialog's glass pane.
+     * It is a part of the focus change detection mechanism.
+     */
+    private MouseInputListener glassPaneListener;
+    /**
+     * UI components on which mouse events are checked and evauluated.
+     * The mouse events are checked only if there are
+     * {@link #multipleSourceRoots}.
+     */
+    private Component[] mouseBlocked;
+    /** 
+     * UI components on which mnemonic activation is checked and evaluated.
+     * Mnemonic activation events are checked only if there are
+     * {@link #multipleSourceRoots}.
+     */
+    private JComponent[] mnemonicBlocked;
+    /**
+     * information about actions mapped to action keys of UI components
+     * accessible using mnemonics.
+     * This is used for blocking access to those components using
+     * mnemonics and for restoring the UI components' action maps
+     * to the original state.
+     *
+     * @see  #blockMnemonics
+     * @see  #unblockMnemonics
+     */
+    private ActionMappingInfo[] actionMappingInfo;
+    /**
+     * component that is explicitely allowed to gain focus.
+     * This is used when a button press event is about to be dispatched
+     * to the button, so that the focus listener does not interrupt
+     * focus transfer to the button.
+     */
+    private Component focusGainAllowedFor;
+    
+
+    // project structure (static)
+    
+    /**
+     * <code>SourceGroups</code> that have at least one test
+     * <code>SourceGroup</code> assigned. It is equal to set of keys
+     * of the {@link #sourcesToTestsMap}.
+     * It is updated whenever {@link #project} changes.
+     *
+     * @see  #setUp
+     */
+    private SourceGroup[] testableSourceGroups;
+    /** root folders of {@link #testableSourceGroups} */
+    private FileObject[] testableSourceGroupsRoots;
+    /** <!-- PENDING --> */
+    private SourceGroup[] allTestSourceGroups;
+    /**
+     * relation between <code>SourceGroup</code>s
+     * and their respective test <code>SourceGroup</code>s.
+     * It is updated whenever {@link #project} changes.
+     *
+     * @see  #setUp
+     */
+    private Map sourcesToTestsMap;
+    
+
+    // entered and computed data
+    
+    /**
+     * index of the first <code>SourceGroup</code> where a file named
+     * according to contents of {@link #srcRelFileNameSys} was found.
+     * The search is performed in {@link #testableSourceGroupsRoots}.
+     * If such a file is not found in any of the source groups roots,
+     * this variable is set to <code>-1</code>.
+     *
+     * @see  #classExists
+     */
+    private int sourceGroupParentIndex = -1;
+    /** */
     private FileObject srcFile;
+    private SourceGroup srcGroup = null;
     private String testsRootDirName = "";                               //NOI18N
     private String srcRelFileNameSys = "";                              //NOI18N
     private String testRelFileName = "";                                //NOI18N
-    private boolean classNameValid = false;
-    private boolean classExists = false;
+    /** */
+    private FileObject testRootFolder;
+    /** */
+    private int classNameLength = 0;
+    /** length of the string denoting name of the selected SourceGroup */
+    private boolean srcGroupNameDisplayed = false;
+    /** <!-- PENDING --> */
+    private boolean programmaticChange = false;
+    /** <!-- PENDING --> */
+    private boolean navigationFilterEnabled = false;
+    /** <!-- PENDING --> */
+    private ClsNameNavigationFilter clsNameNavigationFilter;
+    /** <!-- PENDING --> */
+    private ClsNameDocumentFilter clsNameDocumentFilter;
+    
+    /** */
+    private boolean ignoreCboxItemChanges = false;
+    /** */
+    private boolean ignoreClsNameChanges = false;
+
+    
+    // validation of entered data
+    
+    /**
+     * <code>true</code> if data entered in the form are valid.
+     * The data are valid if the entered class name denotes an existing
+     * class and at least one of the <em>Method Access Levels</em>
+     * checkboxes is selected.
+     */
     private boolean isValid = false;
-    private TemplateWizard wizard;
-    private String msgClassNameInvalid;
-    private String msgClassToTestDoesNotExist;
-        
+    /** is the class name non-empty and valid? */
+    private boolean classNameValid = false;
+    /**
+     * <code>true</code> if and only if a file named
+     * according to contents of {@link #srcRelFileNameSys} was found.
+     * The search is performed in {@link #testableSourceGroupsRoots}.
+     * If this variable is <code>true</code>, variable
+     * {@link #sourceGroupParentIndex} is set to a non-negative value.
+     */
+    private boolean classExists = false;
+    /**
+     * <code>true</code> if and only if at least one of the checkboxes
+     * in the <em>Method Access Levels</em> group is selected
+     */
+    private boolean chkBoxesValid = false;
+
+    
+    //--------------------------------------------------------------------------
+    
     public SimpleTestStepLocation() {
-        super();
         visualComp = createVisualComp();
     }
     
@@ -121,7 +359,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         JLabel lblProject = new JLabel();
         JLabel lblLocation = new JLabel();
         JLabel lblFile = new JLabel();
-        tfClassToTest = new JTextField();
+        tfClassToTest = new JTextField(35);
         btnBrowse = new JButton();
         tfTestClass = new JTextField();
         tfProjectName = new JTextField();
@@ -158,7 +396,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         tfProjectName.setFocusable(false);
         tfCreatedFile.setFocusable(false);
         
-        setUpInteraction();
+        cboxLocation.setEditable(false);
         
         JCheckBox[] chkBoxes;
         
@@ -214,7 +452,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         gbcRight.fill = GridBagConstraints.BOTH;
         gbcRight.weightx = 1.0f;
         
-        // first row:
+        // Class to Test:
         
         gbcRight.gridwidth = 1;
         
@@ -226,7 +464,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         targetPanel.add(tfClassToTest, gbcRight);
         targetPanel.add(btnBrowse, gbcBrowse);
         
-        // second row:
+        // Created Test Class:
         
         gbcLeft.insets.bottom = gbcRight.insets.bottom = 24;
         
@@ -234,7 +472,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         targetPanel.add(tfTestClass, gbcRight);
         targetPanel.add(new JPanel(), gbcBrowse);               //filler
         
-        // third row:
+        // Project:
         
         gbcRight.gridwidth = GridBagConstraints.REMAINDER;
         
@@ -243,14 +481,14 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         targetPanel.add(lblProject, gbcLeft);
         targetPanel.add(tfProjectName, gbcRight);
         
-        // fourth row:
+        // Location:
         
         gbcLeft.insets.bottom = gbcRight.insets.bottom = 12;
         
         targetPanel.add(lblLocation, gbcLeft);
         targetPanel.add(cboxLocation, gbcRight);
         
-        // fifth row:
+        // Created File:
         
         gbcLeft.insets.bottom = gbcRight.insets.bottom = 0;
         
@@ -281,7 +519,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         optionsBox.add(optionalCodeBox);
         optionsBox.add(Box.createHorizontalGlue());
         
-        Box result = Box.createVerticalBox();
+        final Box result = Box.createVerticalBox();
         result.add(targetPanel);
         result.add(Box.createVerticalStrut(12));
             JPanel separatorPanel = new SizeRestrictedPanel(new GridLayout(),
@@ -297,149 +535,665 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         optionsBox.setAlignmentX(0.0f);
         optCode.setAlignmentX(0.0f);
         optComments.setAlignmentX(0.0f);
-
+        
         result.setName(bundle.getString("LBL_panel_ChooseClass"));
+        
+        setUpInteraction();
+        
         return result;
     }
     
-    private void setUpLocationComboBox() {
-        Collection sourceGroupPairs = Utils.getSourceGroupPairs(project);
-        //PENDING - what if the collection of pairs is empty?
-        //PENDING - should not the pairs be sorted (alphabetically)?
-        Iterator i = sourceGroupPairs.iterator();
-        NamedObject[] items = new NamedObject[sourceGroupPairs.size()];
-        for (int j = 0; j < items.length; j++) {
-            SourceGroup[] sourceGroupPair = (SourceGroup[]) i.next();
-            SourceGroup tests = sourceGroupPair[1];
-            items[j] = new NamedObject(sourceGroupPair,
-                                       tests.getDisplayName());
-        }
-        cboxLocation.setModel(new DefaultComboBoxModel(items));
-        //PENDING - if possible, we should pre-set the test source group
-        //          corresponding to the currently selected node
-        locationChanged();
+    /**
+     * <!-- PENDING -->
+     *
+     * @return  <code>true</code> if the selected item has changed,
+     *          <code>false</code> otherwise
+     */
+    private boolean updateLocationComboBox() {
+        Object[] srcRootsToOffer;
         
-        cboxLocation.setEditable(false);
+        if ((allTestSourceGroups.length == 1) || (srcGroup == null)) {
+            srcRootsToOffer = allTestSourceGroups;
+        } else {
+            srcRootsToOffer = (Object[]) sourcesToTestsMap.get(srcGroup);
+        }
+        
+        Object previousSelectedItem = cboxLocation.getSelectedItem();
+        
+        ignoreCboxItemChanges = true;
+        try {
+            Object[] items = createNamedItems(srcRootsToOffer);
+            cboxLocation.setModel(new DefaultComboBoxModel(items));
+            if (previousSelectedItem != null) {
+                cboxLocation.setSelectedItem(previousSelectedItem);//may not process
+            }
+        } finally {
+            ignoreCboxItemChanges = false;
+        }
+        
+        Object newSelectedItem = cboxLocation.getSelectedItem();
+        
+        return !newSelectedItem.equals(previousSelectedItem);
     }
     
+    /**
+     */
+    private static NamedObject[] createNamedItems(final Object[] srcRoots) {
+        
+        //PENDING - should not the source groups be sorted (alphabetically)?
+        NamedObject[] items = new NamedObject[srcRoots.length];
+        for (int i = 0; i < srcRoots.length; i++) {
+            String name = (srcRoots[i] instanceof SourceGroup)
+                          ? ((SourceGroup) srcRoots[i]).getDisplayName()
+                          : (srcRoots[i] instanceof FileObject)
+                            ? FileUtil.getFileDisplayName((FileObject)
+                                                          srcRoots[i])
+                            : srcRoots[i].toString();
+            items[i] = new NamedObject(srcRoots[i],
+                                       name);
+        }
+        return items;
+    }
+    
+    /**
+     */
     private void setUpInteraction() {
-        btnBrowse.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    selectClass();
+        
+        class UIListener implements ActionListener, DocumentListener,
+                                    FocusListener, ItemListener {
+            public void actionPerformed(ActionEvent e) {
+                
+                /* button Browse... pressed */
+                
+                chooseClass();
+            }
+            public void insertUpdate(DocumentEvent e) {
+                classNameChanged();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                classNameChanged();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                classNameChanged();
+            }
+            public void focusGained(FocusEvent e) {
+                Object source = e.getSource();
+                if (source == tfClassToTest) {
+                    //tfClassToTest.getDocument().addDocumentListener(this);
                 }
-        });
-        tfClassToTest.getDocument().addDocumentListener(new DocumentListener() {
-                public void insertUpdate(DocumentEvent e) {
-                    classNameChanged();
+            }
+            public void focusLost(FocusEvent e) {
+                Object source = e.getSource();
+                if (source == tfClassToTest) {
+                    //tfClassToTest.getDocument().removeDocumentListener(this);
+                    if (!e.isTemporary()) {
+                        tfClassToTestFocusLost(e);
+                    }
+                } else if ((source == btnBrowse) && !e.isTemporary()) {
+                    btnBrowseFocusLost(e);
                 }
-                public void removeUpdate(DocumentEvent e) {
-                    classNameChanged();
+            }
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getSource() == cboxLocation) {
+                    if (!ignoreCboxItemChanges) {
+                        locationChanged();
+                    }
+                } else {
+                    /*
+                     * source is one of the Method Access Levels ckeck-boxes
+                     */
+                    checkChkBoxesValidity();
+                    setValidity();
                 }
-                public void changedUpdate(DocumentEvent e) {
-                    classNameChanged();
-                }
-        });
-        cboxLocation.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {
-                    locationChanged();
-                }
-        });
+            }
+        }
+        
+        final UIListener listener = new UIListener();
+        
+        btnBrowse.addActionListener(listener);
+        tfClassToTest.addFocusListener(listener);
+        btnBrowse.addFocusListener(listener);
+        cboxLocation.addItemListener(listener);
+        chkPublic.addItemListener(listener);
+        chkProtected.addItemListener(listener);
+        chkPackagePrivate.addItemListener(listener);
+        tfClassToTest.getDocument().addDocumentListener(listener);
     }
     
-    private void locationChanged() {
+    /**
+     */
+    private static String getComponentDescription(Component c) {
+
+        //PENDING - temporary method
+        
+        if (c == null) {
+            return "<none>";
+        }
+        StringBuffer buf = new StringBuffer(40);
+        buf.append(c.getClass().getName());
+        if (c instanceof AbstractButton) {
+            buf.append(" - ");
+            buf.append(((AbstractButton) c).getText());
+        } else if (c instanceof JLabel) {
+            buf.append(" - ");
+            buf.append(((JLabel) c).getText());
+        }
+        return buf.toString();
+    }
+    
+    /**
+     */
+    private void tfClassToTestFocusLost(FocusEvent e) {
+        final Component allowFocusGain = focusGainAllowedFor;
+        focusGainAllowedFor = null;
+        
+        if (multipleSourceRoots
+                && interactionRestrictionsActive
+                && !interactionRestrictionsSuspended) {
+
+            final Component opposite = e.getOppositeComponent();
+
+            if ((allowFocusGain != null) && (opposite == allowFocusGain)) {
+                return;
+            }
+            if (opposite == btnBrowse) {
+                return;
+            }
+            if ((opposite instanceof JLabel)
+                    && (((JLabel) opposite).getLabelFor() == tfClassToTest)) {
+                /*
+                 * When a JLabel's mnemonic key is pressed, the JLabel gains focus
+                 * until the key is released again. That's why we must ignore such
+                 * focus transfers.
+                 */
+                return;
+            }
+            
+            if (!maybeDisplaySourceGroupChooser()) {
+                
+                /* send the request back to the Test to Class textfield: */
+                tfClassToTest.requestFocus();
+            }
+        }
+    }
+    
+    /**
+     */
+    private void btnBrowseFocusLost(FocusEvent e) {
+        final Component allowFocusGain = focusGainAllowedFor;
+        focusGainAllowedFor = null;
+        
+        if (multipleSourceRoots
+                && interactionRestrictionsActive
+                && !interactionRestrictionsSuspended) {
+
+            final Component opposite = e.getOppositeComponent();
+
+            if ((allowFocusGain != null) && (opposite == allowFocusGain)) {
+                return;
+            }
+            if (opposite == tfClassToTest) {
+                return;
+            }
+            if ((opposite instanceof JLabel)
+                    && (((JLabel) opposite).getLabelFor() == tfClassToTest)) {
+                /*
+                 * When a JLabel's mnemonic key is pressed, the JLabel gains focus
+                 * until the key is released again. That's why we must ignore such
+                 * focus transfers.
+                 */
+                return;
+            }
+
+            if (!maybeDisplaySourceGroupChooser()) {
+                
+                /* send the request back to the Browse... button: */
+                btnBrowse.requestFocus();
+            }
+        }
+    }
+    
+    /**
+     * <!-- PENDING -->
+     *
+     * @return  <code>false</code> if the SourceGroup chooser was displayed
+     *          and the user cancelled the choice; <code>true</code> otherwise
+     */
+    private boolean maybeDisplaySourceGroupChooser() {
+        assert multipleSourceRoots;
+        
+        if (classExists && (srcGroup == null)) {
+            SourceGroup[] candidates = findParentGroupCandidates();
+            
+            assert candidates.length != 0;      //because the class exists
+            
+            if (candidates.length == 1) {
+                setSelectedSrcGroup(candidates[0]);
+                return true;
+            } else {
+                SourceGroup chosenSrcGroup = chooseSrcGroup(candidates);
+                if (chosenSrcGroup != null) {
+                    setSelectedSrcGroup(chosenSrcGroup);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } else {
+            return true;
+        }
+    }
+    
+    /**
+     * Displays a source root chooser which allows the user to choose
+     * a parent source root for the entered class name.
+     *
+     * @param  candidates  source roots to be offered to the user
+     * @return  the chosen source root,
+     *          or <code>null</code> if the user cancelled the choice
+     */
+    private SourceGroup chooseSrcGroup(final SourceGroup[] candidates) {
+        assert (candidates != null) && (candidates.length != 0);
+
+        final String[] rootNames = new String[candidates.length];
+        for (int i = 0; i < rootNames.length; i++) {
+            rootNames[i] = candidates[i].getDisplayName();
+        }
+        
+        final JButton btn = new JButton(
+                NbBundle.getMessage(getClass(),
+                                    "LBL_SelectBtn"));                  //NOI18N
+        final JList list = new JList(rootNames);
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list.setSelectedIndex(0);
+        list.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                btn.setEnabled(!list.isSelectionEmpty());
+            }
+        });
+        JPanel panel = new JPanel(new BorderLayout(0, 0));
+        panel.add(list, BorderLayout.CENTER);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(12, 12, 0, 12),
+                BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
+        
+        String dialogTitle = NbBundle.getMessage(
+                                    getClass(),
+                                    "LBL_SourceRootChooserTitle");      //NOI18N
+        DialogDescriptor descriptor
+                = new DialogDescriptor(panel,                   //component
+                                       dialogTitle,             //title
+                                       true,                    //modal
+                                       new Object[] {           //options
+                                               btn,
+                                               NotifyDescriptor.CANCEL_OPTION},
+                                       btn,                     //default option
+                                       DialogDescriptor.DEFAULT_ALIGN,
+                                       (HelpCtx) null,
+                                       (ActionListener) null);
+        Object selected = DialogDisplayer.getDefault().notify(descriptor);
+        return (selected == btn) ? candidates[list.getSelectedIndex()]
+                                 : (SourceGroup) null;
+    }
+    
+    /**
+     */
+    private void setSelectedSrcGroup(SourceGroup srcGroup) {
+        setSelectedSrcGroup(srcGroup, true);
+    }
+    
+    /**
+     * <!-- PENDING -->
+     */
+    private void setSelectedSrcGroup(SourceGroup srcGroup, boolean updateDisp) {
+        assert multipleSourceRoots
+               && ((srcGroup == null) || (classNameValid && classExists));
+        
+        if (!checkObjChanged(this.srcGroup, srcGroup)) {
+            return;
+        }
+        
+        this.srcGroup = srcGroup;
+        
+        if (updateDisp) {
+            
+            /* update the display: */
+            try {
+                programmaticChange = true;
+
+                String className = tfClassToTest.getText()
+                                   .substring(0, classNameLength);
+                String srcGroupDisplay = getSrcGrpDisp(srcGroup);
+                
+                ignoreClsNameChanges = true;
+                tfClassToTest.setText(className + srcGroupDisplay);
+                ignoreClsNameChanges = false;
+                
+                classNameLength = className.length();
+                classNameChanged();
+                srcGroupNameDisplayed = true;
+                setNavigationFilterEnabled(true);
+            } finally {
+                ignoreClsNameChanges = false;
+                programmaticChange = false;
+            }
+        }
+        
+        updateInteractionRestrictionsState();
+
+            /*
+         * There is no need to check and set validity.
+         * The user should be offered to choose a source root only when
+         * the entered class name is valid and the class exists
+         * in at least two source roots.
+         */
+        
+        /* update target folder: */
+        if (allTestSourceGroups.length > 1) {
+            boolean locationChanged = updateLocationComboBox();
+            if (locationChanged) {
+                updateTargetFolderData();
+            }
+        }
+        
+        /* update name of the file to be created: */
+        updateCreatedFileName();
+        
+        /* set 'srcFile': */
+        srcFile = (srcGroup != null)
+                  ? srcGroup.getRootFolder().getFileObject(srcRelFileNameSys)
+                  : null;
+        
+        assert (srcGroup == null) || (srcFile != null);
+    }
+    
+    /**
+     */
+    private static String getSrcGrpDisp(SourceGroup srcGroup) {
+        if (srcGroup == null) {
+            return "";                                                  //NOI18N
+        } else {
+            String srcGroupName = srcGroup.getDisplayName();
+            return new StringBuffer(srcGroupName.length() + 3)
+                   .append(' ')
+                   .append('(').append(srcGroupName).append(')')
+                   .toString();
+        }
+    }
+    
+    /**
+     */
+    private void setNavigationFilterEnabled(boolean enabled) {
+        if (enabled == navigationFilterEnabled) {
+            if (enabled) {
+                clsNameNavigationFilter.ensureCursorInRange();
+            }
+            return;
+        }
+        
+        if (enabled) {
+            if (clsNameNavigationFilter == null) {
+                clsNameNavigationFilter = new ClsNameNavigationFilter();
+            }
+            tfClassToTest.setNavigationFilter(clsNameNavigationFilter);
+            clsNameNavigationFilter.ensureCursorInRange();
+        } else {
+            tfClassToTest.setNavigationFilter(null);
+        }
+        this.navigationFilterEnabled = enabled;
+    }
+    
+    /**
+     * <!-- PENDING -->
+     */
+    private void updateInteractionRestrictionsState() {
+        setInteractionRestrictionsSuspended(
+                !classNameValid || !classExists || (srcGroup != null));
+    }
+    
+    /**
+     */
+    private void updateTargetFolderData() {
         Object item = cboxLocation.getSelectedItem();
         if (item != null) {
-            SourceGroup[] pair = (SourceGroup[]) ((NamedObject) item).object;
-            srcSourceGroup = pair[0];
-            testSourceGroup = pair[1];
-            srcRootFolder = srcSourceGroup.getRootFolder();
-            testRootFolder = testSourceGroup.getRootFolder();
+            SourceGroup targetSourceGroup = (SourceGroup)
+                                            ((NamedObject) item).object;
+            testRootFolder = targetSourceGroup.getRootFolder();
             testsRootDirName = FileUtil.getFileDisplayName(testRootFolder);
         } else {
-            srcSourceGroup = null;
-            testSourceGroup = null;
-            testsRootDirName = "";
+            testRootFolder = null;
+            testsRootDirName = "";                                      //NOI18N
         }
-        updateCreatedFileName();
-        if (classNameValid) {
-            checkSelectedClassExists();
-        }
-        setValidity();
     }
     
+    /**
+     * Called whenever selection in the Location combo-box is changed.
+     */
+    private void locationChanged() {
+        updateTargetFolderData();
+        updateCreatedFileName();
+    }
+    
+    /**
+     */
     private void classNameChanged() {
-        String className = tfClassToTest.getText().trim();
-        String testClassName = tfTestClass.getText();
-        String fileName;
+        if (ignoreClsNameChanges) {
+            return;
+        }
+        
+        String className;
+        if (!programmaticChange) {
+            className = tfClassToTest.getText().trim();
+            classNameLength = className.length();
+        } else {
+            className = tfClassToTest.getText().substring(0, classNameLength);
+        }
+        
+        String testClassName;
         if (className.length() != 0) {
-            testClassName = className + testClassNameSuffix;
             srcRelFileNameSys = className.replace('.', '/')
                                 + ".java";                              //NOI18N
+            testClassName = className + testClassNameSuffix;
             testRelFileName = testClassName.replace('.', File.separatorChar)
                               + ".java";                                //NOI18N
         } else {
-            testClassName = "";                                         //NOI18N
             srcRelFileNameSys = "";                                     //NOI18N
+            testClassName = "";                                         //NOI18N
             testRelFileName = "";                                       //NOI18N
         }
         tfTestClass.setText(testClassName);
-        updateCreatedFileName();
         
-        if (checkClassNameValidity()) {
-            checkSelectedClassExists();
+        if (!programmaticChange) {
+            updateCreatedFileName();
+            if (checkClassNameValidity()) {
+                checkSelectedClassExists();
+            }
+            setErrorMsg(msgStack.getDisplayedMessage());
+            setValidity();
+
+            /*
+             * The user modified the class name.
+             * It may be ambiguous - it may match classes in multiple SourceGroups.
+             */
+            if (multipleSourceRoots) {
+                setSelectedSrcGroup(null, false);
+            }
         }
-        setValidity();
+        
+        if (multipleSourceRoots) {
+            updateInteractionRestrictionsState();
+        }
     }
     
+    /**
+     * Identifies all <code>SourceGroup</code>s containing file having the
+     * name entered by the user.
+     * This method assumes that at least one such <code>SourceGroup</code>
+     * has already been found and its index stored in field
+     * {@link #sourceGroupParentIndex}.
+     *
+     * @return  array of matching <code>SourceGroup</code>s
+     *          (always contains at least one element)
+     */
+    private SourceGroup[] findParentGroupCandidates() {
+        assert sourceGroupParentIndex >= 0;
+        
+        List cands = null;
+        final int count = testableSourceGroups.length;
+        for (int i = sourceGroupParentIndex + 1; i < count; i++) {
+            final FileObject groupRoot = testableSourceGroupsRoots[i];
+            FileObject srcFile = groupRoot.getFileObject(srcRelFileNameSys);
+            if (srcFile != null && testableSourceGroups[i].contains(srcFile)) {
+                if (cands == null) {
+                    cands = new ArrayList(testableSourceGroups.length - i + 1);
+                    cands.add(testableSourceGroups[sourceGroupParentIndex]);
+                }
+                cands.add(testableSourceGroups[i]);
+            }
+        }
+        return cands == null
+              ? new SourceGroup[] {testableSourceGroups[sourceGroupParentIndex]}
+              : (SourceGroup[]) cands.toArray(new SourceGroup[cands.size()]);
+    }
+    
+    /**
+     */
     private void updateCreatedFileName() {
         tfCreatedFile.setText(testsRootDirName + '/' + testRelFileName);
     }
     
+    /**
+     * Checks validity of the entered class name, updates messages
+     * on the message stack and updates the <code>classNameValid</code> field.
+     *
+     * @see  #msgStack
+     * @see  #setValidity()
+     */
     private boolean checkClassNameValidity() {
         String className = tfClassToTest.getText().trim();
-        classNameValid = Utils.isValidClassName(className);
+        if (srcGroupNameDisplayed) {
+            className = className.substring(0, classNameLength);
+        }
+        String errMsgUpdate;
+        
+        if (className.length() == 0) {
+            msgStack.clearMessage(MSG_LAYER_CLASSNAME);
+            classNameValid = false;
+        } else if (Utils.isValidClassName(className)) {
+            msgStack.clearMessage(MSG_LAYER_CLASSNAME);
+            classNameValid = true;
+        } else {
+            if (msgClassNameInvalid == null) {
+                msgClassNameInvalid = NbBundle.getMessage(
+                        JUnitCfgOfCreate.class,
+                        "MSG_InvalidClassName");                        //NOI18N
+            }
+            msgStack.setMessage(MSG_LAYER_CLASSNAME, msgClassNameInvalid);
+            classNameValid = false;
+        }
+        
         return classNameValid;
     }
     
+    /**
+     * Checks whether a class having the entered name exists, updates messages
+     * on the message stack and updates the <code>classExists</code> field.
+     *
+     * @see  #setValidity()
+     */
     private boolean checkSelectedClassExists() {
-        srcFile = srcRootFolder.getFileObject(srcRelFileNameSys);
-        classExists = (srcFile != null);
-        return classExists;
-    }
-    
-    private void setValidity() {
-        boolean wasValid = isValid;
+        sourceGroupParentIndex = -1;
         
-        boolean valid = true;
-        if (tfClassToTest.getText().trim().length() == 0) {
-            setErrorMsg(null);
-            valid = false;
-        } else if (!classNameValid) {
-            if (msgClassNameInvalid == null) {
-                msgClassNameInvalid = NbBundle.getMessage(
-                        SimpleTestStepLocation.class,
-                        "MSG_InvalidClassName");                    //NOI18N
+        final int count = testableSourceGroups.length;
+        for (int i = 0; i < count; i++) {
+            final FileObject groupRoot = testableSourceGroupsRoots[i];
+            FileObject srcFile = groupRoot.getFileObject(srcRelFileNameSys);
+            if (srcFile != null && testableSourceGroups[i].contains(srcFile)) {
+                this.srcFile = srcFile;
+                sourceGroupParentIndex = i;
+                break;
             }
-            setErrorMsg(msgClassNameInvalid);
-            valid = false;
-        } else if (!classExists) {
+        }
+        
+        classExists = (sourceGroupParentIndex != -1);
+        
+        if (classExists) {
+            msgStack.clearMessage(MSG_LAYER_CLASSNAME);
+        } else {
             if (msgClassToTestDoesNotExist == null) {
                 msgClassToTestDoesNotExist = NbBundle.getMessage(
                         SimpleTestStepLocation.class,
                         "MSG_ClassToTestDoesNotExist");                 //NOI18N
             }
-            setErrorMsg(msgClassToTestDoesNotExist);
-            valid = false;
-        } else {
-            setErrorMsg(null);
+            msgStack.setMessage(MSG_LAYER_CLASSNAME,
+                                msgClassToTestDoesNotExist);
         }
-        isValid = valid;
+        
+        return classExists;
+    }
+    
+    /**
+     * Checks whether at least one of the <em>Method Access Levels</em>
+     * checkboxes is selected, updates messages
+     * on the message stack and updates the <code>chkBoxesValid</code> field.
+     *
+     * @see  #setValidity()
+     */
+    private boolean checkChkBoxesValidity() {
+        chkBoxesValid = chkPublic.isSelected()
+                        || chkProtected.isSelected()
+                        || chkPackagePrivate.isSelected();
+        String msgUpdate;
+        if (chkBoxesValid) {
+            msgUpdate = msgStack.clearMessage(MSG_LAYER_CHECKBOXES);
+        } else {
+            if (msgChkBoxesInvalid == null) {
+                //PENDING - text of the message:
+                msgChkBoxesInvalid = NbBundle.getMessage(
+                        JUnitCfgOfCreate.class,
+                        "MSG_AllMethodTypesDisabled");                  //NOI18N
+            }
+            msgUpdate = msgStack.setMessage(MSG_LAYER_CHECKBOXES,
+                                            msgChkBoxesInvalid);
+        }
+        if (msgUpdate != null) {
+            setErrorMsg(msgStack.getDisplayedMessage());
+        }
+        return chkBoxesValid;
+    }
+    
+    /**
+     * Updates the <code>isValid</code> field and notifies all registered
+     * <code>ChangeListener</code>s if validity has changed.
+     */
+    private void setValidity() {
+        boolean wasValid = isValid;
+        
+        isValid = classNameValid && classExists && chkBoxesValid;
         
         if (isValid != wasValid) {
             fireChange();
+            
+            updateInteractionRestrictionsState();
+            
+            /*
+             * This must be called after fireChange() because fireChange()
+             * sets state (enabled/disabled) of the default button.
+             */
+            if (isValid
+                    && interactionRestrictionsEnabled
+                    && !interactionRestrictionsActive) {
+                tryActivateInteractionRestrictions();
+            }
         }
     }
     
+    /**
+     * Displays the given message in the wizard's message area.
+     *
+     * @param  message  message to be displayed, or <code>null</code>
+     *                  if the message area should be cleared
+     */
     private void setErrorMsg(String message) {
         if (wizard != null) {
             wizard.putProperty("WizardPanel_errorMessage", message);    //NOI18N
@@ -448,51 +1202,41 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
     
     /**
      * Displays a class chooser dialog and lets the user to select a class.
-     * If the user confirms they choice, full name of the selected class
+     * If the user confirms their choice, full name of the selected class
      * is put into the <em>Class To Test</em> text field.
      */
-    private void selectClass() {
+    private void chooseClass() {
         try {
-            /*
-            Collection sourceGroups = Utils.getSourceSourceGroups(project);
-            Node[] sourceGroupNodes = new Node[sourceGroups.size()];
-            Iterator iterator = sourceGroups.iterator();
+            final Node[] sourceGroupNodes
+                    = new Node[testableSourceGroups.length];
             for (int i = 0; i < sourceGroupNodes.length; i++) {
-                SourceGroup srcGroup = (SourceGroup) iterator.next();
-                AbstractNode srcGroupNode = new AbstractNode(
-                       PackageView.createPackageView(srcGroup.getRootFolder()));
-                srcGroupNode.setIconBase(PACKAGES_NODE_ICON_BASE);
-                
-                srcGroupNode.setName(srcGroup.getName());
-                srcGroupNode.setDisplayName(srcGroup.getDisplayName());
-                sourceGroupNodes[i] = srcGroupNode;
+                /*
+                 * Note:
+                 * Precise structure of this view is *not* specified by the API.
+                 */
+                Node srcGroupNode
+                       = PackageView.createPackageView(testableSourceGroups[i]);
+                sourceGroupNodes[i]
+                       = new FilterNode(srcGroupNode,
+                                        new JavaChildren(srcGroupNode));
             }
             
             Node rootNode;
             if (sourceGroupNodes.length == 1) {
                 rootNode = new FilterNode(
                         sourceGroupNodes[0],
-                        new LogicalViewRootChildren(sourceGroupNodes[0]));
+                        new JavaChildren(sourceGroupNodes[0]));
             } else {
                 Children children = new Children.Array();
                 children.add(sourceGroupNodes);
                 
                 AbstractNode node = new AbstractNode(children);
-                rootNode = new FilterNode(node,
-                                          new LogicalViewRootChildren(node));
-                rootNode.setName("Project Source Roots");               //NOI18N
-                rootNode.setDisplayName(
-                        NbBundle.getMessage(SimpleTestStepLocation.class,
-                                            "LBL_Sources"));            //NOI18N
+                node.setName("Project Source Roots");                   //NOI18N
+                node.setDisplayName(
+                        NbBundle.getMessage(getClass(), "LBL_Sources"));//NOI18N
+                //PENDING - set a better icon for the root node
+                rootNode = node;
             }
-             */
-            
-            Node srcGroupNode = PackageView.createPackageView(srcSourceGroup);
-            // Note: precise structure of this view is *not* specified by the API.
-            
-            Node rootNode = new FilterNode(
-                    srcGroupNode,
-                    new JavaChildren(srcGroupNode));
             
             NodeAcceptor acceptor = new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
@@ -513,21 +1257,103 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
                     rootNode,
                     acceptor)[0];
             
-            /* promote the selection to the text field: */
-            tfClassToTest.setText(getClassName(selectedNode));
+            SourceGroup selectedSourceGroup;
+            if (sourceGroupNodes.length == 1) {
+                selectedSourceGroup = testableSourceGroups[0];
+            } else {
+                Node previous = null;
+                Node current = selectedNode.getParentNode();
+                Node parent;
+                while ((parent = current.getParentNode()) != null) {
+                    previous = current;
+                    current = parent;
+                }
+                /*
+                 * 'current' now contains the root node of displayed node
+                 * hierarchy. 'current' contains a parent node of the source
+                 * root and 'previous' contains the parent source root of
+                 * the selected class.
+                 */
+                selectedSourceGroup = null;
+                Node selectedSrcGroupNode = previous;
+                for (int i = 0; i < sourceGroupNodes.length; i++) {
+                    if (sourceGroupNodes[i] == selectedSrcGroupNode) {
+                        selectedSourceGroup = testableSourceGroups[i];
+                        sourceGroupParentIndex = i;
+                        break;
+                    }
+                }
+                assert selectedSourceGroup != null;
+                assert sourceGroupParentIndex >= 0;
+            }
+            srcGroup = selectedSourceGroup;
+            
+            FileObject selectedFileObj
+                    = ((DataObject) selectedNode.getCookie(DataObject.class))
+                      .getPrimaryFile();
+            
+            /* display selected class name: */
+            try {
+                programmaticChange = true;
+                
+                String className = getClassName(selectedFileObj);
+                classNameLength = className.length();
+                if (!multipleSourceRoots) {
+                    tfClassToTest.setText(className);
+                } else {
+                    String srcGroupDisplay = getSrcGrpDisp(selectedSourceGroup);
+
+                    ignoreClsNameChanges = true;
+                    tfClassToTest.setText(className + srcGroupDisplay);
+                    ignoreClsNameChanges = false;
+                    
+                    classNameLength = className.length();
+                    classNameChanged();
+                    srcGroupNameDisplayed = true;
+                    setNavigationFilterEnabled(true);
+                }
+                /*
+                 * Change of text of the Class to Test text-field triggers
+                 * update of variable 'testRelFileName'.
+                 */
+            } finally {
+                ignoreClsNameChanges = false;
+                programmaticChange = false;
+            }
+            
+            /* set class name validity: */
+            classNameValid = true;
+            classExists = true;
+            String msgUpdate = msgStack.clearMessage(MSG_LAYER_CLASSNAME);
+            if (msgUpdate != null) {
+                setErrorMsg(msgUpdate);
+            }
+            setValidity();
+            updateInteractionRestrictionsState();
+            
+            /* update target folder: */
+            if (multipleSourceRoots && (allTestSourceGroups.length > 1)) {
+                boolean locationChanged = updateLocationComboBox();
+                if (locationChanged) {
+                    updateTargetFolderData();       //sets also 'testRootFolder'
+                }
+            }
+            
+            /* update name of the file to be created: */
+            updateCreatedFileName();
+            
+            /* set 'srcFile': */
+            srcFile = selectedFileObj;
+            
         } catch (UserCancelException ex) {
             // if the user cancels the choice, do nothing
         }
     }
     
-    private String getClassName(Node node) {
-        FileObject selectedFile
-                = ((DataObject) node.getCookie(DataObject.class))
-                  .getPrimaryFile();
-        
+    private static String getClassName(FileObject fileObj) {
         //PENDING: is it ensured that the classpath is non-null?
-        return ClassPath.getClassPath(selectedFile, ClassPath.SOURCE)
-               .getResourceName(selectedFile, '.', false);
+        return ClassPath.getClassPath(fileObj, ClassPath.SOURCE)
+               .getResourceName(fileObj, '.', false);
     }
     
     public Component getComponent() {
@@ -571,7 +1397,6 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
                            srcFile);
         wizard.putProperty(SimpleTestCaseWizard.PROP_TEST_ROOT_FOLDER,
                            testRootFolder);
-        
         wizard.putProperty(GuiUtils.CHK_PUBLIC,
                            Boolean.valueOf(chkPublic.isSelected()));
         wizard.putProperty(GuiUtils.CHK_PROTECTED,
@@ -614,19 +1439,846 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
         }
     }
     
-    void setProject(Project project) {
+    /**
+     */
+    void setUp(final Utils utils) {
+        final Project project = utils.getProject();
+        
         if (project == this.project) {
             return;
         }
-        if (project == null) {
-            throw new IllegalArgumentException("null");                 //NOI18N
-        }
         
         this.project = project;
+        this.sourcesToTestsMap = utils.getSourcesToTestsMap(true);
+        
+        int sourceGroupsCnt = sourcesToTestsMap.size();
+        Set mapEntries = sourcesToTestsMap.entrySet();
+        List testGroups = new ArrayList(sourceGroupsCnt + 4);
+        
+        testableSourceGroups = new SourceGroup[sourceGroupsCnt];
+        testableSourceGroupsRoots = new FileObject[sourceGroupsCnt];
+        multipleSourceRoots = (sourceGroupsCnt > 1);
+        
+        Iterator iterator = mapEntries.iterator();
+        for (int i = 0; i < sourceGroupsCnt; i++) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            SourceGroup srcGroup = (SourceGroup) entry.getKey();
+            
+            testableSourceGroups[i] = srcGroup;
+            testableSourceGroupsRoots[i] = srcGroup.getRootFolder();
+            
+            Object[] testGroupsSubset = (Object[]) entry.getValue();
+            for (int j = 0; j < testGroupsSubset.length; j++) {
+                SourceGroup testGroup = (SourceGroup) testGroupsSubset[j];
+                if (!testGroups.contains(testGroup)) {
+                    testGroups.add(testGroup);
+                }
+            }
+        }
+        allTestSourceGroups = (SourceGroup[]) testGroups.toArray(
+                                            new SourceGroup[testGroups.size()]);
+        
         tfProjectName.setText(
                 ProjectUtils.getInformation(project).getDisplayName());
-        setUpLocationComboBox();
-        //PENDING - not yet finished
+        try {
+            programmaticChange = true;
+            
+            ignoreClsNameChanges = true;
+            tfClassToTest.setText("");                                  //NOI18N
+            ignoreClsNameChanges = false;
+            
+            classNameLength = 0;
+            classNameChanged();
+            srcGroupNameDisplayed = false;
+            setNavigationFilterEnabled(false);
+        } finally {
+            ignoreClsNameChanges = false;
+            programmaticChange = false;
+        }
+        if (checkClassNameValidity()) {
+            checkSelectedClassExists();
+        } else {
+            classExists = false;
+        }
+        setErrorMsg(msgStack.getDisplayedMessage());
+        setValidity();
+        
+        //PENDING - if possible, we should pre-set the test source group
+        //          corresponding to the currently selected node
+        updateLocationComboBox();
+        updateTargetFolderData();           //sets also 'testRootFolder'
+        updateCreatedFileName();
+        
+        srcFile = null;
+        
+        if (!multipleSourceRoots) {
+            setInteractionRestrictionsEnabled(false);
+        } else {
+            AbstractDocument doc = (AbstractDocument)
+                                   tfClassToTest.getDocument();
+            if (clsNameDocumentFilter == null) {
+                clsNameDocumentFilter = new ClsNameDocumentFilter();
+            }
+            if (doc.getDocumentFilter() != clsNameDocumentFilter) {
+                doc.setDocumentFilter(clsNameDocumentFilter);
+            }
+            setInteractionRestrictionsEnabled(true);
+        }
     }
+    
+    /**
+     */
+    void cleanUp() {
+        setInteractionRestrictionsEnabled(false);
+    }
+    
+    /**
+     * <!-- PENDING -->
+     */
+    private void setInteractionRestrictionsEnabled(boolean enabled) {
+        if (enabled == interactionRestrictionsEnabled) {
+            return;
+        }
+        
+        class DisplayabilityListener implements HierarchyListener {
+            public void hierarchyChanged(HierarchyEvent e) {
+                long flags = e.getChangeFlags();
+                if ((flags & HierarchyEvent.DISPLAYABILITY_CHANGED) != 0) {
+                    if (visualComp.isDisplayable()) {
+                        if (interactionRestrictionsEnabled) {
+                            setInteractionRestrictionsActive(true);
+                        }
+                    } else {
+                        setInteractionRestrictionsActive(false);
+                    }
+                }
+            }
+        }
+        
+        if (enabled) {
+            this.interactionRestrictionsEnabled = true;
+            
+            assert displayabilityListener == null;
+            displayabilityListener = new DisplayabilityListener();
+            visualComp.addHierarchyListener(displayabilityListener);
+
+            if (visualComp.isDisplayable()) {
+                setInteractionRestrictionsActive(true);
+            }
+        } else {
+            this.interactionRestrictionsEnabled = false;
+            
+            setInteractionRestrictionsActive(false);
+            
+            visualComp.removeHierarchyListener(displayabilityListener);
+            displayabilityListener = null;
+        }
+    }
+    
+    /**
+     * Activates or deactivates the focus detection mechanism.
+     * <!-- PENDING -->
+     */
+    private void setInteractionRestrictionsActive(boolean active) {
+        if (active == this.interactionRestrictionsActive) {
+            return;
+        }
+        
+        if (active) {
+            tryActivateInteractionRestrictions();
+        } else {
+            deactivateInteractionRestrictions();
+        }
+    }
+    
+    /**
+     */
+    private void tryActivateInteractionRestrictions() {
+        assert interactionRestrictionsActive == false;
+        assert interactionRestrictionsEnabled;
+
+        if (rootPane == null) {
+            rootPane = SwingUtilities.getRootPane(visualComp);
+        }
+        
+        if (rootPane != null) {
+            defaultButton = rootPane.getDefaultButton();
+            if (defaultButton != null) {
+                activateInteractionRestrictions();
+            }
+        }
+    }
+    
+    /**
+     */
+    private void activateInteractionRestrictions() {
+        assert interactionRestrictionsActive == false;
+        assert (rootPane != null) && (defaultButton != null);
+        
+        if ((mouseBlocked == null) || (mnemonicBlocked == null)) {
+            findComponentsToBlock();
+            assert (mouseBlocked != null) && (mnemonicBlocked != null);
+        }
+        blockDefaultRootPaneAction();
+        blockMnemonics();
+        setMouseClicksBlockingActive(!interactionRestrictionsSuspended);
+        
+        interactionRestrictionsActive = true;
+    }
+    
+    /**
+     */
+    private void deactivateInteractionRestrictions() {
+        assert interactionRestrictionsActive == true;
+        assert (defaultButton != null) && (rootPane != null);
+        
+        setMouseClicksBlockingActive(false);
+        unblockMnemonics();
+        unblockDefaultRootPaneAction();
+        
+        defaultButton = null;
+        rootPane = null;
+
+        interactionRestrictionsActive = false;
+        interactionRestrictionsSuspended = false;
+    }
+    
+    /**
+     */
+    private void setInteractionRestrictionsSuspended(boolean suspended) {
+        if (suspended != this.interactionRestrictionsSuspended) {
+            setMouseClicksBlockingActive(interactionRestrictionsActive
+                                         && !suspended);
+            this.interactionRestrictionsSuspended = suspended;
+        }
+    }
+    
+    /**
+     */
+    private void setMouseClicksBlockingActive(boolean blockingActive) {
+        if (blockingActive != this.mouseClicksBlocked) {
+            if (blockingActive) {
+                blockMouseClicks();
+            } else {
+                unblockMouseClicks();
+            }
+            this.mouseClicksBlocked = blockingActive;
+        }
+    }
+    
+    /**
+     * Searches the visual component and collects components
+     * on which mouse events or activation by mnemonics needs to be check
+     * and evaluated.
+     *
+     * @see  #mouseBlocked
+     * @see  #mnemonicBlocked
+     */
+    private void findComponentsToBlock() {
+        assert rootPane != null;
+        
+        final Collection/*<Component>*/ mouseBlocked
+                = new ArrayList/*<Component>*/(20);
+        final Collection/*<JComponent>*/ mnemBlocked
+                = new ArrayList/*<JComponent>*/(20);
+
+        final List stack = new ArrayList/*<Component>*/(16);
+        stack.add(rootPane.getContentPane());
+        int lastIndex = 0;
+        
+        while (lastIndex != -1) {
+            
+            Component c = (Component) stack.remove(lastIndex--);
+            
+            if (!c.isVisible()) {
+                continue;
+            }
+            
+            if (c instanceof JLabel) {
+                JLabel lbl = (JLabel) c;
+                Component labelFor = lbl.getLabelFor();
+                if ((labelFor != null) && (labelFor != tfClassToTest)
+                        && (lbl.getDisplayedMnemonic() != 0)) {
+                    mnemBlocked.add(lbl);
+                }
+            } else if (c instanceof AbstractButton) {
+                if (c != btnBrowse) {
+                    AbstractButton btn = (AbstractButton) c;
+                    mouseBlocked.add(btn);
+                    if (btn.getMnemonic() != 0) {
+                        mnemBlocked.add(btn);
+                    }
+                }
+            } else if (!(c instanceof Container)) {
+                if (c.isFocusable() && (c != tfClassToTest)) {
+                    mouseBlocked.add(c);
+                }
+            } else {
+                Component[] content = ((Container) c).getComponents();
+                switch (content.length) {
+                    case 0:
+                        break;
+                    case 1:
+                        stack.add(content[0]);
+                        lastIndex++;
+                        break;
+                    default:
+                        stack.addAll(Arrays.asList(content));
+                        lastIndex += content.length;
+                        break;
+                }
+            }
+        }
+        //mouseBlocked.add(defaultButton);
+        //mnemBlocked.add(defaultButton);
+        
+        this.mouseBlocked = new Component[mouseBlocked.size()];
+        if (mouseBlocked.size() != 0) {
+            mouseBlocked.toArray(this.mouseBlocked);
+        }
+        this.mnemonicBlocked = new JComponent[mnemBlocked.size()];
+        if (mnemBlocked.size() != 0) {
+            mnemBlocked.toArray(this.mnemonicBlocked);
+        }
+    }
+    
+    /**
+     */
+    private void blockDefaultRootPaneAction() {
+        assert (rootPane != null) && (defaultButton != null)
+               && (rootPane.getDefaultButton() == defaultButton);
+        
+        final String actionKey1 = "press";                              //NOI18N
+        final String actionKey2 = "pressed";                            //NOI18N
+        String actionKey;
+        
+        ActionMap actionMap = rootPane.getActionMap();
+        
+        Action originalAction = actionMap.get(actionKey = actionKey1);
+        if (originalAction == null) {
+            originalAction = actionMap.get(actionKey = actionKey2);
+        }
+        assert originalAction != null;
+        
+        if (originalAction == null) {
+            return;
+        }
+        
+        actionMap.put(actionKey, new SelectSrcGrpAction(rootPane,
+                                                        originalAction));
+        rootPaneDefaultActionKey = actionKey;
+        rootPaneDefaultAction = originalAction;
+    }
+    
+    /**
+     */
+    private void unblockDefaultRootPaneAction() {
+        assert rootPane != null;
+        
+        if (rootPaneDefaultAction == null) {
+            
+            /* blockDefaultRootPaneAction() did not pass */
+            return;
+        }
+        
+        rootPane.getActionMap().put(rootPaneDefaultActionKey,
+                                    rootPaneDefaultAction);
+        
+        rootPaneDefaultActionKey = null;
+        rootPaneDefaultAction = null;
+    }
+    
+    /**
+     * Modifies behaviour of the default button.
+     */
+    private void blockMnemonics() {
+        assert rootPane != null;
+        
+        if (actionMappingInfo == null) {
+            findActionMappings();
+        }
+        
+        assert actionMappingInfo != null;
+        assert actionMappingInfo.length == mnemonicBlocked.length;
+        
+        final JComponent[] comps = mnemonicBlocked;
+        for (int i = 0; i < comps.length; i++) {
+            ActionMappingInfo mappingInfo = actionMappingInfo[i];
+            if (mappingInfo != null) {
+                comps[i].getActionMap().put(
+                        mappingInfo.actionKey,
+                        new SelectSrcGrpAction(comps[i],
+                                               mappingInfo.originalAction));
+            } else if (comps[i] instanceof JLabel) {
+                ActionMap map = new JLabelActionMap(comps[i]);
+                map.setParent(comps[i].getActionMap());
+                comps[i].setActionMap(map);
+                continue;
+            }
+        }
+    }
+    
+    /**
+     */
+    private void unblockMnemonics() {
+        assert rootPane != null;
+        
+        if (actionMappingInfo == null) {
+            
+            /* blockMnemonics() did not pass */
+            return;
+        }
+        
+        assert actionMappingInfo.length == mnemonicBlocked.length;
+        
+        final JComponent[] comps = mnemonicBlocked;
+        for (int i = 0; i < comps.length; i++) {
+            ActionMappingInfo mappingInfo = actionMappingInfo[i];
+            if (mappingInfo != null) {
+                comps[i].getActionMap().put(
+                        mappingInfo.actionKey,
+                        mappingInfo.inProximateActionMap
+                                ? mappingInfo.originalAction
+                                : (Action) null);
+            } else if (comps[i] instanceof JLabel) {
+                comps[i].setActionMap(comps[i].getActionMap().getParent());
+            }
+        }
+    }
+    
+    /**
+     */
+    private void findActionMappings() {
+        assert mnemonicBlocked != null;
+        
+        final String actionKey1 = "pressed";                            //NOI18N
+        final String actionKey2 = "press";                              //NOI18N
+        
+        actionMappingInfo = new ActionMappingInfo[mnemonicBlocked.length];
+        
+        final JComponent[] comps = mnemonicBlocked;
+        for (int i = 0; i < comps.length; i++) {
+            JComponent c = comps[i];
+            
+            ActionMap actionMap = comps[i].getActionMap();
+            
+            String primaryKey = actionKey1;
+            String secondaryKey = actionKey2;
+            
+            if (c instanceof JLabel) {
+                actionMappingInfo[i] = null;
+                continue;
+            }
+            
+            String actionKey;
+            Action originalAction = actionMap.get(actionKey = primaryKey);
+            if (originalAction == null) {
+                originalAction = actionMap.get(actionKey = secondaryKey);
+            }
+            if (originalAction == null) {
+                ErrorManager.getDefault()
+                .log(ErrorManager.EXCEPTION,
+                     "JUnitWizard - Test for Existing Class: "          //NOI18N
+                     + "press action not found for a "                  //NOI18N
+                     + c.getClass().getName() + " component");          //NOI18N
+                actionMappingInfo[i] = null;
+                continue;
+            }
+            
+            ActionMappingInfo mappingInfo = new ActionMappingInfo();
+            mappingInfo.actionKey = actionKey;
+            mappingInfo.originalAction = originalAction;
+            /*mappingInfo.inProximateActionMap = false;*/     //it's the default
+            
+            /* find whether the mapping is defined in the proximate ActionMap */
+            final String keyToFind = actionKey;
+            final Object[] keys = actionMap.keys();
+            if (keys != null) {
+                for (int j = 0; j < keys.length; j++) {
+                    if (keyToFind.equals(keys[j])) {
+                        mappingInfo.inProximateActionMap = true;
+                        break;
+                    }
+                }
+            }
+
+            actionMappingInfo[i] = mappingInfo;
+        }
+    }
+    
+    /**
+     * Contains information about <code>ActionMap</code> mapping
+     * of a UI component.
+     * There is one instance of this class per each JComponent
+     * in the {@link #mnemonicBlocked} array.
+     */
+    private class ActionMappingInfo {
+        /** action key for action which activates the component */
+        String actionKey;
+        /** original action mapped to the actionKey */
+        Action originalAction;
+        /**
+         * true if the mapping was defined in the component's
+         * proximate ActionMap; false otherwise
+         */
+        boolean inProximateActionMap;
+    }
+    
+    /**
+     * <!-- PENDING -->
+     */
+    final class JLabelActionMap extends ActionMap {
+        
+        private final Component component;
+        
+        JLabelActionMap(Component comp) {
+            super();
+            this.component = comp;
+        }
+        
+        public Action get(Object key) {
+            if (key.equals("press")) {                                  //NOI18N
+                Action defaultAction = super.get(key);
+                return (defaultAction != null)
+                       ? new SelectSrcGrpAction(component, defaultAction)
+                       : null;
+            } else {
+                return super.get(key);
+            }
+        }
+        
+    }
+    
+    /**
+     * Sets up a glass pane - one part of the focus change detection mechanism.
+     */
+    private void blockMouseClicks() {
+        assert rootPane != null;
+
+        final Component glassPane = rootPane.getGlassPane();
+        
+        if (glassPaneListener == null) {
+            glassPaneListener = new GlassPaneListener();
+        }
+        glassPane.addMouseListener(glassPaneListener);
+        glassPane.addMouseMotionListener(glassPaneListener);
+        glassPane.setVisible(true);
+    }
+    
+    /**
+     * Cleans up a glass pane - one part of the focus change detection
+     * mechanism.
+     */
+    private void unblockMouseClicks() {
+        assert rootPane != null;
+        
+        if (glassPaneListener == null) {
+            return;
+        }
+        
+        final Component glassPane = rootPane.getGlassPane();
+        
+        glassPane.setVisible(false);
+        glassPane.removeMouseMotionListener(glassPaneListener);
+        glassPane.removeMouseListener(glassPaneListener);
+    }
+
+    /**
+     *
+     */
+    final class GlassPaneListener implements MouseInputListener {
+        final Component glassPane = rootPane.getGlassPane();
+        final Component layeredPane = rootPane.getLayeredPane();
+        final Container contentPane = rootPane.getContentPane();
+        
+        public void mouseMoved(MouseEvent e) {
+            redispatchEvent(e);
+        }
+        public void mouseDragged(MouseEvent e) {
+            redispatchEvent(e);
+        }
+        public void mouseClicked(MouseEvent e) {
+            redispatchEvent(e);
+        }
+        public void mouseEntered(MouseEvent e) {
+            redispatchEvent(e);
+        }
+        public void mouseExited(MouseEvent e) {
+            redispatchEvent(e);
+        }
+        public void mousePressed(MouseEvent e) {
+            evaluateEvent(e);
+        }
+        public void mouseReleased(MouseEvent e) {
+            redispatchEvent(e);
+        }
+        private void evaluateEvent(MouseEvent e) {
+            assert multipleSourceRoots;
+            
+            Component component = getDeepestComponent(e);
+            if (component == null) {
+                return;
+            }
+
+            boolean isBlocked = false;
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                final Component[] blocked = mouseBlocked;
+                for (int i = 0; i < blocked.length; i++) {
+                    if (component == blocked[i]) {
+                        isBlocked = true;
+                        break;
+                    }
+                }
+            }
+            
+            boolean askUserToChoose;
+            SourceGroup[] candidates = null;
+            if (!isBlocked || interactionRestrictionsSuspended) {
+                askUserToChoose = false;
+            } else if (component == defaultButton) {
+                candidates = findParentGroupCandidates();
+                askUserToChoose = (candidates.length > 1);
+            } else if (!SwingUtilities.isDescendingFrom(component,
+                                                        visualComp)) {
+                askUserToChoose = false;
+            } else {
+                candidates = findParentGroupCandidates();
+                askUserToChoose = (candidates.length > 1);
+            }
+            
+            assert (askUserToChoose == false) || (candidates.length > 1);
+            
+            if (askUserToChoose) {
+                SourceGroup srcGroup = chooseSrcGroup(candidates);
+                if (srcGroup != null) {
+                    setSelectedSrcGroup(srcGroup);
+                    focusGainAllowedFor = component;
+                    component.requestFocus();
+                }
+            } else {
+                if (candidates != null) {
+                    assert candidates.length == 1;
+                    
+                    setSelectedSrcGroup(candidates[0]);
+                }
+                focusGainAllowedFor = component;
+                try {
+                    redispatchEvent(e, component);
+                } finally {
+                    clearFocusGainAllowedVar();
+                }
+            }
+        }
+        private void redispatchEvent(MouseEvent e) {
+            Component deepestComp = getDeepestComponent(e);
+            if (deepestComp != null) {
+                redispatchEvent(e, deepestComp);
+            }
+        }
+        private void redispatchEvent(MouseEvent e, Component component) {
+            Point componentPoint
+                    = SwingUtilities.convertPoint(glassPane,
+                                                  e.getPoint(),
+                                                  component);
+            component.dispatchEvent(
+                    new MouseEvent(component,
+                                   e.getID(),
+                                   e.getWhen(),
+                                   e.getModifiers(),
+                                   componentPoint.x,
+                                   componentPoint.y,
+                                   e.getClickCount(),
+                                   e.isPopupTrigger()));
+        }
+        private Component getDeepestComponent(MouseEvent e) {
+            Point contentPanePoint
+                    = SwingUtilities.convertPoint(glassPane,
+                                                  e.getPoint(),
+                                                  contentPane);
+            return SwingUtilities.getDeepestComponentAt(
+                            contentPane,
+                            contentPanePoint.x,
+                            contentPanePoint.y);
+        }
+    }
+    
+    /**
+     * Action that is activated by a mnemonic keystroke.
+     */
+    private class SelectSrcGrpAction extends AbstractAction {
+        private final Component component;
+        private final Action delegate;
+        public SelectSrcGrpAction(Component comp, Action delegate) {
+            this.component = comp;
+            this.delegate = delegate;
+        }
+        public void actionPerformed(ActionEvent e) {
+            assert multipleSourceRoots;
+            
+            boolean askUserToChoose;
+            SourceGroup[] candidates = null;
+            if (interactionRestrictionsSuspended) {
+                askUserToChoose = false;
+            } else if ((component == defaultButton)
+                       || (component == rootPane)) {
+                candidates = findParentGroupCandidates();
+                askUserToChoose = (candidates.length > 1);
+            } else if (!SwingUtilities.isDescendingFrom(component,
+                                                        visualComp)) {
+                askUserToChoose = false;
+            } else {
+                candidates = findParentGroupCandidates();
+                askUserToChoose = (candidates.length > 1);
+            }
+            
+            assert (askUserToChoose == false) || (candidates.length > 1);
+            
+            if (askUserToChoose) {
+                SourceGroup srcGroup = chooseSrcGroup(candidates);
+                if (srcGroup != null) {
+                    setSelectedSrcGroup(srcGroup);
+                    if (component == rootPane) {
+                        defaultButton.requestFocus();
+                    } else {
+                        component.requestFocus();
+                    }
+                }
+            } else {
+                if (candidates != null) {
+                    assert candidates.length == 1;
+                    
+                    setSelectedSrcGroup(candidates[0]);
+                }
+                redispatchEvent(e);
+            }
+        }
+        private void redispatchEvent(ActionEvent e) {
+            focusGainAllowedFor = component;
+            try {
+                delegate.actionPerformed(e);
+            } finally {
+                clearFocusGainAllowedVar();
+            }
+        }
+        public boolean isEnabled() {
+            return delegate.isEnabled();
+        }
+    }
+    
+    /**
+     * <!-- PENDING -->
+     */
+    private class ClsNameDocumentFilter extends DocumentFilter {
+        public void replace(DocumentFilter.FilterBypass bypass,
+                            int offset,
+                            int length,
+                            String text,
+                            AttributeSet attrs) throws BadLocationException {
+            if (!programmaticChange && srcGroupNameDisplayed) {
+                removeSrcGroupName(bypass);
+            }
+            super.replace(bypass, offset, length, text, attrs);
+        }
+        public void insertString(
+                            DocumentFilter.FilterBypass bypass,
+                            int offset,
+                            String string,
+                            AttributeSet attr) throws BadLocationException {
+            if (!programmaticChange && srcGroupNameDisplayed) {
+                removeSrcGroupName(bypass);
+            }
+            super.insertString(bypass, offset, string, attr);
+        }
+        public void remove(DocumentFilter.FilterBypass bypass,
+                           int offset,
+                           int length) throws BadLocationException {
+            if (!programmaticChange && srcGroupNameDisplayed) {
+                removeSrcGroupName(bypass);
+            }
+            super.remove(bypass, offset, length);
+        }
+        private void removeSrcGroupName(DocumentFilter.FilterBypass bypass)
+                                                throws BadLocationException {
+            bypass.remove(classNameLength,
+                          tfClassToTest.getText().length() - classNameLength);
+            srcGroupNameDisplayed = false;
+            setNavigationFilterEnabled(false);
+        }
+    }
+    
+    /**
+     * <!-- PENDING -->
+     */
+    private class ClsNameNavigationFilter extends NavigationFilter {
+        public void setDot(NavigationFilter.FilterBypass bypass,
+                           int dot,
+                           Position.Bias bias) {
+            if (dot > classNameLength) {
+                bypass.setDot(classNameLength, bias);
+            } else {
+                super.setDot(bypass, dot, bias);
+            }
+        }
+        public void moveDot(NavigationFilter.FilterBypass bypass,
+                           int dot,
+                           Position.Bias bias) {
+            if (dot > classNameLength) {
+                bypass.moveDot(classNameLength, bias);
+            } else {
+                super.moveDot(bypass, dot, bias);
+            }
+        }
+        private void ensureCursorInRange() {
+            if (srcGroupNameDisplayed) {
+                if (tfClassToTest.getCaretPosition() > classNameLength) {
+                    tfClassToTest.setCaretPosition(classNameLength);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Sends a request to clear the {@link #focusGainAllowedFor} variable
+     * to the end of the event queue.
+     */
+    private void clearFocusGainAllowedVar() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                focusGainAllowedFor = null;
+            }
+        });
+    }
+    
+    /**
+     */
+    private static boolean checkObjChanged(Object oldObj, Object newObj) {
+        return ((oldObj != null) || (newObj != null))
+               && ((oldObj == null) || !oldObj.equals(newObj));
+    }
+    
+    /* *
+     * /
+    private static void printCallstack(String header) {
+        
+        //PENDING - this method is not needed in the final version
+        
+        if (header != null) {
+            System.out.println(header);
+        }
+
+        StackTraceElement[] frames = new Exception().getStackTrace();
+        int count = Math.min(5, frames.length);
+        for (int i = 1; i < frames.length; i++) {
+            String methodName = frames[i].getMethodName();
+            if (!methodName.startsWith("access$")) {
+                System.out.println("   " + methodName + "(...)");
+                if (--count == 0) {
+                    break;
+                }
+            }
+        }
+        System.out.println();
+    }
+     */
     
 }

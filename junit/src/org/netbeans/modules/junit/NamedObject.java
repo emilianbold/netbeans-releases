@@ -16,7 +16,7 @@ package org.netbeans.modules.junit;
 /**
  * Object wrapper which allows to assign a name to an object.
  */
-public class NamedObject {
+public final class NamedObject {
     
     /** name of the object */
     public String  name;
@@ -30,6 +30,9 @@ public class NamedObject {
      * @param  name    name of this object
      */
     public NamedObject(Object object, String name) {
+        if ((object == null) || (name == null)) {
+            throw new IllegalArgumentException("null");                 //NOI18N
+        }
         this.object = object;
         this.name = name;
     }
@@ -42,4 +45,28 @@ public class NamedObject {
     public String toString() {
         return name;
     }
+    
+    /**
+     */
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        if (!o.getClass().equals(NamedObject.class)) {
+            return false;
+        }
+        final NamedObject otherNamed = (NamedObject) o;
+        return name.equals(otherNamed.name)
+               && object.equals(otherNamed.object);
+    }
+    
+    /**
+     */
+    public int hashCode() {
+        return name.hashCode() + object.hashCode();
+    }
+    
 }
