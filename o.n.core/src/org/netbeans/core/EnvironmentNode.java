@@ -48,17 +48,29 @@ final class EnvironmentNode extends AbstractNode {
 
   /** base instance of the node */
   private static EnvironmentNode node;
+
+  /** children to use */
+  private static Children children;
   
-
-  /** used during deserialization */
-  private transient Node[] ret;
-
-  private Node paletteContextNode;
 
   /** Constructor */
   private EnvironmentNode () {
-    super (new Children.Array());
+    super (children = new Children.Array());
     initialize();
+  }
+
+  /** Method to add an node to the environment.
+  */
+  public static void addNode (Node n) {
+    getDefault ();
+    
+    children.add (new Node[] { n });
+  }
+  
+  /** Method to add an node to the environment.
+  */
+  public static void removeNode (Node n) {
+    children.remove (new Node[] { n });
   }
 
   /** Default instance */
@@ -175,6 +187,8 @@ final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  9    Gandalf   1.8         2/25/99  Jaroslav Tulach Change of clipboard 
+ *       management  
  *  8    Gandalf   1.7         2/12/99  Ian Formanek    Reflected renaming 
  *       Desktop -> Workspace
  *  7    Gandalf   1.6         1/25/99  Jaroslav Tulach Added default project, 
