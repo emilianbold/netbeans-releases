@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency/>
