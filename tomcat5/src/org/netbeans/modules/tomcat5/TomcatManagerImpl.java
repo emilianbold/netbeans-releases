@@ -21,9 +21,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.StringTokenizer;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -32,7 +30,6 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.tomcat5.config.Context;
@@ -63,6 +60,9 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
     
     /** Command that is executed on running server. */
     private String command;
+    
+    /** Output of executed command (parsed for list commands). */
+    private String output;
     
     /** Command type used for events. */
     private CommandType cmdType;
@@ -160,6 +160,49 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
     
+    /** Lists web modules.
+     * This method runs synchronously.
+     * @param target server target
+     * @param state one of ENUM_ constants.
+     */
+    TargetModuleID[] list (Target t, int state) {
+        this.tmId = tmId;
+        command = "list"; // NOI18N
+        run ();
+        // PENDING : error check
+        java.util.List modules = new java.util.ArrayList ();
+        boolean first = true;
+        StringTokenizer stok = new StringTokenizer (output, "\r\n");    // NOI18N
+        while (stok.hasMoreTokens ()) {
+            String line = stok.nextToken ();
+            if (first) {
+                first = false;
+            }
+            else {
+                StringTokenizer ltok = new StringTokenizer (line, ":"); // NOI18N
+                try {
+                    String ctx = ltok.nextToken ();
+                    String s = ltok.nextToken ();
+                    String tag = ltok.nextToken ();
+                    String path = ltok.nextToken ();
+                    if ("running".equals (s)
+                    &&  state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_RUNNING) {
+                        modules.add (new TomcatModule (t, path));
+                    }
+                    if ("stopped".equals (s)
+                    &&  state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_NONRUNNING) {
+                        modules.add (new TomcatModule (t, path));
+                    }
+                }
+                catch (java.util.NoSuchElementException e) {
+                    // invalid value
+                    e.printStackTrace ();
+                }
+            }
+        }
+        return (TargetModuleID [])modules.toArray ();
+    }
+    
     /** JSR88 method. */
     public ClientConfiguration getClientConfiguration (TargetModuleID targetModuleID) {
         return null; // PENDING
@@ -211,6 +254,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
         TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, command);
         pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, "" /* message */, StateType.RUNNING)); // PENDING
         
+        output = ""; 
         // similar to Tomcat's Ant task
         URLConnection conn = null;
         InputStreamReader reader = null;
@@ -278,8 +322,10 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
             String msg = null;
             boolean first = true;
             while (true) {
+                // PENDING append to output var
                 int ch = reader.read();
                 if (ch < 0) {
+                    output += buff.toString ()+"\n";    // NOI18N
                     break;
                 } else if ((ch == '\r') || (ch == '\n')) {
                     String line = buff.toString();
@@ -295,6 +341,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
                         }
                         first = false;
                     }
+                    output += buff.toString ()+"\n";    // NOI18N
                 } else {
                     buff.append((char) ch);
                 }

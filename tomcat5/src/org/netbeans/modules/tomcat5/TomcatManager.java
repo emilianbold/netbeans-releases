@@ -38,13 +38,13 @@ import org.openide.ErrorManager;
 public class TomcatManager implements DeploymentManager {
 
     /** Enum value for get*Modules methods. */
-    private static final int ENUM_AVAILABLE = 0;
+    static final int ENUM_AVAILABLE = 0;
     
     /** Enum value for get*Modules methods. */
-    private static final int ENUM_RUNNING = 1;
+    static final int ENUM_RUNNING = 1;
     
     /** Enum value for get*Modules methods. */
-    private static final int ENUM_NONRUNNING = 2;
+    static final int ENUM_NONRUNNING = 2;
     
     
     /** Manager state. */
@@ -80,7 +80,6 @@ public class TomcatManager implements DeploymentManager {
             // parse home and base attrs
             final String home = "home=";
             final String base = ":base=";
-            String attrs = uri.substring (0, uriOffset);
             int homeOffset = uri.indexOf (home) + home.length ();
             int baseOffset = uri.indexOf (base, homeOffset);
             if (homeOffset >= home.length ()) {
@@ -215,8 +214,8 @@ public class TomcatManager implements DeploymentManager {
             return new TargetModuleID[0];
         }
         
-        // PENDING 
-        return null;
+        TomcatManagerImpl impl = new TomcatManagerImpl (this);
+        return impl.list (targetList[0], state);
     }
     
     
@@ -340,7 +339,7 @@ public class TomcatManager implements DeploymentManager {
         }
         
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("TomcatManager.distribute archive="+moduleArchive.getPath ()+", plan="+deplPlan.getPath ());
+            TomcatFactory.getEM ().log ("TomcatManager.distribute archive="+moduleArchive.getPath ()+", plan="+deplPlan.getPath ()); // NOI18N
         }
         TomcatManagerImpl impl = new TomcatManagerImpl (this);
         impl.install (targets[0], moduleArchive, deplPlan);
