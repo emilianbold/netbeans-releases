@@ -255,6 +255,8 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
                 
                 <folder name="FoldMaintainer">
+                    <file name="org-netbeans-lib-editor-fold-CustomFoldMaintainer$Factory.instance"/>
+                    <attr name="org-netbeans-lib-editor-fold-CustomFoldMaintainer$Factory.instance/org-netbeans-modules-editor-java-NbJavaFoldMaintainer$Factory.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-editor-java-NbJavaFoldMaintainer$Factory.instance"/>
                 </folder>
                 

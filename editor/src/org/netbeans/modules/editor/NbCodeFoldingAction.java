@@ -110,14 +110,18 @@ public  class NbCodeFoldingAction extends SystemAction implements Presenter.Menu
         public JPopupMenu getPopupMenu(){
             JPopupMenu pm = super.getPopupMenu();
             pm.removeAll();
-            Action action = getKit().getActionByName(NbEditorKit.generateFoldPopupAction);
-            if (action instanceof BaseAction){
-                JTextComponent component = Utilities.getFocusedComponent();
-                JMenu menu = (JMenu)((BaseAction)action).getPopupMenuItem(component);
-                if (menu!=null){
-                    Component comps[] = menu.getMenuComponents();
-                    for (int i=0; i<comps.length; i++){
-                        pm.add(comps[i]);
+            BaseKit bKit = getKit();
+            if (bKit==null) bKit = BaseKit.getKit(NbEditorKit.class);
+            if (bKit!=null){
+                Action action = bKit.getActionByName(NbEditorKit.generateFoldPopupAction);
+                if (action instanceof BaseAction){
+                    JTextComponent component = Utilities.getFocusedComponent();
+                    JMenu menu = (JMenu)((BaseAction)action).getPopupMenuItem(component);
+                    if (menu!=null){
+                        Component comps[] = menu.getMenuComponents();
+                        for (int i=0; i<comps.length; i++){
+                            pm.add(comps[i]);
+                        }
                     }
                 }
             }
