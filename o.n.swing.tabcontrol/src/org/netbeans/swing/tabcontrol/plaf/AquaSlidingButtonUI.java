@@ -23,14 +23,7 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
-import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonModel;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.text.View;
@@ -65,14 +58,21 @@ public class AquaSlidingButtonUI extends SlidingButtonUI {
         }
         return AQUA_INSTANCE;
     }
-    
+
+    public void installUI(JComponent c) {
+        super.installUI(c);
+        c.setFont (UIManager.getFont("Tree.font"));
+    }
+
+
     protected void installBorder(AbstractButton b) {
         b.setBorder(BorderFactory.createEmptyBorder(5,2,2,2));    
     }
     
-    
+   private ChicletWrapper chic = new ChicletWrapper();
    protected void paintBackground(Graphics2D graph, AbstractButton b) {
-        GenericGlowingChiclet chic = GenericGlowingChiclet.INSTANCE;
+        chic.setNotch(false, false);
+
         chic.setState(0);
         chic.setArcs(0.5f, 0.5f, 0.5f, 0.5f);
         chic.setBounds(0, 1, b.getWidth() - 2, b.getHeight() - 2);
@@ -82,23 +82,12 @@ public class AquaSlidingButtonUI extends SlidingButtonUI {
     }    
     
     protected void paintButtonPressed(Graphics graph, AbstractButton b) {
-        GenericGlowingChiclet chic = GenericGlowingChiclet.INSTANCE;
+        chic.setNotch(false, false);
         int state = 0;
-//        if (b.getModel().isPressed()) {
-//            chic.setColors(selectedPressedActive[0], selectedPressedActive[1], selectedPressedActive[2], selectedPressedActive[3]);
-//        } else {
-//            chic.setColors(selectedActive[0], selectedActive[1], selectedActive[2], selectedActive[3]);
-//        }
-        state |= b.getModel().isSelected() ? chic.STATE_SELECTED : 0;
-        state |= b.getModel().isPressed() ? chic.STATE_PRESSED : 0;
-        state |= b.getModel().isRollover() ? chic.STATE_ACTIVE : 0;
-//        System.out.println("state=" + state);
-        if (state != chic.STATE_ACTIVE) {
-            chic.setState(state);
-        } else {
-            // now we are only active (rollover).. have special colors..
-            chic.setColors(rollover[0], rollover[1], rollover[2], rollover[3]);
-        }
+        state |= b.getModel().isSelected() ? GenericGlowingChiclet.STATE_SELECTED : 0;
+        state |= b.getModel().isPressed() ? GenericGlowingChiclet.STATE_PRESSED : 0;
+        state |= b.getModel().isRollover() ? GenericGlowingChiclet.STATE_ACTIVE : 0;
+        chic.setState(state);
         chic.setArcs(0.5f, 0.5f, 0.5f, 0.5f);
         chic.setBounds(0, 1, b.getWidth() - 2, b.getHeight() - 2);
         chic.setAllowVertical(true);
