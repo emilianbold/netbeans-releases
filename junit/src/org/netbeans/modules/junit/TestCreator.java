@@ -21,13 +21,10 @@ package org.netbeans.modules.junit;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.*;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 
 import org.openide.util.NbBundle;
 import org.netbeans.jmi.javamodel.*;
 import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.api.mdr.MDRepository;
 
 
 /**
@@ -152,8 +149,6 @@ public class TestCreator extends java.lang.Object {
             Resource   tgtRes = tgtClass.getResource();
             tgtRes.setPackageName(packageName);
             
-            JavaModelPackage pkg = (JavaModelPackage)tgtRes.refImmediatePackage();
-
             addFrameworkImport(tgtRes);      
             // construct/update test class from the source class
             fillSuiteClass(listMembers, packageName, tgtClass);

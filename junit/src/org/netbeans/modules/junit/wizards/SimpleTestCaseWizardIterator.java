@@ -15,20 +15,14 @@ package org.netbeans.modules.junit.wizards;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.junit.CreateTestAction;
 import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitSettings;
@@ -39,7 +33,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
@@ -58,8 +51,6 @@ public class SimpleTestCaseWizardIterator
 
     /** index of step &quot;Name &amp; Location&quot; */
     private static final int INDEX_CHOOSE_CLASS = 2;
-    /** index of step &quot;Settings&quot; */
-    private static final int INDEX_SETTINGS = 3;
 
     /** name of panel &quot;Name &amp; Location&quot; */
     private final String nameChooseClass = NbBundle.getMessage(

@@ -112,7 +112,6 @@ public final class ClassNameTextField extends JTextField {
             return;
         }
         
-        String oldDefaultText = this.defaultText;
         this.defaultText = defaultText;
         
         if ((defaultText != null)
@@ -275,7 +274,6 @@ public final class ClassNameTextField extends JTextField {
          */
         public void insertUpdate(DocumentEvent documentEvent) {
             int newStatus;
-            int offset;
             boolean wasEmpty = (length == 0);
 
             if (documentEvent.getLength() != 1
@@ -337,7 +335,6 @@ public final class ClassNameTextField extends JTextField {
          */
         public void removeUpdate(DocumentEvent documentEvent) {
             int newStatus;
-            int offset;
 
             if (documentEvent.getLength() != 1
                     || (documentEvent.getOffset() != (length - 1))) {

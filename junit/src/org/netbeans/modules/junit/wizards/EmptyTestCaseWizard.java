@@ -13,26 +13,9 @@
 
 package org.netbeans.modules.junit.wizards;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.junit.CreateTestAction;
 import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.JUnitSettings;
-import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.NbBundle;
 
 /**
  * Wizard for an empty test case.

@@ -25,7 +25,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -34,7 +33,6 @@ import org.openide.NotifyDescriptor.Message;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -43,9 +41,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.jmi.javamodel.*;
-import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
-import org.openide.util.Utilities;
 import org.openide.filesystems.FileUtil;
 
 

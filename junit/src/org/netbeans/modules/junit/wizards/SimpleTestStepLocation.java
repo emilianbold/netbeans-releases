@@ -189,8 +189,6 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
      * true if the focus change detection mechanism is active
      */
     private boolean interactionRestrictionsActive = false;
-    /** */
-    private boolean focusChangeDetectionActive = false;
     /** <!-- PENDING --> */
     private boolean interactionRestrictionsSuspended = false;
     /** */
@@ -1074,7 +1072,6 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
         if (srcGroupNameDisplayed) {
             className = className.substring(0, classNameLength);
         }
-        String errMsgUpdate;
         
         if (className.length() == 0) {
             msgStack.clearMessage(MSG_LAYER_CLASSNAME);

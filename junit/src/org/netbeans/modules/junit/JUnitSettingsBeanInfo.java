@@ -16,13 +16,9 @@ package org.netbeans.modules.junit;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.TreeSet;
-import java.util.Enumeration;
 import java.awt.Image;
 import java.beans.*;
 
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**

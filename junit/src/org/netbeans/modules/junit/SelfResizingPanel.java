@@ -101,7 +101,6 @@ public class SelfResizingPanel extends JPanel {
      */
     protected void adjustWindowSize() {
         Dimension currSize = getSize();
-        int currWidth = currSize.width;
         int currHeight = currSize.height;
         int prefHeight = getPreferredSize().height;
         if (currHeight < prefHeight) {

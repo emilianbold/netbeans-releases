@@ -14,16 +14,12 @@
 package org.netbeans.modules.junit.wizards;
 
 import java.awt.Component;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.junit.GuiUtils;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;

@@ -127,8 +127,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      */
     private boolean isAcceptable;
     
-    /** */
-    private static final int MSG_TYPE_TEMPORARY = -1;
     /** layer index for a message about an empty set of target folders */
     private static final int MSG_TYPE_NO_TARGET_FOLDERS = 0;
     /** layer index for a message about invalid configuration of checkboxes */

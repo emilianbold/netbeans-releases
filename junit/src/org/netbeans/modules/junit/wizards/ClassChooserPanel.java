@@ -33,7 +33,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.junit.SizeRestrictedPanel;
 import org.openide.awt.Mnemonics;
-import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
 import org.openide.loaders.DataObject;
