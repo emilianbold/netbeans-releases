@@ -36,6 +36,7 @@ import org.netbeans.xtest.util.JNIKill;
 import org.netbeans.xtest.util.PNGEncoder;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
+import org.openide.loaders.DataObject;
 
 /**
  * Main part of XTest starter. Must not use anything outside lib/*.jar and lib/ext/*.jar.
@@ -358,6 +359,17 @@ public class Main extends Object {
                         System.out.println("Exception when terminating processes started from IDE");
                         e.printStackTrace();
                     }
+                    // discard all changes in modified files
+                    Object[] dobs = DataObject.getRegistry().getModifiedSet().toArray();
+                    if(dobs.length > 0) {
+                        errMan.log(ErrorManager.USER, new Date().toString() + ": discarding changes in unsaved files:");
+                        for(int i=0;i<dobs.length;i++) {
+                            DataObject obj = (DataObject)dobs[i];
+                            errMan.log(ErrorManager.USER, "        "+obj.getPrimaryFile().getPath());
+                            obj.setModified(false);
+                        }
+                    }
+                    // exit IDE
                     LifecycleManager.getDefault().exit();
                 }
             });
