@@ -290,7 +290,7 @@ public final class GlobalPathRegistry {
                     newSourceRoots.addAll(Arrays.asList(someRoots));
                 }
             }
-            this.sourceRoots = newSourceRoots;            
+            this.sourceRoots = Collections.unmodifiableSet(newSourceRoots);
         }
         return sourceRoots;
     }
