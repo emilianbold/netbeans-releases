@@ -48,6 +48,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
+
 /** Action sensitive to some cookie that does something useful.
  *
  * @author  vstejskal, David Konecny
@@ -146,7 +147,11 @@ public class CreateTestAction extends CookieAction {
             "MSG_StatusBar_CreateTest_Begin"); //NOI18N
         progress.displayStatusText(msg);
         
+        // results will be accumulated here
+        CreationResults results = new CreationResults();
+
         try {
+
             // go through all nodes
             for(int nodeIdx = 0; nodeIdx < nodes.length; nodeIdx++) {
                 if (hasParentAmongNodes(nodes, nodeIdx)) {
@@ -175,11 +180,38 @@ public class CreateTestAction extends CookieAction {
                 ArrayList cpItems = new ArrayList();
                 cpItems.add(ClassPathSupport.createResource(testRoot));
                 ClassPath testClassPath = ClassPathSupport.createClassPath(cpItems);
-                createTests(testClassPath, fo, doTestTempl, doSuiteTempl, null, progress);
+
+                try {
+                    results.combine(createTests(testClassPath, fo, doTestTempl, doSuiteTempl, null, progress));
+                } catch (CreationError e) {}
+
             }
+
         } finally {
             progress.hide();
         }
+
+        if (!results.getSkipped().isEmpty()) {
+            // something was skipped
+            if (results.getSkipped().size()==1) {
+                // one class? report it
+                TestUtil.notifyUser
+                    (NbBundle.getMessage(CreateTestAction.class,
+                                         "MSG_skipped_class",
+                                         ((ClassElement)results.getSkipped().iterator().next()).getName().getFullName()),
+                     NotifyDescriptor.INFORMATION_MESSAGE );
+
+            } else {
+                // more classes, report a general error
+                TestUtil.notifyUser
+                    (NbBundle.getMessage(CreateTestAction.class,
+                                         "MSG_skipped_classes"),
+                     NotifyDescriptor.INFORMATION_MESSAGE);
+            }
+                        
+        }
+
+
     }
     
     /**
@@ -242,52 +274,66 @@ public class CreateTestAction extends CookieAction {
         return doTarget;
     }
     
-    private boolean createTests(ClassPath testClassPath, FileObject foSource, 
+    private CreationResults createTests(ClassPath testClassPath, FileObject foSource, 
             DataObject doTestT, DataObject doSuiteT, LinkedList parentSuite,
-            ProgressIndicator progress) {
+            ProgressIndicator progress) throws CreationError {
+
                 
         if (foSource.isFolder()) {
             // recurse of subfolders
             FileObject  childs[] = foSource.getChildren();
             LinkedList  mySuite = new LinkedList();
-            
             progress.setMessage(getScanningMsg(foSource.getName()), false);
+
+            CreationResults results = new CreationResults();
+
             for( int i = 0; i < childs.length; i++) {
+
                 if (progress.isCanceled()) {
-                    return false;
+                    results.setAbborted();
+                    break;
                 }
+
                 if (childs[i].isData() && !("java".equals(childs[i].getExt()))) {
                     continue;
                 }
-                if (!createTests(testClassPath, childs[i], doTestT, doSuiteT, mySuite, progress)) {
-                    // aborted
-                    return false;
+
+                results.combine(createTests(testClassPath, childs[i], doTestT, doSuiteT, mySuite, progress));
+                if (results.isAbborted()) {
+                    break;
                 }
+
             }
             
-            if ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses())) {
+            if (!results.isAbborted() && ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses()))) {
                 createSuiteTest(testClassPath, DataFolder.findFolder(foSource), (String) null, mySuite, doSuiteT, parentSuite, progress);
             }
+
+            return results;
+
         } else {
-            createSingleTest(testClassPath, foSource, doTestT, doSuiteT, parentSuite, progress, true);
+            return createSingleTest(testClassPath, foSource, doTestT, doSuiteT, parentSuite, progress, true);
         }
-        return true;
     }
     
-    public static Set createSingleTest(ClassPath testClassPath, FileObject foSource,
+    public static CreationResults createSingleTest(ClassPath testClassPath, FileObject foSource,
             DataObject doTestT, DataObject doSuiteT, LinkedList parentSuite,
-            ProgressIndicator progress, boolean skipNonTestable) {
-                
+            ProgressIndicator progress, boolean skipNonTestable) 
+        throws CreationError
+    {
+
         DataObject dobj;
         try {
             dobj = DataObject.find(foSource);
         } catch (DataObjectNotFoundException ex) {
             ErrorManager.getDefault().log(ErrorManager.ERROR, ex.toString());
-            return null;
+            throw new CreationError(ex);
         }
 
+        // create tests for all classes in the source 
         ClassElement[] classSources = TestUtil.getAllClassElementsFromDataObject(dobj);
-        Set result = new HashSet(2 * classSources.length, .5f);
+        CreationResults result = new CreationResults(classSources.length);
+
         for (int i=0; i < classSources.length; i++) {
             ClassElement classSource = classSources[i];
             if (classSource == null) {
@@ -307,10 +353,10 @@ public class CreateTestAction extends CookieAction {
                 try {
                     TestCreator.createTestClass(foSource, classSource, doTarget.getPrimaryFile(), classTarget);
                     save(doTarget);
-                    result.add(doTarget);
+                    result.addCreated(doTarget);
                 } catch (Exception e) {
                     ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
-                    return null;
+                    throw new CreationError(e);
                 }
 
                 String name = classTarget.getName().getFullName();
@@ -321,11 +367,15 @@ public class CreateTestAction extends CookieAction {
             }
             else {
                 if (progress != null) {
+                    // ignoring because untestable
                     progress.setMessage(getIgnoringMsg(classSource.getName().getFullName()), false);
+                    result.addSkipped(classSource);
                 }
             }
         }
-        return !result.isEmpty() ? result : null;
+
+        return result;
+
     }
     
     private static DataObject getTestClass(ClassPath cp, String testClassName, DataObject doTemplate) {
@@ -397,4 +447,98 @@ public class CreateTestAction extends CookieAction {
                                          "FMT_generator_status_ignoring"); // NOI18N
         return MessageFormat.format(fmt, new Object[] { sourceName });
     }
+
+
+    
+    /**
+     * Error thrown by failed test creation. 
+     */
+    public static final class CreationError extends Exception {
+        public CreationError() {};
+        public CreationError(Throwable cause) {
+            super(cause);
+        }
+    };
+
+    /**
+     * Utility class representing the results of a test creation
+     * process. It gatheres all tests (as DataObject) created and all
+     * classes (as ClassElements) for which no test was created.
+     */
+    public static class CreationResults {
+        
+        Set created; // Set< createdTest : DataObject >
+        Set skipped; // Set< sourceClass : ClassElement >
+        boolean abborted = false;
+
+        public CreationResults() { this(20);}
+
+        public CreationResults(int expectedSize) {
+            created = new HashSet(expectedSize * 2 , 0.5f);
+            skipped = new HashSet(expectedSize * 2 , 0.5f);
+        }
+
+        public void setAbborted() { 
+            abborted = true;
+        }
+        
+        /**
+         * Returns true if the process of creation was abborted. The
+         * result contains the results gathered so far.
+         */
+        public boolean isAbborted() { 
+            return abborted;
+        }
+
+
+        /**
+         * Adds a new entry to the set of created tests.
+         * @return true if it was added, false if it was present before
+         */
+        public boolean addCreated(DataObject test) {
+            return created.add(test);
+        }
+
+        /**
+         * Adds a new <code>ClassElement</code> to the collection of
+         * skipped classes.
+         * @return true if it was added, false if it was present before
+         */
+        public boolean addSkipped(ClassElement c) {
+            return skipped.add(c);
+        }
+
+        /**
+         * Returns a set of classes that were skipped in the process.
+         * @return Set<ClassElement>
+         */
+        public Set getSkipped() {
+            return skipped;
+        }
+
+        /**
+         * Returns a set of test data objects created.
+         * @return Set<DataObject>
+         */ 
+        public Set getCreated() {
+            return created;
+        }
+
+        /**
+         * Combines two results into one. If any of the results is an
+         * abborted result, the combination is also abborted. The
+         * collections of created and skipped classes are unified.
+         * @param rhs the other CreationResult to combine into this
+         */
+        public void combine(CreationResults rhs) {
+            if (rhs.abborted) {
+                this.abborted = true;
+            }
+
+            this.created.addAll(rhs.created);
+            this.skipped.addAll(rhs.skipped);
+        }
+
+    }
+        
 }

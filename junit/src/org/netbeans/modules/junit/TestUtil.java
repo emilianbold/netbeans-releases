@@ -137,14 +137,21 @@ public class TestUtil {
     }
 
     /**
-     * Show error message box. User from OpenTestAction and CreateTestAction
-     * to notify user about problems during action execution.
+     * Show error message box. 
      */
     public static void notifyUser(String msg) {
-        NotifyDescriptor descr = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-        DialogDisplayer.getDefault().notify(descr);
+        notifyUser(msg, NotifyDescriptor.ERROR_MESSAGE);
     }
     
+    /**
+     * Show message box of the specified severity. 
+     */
+    public static void notifyUser(String msg, int errorLevel) {
+        NotifyDescriptor descr = new NotifyDescriptor.Message(msg, errorLevel);
+        DialogDisplayer.getDefault().notify(descr);
+    }
+
+
     
     // other misc methods
     

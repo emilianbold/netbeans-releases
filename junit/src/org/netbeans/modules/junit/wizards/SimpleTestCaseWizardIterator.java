@@ -275,14 +275,14 @@ public class SimpleTestCaseWizardIterator
                 new FileObject[] {testRootFolder});
                 
         /* create test class(es) for the selected source class: */
-        Set tests = CreateTestAction.createSingleTest(
+        try {
+            return CreateTestAction.createSingleTest(
                 testClassPath, classToTest,
                 templateDataObj, null,
-                null, null, false);
-        if (tests == null) {
+                null, null, false).getCreated();
+        } catch (CreateTestAction.CreationError ex) {
             throw new IOException();
         }
-        return tests;
     }
 
     /**
