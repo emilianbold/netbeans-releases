@@ -24,6 +24,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.dbschema.migration.archiver.XMLInputStream;
 
 import org.netbeans.modules.dbschema.util.NameUtil;
+import org.openide.loaders.DataObjectNotFoundException;
 
 public class SchemaElementUtil {
 
@@ -88,7 +89,13 @@ public class SchemaElementUtil {
 
                         if (dataObject != null)
                             se = (SchemaElement)dataObject.getCookie(SchemaElement.class);
-                    } catch (Exception e) {
+                    } 
+                    catch (ClassCastException e) {
+                        // really ugly, caused by faulty code in DBSchemaDataObject.getCookie(...)
+                        // just find it by unarchiving (below)
+                    }
+                    catch (DataObjectNotFoundException e) {
+                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
                         // just find it by unarchiving (below)
                     }
                     if (se == null) {
@@ -121,6 +128,7 @@ public class SchemaElementUtil {
 
                             org.openide.awt.StatusDisplayer.getDefault().setStatusText(""); //NOI18N
                         } catch (Exception e) {
+                            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
                             org.openide.awt.StatusDisplayer.getDefault().setStatusText(ResourceBundle.getBundle("org.netbeans.modules.dbschema.resources.Bundle").getString("CannotRetrieve")); //NOI18N
                         }
                     }
