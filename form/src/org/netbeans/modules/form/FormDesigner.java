@@ -17,6 +17,7 @@ import java.awt.*;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
+import javax.swing.border.*;
 import java.beans.*;
 
 import org.netbeans.core.spi.multiview.*;
@@ -80,6 +81,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     static final int MODE_SELECT = 0;
     static final int MODE_CONNECT = 1;
     static final int MODE_ADD = 2;
+    
+    private boolean initialized = false;
 
     private RADComponent connectionSource;
     private RADComponent connectionTarget;
@@ -92,15 +95,43 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     // ----------
     // constructors and setup
-
-    public FormDesigner() {
-        // this constructor is only for deserialization
-        this(null);
-    }
-
-    FormDesigner(FormModel formModel) {
+    
+    FormDesigner(FormEditorSupport fes) {
         setIcon(Utilities.loadImage(iconURL));
-
+        setLayout(new BorderLayout());
+        
+        FormLoaderSettings settings = FormLoaderSettings.getInstance();
+        Color backgroundColor = settings.getFormDesignerBackgroundColor();
+        Color borderColor = settings.getFormDesignerBorderColor();
+        
+        JPanel loadingPanel = new JPanel();
+        loadingPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 12, 12));
+        loadingPanel.setBackground(backgroundColor);
+        JLabel loadingLbl = new JLabel(FormUtils.getBundleString("LBL_FormLoading")); // NOI18N
+        loadingLbl.setOpaque(true);
+        loadingLbl.setPreferredSize(new Dimension(410,310));
+        loadingLbl.setHorizontalAlignment(SwingConstants.CENTER);
+        loadingPanel.add(loadingLbl);        
+        loadingLbl.setBorder(new CompoundBorder(new LineBorder(borderColor, 5),
+            new EmptyBorder(new Insets(6, 6, 6, 6))));
+        add(loadingPanel, BorderLayout.CENTER);
+        
+        formEditorSupport = fes;
+        
+        // add FormDataObject and FormDesigner to lookup so they can be obtained
+        // from multiview TopComponent
+        Lookup lookup = ComponentInspector.getInstance().setupActionMap(getActionMap());
+        associateLookup(new ProxyLookup(new Lookup[] {
+            lookup,
+            Lookups.fixed(new Object[] { formEditorSupport.getFormDataObject(),
+                                         this })
+        }));
+    }
+    
+    private void initialize() {
+        initialized = true;
+        removeAll();
+        
         formToolBar = new FormToolBar(this);
 
         componentLayer = new ComponentLayer();
@@ -111,26 +142,16 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         layeredPane.add(componentLayer, new Integer(1000));
         layeredPane.add(handleLayer, new Integer(1001));
 
-        setLayout(new BorderLayout());
-
         JScrollPane scrollPane = new JScrollPane(layeredPane);
         scrollPane.setBorder(null); // disable border, winsys will handle borders itself
         add(scrollPane, BorderLayout.CENTER);
 
-        setModel(formModel);
-    }
-
-    public void initialize() {
-        // add FormDataObject and FormDesigner to lookup so they can be obtained
-        // from multiview TopComponent
-        Lookup lookup = ComponentInspector.getInstance().setupActionMap(getActionMap());
-        associateLookup(new ProxyLookup(new Lookup[] {
-            lookup,
-            Lookups.fixed(new Object[] { formEditorSupport.getFormDataObject(),
-                                         this })
-        }));
-
+        setModel(formEditorSupport.getFormModel());
         updateWholeDesigner();
+        
+        // not very nice hack - it's better FormEditorSupport has its
+        // listener registered after FormDesigner
+        formEditorSupport.reinstallListener();
     }
 
     // only MultiViewDescriptor is stored, not MultiViewElement
@@ -814,6 +835,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     public void componentShowing() {
         super.componentShowing();
+        if (!formEditorSupport.formLoaded) {
+            formEditorSupport.loadFormDesigner();
+        }
+        if (!initialized) {
+            initialize();
+        }
         FormEditorSupport.checkFormGroupVisibility();
     }
 

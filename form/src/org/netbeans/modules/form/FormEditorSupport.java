@@ -91,7 +91,7 @@ public class FormEditorSupport extends JavaEditor
     private ArrayList persistenceErrors;
 
     /** An indicator whether the form has been loaded (from the .form file) */
-    private boolean formLoaded = false; 
+    boolean formLoaded = false; 
 
     // listeners
     private FormModelListener formListener;
@@ -378,20 +378,6 @@ public class FormEditorSupport extends JavaEditor
         return formDesigner;
     }
 
-    private FormDesigner createFormDesigner() {
-        formDesigner = new FormDesigner(formModel);
-        formDesigner.initialize();
-
-        // not very nice hack - it's better FormEditorSupport has its
-        // listener registered after FormDesigner
-        if (formListener != null) {
-            formModel.removeFormModelListener(formListener);
-            formModel.addFormModelListener(formListener);
-        }
-
-        return formDesigner;
-    }
-
     /** Called by FormDesigner when activated. */
     void setFormDesigner(FormDesigner designer) {
         formDesigner = designer;
@@ -491,14 +477,14 @@ public class FormEditorSupport extends JavaEditor
     // loading
 
     /** This methods loads the form, reports errors, creates the FormDesigner */
-    private FormDesigner loadFormDesigner() {
+    void loadFormDesigner() {
         JFrame mainWin = (JFrame) WindowManager.getDefault().getMainWindow();
 
         // set status text "Opening Form: ..."
         StatusDisplayer.getDefault().setStatusText(
             FormUtils.getFormattedBundleString(
                 "FMT_OpeningForm", // NOI18N
-                new Object[] { formDataObject.getFormFile().getNameExt() }));
+                new Object[] { formDataObject.getFormFile().getName() }));
         javax.swing.RepaintManager.currentManager(mainWin).paintDirtyRegions();
 
         // set wait cursor [is not very reliable, but...]
@@ -522,8 +508,13 @@ public class FormEditorSupport extends JavaEditor
 
         // report errors during loading
         reportErrors(LOADING);
-
-        return createFormDesigner();
+    }
+    
+    void reinstallListener() {
+        if (formListener != null) {
+            formModel.removeFormModelListener(formListener);
+            formModel.addFormModelListener(formListener);
+        }
     }
 
     /** This method performs the form data loading. All open/load methods go
@@ -1334,8 +1325,7 @@ public class FormEditorSupport extends JavaEditor
             FormDesigner designer = null;
             FormEditorSupport formEditor = getFormEditor();
             if (formEditor != null) {
-                designer = formEditor.formLoaded ?
-                    formEditor.createFormDesigner() : formEditor.loadFormDesigner();
+                designer = new FormDesigner(formEditor);
             }
 
             return designer == null ? MultiViewFactory.BLANK_ELEMENT : designer;
