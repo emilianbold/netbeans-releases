@@ -89,6 +89,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="release">
+        <copy todir="netbeans" includeEmptyDirs="false">
+            <fileset dir="release" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+        </copy>
     </target>
 
     <target name="javahelp">

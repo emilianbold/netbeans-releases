@@ -144,8 +144,21 @@ Microsystems, Inc. All Rights Reserved.
                         <Archive name="lib/ext/xml-apis.jar"/>
                     </Library>
                 ]]>
-              </file>
-          </folder> <!-- java -->
+            </file>
+        </folder> <!-- java -->
+
+        <folder name="Javadoc">
+            <file name="org-netbeans-modules-xml-tools-resources-xml_apis.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.tools.resources.Bundle" />
+                <![CDATA[
+                    <!DOCTYPE Javadoc PUBLIC "-//NetBeans IDE//DTD JavadocLibrary//EN" "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
+
+                    <Javadoc>
+                        <Archive name="docs/xml-apis.zip"/>
+                    </Javadoc>
+                ]]>
+            </file>
+        </folder> <!-- Javadoc -->
     </folder> <!-- Mount -->
 
     <folder name="Shortcuts">
