@@ -152,6 +152,10 @@ public class BaseOptions extends OptionSupport {
     /** Version of the options. It's used for patching the options. */
     private transient int optionsVersion;
     
+    /* Indent engine available during readExternal() */
+    private transient IndentEngine readExternalIndentEngine;
+    private transient boolean inReadExternal;
+    
     public BaseOptions() {
         this(BaseKit.class, BASE);
     }
@@ -575,6 +579,11 @@ public class BaseOptions extends OptionSupport {
 
 
     public IndentEngine getIndentEngine() {
+        // Due to #11212
+        if (inReadExternal) {
+            return readExternalIndentEngine;
+        }
+
         ServiceType.Handle h = (ServiceType.Handle)getProperty(INDENT_ENGINE_PROP);
         IndentEngine eng;
         if (h != null) { // handle already set
@@ -643,6 +652,11 @@ public class BaseOptions extends OptionSupport {
     
     public void readExternal(ObjectInput in)
     throws IOException, ClassNotFoundException {
+
+        /** Hold the current indent engine due to #11212 */
+        readExternalIndentEngine = getIndentEngine();
+        inReadExternal = true;
+
         /* Make the current options version to be zero
          * temporarily to distinguish whether the options
          * imported were old and the setOptionsVersion()
@@ -665,6 +679,10 @@ public class BaseOptions extends OptionSupport {
         }
         
         optionsVersion = LATEST_OPTIONS_VERSION;
+
+        /** Release temp indent engine -  #11212 */
+        inReadExternal = false;
+        readExternalIndentEngine = null;
     }
     
     /** Upgrade the deserialized options.
