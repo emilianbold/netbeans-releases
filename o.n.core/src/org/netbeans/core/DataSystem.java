@@ -169,7 +169,7 @@ final class DataSystem extends AbstractNode {
     Sheet.Set ss = s.get (Sheet.PROPERTIES);
     ss.put (
       new PropertySupport.ReadWrite (
-        Node.this.PROP_DISPLAY_NAME,
+        DataSystem.this.PROP_DISPLAY_NAME,
         String.class,
         NbBundle.getBundle(this).getString("PROP_DS_Name"),
         NbBundle.getBundle(this).getString("HINT_DS_Name")
@@ -193,7 +193,7 @@ final class DataSystem extends AbstractNode {
     String old = getDisplayName();
     setDisplayName(name);
     if (old.equals(name)) return;
-    firePropertyChange(Node.this.PROP_DISPLAY_NAME, old, name);
+    firePropertyChange(DataSystem.this.PROP_DISPLAY_NAME, old, name);
   }
 
   /** writes this node to ObjectOutputStream and its display name
@@ -420,6 +420,8 @@ final class DataSystem extends AbstractNode {
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/6/99   Ian Formanek    Fixed outerclass 
+ *       specifiers uncompilable under JDK 1.2
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  * Beta Change History:

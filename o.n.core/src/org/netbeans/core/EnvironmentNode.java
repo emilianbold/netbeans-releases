@@ -104,7 +104,7 @@ public final class EnvironmentNode extends AbstractNode {
     Sheet sheet = Sheet.createDefault();
     sheet.get(Sheet.PROPERTIES).put(
       new PropertySupport.ReadWrite (
-        Node.this.PROP_DISPLAY_NAME,
+        EnvironmentNode.this.PROP_DISPLAY_NAME,
         String.class,
         bundle.getString("PROP_Environment_name"),
         bundle.getString("HINT_Environment_name")
@@ -126,7 +126,7 @@ public final class EnvironmentNode extends AbstractNode {
   /*public void rename(String name) {
     String old = getDisplayName();
     setDisplayName(name);
-    firePropertyChange(Node.this.PROP_DISPLAY_NAME, old, name);
+    firePropertyChange(EnvironmentNode.this.PROP_DISPLAY_NAME, old, name);
   }*/
 
   /** Getter for set of actions that should be present in the
@@ -169,6 +169,8 @@ public final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/6/99   Ian Formanek    Fixed outerclass 
+ *       specifiers uncompilable under JDK 1.2
  *  2    Gandalf   1.1         1/6/99   Jaroslav Tulach ide.* extended to 
  *       ide.loaders.*
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    

@@ -92,7 +92,7 @@ public final class LoaderPoolNode extends IndexedNode {
     // default sheet with "properties" property set
     Sheet sheet = Sheet.createDefault();
     sheet.get(Sheet.PROPERTIES).put(
-      new PropertySupport.ReadOnly (Node.this.PROP_DISPLAY_NAME,
+      new PropertySupport.ReadOnly (LoaderPoolNode.this.PROP_DISPLAY_NAME,
                                     String.class,
                                     bundle.getString("PROP_LoaderPool"),
                                     bundle.getString("HINT_LoaderPool")) {
@@ -117,7 +117,7 @@ public final class LoaderPoolNode extends IndexedNode {
     String old = getDisplayName();
     if ((old != null) && old.equals(name)) return;
     setDisplayName(name);
-    firePropertyChange(Node.this.PROP_DISPLAY_NAME, old, name);
+    firePropertyChange(LoaderPoolNode.this.PROP_DISPLAY_NAME, old, name);
   }*/
 
 
@@ -522,6 +522,8 @@ public final class LoaderPoolNode extends IndexedNode {
 
 /*
 * Log
+*  2    Gandalf   1.1         1/6/99   Ian Formanek    Fixed outerclass 
+*       specifiers uncompilable under JDK 1.2
 *  1    Gandalf   1.0         1/5/99   Ian Formanek    
 * $
 */
