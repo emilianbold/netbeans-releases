@@ -138,11 +138,9 @@ public class FormDataObject extends JavaDataObject {
                     if (rootNode != null)
                         rootNode.updateName();
                     
-                    FormDesigner topComp = formEditor.getFormDesigner();
-                    if (topComp != null)
-                        topComp.setName(java.text.MessageFormat.format(
-                            FormEditor.getFormBundle ().getString("FMT_FormWindowTitle"),
-                            new Object[] { (String)e.getNewValue() }));
+                    FormDesigner designer = formEditor.getFormDesigner();
+                    if (designer != null)
+                        designer.updateName();
                 }
             }
         });

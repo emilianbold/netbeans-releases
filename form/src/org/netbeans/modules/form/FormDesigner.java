@@ -199,6 +199,15 @@ public class FormDesigner extends TopComponent
         setActivatedNodes(selectedNodes);
     }
 
+    void updateName() {
+        String name = formModel.getFormDataObject().getName();
+        if (!(topDesignContainer instanceof FormContainer))
+            name += " / " + topDesignContainer.getName(); // NOI18N
+        if (formModel.isReadOnly())
+            name += " " + FormEditor.getFormBundle().getString("CTL_FormTitle_RO"); // NOI18N
+        setName(name);
+    }
+
     ////////////////
     
     FormDesigner(FormModel formModel) {
@@ -554,13 +563,7 @@ public class FormDesigner extends TopComponent
                 };
             SwingUtilities.invokeLater(repopulateTask);
 
-            // set TopComponent's name (visible in title)
-            String name = formModel.getFormDataObject().getName();
-            if (!(topDesignContainer instanceof FormContainer))
-                name += " / " + topDesignContainer.getName(); // NOI18N
-            if (formModel.isReadOnly())
-                name += " " + FormEditor.getFormBundle().getString("CTL_FormTitle_RO"); // NOI18N
-            setName(name);
+            updateName();
         }
     }
 
@@ -808,6 +811,7 @@ public class FormDesigner extends TopComponent
                     root.add(comp, constr);
             }
             else if (constrDesc instanceof AbsoluteLayoutSupport.AbsoluteConstraintsDesc) {
+                root.add(comp);
                 Rectangle bounds =
                     ((AbsoluteLayoutSupport.AbsoluteConstraintsDesc)constrDesc)
                         .getBounds();
@@ -815,7 +819,6 @@ public class FormDesigner extends TopComponent
                     bounds.width = comp.getPreferredSize().width;
                 if (bounds.height == -1)
                     bounds.height = comp.getPreferredSize().height;
-                root.add(comp);
                 comp.setBounds(bounds);
             }
         }
