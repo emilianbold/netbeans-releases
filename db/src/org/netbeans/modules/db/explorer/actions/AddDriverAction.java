@@ -74,20 +74,7 @@ public class AddDriverAction extends DatabaseAction {
                         JDBCDriverManager.getDefault().addDriver(new JDBCDriver(name, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()])));
                     } catch (IOException exc) {
                         //PENDING
-                    }
-                    
-                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            try {
-                                DriverListNodeInfo info = (DriverListNodeInfo) n[0].getCookie(DriverListNodeInfo.class);
-                                if (info != null)
-                                    info.refreshChildren();
-                            } catch (Exception exc) {
-//                                exc.printStackTrace();
-                            }
-                        }
-                    });
-
+                    }                    
                 }
             }
         };
