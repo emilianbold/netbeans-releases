@@ -212,7 +212,7 @@ public class UpdateHelper {
 
         //add properties needed by 4.1 project
         if(props != null) {
-            props.put("test.src.dir", "");
+            props.put("test.src.dir", "test");
             props.put("build.test.classes.dir", "");
             props.put("build.test.results.dir", "");
         }
