@@ -332,6 +332,8 @@ the Options window:-->
 <mapID target="update.offline" url="configure/modules/updateoffline.html" />
 <mapID target="update.globally" url="configure/modules/updateglobally.html" />
 <mapID target="configure.enable.module" url="configure/modules/enablemodule.html" />
+<mapID target="configure.module" url="configure/modules/modulenodes.html" />
+
 
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
 <mapID target="shortcuts.menus" url="shortcuts/menucuts.html" />
@@ -529,9 +531,9 @@ the Options window:-->
       <mapID target="org.netbeans.modules.form.editors2.CustomTableModelEditor" url="pending.html" /> 
    
 <!--for Modules node in Options window:-->
-   <mapID target="org.netbeans.core.ui.ModuleNode" url="pending.html" />
-   <mapID target="org.netbeans.core.ui.ModuleNode$Item" url="pending.html" />   
-   <mapID target="org.netbeans.core.ui.ModuleNode$CategoryNode" url="pending.html" />   
+   <mapID target="org.netbeans.core.ui.ModuleNode" url="configure/modules/modulenodes.html" />
+   <mapID target="org.netbeans.core.ui.ModuleNode$Item" url="configure/modules/modulenodes.html" />   
+   <mapID target="org.netbeans.core.ui.ModuleNode$CategoryNode" url="configure/modules/modulenodes.html" />   
       
    
 <!--OptionsAction is Options window:--> 
