@@ -459,10 +459,15 @@ public class MakeNBM extends MatchingTask {
 		    // Write manifest attributes.
 		    ps.print ("  <manifest ");
 		    boolean firstline = true;
-		    Iterator it = attr.entrySet ().iterator ();
-		    while (it.hasNext ()) {
-                        Map.Entry entry = (Map.Entry) it.next ();
-                        String name = ((Attributes.Name)entry.getKey()).toString();
+                    List attrNames = new ArrayList(attr.size()); // List<String>
+                    Iterator it = attr.keySet().iterator();
+                    while (it.hasNext()) {
+                        attrNames.add(((Attributes.Name)it.next()).toString());
+                    }
+                    Collections.sort(attrNames);
+                    it = attrNames.iterator();
+                    while (it.hasNext()) {
+                        String name = (String)it.next();
                         // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-1_0.dtd
                         //  and www/www/dtds/autoupdate-info-1_0.dtd):
                         if (! name.startsWith("OpenIDE-Module")) continue;
@@ -476,7 +481,7 @@ public class MakeNBM extends MatchingTask {
 			    firstline = false;
 			else
 			    ps.print ("            ");
-                        ps.println(name + "=\"" + xmlEscape((String)entry.getValue()) + "\"");
+                        ps.println(name + "=\"" + xmlEscape(attr.getValue(name)) + "\"");
 		    }
 		    ps.println ("  />");
 		    // Maybe write out license text.
