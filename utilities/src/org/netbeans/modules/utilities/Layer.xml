@@ -164,7 +164,12 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
             </file>
-            <attr name="submit-feedback-link.url/utilities-sep-4.instance" boolvalue="true"/>
+            <attr name="submit-feedback-link.url/join-netbeans-community.url" boolvalue="true"/>
+            <file name="join-netbeans-community.url" url="nbresloc:/org/netbeans/modules/utilities/join-netbeans-community.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
+            </file>
+            <attr name="join-netbeans-community.url/utilities-sep-4.instance" boolvalue="true"/>
             <file name="utilities-sep-4.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
