@@ -281,43 +281,29 @@ public class TransactionView extends ExplorerPanel implements
     }
     
     /**
-     * Invoked from IDE when Monitor is opened. */
+     * Starts the monitor client in a specific workspace */
     private boolean openedOnceAlready = false;
     public void open(Workspace w) {
-	if(debug) log("open(Workspace w): " + String.valueOf(w)); //NOI18N
+
+	if(debug) log("running open(Workspace)"); //NOI18N
+	if(w == null) super.open();
+
+	if(debug) log("opening in workspace: " + String.valueOf(w)); //NOI18N
 	super.open(w); 
 	setName(msgs.getString("MON_Title"));	
-	String name = w.getName();
 	if (!openedOnceAlready) {
 	    openedOnceAlready = true;
-	    if (debug) log("Calling opentransactions from open(workspace w)"); // NOI18N
 	    controller.getTransactions();
 	    openTransactionNodes();
 	}
 	controller.checkServer(false);
         requestFocus();
     }
-    
 
     protected void updateTitle() {
 	setName(msgs.getString("MON_Title"));	
     }
     
-    /**
-     * Invoked from IDE when Monitor is opened. This calls
-     * getTransactions() which makes a URL connection to the
-     * web server. The effect of super.open() is to invoke the method
-     * above (which is not circular). Repeating the code from above
-     * causes getTransactions() to be called twice (and hence
-     * potentially the dialog to show twice) so I had to take it out
-     * from here. */
-    public void open() {
-	super.open();
-	if(debug) log("open()"); //NOI18N
-        requestFocus();
-    }
-
-
     /**
      * Invoked by IDE when trying to close monitor. */
     public boolean canClose(Workspace w, boolean last) {
