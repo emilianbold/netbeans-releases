@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="openide" testtypes="unit" attributes="stable"/>
       <module name="openide/compat" testtypes="unit" attributes="stable"/>
       <module name="openidex" testtypes="unit" attributes="stable"/>
+      <module name="mdr" testtypes="unit" attributes="stable"/>
   </config>
   
   <config name="unit-nb">
@@ -32,6 +33,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="openide" testtypes="unit" attributes="stable"/>
       <module name="openide/compat" testtypes="unit" attributes="stable"/>
       <module name="openidex" testtypes="unit" attributes="stable"/>
+      <module name="mdr" testtypes="unit" attributes="stable"/>
   </config>
   
   <!-- QA TESTS -->
