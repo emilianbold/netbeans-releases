@@ -314,21 +314,16 @@ public final class ServerRegistry implements java.io.Serializable {
             Server server = (Server) i.next();
             try {
                 if(server.handlesUri(url)) {
-                    DeploymentManager manager = server.getDeploymentManager(url,username,password);
-                    if(manager != null) {
-                        ServerInstance instance = new ServerInstance(server,url,manager);
-                        // PENDING persist url/password in ServerString as well
-                        instancesMap().put(url,instance);
-                        ServerString str = new ServerString(server.getShortName(),url,null);
-                        writeInstanceToFile(url,username,password);
-                        if (displayName != null) instance.getInstanceProperties().setProperty(
-                                InstanceProperties.DISPLAY_NAME_ATTR, displayName);
-                        fireInstanceListeners(url, true);
-                        return true;
-                    }
+                    ServerInstance instance = new ServerInstance(server,url);
+                    // PENDING persist url/password in ServerString as well
+                    instancesMap().put(url,instance);
+                    ServerString str = new ServerString(server.getShortName(),url,null);
+                    writeInstanceToFile(url,username,password);
+                    if (displayName != null) instance.getInstanceProperties().setProperty(
+                            InstanceProperties.DISPLAY_NAME_ATTR, displayName);
+                    fireInstanceListeners(url, true);
+                    return true;
                 }
-            } catch (javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException dmce) {
-                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, dmce);
             } catch (Exception e) {
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, e);
             }

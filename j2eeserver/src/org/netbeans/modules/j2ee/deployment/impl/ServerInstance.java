@@ -73,10 +73,9 @@ public class ServerInstance implements Node.Cookie {
         
     // PENDING how to manage connected/disconnected servers with the same manager?
     // maybe concept of 'default unconnected instance' is broken?
-    public ServerInstance(Server server, String url, DeploymentManager manager) {
+    public ServerInstance(Server server, String url) {
         this.server = server; 
-        this.url = url; 
-        this.manager = manager;
+        this.url = url;
         instanceProperties = new InstancePropertiesImpl(url);
     }
     
