@@ -728,21 +728,23 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             "ant-task",             // NOI18N
             "servlet-types",        // NOI18N
             "web-types",            // NOI18N
+            "web-services",         // NOI18N
+            "web-service-clients",  // NOI18N
             "junit",                // NOI18N
             "simple-files"          // NOI18N
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
             
-            "Templates/JSP_Servlet/JSP.jsp",
-            "Templates/JSP_Servlet/Html.html",
-            "Templates/JSP_Servlet/Servlet.java",
-            "Templates/Classes/Class.java",
-            "Templates/Other/Folder",
-            "Templates/Classes/Package", // NOI18N
-            "Templates/JSP_Servlet/WebService",
-            "Templates/JSP_Servlet/MessageHandler",
-            "Templates/JSP_Servlet/WebServiceClient"
+            "Templates/JSP_Servlet/JSP.jsp",            // NOI18N
+            "Templates/JSP_Servlet/Html.html",          // NOI18N
+            "Templates/JSP_Servlet/Servlet.java",       // NOI18N
+            "Templates/Classes/Class.java",             // NOI18N
+            "Templates/Other/Folder",                   // NOI18N
+            "Templates/Classes/Package",                // NOI18N
+            "Templates/WebServices/WebService",         // NOI18N
+            "Templates/WebServices/WebServiceClient",   // NOI18N                    
+            "Templates/WebServices/MessageHandler",     // NOI18N
         };
         
         public String[] getRecommendedTypes() {

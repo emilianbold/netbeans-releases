@@ -728,6 +728,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         private static final String[] TYPES = new String[] {
             "java-classes",         // NOI18N
             "ejb-types",            // NOI18N
+            "web-services",         // NOI18N
             "java-beans",           // NOI18N
             "oasis-XML-catalogs",   // NOI18N
             "XML",                  // NOI18N
@@ -743,8 +744,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             "Templates/J2EE/Entity",  // NOI18N
             "Templates/J2EE/RelatedCMP", // NOI18N                    
             "Templates/J2EE/Message", //NOI18N
-            "Templates/J2EE/WebService", // NOI18N
-            "Templates/J2EE/MessageHandler", // NOI18N
+            "Templates/WebServices/WebService", // NOI18N
+            "Templates/WebServices/MessageHandler", // NOI18N
             "Templates/Classes/Class.java" // NOI18N
         };
         
