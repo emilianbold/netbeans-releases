@@ -45,10 +45,10 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Main targets -->
     <!-- ============ -->
 
-    <!--target name="all" depends="runtests"/-->
-    <target name="all">
+    <target name="all" depends="runtests"/>
+    <!--target name="all">
         <echo message="Tests are disabled"/>
-    </target>
+    </target-->
 
     <!-- This calls target which will call compilers according to cfg file.
          You should not change this target unless you realy know what you are doing -->
