@@ -24,12 +24,6 @@ Microsystems, Inc. All Rights Reserved.
     <disconnected-string>tomcat:jakarta-tomcat-5.0.16</disconnected-string>
     
     <!--
-    The finder-ui must be a class-name for a dialog that is shown when the Find Server action
-    is run on the plugin node.  If the user selects a server from this dialog, the class
-    should install it in the /J2EE/InstalledServers/ section of the DefaultFileSystem.
-    -->
-    <finder-ui>org.netbeans.modules.tomcat5.ide.TomcatInstall</finder-ui>
-    <!--
     The  name-mapper must be a class-name that implements TargetNameResolver.
     This class provides mapping between names in jsr88 and jsr77
     -->

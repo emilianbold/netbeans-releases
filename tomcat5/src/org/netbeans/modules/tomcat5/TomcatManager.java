@@ -16,6 +16,8 @@ package org.netbeans.modules.tomcat5;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Locale;
+import org.openide.filesystems.FileObject;
+import java.util.Enumeration;
 
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
@@ -30,6 +32,21 @@ import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
+
+import org.w3c.dom.Document;
+import org.xml.sax.*;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+
+import org.netbeans.modules.tomcat5.config.Server;
+
+import org.openide.xml.XMLUtil;
 
 /** DeploymentManager that can deploy to 
  * Tomcat 5 using manager application.
@@ -47,7 +64,18 @@ public class TomcatManager implements DeploymentManager {
     /** Enum value for get*Modules methods. */
     static final int ENUM_NONRUNNING = 2;
     
+    /** debugger port property */
+    public static final String DEBUG_PORT = "debugger_port";
     
+    /** http server port property */
+    public static final String SERVER_PORT = "server_port";
+
+    /** default value for property for debugger port */
+    public static final String DEFAULT_DEBUG_PORT = "11555";
+
+    /** default value for property for debugger port */
+    public static final String DEFAULT_SERVER_PORT = "8080";
+
     /** Manager state. */
     private boolean connected;
     
@@ -63,6 +91,14 @@ public class TomcatManager implements DeploymentManager {
     private String catalinaHome;
     /** CATALINA_BASE of disconnected TomcatManager. */
     private String catalinaBase;
+    
+    /** storage for HTTP connector port */
+    private Integer serverPort;
+    
+    /** storage debug port */
+    private Integer debugPort;
+
+    private Server root = null;
     
     /** Creates an instance of connected TomcatManager
      * @param conn <CODE>true</CODE> to create connected manager
@@ -403,6 +439,94 @@ public class TomcatManager implements DeploymentManager {
     
     public String toString () {
         return "Tomcat manager ["+uri+", home "+catalinaHome+", base "+catalinaBase+(connected?"conneceted":"disconnected")+"]";    // NOI18N
+    }
+
+    public Integer getServerPort() {
+        if (serverPort == null) {
+            String url = TomcatFactory.tomcatUriPrefix + getUri();
+            FileObject instanceFO = ServerRegistry.getInstance().getInstanceFileObject(url);
+            if (instanceFO == null) { 
+                return null;
+            }
+            Object o = instanceFO.getAttribute(SERVER_PORT);
+            String serverPortStr;
+            if (o != null) {
+                serverPortStr = (String)o;
+            } else { 
+                return null;
+            }
+            serverPort = new Integer(Integer.parseInt(serverPortStr));
+        }
+        return serverPort;
+    }
+    
+    public void setServerPort(Integer port) {
+        // TODO - port needs to be updated everywhere
+        this.serverPort = port;
+    }
+
+    public Server getRoot() {
+        
+        if (this.root != null) {
+            return root;
+        }
+        
+        try {
+            FileInputStream inputStream;
+            if (catalinaBase != null) {
+                try {
+                    inputStream = new FileInputStream(new File(catalinaBase + "/conf/server.xml"));
+                } catch (FileNotFoundException fnfe) {
+                    return null;
+                }
+            } else {
+                try {
+                    inputStream = new FileInputStream(new File(catalinaHome + "/conf/server.xml"));
+                } catch (FileNotFoundException fnfe) {
+                    return null;
+                }
+            }
+
+            Document doc = XMLUtil.parse(new InputSource(inputStream), false, false, null,org.openide.xml.EntityCatalog.getDefault());
+            root = Server.createGraph(doc);
+            return root;
+        } catch (Exception e) {
+            if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                TomcatFactory.getEM ().log (e.toString());
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Getter for property debugPort.
+     * @return Value of property debugPort.
+     */
+    public java.lang.Integer getDebugPort() {
+        if (serverPort == null) {
+            String url = TomcatFactory.tomcatUriPrefix + getUri();
+            FileObject instanceFO = ServerRegistry.getInstance().getInstanceFileObject(url);
+            if (instanceFO == null) {
+                return null;
+            }
+            Object o = instanceFO.getAttribute(DEBUG_PORT);
+            String debugPortStr;
+            if (o != null) {
+                debugPortStr = (String)o;
+            } else {
+                return null;
+            }
+            debugPort = new Integer(Integer.parseInt(debugPortStr));
+        }
+        return serverPort;
+    }
+    
+    /**
+     * Setter for property debugPort.
+     * @param port New value of property debugPort.
+     */
+    public void setDebugPort(java.lang.Integer port) {
+        this.debugPort = port;
     }
     
 }

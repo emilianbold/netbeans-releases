@@ -41,11 +41,10 @@ public class TomcatInstanceNode extends AbstractNode {
     protected static final String CLASSIC = "classic"; //NOI18N
     protected static final String NAME_FOR_SHARED_MEMORY_ACCESS = "name_for_shared_memory_access"; //NOI18N
     private static final String DEFAULT_NAME_FOR_SHARED_MEMORY_ACCESS = "tomcat_shared_memory_id"; //NOI18N
-
     
     private Lookup lkp;
     
-    /** Creates a new instance of TomcatInstaceNode 
+    /** Creates a new instance of TomcatInstanceNode 
       @param lookup will contain DeploymentFactory, DeploymentManager, Management objects. 
      */
     public TomcatInstanceNode(Children children, Lookup lookup) {
@@ -54,23 +53,45 @@ public class TomcatInstanceNode extends AbstractNode {
         setIconBase(ICON_BASE);
         this.setName("TomcatInstanceNode"); //NOI18N
     }
-    
-    
+        
     public String getDisplayName(){
+        Integer port = getServerPort();
+        String portStr = "";
+        if (port != null) { 
+            portStr = port.toString();
+        }
         return NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode",  // NOI18N
-            new Object []{getPort()});
+            new Object []{portStr});
     }
     
-    private String getPort (){
-        // TODO Port has to be obtained 
+    private Integer getServerPort () {
         DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
         if (m instanceof TomcatManager){
-            return ((TomcatManager)m).getUri();
+            return ((TomcatManager)m).getServerPort();
         }
-        return "0";
+        return new Integer(8080);
     }
     
+    private String getHome() {
+        DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
+        if (m instanceof TomcatManager){
+            return ((TomcatManager)m).getCatalinaHome();
+        }
+        return "";
+    }
     
+    private String getBase() {
+        DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
+        if (m instanceof TomcatManager) {
+            if (((TomcatManager)m).getCatalinaBase() != null) {
+                return ((TomcatManager)m).getCatalinaBase();
+            } else {
+                return ((TomcatManager)m).getCatalinaHome();
+            }
+        }
+        return "";
+    }
+
     // Create a property sheet:
     protected Sheet createSheet () {
 	Sheet sheet = super.createSheet ();
@@ -96,7 +117,7 @@ public class TomcatInstanceNode extends AbstractNode {
                ) {
                    public Object getValue () {
                        // TODO 
-                       return new Integer(8080);
+                       return getServerPort();
                    }
                    
                    public void setValue (Object val){
@@ -112,7 +133,7 @@ public class TomcatInstanceNode extends AbstractNode {
                ) {
                    public Object getValue () {
                        // TODO
-                       return "todo";
+                       return getHome();
                    }
                };    
         ssProp.put(p);
@@ -124,7 +145,7 @@ public class TomcatInstanceNode extends AbstractNode {
                ) {
                    public Object getValue () {
                        //TODO
-                       return "todo";
+                       return getBase();
                    }
                };    
         ssProp.put(p);
