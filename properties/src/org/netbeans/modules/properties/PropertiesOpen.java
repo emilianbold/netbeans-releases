@@ -41,6 +41,8 @@ import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
+import org.openide.windows.Workspace;
+import org.openide.windows.Mode;
 import org.openide.explorer.propertysheet.PropertyDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -437,7 +439,20 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     * @return the copy of this object
     */
     protected CloneableTopComponent createClonedObject () {
-      return new PropertiesCloneableTopComponent (dobj, ptm/*, ptcm*/);
+    
+      String PROPERTIES_MODE = "com.netbeans.developer.modules.loaders.properties";
+      PropertiesCloneableTopComponent pctc = new PropertiesCloneableTopComponent (dobj, ptm/*, ptcm*/);
+      Workspace cur = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+      Mode m = cur.findMode(PROPERTIES_MODE);
+      if (m == null) {
+        m = cur.createMode(PROPERTIES_MODE, 
+                           NbBundle.getBundle(PropertiesModule.class).getString("LAB_PropertiesModeName"),
+                           null);
+      } 
+      // PENDING
+      //m.setBounds(new Rectangle(x, y, width, height));
+      m.dockInto(pctc);
+      return pctc;
     }
                           
     /** This method is called when parent window of this component has focus,
