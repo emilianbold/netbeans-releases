@@ -11,7 +11,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
+
 
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -32,8 +34,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.util.datatransfer.*;
 import org.openide.actions.InstantiateAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.OpenAction;
@@ -41,6 +41,7 @@ import org.openide.nodes.*;
 import org.openide.loaders.*;
 import org.openide.*;
 import org.openide.text.EditorSupport;
+
 
 /** Standard node representing a data object.
 *
@@ -193,7 +194,3 @@ public class PropertiesDataNode extends DataNode {
         };
     }
 }
-
-/*
- * <<Log>>
- */
