@@ -7,14 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.junit;
 
 import java.awt.EventQueue;
-
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Field;
@@ -399,9 +398,20 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @return a path to a test method working directory
      */    
     public String getWorkDirPath() {
+        String name = getName();
+        // start - PerformanceTestCase overrides getName() method and then
+        // name can contain illegal characters
+        String osName = System.getProperty ("os.name");
+        if (osName != null && osName.startsWith("Windows")) {
+            char ntfsIllegal[] ={'"','/','\\','?','<','>','|',':'};
+            for (int i=0; i<ntfsIllegal.length; i++) {
+                name = name.replace(ntfsIllegal[i], '~');
+            }
+        }
+        // end
         return Manager.getWorkDirPath() +
             File.separator + getClass().getName() +
-            File.separator + getName();
+            File.separator + name;
     }
 
     /** Returns unique working directory for a test (each test method has a unique dir).
