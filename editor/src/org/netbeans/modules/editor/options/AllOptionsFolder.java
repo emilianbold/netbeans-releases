@@ -273,6 +273,14 @@ public class AllOptionsFolder{
     public void setToolbarVisible(boolean toolbarVisible) {
         getBase().setToolbarVisible(toolbarVisible);
     }
+    
+    public boolean isTextAntialiasing() {
+        return getBase().isTextAntialiasing();
+    }
+    
+    public void setTextAntialiasing(boolean textAntialiasing) {
+        getBase().setTextAntialiasing(textAntialiasing);
+    }
 
     /** Loads default global keyBindings List and initializes it.
      *  It is used mainly by other options for initializing global keyBindings */

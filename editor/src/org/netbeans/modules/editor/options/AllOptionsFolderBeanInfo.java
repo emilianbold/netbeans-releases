@@ -32,7 +32,8 @@ public class AllOptionsFolderBeanInfo extends BaseOptionsBeanInfo {
         BaseOptions.KEY_BINDING_LIST_PROP,
         EDITOR_STATE_PROP,
         BaseOptions.OPTIONS_VERSION_PROP,
-        BaseOptions.TOOLBAR_VISIBLE_PROP
+        BaseOptions.TOOLBAR_VISIBLE_PROP,
+        BaseOptions.TEXT_ANTIALIASING_PROP
     };
     
     public AllOptionsFolderBeanInfo() {

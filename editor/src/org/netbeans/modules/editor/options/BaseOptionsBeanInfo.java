@@ -80,6 +80,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
                 BaseOptions.TEXT_LIMIT_LINE_COLOR_PROP,
                 BaseOptions.TEXT_LIMIT_LINE_VISIBLE_PROP,
                 BaseOptions.TEXT_LIMIT_WIDTH_PROP,
+                BaseOptions.TEXT_ANTIALIASING_PROP,
             };
 
 

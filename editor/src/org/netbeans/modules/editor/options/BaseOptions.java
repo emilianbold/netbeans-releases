@@ -77,6 +77,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import java.io.File;
 import java.awt.Dimension;
+import java.awt.RenderingHints;
 
 
 
@@ -137,6 +138,7 @@ public class BaseOptions extends OptionSupport {
     public static final String TEXT_LIMIT_LINE_VISIBLE_PROP = "textLimitLineVisible"; // NOI18N
     public static final String TEXT_LIMIT_WIDTH_PROP = "textLimitWidth"; // NOI18N
     public static final String TOOLBAR_VISIBLE_PROP = "toolbarVisible"; // NOI18N
+    public static final String TEXT_ANTIALIASING_PROP = "textAntialiasing"; // NOI18N
     
     static final String[] BASE_PROP_NAMES = {
         ABBREV_MAP_PROP,
@@ -179,6 +181,17 @@ public class BaseOptions extends OptionSupport {
     /** Whether formatting debug messages should be displayed */
     private static final boolean debugFormat
     = Boolean.getBoolean("netbeans.debug.editor.format"); // NOI18N
+    
+    private static final Map textAntialiasingHintsMap = new HashMap();
+    static {
+        textAntialiasingHintsMap.put(RenderingHints.KEY_ANTIALIASING,
+            RenderingHints.VALUE_ANTIALIAS_ON);
+        textAntialiasingHintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING,
+            RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        textAntialiasingHintsMap.put(RenderingHints.KEY_FRACTIONALMETRICS,
+            RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
+    }
+
     
     private transient Settings.Initializer coloringMapInitializer;
     
@@ -370,6 +383,19 @@ public class BaseOptions extends OptionSupport {
                     }
                 }
             );
+            
+            // Antialiasing evaluator - for global options only
+            if (kitClass == BaseKit.class) {
+                settingsMap.put(SettingsNames.RENDERING_HINTS,
+                    new Settings.Evaluator() {
+                        public Object getValue(Class kitClass2, String settingName) {
+                            return getSettingBoolean(TEXT_ANTIALIASING_PROP)
+                                ? textAntialiasingHintsMap
+                                : java.util.Collections.EMPTY_MAP;
+                        }
+                    }
+                );
+            }
 
             if (coloringMapInitializer != null) {
                 coloringMapInitializer.updateSettingsMap(kitClass, settingsMap);
@@ -1115,6 +1141,17 @@ public class BaseOptions extends OptionSupport {
     
     public void setToolbarVisible(boolean toolbarVisible) {
         setSettingBoolean(TOOLBAR_VISIBLE_PROP, toolbarVisible, TOOLBAR_VISIBLE_PROP);
+    }
+    
+    public boolean isTextAntialiasing() {
+         // artificial setting -> evaluator used (at begining of this class)
+        return getSettingBoolean(TEXT_ANTIALIASING_PROP);
+    }
+    
+    public void setTextAntialiasing(boolean textAntialiasing) {
+        setSettingBoolean(TEXT_ANTIALIASING_PROP, textAntialiasing, TEXT_ANTIALIASING_PROP);
+        // Cause refresh or renderingHints variable in EditorUI
+        Settings.touchValue(getKitClass(), SettingsNames.RENDERING_HINTS);
     }
         
     /** Retrieves the actions from XML file */
