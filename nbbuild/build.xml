@@ -395,7 +395,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module jini..."/>
     <ant dir="../jini" target="netbeans"/>
   </target>
-  <target name="all-jndi" depends="all-openide,all-openidex,all-openide/deprecated">
+  <target name="all-jndi" depends="all-openide,all-openidex,all-openide/deprecated,all-projects">
     <echo message="Building module jndi..."/>
     <ant dir="../jndi" target="netbeans"/>
   </target>
