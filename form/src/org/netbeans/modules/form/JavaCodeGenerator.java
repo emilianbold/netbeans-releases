@@ -45,6 +45,7 @@ import java.util.Iterator;
 public class JavaCodeGenerator extends CodeGenerator {
   private static Object GEN_LOCK = new Object ();
 
+  protected static final String AUX_VARIABLE_MODIFIER = "JavaCodeGenerator_VariableModifier";
   protected static final String SECTION_INIT_COMPONENTS = "initComponents";
   protected static final String SECTION_VARIABLES = "variables";
   protected static final String SECTION_EVENT_PREFIX = "event_";
@@ -104,7 +105,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   */
   public Node.Property[] getSyntheticProperties (final RADComponent component) {
     return new Node.Property[] {
-      new PropertySupport.ReadWrite ("variableName", String.class, "Variable Name",
+      new PropertySupport.ReadWrite ("variableName", String.class, "Variable Name", // [PENDING - localize]
                                      "The name of the global variable generated for this component") {
         public void setValue (Object value) {
           if (!(value instanceof String)) {
@@ -116,6 +117,33 @@ public class JavaCodeGenerator extends CodeGenerator {
         public Object getValue () {
           return component.getName ();
         }
+      },
+      new PropertySupport.ReadWrite ("modifier", Integer.class, "Variable Modifier",  // [PENDING - localize]
+                                     "The modifiers of the global variable generated for this component") {
+        public void setValue (Object value) {
+          if (!(value instanceof Integer)) {
+            throw new IllegalArgumentException ();
+          }
+          if (((Integer)value).intValue () == FormLoaderSettings.DEFAULT_MODIFIER) {
+            component.setAuxiliaryValue (AUX_VARIABLE_MODIFIER, null);
+          } else {
+            component.setAuxiliaryValue (AUX_VARIABLE_MODIFIER, value);
+          }
+          regenerateVariables ();
+        }
+
+        public Object getValue () {
+          Object modifier = component.getAuxiliaryValue (AUX_VARIABLE_MODIFIER);
+          if (modifier == null) {
+            modifier = new Integer (FormLoaderSettings.DEFAULT_MODIFIER);
+          }
+          return modifier;
+        }
+        
+        public PropertyEditor getPropertyEditor () {
+          return new ModifierPropertyEditor ();
+        }
+        
       },
     };
   }
@@ -209,7 +237,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       RADForm form = formManager.getRADForm ();
   
       addVariables (formManager.getNonVisualsContainer (), variablesWriter);
-      addVariables ((ComponentContainer)form.getTopLevelComponent (), variablesWriter); // [PENDING - illegal cast]
+      addVariables (form.getFormContainer (), variablesWriter);
       
       variablesWriter.write (VARIABLES_FOOTER);
       variablesWriter.write ("\n");
@@ -333,7 +361,25 @@ public class JavaCodeGenerator extends CodeGenerator {
     if (ed == null) { // cannot generate without property editor
       return;
     }
-    
+
+    String javaInitializationString = null;
+    // null values are generated separately, as most property editors cannot cope with nulls
+    if (value != null) {
+      try {
+        ed.setValue (value);
+      } catch (Exception e) {
+        System.out.println ("Ahoj...");
+        return; // cannot generate
+      }
+      javaInitializationString = ed.getJavaInitializationString ();
+      if ((javaInitializationString == null) || ("???".equals (javaInitializationString))) {
+        return; // cannot generate code for this property
+      }
+    } else {
+      // null values are generated separately, as most property editors cannot cope with nulls
+      javaInitializationString = "null";
+    }
+
     // if the setter throws checked exceptions, we must generate try/catch block around it.
     Class[] exceptions = writeMethod.getExceptionTypes ();
     if (exceptions.length > 0) {
@@ -344,13 +390,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     initCodeWriter.write (writeMethod.getName ());
     initCodeWriter.write (" (");
 
-    // null values are generated separately, as most property editors cannot cope with nulls
-    if (value != null) {
-      ed.setValue (value);
-      initCodeWriter.write (ed.getJavaInitializationString ());
-    } else {
-      initCodeWriter.write ("null");
-    }
+    initCodeWriter.write (javaInitializationString);
     
     initCodeWriter.write (");\n");
 
@@ -502,8 +542,14 @@ public class JavaCodeGenerator extends CodeGenerator {
 
   private void addVariables (ComponentContainer cont, Writer variablesWriter) throws IOException {
     RADComponent[] children = cont.getSubBeans ();
+    
     for (int i = 0; i < children.length; i++) {
-      switch (FormEditor.getFormSettings ().getVariablesModifier ()) {
+      int modifier = FormEditor.getFormSettings ().getVariablesModifier ();
+      Object expliciteModifier = children[i].getAuxiliaryValue (AUX_VARIABLE_MODIFIER);
+      if (expliciteModifier != null) {
+        modifier = ((Integer)expliciteModifier).intValue ();
+      }
+      switch (modifier) {
         case FormLoaderSettings.PRIVATE: variablesWriter.write ("private "); break;
         case FormLoaderSettings.PROTECTED: variablesWriter.write ("protected "); break;
         case FormLoaderSettings.PUBLIC: variablesWriter.write ("public "); break;
@@ -895,10 +941,53 @@ public class JavaCodeGenerator extends CodeGenerator {
     }
 
   }
+
+  final public static class ModifierPropertyEditor extends java.beans.PropertyEditorSupport {
+    /** Display Names for alignment. */
+    private static final String[] names = {
+      FormEditor.getFormBundle ().getString ("VALUE_DEFAULT_MODIFIER"),
+      FormEditor.getFormBundle ().getString ("VALUE_PRIVATE"),
+      FormEditor.getFormBundle ().getString ("VALUE_PACKAGE_PRIVATE"),
+      FormEditor.getFormBundle ().getString ("VALUE_PROTECTED"),
+      FormEditor.getFormBundle ().getString ("VALUE_PUBLIC"),
+    };
+
+    /** @return names of the possible directions */
+    public String[] getTags () {
+      return names;
+    }
+
+    /** @return text for the current value */
+    public String getAsText () {
+      int value = ((Integer)getValue ()).intValue ();
+      
+      if ((value >= -1) && (value < 4)) {
+        return names [value+1];
+      }
+      else return null;
+    }
+
+    /** Setter.
+    * @param str string equal to one value from directions array
+    */
+    public void setAsText (String str) {
+      for (int i = 0; i < 5; i ++) {
+        if (names[i].equals (str)) {
+          setValue (new Integer (i-1));
+          return;
+        }
+      }
+    }
+
+  }
+
 }
 
 /*
  * Log
+ *  29   Gandalf   1.28        6/29/99  Ian Formanek    Individual variable 
+ *       modifiers for each component, tweaked code generation for multiple 
+ *       property editors
  *  28   Gandalf   1.27        6/27/99  Ian Formanek    Fixed for usage with 
  *       RADConnectionPropertyEditor
  *  27   Gandalf   1.26        6/27/99  Ian Formanek    Uses indentation engine 
