@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.Sources;
+
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -44,16 +46,18 @@ public class FreeformProjectGenerator {
     /**
      * Creates new Freeform java project at the given folder with the given name,
      * target mappings, source folders, etc.
-     * @param dir project folder; cannot be null
+     * @param location original project folder; cannot be null
+     * @param dir freeform project folder; cannot be null
      * @param name name of new project; cannot be null
      * @param antScript Ant script file; can be null what means default Ant script location
      * @param mappings list of TargetMapping instances
      * @param sources list of SourceFolder instances
      * @param compUnits list of JavaCompilationUnit instances
      */
-    public static AntProjectHelper createJavaProject(File dir, String name, File antScript, List mappings, List sources, List compUnits) throws IOException {
+    public static AntProjectHelper createJavaProject(File location, File dir, String name, File antScript, List mappings, List sources, List compUnits) throws IOException {
         FileObject dirFO = createProjectDir (dir);
-        AntProjectHelper h = createProject(dirFO, PropertyUtils.getUsablePropertyName(name), antScript, mappings, sources, compUnits, null);
+        FileObject locationFO = FileUtil.toFileObject(location);
+        AntProjectHelper h = createProject(locationFO, dirFO, PropertyUtils.getUsablePropertyName(name), antScript, mappings, sources, compUnits, null);
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         return h;
@@ -62,7 +66,8 @@ public class FreeformProjectGenerator {
     /**
      * Creates new Freeform web project at the given folder with the given name,
      * target mappings, source folders, etc.
-     * @param dir project folder; cannot be null
+     * @param location original project folder; cannot be null
+     * @param dir freeform project folder; cannot be null
      * @param name name of new project; cannot be null
      * @param antScript Ant script file; can be null what means default Ant script location
      * @param mappings list of TargetMapping instances
@@ -70,9 +75,10 @@ public class FreeformProjectGenerator {
      * @param compUnits list of JavaCompilationUnit instances
      * @param webModules list of WebModule instances
      */
-    public static AntProjectHelper createWebProject(File dir, String name, File antScript, List mappings, List sources, List compUnits, List webModules) throws IOException {
+    public static AntProjectHelper createWebProject(File location, File dir, String name, File antScript, List mappings, List sources, List compUnits, List webModules) throws IOException {
         FileObject dirFO = createProjectDir (dir);
-        AntProjectHelper h = createProject(dirFO, PropertyUtils.getUsablePropertyName(name), antScript, mappings, sources, compUnits, webModules);
+        FileObject locationFO = FileUtil.toFileObject(location);
+        AntProjectHelper h = createProject(locationFO, dirFO, PropertyUtils.getUsablePropertyName(name), antScript, mappings, sources, compUnits, webModules);
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         return h;
@@ -177,7 +183,7 @@ public class FreeformProjectGenerator {
         //public String context;
     }
 
-    private static AntProjectHelper createProject(final FileObject dirFO, final String name, final File antScript, final List mappings, final List sources, final List compUnits, final List webModules) throws IOException {
+    private static AntProjectHelper createProject(final FileObject locationFO, final FileObject dirFO, final String name, final File antScript, final List mappings, final List sources, final List compUnits, final List webModules) throws IOException {
         final AntProjectHelper[] h = new AntProjectHelper[1];
         final IOException[] ioe = new IOException[1];
         ProjectManager.mutex().writeAccess(new Runnable() {
@@ -211,7 +217,17 @@ public class FreeformProjectGenerator {
 
                     putTargetMappings(h[0], mappings);
                     putSourceFolders(h[0], sources, null);
-                    putSourceViews(h[0], sources);
+                    List sourceViews = new ArrayList(sources);
+                    if (!locationFO.equals(dirFO)) {
+                        SourceFolder gen = new SourceFolder();
+                        gen.type = Sources.TYPE_GENERIC;
+                        gen.location = FileUtil.toFile(locationFO).getAbsolutePath();
+                        // XXX: uniquefy label
+                        gen.label = locationFO.getName();
+                        gen.style = "tree";
+                        sourceViews.add(gen);
+                    }
+                    putSourceViews(h[0], sourceViews, null);
                     putJavaCompilationUnits(h[0], aux, compUnits, "compile");
                     if (webModules != null) {
                         putWebModules (h[0], aux, webModules);
@@ -251,6 +267,7 @@ public class FreeformProjectGenerator {
         public String label;
         public String type;
         public String location;
+        public String style;
     }
 
     /**
@@ -259,7 +276,7 @@ public class FreeformProjectGenerator {
      * @param type type of source folders to be read. Can be null in which case
      *    all types will be read. Useful for reading one type of source folders.
      *    Source folders without type are read only when type == null.
-     * @return list of SourceFolder instances
+     * @return list of SourceFolder instances; style value will be always null
      */
     public static List/*<SourceFolder>*/ getSourceFolders(AntProjectHelper helper, String type) {
         ArrayList list = new ArrayList();
@@ -357,16 +374,59 @@ public class FreeformProjectGenerator {
     }
     
     /**
-     * Update source views of the project. At the moment only source views
-     * of style "package" are updated. They are updated according to list
-     * of given source folders of type "java". This method should be called
-     * always after the putSourceFolders method was called for "java" type
+     * Read source views from the project. At the moment only source-folder
+     * elements are read and source-file ones are ignored.
+     * @param helper AntProjectHelper instance
+     * @param style style of source folders to be read. Can be null in which case
+     *    all styles will be read. Useful for reading one style of source folders.
+     * @return list of SourceFolder instances; type value will be always null
+     */
+    public static List getSourceViews(AntProjectHelper helper, String style) {
+        ArrayList list = new ArrayList();
+        Element data = helper.getPrimaryConfigurationData(true);
+        Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (viewEl == null) {
+            return list;
+        }
+        Element itemsEl = Util.findElement(viewEl, "items", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (itemsEl == null) {
+            return list;
+        }
+        Iterator/*<Element>*/ it = Util.findSubElements(itemsEl).iterator();
+        while (it.hasNext()) {
+            Element sourceFolderEl = (Element)it.next();
+            if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
+                continue;
+            }
+            SourceFolder sf = new SourceFolder();
+            sf.style = sourceFolderEl.getAttribute("style");
+            Element el = Util.findElement(sourceFolderEl, "label", FreeformProjectType.NS_GENERAL);
+            if (el != null) {
+                sf.label = Util.findText(el);
+            }
+            el = Util.findElement(sourceFolderEl, "location", FreeformProjectType.NS_GENERAL);
+            if (el != null) {
+                sf.location = Util.findText(el);
+            }
+            if (style == null || style.equals(sf.style)) {
+                list.add(sf);
+            }
+        }
+        return list;
+    }
+    
+    /**
+     * Update source views of the project. 
+     * This method should be called always after the putSourceFolders method
      * to keep views and folders in sync.
      * Project is left modified and you must save it explicitely.
      * @param helper AntProjectHelper instance
      * @param sources list of SourceFolder instances
+     * @param style style of source views to update. 
+     *    Can be null in which case all styles will be overriden.
+     *    Useful for overriding just one style of source view.
      */
-    public static void putSourceViews(AntProjectHelper helper, List/*<SourceFolder>*/ sources) {
+    public static void putSourceViews(AntProjectHelper helper, List/*<SourceFolder>*/ sources, String style) {
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -387,24 +447,16 @@ public class FreeformProjectGenerator {
             if (!sourceViewEl.getLocalName().equals("source-folder")) { // NOI18N
                 continue;
             }
-            String style = sourceViewEl.getAttribute("style");
-            if ("packages".equals(style) || "tree".equals(style)) {
+            String sourceStyle = sourceViewEl.getAttribute("style");
+            if (style == null || style.equals(sourceStyle)) {
                 itemsEl.removeChild(sourceViewEl);
             }
         }
         Iterator it2 = sources.iterator();
         while (it2.hasNext()) {
             SourceFolder sf = (SourceFolder)it2.next();
-            String style = null;
-            if ("java".equals(sf.type)) {
-                style = "packages";
-            } if ("doc_root".equals(sf.type)) {
-                style = "tree";
-            } if (style == null) {
-                continue;
-            }
             Element sourceFolderEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "source-folder"); // NOI18N
-            sourceFolderEl.setAttribute("style", style);
+            sourceFolderEl.setAttribute("style", sf.style);
             Element el;
             if (sf.label != null) {
                 el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "label"); // NOI18N
@@ -482,7 +534,7 @@ public class FreeformProjectGenerator {
                     cu.sourceLevel = Util.findText(el);
                 }
             }
-            cu.output = outputs;
+            cu.output = outputs.size() > 0 ? outputs : null;
             if (mode == null || mode.equals(cu.classpathMode)) {
                 list.add(cu);
             }
@@ -535,6 +587,7 @@ public class FreeformProjectGenerator {
             if (cu.classpath != null) {
                 el = doc.createElementNS(FreeformProjectType.NS_JAVA, "classpath"); // NOI18N
                 el.appendChild(doc.createTextNode(cu.classpath));
+                assert cu.classpathMode != null : cu.classpath;
                 el.setAttribute("mode", cu.classpathMode);
                 cuEl.appendChild(el);
             }

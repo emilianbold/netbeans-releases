@@ -37,6 +37,8 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
     private boolean projectFolderTouched = false;
     /** Was projectName property edited by user? */
     private boolean projectNameTouched = false;
+    /** Is choosen Ant script a valid one? */
+    private boolean antScriptValidityChecked;
     
     public BasicProjectInfoPanel(String projectLocation, String antScript, String projectName, String projectFolder, ChangeListener listener) {
         initComponents();
@@ -97,6 +99,14 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
             if (!getAntScript().exists()) {
                 return "The Ant script does not exist";
             }
+            if (!antScriptValidityChecked) {
+                FileObject fo = FileUtil.toFileObject(getAntScript());
+                if (fo != null && Util.getAntScriptTargetNames(fo) != null) {
+                    antScriptValidityChecked = true;
+                } else {
+                    return "The choosen script is not valid Ant script";
+                }
+            }
             if (getProjectName().length() == 0) {
                 return "Project name must be set";
             }
@@ -125,11 +135,13 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
             ignoreEvent = true;
             
             if (projectLocation.getDocument() == e.getDocument()) {
+                antScriptValidityChecked = false;
                 updateAntScriptLocation();
                 updateProjectName();
                 updateProjectFolder();
             }
             if (antScript.getDocument() == e.getDocument()) {
+                antScriptValidityChecked = false;
                 updateProjectName();
             }
             

@@ -85,6 +85,8 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
         wizardDescriptor.putProperty("NewProjectWizard_Title", component.getClientProperty("NewProjectWizard_Title")); //NOI18N
         File f = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_ANT_SCRIPT);
         FileObject fo = FileUtil.toFileObject(f);
+        // Util.getAntScriptTargetNames can return null when script is 
+        // invalid but first panel checks script validity so it is OK here.
         List l = Util.getAntScriptTargetNames(fo);
         component.setTargetNames(l);
         File projDir = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_FOLDER);

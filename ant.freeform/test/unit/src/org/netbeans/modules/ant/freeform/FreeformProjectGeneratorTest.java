@@ -102,6 +102,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         FreeformProjectGenerator.SourceFolder sf = new FreeformProjectGenerator.SourceFolder();
         sf.label = "src";
         sf.type = "java";
+        sf.style = "packages";
         sf.location = src.getAbsolutePath();
         sources.add(sf);
         ArrayList compUnits = new ArrayList();
@@ -111,7 +112,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         cu.sourceLevel = "1.4";
         cu.packageRoot = src.getAbsolutePath();
         compUnits.add(cu);
-        AntProjectHelper helper = FreeformProjectGenerator.createJavaProject(base, projectName, null, new ArrayList(), sources, compUnits);
+        AntProjectHelper helper = FreeformProjectGenerator.createJavaProject(base, base, projectName, null, new ArrayList(), sources, compUnits);
         return helper;
     }
     
@@ -183,7 +184,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         ProjectManager.getDefault().saveAllProjects();
     }
     
-    public void testSourceFoldersAndSourceViews() throws Exception {
+    public void testSourceFolders() throws Exception {
         clearWorkDir();
         AntProjectHelper helper = createEmptyProject("proj3", "proj-3");
         FileObject base = helper.getProjectDirectory();
@@ -195,12 +196,6 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertEquals("Project must have one java source group", 1, ss.getSourceGroups("java").length);
         assertEquals("Project cannot have csharp source group", 0, ss.getSourceGroups("csharp").length);
 
-        LogicalViewProvider lvp = (LogicalViewProvider)p.getLookup().lookup(LogicalViewProvider.class);
-        assertNotNull("Project does not have LogicalViewProvider", lvp);
-        Node n = lvp.createLogicalView();
-        // expected subnodes: #1) src folder and #2) build.xml
-        assertEquals("There must be two subnodes in logical view", 2, n.getChildren().getNodesCount());
-        
         Listener l = new Listener();
         ss.addChangeListener(l);
         
@@ -212,8 +207,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         sf.location = test.getAbsolutePath();
         sfs.add(sf);
         FreeformProjectGenerator.putSourceFolders(helper, sfs, null);
-        FreeformProjectGenerator.putSourceViews(helper, sfs);
-        assertEquals("Project must have two java source group", 2, ss.getSourceGroups("java").length);
+        assertEquals("Project must have two java source groups", 2, ss.getSourceGroups("java").length);
         assertEquals("Project cannot have csharp source group", 0, ss.getSourceGroups("csharp").length);
         // XXX still crude impl that does not try to fire a minimal number of changes:
         /*
@@ -221,10 +215,6 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
          */
         l.reset();
         
-        n = lvp.createLogicalView();
-        // expected subnodes: #1) src folder and #2) build.xml and #3) tests
-//        assertEquals("There must be three subnodes in logical view", 3, n.getChildren().getNodesCount());
-
         sfs = new ArrayList();
         sf = new FreeformProjectGenerator.SourceFolder();
         sf.label = "xdoc";
@@ -233,11 +223,10 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         sf.location = test.getAbsolutePath();
         sfs.add(sf);
         FreeformProjectGenerator.putSourceFolders(helper, sfs, "x-doc");
-        assertEquals("Project must have two java source group", 2, ss.getSourceGroups("java").length);
-        assertEquals("Project cannot have csharp source group", 2, FreeformProjectGenerator.getSourceFolders(helper, "java").size());
+        assertEquals("Project must have two java source groups", 2, ss.getSourceGroups("java").length);
+        assertEquals("Project must have two java source groups", 2, FreeformProjectGenerator.getSourceFolders(helper, "java").size());
         assertEquals("Project cannot have csharp source group", 0, ss.getSourceGroups("csharp").length);
-        assertEquals("Project cannot have csharp source group", 1, ss.getSourceGroups("x-doc").length);
-        assertEquals("Project cannot have csharp source group", 1, FreeformProjectGenerator.getSourceFolders(helper, "x-doc").size());
+        assertEquals("Project must have one x-doc source group", 1, ss.getSourceGroups("x-doc").length);
         sf = new FreeformProjectGenerator.SourceFolder();
         sf.label = "xdoc2";
         sf.type = "x-doc";
@@ -245,23 +234,88 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         sf.location = src.getAbsolutePath();
         sfs.add(sf);
         FreeformProjectGenerator.putSourceFolders(helper, sfs, "x-doc");
-        assertEquals("Project must have two java source group", 2, ss.getSourceGroups("java").length);
-        assertEquals("Project cannot have csharp source group", 2, FreeformProjectGenerator.getSourceFolders(helper, "java").size());
+        assertEquals("Project must have two java source groups", 2, ss.getSourceGroups("java").length);
+        assertEquals("Project must have two java source groups", 2, FreeformProjectGenerator.getSourceFolders(helper, "java").size());
         assertEquals("Project cannot have csharp source group", 0, ss.getSourceGroups("csharp").length);
-        assertEquals("Project cannot have csharp source group", 2, ss.getSourceGroups("x-doc").length);
-        assertEquals("Project cannot have csharp source group", 2, FreeformProjectGenerator.getSourceFolders(helper, "x-doc").size());
-        assertEquals("Project cannot have csharp source group", 4, FreeformProjectGenerator.getSourceFolders(helper, null).size());
+        assertEquals("Project must have two x-doc source groups", 2, ss.getSourceGroups("x-doc").length);
+        assertEquals("Project must have two x-doc source groups", 2, FreeformProjectGenerator.getSourceFolders(helper, "x-doc").size());
+        assertEquals("Project must have four source groups", 4, FreeformProjectGenerator.getSourceFolders(helper, null).size());
 
         sfs = FreeformProjectGenerator.getSourceFolders(helper, null);
         FreeformProjectGenerator.putSourceFolders(helper, sfs, null);
-        FreeformProjectGenerator.putSourceViews(helper, sfs);
-        assertEquals("Project must have two java source group", 2, ss.getSourceGroups("java").length);
-        assertEquals("Project cannot have csharp source group", 2, FreeformProjectGenerator.getSourceFolders(helper, "java").size());
+        assertEquals("Project must have two java source groups", 2, ss.getSourceGroups("java").length);
+        assertEquals("Project must have two java source groups", 2, FreeformProjectGenerator.getSourceFolders(helper, "java").size());
         assertEquals("Project cannot have csharp source group", 0, ss.getSourceGroups("csharp").length);
-        assertEquals("Project cannot have csharp source group", 2, ss.getSourceGroups("x-doc").length);
-        assertEquals("Project cannot have csharp source group", 2, FreeformProjectGenerator.getSourceFolders(helper, "x-doc").size());
-        assertEquals("Project cannot have csharp source group", 4, FreeformProjectGenerator.getSourceFolders(helper, null).size());
+        assertEquals("Project must have two x-doc source groups", 2, ss.getSourceGroups("x-doc").length);
+        assertEquals("Project must have two x-doc source groups", 2, FreeformProjectGenerator.getSourceFolders(helper, "x-doc").size());
+        assertEquals("Project must have four source groups", 4, FreeformProjectGenerator.getSourceFolders(helper, null).size());
+
+        ProjectManager.getDefault().saveAllProjects();
+    }
+    
+    public void testSourceViews() throws Exception {
+        clearWorkDir();
+        AntProjectHelper helper = createEmptyProject("proj6", "proj-6");
+        FileObject base = helper.getProjectDirectory();
+        Project p = ProjectManager.getDefault().findProject(base);
+        assertNotNull("Project was not created", p);
+        assertEquals("Project folder is incorrect", base, p.getProjectDirectory());
         
+        Sources ss = ProjectUtils.getSources(p);
+        assertEquals("Project must have one java source group", 1, ss.getSourceGroups("java").length);
+
+        LogicalViewProvider lvp = (LogicalViewProvider)p.getLookup().lookup(LogicalViewProvider.class);
+        assertNotNull("Project does not have LogicalViewProvider", lvp);
+        Node n = lvp.createLogicalView();
+        // expected subnodes: #1) src folder and #2) build.xml
+        assertEquals("There must be two subnodes in logical view", 2, n.getChildren().getNodesCount());
+        
+        List sfs = FreeformProjectGenerator.getSourceViews(helper, null);
+        assertEquals("There must be one source view", 1, sfs.size());
+        FreeformProjectGenerator.SourceFolder sf = new FreeformProjectGenerator.SourceFolder();
+        sf.label = "test";
+        sf.style = "packages";
+        sf.location = test.getAbsolutePath();
+        sfs.add(sf);
+        FreeformProjectGenerator.putSourceViews(helper, sfs, null);
+        assertEquals("Project must have two packages source views", 2, FreeformProjectGenerator.getSourceViews(helper, "packages").size());
+        assertEquals("Project cannot have any flat source view", 0, FreeformProjectGenerator.getSourceViews(helper, "flat").size());
+        
+        n = lvp.createLogicalView();
+        // expected subnodes: #1) src folder and #2) build.xml and #3) tests
+//        assertEquals("There must be three subnodes in logical view", 3, n.getChildren().getNodesCount());
+
+        sfs = new ArrayList();
+        sf = new FreeformProjectGenerator.SourceFolder();
+        sf.label = "xdoc";
+        sf.style = "tree";
+        // just some path
+        sf.location = test.getAbsolutePath();
+        sfs.add(sf);
+        FreeformProjectGenerator.putSourceViews(helper, sfs, "tree");
+        assertEquals("Project must have two packages source views", 2, FreeformProjectGenerator.getSourceViews(helper, "packages").size());
+        assertEquals("Project cannot have any flat source view", 0, FreeformProjectGenerator.getSourceViews(helper, "flat").size());
+        assertEquals("Project must have one tree source view", 1, FreeformProjectGenerator.getSourceViews(helper, "tree").size());
+        assertEquals("Project must have three source views", 3, FreeformProjectGenerator.getSourceViews(helper, null).size());
+        sf = new FreeformProjectGenerator.SourceFolder();
+        sf.label = "xdoc2";
+        sf.style = "tree";
+        // just some path
+        sf.location = src.getAbsolutePath();
+        sfs.add(sf);
+        FreeformProjectGenerator.putSourceViews(helper, sfs, "tree");
+        assertEquals("Project must have two packages source views", 2, FreeformProjectGenerator.getSourceViews(helper, "packages").size());
+        assertEquals("Project cannot have any flat source view", 0, FreeformProjectGenerator.getSourceViews(helper, "flat").size());
+        assertEquals("Project must have two tree source views", 2, FreeformProjectGenerator.getSourceViews(helper, "tree").size());
+        assertEquals("Project must have four source views", 4, FreeformProjectGenerator.getSourceViews(helper, null).size());
+
+        sfs = FreeformProjectGenerator.getSourceViews(helper, null);
+        FreeformProjectGenerator.putSourceViews(helper, sfs, null);
+        assertEquals("Project must have two packages source views", 2, FreeformProjectGenerator.getSourceViews(helper, "packages").size());
+        assertEquals("Project cannot have any flat source view", 0, FreeformProjectGenerator.getSourceViews(helper, "flat").size());
+        assertEquals("Project must have two tree source views", 2, FreeformProjectGenerator.getSourceViews(helper, "tree").size());
+        assertEquals("Project must have four source views", 4, FreeformProjectGenerator.getSourceViews(helper, null).size());
+
         ProjectManager.getDefault().saveAllProjects();
     }
     
