@@ -54,6 +54,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="corba"   	testtypes="qa-functional"  attributes="validation"/>  
       -->
       <module name="core"   	testtypes="qa-functional"  attributes="validation"/>  
+      <module name="core"   	testtypes="qa-performance" attributes="measure_ui"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation"/>
       <module name="form" 	testtypes="qa-functional"  attributes="validation"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation"/>
@@ -133,6 +134,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="clazz"  	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="corba"   	testtypes="qa-functional"  attributes="validation,full"/>  
       <module name="core"   	testtypes="qa-functional"  attributes="validation,full"/>  
+      <module name="core"   	testtypes="qa-performance" attributes="measure_ui"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="form" 	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation,full"/>
