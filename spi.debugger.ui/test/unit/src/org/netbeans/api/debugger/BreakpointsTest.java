@@ -32,6 +32,7 @@ public class BreakpointsTest extends DebuggerApiTestBase {
         TestDebuggerManagerListener dml = new TestDebuggerManagerListener();
         dm.addDebuggerListener(dml);
 
+        initBreakpoints(dm, dml);
         addBreakpoint(dm, tb, dml);
         addBreakpoint(dm, tb, dml);
         addBreakpoint(dm, tb, dml);
@@ -42,6 +43,30 @@ public class BreakpointsTest extends DebuggerApiTestBase {
         addBreakpoint(dm, tb, dml);
         removeBreakpoint(dm, tb, dml);
         removeBreakpoint(dm, tb, dml);
+    }
+
+    private void initBreakpoints(DebuggerManager dm, DebuggerApiTestBase.TestDebuggerManagerListener dml) {
+        dm.getBreakpoints();    // trigger the "breakpointsInit" property change
+        DebuggerApiTestBase.Event event;
+        List events = dml.getEvents();
+        assertEquals("Wrong PCS", 1, events.size());
+        event = (DebuggerApiTestBase.Event) events.get(0);
+        assertEquals("Wrong PCS", "propertyChange", event.name);
+        PropertyChangeEvent pce = (PropertyChangeEvent) event.param;
+        assertEquals("Wrong PCE name", "breakpointsInit", pce.getPropertyName());
+    }
+
+    private void printEvents(List events) {
+        System.out.println("events: " + events.size());
+        for (Iterator i = events.iterator(); i.hasNext();) {
+            DebuggerApiTestBase.Event event1 = (DebuggerApiTestBase.Event) i.next();
+            System.out.println("event: " + event1.name);
+            if (event1.param instanceof PropertyChangeEvent) {
+                PropertyChangeEvent pce = (PropertyChangeEvent) event1.param;
+                System.out.println("PCS name: " + pce.getPropertyName());
+            }
+            System.out.println(event1.param);
+        }
     }
 
     private void removeBreakpoint(DebuggerManager dm, TestBreakpoint tb, DebuggerApiTestBase.TestDebuggerManagerListener dml) {
