@@ -44,10 +44,10 @@ public class UnitTestForSourceQuery {
     /**
      * Returns the test root for a given source root.
      *
-     * @param source java package root with sources
-     * @return corresponding java package root with unit tests. The
+     * @param source Java package root with sources
+     * @return corresponding Java package root with unit tests. The
      *     returned URL does not have to point to existing file. It can be null
-     *     when mapping from source to unit test is not known.
+     *     when the mapping from source to unit test is not known.
      * @deprecated Use {@link #findUnitTests} instead.
      */
     public static URL findUnitTest(FileObject source) {
@@ -59,10 +59,10 @@ public class UnitTestForSourceQuery {
     /**
      * Returns the test roots for a given source root.
      *
-     * @param source java package root with sources
-     * @return corresponding java package roots with unit tests. The
-     *     returned URLs do not have to point to existing file. It can be an empty
-     *     array when mapping from source to unit test is not known but can't be null.
+     * @param source Java package root with sources
+     * @return corresponding Java package roots with unit tests. The
+     *     returned URLs do not have to point to existing files. It can be an empty
+     *     array (but not null) when the mapping from source to unit tests is not known.
      * @since org.netbeans.api.java/1 1.7
      */
     public static URL[] findUnitTests(FileObject source) {
@@ -92,9 +92,9 @@ public class UnitTestForSourceQuery {
     /**
      * Returns the source root for a given test root.
      *
-     * @param unitTest java package root with unit tests
-     * @return corresponding java package root with sources. It can be null
-     *     when mapping from unit test to source is not known.
+     * @param unitTest Java package root with unit tests
+     * @return corresponding Java package root with sources. It can be null
+     *     when the mapping from unit test to source is not known.
      * @deprecated Use {@link #findSources} instead.
      */
     public static URL findSource(FileObject unitTest) {
@@ -105,9 +105,9 @@ public class UnitTestForSourceQuery {
     /**
      * Returns the source roots for a given test root.
      *
-     * @param unitTest java package root with unit tests
-     * @return corresponding java package roots with sources. It can be an empty array
-     *     when mapping from unit test to source is not known but it can't be null.
+     * @param unitTest Java package root with unit tests
+     * @return corresponding Java package roots with sources. It can be an empty array (not null)
+     *     when the mapping from unit test to sources is not known.
      * @since org.netbeans.api.java/1 1.7
      */
     public static URL[] findSources (FileObject unitTest) {
