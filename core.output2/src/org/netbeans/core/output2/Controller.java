@@ -700,6 +700,8 @@ public class Controller { //XXX public only for debug access to logging code
      */
     public void notifyRemoved(OutputWindow win, OutputTab tab) {
         if (log) log ("Tab " + tab + " has been CLOSED.  Disposing its IO.");
+        NbIO io = tab.getIO();
+        io.setClosed(true);
         tab.getIO().dispose();
     }
 
