@@ -67,6 +67,8 @@ public class FormUtils
     static final Object PROP_HIDDEN = new Object();
 
     private static Object[][] propsClassifications = {
+        { java.awt.Component.class, CLASS_AND_SUBCLASSES,
+                "locale", PROP_HIDDEN },
         { java.awt.Container.class, CLASS_AND_SUBCLASSES,
                 "layout", PROP_HIDDEN },
         { javax.swing.JComponent.class, CLASS_AND_SUBCLASSES,
@@ -167,8 +169,7 @@ public class FormUtils
         { java.applet.Applet.class, CLASS_AND_SUBCLASSES,
                 "appletContext", PROP_HIDDEN,
                 "codeBase", PROP_HIDDEN,
-                "documentBase", PROP_HIDDEN,
-                "locale", PROP_HIDDEN }
+                "documentBase", PROP_HIDDEN }
     };
 
     /** The properties whose changes are ignored in JComponent subclasses */
