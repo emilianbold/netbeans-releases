@@ -46,8 +46,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
     static {
         try {
             desc = new PropertyDescriptor[] {
-                new PropertyDescriptor(FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY, FormLoaderSettings.class,
-                                       "getIndentAWTHierarchy", "setIndentAWTHierarchy"), // NOI18N
+//                new PropertyDescriptor(FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY, FormLoaderSettings.class,
+//                                       "getIndentAWTHierarchy", "setIndentAWTHierarchy"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_USE_INDENT_ENGINE, FormLoaderSettings.class,
+                                       "getUseIndentEngine", "setUseIndentEngine"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_EVENT_VARIABLE_NAME, FormLoaderSettings.class,
                                        "getEventVariableName", "setEventVariableName"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_SELECTION_BORDER_SIZE, FormLoaderSettings.class,
@@ -84,9 +86,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        "getPaletteTabsVisible", "setPaletteTabsVisible") // NOI18N
             };
 
-            desc[0].setDisplayName(formBundle.getString("PROP_INDENT_AWT_HIERARCHY"));
-            desc[0].setShortDescription(formBundle.getString("HINT_INDENT_AWT_HIERARCHY"));
-            desc[0].setExpert(true);
+//            desc[0].setDisplayName(formBundle.getString("PROP_INDENT_AWT_HIERARCHY"));
+//            desc[0].setShortDescription(formBundle.getString("HINT_INDENT_AWT_HIERARCHY"));
+//            desc[0].setExpert(true);
+            desc[0].setDisplayName(formBundle.getString("PROP_USE_INDENT_ENGINE"));
+            desc[0].setShortDescription(formBundle.getString("HINT_USE_INDENT_ENGINE"));
 
             desc[1].setDisplayName(formBundle.getString("PROP_EVENT_VARIABLE_NAME"));
             desc[1].setShortDescription(formBundle.getString("HINT_EVENT_VARIABLE_NAME"));

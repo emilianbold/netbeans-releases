@@ -459,16 +459,22 @@ class JavaCodeGenerator extends CodeGenerator {
         if (!initialized || !canGenerate)
             return;
 
+        IndentEngine indentEngine = IndentEngine.find(
+            formModel.getFormEditorSupport().getDocument());
+
+        StringWriter initCodeBuffer = new StringWriter(1024);
+        Writer initCodeWriter;
+        if (formSettings.getUseIndentEngine())
+            initCodeWriter = indentEngine.createWriter(
+                               formModel.getFormEditorSupport().getDocument(),
+                               initComponentsSection.getBegin().getOffset(),
+                               initCodeBuffer);
+        else
+            initCodeWriter = initCodeBuffer;
+
+        containerDependentProperties = null;
+
         try {
-            IndentEngine engine = IndentEngine.find(
-                formModel.getFormEditorSupport().getDocument());
-            AWTIndentStringWriter initCodeBuffer = new AWTIndentStringWriter();
-            Writer initCodeWriter = engine.createWriter(
-                formModel.getFormEditorSupport().getDocument(),
-                initComponentsSection.getBegin().getOffset(), initCodeBuffer);
-
-            containerDependentProperties = null;
-
             initCodeWriter.write(INIT_COMPONENTS_HEADER);
             RADComponent top = formModel.getTopRADComponent();
             RADComponent[] nonVisualComponents = formModel.getNonVisualComponents();
@@ -479,11 +485,11 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write("\n");
 
             for (int i = 0; i < nonVisualComponents.length; i++) {
-                addInitCode(nonVisualComponents[i], initCodeWriter, initCodeBuffer, 0);
+                addInitCode(nonVisualComponents[i], initCodeWriter, 0);
             }
             if (nonVisualComponents.length > 0)
                 initCodeWriter.write("\n");
-            addInitCode(top, initCodeWriter, initCodeBuffer, 0);
+            addInitCode(top, initCodeWriter, 0);
 
             // for visual forms append sizing text
             if (formModel.getTopRADComponent() instanceof RADVisualFormContainer) {
@@ -553,22 +559,23 @@ class JavaCodeGenerator extends CodeGenerator {
                 initCodeWriter.write(sizeText);
             }
 
+            containerDependentProperties = null;
+
             initCodeWriter.write(INIT_COMPONENTS_FOOTER);
             initCodeWriter.close();
 
-            containerDependentProperties = null;
-
             // set the text into the guarded block
             synchronized(GEN_LOCK) {
-                String originalText = initComponentsSection.getText();
                 String newText = initCodeBuffer.toString();
-                if (!newText.equals(originalText)) {
-                    initComponentsSection.setText(newText);
-                    clearUndo();
-                }
+                if (!formSettings.getUseIndentEngine())
+                    newText = indentCode(newText, indentEngine);
+
+                initComponentsSection.setText(newText);
+                clearUndo();
             }
-        } catch (IOException e) {
-            throw new InternalError(); // cannot happen
+        }
+        catch (IOException e) { // should not happen
+            e.printStackTrace();
         }
     }
 
@@ -576,13 +583,18 @@ class JavaCodeGenerator extends CodeGenerator {
         if (!initialized || !canGenerate)
             return;
         
-        IndentEngine engine = IndentEngine.find(
+        IndentEngine indentEngine = IndentEngine.find(
             formModel.getFormEditorSupport().getDocument());
-        StringWriter variablesBuffer = new StringWriter();
-        Writer variablesWriter = engine.createWriter(
-            formModel.getFormEditorSupport().getDocument(),
-            variablesSection.getBegin().getOffset(),
-            variablesBuffer);
+
+        StringWriter variablesBuffer = new StringWriter(1024);
+        Writer variablesWriter;
+        if (formSettings.getUseIndentEngine())
+            variablesWriter = indentEngine.createWriter(
+                               formModel.getFormEditorSupport().getDocument(),
+                               variablesSection.getBegin().getOffset(),
+                               variablesBuffer);
+        else
+            variablesWriter = variablesBuffer;
 
         try {
             variablesWriter.write(VARIABLES_HEADER);
@@ -595,16 +607,18 @@ class JavaCodeGenerator extends CodeGenerator {
             variablesWriter.write(VARIABLES_FOOTER);
             variablesWriter.write("\n"); // NOI18N
             variablesWriter.close();
+
             synchronized(GEN_LOCK) {
-                String originalText = variablesSection.getText();
                 String newText = variablesBuffer.toString();
-                if (!newText.equals(originalText)) {
-                    variablesSection.setText(newText);
-                    clearUndo();
-                }
+                if (!formSettings.getUseIndentEngine())
+                    newText = indentCode(newText, indentEngine);
+
+                variablesSection.setText(newText);
+                clearUndo();
             }
-        } catch (IOException e) {
-            throw new InternalError(); // cannot happen
+        }
+        catch (IOException e) { // should not happen
+            e.printStackTrace();
         }
     }
 
@@ -633,7 +647,6 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void addInitCode(RADComponent comp,
                              Writer initCodeWriter,
-                             AWTIndentStringWriter initCodeBuffer,
                              int level) throws IOException {
         generateComponentInit(comp, initCodeWriter);
         generateComponentEvents(comp, initCodeWriter);
@@ -641,49 +654,21 @@ class JavaCodeGenerator extends CodeGenerator {
         if (comp instanceof ComponentContainer) {
             RADComponent[] children =((ComponentContainer)comp).getSubBeans();
             for (int i = 0; i < children.length; i++) {
-                if ((comp instanceof FormContainer)
-                    ||(!FormEditor.getFormSettings().getIndentAWTHierarchy()))
-                {
-                    //XXX initCodeWriter.write("\n"); // NOI18N
-                    // do not indent for top-level children
-                    addInitCode(children[i], initCodeWriter, initCodeBuffer, level);
+                addInitCode(children[i], initCodeWriter, level);
 
-                    if (comp instanceof RADVisualContainer) {
-                        if (comp instanceof RADVisualFormContainer) {
-                            // no indent for top-level container
-                            //XXX initCodeWriter.write("\n"); // NOI18N
-                            generateComponentAddCode(children[i],(RADVisualContainer)comp, initCodeWriter);
-                        } else {
-                            generateComponentAddCode(children[i],(RADVisualContainer)comp, initCodeWriter);
-                        }
-                    } else if (comp instanceof RADMenuComponent) {
-                        generateMenuAddCode(children[i],(RADMenuComponent)comp, initCodeWriter);
-                    } // [PENDING - adding to non-visual containers]
+                if (comp instanceof RADVisualContainer) {
+                    if (comp instanceof RADVisualFormContainer) {
+                        // no indent for top-level container
+                        //XXX initCodeWriter.write("\n"); // NOI18N
+                        generateComponentAddCode(children[i],(RADVisualContainer)comp, initCodeWriter);
+                    } else {
+                        generateComponentAddCode(children[i],(RADVisualContainer)comp, initCodeWriter);
+                    }
+                } else if (comp instanceof RADMenuComponent) {
+                    generateMenuAddCode(children[i],(RADMenuComponent)comp, initCodeWriter);
+                } // [PENDING - adding to non-visual containers]
 
-                    initCodeWriter.write("\n"); // NOI18N
-
-                } else {
-                    //XXX initCodeWriter.write("\n"); // NOI18N
-                    //XXX initCodeWriter.flush();
-                    initCodeBuffer.setIndentLevel(level + 1, oneIndent);
-                    addInitCode(children[i], initCodeWriter, initCodeBuffer, level + 1);
-
-                    if (comp instanceof RADVisualContainer) {
-                        if (comp instanceof RADVisualFormContainer) {
-                            // no indent for top-level container
-                            initCodeWriter.write("\n"); // NOI18N
-                            generateComponentAddCode(children[i],(RADVisualContainer)comp, initCodeWriter);
-                        } else {
-                            generateComponentAddCode(children[i],(RADVisualContainer)comp, initCodeWriter);
-                        }
-                    } else if (comp instanceof RADMenuComponent) {
-                        generateMenuAddCode(children[i],(RADMenuComponent)comp, initCodeWriter);
-                    } // [PENDING - adding to non-visual containers]
-
-                    initCodeWriter.write("\n"); // NOI18N
-                    initCodeWriter.flush();
-                    initCodeBuffer.setIndentLevel(level, oneIndent);
-                }
+                initCodeWriter.write("\n"); // NOI18N
             }
 
             // hack for properties that can't be set until all children 
@@ -1431,6 +1416,173 @@ class JavaCodeGenerator extends CodeGenerator {
         return diff > 1500 ? true : false;
     }
 
+    private String indentCode(String code, IndentEngine refEngine) {
+        int spacesPerTab = 4;
+        boolean braceOnNewLine = false;
+
+        IndentEngine engine = IndentEngine.find(
+                              formModel.getFormEditorSupport().getDocument());
+        if (refEngine != null) {
+            Class engineClass = refEngine.getClass();
+
+            try {
+                Method m = engineClass.getMethod("getSpacesPerTab", // NOI18N
+                                                 new Class[0]);
+                spacesPerTab = ((Integer)m.invoke(refEngine, new Object[0]))
+                                         .intValue();
+            }
+            catch (Exception ex) {} // ignore
+
+            try {
+                Method m = engineClass.getMethod("getJavaFormatNewlineBeforeBrace", // NOI18N
+                                                 new Class[0]);
+                braceOnNewLine = ((Boolean)m.invoke(refEngine, new Object[0]))
+                                           .booleanValue();
+            }
+            catch (Exception ex) {} // ignore
+        }
+
+        StringBuffer tab = new StringBuffer(spacesPerTab);
+        for (int i=0; i < spacesPerTab; i++)
+            tab.append(" "); // NOI18N
+
+        return doIndentation(code, 1, tab.toString(), braceOnNewLine);
+    }
+
+    // simple indentation method
+    private static String doIndentation(String code,
+                                        int minIndentLevel,
+                                        String tab,
+                                        boolean braceOnNewLine) {
+        int indentLevel = minIndentLevel;
+        boolean lastLineEmpty = false;
+        int codeLength = code.length();
+        StringBuffer buffer = new StringBuffer(codeLength);
+
+        int i = 0;
+        while (i < codeLength) {
+            int lineStart = i;
+            int lineEnd;
+            boolean startingSpace = true;
+            boolean firstClosingBr = false;
+            boolean closingBr = false;
+            int lastOpeningBr = -1;
+            int endingSpace = -1;
+            boolean insideString = false;
+            int brackets = 0;
+            char c;
+
+            do { // go through one line
+                c = code.charAt(i);
+                if (!insideString) {
+                    if (c == '}' || c == ')') {
+                        lastOpeningBr = -1;
+                        endingSpace = -1;
+                        if (startingSpace) { // first non-space char on the line
+                            firstClosingBr = true;
+                            closingBr = true;
+                            startingSpace = false;
+                            lineStart = i;
+                        }
+                        else if (!closingBr)
+                            brackets--;
+                    }
+                    else if (c == '{' || c == '(') {
+                        closingBr = false;
+                        lastOpeningBr = -1;
+                        endingSpace = -1;
+                        if (startingSpace) { // first non-space char on the line
+                            startingSpace = false;
+                            lineStart = i;
+                        }
+                        else if (c == '{') // possible last brace on the line
+                            lastOpeningBr = i;
+                        brackets++;
+                    }
+                    else if (c == '\"') { // start of String, its content is ignored
+                        insideString = true;
+                        lastOpeningBr = -1;
+                        endingSpace = -1;
+                        if (startingSpace) { // first non-space char on the line
+                            startingSpace = false;
+                            lineStart = i;
+                        }
+                    }
+                    else if (c == ' ' || c == '\t') {
+                        if (endingSpace < 0)
+                            endingSpace = i;
+                    }
+                    else {
+                        if (startingSpace) { // first non-space char on the line
+                            startingSpace = false;
+                            lineStart = i;
+                        }
+                        if (c != '\n') { // this char is not a whitespace
+                            endingSpace = -1;
+                            if (lastOpeningBr > -1)
+                                lastOpeningBr = -1;
+                        }
+                    }
+                }
+                else if (c == '\"' && code.charAt(i-1) != '\\') // end of String
+                    insideString = false;
+
+                i++;
+            }
+            while (c != '\n' && i < codeLength);
+
+            if (code.charAt(lineStart) == '\n') { // the line is empty
+                if (!lastLineEmpty) {
+                    buffer.append("\n");
+                    lastLineEmpty = true;
+                }
+                continue; // skip second and more empty lines
+            }
+            else lastLineEmpty = false;
+
+            // adjust indentation level for the line
+            if (firstClosingBr && indentLevel > minIndentLevel)
+                indentLevel--;
+
+            // write indentation space
+            for (int j=0; j < indentLevel; j++)
+                buffer.append(tab);
+
+            if (lastOpeningBr > -1 && braceOnNewLine) {
+                // write the line without last opening brace
+                // (indentation option "Add New Line Before Brace")
+                endingSpace = lastOpeningBr;
+                c = code.charAt(endingSpace-1);
+                while (c == ' ' || c == '\t') {
+                    endingSpace--;
+                    c = code.charAt(endingSpace-1);
+                }
+                i = lastOpeningBr;
+                brackets = 0;
+            }
+
+            // calculate line end
+            if (endingSpace < 0)
+                lineEnd = c == '\n' ? i-1 : i;
+            else
+                lineEnd = endingSpace;
+
+            // write the line
+            buffer.append(code.substring(lineStart, lineEnd));
+            buffer.append("\n"); // NOI18N
+
+            // calculate indentation level for the next line
+            if (brackets < 0) {
+                if (indentLevel > minIndentLevel)
+                    indentLevel--;
+            }
+            else if (brackets > 0)
+                indentLevel++;
+        }
+
+        return buffer.toString();
+    }
+
     //
     // {{{ JCGFormListener
     //
@@ -1515,79 +1667,6 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
     // }}}
-
-    //
-    // {{{ AWTIndentStringWriter
-    //
-
-    static class AWTIndentStringWriter extends StringWriter {
-        String currentIndent = null;
-
-        void setIndentLevel(int level, String indentString) {
-            if (level == 0) {
-                currentIndent = null;
-            } else {
-                currentIndent = ""; // NOI18N
-                for (int i = 0; i < level; i++) {
-                    currentIndent = currentIndent + indentString;
-                }
-            }
-        }
-
-        /**
-         * Write a single character.
-         */
-        public void write(int c) {
-            if ((currentIndent != null) &&(c ==(int)'\n')) {
-                super.write("\n" + currentIndent); // NOI18N
-            } else {
-                super.write(c);
-            }
-        }
-
-        /**
-         * Write a portion of an array of characters.
-         *
-         * @param  cbuf  Array of characters
-         * @param  off   Offset from which to start writing characters
-         * @param  len   Number of characters to write
-         */
-
-        public void write(char cbuf[], int off, int len) {
-            if (currentIndent != null) {
-                String str = new String(cbuf, off, len);
-                str = Utilities.replaceString(str, "\n", "\n"+currentIndent); // NOI18N
-                char[] newBuf = str.toCharArray();
-                super.write(newBuf, 0, newBuf.length);
-            } else {
-                super.write(cbuf, off, len);
-            }
-        }
-
-        /**
-         * Write a string.
-         */
-        public void write(String str) {
-            if (currentIndent != null) str = Utilities.replaceString(str, "\n", "\n"+currentIndent); // NOI18N
-            super.write(str);
-        }
-
-        /**
-         * Write a portion of a string.
-         *
-         * @param  str  String to be written
-         * @param  off  Offset from which to start writing characters
-         * @param  len  Number of characters to write
-         */
-        public void write(String str, int off, int len)  {
-            if (currentIndent != null) str = Utilities.replaceString(
-                str, "\n", "\n"+currentIndent); // NOI18N
-            super.write(str, off, len);
-        }
-    }
-
-    // }}}
-
 
     //
     // {{{ CodeGenerateEditor

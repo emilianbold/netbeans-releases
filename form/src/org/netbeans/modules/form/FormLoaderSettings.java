@@ -31,7 +31,8 @@ public class FormLoaderSettings extends SystemOption {
     /** Property name of the workspace property */
     public static final String PROP_WORKSPACE = "workspace"; // NOI18N
     /** Property name of the indentAWTHierarchy property */
-    public static final String PROP_INDENT_AWT_HIERARCHY = "indentAWTHierarchy"; // NOI18N
+//    public static final String PROP_INDENT_AWT_HIERARCHY = "indentAWTHierarchy"; // NOI18N
+    public static final String PROP_USE_INDENT_ENGINE = "useIndentEngine"; // NOI18N
     /** Property name of the eventVariableName property */
     public static final String PROP_EVENT_VARIABLE_NAME = "eventVariableName"; // NOI18N
 
@@ -86,7 +87,8 @@ public class FormLoaderSettings extends SystemOption {
      * is indented to reflect the hierarchy(i.e. the code for subcomponents of
      * Container is indented to the right).
      */
-    private static boolean indentAWTHierarchy = false;
+//    private static boolean indentAWTHierarchy = false;
+    private static boolean useIndentEngine = false;
 
     /** The name of the Event variable generated in the event handlers. */
     private static String eventVariableName = "evt"; // NOI18N
@@ -172,17 +174,29 @@ public class FormLoaderSettings extends SystemOption {
     }
 
     /** Getter for the IndentAWTHierarchy option */
-    public boolean getIndentAWTHierarchy() {
-        return indentAWTHierarchy;
-    }
+//    public boolean getIndentAWTHierarchy() {
+//        return indentAWTHierarchy;
+//    }
 
     /** Setter for the IndentAWTHierarchy option */
-    public void setIndentAWTHierarchy(boolean value) {
-        if (value == indentAWTHierarchy)
+//    public void setIndentAWTHierarchy(boolean value) {
+//        if (value == indentAWTHierarchy)
+//            return;
+//        indentAWTHierarchy = value;
+//        firePropertyChange(PROP_INDENT_AWT_HIERARCHY,
+//                           new Boolean(!indentAWTHierarchy), new Boolean(indentAWTHierarchy));
+//    }
+
+    public boolean getUseIndentEngine() {
+        return useIndentEngine;
+    }
+
+    public void setUseIndentEngine(boolean value) {
+        if (value == useIndentEngine)
             return;
-        indentAWTHierarchy = value;
-        firePropertyChange(PROP_INDENT_AWT_HIERARCHY,
-                           new Boolean(!indentAWTHierarchy), new Boolean(indentAWTHierarchy));
+        useIndentEngine = value;
+        firePropertyChange(PROP_USE_INDENT_ENGINE,
+                           new Boolean(!value), new Boolean(value));
     }
 
     /** Getter for the sortEventSets option */
