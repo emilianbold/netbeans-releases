@@ -130,10 +130,10 @@ final public class FormEditor extends Object
     }
 
     public static PropertyEditor createPropertyEditor(
-            Class editorClass,
-            Class propertyType,
-            RADComponent radComponent,
-            RADComponent.RADProperty radProperty)
+        Class editorClass,
+        Class propertyType,
+        RADComponent radComponent,
+        RADComponent.RADProperty radProperty)
         throws InstantiationException, IllegalAccessException
     {
         PropertyEditor ed;
@@ -218,9 +218,9 @@ final public class FormEditor extends Object
                                 (tm.getRowCount() == 0) &&(tm.getColumnCount() == 0)))
             {
                 propValue = new TableModelEditor.NbTableModel(new javax.swing.table.DefaultTableModel(
-                        new String[] {"Title 1", "Title 2", "Title 3", "Title 4"}, // NOI18N
-                        4
-                        ));
+                    new String[] {"Title 1", "Title 2", "Title 3", "Title 4"}, // NOI18N
+                    4
+                    ));
                 propName = "model"; // NOI18N
             }
         }
@@ -404,9 +404,9 @@ final public class FormEditor extends Object
     }
 
     static RADComponent.RADProperty[] sortProperties(
-            java.util.List properties, Class beanClass) {
+        java.util.List properties, Class beanClass) {
         return(RADComponent.RADProperty[])properties.toArray(
-                new RADComponent.RADProperty[properties.size()]); // noop so far [PENDING]
+            new RADComponent.RADProperty[properties.size()]); // noop so far [PENDING]
     }
 
     // ---------------------------------------------------
@@ -418,8 +418,8 @@ final public class FormEditor extends Object
     {
         /** The message formatter for Explorer title */
         private static MessageFormat formatInspectorTitle = new MessageFormat(
-                formBundle.getString("FMT_InspectorTitle")
-                );
+            formBundle.getString("FMT_InspectorTitle")
+            );
 
         /** A JDK 1.1. serial version UID */
         //    static final long serialVersionUID = 6802346985641760699L;
@@ -429,7 +429,7 @@ final public class FormEditor extends Object
 
         /** The Inspector's icon */
         private final static Image inspectorIcon = Toolkit.getDefaultToolkit().getImage(
-                ComponentInspector.class.getResource("/org/netbeans/modules/form/resources/inspector.gif")); // NOI18N
+            ComponentInspector.class.getResource("/org/netbeans/modules/form/resources/inspector.gif")); // NOI18N
 
         static final long serialVersionUID =4248268998485315927L;
         ComponentInspector() {
@@ -447,15 +447,15 @@ final public class FormEditor extends Object
             add("Center", split); // NOI18N
 
             manager.addPropertyChangeListener(new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                            updateTitle();
-                            if (formManager != null) {
-                                formManager.updateSelection(getExplorerManager().getSelectedNodes());
-                            }
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                        updateTitle();
+                        if (formManager != null) {
+                            formManager.updateSelection(getExplorerManager().getSelectedNodes());
                         }
                     }
                 }
+            }
                                               );
             setIcon(inspectorIcon);
             setName(formBundle.getString("CTL_NoSelection"));
@@ -520,7 +520,7 @@ final public class FormEditor extends Object
                 if (cookie != null) {
                     RADComponent radComponent = cookie.getRADComponent();
                     title = formatInspectorTitle.format(
-                            new Object[] { radComponent.getName() });
+                        new Object[] { radComponent.getName() });
                 } else {
                     title = formBundle.getString("CTL_NoSelection");
                 }
@@ -609,19 +609,19 @@ final public class FormEditor extends Object
 
         ErrorLogDialog eld = new ErrorLogDialog((ErrorLogItem[])errorLog.toArray(new ErrorLogItem[errorLog.size()]));
         errDlg = TopManager.getDefault().createDialog(new DialogDescriptor(
-                eld,
-                FormEditor.getFormBundle().getString("CTL_ErrorsNotificationTitle"),
-                true,
-                new Object[] { FormEditor.getFormBundle().getString("CTL_CLOSE") },
-                FormEditor.getFormBundle().getString("CTL_CLOSE"),
-                DialogDescriptor.BOTTOM_ALIGN,
-                null,
-                new ActionListener() {
-                        public void actionPerformed(ActionEvent evt) {
-                            errDlg.setVisible(false);
-                        }
-                    }
-                )
+            eld,
+            FormEditor.getFormBundle().getString("CTL_ErrorsNotificationTitle"),
+            true,
+            new Object[] { FormEditor.getFormBundle().getString("CTL_CLOSE") },
+            FormEditor.getFormBundle().getString("CTL_CLOSE"),
+            DialogDescriptor.BOTTOM_ALIGN,
+            null,
+            new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    errDlg.setVisible(false);
+                }
+            }
+            )
                                                       );
         errDlg.show();
 

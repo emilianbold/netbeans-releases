@@ -53,30 +53,30 @@ public class CustomCodeEditor extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints1;
         setTitle(FormEditor.getFormBundle().getString("CTL_CC_PROPERTY_EDITOR") + ": " + propertySupport.getDisplayName());
         addWindowListener(new java.awt.event.WindowAdapter() {
-                public void windowClosing(java.awt.event.WindowEvent evt) {
-                    closeDialog(evt);
-                }
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                closeDialog(evt);
             }
+        }
                           );
 
         jPanel1.setLayout(new java.awt.FlowLayout(2, 5, 5));
 
         okButton.setLabel(FormEditor.getFormBundle().getString("CTL_OK"));
         okButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    okButtonActionPerformed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                okButtonActionPerformed(evt);
             }
+        }
                                    );
 
         jPanel1.add(okButton);
 
         cancelButton.setLabel(FormEditor.getFormBundle().getString("CTL_CANCEL"));
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    cancelButtonActionPerformed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
             }
+        }
                                        );
 
         jPanel1.add(cancelButton);

@@ -18,10 +18,10 @@ package org.netbeans.modules.form;
 import org.openide.nodes.Node;
 
 /** Cookie for Form operations.
-*
-* @author Ian Formanek
-* @version 0.10, May 26, 1998
-*/
+ *
+ * @author Ian Formanek
+ * @version 0.10, May 26, 1998
+ */
 public interface FormCookie extends Node.Cookie {
 
     /** Focuses the source editor */

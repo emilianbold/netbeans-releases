@@ -67,8 +67,8 @@ public final class BeanInstaller
         JarFileSystem jar = createJarForFile(jarFile);
         if (jar == null) {
             TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                    bundle.getString(
-                            "MSG_ErrorInFile"), NotifyDescriptor.ERROR_MESSAGE));
+                bundle.getString(
+                    "MSG_ErrorInFile"), NotifyDescriptor.ERROR_MESSAGE));
             return;
         }
 
@@ -76,18 +76,18 @@ public final class BeanInstaller
 
         if (beans.size() == 0) {
             TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                    bundle.getString(
-                            "MSG_noBeansInJar"), NotifyDescriptor.INFORMATION_MESSAGE));
+                bundle.getString(
+                    "MSG_noBeansInJar"), NotifyDescriptor.INFORMATION_MESSAGE));
             return;
         }
 
         BeanSelector sel = new BeanSelector(beans);
         DialogDescriptor desc = new DialogDescriptor(
-                sel,
-                bundle.getString("CTL_SelectJB"),
-                true,
-                null
-                );
+            sel,
+            bundle.getString("CTL_SelectJB"),
+            true,
+            null
+            );
         desc.setHelpCtx(new HelpCtx(BeanInstaller.class.getName() + ".installBean")); // NOI18N
 
         TopManager.getDefault().createDialog(desc).show();
@@ -328,11 +328,11 @@ public final class BeanInstaller
     private static String selectPaletteCategory() {
         CategorySelector sel = new CategorySelector();
         DialogDescriptor desc = new DialogDescriptor(
-                sel,
-                bundle.getString("CTL_SelectPalette"),
-                true,
-                null
-                );
+            sel,
+            bundle.getString("CTL_SelectPalette"),
+            true,
+            null
+            );
         desc.setHelpCtx(new HelpCtx(BeanInstaller.class.getName() + ".selectPaletteCategory")); // NOI18N
 
         TopManager.getDefault().createDialog(desc).show();
@@ -352,13 +352,13 @@ public final class BeanInstaller
         JFileChooser chooser = new JFileChooser();
 
         chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-                public boolean accept(File f) {
-                    return(f.isDirectory() || f.getName().endsWith(JAR_EXT));
-                }
-                public String getDescription() {
-                    return bundle.getString("CTL_JarArchivesMask");
-                }
-            });
+            public boolean accept(File f) {
+                return(f.isDirectory() || f.getName().endsWith(JAR_EXT));
+            }
+            public String getDescription() {
+                return bundle.getString("CTL_JarArchivesMask");
+            }
+        });
 
         if (lastDirectory != null) {
             chooser.setCurrentDirectory(lastDirectory);
@@ -376,7 +376,7 @@ public final class BeanInstaller
                     return f;
                 } else {
                     TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                            bundle.getString("MSG_noBeansInJar"), NotifyDescriptor.INFORMATION_MESSAGE)
+                        bundle.getString("MSG_noBeansInJar"), NotifyDescriptor.INFORMATION_MESSAGE)
                                                    );
                 }
             }
@@ -564,9 +564,9 @@ public final class BeanInstaller
         JarFileSystem jar = createJarForFile(jarFile);
         if (jar == null) {
             TopManager.getDefault().notify(
-                    new NotifyDescriptor.Message(bundle.getString("MSG_ErrorInFile"),
-                                                 NotifyDescriptor.ERROR_MESSAGE)
-                    );
+                new NotifyDescriptor.Message(bundle.getString("MSG_ErrorInFile"),
+                                             NotifyDescriptor.ERROR_MESSAGE)
+                );
             return false;
         }
         

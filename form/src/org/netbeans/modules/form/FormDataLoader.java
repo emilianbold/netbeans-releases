@@ -24,10 +24,10 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.java.JavaDataLoader;
 
 /** Loader for Forms. Recognizes file with extension .form and .java and with extension class if
-* there is their source and form file.
-*
-* @author Ian Formanek
-*/
+ * there is their source and form file.
+ *
+ * @author Ian Formanek
+ */
 public class FormDataLoader extends JavaDataLoader {
     /* The standard extensions of the recognized files */
     public static final String FORM_EXTENSION = "form"; // NOI18N

@@ -21,9 +21,9 @@ import java.awt.Image;
 import org.netbeans.modules.java.JavaDataLoader;
 
 /** Form data loader bean info.
-*
-* @author Ian Formanek
-*/
+ *
+ * @author Ian Formanek
+ */
 public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
 
     public BeanInfo[] getAdditionalBeanInfo() {

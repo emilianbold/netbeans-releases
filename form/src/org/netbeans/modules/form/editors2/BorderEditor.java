@@ -153,10 +153,10 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
             root.getChildren().add(new Node[] { noBorder });
 
             PropertyChangeListener pListener = new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        updateBorder(getExplorerManager().getSelectedNodes()[0]);
-                    }
-                };
+                public void propertyChange(PropertyChangeEvent evt) {
+                    updateBorder(getExplorerManager().getSelectedNodes()[0]);
+                }
+            };
 
             PaletteItem[] items = ComponentPalette.getDefault().getAllItems();
             for (int i = 0; i < items.length; i++) {

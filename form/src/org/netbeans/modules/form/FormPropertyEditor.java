@@ -20,10 +20,10 @@ import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 import org.openide.nodes.*;
 
 /** A Multiplexing PropertyEditor used in the form editor.
-* Allows multiple editors to be used with one currently selected.
-*
-* @author Ian Formanek
-*/
+ * Allows multiple editors to be used with one currently selected.
+ *
+ * @author Ian Formanek
+ */
 public class FormPropertyEditor implements PropertyEditor, PropertyChangeListener, EnhancedPropertyEditor {
     // -----------------------------------------------------------------------------
     // Private Variables

@@ -18,9 +18,9 @@ package org.netbeans.modules.form;
 import org.openide.nodes.Node;
 
 /** Cookie for Form Editor Node providing access to RADComponent it represents.
-*
-* @author Ian Formanek
-*/
+ *
+ * @author Ian Formanek
+ */
 public interface RADComponentCookie extends Node.Cookie {
 
     /** Provides access to form editor node */

@@ -155,19 +155,19 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
             }
 
             tabs.addChangeListener(new ChangeListener() {
-                    public void stateChanged(ChangeEvent evt) {
-                        FormCustomEditor.this.editor.setModifiedEditor(getCurrentPropertyEditor());
-                    }
+                public void stateChanged(ChangeEvent evt) {
+                    FormCustomEditor.this.editor.setModifiedEditor(getCurrentPropertyEditor());
                 }
+            }
                                    );
         }
 
         JButton advancedButton = new JButton(FormEditor.getFormBundle().getString("CTL_Advanced"));
         advancedButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    showAdvancedSettings();
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showAdvancedSettings();
             }
+        }
                                          );
 
         JPanel advancedPanel = new JPanel();
@@ -185,9 +185,9 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
     private void showAdvancedSettings() {
         FormCustomEditorAdvanced fcea = new FormCustomEditorAdvanced(preCode, postCode);
         DialogDescriptor dd = new DialogDescriptor(
-                fcea,
-                FormEditor.getFormBundle().getString("CTL_AdvancedInitializationCode")
-                );
+            fcea,
+            FormEditor.getFormBundle().getString("CTL_AdvancedInitializationCode")
+            );
         dd.setHelpCtx(new HelpCtx(FormCustomEditorAdvanced.class));
         TopManager.getDefault().createDialog(dd).show();
 

@@ -23,11 +23,11 @@ import org.openide.TopManager;
 import org.openide.util.Utilities;
 
 /** The MethodPicker is a form which allows user to pick one of methods
-* with specified required return type.
-*
-* @author  Ian Formanek
-* @version 1.00, Aug 29, 1998
-*/
+ * with specified required return type.
+ *
+ * @author  Ian Formanek
+ * @version 1.00, Aug 29, 1998
+ */
 public class MethodPicker extends javax.swing.JDialog {
 
     public static final int CANCEL = 0;
@@ -47,22 +47,22 @@ public class MethodPicker extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.JDialog.DO_NOTHING_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
-                public void windowClosing(java.awt.event.WindowEvent evt) {
-                    cancelDialog();
-                }
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                cancelDialog();
             }
+        }
                           );
 
         // attach cancel also to Escape key
         getRootPane().registerKeyboardAction(
-                new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent evt) {
-                            cancelDialog();
-                        }
-                    },
-                javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0, true),
-                javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-                );
+            new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    cancelDialog();
+                }
+            },
+            javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0, true),
+            javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+            );
 
         Collection allComponents = manager.getAllComponents();
         components =(RADComponent[])allComponents.toArray(new RADComponent [allComponents.size()]);
@@ -83,9 +83,9 @@ public class MethodPicker extends javax.swing.JDialog {
 
         // localize components
         setTitle(java.text.MessageFormat.format(
-                FormEditor.getFormBundle().getString("CTL_FMT_CW_SelectMethod"),
-                new Object[] { Utilities.getShortClassName(requiredType) }
-                )
+            FormEditor.getFormBundle().getString("CTL_FMT_CW_SelectMethod"),
+            new Object[] { Utilities.getShortClassName(requiredType) }
+            )
                  );
         componentLabel.setText(FormEditor.getFormBundle().getString("CTL_CW_Component")); // "Component:"
         okButton.setText(FormEditor.getFormBundle().getString("CTL_OK")); // "OK"
@@ -160,10 +160,10 @@ public class MethodPicker extends javax.swing.JDialog {
             }
             // sort the methods by name
             Collections.sort(filtered, new Comparator() {
-                    public int compare(Object o1, Object o2) {
-                        return((MethodDescriptor)o1).getName().compareTo(((MethodDescriptor)o2).getName());
-                    }
+                public int compare(Object o1, Object o2) {
+                    return((MethodDescriptor)o1).getName().compareTo(((MethodDescriptor)o2).getName());
                 }
+            }
                              );
 
             descriptors = new MethodDescriptor[filtered.size()];
@@ -217,10 +217,10 @@ public class MethodPicker extends javax.swing.JDialog {
 
 
         methodList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-                public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                    methodListValueChanged(evt);
-                }
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                methodListValueChanged(evt);
             }
+        }
                                             );
 
         propertiesScrollPane.setViewportView(methodList);
@@ -234,10 +234,10 @@ public class MethodPicker extends javax.swing.JDialog {
         jPanel1.add(componentLabel, java.awt.BorderLayout.WEST);
 
         componentsCombo.addItemListener(new java.awt.event.ItemListener() {
-                public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                    componentsComboItemStateChanged(evt);
-                }
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                componentsComboItemStateChanged(evt);
             }
+        }
                                         );
 
         jPanel1.add(componentsCombo, java.awt.BorderLayout.CENTER);
@@ -261,20 +261,20 @@ public class MethodPicker extends javax.swing.JDialog {
 
         okButton.setText(FormEditor.getFormBundle().getString("CTL_OK"));
         okButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    okButtonActionPerformed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                okButtonActionPerformed(evt);
             }
+        }
                                    );
 
         rightButtonsPanel.add(okButton);
 
         cancelButton.setText(FormEditor.getFormBundle().getString("CTL_CANCEL"));
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    cancelButtonActionPerformed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
             }
+        }
                                        );
 
         rightButtonsPanel.add(cancelButton);

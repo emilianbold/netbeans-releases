@@ -247,9 +247,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 e.printStackTrace();
             throw new IOException(java.text.MessageFormat.format(
-                    FormEditor.getFormBundle().getString("FMT_ERR_FormInfoNotFound"),
-                    new String[] { infoClass }
-                    )
+                FormEditor.getFormBundle().getString("FMT_ERR_FormInfoNotFound"),
+                new String[] { infoClass }
+                )
                                   );
         }
 
@@ -330,12 +330,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         e.printStackTrace();
 
                     FormEditor.fileError(java.text.MessageFormat.format(
-                            FormEditor.getFormBundle().getString("FMT_ERR_ClassNotFound"),
-                            new Object [] {
-                                e.getMessage(),
-                                e.getClass().getName(),
-                            }
-                            ), e);
+                        FormEditor.getFormBundle().getString("FMT_ERR_ClassNotFound"),
+                        new Object [] {
+                            e.getMessage(),
+                            e.getClass().getName(),
+                        }
+                        ), e);
                     return false; // failed to load the component!!!
                 }
                 comp.setComponent(compClass);
@@ -479,7 +479,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             String className = findAttribute(layoutNode, ATTR_LAYOUT_CLASS);
             try {
                 DesignLayout dl =(DesignLayout)
-                                 PersistenceObjectRegistry.createInstance(className);
+                    PersistenceObjectRegistry.createInstance(className);
 
                 org.w3c.dom.Node[] propNodes = findSubNodes(layoutNode, XML_PROPERTY);
                 if (propNodes.length > 0) {
@@ -728,13 +728,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
             // 2.store Form element
             addElementOpenAttr(
-                    buf,
-                    XML_FORM,
-                    new String[] { ATTR_FORM_VERSION, ATTR_FORM_TYPE },
-                    new String[] { CURRENT_VERSION,
-                                   PersistenceObjectRegistry.getPrimaryName(
-                                           manager.getRADForm().getFormInfo()) }
-                    );
+                buf,
+                XML_FORM,
+                new String[] { ATTR_FORM_VERSION, ATTR_FORM_TYPE },
+                new String[] { CURRENT_VERSION,
+                               PersistenceObjectRegistry.getPrimaryName(
+                                   manager.getRADForm().getFormInfo()) }
+                );
 
             // 3.store Non-Visual Components
             RADComponent[] nonVisuals = manager.getNonVisualComponents();
@@ -750,11 +750,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
                     buf.append(ONE_INDENT + ONE_INDENT);
                     addElementOpenAttr(
-                            buf,
-                            elementType,
-                            new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME },
-                            new String[] { nonVisuals[i].getBeanClass().getName(), nonVisuals[i].getName() }
-                            );
+                        buf,
+                        elementType,
+                        new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME },
+                        new String[] { nonVisuals[i].getBeanClass().getName(), nonVisuals[i].getName() }
+                        );
 
                     if (nonVisuals[i] instanceof RADMenuItemComponent) {
                         saveMenuComponent((RADMenuItemComponent)nonVisuals[i], buf, ONE_INDENT + ONE_INDENT + ONE_INDENT);
@@ -795,21 +795,21 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 if (children[i] instanceof ComponentContainer) {
                     buf.append(indent + ONE_INDENT);
                     addElementOpenAttr(
-                            buf,
-                            XML_CONTAINER,
-                            new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME },
-                            new String[] { children[i].getBeanClass().getName(), children[i].getName() }
-                            );
+                        buf,
+                        XML_CONTAINER,
+                        new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME },
+                        new String[] { children[i].getBeanClass().getName(), children[i].getName() }
+                        );
                     saveContainer((ComponentContainer)children[i], buf, indent + ONE_INDENT + ONE_INDENT);
                     buf.append(indent + ONE_INDENT); addElementClose(buf, XML_CONTAINER);
                 } else {
                     buf.append(indent + ONE_INDENT);
                     addElementOpenAttr(
-                            buf,
-                            XML_COMPONENT,
-                            new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME },
-                            new String[] { children[i].getBeanClass().getName(), children[i].getName() }
-                            );
+                        buf,
+                        XML_COMPONENT,
+                        new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME },
+                        new String[] { children[i].getBeanClass().getName(), children[i].getName() }
+                        );
                     if (children[i] instanceof RADVisualComponent) {
                         saveVisualComponent((RADVisualComponent)children[i], buf, indent + ONE_INDENT + ONE_INDENT);
                     } else {
@@ -828,18 +828,18 @@ public class GandalfPersistenceManager extends PersistenceManager {
         List changedProperties = layout.getChangedProperties();
         if (changedProperties.size() == 0) {
             addLeafElementOpenAttr(
-                    buf,
-                    XML_LAYOUT,
-                    new String[] { ATTR_LAYOUT_CLASS },
-                    new String[] { PersistenceObjectRegistry.getPrimaryName(layout) }
-                    );
+                buf,
+                XML_LAYOUT,
+                new String[] { ATTR_LAYOUT_CLASS },
+                new String[] { PersistenceObjectRegistry.getPrimaryName(layout) }
+                );
         } else {
             addElementOpenAttr(
-                    buf,
-                    XML_LAYOUT,
-                    new String[] { ATTR_LAYOUT_CLASS },
-                    new String[] { PersistenceObjectRegistry.getPrimaryName(layout) }
-                    );
+                buf,
+                XML_LAYOUT,
+                new String[] { ATTR_LAYOUT_CLASS },
+                new String[] { PersistenceObjectRegistry.getPrimaryName(layout) }
+                );
             for (Iterator it = changedProperties.iterator(); it.hasNext();) {
                 Node.Property prop =(Node.Property)it.next();
                 String propertyName = prop.getName();
@@ -873,39 +873,39 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
                 if (encodedValue != null) {
                     addLeafElementOpenAttr(
-                            buf,
-                            XML_PROPERTY,
-                            new String[] { ATTR_PROPERTY_NAME, ATTR_PROPERTY_TYPE, ATTR_PROPERTY_VALUE },
-                            new String[] { propertyName, prop.getValueType().getName(), encodedValue }
-                            );
+                        buf,
+                        XML_PROPERTY,
+                        new String[] { ATTR_PROPERTY_NAME, ATTR_PROPERTY_TYPE, ATTR_PROPERTY_VALUE },
+                        new String[] { propertyName, prop.getValueType().getName(), encodedValue }
+                        );
                 } else {
                     addElementOpenAttr(
-                            buf,
-                            XML_PROPERTY,
-                            new String[] {
-                                ATTR_PROPERTY_NAME,
-                                ATTR_PROPERTY_TYPE,
-                                ATTR_PROPERTY_EDITOR,
-                            },
-                            new String[] {
-                                prop.getName(),
-                                prop.getValueType().getName(),
-                                ed.getClass().getName(), // XXX ed == null?
-                            }
-                            );
+                        buf,
+                        XML_PROPERTY,
+                        new String[] {
+                            ATTR_PROPERTY_NAME,
+                            ATTR_PROPERTY_TYPE,
+                            ATTR_PROPERTY_EDITOR,
+                        },
+                        new String[] {
+                            prop.getName(),
+                            prop.getValueType().getName(),
+                            ed.getClass().getName(), // XXX ed == null?
+                        }
+                        );
                     if (valueNode != null) {
                         saveNodeIntoText(buf, valueNode, indent + ONE_INDENT);
                     } else {
                         addLeafElementOpenAttr(
-                                buf,
-                                XML_SERIALIZED_PROPERTY_VALUE,
-                                new String[] {
-                                    ATTR_PROPERTY_VALUE,
-                                },
-                                new String[] {
-                                    encodedSerializeValue,
-                                }
-                                );
+                            buf,
+                            XML_SERIALIZED_PROPERTY_VALUE,
+                            new String[] {
+                                ATTR_PROPERTY_VALUE,
+                            },
+                            new String[] {
+                                encodedSerializeValue,
+                            }
+                            );
                     }
                     buf.append(indent);
                     addElementClose(buf, XML_PROPERTY);
@@ -939,11 +939,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
                     buf.append(indent + ONE_INDENT);
                     addElementOpenAttr(
-                            buf,
-                            elementType,
-                            new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME },
-                            new String[] { children[i].getBeanClass().getName(), children[i].getName() }
-                            );
+                        buf,
+                        elementType,
+                        new String[] { ATTR_COMPONENT_CLASS, ATTR_COMPONENT_NAME },
+                        new String[] { children[i].getBeanClass().getName(), children[i].getName() }
+                        );
                     // [PENDING - RADComponents which are not menu???]
                     saveMenuComponent((RADMenuItemComponent)children[i], buf, indent + ONE_INDENT + ONE_INDENT);
                     buf.append(indent + ONE_INDENT); addElementClose(buf, elementType);
@@ -1005,19 +1005,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     buf.append(indent);
                     // in this case save only the pre/post code
                     addLeafElementOpenAttr(
-                            buf,
-                            XML_PROPERTY,
-                            new String[] {
-                                ATTR_PROPERTY_NAME,
-                                ATTR_PROPERTY_PRE_CODE,
-                                ATTR_PROPERTY_POST_CODE,
-                            },
-                            new String[] {
-                                desc.getName(),
-                                prop.getPreCode(),
-                                prop.getPostCode(),
-                            }
-                            );
+                        buf,
+                        XML_PROPERTY,
+                        new String[] {
+                            ATTR_PROPERTY_NAME,
+                            ATTR_PROPERTY_PRE_CODE,
+                            ATTR_PROPERTY_POST_CODE,
+                        },
+                        new String[] {
+                            desc.getName(),
+                            prop.getPreCode(),
+                            prop.getPostCode(),
+                        }
+                        );
                 }
                 continue; // not changed, so do not save value
             }
@@ -1049,58 +1049,58 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
             if (encodedValue != null) {
                 addLeafElementOpenAttr(
-                        buf,
-                        XML_PROPERTY,
-                        new String[] {
-                            ATTR_PROPERTY_NAME,
-                            ATTR_PROPERTY_TYPE,
-                            ATTR_PROPERTY_EDITOR,
-                            ATTR_PROPERTY_VALUE,
-                            ATTR_PROPERTY_PRE_CODE,
-                            ATTR_PROPERTY_POST_CODE,
-                        },
-                        new String[] {
-                            desc.getName(),
-                            desc.getPropertyType().getName(),
-                            prop.getCurrentEditor().getClass().getName(),
-                            encodedValue,
-                            prop.getPreCode(),
-                            prop.getPostCode(),
-                        }
-                        );
+                    buf,
+                    XML_PROPERTY,
+                    new String[] {
+                        ATTR_PROPERTY_NAME,
+                        ATTR_PROPERTY_TYPE,
+                        ATTR_PROPERTY_EDITOR,
+                        ATTR_PROPERTY_VALUE,
+                        ATTR_PROPERTY_PRE_CODE,
+                        ATTR_PROPERTY_POST_CODE,
+                    },
+                    new String[] {
+                        desc.getName(),
+                        desc.getPropertyType().getName(),
+                        prop.getCurrentEditor().getClass().getName(),
+                        encodedValue,
+                        prop.getPreCode(),
+                        prop.getPostCode(),
+                    }
+                    );
             } else {
                 addElementOpenAttr(
-                        buf,
-                        XML_PROPERTY,
-                        new String[] {
-                            ATTR_PROPERTY_NAME,
-                            ATTR_PROPERTY_TYPE,
-                            ATTR_PROPERTY_EDITOR,
-                            ATTR_PROPERTY_PRE_CODE,
-                            ATTR_PROPERTY_POST_CODE,
-                        },
-                        new String[] {
-                            desc.getName(),
-                            desc.getPropertyType().getName(),
-                            prop.getCurrentEditor().getClass().getName(),
-                            prop.getPreCode(),
-                            prop.getPostCode(),
-                        }
-                        );
+                    buf,
+                    XML_PROPERTY,
+                    new String[] {
+                        ATTR_PROPERTY_NAME,
+                        ATTR_PROPERTY_TYPE,
+                        ATTR_PROPERTY_EDITOR,
+                        ATTR_PROPERTY_PRE_CODE,
+                        ATTR_PROPERTY_POST_CODE,
+                    },
+                    new String[] {
+                        desc.getName(),
+                        desc.getPropertyType().getName(),
+                        prop.getCurrentEditor().getClass().getName(),
+                        prop.getPreCode(),
+                        prop.getPostCode(),
+                    }
+                    );
                 if (valueNode != null) {
                     saveNodeIntoText(buf, valueNode, indent + ONE_INDENT);
                 } else {
                     buf.append(indent + ONE_INDENT);
                     addLeafElementOpenAttr(
-                            buf,
-                            XML_SERIALIZED_PROPERTY_VALUE,
-                            new String[] {
-                                ATTR_PROPERTY_VALUE,
-                            },
-                            new String[] {
-                                encodedSerializeValue,
-                            }
-                            );
+                        buf,
+                        XML_SERIALIZED_PROPERTY_VALUE,
+                        new String[] {
+                            ATTR_PROPERTY_VALUE,
+                        },
+                        new String[] {
+                            encodedSerializeValue,
+                        }
+                        );
                 }
                 buf.append(indent);
                 addElementClose(buf, XML_PROPERTY);
@@ -1134,19 +1134,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
             buf.append(indent);
 
             addLeafElementOpenAttr(
-                    buf,
-                    XML_SYNTHETIC_PROPERTY,
-                    new String[] {
-                        ATTR_PROPERTY_NAME,
-                        ATTR_PROPERTY_TYPE,
-                        ATTR_PROPERTY_VALUE,
-                    },
-                    new String[] {
-                        prop.getName(),
-                        valueType,
-                        encodedValue,
-                    }
-                    );
+                buf,
+                XML_SYNTHETIC_PROPERTY,
+                new String[] {
+                    ATTR_PROPERTY_NAME,
+                    ATTR_PROPERTY_TYPE,
+                    ATTR_PROPERTY_VALUE,
+                },
+                new String[] {
+                    prop.getName(),
+                    valueType,
+                    encodedValue,
+                }
+                );
         }
     }
 
@@ -1157,17 +1157,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
             buf.append(indent);
             addLeafElementOpenAttr(
-                    buf,
-                    XML_EVENT,
-                    new String[] {
-                        ATTR_EVENT_NAME,
-                        ATTR_EVENT_HANDLER
-                    },
-                    new String[] {
-                        eventName,
-                        handlerName,
-                    }
-                    );
+                buf,
+                XML_EVENT,
+                new String[] {
+                    ATTR_EVENT_NAME,
+                    ATTR_EVENT_HANDLER
+                },
+                new String[] {
+                    eventName,
+                    handlerName,
+                }
+                );
         }
     }
 
@@ -1187,18 +1187,18 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
             buf.append(indent);
             addLeafElementOpenAttr(
-                    buf,
-                    XML_AUX_VALUE,
-                    new String[] {
-                        ATTR_AUX_NAME,
-                        ATTR_AUX_VALUE_TYPE,
-                        ATTR_AUX_VALUE },
-                    new String[] {
-                        valueName,
-                        valueType,
-                        encodedValue
-                    }
-                    );
+                buf,
+                XML_AUX_VALUE,
+                new String[] {
+                    ATTR_AUX_NAME,
+                    ATTR_AUX_VALUE_TYPE,
+                    ATTR_AUX_VALUE },
+                new String[] {
+                    valueName,
+                    valueType,
+                    encodedValue
+                }
+                );
         }
     }
 
@@ -1215,39 +1215,39 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (constrNode != null) {
                 buf.append(indent);
                 addElementOpenAttr(
-                        buf,
-                        XML_CONSTRAINT,
-                        new String[] {
-                            ATTR_CONSTRAINT_LAYOUT,
-                            ATTR_CONSTRAINT_VALUE
-                        },
-                        new String[] {
-                            layoutName,
-                            PersistenceObjectRegistry.getPrimaryName(cd),
-                        }
-                        );
+                    buf,
+                    XML_CONSTRAINT,
+                    new String[] {
+                        ATTR_CONSTRAINT_LAYOUT,
+                        ATTR_CONSTRAINT_VALUE
+                    },
+                    new String[] {
+                        layoutName,
+                        PersistenceObjectRegistry.getPrimaryName(cd),
+                    }
+                    );
 
                 saveNodeIntoText(buf, constrNode, indent + ONE_INDENT);
 
                 buf.append(indent);
                 addElementClose(
-                        buf,
-                        XML_CONSTRAINT
-                        );
+                    buf,
+                    XML_CONSTRAINT
+                    );
             } else {
                 buf.append(indent);
                 addLeafElementOpenAttr(
-                        buf,
-                        XML_CONSTRAINT,
-                        new String[] {
-                            ATTR_CONSTRAINT_LAYOUT,
-                            ATTR_CONSTRAINT_VALUE
-                        },
-                        new String[] {
-                            layoutName,
-                            PersistenceObjectRegistry.getPrimaryName(cd),
-                        }
-                        );
+                    buf,
+                    XML_CONSTRAINT,
+                    new String[] {
+                        ATTR_CONSTRAINT_LAYOUT,
+                        ATTR_CONSTRAINT_VALUE
+                    },
+                    new String[] {
+                        layoutName,
+                        PersistenceObjectRegistry.getPrimaryName(cd),
+                    }
+                    );
             }
         }
     }
@@ -1582,12 +1582,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
             // probably not necessary, but there is no guarantee that
             // the order of attributes will remain the same in DOM
             Collections.sort(attribList, new Comparator() {
-                    public int compare(Object o1, Object o2) {
-                        org.w3c.dom.Node n1 =(org.w3c.dom.Node)o1;
-                        org.w3c.dom.Node n2 =(org.w3c.dom.Node)o2;
-                        return n1.getNodeName().compareTo(n2.getNodeName());
-                    }
+                public int compare(Object o1, Object o2) {
+                    org.w3c.dom.Node n1 =(org.w3c.dom.Node)o1;
+                    org.w3c.dom.Node n2 =(org.w3c.dom.Node)o2;
+                    return n1.getNodeName().compareTo(n2.getNodeName());
                 }
+            }
                              );
 
             for (Iterator it = attribList.iterator(); it.hasNext();) {

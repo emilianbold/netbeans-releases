@@ -29,9 +29,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
 /** The ParametersPicker is a panel which allows to enter a method parameter data.
-*
-* @author  Ian Formanek
-*/
+ *
+ * @author  Ian Formanek
+ */
 public class ParametersPicker extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
 
     static final long serialVersionUID =1116033799965380000L;
@@ -57,9 +57,9 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
         // localize components
         setBorder(new javax.swing.border.CompoundBorder(
-                new javax.swing.border.TitledBorder(
-                        new javax.swing.border.EtchedBorder(), " " + FormEditor.getFormBundle().getString("CTL_CW_GetParametersFrom") + " "), // "Get Parameter From:"
-                new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5))));
+            new javax.swing.border.TitledBorder(
+                new javax.swing.border.EtchedBorder(), " " + FormEditor.getFormBundle().getString("CTL_CW_GetParametersFrom") + " "), // "Get Parameter From:"
+            new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5))));
         valueButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Value")); // "Value:"
         beanButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Bean")); // "Bean:"
         propertyButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Property")); // "Property:"
@@ -85,16 +85,16 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         if (beansList.size() > 0) {
             beanCombo.setModel(beanComboModel);
             beanCombo.addItemListener(new ItemListener() {
-                    public void itemStateChanged(ItemEvent evt) {
-                        int index = beanCombo.getSelectedIndex();
-                        if (index == 0) {
-                            selectedComponent = null;
-                        } else {
-                            selectedComponent =(RADComponent)beansList.get(index - 1);
-                        }
-                        fireStateChange();
+                public void itemStateChanged(ItemEvent evt) {
+                    int index = beanCombo.getSelectedIndex();
+                    if (index == 0) {
+                        selectedComponent = null;
+                    } else {
+                        selectedComponent =(RADComponent)beansList.get(index - 1);
                     }
+                    fireStateChange();
                 }
+            }
                                       );
         } else {
             beanButton.setEnabled(false);    // no beans on the form are of the required type
@@ -299,10 +299,10 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         valueButton.setSelected(true);
         valueButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Value"));
         valueButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    typeButtonPressed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                typeButtonPressed(evt);
             }
+        }
                                       );
 
 
@@ -311,10 +311,10 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         add(valueButton, gridBagConstraints1);
 
         valueField.addCaretListener(new javax.swing.event.CaretListener() {
-                public void caretUpdate(javax.swing.event.CaretEvent evt) {
-                    updateState(evt);
-                }
+            public void caretUpdate(javax.swing.event.CaretEvent evt) {
+                updateState(evt);
             }
+        }
                                     );
 
 
@@ -327,10 +327,10 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
         beanButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Bean"));
         beanButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    typeButtonPressed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                typeButtonPressed(evt);
             }
+        }
                                      );
 
 
@@ -348,10 +348,10 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
         propertyButton.setText(FormEditor.getFormBundle().getString("CTL_CW_Property"));
         propertyButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    typeButtonPressed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                typeButtonPressed(evt);
             }
+        }
                                          );
 
 
@@ -370,10 +370,10 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
         propertyDetailsButton.setText("..."); // NOI18N
         propertyDetailsButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    propertyDetailsButtonActionPerformed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                propertyDetailsButtonActionPerformed(evt);
             }
+        }
                                                 );
 
 
@@ -384,10 +384,10 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
         methodButton.setText(FormEditor.getFormBundle().getString("CTL_CW_MethodCall"));
         methodButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    typeButtonPressed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                typeButtonPressed(evt);
             }
+        }
                                        );
 
 
@@ -406,10 +406,10 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
         methodDetailsButton.setText("..."); // NOI18N
         methodDetailsButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    methodDetailsButtonActionPerformed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                methodDetailsButtonActionPerformed(evt);
             }
+        }
                                               );
 
 
@@ -420,10 +420,10 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
         codeButton.setText(FormEditor.getFormBundle().getString("CTL_CW_UserCode"));
         codeButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    typeButtonPressed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                typeButtonPressed(evt);
             }
+        }
                                      );
 
 
@@ -434,10 +434,10 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
         codeArea.setEditable(false);
         codeArea.addCaretListener(new javax.swing.event.CaretListener() {
-                public void caretUpdate(javax.swing.event.CaretEvent evt) {
-                    updateState(evt);
-                }
+            public void caretUpdate(javax.swing.event.CaretEvent evt) {
+                updateState(evt);
             }
+        }
                                   );
 
         codeScrollPane.setViewportView(codeArea);

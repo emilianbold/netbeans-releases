@@ -141,28 +141,28 @@ public class SelectLayoutAction extends CookieAction {
         popupMenu.setEnabled(isEnabled());
         HelpCtx.setHelpIDString(popupMenu, SelectLayoutAction.class.getName());
         popupMenu.addMenuListener(new MenuListener() {
-                public void menuSelected(MenuEvent e) {
-                    JMenu menu =(JMenu)e.getSource();
-                    if (menu.getMenuComponentCount() > 0) { // [IAN - Patch for Swing 1.1, which throws NullPointerException if removeAll is called on empty uninitialized JMenu]
-                        menu.removeAll();
-                    }
-                    Node[] nodes = getActivatedNodes();
-                    if (nodes.length == 0) return;
-
-                    PaletteItem[] layouts = getAllLayouts();
-
-                    for (int i = 0; i < layouts.length; i++) {
-                        JMenuItem mi = new JMenuItem(layouts[i].getDisplayName());
-                        HelpCtx.setHelpIDString(mi, SelectLayoutAction.class.getName());
-                        menu.add(mi);
-                        mi.addActionListener(new LayoutActionListener(nodes, layouts[i]));
-                    }
+            public void menuSelected(MenuEvent e) {
+                JMenu menu =(JMenu)e.getSource();
+                if (menu.getMenuComponentCount() > 0) { // [IAN - Patch for Swing 1.1, which throws NullPointerException if removeAll is called on empty uninitialized JMenu]
+                    menu.removeAll();
                 }
-                public void menuDeselected(MenuEvent e) {
-                }
-                public void menuCanceled(MenuEvent e) {
+                Node[] nodes = getActivatedNodes();
+                if (nodes.length == 0) return;
+
+                PaletteItem[] layouts = getAllLayouts();
+
+                for (int i = 0; i < layouts.length; i++) {
+                    JMenuItem mi = new JMenuItem(layouts[i].getDisplayName());
+                    HelpCtx.setHelpIDString(mi, SelectLayoutAction.class.getName());
+                    menu.add(mi);
+                    mi.addActionListener(new LayoutActionListener(nodes, layouts[i]));
                 }
             }
+            public void menuDeselected(MenuEvent e) {
+            }
+            public void menuCanceled(MenuEvent e) {
+            }
+        }
                                   );
         return popupMenu;
     }

@@ -29,9 +29,9 @@ import org.openide.TopManager;
  * Images must be represented by some DataObject which returns itselv
  * as cookie, and has image file as a primary file. File extensions
  * for images is specified in isImage method.
-*
-* @author Jan Jancura
-*/
+ *
+ * @author Jan Jancura
+ */
 public class IconEditor extends Object {
     public static final int TYPE_URL = 1;
     public static final int TYPE_FILE = 2;

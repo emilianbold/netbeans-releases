@@ -25,10 +25,10 @@ import java.util.Map;
 import java.util.ArrayList;
 
 /** BeanSupport is a utility class with various static methods supporting
-* operations with JavaBeans.
-*
-* @author Ian Formanek
-*/
+ * operations with JavaBeans.
+ *
+ * @author Ian Formanek
+ */
 public class BeanSupport {
     // -----------------------------------------------------------------------------
     // Private variables

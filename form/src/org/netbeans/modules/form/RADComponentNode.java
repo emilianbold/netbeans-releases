@@ -38,19 +38,19 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
-*
-* @author Ian Formanek
-*/
+ *
+ * @author Ian Formanek
+ */
 public class RADComponentNode extends AbstractNode implements RADComponentCookie, FormCookie {
 
     public static DataFlavor RAD_COMPONENT_COPY_FLAVOR = new RADDataFlavor(
-            RADComponentNode.class,
-            "RAD_COMPONENT_COPY_FLAVOR" // NOI18N
-            );
+        RADComponentNode.class,
+        "RAD_COMPONENT_COPY_FLAVOR" // NOI18N
+        );
     public static DataFlavor RAD_COMPONENT_CUT_FLAVOR = new RADDataFlavor(
-            RADComponentNode.class,
-            "RAD_COMPONENT_CUT_FLAVOR" // NOI18N
-            );
+        RADComponentNode.class,
+        "RAD_COMPONENT_CUT_FLAVOR" // NOI18N
+        );
 
 
     private final static MessageFormat nameFormat = new MessageFormat(NbBundle.getBundle(RADComponentNode.class).getString("FMT_ComponentName"));
@@ -114,16 +114,16 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
     public HelpCtx getHelpCtx() {
         HelpCtx help = InstanceSupport.findHelp(new InstanceCookie() {
-                public Object instanceCreate() {
-                    return component.getBeanInstance();
-                }
-                public String instanceName() {
-                    return component.getName();
-                }
-                public Class instanceClass() {
-                    return component.getBeanClass();
-                }
-            });
+            public Object instanceCreate() {
+                return component.getBeanInstance();
+            }
+            public String instanceName() {
+                return component.getName();
+            }
+            public Class instanceClass() {
+                return component.getBeanClass();
+            }
+        });
         if (help != null)
             return help;
         else

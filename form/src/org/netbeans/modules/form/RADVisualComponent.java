@@ -23,9 +23,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 /**
-*
-* @author Ian Formanek
-*/
+ *
+ * @author Ian Formanek
+ */
 public class RADVisualComponent extends RADComponent {
 
     // -----------------------------------------------------------------------------
@@ -89,10 +89,10 @@ public class RADVisualComponent extends RADComponent {
             System.arraycopy(inh, 0, visualPropertySet, 0, inh.length-1);
             visualPropertySet[visualPropertySet.length-2] =
                 new Node.PropertySet("layout", FormEditor.getFormBundle().getString("MSG_Layout"), FormEditor.getFormBundle().getString("MSG_LayoutProps")) {
-                        public Node.Property[] getProperties() {
-                            return parent.getDesignLayout().getComponentProperties(RADVisualComponent.this);
-                        }
-                    };
+                    public Node.Property[] getProperties() {
+                        return parent.getDesignLayout().getComponentProperties(RADVisualComponent.this);
+                    }
+                };
             visualPropertySet[visualPropertySet.length-1] = inh[inh.length-1]; // add events tab to the end
         }
         return visualPropertySet;

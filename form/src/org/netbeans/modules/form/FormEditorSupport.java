@@ -70,56 +70,56 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     private static boolean listenerRegistered = false;
     private static PropertyChangeListener editorFocusChangeListener =
         new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals(TopComponent.Registry.PROP_ACTIVATED)) {
-                        TopComponent tc = TopComponent.getRegistry().getActivated();
-                        if (tc != null) {
-                            String componentName = tc.getName();
-                            // is it a form ? => find formManager for it and focus it in ComponentInspector
-                            for (java.util.Enumeration enum = openForms.keys(); enum.hasMoreElements();) {
-                                FormEditorSupport fes =(FormEditorSupport) enum.nextElement();
-                                String formName = fes.getFormObject().getName();
-                                if (formName.equals(componentName)) {
-                                    FormEditor.getComponentInspector().focusForm((FormManager2) openForms.get(fes));
-                                    break;
-                                }
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(TopComponent.Registry.PROP_ACTIVATED)) {
+                    TopComponent tc = TopComponent.getRegistry().getActivated();
+                    if (tc != null) {
+                        String componentName = tc.getName();
+                        // is it a form ? => find formManager for it and focus it in ComponentInspector
+                        for (java.util.Enumeration enum = openForms.keys(); enum.hasMoreElements();) {
+                            FormEditorSupport fes =(FormEditorSupport) enum.nextElement();
+                            String formName = fes.getFormObject().getName();
+                            if (formName.equals(componentName)) {
+                                FormEditor.getComponentInspector().focusForm((FormManager2) openForms.get(fes));
+                                break;
                             }
                         }
                     }
                 }
-            };
+            }
+        };
 
     public FormEditorSupport(MultiDataObject.Entry javaEntry, FormDataObject formObject) {
         super(javaEntry);
         this.formObject = formObject;
         formLoaded = false;
         settingsListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (formLoaded) {
-                        if (FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY.equals(
-                                evt.getPropertyName())) {
-                            formManager.fireCodeChange();
-                        } else if (FormLoaderSettings.PROP_VARIABLES_MODIFIER.equals(
-                                evt.getPropertyName())) {
-                            formManager.fireFormChange();
-                        } else if (FormLoaderSettings.PROP_NULL_LAYOUT.equals(
-                                evt.getPropertyName())) {
-                            formManager.fireCodeChange();
-                        }
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (formLoaded) {
+                    if (FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY.equals(
+                        evt.getPropertyName())) {
+                        formManager.fireCodeChange();
+                    } else if (FormLoaderSettings.PROP_VARIABLES_MODIFIER.equals(
+                        evt.getPropertyName())) {
+                        formManager.fireFormChange();
+                    } else if (FormLoaderSettings.PROP_NULL_LAYOUT.equals(
+                        evt.getPropertyName())) {
+                        formManager.fireCodeChange();
                     }
                 }
-            };
+            }
+        };
     }
 
     private boolean openForm() {
         // sets status text
 
         TopManager.getDefault().setStatusText(
-                java.text.MessageFormat.format(
-                        NbBundle.getBundle(FormEditorSupport.class).getString("FMT_OpeningForm"),
-                        new Object[] { formObject.getName() }
-                        )
-                );
+            java.text.MessageFormat.format(
+                NbBundle.getBundle(FormEditorSupport.class).getString("FMT_OpeningForm"),
+                new Object[] { formObject.getName() }
+                )
+            );
 
         // load the form
 
@@ -135,10 +135,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
         if (!listenerRegistered) {
             TopComponent.getRegistry().addPropertyChangeListener(
-                    org.openide.util.WeakListener.propertyChange(
-                            editorFocusChangeListener,TopComponent.getRegistry()
-                            )
-                    );
+                org.openide.util.WeakListener.propertyChange(
+                    editorFocusChangeListener,TopComponent.getRegistry()
+                    )
+                );
             listenerRegistered = true;
         }
 
@@ -146,7 +146,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
         String formWorkspace = FormEditor.getFormSettings().getWorkspace();
         if (!formWorkspace.equalsIgnoreCase(
-                FormEditor.getFormBundle().getString("VALUE_WORKSPACE_NONE"))
+            FormEditor.getFormBundle().getString("VALUE_WORKSPACE_NONE"))
             && isCurrentWorkspaceEditing()
             ) {
             Workspace visualWorkspace =
@@ -202,21 +202,21 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     private void attachWorkspacesListener() {
         openOnEditing = true;
         workspacesListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (WindowManager.PROP_CURRENT_WORKSPACE.equals(evt.getPropertyName())) {
-                        if (openOnEditing) {
-                            if (isCurrentWorkspaceEditing()) {
-                                openOnEditing = false;
-                                TopManager.getDefault().getWindowManager().removePropertyChangeListener(workspacesListener);
-                                workspacesListener = null;
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (WindowManager.PROP_CURRENT_WORKSPACE.equals(evt.getPropertyName())) {
+                    if (openOnEditing) {
+                        if (isCurrentWorkspaceEditing()) {
+                            openOnEditing = false;
+                            TopManager.getDefault().getWindowManager().removePropertyChangeListener(workspacesListener);
+                            workspacesListener = null;
 
-                                FormEditor.getComponentInspector().open();
-                                getFormTopComponent().open();
-                            }
+                            FormEditor.getComponentInspector().open();
+                            getFormTopComponent().open();
                         }
                     }
                 }
-            };
+            }
+        };
         TopManager.getDefault().getWindowManager().addPropertyChangeListener(workspacesListener);
     }
 
@@ -332,18 +332,18 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
         if (loadManager == null) {
             TopManager.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                            FormEditor.getFormBundle().getString("MSG_ERR_NotRecognizedForm"),
-                            NotifyDescriptor.ERROR_MESSAGE));
+                new NotifyDescriptor.Message(
+                    FormEditor.getFormBundle().getString("MSG_ERR_NotRecognizedForm"),
+                    NotifyDescriptor.ERROR_MESSAGE));
             return false;
         }
 
         if (!loadManager.supportsAdvancedFeatures()) {
             Object result = TopManager.getDefault().notify(
-                    new NotifyDescriptor.Confirmation(FormEditor.getFormBundle().getString("MSG_ConvertForm"),
-                                                      NotifyDescriptor.YES_NO_OPTION,
-                                                      NotifyDescriptor.QUESTION_MESSAGE)
-                    );
+                new NotifyDescriptor.Confirmation(FormEditor.getFormBundle().getString("MSG_ConvertForm"),
+                                                  NotifyDescriptor.YES_NO_OPTION,
+                                                  NotifyDescriptor.QUESTION_MESSAGE)
+                );
             if (NotifyDescriptor.YES_OPTION.equals(result)) {
                 saveManager = new GandalfPersistenceManager();
             } else {
@@ -357,11 +357,11 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
             formManager = loadManager.loadForm(formObject);
             if (formManager == null) {
                 TopManager.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                                java.text.MessageFormat.format(
-                                        FormEditor.getFormBundle().getString("FMT_ERR_LoadingForm"),
-                                        new Object[] { formObject.getName() }),
-                                NotifyDescriptor.ERROR_MESSAGE));
+                    new NotifyDescriptor.Message(
+                        java.text.MessageFormat.format(
+                            FormEditor.getFormBundle().getString("FMT_ERR_LoadingForm"),
+                            new Object[] { formObject.getName() }),
+                        NotifyDescriptor.ERROR_MESSAGE));
                 return false;
             }
             if (formTopComponent != null) {
@@ -385,11 +385,11 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
                 t.printStackTrace();
             }
             TopManager.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                            java.text.MessageFormat.format(
-                                    FormEditor.getFormBundle().getString("FMT_ERR_LoadingFormDetails"),
-                                    new Object[] { formObject.getName(), org.openide.util.Utilities.getShortClassName(t.getClass()), t.getMessage()}),
-                            NotifyDescriptor.ERROR_MESSAGE));
+                new NotifyDescriptor.Message(
+                    java.text.MessageFormat.format(
+                        FormEditor.getFormBundle().getString("FMT_ERR_LoadingFormDetails"),
+                        new Object[] { formObject.getName(), org.openide.util.Utilities.getShortClassName(t.getClass()), t.getMessage()}),
+                    NotifyDescriptor.ERROR_MESSAGE));
             return false;
         }
 

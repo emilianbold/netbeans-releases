@@ -23,15 +23,15 @@ import java.awt.Container;
 import java.util.ArrayList;
 
 /**
-* Initialization order: <UL>
-* <LI> Constructor: new RADVisualContainer();
-* <LI> FormManager2 init: initialize(FormManager2)
-* <LI> Bean init: setComponent(Class)
-* <LI> SubComponents init: initSubComponents(RADComponent[])
-* <LI> DesignLayout init: setDesignLayout(DesignLayout) </UL>
+ * Initialization order: <UL>
+ * <LI> Constructor: new RADVisualContainer();
+ * <LI> FormManager2 init: initialize(FormManager2)
+ * <LI> Bean init: setComponent(Class)
+ * <LI> SubComponents init: initSubComponents(RADComponent[])
+ * <LI> DesignLayout init: setDesignLayout(DesignLayout) </UL>
  
-* @author Ian Formanek
-*/
+ * @author Ian Formanek
+ */
 public class RADVisualContainer extends RADVisualComponent implements ComponentContainer {
     private ArrayList subComponents;
     private DesignLayout designLayout;

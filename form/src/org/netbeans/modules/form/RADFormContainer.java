@@ -18,9 +18,9 @@ package org.netbeans.modules.form;
 import org.netbeans.modules.form.forminfo.FormInfo;
 
 /**
-*
-* @author Ian Formanek
-*/
+ *
+ * @author Ian Formanek
+ */
 public class RADFormContainer extends RADContainer implements FormContainer {
 
     /** The form info of form represented by this RADFormContainer */

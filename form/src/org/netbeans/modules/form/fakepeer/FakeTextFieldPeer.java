@@ -87,6 +87,6 @@ class FakeTextFieldPeer extends FakeTextComponentPeer implements TextFieldPeer
             int h = fm.getHeight();
 
             return new Dimension(w > 92 ? 100 : w+8, h + 4);
-       }
+        }
     }
 }

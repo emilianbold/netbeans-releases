@@ -104,11 +104,11 @@ public final class ColorEditor implements PropertyEditor {
 
     static {
         UIManager.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    swingColorNames = null;
-                    swingColors = null;
-                }
-            });
+            public void propertyChange(PropertyChangeEvent evt) {
+                swingColorNames = null;
+                swingColors = null;
+            }
+        });
         swingColorNames = null;
         swingColors = null;
     }
@@ -124,24 +124,24 @@ public final class ColorEditor implements PropertyEditor {
     public static JColorChooser getStaticChooser() {
         if (staticChooser == null) {
             staticChooser = new JColorChooser() {
-                    public void setColor(Color c) {
-                        if (c == null) return;
-                        super.setColor(c);
-                    }
-                };
+                public void setColor(Color c) {
+                    if (c == null) return;
+                    super.setColor(c);
+                }
+            };
             staticChooser.addChooserPanel(
-                    new NbColorChooserPanel(AWT_PALETTE, awtColorNames, awtColors,
-                                            bundle.getString("CTL_AWTPalette"))
-                    );
+                new NbColorChooserPanel(AWT_PALETTE, awtColorNames, awtColors,
+                                        bundle.getString("CTL_AWTPalette"))
+                );
             initSwingConstants();
             staticChooser.addChooserPanel(
-                    new NbColorChooserPanel(SWING_PALETTE, swingColorNames, swingColors,
-                                            bundle.getString("CTL_SwingPalette"))
-                    );
+                new NbColorChooserPanel(SWING_PALETTE, swingColorNames, swingColors,
+                                        bundle.getString("CTL_SwingPalette"))
+                );
             staticChooser.addChooserPanel(
-                    new NbColorChooserPanel(SYSTEM_PALETTE, systemColorNames, systemColors,
-                                            bundle.getString("CTL_SystemPalette"))
-                    );
+                new NbColorChooserPanel(SYSTEM_PALETTE, systemColorNames, systemColors,
+                                        bundle.getString("CTL_SystemPalette"))
+                );
         }
         return staticChooser;
     }
@@ -451,7 +451,7 @@ public final class ColorEditor implements PropertyEditor {
             if (!list.isSelectionEmpty()) {
                 int i = list.getSelectedIndex();
                 getColorSelectionModel().setSelectedColor(
-                        new SuperColor(names [i], palette, colors [i]));
+                    new SuperColor(names [i], palette, colors [i]));
             }
         }
 
@@ -487,9 +487,9 @@ public final class ColorEditor implements PropertyEditor {
                 try {
                     FontMetrics fontMetrics = getFontMetrics(getFont());
                     return new Dimension(
-                            fontMetrics.stringWidth(names [index]) + 30,
-                            fontMetrics.getHeight() + 4
-                            );
+                        fontMetrics.stringWidth(names [index]) + 30,
+                        fontMetrics.getHeight() + 4
+                        );
                 } catch (NullPointerException e) {
                     return new Dimension(10, 10);
                 }
@@ -523,12 +523,12 @@ public final class ColorEditor implements PropertyEditor {
              * reconfigure the Jlabel each time we're called.
              */
             public java.awt.Component getListCellRendererComponent(
-                    JList list,
-                    Object value,            // value to display
-                    int index,               // cell index
-                    boolean isSelected,      // is the cell selected
-                    boolean cellHasFocus     // the list and the cell have the focus
-                    ) {
+                JList list,
+                Object value,            // value to display
+                int index,               // cell index
+                boolean isSelected,      // is the cell selected
+                boolean cellHasFocus     // the list and the cell have the focus
+                ) {
                 this.index = index;
                 selected = isSelected;
                 hasFocus = cellHasFocus;

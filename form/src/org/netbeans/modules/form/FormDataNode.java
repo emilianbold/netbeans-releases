@@ -21,10 +21,10 @@ import org.openide.util.HelpCtx;
 import org.netbeans.modules.java.JavaNode;
 
 /** The DataNode for Forms.
-*
-* @author Ian Formanek
-* @version 1.00, Jul 21, 1998
-*/
+ *
+ * @author Ian Formanek
+ * @version 1.00, Jul 21, 1998
+ */
 public class FormDataNode extends JavaNode {
     /** generated Serialized Version UID */
     //  static final long serialVersionUID = 1795549004166402392L;

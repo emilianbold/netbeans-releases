@@ -67,8 +67,8 @@ class FakeScrollbarPeer extends FakeComponentPeer implements ScrollbarPeer
         public Dimension getMinimumSize() {
             Scrollbar target =(Scrollbar) _target;
             return target.getOrientation() == Scrollbar.HORIZONTAL ?
-                   new Dimension(3 * FakePeerUtils.SCROLL_W, FakePeerUtils.SCROLL_H) :
-                   new Dimension(FakePeerUtils.SCROLL_W, 3 * FakePeerUtils.SCROLL_H);
+                new Dimension(3 * FakePeerUtils.SCROLL_W, FakePeerUtils.SCROLL_H) :
+                new Dimension(FakePeerUtils.SCROLL_W, 3 * FakePeerUtils.SCROLL_H);
         }
     }
 }

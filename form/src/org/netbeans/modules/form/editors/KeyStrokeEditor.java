@@ -204,10 +204,10 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             add(_keyGrabber = new KeyGrabberField());
 
             _keyGrabber.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent ev) {
-                        setAsText(_keyGrabber.getText());
-                    }
-                });
+                public void actionPerformed(ActionEvent ev) {
+                    setAsText(_keyGrabber.getText());
+                }
+            });
 
             // fill in virtual key list
 
@@ -242,11 +242,11 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             // listeners
 
             ItemListener il = new ItemListener() {
-                    public void itemStateChanged(ItemEvent e) {
-                        if (e.getStateChange() == ItemEvent.SELECTED)
-                            virtualKeyChanged();
-                    }
-                };
+                public void itemStateChanged(ItemEvent e) {
+                    if (e.getStateChange() == ItemEvent.SELECTED)
+                        virtualKeyChanged();
+                }
+            };
             _virtualKey.addItemListener(il);
             _ctrl.addItemListener(il);
             _alt.addItemListener(il);

@@ -132,25 +132,25 @@ class JavaCodeGenerator extends CodeGenerator {
 
     public Node.Property[] getSyntheticProperties(final RADComponent component) {
         Node.Property variableProperty = new PropertySupport.ReadWrite(
-                "variableName",
-                String.class,
-                FormEditor.getFormBundle().getString("MSG_JC_VariableName"),
-                FormEditor.getFormBundle().getString("MSG_JC_VariableDesc"))
-            {
-                public void setValue(Object value) {
-                    if (!(value instanceof String)) {
-                        throw new IllegalArgumentException();
-                    }
-                    String oldValue = component.getName();
-                    component.setName((String)value);
-                    component.getNodeReference().firePropertyChangeHelper(
-                            "variableName", oldValue, value); // NOI18N
+            "variableName",
+            String.class,
+            FormEditor.getFormBundle().getString("MSG_JC_VariableName"),
+            FormEditor.getFormBundle().getString("MSG_JC_VariableDesc"))
+        {
+            public void setValue(Object value) {
+                if (!(value instanceof String)) {
+                    throw new IllegalArgumentException();
                 }
+                String oldValue = component.getName();
+                component.setName((String)value);
+                component.getNodeReference().firePropertyChangeHelper(
+                    "variableName", oldValue, value); // NOI18N
+            }
 
-                public Object getValue() {
-                    return component.getName();
-                }
-            };
+            public Object getValue() {
+                return component.getName();
+            }
+        };
 
         if (!component.getFormManager().getFormEditorSupport().supportsAdvancedFeatures()) {
             return new Node.Property[] { variableProperty };
@@ -159,216 +159,216 @@ class JavaCodeGenerator extends CodeGenerator {
             Node.Property[] props = new Node.Property[] {
                 variableProperty,
                 new PropertySupport.ReadWrite(
-                        "useDefaultModifiers",
-                        Boolean.TYPE,
-                        FormEditor.getFormBundle().getString("MSG_JC_UseDefaultMod"),
-                        FormEditor.getFormBundle().getString("MSG_JC_UseDefaultModDesc"))
-                    {
-                        public void setValue(Object value) {
-                            if (!(value instanceof Boolean)) {
-                                throw new IllegalArgumentException();
-                            }
-                            boolean useDefaultModifiers =((Boolean)value).booleanValue();
-                            if (useDefaultModifiers) {
-                                component.setAuxValue(AUX_VARIABLE_MODIFIER, null);
-                            } else {
-                                component.setAuxValue(AUX_VARIABLE_MODIFIER, new Integer(FormEditor.getFormSettings().getVariablesModifier()));
-                            }
-                            regenerateVariables();
-                            component.getNodeReference().notifyPropertiesChange();
-                            component.getNodeReference().notifyPropertySetsChange();
+                    "useDefaultModifiers",
+                    Boolean.TYPE,
+                    FormEditor.getFormBundle().getString("MSG_JC_UseDefaultMod"),
+                    FormEditor.getFormBundle().getString("MSG_JC_UseDefaultModDesc"))
+                {
+                    public void setValue(Object value) {
+                        if (!(value instanceof Boolean)) {
+                            throw new IllegalArgumentException();
                         }
-
-                        public Object getValue() {
-                            return new Boolean(component.getAuxValue(AUX_VARIABLE_MODIFIER) == null);
+                        boolean useDefaultModifiers =((Boolean)value).booleanValue();
+                        if (useDefaultModifiers) {
+                            component.setAuxValue(AUX_VARIABLE_MODIFIER, null);
+                        } else {
+                            component.setAuxValue(AUX_VARIABLE_MODIFIER, new Integer(FormEditor.getFormSettings().getVariablesModifier()));
                         }
-
-                    },
-                new PropertySupport.ReadWrite(
-                        "modifiers",
-                        Integer.class,
-                        FormEditor.getFormBundle().getString("MSG_JC_VariableModifiers"),
-                        FormEditor.getFormBundle().getString("MSG_JC_VariableModifiersDesc"))
-                    {
-                        public void setValue(Object value) {
-                            if (!(value instanceof Integer)) {
-                                throw new IllegalArgumentException();
-                            }
-                            component.setAuxValue(AUX_VARIABLE_MODIFIER, value);
-                            regenerateVariables();
-                            component.getNodeReference().notifyPropertiesChange();
-                        }
-
-                        public Object getValue() {
-                            return component.getAuxValue(AUX_VARIABLE_MODIFIER);
-                        }
-
-                        public boolean canWrite() {
-                            return(component.getAuxValue(AUX_VARIABLE_MODIFIER) != null);
-                        }
-
-                        public PropertyEditor getPropertyEditor() {
-                            return new ModifierEditor(Modifier.PUBLIC
-                                                      | Modifier.PROTECTED
-                                                      | Modifier.PRIVATE
-                                                      | Modifier.STATIC
-                                                      | Modifier.FINAL
-                                                      | Modifier.TRANSIENT
-                                                      | Modifier.VOLATILE);
-                        }
-                    },
-                new PropertySupport.ReadWrite(
-                        "codeGeneration",
-                        Integer.TYPE,
-                        FormEditor.getFormBundle().getString("MSG_JC_CodeGeneration"),
-                        FormEditor.getFormBundle().getString("MSG_JC_CodeGenerationDesc"))
-                    {
-                        public void setValue(Object value) {
-                            if (!(value instanceof Integer)) {
-                                throw new IllegalArgumentException();
-                            }
-                            component.setAuxValue(AUX_CODE_GENERATION, value);
-                            if (value.equals(VALUE_SERIALIZE)) {
-                                if (component.getAuxValue(AUX_SERIALIZE_TO) == null) {
-                                    component.setAuxValue(AUX_SERIALIZE_TO,
-                                                          getDefaultSerializedName(component));
-                                }
-                            }
-                            regenerateInitializer();
-                            component.getNodeReference().notifyPropertiesChange();
-                        }
-
-                        public Object getValue() {
-                            Object value = component.getAuxValue(AUX_CODE_GENERATION);
-                            if (value == null) {
-                                if (component.hasHiddenState()) {
-                                    value = VALUE_SERIALIZE;
-                                } else {
-                                    value = VALUE_GENERATE_CODE;
-                                }
-                            }
-                            return value;
-                        }
-
-                        public PropertyEditor getPropertyEditor() {
-                            return new CodeGenerateEditor(component);
-                        }
-                    },
-                new CodePropertySupportRW(
-                        "creationCodePre",
-                        String.class,
-                        FormEditor.getFormBundle().getString("MSG_JC_PreCreationCode"),
-                        FormEditor.getFormBundle().getString("MSG_JC_PreCreationCodeDesc"))
-                    {
-                        public void setValue(Object value) {
-                            if (!(value instanceof String)) {
-                                throw new IllegalArgumentException();
-                            }
-                            component.setAuxValue(AUX_CREATE_CODE_PRE, value);
-                            regenerateInitializer();
-                            component.getNodeReference().notifyPropertiesChange();
-                        }
-
-                        public Object getValue() {
-                            Object value = component.getAuxValue(AUX_CREATE_CODE_PRE);
-                            if (value == null) {
-                                value = ""; // NOI18N
-                            }
-                            return value;
-                        }
-                    },
-                new CodePropertySupportRW(
-                        "creationCodePost",
-                        String.class,
-                        FormEditor.getFormBundle().getString("MSG_JC_PostCreationCode"),
-                        FormEditor.getFormBundle().getString("MSG_JC_PostCreationCodeDesc"))
-                    {
-                        public void setValue(Object value) {
-                            if (!(value instanceof String)) {
-                                throw new IllegalArgumentException();
-                            }
-                            component.setAuxValue(AUX_CREATE_CODE_POST, value);
-                            regenerateInitializer();
-                            component.getNodeReference().notifyPropertiesChange();
-                        }
-
-                        public Object getValue() {
-                            Object value = component.getAuxValue(AUX_CREATE_CODE_POST);
-                            if (value == null) {
-                                value = ""; // NOI18N
-                            }
-                            return value;
-                        }
-                    },
-                new CodePropertySupportRW(
-                        "initCodePre",
-                        String.class,
-                        FormEditor.getFormBundle().getString("MSG_JC_PreInitCode"),
-                        FormEditor.getFormBundle().getString("MSG_JC_PreInitCodeDesc"))
-                    {
-                        public void setValue(Object value) {
-                            if (!(value instanceof String)) {
-                                throw new IllegalArgumentException();
-                            }
-                            component.setAuxValue(AUX_INIT_CODE_PRE, value);
-                            regenerateInitializer();
-                            component.getNodeReference().notifyPropertiesChange();
-                        }
-
-                        public Object getValue() {
-                            Object value = component.getAuxValue(AUX_INIT_CODE_PRE);
-                            if (value == null) {
-                                value = ""; // NOI18N
-                            }
-                            return value;
-                        }
-                    },
-                new CodePropertySupportRW(
-                        "initCodePost",
-                        String.class,
-                        FormEditor.getFormBundle().getString("MSG_JC_PostInitCode"),
-                        FormEditor.getFormBundle().getString("MSG_JC_PostInitCodeDesc"))
-                    {
-                        public void setValue(Object value) {
-                            if (!(value instanceof String)) {
-                                throw new IllegalArgumentException();
-                            }
-                            component.setAuxValue(AUX_INIT_CODE_POST, value);
-                            regenerateInitializer();
-                            component.getNodeReference().notifyPropertiesChange();
-                        }
-
-                        public Object getValue() {
-                            Object value = component.getAuxValue(AUX_INIT_CODE_POST);
-                            if (value == null) {
-                                value = ""; // NOI18N
-                            }
-                            return value;
-                        }
-                    },
-                new PropertySupport.ReadWrite(
-                        "serializeTo",
-                        String.class,
-                        FormEditor.getFormBundle().getString("MSG_JC_SerializeTo"),
-                        FormEditor.getFormBundle().getString("MSG_JC_SerializeToDesc"))
-                    {
-                        public void setValue(Object value) {
-                            if (!(value instanceof String)) {
-                                throw new IllegalArgumentException();
-                            }
-                            component.setAuxValue(AUX_SERIALIZE_TO, value);
-                            regenerateInitializer();
-                            component.getNodeReference().notifyPropertiesChange();
-                        }
-
-                        public Object getValue() {
-                            Object value = component.getAuxValue(AUX_SERIALIZE_TO);
-                            if (value == null) {
-                                value = getDefaultSerializedName(component);
-                            }
-                            return value;
-                        }
+                        regenerateVariables();
+                        component.getNodeReference().notifyPropertiesChange();
+                        component.getNodeReference().notifyPropertySetsChange();
                     }
+
+                    public Object getValue() {
+                        return new Boolean(component.getAuxValue(AUX_VARIABLE_MODIFIER) == null);
+                    }
+
+                },
+                new PropertySupport.ReadWrite(
+                    "modifiers",
+                    Integer.class,
+                    FormEditor.getFormBundle().getString("MSG_JC_VariableModifiers"),
+                    FormEditor.getFormBundle().getString("MSG_JC_VariableModifiersDesc"))
+                {
+                    public void setValue(Object value) {
+                        if (!(value instanceof Integer)) {
+                            throw new IllegalArgumentException();
+                        }
+                        component.setAuxValue(AUX_VARIABLE_MODIFIER, value);
+                        regenerateVariables();
+                        component.getNodeReference().notifyPropertiesChange();
+                    }
+
+                    public Object getValue() {
+                        return component.getAuxValue(AUX_VARIABLE_MODIFIER);
+                    }
+
+                    public boolean canWrite() {
+                        return(component.getAuxValue(AUX_VARIABLE_MODIFIER) != null);
+                    }
+
+                    public PropertyEditor getPropertyEditor() {
+                        return new ModifierEditor(Modifier.PUBLIC
+                                                  | Modifier.PROTECTED
+                                                  | Modifier.PRIVATE
+                                                  | Modifier.STATIC
+                                                  | Modifier.FINAL
+                                                  | Modifier.TRANSIENT
+                                                  | Modifier.VOLATILE);
+                    }
+                },
+                new PropertySupport.ReadWrite(
+                    "codeGeneration",
+                    Integer.TYPE,
+                    FormEditor.getFormBundle().getString("MSG_JC_CodeGeneration"),
+                    FormEditor.getFormBundle().getString("MSG_JC_CodeGenerationDesc"))
+                {
+                    public void setValue(Object value) {
+                        if (!(value instanceof Integer)) {
+                            throw new IllegalArgumentException();
+                        }
+                        component.setAuxValue(AUX_CODE_GENERATION, value);
+                        if (value.equals(VALUE_SERIALIZE)) {
+                            if (component.getAuxValue(AUX_SERIALIZE_TO) == null) {
+                                component.setAuxValue(AUX_SERIALIZE_TO,
+                                                      getDefaultSerializedName(component));
+                            }
+                        }
+                        regenerateInitializer();
+                        component.getNodeReference().notifyPropertiesChange();
+                    }
+
+                    public Object getValue() {
+                        Object value = component.getAuxValue(AUX_CODE_GENERATION);
+                        if (value == null) {
+                            if (component.hasHiddenState()) {
+                                value = VALUE_SERIALIZE;
+                            } else {
+                                value = VALUE_GENERATE_CODE;
+                            }
+                        }
+                        return value;
+                    }
+
+                    public PropertyEditor getPropertyEditor() {
+                        return new CodeGenerateEditor(component);
+                    }
+                },
+                new CodePropertySupportRW(
+                    "creationCodePre",
+                    String.class,
+                    FormEditor.getFormBundle().getString("MSG_JC_PreCreationCode"),
+                    FormEditor.getFormBundle().getString("MSG_JC_PreCreationCodeDesc"))
+                {
+                    public void setValue(Object value) {
+                        if (!(value instanceof String)) {
+                            throw new IllegalArgumentException();
+                        }
+                        component.setAuxValue(AUX_CREATE_CODE_PRE, value);
+                        regenerateInitializer();
+                        component.getNodeReference().notifyPropertiesChange();
+                    }
+
+                    public Object getValue() {
+                        Object value = component.getAuxValue(AUX_CREATE_CODE_PRE);
+                        if (value == null) {
+                            value = ""; // NOI18N
+                        }
+                        return value;
+                    }
+                },
+                new CodePropertySupportRW(
+                    "creationCodePost",
+                    String.class,
+                    FormEditor.getFormBundle().getString("MSG_JC_PostCreationCode"),
+                    FormEditor.getFormBundle().getString("MSG_JC_PostCreationCodeDesc"))
+                {
+                    public void setValue(Object value) {
+                        if (!(value instanceof String)) {
+                            throw new IllegalArgumentException();
+                        }
+                        component.setAuxValue(AUX_CREATE_CODE_POST, value);
+                        regenerateInitializer();
+                        component.getNodeReference().notifyPropertiesChange();
+                    }
+
+                    public Object getValue() {
+                        Object value = component.getAuxValue(AUX_CREATE_CODE_POST);
+                        if (value == null) {
+                            value = ""; // NOI18N
+                        }
+                        return value;
+                    }
+                },
+                new CodePropertySupportRW(
+                    "initCodePre",
+                    String.class,
+                    FormEditor.getFormBundle().getString("MSG_JC_PreInitCode"),
+                    FormEditor.getFormBundle().getString("MSG_JC_PreInitCodeDesc"))
+                {
+                    public void setValue(Object value) {
+                        if (!(value instanceof String)) {
+                            throw new IllegalArgumentException();
+                        }
+                        component.setAuxValue(AUX_INIT_CODE_PRE, value);
+                        regenerateInitializer();
+                        component.getNodeReference().notifyPropertiesChange();
+                    }
+
+                    public Object getValue() {
+                        Object value = component.getAuxValue(AUX_INIT_CODE_PRE);
+                        if (value == null) {
+                            value = ""; // NOI18N
+                        }
+                        return value;
+                    }
+                },
+                new CodePropertySupportRW(
+                    "initCodePost",
+                    String.class,
+                    FormEditor.getFormBundle().getString("MSG_JC_PostInitCode"),
+                    FormEditor.getFormBundle().getString("MSG_JC_PostInitCodeDesc"))
+                {
+                    public void setValue(Object value) {
+                        if (!(value instanceof String)) {
+                            throw new IllegalArgumentException();
+                        }
+                        component.setAuxValue(AUX_INIT_CODE_POST, value);
+                        regenerateInitializer();
+                        component.getNodeReference().notifyPropertiesChange();
+                    }
+
+                    public Object getValue() {
+                        Object value = component.getAuxValue(AUX_INIT_CODE_POST);
+                        if (value == null) {
+                            value = ""; // NOI18N
+                        }
+                        return value;
+                    }
+                },
+                new PropertySupport.ReadWrite(
+                    "serializeTo",
+                    String.class,
+                    FormEditor.getFormBundle().getString("MSG_JC_SerializeTo"),
+                    FormEditor.getFormBundle().getString("MSG_JC_SerializeToDesc"))
+                {
+                    public void setValue(Object value) {
+                        if (!(value instanceof String)) {
+                            throw new IllegalArgumentException();
+                        }
+                        component.setAuxValue(AUX_SERIALIZE_TO, value);
+                        regenerateInitializer();
+                        component.getNodeReference().notifyPropertiesChange();
+                    }
+
+                    public Object getValue() {
+                        Object value = component.getAuxValue(AUX_SERIALIZE_TO);
+                        if (value == null) {
+                            value = getDefaultSerializedName(component);
+                        }
+                        return value;
+                    }
+                }
             };
 
             Integer generationType =(Integer) component.getAuxValue(AUX_CODE_GENERATION);
@@ -379,32 +379,32 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
                 moreProps [moreProps.length -1] =
                     new CodePropertySupportRW(
-                            "creationCodeCustom",
-                            String.class,
-                            FormEditor.getFormBundle().getString("MSG_JC_CustomCreationCode"),
-                            FormEditor.getFormBundle().getString("MSG_JC_CustomCreationCodeDesc"))
-                        {
-                            public void setValue(Object value) {
-                                if (!(value instanceof String)) {
-                                    throw new IllegalArgumentException();
-                                }
-                                component.setAuxValue(AUX_CREATE_CODE_CUSTOM, value);
-                                regenerateInitializer();
-                                component.getNodeReference().notifyPropertiesChange();
+                        "creationCodeCustom",
+                        String.class,
+                        FormEditor.getFormBundle().getString("MSG_JC_CustomCreationCode"),
+                        FormEditor.getFormBundle().getString("MSG_JC_CustomCreationCodeDesc"))
+                    {
+                        public void setValue(Object value) {
+                            if (!(value instanceof String)) {
+                                throw new IllegalArgumentException();
                             }
+                            component.setAuxValue(AUX_CREATE_CODE_CUSTOM, value);
+                            regenerateInitializer();
+                            component.getNodeReference().notifyPropertiesChange();
+                        }
 
-                            public Object getValue() {
-                                Object value = component.getAuxValue(AUX_CREATE_CODE_CUSTOM);
-                                if (value == null) {
-                                    value = ""; // NOI18N
-                                }
-                                return value;
+                        public Object getValue() {
+                            Object value = component.getAuxValue(AUX_CREATE_CODE_CUSTOM);
+                            if (value == null) {
+                                value = ""; // NOI18N
                             }
-                            public boolean canWrite() {
-                                Integer genType =(Integer)component.getAuxValue(AUX_CODE_GENERATION);
-                                return((genType == null) ||(genType.equals(VALUE_GENERATE_CODE)));
-                            }
-                        };
+                            return value;
+                        }
+                        public boolean canWrite() {
+                            Integer genType =(Integer)component.getAuxValue(AUX_CODE_GENERATION);
+                            return((genType == null) ||(genType.equals(VALUE_GENERATE_CODE)));
+                        }
+                    };
                 return moreProps;
             } else {
                 return props;
@@ -429,8 +429,8 @@ class JavaCodeGenerator extends CodeGenerator {
             IndentEngine engine = IndentEngine.find("text/x-java"); // NOI18N
             AWTIndentStringWriter initCodeBuffer = new AWTIndentStringWriter();
             Writer initCodeWriter = engine.createWriter(
-                    formManager.getFormEditorSupport().getDocument(),
-                    initComponentsSection.getBegin().getOffset(), initCodeBuffer);
+                formManager.getFormEditorSupport().getDocument(),
+                initComponentsSection.getBegin().getOffset(), initCodeBuffer);
 
             initCodeWriter.write(INIT_COMPONENTS_HEADER);
             RADForm form = formManager.getRADForm();
@@ -537,9 +537,9 @@ class JavaCodeGenerator extends CodeGenerator {
         IndentEngine engine = IndentEngine.find("text/x-java"); // NOI18N
         StringWriter variablesBuffer = new StringWriter();
         Writer variablesWriter = engine.createWriter(
-                formManager.getFormEditorSupport().getDocument(),
-                variablesSection.getBegin().getOffset(),
-                variablesBuffer);
+            formManager.getFormEditorSupport().getDocument(),
+            variablesSection.getBegin().getOffset(),
+            variablesBuffer);
 
         try {
             variablesWriter.write(VARIABLES_HEADER);
@@ -889,7 +889,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
             // try to find adpater to use instead of the listener
             Class classToGenerate = BeanSupport.getAdapterForListener(
-                    eventSetDesc.getListenerType());
+                eventSetDesc.getListenerType());
             boolean adapterUsed = true;
             if (classToGenerate == null) { // if not found, we must use the listener
                 classToGenerate = eventSetDesc.getListenerType();
@@ -1486,7 +1486,7 @@ class JavaCodeGenerator extends CodeGenerator {
          */
         public void write(String str, int off, int len)  {
             if (currentIndent != null) str = Utilities.replaceString(
-                    str, "\n", "\n"+currentIndent); // NOI18N
+                str, "\n", "\n"+currentIndent); // NOI18N
             super.write(str, off, len);
         }
     }
@@ -1557,14 +1557,14 @@ class JavaCodeGenerator extends CodeGenerator {
 
         public PropertyEditor getPropertyEditor() {
             return new PropertyEditorSupport() {
-                    public java.awt.Component getCustomEditor() {
-                        return new CustomCodeEditor(CodePropertySupportRW.this);
-                    }
+                public java.awt.Component getCustomEditor() {
+                    return new CustomCodeEditor(CodePropertySupportRW.this);
+                }
 
-                    public boolean supportsCustomEditor() {
-                        return true;
-                    }
-                };
+                public boolean supportsCustomEditor() {
+                    return true;
+                }
+            };
         }
     }
 

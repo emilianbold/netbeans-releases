@@ -18,8 +18,8 @@ package org.netbeans.modules.form.editors2;
 import javax.swing.AbstractListModel;
 
 /** A property editor for ListModel.
-* @author  Ian Formanek
-*/
+ * @author  Ian Formanek
+ */
 public class ListModelEditor extends Object {
 
     public static class NbListModel extends AbstractListModel implements java.io.Serializable {

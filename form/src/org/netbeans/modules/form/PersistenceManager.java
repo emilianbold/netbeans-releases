@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
-*
-* @author Ian Formanek
-*/
+ *
+ * @author Ian Formanek
+ */
 public abstract class PersistenceManager {
 
     private static ArrayList managers = new ArrayList(5);

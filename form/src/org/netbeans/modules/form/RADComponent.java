@@ -182,29 +182,29 @@ public class RADComponent {
     void setNodeReference(RADComponentNode node) {
         this.componentNode = node;
         componentNode.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-                public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                    if (evt.getPropertyName() != null && evt.getPropertyName().equals("variableName")) { // NOI18N // [CHECK]
-                        String oldName =(String) evt.getOldValue();
-                        String newName =(String) evt.getNewValue();
-                        EventsList.EventSet[] esets = getEventsList().getEventSets();
-                        for (int i=0, n=esets.length; i<n; i++) {
-                            EventsList.Event [] evts = esets [i].getEvents();
-                            for (int j=0, m=evts.length; j<m; j++) {
-                                String defaultName = FormUtils.getDefaultEventName(oldName, evts[j].getListenerMethod());
-                                for (java.util.Iterator iter = evts[j].getHandlers().iterator(); iter.hasNext();) {
-                                    EventsManager.EventHandler eh =(EventsManager.EventHandler) iter.next();
-                                    if (eh.getName().equals(defaultName)) {
-                                        String newValue = FormUtils.getDefaultEventName(newName, evts[j].getListenerMethod());
-                                        formManager.getEventsManager().renameEventHandler(eh, newValue);
-                                        formManager.fireEventRenamed(RADComponent.this, eh, defaultName);
-                                        break;
-                                    }
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                if (evt.getPropertyName() != null && evt.getPropertyName().equals("variableName")) { // NOI18N // [CHECK]
+                    String oldName =(String) evt.getOldValue();
+                    String newName =(String) evt.getNewValue();
+                    EventsList.EventSet[] esets = getEventsList().getEventSets();
+                    for (int i=0, n=esets.length; i<n; i++) {
+                        EventsList.Event [] evts = esets [i].getEvents();
+                        for (int j=0, m=evts.length; j<m; j++) {
+                            String defaultName = FormUtils.getDefaultEventName(oldName, evts[j].getListenerMethod());
+                            for (java.util.Iterator iter = evts[j].getHandlers().iterator(); iter.hasNext();) {
+                                EventsManager.EventHandler eh =(EventsManager.EventHandler) iter.next();
+                                if (eh.getName().equals(defaultName)) {
+                                    String newValue = FormUtils.getDefaultEventName(newName, evts[j].getListenerMethod());
+                                    formManager.getEventsManager().renameEventHandler(eh, newValue);
+                                    formManager.fireEventRenamed(RADComponent.this, eh, defaultName);
+                                    break;
                                 }
                             }
                         }
                     }
                 }
             }
+        }
                                                 );
     }
 
@@ -367,72 +367,72 @@ public class RADComponent {
                 // No expert properties
                 beanPropertySets = new Node.PropertySet [] {
                     new Node.PropertySet(
-                            "properties", // NOI18N
-                            FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
-                            FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
-                            ) {
-                            public Node.Property[] getProperties() {
-                                return getComponentProperties();
-                            }
-                        },
+                        "properties", // NOI18N
+                        FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
+                        FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
+                        ) {
+                        public Node.Property[] getProperties() {
+                            return getComponentProperties();
+                        }
+                    },
                     new Node.PropertySet(
-                            "events", // NOI18N
-                            FormEditor.getFormBundle().getString("CTL_EventsTab"),
-                            FormEditor.getFormBundle().getString("CTL_EventsTabHint")
-                            ) {
-                            public Node.Property[] getProperties() {
-                                return getComponentEvents();
-                            }
-                        },
+                        "events", // NOI18N
+                        FormEditor.getFormBundle().getString("CTL_EventsTab"),
+                        FormEditor.getFormBundle().getString("CTL_EventsTabHint")
+                        ) {
+                        public Node.Property[] getProperties() {
+                            return getComponentEvents();
+                        }
+                    },
                     new Node.PropertySet(
-                            "synthetic", // NOI18N
-                            FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
-                            FormEditor.getFormBundle().getString("CTL_SyntheticTabHint")
-                            ) {
-                            public Node.Property[] getProperties() {
-                                return getSyntheticProperties();
-                            }
-                        },
+                        "synthetic", // NOI18N
+                        FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
+                        FormEditor.getFormBundle().getString("CTL_SyntheticTabHint")
+                        ) {
+                        public Node.Property[] getProperties() {
+                            return getSyntheticProperties();
+                        }
+                    },
                 };
             } else {
                 // With expert properties
                 beanPropertySets = new Node.PropertySet [] {
                     new Node.PropertySet(
-                            "properties", // NOI18N
-                            FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
-                            FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
-                            ) {
-                            public Node.Property[] getProperties() {
-                                return getComponentProperties();
-                            }
-                        },
+                        "properties", // NOI18N
+                        FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
+                        FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
+                        ) {
+                        public Node.Property[] getProperties() {
+                            return getComponentProperties();
+                        }
+                    },
                     new Node.PropertySet(
-                            "expert", // NOI18N
-                            FormEditor.getFormBundle().getString("CTL_ExpertTab"),
-                            FormEditor.getFormBundle().getString("CTL_ExpertTabHint")
-                            ) {
-                            public Node.Property[] getProperties() {
-                                return getComponentExpertProperties();
-                            }
-                        },
+                        "expert", // NOI18N
+                        FormEditor.getFormBundle().getString("CTL_ExpertTab"),
+                        FormEditor.getFormBundle().getString("CTL_ExpertTabHint")
+                        ) {
+                        public Node.Property[] getProperties() {
+                            return getComponentExpertProperties();
+                        }
+                    },
                     new Node.PropertySet(
-                            "events", // NOI18N
-                            FormEditor.getFormBundle().getString("CTL_EventsTab"),
-                            FormEditor.getFormBundle().getString("CTL_EventsTabHint")
-                            ) {
-                            public Node.Property[] getProperties() {
-                                return getComponentEvents();
-                            }
-                        },
+                        "events", // NOI18N
+                        FormEditor.getFormBundle().getString("CTL_EventsTab"),
+                        FormEditor.getFormBundle().getString("CTL_EventsTabHint")
+                        ) {
+                        public Node.Property[] getProperties() {
+                            return getComponentEvents();
+                        }
+                    },
                     new Node.PropertySet(
-                            "synthetic", // NOI18N
-                            FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
-                            FormEditor.getFormBundle().getString("CTL_SyntheticTabHint")
-                            ) {
-                            public Node.Property[] getProperties() {
-                                return getSyntheticProperties();
-                            }
-                        },
+                        "synthetic", // NOI18N
+                        FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
+                        FormEditor.getFormBundle().getString("CTL_SyntheticTabHint")
+                        ) {
+                        public Node.Property[] getProperties() {
+                            return getSyntheticProperties();
+                        }
+                    },
                 };
             }
         }
@@ -543,75 +543,75 @@ public class RADComponent {
             for (int j = 0; j < events.length; j++) {
                 Node.Property ep = new EventProperty(events[j]) {
 
-                        public Object getValue() {
-                            if (event.getHandlers().size() == 0)
-                                lastSelectedHandler = null;
-                            else
-                                lastSelectedHandler =((EventsManager.EventHandler) event.getHandlers().get(0)).getName();
-                            return lastSelectedHandler;
+                    public Object getValue() {
+                        if (event.getHandlers().size() == 0)
+                            lastSelectedHandler = null;
+                        else
+                            lastSelectedHandler =((EventsManager.EventHandler) event.getHandlers().get(0)).getName();
+                        return lastSelectedHandler;
+                    }
+
+                    public void setValue(Object val) throws IllegalArgumentException {
+                        if (val == null)
+                            return;
+                        if (!(val instanceof HandlerSetChange)) {
+                            if (val instanceof String) {
+                                HandlerSetChange change = new HandlerSetChange();
+                                change.getRenamedNewNames().add((String)val);
+                                change.getRenamedOldNames().add((String) getValue());
+                                val = change;
+                            }
+                            else {
+                                throw new IllegalArgumentException();
+                            }
+                        }
+                        Hashtable handlersByName = new Hashtable();
+                        Vector handlers = event.getHandlers();
+
+                        for (Iterator it = handlers.iterator(); it.hasNext();) {
+                            EventsManager.EventHandler h =(EventsManager.EventHandler) it.next();
+                            handlersByName.put(h.getName(), h);
                         }
 
-                        public void setValue(Object val) throws IllegalArgumentException {
-                            if (val == null)
-                                return;
-                            if (!(val instanceof HandlerSetChange)) {
-                                if (val instanceof String) {
-                                    HandlerSetChange change = new HandlerSetChange();
-                                    change.getRenamedNewNames().add((String)val);
-                                    change.getRenamedOldNames().add((String) getValue());
-                                    val = change;
+                        HandlerSetChange change =(HandlerSetChange) val;
+                        if (change.hasAdded()) {
+                            for (Iterator iter = change.getAdded().iterator(); iter.hasNext();) {
+                                String handlerName =(String) iter.next();
+                                if (!Utilities.isJavaIdentifier(handlerName)) {
+                                    TopManager.getDefault().notify(new NotifyDescriptor.Message(java.text.MessageFormat.format(FormEditor.getFormBundle().getString("FMT_MSG_InvalidJavaIdentifier"), new Object [] {handlerName}), NotifyDescriptor.ERROR_MESSAGE));
+                                    continue;
                                 }
-                                else {
-                                    throw new IllegalArgumentException();
-                                }
+                                // adding event handler
+                                formManager.getEventsManager().addEventHandler(event, handlerName);
+                                EventsManager.EventHandler handler =(EventsManager.EventHandler) event.getHandlers().get(event.getHandlers().size() -1);
+                                formManager.fireEventAdded(RADComponent.this, handler);
                             }
-                            Hashtable handlersByName = new Hashtable();
-                            Vector handlers = event.getHandlers();
-
-                            for (Iterator it = handlers.iterator(); it.hasNext();) {
-                                EventsManager.EventHandler h =(EventsManager.EventHandler) it.next();
-                                handlersByName.put(h.getName(), h);
-                            }
-
-                            HandlerSetChange change =(HandlerSetChange) val;
-                            if (change.hasAdded()) {
-                                for (Iterator iter = change.getAdded().iterator(); iter.hasNext();) {
-                                    String handlerName =(String) iter.next();
-                                    if (!Utilities.isJavaIdentifier(handlerName)) {
-                                        TopManager.getDefault().notify(new NotifyDescriptor.Message(java.text.MessageFormat.format(FormEditor.getFormBundle().getString("FMT_MSG_InvalidJavaIdentifier"), new Object [] {handlerName}), NotifyDescriptor.ERROR_MESSAGE));
-                                        continue;
-                                    }
-                                    // adding event handler
-                                    formManager.getEventsManager().addEventHandler(event, handlerName);
-                                    EventsManager.EventHandler handler =(EventsManager.EventHandler) event.getHandlers().get(event.getHandlers().size() -1);
-                                    formManager.fireEventAdded(RADComponent.this, handler);
-                                }
-                            }
-                            if (change.hasRenamed()) {
-                                for (int k=0, n = change.getRenamedOldNames().size(); k<n; k++) {
-                                    String oldName =(String) change.getRenamedOldNames().get(k);
-                                    String newName =(String) change.getRenamedNewNames().get(k);
-                                    if (!Utilities.isJavaIdentifier(newName)) continue;
-                                    if (newName.equals(oldName)) continue; // no change
-                                    EventsManager.EventHandler handler =(EventsManager.EventHandler) handlersByName.get(oldName);
-                                    formManager.getEventsManager().renameEventHandler(handler, newName);
-                                    formManager.fireEventRenamed(RADComponent.this, handler, oldName);
-                                }
-                            }
-                            if (change.hasRemoved()) {
-                                for (Iterator iter = change.getRemoved().iterator(); iter.hasNext();) {
-                                    EventsManager.EventHandler handler =(EventsManager.EventHandler) handlersByName.get((String) iter.next());
-                                    formManager.getEventsManager().removeEventHandler(event, handler);
-                                    formManager.fireEventRemoved(RADComponent.this, handler);
-                                }
-                            }
-                            String newSelectedHandler = ""; // NOI18N
-                            if (event.getHandlers().size() >0)
-                                newSelectedHandler =((EventsManager.EventHandler) event.getHandlers().get(0)).getName();
-                            getNodeReference().firePropertyChangeHelper(this.getName(), lastSelectedHandler, newSelectedHandler);
-                            ((java.beans.PropertyEditorSupport)getPropertyEditor()).firePropertyChange();
                         }
-                    };
+                        if (change.hasRenamed()) {
+                            for (int k=0, n = change.getRenamedOldNames().size(); k<n; k++) {
+                                String oldName =(String) change.getRenamedOldNames().get(k);
+                                String newName =(String) change.getRenamedNewNames().get(k);
+                                if (!Utilities.isJavaIdentifier(newName)) continue;
+                                if (newName.equals(oldName)) continue; // no change
+                                EventsManager.EventHandler handler =(EventsManager.EventHandler) handlersByName.get(oldName);
+                                formManager.getEventsManager().renameEventHandler(handler, newName);
+                                formManager.fireEventRenamed(RADComponent.this, handler, oldName);
+                            }
+                        }
+                        if (change.hasRemoved()) {
+                            for (Iterator iter = change.getRemoved().iterator(); iter.hasNext();) {
+                                EventsManager.EventHandler handler =(EventsManager.EventHandler) handlersByName.get((String) iter.next());
+                                formManager.getEventsManager().removeEventHandler(event, handler);
+                                formManager.fireEventRemoved(RADComponent.this, handler);
+                            }
+                        }
+                        String newSelectedHandler = ""; // NOI18N
+                        if (event.getHandlers().size() >0)
+                            newSelectedHandler =((EventsManager.EventHandler) event.getHandlers().get(0)).getName();
+                        getNodeReference().firePropertyChangeHelper(this.getName(), lastSelectedHandler, newSelectedHandler);
+                        ((java.beans.PropertyEditorSupport)getPropertyEditor()).firePropertyChange();
+                    }
+                };
                 nodeEvents[idx++] = ep;
             }
         }
@@ -1296,8 +1296,8 @@ public class RADComponent {
         if (valueType == null) {
             try {
                 valueType = org.openide.TopManager.getDefault().currentClassLoader().loadClass(
-                        "[L" + desc.getIndexedPropertyType().getName() + ";" // NOI18N
-                        );
+                    "[L" + desc.getIndexedPropertyType().getName() + ";" // NOI18N
+                    );
             } catch (Exception e) {
                 valueType = Object[].class;
             }
@@ -1399,48 +1399,48 @@ public class RADComponent {
                     }
 
                     eventCombo.addActionListener(new java.awt.event.ActionListener() {
-                            public void actionPerformed(java.awt.event.ActionEvent e) {
-                                String selected =(String) eventCombo.getEditor().getItem();
-                                lastSelectedHandler = selected;
-                                event.gotoEventHandler(selected);
-                            }
+                        public void actionPerformed(java.awt.event.ActionEvent e) {
+                            String selected =(String) eventCombo.getEditor().getItem();
+                            lastSelectedHandler = selected;
+                            event.gotoEventHandler(selected);
                         }
+                    }
                                                  );
                     eventCombo.addFocusListener(new java.awt.event.FocusAdapter() {
-                            public void focusGained(java.awt.event.FocusEvent evt) {
-                                Vector hand = event.getHandlers();
-                                eventCombo.removeAllItems();
-                                if (hand.size() == 0) {
-                                    eventCombo.getEditor().setItem(FormUtils.getDefaultEventName(RADComponent.this, event.getListenerMethod()));
-                                } else {
-                                    for (int i=0, n=hand.size(); i<n; i++) {
-                                        eventCombo.addItem(((EventsManager.EventHandler) hand.get(i)).getName());
-                                    }
+                        public void focusGained(java.awt.event.FocusEvent evt) {
+                            Vector hand = event.getHandlers();
+                            eventCombo.removeAllItems();
+                            if (hand.size() == 0) {
+                                eventCombo.getEditor().setItem(FormUtils.getDefaultEventName(RADComponent.this, event.getListenerMethod()));
+                            } else {
+                                for (int i=0, n=hand.size(); i<n; i++) {
+                                    eventCombo.addItem(((EventsManager.EventHandler) hand.get(i)).getName());
                                 }
                             }
                         }
+                    }
                                                 );
                     eventCombo.getEditor().addActionListener(new java.awt.event.ActionListener() {
-                            public void actionPerformed(java.awt.event.ActionEvent e) {
-                                String selected =(String) eventCombo.getEditor().getItem();
-                                lastSelectedHandler = selected;
-                                boolean isNew = true;
-                                String items[] = new String[eventCombo.getItemCount()];
-                                for (int i=0, n=eventCombo.getItemCount(); i<n; i++) {
-                                    items[i] =(String) eventCombo.getItemAt(i);
-                                    if (eventCombo.getItemAt(i).equals(selected)) {
-                                        isNew = false;
-                                    }
+                        public void actionPerformed(java.awt.event.ActionEvent e) {
+                            String selected =(String) eventCombo.getEditor().getItem();
+                            lastSelectedHandler = selected;
+                            boolean isNew = true;
+                            String items[] = new String[eventCombo.getItemCount()];
+                            for (int i=0, n=eventCombo.getItemCount(); i<n; i++) {
+                                items[i] =(String) eventCombo.getItemAt(i);
+                                if (eventCombo.getItemAt(i).equals(selected)) {
+                                    isNew = false;
                                 }
-                                if (isNew) {
-                                    HandlerSetChange change = new HandlerSetChange();
-                                    change.getAdded().add(selected);
-                                    setValue(change);
-                                    eventCombo.addItem(selected);
-                                }
-                                event.gotoEventHandler(selected);
                             }
+                            if (isNew) {
+                                HandlerSetChange change = new HandlerSetChange();
+                                change.getAdded().add(selected);
+                                setValue(change);
+                                eventCombo.addItem(selected);
+                            }
+                            event.gotoEventHandler(selected);
                         }
+                    }
                                                              );
                     return eventCombo;
                 } else {
@@ -1452,10 +1452,10 @@ public class RADComponent {
                         eventField.setText(((EventsManager.EventHandler) handlers.get(0)).getName());
                     }
                     eventField.addActionListener(new java.awt.event.ActionListener() {
-                            public void actionPerformed(java.awt.event.ActionEvent e) {
-                                setAsText(eventField.getText());
-                            }
+                        public void actionPerformed(java.awt.event.ActionEvent e) {
+                            setAsText(eventField.getText());
                         }
+                    }
                                                  );
                     return eventField;
                 }
@@ -1479,12 +1479,12 @@ public class RADComponent {
                                                            java.text.MessageFormat.format(FormEditor.getFormBundle().getString("FMT_MSG_HandlersFor"), new Object [] {event.getName()}),
                                                            true,
                                                            new java.awt.event.ActionListener() {
-                                                                   public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                                                       if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                                                                           ed.doChanges();
-                                                                       }
+                                                               public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                                                   if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
+                                                                       ed.doChanges();
                                                                    }
                                                                }
+                                                           }
                                                            );
                 return TopManager.getDefault().createDialog(dd);
             }

@@ -309,120 +309,120 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         Node.Property policyProperty = new PropertySupport.ReadWrite(PROP_FORM_SIZE_POLICY, Integer.TYPE,
                                                                      FormEditor.getFormBundle().getString("MSG_FormSizePolicy"),
                                                                      FormEditor.getFormBundle().getString("MSG_FormSizePolicy")) {
-                public Object getValue() throws
-                    IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    return new Integer(getFormSizePolicy());
-                }
+            public Object getValue() throws
+                IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                return new Integer(getFormSizePolicy());
+            }
 
-                public void setValue(Object val) throws IllegalAccessException,
-                                                        IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    if (!(val instanceof Integer)) throw new IllegalArgumentException();
-                    setFormSizePolicy(((Integer)val).intValue());
-                }
+            public void setValue(Object val) throws IllegalAccessException,
+                                                    IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                if (!(val instanceof Integer)) throw new IllegalArgumentException();
+                setFormSizePolicy(((Integer)val).intValue());
+            }
 
-                /** Editor for alignment */
-                public java.beans.PropertyEditor getPropertyEditor() {
-                    return new SizePolicyEditor();
-                }
+            /** Editor for alignment */
+            public java.beans.PropertyEditor getPropertyEditor() {
+                return new SizePolicyEditor();
+            }
 
-            };
+        };
 
 
         Node.Property sizeProperty = new PropertySupport.ReadWrite(PROP_FORM_SIZE, Dimension.class,
                                                                    FormEditor.getFormBundle().getString("MSG_FormSize"),
                                                                    FormEditor.getFormBundle().getString("MSG_FormSize")) {
-                public Object getValue() throws
-                    IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    return getFormSize();
-                }
+            public Object getValue() throws
+                IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                return getFormSize();
+            }
 
-                public void setValue(Object val) throws IllegalAccessException,
-                                                        IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    if (!(val instanceof Dimension)) throw new IllegalArgumentException();
-                    setFormSize((Dimension)val);
-                }
-            };
+            public void setValue(Object val) throws IllegalAccessException,
+                                                    IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                if (!(val instanceof Dimension)) throw new IllegalArgumentException();
+                setFormSize((Dimension)val);
+            }
+        };
 
         Node.Property positionProperty = new PropertySupport.ReadWrite(PROP_FORM_POSITION, Point.class,
                                                                        FormEditor.getFormBundle().getString("MSG_FormPosition"),
                                                                        FormEditor.getFormBundle().getString("MSG_FormPosition")) {
-                public Object getValue() throws
-                    IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    return getFormPosition();
-                }
+            public Object getValue() throws
+                IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                return getFormPosition();
+            }
 
-                public void setValue(Object val) throws IllegalAccessException,
-                                                        IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    if (!(val instanceof Point)) throw new IllegalArgumentException();
-                    setFormPosition((Point)val);
-                }
-            };
+            public void setValue(Object val) throws IllegalAccessException,
+                                                    IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                if (!(val instanceof Point)) throw new IllegalArgumentException();
+                setFormPosition((Point)val);
+            }
+        };
 
         Node.Property genPositionProperty = new PropertySupport.ReadWrite(PROP_GENERATE_POSITION, Boolean.TYPE,
                                                                           FormEditor.getFormBundle().getString("MSG_GeneratePosition"),
                                                                           FormEditor.getFormBundle().getString("MSG_GeneratePosition")) {
-                public Object getValue() throws
-                    IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    return new Boolean(getGeneratePosition());
-                }
+            public Object getValue() throws
+                IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                return new Boolean(getGeneratePosition());
+            }
 
-                public void setValue(Object val) throws IllegalAccessException,
-                                                        IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    if (!(val instanceof Boolean)) throw new IllegalArgumentException();
-                    setGeneratePosition(((Boolean)val).booleanValue());
-                }
-            };
+            public void setValue(Object val) throws IllegalAccessException,
+                                                    IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                if (!(val instanceof Boolean)) throw new IllegalArgumentException();
+                setGeneratePosition(((Boolean)val).booleanValue());
+            }
+        };
 
         Node.Property genSizeProperty = new PropertySupport.ReadWrite(PROP_GENERATE_SIZE, Boolean.TYPE,
                                                                       FormEditor.getFormBundle().getString("MSG_GenerateSize"),
                                                                       FormEditor.getFormBundle().getString("MSG_GenerateSize")) {
-                public Object getValue() throws
-                    IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    return new Boolean(getGenerateSize());
-                }
+            public Object getValue() throws
+                IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                return new Boolean(getGenerateSize());
+            }
 
-                public void setValue(Object val) throws IllegalAccessException,
-                                                        IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    if (!(val instanceof Boolean)) throw new IllegalArgumentException();
-                    setGenerateSize(((Boolean)val).booleanValue());
-                }
-            };
+            public void setValue(Object val) throws IllegalAccessException,
+                                                    IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                if (!(val instanceof Boolean)) throw new IllegalArgumentException();
+                setGenerateSize(((Boolean)val).booleanValue());
+            }
+        };
 
         Node.Property genCenterProperty = new PropertySupport.ReadWrite(PROP_GENERATE_CENTER, Boolean.TYPE,
                                                                         FormEditor.getFormBundle().getString("MSG_GenerateCenter"),
                                                                         FormEditor.getFormBundle().getString("MSG_GenerateCenter")) {
-                public Object getValue() throws
-                    IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    return new Boolean(getGenerateCenter());
-                }
+            public Object getValue() throws
+                IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                return new Boolean(getGenerateCenter());
+            }
 
-                public void setValue(Object val) throws IllegalAccessException,
-                                                        IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    if (!(val instanceof Boolean)) throw new IllegalArgumentException();
-                    setGenerateCenter(((Boolean)val).booleanValue());
-                }
-            };
+            public void setValue(Object val) throws IllegalAccessException,
+                                                    IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                if (!(val instanceof Boolean)) throw new IllegalArgumentException();
+                setGenerateCenter(((Boolean)val).booleanValue());
+            }
+        };
 
         Node.Property genEncodingProperty = new EncodingProperty("encoding", String.class, // NOI18N
                                                                  FormEditor.getFormBundle().getString("MSG_FormEncoding"),
                                                                  FormEditor.getFormBundle().getString("MSG_FormEncodingDesc")) {
-                public void setValue(Object value) {
-                    if (!(value instanceof String)) {
-                        throw new IllegalArgumentException();
-                    }
-                    getFormManager().setEncoding((String) value);
+            public void setValue(Object value) {
+                if (!(value instanceof String)) {
+                    throw new IllegalArgumentException();
                 }
+                getFormManager().setEncoding((String) value);
+            }
 
 
-                public Object getValue() {
-                    Object value = getFormManager().getEncoding();
-                    if (value == null) {
-                        value = ""; // NOI18N
-                    }
-                    return value;
+            public Object getValue() {
+                Object value = getFormManager().getEncoding();
+                if (value == null) {
+                    value = ""; // NOI18N
                 }
+                return value;
+            }
 
-            };
+        };
 
         // the order of if's is important, JAppletFormInfo implements
         // JMenuBarContainer
@@ -464,24 +464,24 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         return new PropertySupport.ReadWrite(PROP_MENU_BAR, String.class,
                                              FormEditor.getFormBundle().getString("MSG_MenuBar"),
                                              FormEditor.getFormBundle().getString("MSG_MenuBarDesc")) {
-                public Object getValue() throws
-                    IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    String s = getFormMenu();
-                    return(s == null) ? NO_MENU : s;
-                }
+            public Object getValue() throws
+                IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                String s = getFormMenu();
+                return(s == null) ? NO_MENU : s;
+            }
 
-                public void setValue(Object val) throws IllegalAccessException,
-                                                        IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                    if (!(val instanceof String)) throw new IllegalArgumentException();
-                    String s =(String) val;
-                    setFormMenu(s.equals(NO_MENU) ? null : s);
-                }
+            public void setValue(Object val) throws IllegalAccessException,
+                                                    IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+                if (!(val instanceof String)) throw new IllegalArgumentException();
+                String s =(String) val;
+                setFormMenu(s.equals(NO_MENU) ? null : s);
+            }
 
-                /** Editor for alignment */
-                public java.beans.PropertyEditor getPropertyEditor() {
-                    return new FormMenuEditor();
-                }
-            };
+            /** Editor for alignment */
+            public java.beans.PropertyEditor getPropertyEditor() {
+                return new FormMenuEditor();
+            }
+        };
     }
 
     public ArrayList getAvailableMenus() {
@@ -595,7 +595,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 }
                 catch (java.io.UnsupportedEncodingException ex) {
                     throw new IllegalArgumentException(
-                            FormEditor.getFormBundle().getString("ERR_UnsupportedEncoding"));
+                        FormEditor.getFormBundle().getString("ERR_UnsupportedEncoding"));
                 }
 
                 this.setValue(newValue);
@@ -617,16 +617,16 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
                 eventBox.setSelectedItem(getAsText());
                 eventBox.addActionListener(new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent e) {
-                            try {
-                                setAsText((String) eventBox.getEditor().getItem());
-                            }
-                            catch (IllegalArgumentException ex) {
-                                TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                                        ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-                            }
+                    public void actionPerformed(java.awt.event.ActionEvent e) {
+                        try {
+                            setAsText((String) eventBox.getEditor().getItem());
+                        }
+                        catch (IllegalArgumentException ex) {
+                            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                                ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                         }
                     }
+                }
                                            );
                 return eventBox;
             }

@@ -113,10 +113,10 @@ public class FormUtils
                 fmt = NbBundle.getBundle(FormUtils.class).getString("FMT_ERR_WritingProperty");
 
             TopManager.getDefault().getStdOut().println(
-                    MessageFormat.format(fmt,
-                                         new Object[] { t.getClass().getName(),
-                                                        propertyName,
-                                                        displayName }));
+                MessageFormat.format(fmt,
+                                     new Object[] { t.getClass().getName(),
+                                                    propertyName,
+                                                    displayName }));
         }
     }
 

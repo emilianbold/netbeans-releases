@@ -29,9 +29,9 @@ import org.openide.windows.Workspace;
 import org.openide.windows.WindowManager;
 
 /** A BeanInfo for FormLoaderSettings.
-* @author Ian Formanek
-* @version 0.11, May 22, 1998
-*/
+ * @author Ian Formanek
+ * @version 0.11, May 22, 1998
+ */
 public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
     /** Icons for url data loader. */
@@ -230,8 +230,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             if (!namesInitialized) {
                 namesInitialized = true;
                 initializeNamesMap(
-                        TopManager.getDefault().getWindowManager().getWorkspaces()
-                        );
+                    TopManager.getDefault().getWindowManager().getWorkspaces()
+                    );
             }
             String value =(String)getValue();
             String displayName =(String)namesMap.get(value);

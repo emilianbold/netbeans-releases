@@ -109,18 +109,18 @@ public class FormEditorModule extends ModuleInstall {
         charEditor = PropertyEditorManager.findEditor(Character.TYPE);
         if (charEditor == null)
             FormPropertyEditorManager.registerEditor(
-                    Character.TYPE,
-                    org.netbeans.modules.form.editors.CharacterEditor.class);
+                Character.TYPE,
+                org.netbeans.modules.form.editors.CharacterEditor.class);
 
         charEditor = PropertyEditorManager.findEditor(Character.class);
         if (charEditor == null)
             FormPropertyEditorManager.registerEditor(
-                    Character.class,
-                    org.netbeans.modules.form.editors.CharacterEditor.class);
+                Character.class,
+                org.netbeans.modules.form.editors.CharacterEditor.class);
 
         FormPropertyEditorManager.registerEditor(
-                javax.swing.KeyStroke.class,
-                org.netbeans.modules.form.editors.KeyStrokeEditor.class);
+            javax.swing.KeyStroke.class,
+            org.netbeans.modules.form.editors.KeyStrokeEditor.class);
     }
 
     /** Module was uninstalled. */
@@ -239,9 +239,9 @@ public class FormEditorModule extends ModuleInstall {
     private void copyTemplates() {
         try {
             FileUtil.extractJar(
-                    TopManager.getDefault().getPlaces().folders().templates().getPrimaryFile(),
-                    NbBundle.getLocalizedFile("org.netbeans.modules.form.resources.templates", "jar").openStream() // NOI18N
-                    );
+                TopManager.getDefault().getPlaces().folders().templates().getPrimaryFile(),
+                NbBundle.getLocalizedFile("org.netbeans.modules.form.resources.templates", "jar").openStream() // NOI18N
+                );
         } catch (java.io.IOException e) {
             TopManager.getDefault().notifyException(e);
         }
@@ -249,7 +249,7 @@ public class FormEditorModule extends ModuleInstall {
 
     private void createComponentPalette() {
         FileObject root = TopManager.getDefault().getRepository()
-                          .getDefaultFileSystem().getRoot();
+            .getDefaultFileSystem().getRoot();
         FileObject paletteFolder;
         if ((paletteFolder = root.getFileObject("Palette")) == null) { // NOI18N
             try {

@@ -55,10 +55,10 @@ public class EventCustomEditor extends javax.swing.JPanel {
 
 
         handlersList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-                public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                    handlersListValueChanged(evt);
-                }
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                handlersListValueChanged(evt);
             }
+        }
                                               );
 
         jScrollPane1.setViewportView(handlersList);
@@ -75,10 +75,10 @@ public class EventCustomEditor extends javax.swing.JPanel {
 
         addButton.setLabel(FormEditor.getFormBundle().getString("CTL_EE_ADD"));
         addButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    addButtonActionPerformed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButtonActionPerformed(evt);
             }
+        }
                                     );
 
 
@@ -93,10 +93,10 @@ public class EventCustomEditor extends javax.swing.JPanel {
 
         removeButton.setLabel(FormEditor.getFormBundle().getString("CTL_EE_REMOVE"));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    removeButtonActionPerformed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeButtonActionPerformed(evt);
             }
+        }
                                        );
 
 
@@ -111,10 +111,10 @@ public class EventCustomEditor extends javax.swing.JPanel {
 
         editButton.setLabel(FormEditor.getFormBundle().getString("CTL_EE_RENAME"));
         editButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    editButtonActionPerformed(evt);
-                }
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
             }
+        }
                                      );
 
 

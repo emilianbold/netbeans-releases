@@ -22,9 +22,9 @@ import javax.swing.*;
 import java.text.MessageFormat;
 
 /** The RADMenuItemComponent represents one menu item component placed on the Form.
-*
-* @author Petr Hamernik, Ian Formanek
-*/
+ *
+ * @author Petr Hamernik, Ian Formanek
+ */
 public class RADMenuItemComponent extends RADComponent {
 
     static final Object DUMMY_SEPARATOR_INSTANCE = new Object();
@@ -142,10 +142,10 @@ public class RADMenuItemComponent extends RADComponent {
 
     private ActionListener getDefaultActionListener() {
         return new ActionListener() {
-                public void actionPerformed(ActionEvent ev) {
-                    if (!getFormManager().isTestMode() && hasDefaultEvent()) attachDefaultEvent();
-                }
-            };
+            public void actionPerformed(ActionEvent ev) {
+                if (!getFormManager().isTestMode() && hasDefaultEvent()) attachDefaultEvent();
+            }
+        };
     }
 
     static DesignTimeMenus getDesignTimeMenus(FormManager2 fm) {
@@ -174,19 +174,19 @@ public class RADMenuItemComponent extends RADComponent {
         final java.util.HashMap designTimeMenus = new java.util.HashMap();
         DesignTimeMenus(FormManager2 fm) {
             fm.addFormListener(new FormAdapter() {
-                    public void propertyChanged(FormPropertyEvent evt) {
-                        if (evt.getRADComponent() instanceof RADMenuItemComponent) {
-                            RADMenuItemComponent comp =(RADMenuItemComponent) evt.getRADComponent();
-                            copyMenuProperties(comp.getBeanInstance(), getDesignTime(comp.getBeanInstance()));
-                        }
+                public void propertyChanged(FormPropertyEvent evt) {
+                    if (evt.getRADComponent() instanceof RADMenuItemComponent) {
+                        RADMenuItemComponent comp =(RADMenuItemComponent) evt.getRADComponent();
+                        copyMenuProperties(comp.getBeanInstance(), getDesignTime(comp.getBeanInstance()));
                     }
-                    public void formLoaded() {
-                        for (java.util.Iterator it = designTimeMenus.keySet().iterator(); it.hasNext();) {
-                            Object menu = it.next();
-                            copyMenuProperties(menu, getDesignTime(menu));
-                        }
+                }
+                public void formLoaded() {
+                    for (java.util.Iterator it = designTimeMenus.keySet().iterator(); it.hasNext();) {
+                        Object menu = it.next();
+                        copyMenuProperties(menu, getDesignTime(menu));
                     }
-                });
+                }
+            });
         }
 
         Object getDesignTime(Object awtMenu) {

@@ -18,9 +18,9 @@ package org.netbeans.modules.form;
 import java.util.ArrayList;
 
 /**
-*
-* @author Ian Formanek
-*/
+ *
+ * @author Ian Formanek
+ */
 public class RADContainer extends RADComponent implements ComponentContainer {
     private ArrayList subComponents;
 
