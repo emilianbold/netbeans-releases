@@ -19,6 +19,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
 
+import com.netbeans.developer.impl.IDESettings;
+
 /** Opens a HTML Browser on the home URL specified in IDESettings.
 * (Or activates last opened).
 *
@@ -38,7 +40,11 @@ public class HTMLViewAction extends CallableSystemAction {
   public void performAction() {
     TopManager tm = TopManager.getDefault();
     tm.setStatusText (NbBundle.getBundle(HTMLViewAction.class).getString("CTL_OpeningBrowser"));
-    tm.showUrl (com.netbeans.developer.impl.IDESettings.getRealHomeURL ());
+    try {
+      tm.showUrl (new java.net.URL (org.openide.awt.HtmlBrowser.getHomePage ()));
+    } catch (java.net.MalformedURLException e) {
+      tm.showUrl (IDESettings.getRealHomeURL ());
+    }
     tm.setStatusText ("");
   }
 
@@ -55,6 +61,7 @@ public class HTMLViewAction extends CallableSystemAction {
 
 /*
  * Log
+ *  13   Gandalf   1.12        1/5/00   Jan Jancura     Bug 4872
  *  12   Gandalf   1.11        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  11   Gandalf   1.10        6/24/99  Jesse Glick     Gosh-honest HelpID's.
