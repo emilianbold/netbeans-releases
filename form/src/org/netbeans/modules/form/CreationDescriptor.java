@@ -14,6 +14,7 @@
 package org.netbeans.modules.form;
 
 import java.lang.reflect.*;
+import org.netbeans.modules.form.codestructure.*;
 
 /**
  * @author Tomas Pavek
@@ -41,14 +42,19 @@ public interface CreationDescriptor {
 
     public interface Creator {
 
-        public int getPropertiesCount();
+        public int getParameterCount();
 
-        public String[] getPropertiesNames();
+        public Class[] getParameterTypes();
+
+        public String[] getPropertyNames();
 
         public Object createInstance(FormProperty[] props)
             throws InstantiationException, IllegalAccessException,
                    IllegalArgumentException, InvocationTargetException;
 
+        // [this will become useless when we can rely on getCodeOrigin(...)]
         public String getJavaCreationCode(FormProperty[] props);
+
+        public CodeElementOrigin getCodeOrigin(CodeElement[] params);
     }
 }

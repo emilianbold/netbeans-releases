@@ -16,271 +16,766 @@ package org.netbeans.modules.form.layoutsupport;
 import java.awt.*;
 import java.beans.*;
 import java.util.*;
-import org.openide.nodes.*;
-import org.openide.util.NbBundle;
+import java.lang.reflect.Method;
+
+import org.openide.nodes.Node;
 import org.openide.util.Utilities;
+
 import org.netbeans.modules.form.*;
-import org.netbeans.modules.form.fakepeer.FakePeerSupport;
+import org.netbeans.modules.form.codestructure.*;
 
 /**
- * @author Tran Duc Trung, Tomas Pavek
+ * @author Tomas Pavek
  */
 
-public abstract class AbstractLayoutSupport implements LayoutSupport
+public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 {
-    private RADComponent metaLayout;
+    private static Image defaultLayoutIcon;
+    private static Image defaultLayoutIcon32;
 
-    private RADVisualContainer container;
+    private static ResourceBundle bundle = null;
 
-    private boolean setToContainer = false;
-    
-    // -------------------------------
-    // LayoutSupport implementation
+    private static Method simpleAddMethod = null;
+    private static Method addWithConstraintsMethod = null;
+    private static Method setLayoutMethod = null;
 
-    public Image getIcon(int type) {
-        if (metaLayout != null) {
-            Image icon = metaLayout.getBeanInfo().getIcon(type);
-            if (icon != null) return icon;
+    // ------
+
+    private LayoutSupportContext layoutContext;
+
+    private java.util.List componentCodeElements;
+    private java.util.List componentCodeGroups;
+    private java.util.List componentConstraints;
+
+    private BeanCodeManager layoutBeanElement;
+    private CodeConnectionGroup setLayoutCode;
+
+    private MetaLayout metaLayout;
+    private Node.PropertySet[] propertySets;
+    private FormProperty[] allProperties;
+
+    private PropertyChangeListener layoutListener;
+
+    // -----------
+    // LayoutSupportDelegate interface implementation
+
+    public void initialize(LayoutSupportContext layoutContext,
+                           boolean fromCode)
+    {
+        this.layoutContext = layoutContext;
+
+        CodeStructure codeStructure = layoutContext.getCodeStructure();
+
+        if (componentCodeElements != null)
+            componentCodeElements.clear();
+        else componentCodeElements = new ArrayList();
+
+        if (componentCodeGroups != null)
+            componentCodeGroups.clear();
+        else componentCodeGroups = new ArrayList();
+
+        if (componentConstraints != null)
+            componentConstraints.clear();
+        else componentConstraints = new ArrayList();
+
+        if (setLayoutCode != null)
+            setLayoutCode.removeAll();
+        else setLayoutCode = codeStructure.createConnectionGroup();
+
+        Class cls = getSupportedClass();
+        if (cls != null && LayoutManager.class.isAssignableFrom(cls)) {
+            // create default layout instance and metacomponent for it
+            LayoutManager lmInstance = null;
+            try {
+                lmInstance = createDefaultLayoutInstance(
+                               layoutContext.getPrimaryContainer(),
+                               layoutContext.getPrimaryContainerDelegate());
+            }
+            catch (Exception ex) { // cannot make default layout instance
+                ex.printStackTrace(); // [just ignore??]
+            }
+
+            if (lmInstance != null)
+                metaLayout = new MetaLayout(this, lmInstance);
         }
+        else metaLayout = null;
 
-        switch (type) {
-            case BeanInfo.ICON_COLOR_16x16:
-            case BeanInfo.ICON_MONO_16x16:
-                return Utilities.loadImage("org/netbeans/modules/form/layoutsupport/resources/AbstractLayout.gif"); // NOI18N
-            default:
-                return Utilities.loadImage("org/netbeans/modules/form/layoutsupport/resources/AbstractLayout32.gif"); // NOI18N
+        // read layout code
+        readLayoutCode(setLayoutCode);
+
+        if (fromCode) { // read components from code
+            CodeConnectionGroup componentCode = null;
+            Iterator it = CodeStructure.getConnectionsIterator(
+                                            getActiveContainerCodeElement());
+            while (it.hasNext()) {
+                if (componentCode == null)
+                    componentCode = codeStructure.createConnectionGroup();
+
+                CodeConnection connection = (CodeConnection) it.next();
+                CodeElement compElement = readComponentCode(connection,
+                                                            componentCode);
+                if (compElement != null) {
+                    componentCodeElements.add(compElement);
+                    componentCodeGroups.add(componentCode);
+                    componentCode = null;
+
+                    if (componentConstraints.size() < componentCodeElements.size())
+                        componentConstraints.add(null);
+                }
+            }
         }
     }
-    
+
+    public boolean isDedicated() {
+        Class cls = getSupportedClass();
+        return cls != null && !LayoutManager.class.isAssignableFrom(cls);
+    }
+
+    // node presentation
+    public boolean shouldHaveNode() {
+        Class cls = getSupportedClass();
+        return cls != null && LayoutManager.class.isAssignableFrom(cls);
+    }
+
     public String getDisplayName() {
-        String name = getLayoutClass().getName();
+        String name = getSupportedClass().getName();
         int lastdot = name.lastIndexOf('.');
         if (lastdot > 0)
             name = name.substring(lastdot + 1);
         return name;
     }
 
-    public void initialize(RADVisualContainer container) {
-        Class layoutClass = getLayoutClass();
-        if (layoutClass != null) {
-            if (this.container != container) {
-                this.container = container;
-
-                metaLayout = new MetaLayout(this, container);
-                metaLayout.setComponent(layoutClass);
-
-                // LayoutSupport may not be set to container (yet)
-                setToContainer = container.getLayoutSupport() == this;
-            }
-            // LayoutSupport has already been initialized, but may not have
-            // been set to container (test if it already is now)
-            else if (!setToContainer && container.getLayoutSupport() == this) {
-                Container cont = container.getContainerDelegate(
-                                              container.getBeanInstance());
-                cont.setLayout((LayoutManager)metaLayout.getBeanInstance());
-                setToContainer = true;
-            }
+    public Image getIcon(int type) {
+        if (metaLayout != null) {
+            Image icon = metaLayout.getBeanInfo().getIcon(type);
+            if (icon != null)
+                return icon;
         }
-        else { // no real layout is used
-            this.container = container;
-            metaLayout = null;
+
+        switch (type) {
+            case BeanInfo.ICON_COLOR_16x16:
+            case BeanInfo.ICON_MONO_16x16:
+                if (defaultLayoutIcon == null)
+                    defaultLayoutIcon = Utilities.loadImage(
+                        "org/netbeans/modules/form/layoutsupport/resources/AbstractLayout.gif"); // NOI18N
+                return defaultLayoutIcon;
+
+            default:
+                if (defaultLayoutIcon32 == null)
+                    defaultLayoutIcon32 = Utilities.loadImage(
+                        "org/netbeans/modules/form/layoutsupport/resources/AbstractLayout32.gif"); // NOI18N
+                return defaultLayoutIcon32;
         }
-    }
-
-    public final RADVisualContainer getContainer() {
-        return container;
-    }
-
-    public LayoutManager createDefaultLayoutInstance(Container cont) {
-        Class layoutClass = getLayoutClass();
-        return layoutClass == null ? null :
-               (LayoutManager) BeanSupport.createBeanInstance(layoutClass);
-    }
-
-    public LayoutManager cloneLayoutInstance(Container cont) {
-        if (metaLayout == null) return null;
-
-        try {
-            return (LayoutManager) metaLayout.cloneBeanInstance(null);
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
-        }
-        // alternatively:
-//        LayoutManager lm = createLayoutInstance(cont);
-//        BeanSupport.copyProperties(metaLayout.getAllBeanProperties(), lm);
     }
 
     public Node.PropertySet[] getPropertySets() {
-        return metaLayout != null ? metaLayout.getProperties() : null;
+        if (propertySets == null) {
+            FormProperty[] properties = getProperties();
+            if (properties == null) {
+                propertySets = metaLayout != null ?
+                                   metaLayout.getProperties() : null;
+            }
+            else { // a subclass provides special properties
+                propertySets = new Node.PropertySet[1];
+                propertySets[0] = new Node.PropertySet(
+                    "properties", // NOI18N
+                    FormEditor.getFormBundle().getString("CTL_PropertiesTab"), // NOI18N
+                    FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")) // NOI18N
+                {
+                    public Node.Property[] getProperties() {
+                        return AbstractLayoutSupport.this.getProperties();
+                    }
+                };
+            }
+
+            if (propertySets != null) {
+                ArrayList allPropsList = new ArrayList();
+                for (int i=0; i < propertySets.length; i++) {
+                    Node.Property[] props = propertySets[i].getProperties();
+                    for (int j=0; j < props.length; j++) {
+                        Node.Property prop = props[j];
+                        if (prop instanceof FormProperty) {
+                            allPropsList.add(prop);
+                            ((FormProperty)prop).addPropertyChangeListener(
+                                                   getLayoutPropertyListener());
+                        }
+                    }
+                }
+                allProperties = new FormProperty[allPropsList.size()];
+                allPropsList.toArray(allProperties);
+            }
+            else allProperties = new FormProperty[0];
+        }
+        return propertySets;
     }
 
     public Class getCustomizerClass() {
         return null;
     }
 
-    public ConstraintsDesc getNewConstraints(Container cont, Point posInCont,
-                                             Component comp, Point posInComp) {
+    public CodeConnectionGroup getLayoutCode() {
+        return setLayoutCode;
+    }
+
+    public CodeConnectionGroup getComponentCode(int index) {
+        return (CodeConnectionGroup) componentCodeGroups.get(index);
+    }
+
+    public CodeElement getComponentCodeElement(int index) {
+        return (CodeElement) componentCodeElements.get(index);
+    }
+
+    public int getComponentCount() {
+        return componentCodeElements.size();
+    }
+
+    // components adding/removing
+    public void addComponents(CodeElement[] newCompElements,
+                              LayoutConstraints[] newConstraints)
+    {
+        int oldCount = componentCodeElements.size();
+        CodeStructure codeStructure = layoutContext.getCodeStructure();
+
+        for (int i=0; i < newCompElements.length; i++) {
+            CodeElement compElement = newCompElements[i];
+            componentCodeElements.add(compElement);
+
+            LayoutConstraints constr = newConstraints != null ?
+                                       newConstraints[i] : null;
+            if (constr == null)
+                constr = createDefaultConstraints();
+
+            componentConstraints.add(constr);
+
+            CodeConnectionGroup componentCode =
+                codeStructure.createConnectionGroup();
+            createComponentCode(componentCode, compElement, i + oldCount);
+            componentCodeGroups.add(componentCode);
+        }
+    }
+
+    public void removeComponent(int index) {
+        componentCodeElements.remove(index);
+        componentCodeGroups.remove(index);
+        componentConstraints.remove(index);
+    }
+
+    public void removeAll() {
+        componentCodeElements.clear();
+        componentCodeGroups.clear();
+        componentConstraints.clear();
+    }
+
+    public boolean isLayoutChanged(Container defaultContainer,
+                                   Container defaultContainerDelegate)
+    {
+        if (isDedicated())
+            return false;
+
+        Class layoutClass = getSupportedClass();
+        LayoutManager lm = defaultContainerDelegate.getLayout();
+
+        if (layoutClass == null)
+            return lm != null;
+        if (lm == null)
+            return true;
+        if (!layoutClass.isAssignableFrom(lm.getClass()))
+            return true;
+
+        FormProperty[] props = getAllProperties();
+        for (int i=0; i < props.length; i++)
+            if (props[i].isChanged())
+                return true;
+
+        return false;
+    }
+
+    // managing constraints
+    public LayoutConstraints getConstraints(int index) {
+        return index < 0 || index >= componentConstraints.size() ? null :
+               (LayoutConstraints) componentConstraints.get(index);
+    }
+
+    public void convertConstraints(LayoutConstraints[] previousConstraints,
+                                   LayoutConstraints[] currentConstraints,
+                                   Component[] components)
+    {
+    }
+
+    // managing live components
+    public void setLayoutToContainer(Container container,
+                                     Container containerDelegate)
+    {
+        if (isDedicated())
+            return;
+
+        LayoutManager lm = null;
+        try {
+            if (containerDelegate == layoutContext.getPrimaryContainerDelegate()) {
+                if (metaLayout != null) // use the instance of MetaLayout
+                    lm = (LayoutManager) metaLayout.getBeanInstance();
+            }
+            else { // use cloned layout instance
+                lm = cloneLayoutInstance(container, containerDelegate);
+            }
+        }
+        catch (Exception ex) { // should not happen
+            ex.printStackTrace();
+        }
+
+        if (lm != null)
+            containerDelegate.setLayout(lm);
+    }
+
+    public void addComponentsToContainer(Container container,
+                                         Container containerDelegate,
+                                         Component[] components,
+                                         int index)
+    {
+        for (int i=0; i < components.length; i++) {
+            LayoutConstraints constr = getConstraints(i+index);
+            if (constr != null)
+                containerDelegate.add(components[i],
+                                      constr.getConstraintsObject(),
+                                      i + index);
+            else
+                containerDelegate.add(components[i], i + index);
+        }
+    }
+
+    public boolean removeComponentFromContainer(Container container,
+                                                Container containerDelegate,
+                                                Component component,
+                                                int index)
+    {
+        containerDelegate.remove(component);
+        return true;
+    }
+
+    public boolean clearContainer(Container container,
+                                  Container containerDelegate)
+    {
+        containerDelegate.removeAll();
+        return true;
+    }
+
+    // drag and drop support
+    public LayoutConstraints getNewConstraints(Container container,
+                                               Container containerDelegate,
+                                               Component component,
+                                               int index,
+                                               Point posInCont, Point posInComp)
+    {
         return null;
     }
 
     public int getNewIndex(Container container,
-                           Point posInCont,
+                           Container containerDelegate,
                            Component component,
-                           Point posInComp) {
+                           int index,
+                           Point posInCont, Point posInComp)
+    {
         return -1;
     }
 
-    public boolean paintDragFeedback(Container container,
+    public boolean paintDragFeedback(Container container, 
+                                     Container containerDelegate,
                                      Component component,
-                                     ConstraintsDesc newConstraints,
+                                     LayoutConstraints newConstraints,
                                      int newIndex,
-                                     Graphics g) {
+                                     Graphics g)
+    {
         return false;
     }
 
-    public int getResizableDirections(Component component) {
+    // resizing support
+    public int getResizableDirections(Component component, int index) {
         return 0;
     }
 
-    public ConstraintsDesc getResizedConstraints(Component component,
-                                                 Insets sizeChanges) {
+    public LayoutConstraints getResizedConstraints(Component component,
+                                                   int index,
+                                                   Insets sizeChanges)
+    {
         return null;
     }
 
-    public void addComponent(RADVisualComponent component, ConstraintsDesc desc) {
-        if (desc != null)
-            component.setConstraintsDesc(getClass(), desc);
+    // copying
+    public LayoutSupportDelegate cloneLayout(LayoutSupportContext targetContext,
+                                             CodeElement[] targetComponents)
+    {
+        AbstractLayoutSupport clone;
+        try {
+            clone = (AbstractLayoutSupport) getClass().newInstance();
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
 
-        // add the component to real container (although never shown)
-        Container cont = container.getContainerDelegate(container.getBeanInstance());
-        if (cont != null)
-            if (desc != null)
-                cont.add(component.getComponent(), desc.getConstraintsObject());
-            else
-                cont.add(component.getComponent());
+        clone.initialize(targetContext, false);
+
+        FormProperty[] sourceProperties = getAllProperties();
+        FormProperty[] targetProperties = clone.getAllProperties();
+        FormUtils.copyProperties(sourceProperties, targetProperties,
+                                 true, false);
+        clone.layoutChanged();
+
+        int compCount = getComponentCount();
+        LayoutConstraints[] constraints = new LayoutConstraints[compCount];
+        for (int i=0; i < compCount; i++) {
+            LayoutConstraints constr = getConstraints(i);
+            constraints[i] = constr != null ? constr.cloneConstraints() : null;
+        }
+
+        clone.addComponents(targetComponents, constraints);
+
+        return clone;
     }
-    
-    public void removeComponent(RADVisualComponent component) {
-        // remove the component from real container
-        Container cont = container.getContainerDelegate(container.getBeanInstance());
-        if (cont != null) {
-            Component comp = component.getComponent();
-            cont.remove(comp);
 
-            // hack for AWT components
-            // we must attach the fake peer to the AWT component again
-            ensureFakePeerAttached(comp);
+    // ---------
+    // extending API for subclasses
+
+    // can be overriden
+    protected LayoutManager createDefaultLayoutInstance(
+                                Container container,
+                                Container containerDelegate)
+        throws Exception
+    {
+        return (LayoutManager)
+               CreationFactory.createDefaultInstance(getSupportedClass());
+    }
+
+    // can be overriden
+    protected LayoutManager cloneLayoutInstance(Container container,
+                                                Container containerDelegate)
+        throws Exception
+    {
+        return metaLayout == null ? null :
+               (LayoutManager) metaLayout.cloneBeanInstance(null);
+    }
+
+    // can be overriden
+    // This methods returns the code element to be used for layout settings
+    // and components - this can be either container, or container delegate
+    // element. In fact, it is container delegate in most cases (so this method
+    // needs to be overriden very rarely). But there's e.g. JScrollPane which
+    // has viewport as the container delegate, but we work with the JScrollPane.
+    protected CodeElement getActiveContainerCodeElement() {
+        return layoutContext.getContainerDelegateCodeElement();
+    }
+
+    // can be overriden
+    protected void readLayoutCode(CodeConnectionGroup layoutCode) {
+        if (isDedicated())
+            return;
+
+        CodeConnectionGroup initLayoutCode =
+            getCodeStructure().createConnectionGroup();
+        CodeConnection setLayoutConnection = null;
+
+        CodeConnection[] connections = CodeStructure.getConnections(
+                                           getActiveContainerCodeElement(),
+                                           getSetLayoutMethod());
+        if (connections.length > 0) { // read from code
+            setLayoutConnection = connections[0];
+            readInitLayoutCode(setLayoutConnection.getConnectionParameters()[0],
+                               initLayoutCode);
+        }
+        else { // create new
+            CodeElement layoutElement = createInitLayoutCode(initLayoutCode);
+            if (layoutElement != null)
+                setLayoutConnection = CodeStructure.createConnection(
+                         getActiveContainerCodeElement(),
+                         getSetLayoutMethod(),
+                         new CodeElement[] { layoutElement });
+        }
+
+        if (setLayoutConnection != null) {
+            layoutCode.addGroup(initLayoutCode);
+            layoutCode.addConnection(setLayoutConnection);
         }
     }
 
-    public ConstraintsDesc getConstraints(RADVisualComponent component) {
-        return (ConstraintsDesc) component.getConstraintsDesc(getClass());
+    // can be overriden
+    protected void readInitLayoutCode(CodeElement layoutElement,
+                                      CodeConnectionGroup initLayoutCode)
+    {
+        if (metaLayout == null)
+            return;
+
+        layoutBeanElement = new BeanCodeManager(
+            getSupportedClass(),
+            getAllProperties(),
+            CreationDescriptor.PLACE_ALL | CreationDescriptor.CHANGED_ONLY,
+            false, // don't force empty constructor
+            false, // disable changes firing when properties are restored
+            layoutElement,
+            initLayoutCode);
     }
 
-    public ConstraintsDesc fixConstraints(ConstraintsDesc constraintsDesc) {
-        return constraintsDesc;
+    // can be overriden
+    protected CodeElement createInitLayoutCode(
+                              CodeConnectionGroup initLayoutCode)
+    {
+        if (metaLayout == null)
+            return null;
+
+        layoutBeanElement = new BeanCodeManager(
+            getSupportedClass(),
+            getAllProperties(),
+            CreationDescriptor.PLACE_ALL | CreationDescriptor.CHANGED_ONLY,
+            false,
+            layoutContext.getCodeStructure(),
+            CodeElementVariable.LOCAL,
+            initLayoutCode);
+
+        return layoutBeanElement.getCodeElement();
     }
 
-    public ConstraintsDesc[] convertConstraints(ConstraintsDesc[] constraints,
-                                                Component[] components) {
+    // can be overriden
+    // called automatically when some property of layout has been changed
+    protected void layoutChanged() {
+        if (layoutBeanElement != null)
+            layoutBeanElement.updateCode();
+    }
+
+    // can be overriden
+    protected CodeElement readComponentCode(CodeConnection connection,
+                                            CodeConnectionGroup componentCode)
+    {
+        CodeElement compElement;
+        CodeConnectionGroup constrCode;
+        LayoutConstraints constr;
+
+        if (getSimpleAddMethod().equals(connection.getConnectingObject())) {
+            compElement = connection.getConnectionParameters()[0];
+            constrCode = null;
+            constr = null;
+        }
+        else if (getAddWithConstraintsMethod().equals(
+                                 connection.getConnectingObject()))
+        {
+            CodeElement[] params = connection.getConnectionParameters();
+
+            compElement = params[0];
+            constrCode = getCodeStructure().createConnectionGroup();
+            constr = readConstraintsCode(params[1], constrCode, compElement);
+        }
+        else return null;
+
+        componentConstraints.add(constr);
+        if (constrCode != null)
+            componentCode.addGroup(constrCode);
+        componentCode.addConnection(connection);
+
+        return compElement;
+    }
+
+    // can be overriden
+    protected LayoutConstraints readConstraintsCode(
+                                    CodeElement constrElement,
+                                    CodeConnectionGroup constrCode,
+                                    CodeElement compElement)
+    {
         return null;
     }
 
-    public String getJavaSetLayoutString(/*RADVisualContainer cont*/) {
-        if (getLayoutClass() == null) return null;
+    // can be overriden
+    // creates code for one newly added component
+    protected void createComponentCode(CodeConnectionGroup componentCode,
+                                       CodeElement compElement,
+                                       int index)
+    {
+        CodeConnectionGroup constrCode =
+            getCodeStructure().createConnectionGroup();
+        LayoutConstraints constr = getConstraints(index);
 
-        StringBuffer buf = new StringBuffer();
-        String delegate = getContainer().getJavaContainerDelegateString();
-        if (!"".equals(delegate)) { // NOI18N
-            buf.append(delegate);
-            buf.append("."); // NOI18N
+        // first create init code for the constraints object
+        CodeElement constrElement = createConstraintsCode(
+                                      constrCode, constr, compElement, index);
+
+        // create "add" code for the component
+        CodeConnection compAddConnection;
+        if (constrElement != null) { // add with constraints
+            compAddConnection = CodeStructure.createConnection(
+                    getActiveContainerCodeElement(),
+                    getAddWithConstraintsMethod(),
+                    new CodeElement[] { compElement, constrElement });
         }
-        buf.append("setLayout("); // NOI18N
-
-        CreationDescriptor cd = CreationFactory.getDescriptor(getLayoutClass());
-        if (cd != null) {
-            FormProperty[] props = getCreationProperties();
-            CreationDescriptor.Creator creator = cd.findBestCreator(props,
-                CreationDescriptor.CHANGED_ONLY | CreationDescriptor.PLACE_ALL);
-            if (creator != null)
-                buf.append(creator.getJavaCreationCode(props));
-            else
-                cd = null;
+        else { // add without constraints
+            compAddConnection = CodeStructure.createConnection(
+                    getActiveContainerCodeElement(),
+                    getSimpleAddMethod(),
+                    new CodeElement[] { compElement });
         }
 
-        if (cd == null) { // no special creation code
-            buf.append("new "); // NOI18N
-            buf.append(getLayoutClass().getName().replace('$', '.'));
-            buf.append("()");
-        }
-
-        buf.append(");\n"); // NOI18N
-        return buf.toString();
+        componentCode.addGroup(constrCode);
+        componentCode.addConnection(compAddConnection);
     }
 
-    public String getJavaAddComponentString(/*RADVisualContainer cont,*/
-                                            RADVisualComponent comp) {
-        StringBuffer buf = new StringBuffer();
-
-        String delegate = getContainer().getJavaContainerDelegateString();
-        if (!"".equals(delegate)) { // NOI18N
-            buf.append(delegate);
-            buf.append("."); // NOI18N
-        }
-
-        buf.append("add("); // NOI18N
-        buf.append(comp.getName());
-
-        ConstraintsDesc desc = getConstraints(comp);
-        String constr = desc != null ? desc.getJavaInitializationString() : null;
-        if (constr != null && !"".equals(constr)) { // NOI18N
-            buf.append(", "); // NOI18N
-            buf.append(constr);
-        }
-
-        buf.append(");\n"); // NOI18N
-        return buf.toString();
+    // can be overriden
+    protected CodeElement createConstraintsCode(CodeConnectionGroup constrCode,
+                                                LayoutConstraints constr,
+                                                CodeElement compElement,
+                                                int index)
+    {
+        return null;
     }
 
-    // ---------------------
-    // other methods
+    // can be overriden
+    protected LayoutConstraints createDefaultConstraints() {
+        return null;
+    }
 
-    public FormProperty getProperty(String propName) {
+    // can be overriden
+    protected Node.Property getProperty(String propName) {
         return metaLayout == null ? null :
                                     metaLayout.getPropertyByName(propName);
     }
 
-    protected final RADComponent getMetaLayout() {
-        return metaLayout;
-    }
-
-    protected FormProperty[] getCreationProperties() {
-        return metaLayout.getAllBeanProperties();
-    }
-
-    protected ConstraintsDesc getConstraints(Component comp, Container cont) {
-        if (comp == null || cont == null) return null;
-
-        Component[] comps = cont.getComponents();
-        RADVisualComponent[] metacomps = container.getSubComponents();
-        if (comps.length != metacomps.length) return null;
-
-        for (int i=0; i < comps.length; i++)
-            if (comps[i] == comp)
-                return getConstraints(metacomps[i]);
-
+    /** Can be overriden to provide other properties than standard bean
+     * properties (handled by MetaLayout). This method is called only by
+     * getPropertySets() interface method to obtain default property set for
+     * the layout. So it is also possible to override (more generally)
+     * getPropertySets() instead. Overriding this method requires also dealing
+     * with layout initialization code - createInitLayoutCode(...) method.
+     */
+    protected FormProperty[] getProperties() {
         return null;
     }
 
-    static protected void ensureFakePeerAttached(Component comp) {
-        boolean attached = FakePeerSupport.attachFakePeer(comp);
-        if (attached && comp instanceof Container)
-            FakePeerSupport.attachFakePeerRecursively((Container)comp);
+    // ---------
+    // useful method for subclasses
+
+    protected final LayoutSupportContext getLayoutContext() {
+        return layoutContext;
     }
 
-    static protected ResourceBundle getBundle() {
-        return NbBundle.getBundle(AbstractLayoutSupport.class);
+    protected final CodeStructure getCodeStructure() {
+        return layoutContext.getCodeStructure();
+    }
+
+    protected final java.util.List getConstraintsList() {
+        return componentConstraints;
+    }
+
+    protected final FormProperty[] getAllProperties() {
+        if (allProperties == null)
+            getPropertySets();
+
+        return allProperties;
+    }
+
+    // to be used by subclasses if they need to re-create the layout instance
+    // used by MetaLayout (see BoxLayoutSupport)
+    protected final void updateLayoutInstance() {
+        Container cont = layoutContext.getPrimaryContainer();
+        Container contDel = layoutContext.getPrimaryContainerDelegate();
+        Component comps[] = contDel.getComponents();
+
+        LayoutManager lm = null;
+        try {
+            lm = cloneLayoutInstance(cont, contDel);
+        }
+        catch (Exception ex) { // should not happen
+            ex.printStackTrace();
+        }
+
+        if (lm != null && metaLayout != null)
+            metaLayout.updateInstance(lm);
+    
+        clearContainer(cont, contDel);
+        setLayoutToContainer(cont, contDel);
+        addComponentsToContainer(cont, contDel, comps, 0);
+    }
+
+    protected final CodeConnection getSetLayoutConnection() {
+        CodeConnection[] found = CodeStructure.getConnections(
+                                     getActiveContainerCodeElement(),
+                                     getSetLayoutMethod());
+        return found != null && found.length > 0 ? found[0] : null;
+    }
+
+    // ---------
+    // utility methods
+
+    // [protected?? - subclasses]
+    protected static ResourceBundle getBundle() {
+        if (bundle == null)
+            bundle = org.openide.util.NbBundle.getBundle(AbstractLayoutSupport.class);
+        return bundle;
+    }
+
+    protected static Method getSimpleAddMethod() {
+        if (simpleAddMethod == null) {
+            try {
+                simpleAddMethod = Container.class.getMethod(
+                                      "add", // NOI18N
+                                      new Class[] { Component.class });
+            }
+            catch (NoSuchMethodException ex) { // should not happen
+                ex.printStackTrace();
+            }
+        }
+        return simpleAddMethod;
+    }
+
+    protected static Method getAddWithConstraintsMethod() {
+        if (addWithConstraintsMethod == null) {
+            try {
+                addWithConstraintsMethod = Container.class.getMethod(
+                                               "add", // NOI18N
+                                               new Class[] { Component.class,
+                                                             Object.class });
+            }
+            catch (NoSuchMethodException ex) { // should not happen
+                ex.printStackTrace();
+            }
+        }
+        return addWithConstraintsMethod;
+    }
+
+    protected static Method getSetLayoutMethod() {
+        if (setLayoutMethod == null) {
+            try {
+                setLayoutMethod = Container.class.getMethod(
+                                    "setLayout", // NOI18N
+                                    new Class[] { LayoutManager.class });
+            }
+            catch (NoSuchMethodException ex) { // should not happen
+                ex.printStackTrace();
+            }
+        }
+        return setLayoutMethod;
+    }
+
+    // -------
+    // private methods
+
+    private PropertyChangeListener getLayoutPropertyListener() {
+        if (layoutListener == null)
+            layoutListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent ev) {
+                    Object source = ev.getSource();
+                    if (!(source instanceof FormProperty))
+                        return;
+
+                    layoutChanged();
+
+                    ev = FormProperty.PROP_VALUE.equals(ev.getPropertyName()) ?
+                         new PropertyChangeEvent(AbstractLayoutSupport.this,
+                                                 ((FormProperty)source).getName(),
+                                                 ev.getOldValue(),
+                                                 ev.getNewValue())
+                         :
+                         new PropertyChangeEvent(AbstractLayoutSupport.this,
+                                                 null, null, null);
+
+                    layoutContext.containerLayoutChanged(ev);
+                }
+            };
+
+        return layoutListener;
     }
 }

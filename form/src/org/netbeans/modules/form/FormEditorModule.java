@@ -87,7 +87,7 @@ public class FormEditorModule extends ModuleInstall
         timerBeanHack();
         
         // register standard persistence managers
-        PersistenceManager.registerManager("org.netbeans.modules.form.TuborgPersistenceManager"); // NOI18N
+//        PersistenceManager.registerManager("org.netbeans.modules.form.TuborgPersistenceManager"); // NOI18N
         PersistenceManager.registerManager("org.netbeans.modules.form.GandalfPersistenceManager"); // NOI18N
 
         FormPropertyEditorManager.registerEditor(

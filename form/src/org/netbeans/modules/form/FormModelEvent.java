@@ -15,7 +15,7 @@
 package org.netbeans.modules.form;
 
 import java.util.EventObject;
-import org.netbeans.modules.form.layoutsupport.LayoutSupport;
+import org.netbeans.modules.form.layoutsupport.LayoutSupportDelegate;
 
 /**
  *
@@ -29,8 +29,8 @@ public class FormModelEvent extends EventObject
     private String propertyName;
     private Object propertyOldValue;
     private Object propertyNewValue;
-    private LayoutSupport oldLayoutSupport;
-    private LayoutSupport newLayoutSupport;
+    private LayoutSupportDelegate oldLayoutSupport;
+    private LayoutSupportDelegate newLayoutSupport;
 
     FormModelEvent(FormModel source) {
         super(source);
@@ -70,7 +70,8 @@ public class FormModelEvent extends EventObject
 
     FormModelEvent(FormModel source,
                    RADVisualContainer metacont,
-                   LayoutSupport oldLayoutSupp, LayoutSupport newLayoutSupp) {
+                   LayoutSupportDelegate oldLayoutSupp,
+                   LayoutSupportDelegate newLayoutSupp) {
         this(source);
         component = metacont;
         container = metacont;
@@ -112,11 +113,11 @@ public class FormModelEvent extends EventObject
         return propertyNewValue;
     }
 
-    public final LayoutSupport getOldLayoutSupport() {
+    public final LayoutSupportDelegate getOldLayoutSupport() {
         return oldLayoutSupport;
     }
 
-    public final LayoutSupport getNewLayoutSupport() {
+    public final LayoutSupportDelegate getNewLayoutSupport() {
         return newLayoutSupport;
     }
 }

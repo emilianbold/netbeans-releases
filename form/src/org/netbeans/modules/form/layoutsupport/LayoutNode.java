@@ -27,38 +27,28 @@ import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.actions.*;
 
 /**
- *
- * @author Tran Duc Trung, Tomas Pavek
+ * @author Tomas Pavek
  */
 
 public class LayoutNode extends FormNode implements FormLayoutCookie
 {
-    private LayoutSupport layoutSupport;
+    private LayoutSupportManager layoutSupport;
     
     public LayoutNode(RADVisualContainer cont) {
-//        this(cont.getLayoutSupport());
         super(Children.LEAF, cont.getFormModel());
         layoutSupport = cont.getLayoutSupport();
         setName(layoutSupport.getDisplayName());
-//        getCookieSet().add(this);
         cont.setLayoutNodeReference(this);
     }
-
-/*    public LayoutNode(LayoutSupport layoutSupport) {
-        super(Children.LEAF);
-        this.layoutSupport = layoutSupport;
-        setName(layoutSupport.getDisplayName());
-        getCookieSet().add(this);
-    } */
 
     public LayoutNode getLayoutNode() {
         return this;
     }
 
-    public LayoutSupport getLayoutSupport() {
-        return layoutSupport;
+    public RADVisualContainer getMetaContainer() {
+        return layoutSupport.getMetaContainer();
     }
-    
+
     public void fireLayoutPropertiesChange() {
         firePropertyChange(null, null, null);
     }
@@ -76,11 +66,11 @@ public class LayoutNode extends FormNode implements FormLayoutCookie
     }
 
     public boolean hasCustomizer() {
-        if (layoutSupport.getContainer().isReadOnly()
+        if (layoutSupport.getMetaContainer().isReadOnly()
                || layoutSupport.getCustomizerClass() == null)
             return false;
 
-        RADVisualContainer container = layoutSupport.getContainer();
+        RADVisualContainer container = layoutSupport.getMetaContainer();
         FormDesigner designer = getFormModel().getFormDesigner();
         return designer.isInDesignedTree(container);
     }
@@ -93,40 +83,41 @@ public class LayoutNode extends FormNode implements FormLayoutCookie
         Object customizer;
         try {
             customizer = customizerClass.newInstance();
-        } catch (InstantiationException e) {
+        }
+        catch (InstantiationException e) {
             return null;
-        } catch (IllegalAccessException e) {
+        }
+        catch (IllegalAccessException e) {
             return null;
         }
         if (customizer instanceof Component 
-            && customizer instanceof Customizer) {
-            ((java.beans.Customizer) customizer).setObject(layoutSupport);
+                && customizer instanceof Customizer)
+        {
+            ((java.beans.Customizer)customizer).setObject(
+                                            layoutSupport.getLayoutDelegate());
             return (Component) customizer;
         }
-        else
-            return null;
+        else return null;
     }
 
     protected SystemAction[] createActions() {
         ArrayList actions = new ArrayList(10);
 
-        if (!layoutSupport.getContainer().isReadOnly()) {
+        if (!layoutSupport.getMetaContainer().isReadOnly()) {
             actions.add(SystemAction.get(SelectLayoutAction.class));
-//            actions.add(SystemAction.get(CustomizeLayoutAction.class));
             actions.add(null);
         }
 
         SystemAction[] superActions = super.createActions();
         for (int i=0; i < superActions.length; i++)
             actions.add(superActions[i]);
-//        actions.add(SystemAction.get(PropertiesAction.class));
 
         SystemAction[] array = new SystemAction[actions.size()];
         actions.toArray(array);
         return array;
     }
 
-    public HelpCtx getHelpCtx() {
+/*    public HelpCtx getHelpCtx() {
         Class layoutClass = layoutSupport.getLayoutClass();
         String helpID = null;
         if (layoutClass != null) {
@@ -148,5 +139,5 @@ public class LayoutNode extends FormNode implements FormLayoutCookie
         if (helpID != null)
             return new HelpCtx(helpID);
         return super.getHelpCtx();
-    }
+    } */
 }

@@ -335,11 +335,12 @@ class HandleLayer extends JPanel
                 (RADVisualContainer) metacomp :
                 (RADVisualContainer) metacomp.getParentComponent();
 
-        LayoutSupport laysup = metacont.getLayoutSupport();
-        if (laysup instanceof LayoutSupportArranging) {
+        LayoutSupportManager laysup = metacont.getLayoutSupport();
+        if (laysup.supportsArranging()) {
             Container cont = (Container) formDesigner.getComponent(metacont);
-            Point p = SwingUtilities.convertPoint(HandleLayer.this, e.getPoint(), cont);
-            ((LayoutSupportArranging)laysup).processMouseClick(p, cont);
+            Point p = SwingUtilities.convertPoint(HandleLayer.this,
+                                                  e.getPoint(), cont);
+            laysup.processMouseClick(p, cont);
         }
     }
 
@@ -426,9 +427,10 @@ class HandleLayer extends JPanel
     }
     
     private boolean validDesignerResizing(int resizing) {
-        return ( (resizing == (LayoutSupport.RESIZE_DOWN | LayoutSupport.RESIZE_RIGHT)) ||
-                 (resizing == LayoutSupport.RESIZE_DOWN) ||
-                 (resizing == LayoutSupport.RESIZE_RIGHT) );
+        return resizing == (LayoutSupportManager.RESIZE_DOWN
+                            | LayoutSupportManager.RESIZE_RIGHT)
+            || resizing == LayoutSupportManager.RESIZE_DOWN
+            || resizing == LayoutSupportManager.RESIZE_RIGHT;
     }
     
     private void checkDesignerResizing(Point p) {
@@ -510,13 +512,15 @@ class HandleLayer extends JPanel
                 || metacomp == formDesigner.getTopDesignComponent())
             return 0;
 
-        LayoutSupport laySup = metacont.getLayoutSupport();
+        LayoutSupportManager laySup = metacont.getLayoutSupport();
         if (laySup == null)
             return 0;
 
         Component comp = (Component) formDesigner.getComponent(metacomp);
 
-        int resizable = laySup.getResizableDirections(comp);
+        int resizable = laySup.getResizableDirections(
+                                   comp,
+                                   metacont.getIndexOf(metacomp));
         if (resizable != 0)
             resizable &= getSelectionResizable(p, comp, 2);
 
@@ -542,13 +546,13 @@ class HandleLayer extends JPanel
         int resizable = 0;
         if (r1.contains(p)) {
             if (p.y >= r2.y + r2.height)
-                resizable |= LayoutSupport.RESIZE_DOWN;
+                resizable |= LayoutSupportManager.RESIZE_DOWN;
             else if (p.y < r2.y)
-                resizable |= LayoutSupport.RESIZE_UP;
+                resizable |= LayoutSupportManager.RESIZE_UP;
             if (p.x >= r2.x + r2.width)
-                resizable |= LayoutSupport.RESIZE_RIGHT;
+                resizable |= LayoutSupportManager.RESIZE_RIGHT;
             else if (p.x < r2.x)
-                resizable |= LayoutSupport.RESIZE_LEFT;
+                resizable |= LayoutSupportManager.RESIZE_LEFT;
         }
 
         return resizable;
@@ -556,25 +560,25 @@ class HandleLayer extends JPanel
 
     private void setResizingCursor(int resizeType) {
         Cursor cursor = null;
-        if ((resizeType & LayoutSupport.RESIZE_UP) != 0) {
-            if ((resizeType & LayoutSupport.RESIZE_LEFT) != 0)
+        if ((resizeType & LayoutSupportManager.RESIZE_UP) != 0) {
+            if ((resizeType & LayoutSupportManager.RESIZE_LEFT) != 0)
                 cursor = Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR);
-            else if ((resizeType & LayoutSupport.RESIZE_RIGHT) != 0)
+            else if ((resizeType & LayoutSupportManager.RESIZE_RIGHT) != 0)
                 cursor = Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR);
             else
                 cursor = Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR);
         }
-        else if ((resizeType & LayoutSupport.RESIZE_DOWN) != 0) {
-            if ((resizeType & LayoutSupport.RESIZE_LEFT) != 0)
+        else if ((resizeType & LayoutSupportManager.RESIZE_DOWN) != 0) {
+            if ((resizeType & LayoutSupportManager.RESIZE_LEFT) != 0)
                 cursor = Cursor.getPredefinedCursor(Cursor.SW_RESIZE_CURSOR);
-            else if ((resizeType & LayoutSupport.RESIZE_RIGHT) != 0)
+            else if ((resizeType & LayoutSupportManager.RESIZE_RIGHT) != 0)
                 cursor = Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR);
             else
                 cursor = Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR);
         }
-        else if ((resizeType & LayoutSupport.RESIZE_LEFT) != 0)
+        else if ((resizeType & LayoutSupportManager.RESIZE_LEFT) != 0)
             cursor = Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR);
-        else if ((resizeType & LayoutSupport.RESIZE_RIGHT) != 0)
+        else if ((resizeType & LayoutSupportManager.RESIZE_RIGHT) != 0)
             cursor = Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR);
 
         if (cursor == null)
@@ -583,22 +587,24 @@ class HandleLayer extends JPanel
         setCursor(cursor);
     }
 
-    private LayoutSupport.ConstraintsDesc getConstraintsAtPoint(
-                                              RADComponent metacomp,
-                                              Point point) {
+    private LayoutConstraints getConstraintsAtPoint(RADComponent metacomp,
+                                                    Point point)
+    {
         if (!(metacomp instanceof RADVisualComponent))
             return null;
 
-        RADVisualContainer parentCont = metacomp instanceof RADVisualContainer ?
+        RADVisualContainer metacont = metacomp instanceof RADVisualContainer ?
             (RADVisualContainer) metacomp :
             (RADVisualContainer) metacomp.getParentComponent();
-        if (parentCont == null)
+        if (metacont == null)
             return null;
 
-        Container cont = parentCont.getContainerDelegate(
-                                        formDesigner.getComponent(parentCont));
-        Point p = SwingUtilities.convertPoint(this, point, cont);
-        return parentCont.getLayoutSupport().getNewConstraints(cont, p, null, null);
+        Container cont = (Container) formDesigner.getComponent(metacont);
+        Container contDel = metacont.getContainerDelegate(cont);
+        Point p = SwingUtilities.convertPoint(this, point, contDel);
+        return metacont.getLayoutSupport().getNewConstraints(cont, contDel,
+                                                             null, -1,
+                                                             p, null);
     }
 
     private void displayHint(RADComponent metacomp, Point p, PaletteItem item) {
@@ -615,16 +621,16 @@ class HandleLayer extends JPanel
             metacont = (RADVisualContainer) metacomp.getParentComponent();
 
         if (item.isLayout()) {
-            LayoutSupport layoutSupp = metacont.getLayoutSupport();
+/*            LayoutSupport layoutSupp = metacont.getLayoutSupport();
             if (layoutSupp != null
                 && !(layoutSupp instanceof LayoutSupport))
             {
                 setStatusText("FMT_MSG_CannotSetLayout",
                               new Object[] { metacont.getName() });
-            } else {
+            } else { */
                 setStatusText("FMT_MSG_SetLayout",
                               new Object[] { metacont.getName() });
-            }
+//            }
         }
         else if (item.isBorder()) {
             if (JComponent.class.isAssignableFrom(metacomp.getBeanClass())) {
@@ -639,25 +645,25 @@ class HandleLayer extends JPanel
             setStatusText("FMT_MSG_AddNonVisualComponent",
                           new Object[] { item.getItemClass().getName() });
         } else {
-            LayoutSupport layoutSupp = metacont.getLayoutSupport();
-            if (layoutSupp != null) {
-                Container cont = metacont.getContainerDelegate(
-                        formDesigner.getComponent(metacont));
-                Point point = SwingUtilities.convertPoint(
-                        HandleLayer.this, p, cont);
-                LayoutSupport.ConstraintsDesc cd =
-                        layoutSupp.getNewConstraints(cont, point, null, null);
-                if (cd != null) {
-                    setStatusText("FMT_MSG_AddComponent",
-                                  new Object[] {
-                                      cd.getJavaInitializationString(),
-                                      metacont.getName(),
-                                      item.getItemClass().getName()
-                                  });
-                }
-                else {
-                    TopManager.getDefault().setStatusText("");
-                }
+            LayoutSupportManager layoutSupp = metacont.getLayoutSupport();
+            Container cont = (Container) formDesigner.getComponent(metacont);
+            Container contDel = metacont.getContainerDelegate(cont);
+            Point point = SwingUtilities.convertPoint(HandleLayer.this,
+                                                      p, contDel);
+            LayoutConstraints lc =
+                metacont.getLayoutSupport().getNewConstraints(cont, contDel,
+                                                              null, -1,
+                                                              point, null);
+            if (lc != null) {
+                setStatusText("FMT_MSG_AddComponent",
+                              new Object[] {
+                                  "", //cd.getJavaInitializationString(),
+                                  metacont.getName(),
+                                  item.getItemClass().getName()
+                              });
+            }
+            else {
+                TopManager.getDefault().setStatusText("");
             }
         }
     }

@@ -17,6 +17,7 @@ import java.awt.*;
 import java.util.*;
 import java.lang.reflect.*;
 import javax.swing.*;
+import javax.swing.border.Border;
 import org.openide.util.Mutex;
 import org.openide.cookies.InstanceCookie;
 
@@ -187,7 +188,7 @@ public class CreationFactory {
                                            CreationDescriptor.Creator creator,
                                            FormProperty[] properties) {
 
-        String[] propNames = creator.getPropertiesNames();
+        String[] propNames = creator.getPropertyNames();
         FormProperty[] crProps = new FormProperty[propNames.length];
 
         for (int i=0; i < propNames.length; i++) {
@@ -197,7 +198,8 @@ public class CreationFactory {
                     crProps[i] = properties[j];
                     break;
                 }
-            if (crProps[i] == null) return null; // missing property, should not happen
+            if (crProps[i] == null)
+                return null; // missing property, should not happen
         }
 
         return crProps;
@@ -207,7 +209,7 @@ public class CreationFactory {
                                            CreationDescriptor.Creator creator,
                                            FormProperty[] properties) {
 
-        String[] propNames = creator.getPropertiesNames();
+        String[] propNames = creator.getPropertyNames();
         FormProperty[] remProps = new FormProperty[properties.length - propNames.length];
         if (remProps.length == 0) return remProps;
 
@@ -217,7 +219,8 @@ public class CreationFactory {
             for (int j=0; j < propNames.length; j++) {
                 if (propName.equals(propNames[j])) break;
                 if (j+1 == propNames.length) {
-                    if (ii > remProps.length) return null; // should not happen
+                    if (ii > remProps.length)
+                        return null; // should not happen
                     remProps[ii++] = properties[i];
                 }
             }
@@ -226,16 +229,29 @@ public class CreationFactory {
         return remProps;
     }
 
-    public static boolean containsProperty(CreationDescriptor desc, String propName) {
+    public static boolean containsProperty(CreationDescriptor desc,
+                                           String propName)
+    {
         CreationDescriptor.Creator[] creators = desc.getCreators();
-        if (creators == null) return false;
+        if (creators == null)
+            return false;
 
         for (int i=0; i < creators.length; i++) {
-            String[] propNames = creators[i].getPropertiesNames();
+            String[] propNames = creators[i].getPropertyNames();
             for (int j=0; j < propNames.length; j++)
                 if (propNames[j].equals(propName))
                     return true;
         }
+        return false;
+    }
+
+    public static boolean containsProperty(CreationDescriptor.Creator creator,
+                                           String propName)
+    {
+        String[] propNames = creator.getPropertyNames();
+        for (int j=0; j < propNames.length; j++)
+            if (propNames[j].equals(propName))
+                return true;
         return false;
     }
 
@@ -244,6 +260,28 @@ public class CreationFactory {
         for (int i=0; i < properties.length; i++)
             if (properties[i].getName().equals(propName))
                 return properties[i];
+        return null;
+    }
+
+    public static CreationDescriptor.Creator findCreator(
+                                                 CreationDescriptor desc,
+                                                 Class[] paramTypes)
+    {
+        CreationDescriptor.Creator[] creators = desc.getCreators();
+        for (int i=0; i < creators.length; i++) {
+            CreationDescriptor.Creator cr = creators[i];
+            if (cr.getParameterCount() == paramTypes.length) {
+                Class[] types = cr.getParameterTypes();
+                boolean match = true;
+                for (int j=0; j < types.length; j++)
+                    if (!types[j].isAssignableFrom(paramTypes[j])) {
+                        match = false;
+                        break;
+                    }
+                if (match)
+                    return cr;
+            }
+        }
         return null;
     }
 
@@ -263,7 +301,7 @@ public class CreationFactory {
                 String name = properties[i].getName();
 
                 for (int j=0; j < creators.length; j++) {
-                    String[] crNames = creators[j].getPropertiesNames();
+                    String[] crNames = creators[j].getPropertyNames();
                     for (int k=0; k < crNames.length; k++)
                         if (name.equals(crNames[k]))
                             placed[j]++;
@@ -284,12 +322,12 @@ public class CreationFactory {
 
         int best = 0;
         int[] sizes = new int[creators.length];
-        sizes[0] = creators[0].getPropertiesCount();
+        sizes[0] = creators[0].getParameterCount();
 
         if (placeAllProps)
             // find shortest creator with all properties placed
             for (int i=1; i < placed.length; i++) {
-                sizes[i] = creators[i].getPropertiesCount();
+                sizes[i] = creators[i].getParameterCount();
                 if (placed[i] > placed[best]
                     || (placed[i] == placed[best]
                         && sizes[i] < sizes[best]))
@@ -298,7 +336,7 @@ public class CreationFactory {
         else
             // find longest creator with all parameters provided by properties
             for (int i=1; i < placed.length; i++) {
-                sizes[i] = creators[i].getPropertiesCount();
+                sizes[i] = creators[i].getParameterCount();
                 int iDiff = sizes[i] - placed[i];
                 int bestDiff = sizes[best] - placed[best];
                 if (iDiff < bestDiff
@@ -323,21 +361,37 @@ public class CreationFactory {
     // constructors descriptors for some "special" classes...
 
     private static void createDefaultDescriptors() {
+        Class[][] constrParamTypes;
+        String[][] constrPropertyNames;
+        Object[] defaultConstrParams;
+
+        try {
         // borders ------------
 
         // LineBorder
-        String[][] lineBorderConstructors = { 
+        constrParamTypes = new Class[][] {
+            { Color.class },
+            { Color.class, Integer.TYPE },
+            { Color.class, Integer.TYPE, Boolean.TYPE }
+        };
+        constrPropertyNames = new String[][] {
             { "lineColor" },
             { "lineColor", "thickness" },
             { "lineColor", "thickness", "roundedCorners" }
         };
-        Object[] defaultLineBorderParams = { java.awt.Color.black };
+        defaultConstrParams = new Object[] { java.awt.Color.black };
         registerDescriptor(new ConstructorsDescriptor(
                 javax.swing.border.LineBorder.class,
-                lineBorderConstructors, defaultLineBorderParams));
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // EtchedBorder
-        String[][] etchedBorderConstructors = {
+        constrParamTypes = new Class[][] {
+            { },
+            { Color.class, Color.class },
+            { Integer.TYPE },
+            { Integer.TYPE, Color.class, Color.class }
+        };
+        constrPropertyNames = new String[][] {
             { },
             { "highlightColor", "shadowColor" },
             { "etchType" },
@@ -345,25 +399,36 @@ public class CreationFactory {
         };
 //        EtchedBorder defEB = new EtchedBorder();
 //        java.awt.Component auxComp = new javax.swing.JPanel();
-        Object[] defaultEtchedBorderParams = { };
+        defaultConstrParams = new Object[] { };
 //            defEB.getHighlightColor(auxComp),
 //            defEB.getShadowColor(auxComp)
 //        };
         registerDescriptor(new ConstructorsDescriptor(
                 javax.swing.border.EtchedBorder.class,
-                etchedBorderConstructors, defaultEtchedBorderParams));
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // EmptyBorder
-        String[][] emptyBorderConstructors = {
+        constrParamTypes = new Class[][] {
+            { Insets.class }
+        };
+        constrPropertyNames = new String[][] {
             { "borderInsets" }
         };
-        Object[] defaultEmptyBorderParams = { new java.awt.Insets(1,1,1,1) };
+        defaultConstrParams = new Object[] { new java.awt.Insets(1,1,1,1) };
         registerDescriptor(new ConstructorsDescriptor(
-            javax.swing.border.EmptyBorder.class,
-            emptyBorderConstructors, defaultEmptyBorderParams));
+                javax.swing.border.EmptyBorder.class,
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // TitledBorder
-        String[][] titledBorderConstructors = {
+        constrParamTypes = new Class[][] {
+            { String.class },
+            { Border.class, String.class },
+            { Border.class, String.class, Integer.TYPE, Integer.TYPE },
+            { Border.class, String.class, Integer.TYPE, Integer.TYPE, Font.class },
+            { Border.class, String.class, Integer.TYPE, Integer.TYPE, Font.class, Color.class },
+            { Border.class }
+        };
+        constrPropertyNames = new String[][] {
             { "title" },
             { "border", "title" },
             { "border", "title", "titleJustification", "titlePosition" },
@@ -371,29 +436,39 @@ public class CreationFactory {
             { "border", "title", "titleJustification", "titlePosition", "titleFont", "titleColor" },
             { "border" }
         };
-        Object[] defaultTitledBorderParams = { null, "", new Integer(0), new Integer(0) };
+        defaultConstrParams = new Object[] { null, "", new Integer(0), new Integer(0) };
         registerDescriptor(new ConstructorsDescriptor(
-            javax.swing.border.TitledBorder.class,
-            titledBorderConstructors, defaultTitledBorderParams));
+                javax.swing.border.TitledBorder.class,
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // CompoundBorder
-        String[][] compoundBorderConstructors = {
+        constrParamTypes = new Class[][] {
+            { },
+            { Border.class, Border.class }
+        };
+        constrPropertyNames = new String[][] {
             { },
             { "outsideBorder", "insideBorder" }
         };
+        defaultConstrParams = new Object[0];
         registerDescriptor(new ConstructorsDescriptor(
-            javax.swing.border.CompoundBorder.class,
-            compoundBorderConstructors, new Object[0]));
+                javax.swing.border.CompoundBorder.class,
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // BevelBorder
-        String[][] bevelBorderConstructors = {
+        constrParamTypes = new Class[][] {
+            { Integer.TYPE },
+            { Integer.TYPE, Color.class, Color.class },
+            { Integer.TYPE, Color.class, Color.class, Color.class, Color.class }
+        };
+        constrPropertyNames = new String[][] {
             { "bevelType" },
             { "bevelType", "highlightOuterColor", "shadowOuterColor" },
             { "bevelType", "highlightOuterColor", "highlightInnerColor",
                            "shadowOuterColor", "shadowInnerColor" }
         };
 //        BevelBorder defBB = new BevelBorder(BevelBorder.RAISED);
-        Object[] defaultBevelBorderParams = {
+        defaultConstrParams = new Object[] {
             new Integer(javax.swing.border.BevelBorder.RAISED)
 //            defBB.getHighlightOuterColor(auxComp),
 //            defBB.getHighlightInnerColor(auxComp),
@@ -401,84 +476,116 @@ public class CreationFactory {
 //            defBB.getShadowInnerColor(auxComp)
         };
         registerDescriptor(new ConstructorsDescriptor(
-            javax.swing.border.BevelBorder.class,
-            bevelBorderConstructors, defaultBevelBorderParams));
+                javax.swing.border.BevelBorder.class,
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // SoftBevelBorder
         registerDescriptor(new ConstructorsDescriptor(
-            javax.swing.border.SoftBevelBorder.class,
-            bevelBorderConstructors, defaultBevelBorderParams));
+                javax.swing.border.SoftBevelBorder.class,
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // MatteBorder
-        String[][] matteBorderConstructors = {
+        constrParamTypes = new Class[][] {
+            { Icon.class },
+            { Insets.class, Icon.class },
+            { Insets.class, Color.class }
+        };
+        constrPropertyNames = new String[][] {
             { "tileIcon" },
             { "borderInsets", "tileIcon" },
             { "borderInsets", "matteColor" }
         };
-        Object[] defaultMatteBorderParams = { //new java.awt.Insets(1,1,1,1),
+        defaultConstrParams = new Object[] { //new java.awt.Insets(1,1,1,1),
             new Integer(1), new Integer(1), new Integer(1), new Integer(1),
             java.awt.Color.black
         };
         registerDescriptor(new ConstructorsDescriptor(
-            javax.swing.border.MatteBorder.class,
-            matteBorderConstructors, defaultMatteBorderParams));
+                javax.swing.border.MatteBorder.class,
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // layouts --------------
 
         // BorderLayout
-        String[][] borderLayoutConstructors = {
+        constrParamTypes = new Class[][] {
+            { },
+            { Integer.TYPE, Integer.TYPE }
+        };
+        constrPropertyNames = new String[][] {
             { },
             { "hgap", "vgap" }
         };
-        Object[] defaultLayoutParams = { };
+        defaultConstrParams = new Object[0];
         registerDescriptor(new ConstructorsDescriptor(
-            java.awt.BorderLayout.class,
-            borderLayoutConstructors, defaultLayoutParams));
+                java.awt.BorderLayout.class,
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // FlowLayout
-        String[][] flowLayoutConstructors = {
+        constrParamTypes = new Class[][] {
+            { },
+            { Integer.TYPE },
+            { Integer.TYPE, Integer.TYPE, Integer.TYPE }
+        };
+        constrPropertyNames = new String[][] {
             { },
             { "alignment" },
             { "alignment", "hgap", "vgap" },
         };
         registerDescriptor(new ConstructorsDescriptor(
-            java.awt.FlowLayout.class,
-            flowLayoutConstructors, defaultLayoutParams));
+                java.awt.FlowLayout.class,
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // GridBagLayout
-        String[][] gridBagLayoutConstructors = {
+        constrParamTypes = new Class[][] {
+            { }
+        };
+        constrPropertyNames = new String[][] {
             { }
         };
         registerDescriptor(new ConstructorsDescriptor(
-            java.awt.GridBagLayout.class,
-            gridBagLayoutConstructors, defaultLayoutParams));
+                java.awt.GridBagLayout.class,
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // GridLayout
-        String[][] gridLayoutConstructors = {
+        constrParamTypes = new Class[][] {
+            { },
+            { Integer.TYPE, Integer.TYPE },
+            { Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE }
+        };
+        constrPropertyNames = new String[][] {
+            { },
             { "rows", "columns" },
             { "rows", "columns", "hgap", "vgap" }
         };
         registerDescriptor(new ConstructorsDescriptor(
-            java.awt.GridLayout.class,
-            gridLayoutConstructors, defaultLayoutParams));
+                java.awt.GridLayout.class,
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // CardLayout
-        String[][] cardLayoutConstructors = {
+        constrParamTypes = new Class[][] {
+            { },
+            { Integer.TYPE, Integer.TYPE }
+        };
+        constrPropertyNames = new String[][] {
             { },
             { "hgap", "vgap" }
         };
         registerDescriptor(new ConstructorsDescriptor(
-            java.awt.CardLayout.class,
-            cardLayoutConstructors, defaultLayoutParams));
+                java.awt.CardLayout.class,
+                constrParamTypes, constrPropertyNames, defaultConstrParams));
 
         // AWT --------
 
         // Dialog
-        Object[] defaultDialogParams = { new java.awt.Frame() };
+        defaultConstrParams = new Object[] { new java.awt.Frame() };
         registerDescriptor(new ConstructorsDescriptor(
             java.awt.Dialog.class,
-            null, defaultDialogParams));
+            null, null, defaultConstrParams));
 
         defaultDescriptorsCreated = true;
+
+        }
+        catch (NoSuchMethodException ex) { // should not happen
+            ex.printStackTrace();
+        }
     }
 }

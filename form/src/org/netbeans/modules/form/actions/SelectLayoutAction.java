@@ -80,9 +80,7 @@ public class SelectLayoutAction extends NodeAction
             if (container == null)
                 return false;
 
-            LayoutSupport ls = container.getLayoutSupport();
-            if (ls != null && ls.getLayoutClass() == null
-                    && ls.getClass() != NullLayoutSupport.class)
+            if (container.getLayoutSupport().isDedicated())
                 return false;
 
             FormDesigner designer = container.getFormModel().getFormDesigner();
@@ -98,7 +96,7 @@ public class SelectLayoutAction extends NodeAction
             (FormLayoutCookie) node.getCookie(FormLayoutCookie.class);
 
         if (layoutCookie != null) {
-            container = layoutCookie.getLayoutNode().getLayoutSupport().getContainer();
+            container = layoutCookie.getLayoutNode().getMetaContainer();
 //            System.err.println("**** container = " + container); // XXX
         }
         else {
@@ -190,9 +188,9 @@ public class SelectLayoutAction extends NodeAction
                 if (container == null) continue;
                 
                 // set the selected layout on the activated container
-                LayoutSupport layoutSupport = null;
+                LayoutSupportDelegate layoutSupport = null;
                 try {
-                    layoutSupport = paletteItem.createLayoutSupportInstance();
+                    layoutSupport = paletteItem.createLayoutDelegateInstance();
                 }
                 catch (Exception e) {
                     if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N

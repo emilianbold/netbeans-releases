@@ -82,8 +82,9 @@ public class RADComponentNode extends FormNode
         firePropertySetsChange(null, null);
     }
 
-    /** Provides package-private access for firing property changes */
-    void firePropertyChangeHelper(String name, Object oldValue, Object newValue) {
+    /** Provides access for firing property changes */
+    public void firePropertyChangeHelper(String name,
+                                         Object oldValue, Object newValue) {
         super.firePropertyChange(name, oldValue, newValue);
     }
 
@@ -170,18 +171,18 @@ public class RADComponentNode extends FormNode
         }
         else {
             if (component instanceof RADVisualContainer) {
-                actions.add(SystemAction.get(EditContainerAction.class));
-                if (!(component instanceof RADVisualFormContainer))
-                    actions.add(SystemAction.get(EditFormAction.class));
-                actions.add(null);
-
-                LayoutSupport ls = ((RADVisualContainer)component).getLayoutSupport();
-                if (ls == null || ls.getLayoutClass() != null
-                        || ls.getClass() == NullLayoutSupport.class) {
+                if (!((RADVisualContainer)component).getLayoutSupport().isDedicated()) {
                     actions.add(SystemAction.get(SelectLayoutAction.class));
                     actions.add(SystemAction.get(CustomizeLayoutAction.class));
                     actions.add(null);
                 }
+
+                actions.add(SystemAction.get(EditContainerAction.class));
+                RADComponent topComp =
+                    component.getFormModel().getTopRADComponent();
+                if (topComp != null && component != topComp)
+                    actions.add(SystemAction.get(EditFormAction.class));
+                actions.add(null);
             }
 
             actions.add(SystemAction.get(EventsAction.class));
@@ -277,7 +278,7 @@ public class RADComponentNode extends FormNode
     public void destroy() throws java.io.IOException {
         // turn on notifying the user about deleting event handlers
         FormEventHandlers.setNotifyUser(true);
-        component.getFormModel().deleteComponent(component);
+        component.getFormModel().removeComponent(component);
         FormEventHandlers.restorePreviousNotifySettings();
 
         super.destroy();
@@ -366,8 +367,8 @@ public class RADComponentNode extends FormNode
                     try {
                         prop.reinstateProperty();
                         if (prop.isChanged())
-                            prop.firePropertyValueChange(evt.getOldValue(),
-                                                         evt.getNewValue());
+                            prop.propertyValueChanged(evt.getOldValue(),
+                                                      evt.getNewValue());
                     }
                     catch (Exception ex) { // unlikely to happen
                         if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -410,7 +411,7 @@ public class RADComponentNode extends FormNode
     }
 
     /** Store original name of component and subcomponents. */
-    private void storeNames(RADComponent comp) {
+/*    private void storeNames(RADComponent comp) {
         comp.storeName();
         if (comp instanceof ComponentContainer) {
             RADComponent comps[] =((ComponentContainer) comp).getSubBeans();
@@ -418,7 +419,7 @@ public class RADComponentNode extends FormNode
                 storeNames(comps[i]);
             }
         }
-    }
+    } */
 
     /** Cut this node to the clipboard.
      *
@@ -560,8 +561,8 @@ public class RADComponentNode extends FormNode
                 if (menuComp != null)
                     keys.add(menuComp);
 
-                if (visualCont.shouldHaveLayoutNode()) {
-                    keyLayout = new Object();
+                if (visualCont.getLayoutSupport().shouldHaveNode()) {
+                    keyLayout = visualCont.getLayoutSupport().getLayoutDelegate(); //new Object(); // [need not be recreated every time]
                     keys.add(keyLayout);
                 }
 

@@ -20,66 +20,35 @@ import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 /**
+ * Meta component representing a LayoutManager instance.
+ *
  * @author Tomas Pavek
  */
 
 class MetaLayout extends RADComponent {
 
-    private LayoutSupport layoutSupport;
-    private RADVisualContainer container;
+    private AbstractLayoutSupport abstLayoutDelegate;
 
-    public MetaLayout(LayoutSupport laysup, RADVisualContainer container) {
+    public MetaLayout(AbstractLayoutSupport layoutDelegate,
+                      LayoutManager lmInstance)
+    {
         super();
-        this.layoutSupport = laysup;
-        this.container = container;
-        initialize(container.getFormModel());
+        abstLayoutDelegate = layoutDelegate;
+        FormModel formModel =
+                ((LayoutSupportManager)abstLayoutDelegate.getLayoutContext())
+                        .getMetaContainer().getFormModel();
+        initialize(formModel);
+        setBeanInstance(lmInstance);
     }
 
-    public void updateInstance(Object beanInstance) {
-        if (container.getLayoutSupport() == layoutSupport) {
-            Container cont =
-                container.getContainerDelegate(container.getBeanInstance());
-            RADVisualComponent[] comps = container.getSubComponents();
-
-            for (int i=0; i < comps.length; i++)
-                cont.remove(comps[i].getComponent());
-
-            super.updateInstance(beanInstance); // calls setBeanInstance
-
-            for (int i=0; i < comps.length; i++) {
-                Component comp = comps[i].getComponent();
-
-                // hack for AWT components - fake peer must be attached again
-                boolean attached = FakePeerSupport.attachFakePeer(comp);
-                if (attached && comp instanceof Container)
-                        FakePeerSupport.attachFakePeerRecursively((Container)comp);
-
-                cont.add(comp);
-            }
-//            getFormModel().fireFormChanged();
-        }
-        else super.updateInstance(beanInstance); // calls setBeanInstance
-    }
-
-    protected Object createBeanInstance() {
-        Container cont = container.getContainerDelegate(container.getBeanInstance());
-        return layoutSupport.createDefaultLayoutInstance(cont);
-    }
-
-    protected void setBeanInstance(Object beanInstance) {
-        super.setBeanInstance(beanInstance);
-
-        if (container.getLayoutSupport() == layoutSupport) {
-            Container cont =
-                container.getContainerDelegate(container.getBeanInstance());
-            cont.setLayout((LayoutManager)beanInstance);
-        }
+    protected void createCodeElement() {
     }
 
     protected void createPropertySets(java.util.List propSets) {
         super.createPropertySets(propSets);
 
-        // temporary hack - until we implement code generation properties...
+        // RADComponent provides also Code Generation properties for which
+        // we have no use here (yet) - so we remove them now
         for (int i=0, n=propSets.size(); i < n; i++) {
             Node.PropertySet propSet = (Node.PropertySet)propSets.get(i);
             if (!"properties".equals(propSet.getName()) // NOI18N
@@ -93,21 +62,6 @@ class MetaLayout extends RADComponent {
     protected PropertyChangeListener createPropertyListener() {
         // cannot reuse RADComponent.PropertyListener, because this is not
         // a regular RADComponent (properties have a special meaning)
-        return new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent ev) {
-                getFormModel().fireContainerLayoutChanged(container,
-                                                          null, null);
-
-                LayoutNode node = container.getLayoutNodeReference();
-                if (node == null)
-                    return;
-
-                // propagate the change to node
-                if (FormProperty.PROP_VALUE.equals(ev.getPropertyName()))
-                    node.fireLayoutPropertiesChange();
-                else if (FormProperty.CURRENT_EDITOR.equals(ev.getPropertyName()))
-                    node.fireLayoutPropertySetsChange();
-            }
-        };
+        return null;
     }
 }

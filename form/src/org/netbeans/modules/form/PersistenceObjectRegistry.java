@@ -70,14 +70,22 @@ public class PersistenceObjectRegistry
     }
 
     public static String getPrimaryName(Class clazz) {
-        String classname = clazz.getName();
-
-        String name =(String) _classToPrimaryName.get(classname);
-        return name != null ? name : classname;
+        return getPrimaryName(clazz.getName());
     }
 
-    static {
+    static String getPrimaryName(String className) {
+        String name = (String) _classToPrimaryName.get(className);
+        return name != null ? name : className;
+    }
+
+    static String getClassName(String primaryName) {
+        primaryName = Utilities.translate(primaryName);
+        String classname = (String) _nameToClassname.get(primaryName);
+        return classname != null ? classname : primaryName;
+    }
+
+//    static {
         //      registerPrimaryName("org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$ConstraintsDesc",
         //                          "org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription");
-    }
+//    }
 }

@@ -19,7 +19,6 @@ import java.util.*;
 
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 import org.netbeans.modules.form.layoutsupport.*;
-import org.netbeans.modules.form.layoutsupport.dedicated.*;
 
 /**
  * This class replicates the instances from meta-components hierarchy,
@@ -170,36 +169,39 @@ public class VisualReplicator {
         Container cont = (Container) getClonedComponent(metacont);
         if (cont == null) // should not happen
             return;
-
-        // this is temporary code - may not work properly for some containers
         Container contDelegate = metacont.getContainerDelegate(cont);
-        contDelegate.removeAll();
 
-        LayoutSupport laysup = metacont.getLayoutSupport();
-        setContainerLayout(contDelegate, laysup);
+        LayoutSupportManager laysup = metacont.getLayoutSupport();
+        laysup.clearContainer(cont, contDelegate);
+        laysup.setLayoutToContainer(cont, contDelegate);
 
-        // add removed subcomponents
-        RADVisualComponent[] subcomps = metacont.getSubComponents();
-        for (int i = 0; i < subcomps.length; i++) {
-            RADVisualComponent subMetaComp = subcomps[i];
+        RADVisualComponent[] metacomps = metacont.getSubComponents();
+        Component[] comps = new Component[metacomps.length];
+        for (int i = 0; i < metacomps.length; i++) {
+            RADVisualComponent metacomp = metacomps[i];
 
-            Component comp = (Component) getClonedComponent(subMetaComp);
+            Component comp = (Component) getClonedComponent(metacomp);
             if (comp == null)
-                comp = (Component) createClone(subMetaComp);
-            else if (comp.getParent() != null)
-                comp.getParent().remove(comp);
+                comp = (Component) createClone(metacomp);
+            else {
+                if (comp.getParent() != null)
+                    comp.getParent().remove(comp);
+                comp.setVisible(true); // e.g. CardLayout hides components
+            }
 
             // re-attach fake peer
             boolean attached = FakePeerSupport.attachFakePeer(comp);
             if (attached && comp instanceof Container)
                 FakePeerSupport.attachFakePeerRecursively((Container)comp);
 
-            addComponentToContainer(metacont, cont, contDelegate,
-                                    subMetaComp, comp);
+            comps[i] = comp;
         }
 
-        if (laysup instanceof LayoutSupportArranging)
-            ((LayoutSupportArranging)laysup).arrangeContainer(cont);
+        // add removed subcomponents
+        laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
+
+        if (laysup.supportsArranging())
+            laysup.arrangeContainer(cont, contDelegate);
     }
 
     public void addComponent(RADComponent metacomp) {
@@ -218,11 +220,16 @@ public class VisualReplicator {
             Container cont = (Container) getClonedComponent(metacont);
             if (cont == null) // should not happen
                 return;
+            Container contDelegate = metacont.getContainerDelegate(cont);
 
-            addComponentToContainer(metacont, cont,
-                                    metacont.getContainerDelegate(cont),
-                                    (RADVisualComponent) metacomp,
-                                    (Component) clone);
+            LayoutSupportManager laysup = metacont.getLayoutSupport();
+            laysup.addComponentsToContainer(
+                          cont,
+                          contDelegate,
+                          new Component[] { (Component) clone },
+                          ((RADVisualComponent)metacomp).getComponentIndex());
+            if (laysup.supportsArranging())
+                laysup.arrangeContainer(cont, contDelegate);
         }
         else if (metacomp instanceof RADMenuItemComponent) {
             Object clone = createClone(metacomp);
@@ -369,20 +376,20 @@ public class VisualReplicator {
             }
 
             // set layout
-            LayoutSupport laysup = metacont.getLayoutSupport();
-            setContainerLayout(contDelegate, laysup);
+            LayoutSupportManager laysup = metacont.getLayoutSupport();
+            laysup.setLayoutToContainer(cont, contDelegate);
 
             // copy subcomponents
             RADVisualComponent[] metacomps = metacont.getSubComponents();
-            for (int i = 0; i < metacomps.length; i++) {
-                Component comp = (Component) cloneComponent(metacomps[i],
-                                                            relativeProperties);
-                addComponentToContainer(metacont, cont, contDelegate,
-                                        metacomps[i], comp);
-            }
+            Component[] comps = new Component[metacomps.length];
+            for (int i = 0; i < metacomps.length; i++)
+                comps[i] = (Component) cloneComponent(metacomps[i],
+                                                      relativeProperties);
 
-            if (laysup instanceof LayoutSupportArranging)
-                ((LayoutSupportArranging)laysup).arrangeContainer(cont);
+            laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
+
+            if (laysup.supportsArranging())
+                laysup.arrangeContainer(cont, contDelegate);
         }
         else if (metacomp instanceof RADMenuComponent) {
             RADComponent[] metacomps = ((RADMenuComponent)metacomp).getSubBeans();
@@ -414,116 +421,6 @@ public class VisualReplicator {
         return metacomp == getTopMetaComponent()
                && requiredTopClass != null
                && !requiredTopClass.isAssignableFrom(beanClass);
-    }
-
-    private static void setContainerLayout(Container cont, // container delegate
-                                           LayoutSupport laysup) {
-        if (laysup != null) {
-            if (laysup.getClass() == NullLayoutSupport.class)
-                cont.setLayout(null);
-            else {
-                LayoutManager lm = laysup.cloneLayoutInstance(cont);
-                if (lm != null)
-                    cont.setLayout(lm);
-                // if lm == null then do nothing - it's probably special
-                // container with dedicated layout support (e.g. JSplitPane)
-            }
-        }
-    }
-
-    // [temporary method - LayoutSupport implementations should do this]
-    private static void addComponentToContainer(RADVisualContainer metacont,
-                                                Container cont,
-                                                Container contDelegate,
-                                                RADVisualComponent metacomp,
-                                                Component comp) {
-        comp.setName(metacomp.getName());
-
-        if (cont instanceof JScrollPane) {
-            ((JScrollPane)cont).setViewportView(comp);
-        }
-        else if (cont instanceof JSplitPane) {
-            LayoutSupport.ConstraintsDesc desc =
-                metacomp.getConstraintsDesc(JSplitPaneSupport.class);
-            if (desc instanceof JSplitPaneSupport.SplitConstraintsDesc)
-                cont.add(comp, desc.getConstraintsObject());
-        }
-        else if (cont instanceof JTabbedPane) {
-            LayoutSupport.ConstraintsDesc desc =
-                metacomp.getConstraintsDesc(JTabbedPaneSupport.class);
-            if (desc instanceof JTabbedPaneSupport.TabConstraintsDesc) {
-                try {
-                    FormProperty titleProperty = (FormProperty)desc.getProperties()[0];
-                    FormProperty iconProperty = (FormProperty)desc.getProperties()[1];
-                    ((JTabbedPane)cont).addTab(
-                        (String) titleProperty.getRealValue(),
-                        (Icon) iconProperty.getRealValue(),
-                        comp);
-                }
-                catch (Exception ex) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        ex.printStackTrace();
-                }
-            }
-        }
-        else if (cont instanceof JLayeredPane) {
-            LayoutSupport.ConstraintsDesc desc =
-                    metacomp.getConstraintsDesc(JLayeredPaneSupport.class);
-            if (desc instanceof JLayeredPaneSupport.LayeredConstraintsDesc) {
-                cont.add(comp, desc.getConstraintsObject());
-                Rectangle bounds =
-                    ((JLayeredPaneSupport.LayeredConstraintsDesc)desc)
-                        .getBounds();
-                if (bounds.width == -1 || bounds.height == -1) {
-                    Dimension pref = comp.isDisplayable() ?
-                                     comp.getPreferredSize() :
-                                     metacomp.getComponent().getPreferredSize();
-                    if (bounds.width == -1)
-                        bounds.width = pref.width;
-                    if (bounds.height == -1)
-                        bounds.height = pref.height;
-                }
-                comp.setBounds(bounds);
-            }
-        }
-        else {
-            LayoutSupport laysup = metacont.getLayoutSupport();
-            if (laysup == null) { // this should not happen
-                System.out.println("[WARNING] LayoutSupport is null in container: "+metacont.getName());
-                return;
-            }
-
-            Object constr = null;
-            LayoutSupport.ConstraintsDesc constrDesc =
-                                            laysup.getConstraints(metacomp);
-            if (constrDesc != null)
-                constr = constrDesc.getConstraintsObject();
-      
-            if (contDelegate.getLayout() != null) {
-                if (null == constr)
-                    contDelegate.add(comp);
-                else
-                    contDelegate.add(comp, constr);
-            }
-            else if (constrDesc instanceof AbsoluteLayoutSupport.AbsoluteConstraintsDesc) {
-                // null layout
-                contDelegate.add(comp);
-                Rectangle bounds =
-                    ((AbsoluteLayoutSupport.AbsoluteConstraintsDesc)constrDesc)
-                        .getBounds();
-                if (bounds.width == -1 || bounds.height == -1) {
-                    Dimension pref = comp.isDisplayable() ?
-                                     comp.getPreferredSize() :
-                                     metacomp.getComponent().getPreferredSize();
-                    if (bounds.width == -1)
-                        bounds.width = pref.width;
-                    if (bounds.height == -1)
-                        bounds.height = pref.height;
-                }
-                comp.setBounds(bounds);
-            }
-            else contDelegate.add(comp);
-        }
     }
 
     private static void setContainerMenu(Container cont,

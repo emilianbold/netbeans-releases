@@ -38,6 +38,7 @@ class ComponentDragger
 
     private RADVisualContainer targetMetaContainer;
     private Container targetContainer;
+    private Container targetContainerDel;
 
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
@@ -68,6 +69,7 @@ class ComponentDragger
         if (!computeConstraints(point, constraints, indices))
             return;
 
+        LayoutSupportManager layoutSupport = targetMetaContainer.getLayoutSupport();
         RADVisualComponent[] currentComponents = targetMetaContainer.getSubComponents();
 
         Set changedContainers = new HashSet(5);
@@ -102,7 +104,7 @@ class ComponentDragger
 
         int newI = 0;
 
-        // copy current components (already in target container)
+        // take over current components (already in target container)
         for (int i=0; i < currentComponents.length; i++) {
             RADVisualComponent metacomp = currentComponents[i];
             int ii = newComponents.indexOf(metacomp);
@@ -111,6 +113,7 @@ class ComponentDragger
                     newI++;
 
                 newComponents.set(newI, metacomp);
+                newConstraints.set(newI, layoutSupport.getConstraints(metacomp));
             }
         }
 
@@ -132,16 +135,16 @@ class ComponentDragger
         }
         // now we have lists of components and constraints in right order 
 
-        LayoutSupport layoutSupport = targetMetaContainer.getLayoutSupport();
-
         // remove components from source container(s)
+        layoutSupport.removeAll();
+
         for (int i=0; i < n; i++) {
             RADVisualComponent metacomp = (RADVisualComponent) newComponents.get(i);
             if (metacomp != null) {
                 RADVisualContainer parentCont = metacomp.getParentContainer();
-                if (parentCont == targetMetaContainer)
-                    layoutSupport.removeComponent(metacomp);
-                else
+                if (parentCont != targetMetaContainer)
+//                    layoutSupport.removeComponent(parentCont.getIndexOf(metacomp));
+//                else
                     parentCont.remove(metacomp);
 
                 changedContainers.add(parentCont);
@@ -155,24 +158,21 @@ class ComponentDragger
             }
         }
 
-        if (n == 0) return; // dragging not allowed
+        if (n == 0)
+            return; // dragging not allowed
 
         // and finally - add all new components to target container
         RADVisualComponent[] newCompsArray = new RADVisualComponent[n];
-        newComponents.toArray(newCompsArray);
-        targetMetaContainer.initSubComponents(newCompsArray);
+        LayoutConstraints[] newConstrArray = new LayoutConstraints[n];
+//        newComponents.toArray(newCompsArray);
 
         for (int i=0; i < n; i++) {
-            RADVisualComponent metacomp = newCompsArray[i];
-
-            LayoutSupport.ConstraintsDesc constr = 
-                (LayoutSupport.ConstraintsDesc) newConstraints.get(i);
-            if (constr == null)
-                constr = layoutSupport.getConstraints(metacomp);
-
-            layoutSupport.addComponent(metacomp, constr);
-            metacomp.resetConstraintsProperties();
+            newCompsArray[i] = (RADVisualComponent) newComponents.get(i);
+            newConstrArray[i] = (LayoutConstraints) newConstraints.get(i);
         }
+
+        targetMetaContainer.initSubComponents(newCompsArray);
+        layoutSupport.addComponents(newCompsArray, newConstrArray);
 
         // fire changes
         for (Iterator it=changedContainers.iterator(); it.hasNext(); ) {
@@ -208,12 +208,12 @@ class ComponentDragger
                                                    constraints, indices);
 
         Point contPos = null;
-        LayoutSupport layoutSupport = null;
+        LayoutSupportManager layoutSupport = null;
         if (constraintsOK) {
-            contPos = SwingUtilities.convertPoint(targetContainer, 0, 0, handleLayer);
+            contPos = SwingUtilities.convertPoint(targetContainerDel, 0, 0, handleLayer);
             layoutSupport = targetMetaContainer.getLayoutSupport();
             if (resizeType == 0)
-                paintTargetContainerFeedback(g, targetContainer);
+                paintTargetContainerFeedback(g, targetContainerDel);
         }
 
         for (int i = 0; i < selectedComponents.length; i++) {
@@ -222,14 +222,14 @@ class ComponentDragger
 
             if (constraintsOK) {
                 Component comp = (Component) formDesigner.getComponent(metacomp);
-                LayoutSupport.ConstraintsDesc constr =
-                    (LayoutSupport.ConstraintsDesc) constraints.get(i);
+                LayoutConstraints constr = (LayoutConstraints) constraints.get(i);
                 int index = ((Integer)indices.get(i)).intValue();
 
                 if (constr != null || index >= 0) {
                     g.translate(contPos.x, contPos.y);
                     drawn = layoutSupport.paintDragFeedback(
-                        targetContainer, comp, constr, index, g);
+                                targetContainer, targetContainerDel,
+                                comp, constr, index, g);
                     g.translate(- contPos.x, - contPos.y);
                 }
 //                else continue;
@@ -260,22 +260,22 @@ class ComponentDragger
                 fixTargetContainer = null;
             }
 
-            LayoutSupport layoutSupport = targetMetaContainer.getLayoutSupport();
-            if (layoutSupport == null)
-                return false; // no LayoutSupport (should not happen)
+            LayoutSupportManager layoutSupport = targetMetaContainer.getLayoutSupport();
+//            if (layoutSupport == null)
+//                return false; // no LayoutSupport (should not happen)
 
-            Component contComp = (Component) formDesigner.getComponent(targetMetaContainer);
-            if (contComp == null)
+            targetContainer = (Container) formDesigner.getComponent(targetMetaContainer);
+            if (targetContainer == null)
                 return false; // container not in designer (should not happen)
 
-            targetContainer = targetMetaContainer.getContainerDelegate(contComp);
-            if (targetContainer == null)
+            targetContainerDel = targetMetaContainer.getContainerDelegate(targetContainer);
+            if (targetContainerDel == null)
                 return false; // no container delegate (should not happen)
 
-            Point posInCont = SwingUtilities.convertPoint(handleLayer, p, targetContainer);
+            Point posInCont = SwingUtilities.convertPoint(handleLayer, p, targetContainerDel);
 
             for (int i = 0; i < selectedComponents.length; i++) {
-                LayoutSupport.ConstraintsDesc constr = null;
+                LayoutConstraints constr = null;
                 int index = -1;
 
                 RADVisualComponent metacomp = selectedComponents[i];
@@ -295,24 +295,30 @@ class ComponentDragger
                         Point posInComp = SwingUtilities.convertPoint(
                                               handleLayer, hotspot, comp);
                         index = layoutSupport.getNewIndex(
-                                    targetContainer, posInCont, comp, posInComp);
+                                    targetContainer, targetContainerDel,
+                                    comp, metacomp.getComponentIndex(),
+                                    posInCont, posInComp);
                         constr = layoutSupport.getNewConstraints(
-                                     targetContainer, posInCont, comp, posInComp);
+                                    targetContainer, targetContainerDel,
+                                    comp, metacomp.getComponentIndex(),
+                                    posInCont, posInComp);
                     }
                     else { // resizing
                         int up = 0, down = 0, left = 0, right = 0;
 
-                        if ((resizeType & LayoutSupport.RESIZE_DOWN) != 0)
+                        if ((resizeType & LayoutSupportManager.RESIZE_DOWN) != 0)
                             down = p.y - hotspot.y;
-                        else if ((resizeType & LayoutSupport.RESIZE_UP) != 0)
+                        else if ((resizeType & LayoutSupportManager.RESIZE_UP) != 0)
                             up = hotspot.y - p.y;
-                        if ((resizeType & LayoutSupport.RESIZE_RIGHT) != 0)
+                        if ((resizeType & LayoutSupportManager.RESIZE_RIGHT) != 0)
                             right = p.x - hotspot.x;
-                        else if ((resizeType & LayoutSupport.RESIZE_LEFT) != 0)
+                        else if ((resizeType & LayoutSupportManager.RESIZE_LEFT) != 0)
                             left = hotspot.x - p.x;
 
                         Insets sizeChanges = new Insets(up, left, down, right);
-                        constr = layoutSupport.getResizedConstraints(comp, sizeChanges);
+                        constr = layoutSupport.getResizedConstraints(
+                                     comp, metacomp.getComponentIndex(),
+                                     sizeChanges);
                     }
                 }
 

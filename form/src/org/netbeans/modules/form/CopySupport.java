@@ -17,7 +17,7 @@ import java.awt.datatransfer.*;
 import org.openide.nodes.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.datatransfer.PasteType;
-import org.netbeans.modules.form.layoutsupport.LayoutSupport;
+import org.netbeans.modules.form.layoutsupport.*;
 
 class CopySupport {
 
@@ -132,47 +132,47 @@ class CopySupport {
                 targetForm.getComponentCreator()
                     .copyComponent(sourceComponent, targetContainer);
                 return null;
+//                return new RADTransferable(COMPONENT_COPY_FLAVOR, sourceComponent);
             }
-            else { // pasting cut RADComponent (same instance)
-                FormModel sourceForm = sourceComponent.getFormModel();
-                if (sourceForm != targetForm) { // taken from another form
-                    Node sourceNode = sourceComponent.getNodeReference();
-                    // delete component in the source
-                    if (sourceNode != null)
-                        sourceNode.destroy();
-                    else throw new IllegalStateException();
 
-                    sourceComponent.initialize(targetForm);
-                }
-                else { // moving within the same form
-                    if (!canPasteCut(sourceComponent, targetForm, targetContainer))
-                        return transferable; // ignore paste
+            FormModel sourceForm = sourceComponent.getFormModel();
+            if (sourceForm != targetForm) { // pasting cut from another form
+                targetForm.getComponentCreator()
+                    .copyComponent(sourceComponent, targetContainer);
 
-                    // remove source component from its parent
-                    sourceForm.removeComponent(sourceComponent);
-                }
+                Node sourceNode = sourceComponent.getNodeReference();
+                // delete component in the source form
+                if (sourceNode != null)
+                    sourceNode.destroy();
+                else throw new IllegalStateException();
+                //sourceComponent.initialize(targetForm);
+            }
+            else { // moving component within the same form
+                if (!canPasteCut(sourceComponent, targetForm, targetContainer))
+                    return transferable; // ignore paste
+
+                // remove source component from its parent
+                sourceForm.removeComponentFromContainer(sourceComponent);
 
                 if (sourceComponent instanceof RADVisualComponent
-                        && targetContainer instanceof RADVisualContainer) {
+                        && targetContainer instanceof RADVisualContainer)
+                {
+                    RADVisualComponent visualComp = (RADVisualComponent)
+                                                    sourceComponent;
                     RADVisualContainer visualCont = (RADVisualContainer)
                                                     targetContainer;
-                    LayoutSupport laysup = visualCont.getLayoutSupport();
-                    if (laysup != null) {
-                        RADVisualComponent sourceComp = (RADVisualComponent)
-                                                        sourceComponent;
-                        LayoutSupport.ConstraintsDesc cd =
-                                            laysup.getConstraints(sourceComp);
-                        targetForm.addVisualComponent(sourceComp, visualCont,
-                                                      laysup.fixConstraints(cd));
-                    }
+                    LayoutConstraints constr = visualCont.getLayoutSupport()
+                                             .getStoredConstraints(visualComp);
+
+                    targetForm.addVisualComponent(visualComp, visualCont, constr);
                 }
                 else {
                     targetForm.addComponent(sourceComponent, targetContainer);
                 }
-
-                // return new copy flavor, as the first one was used already
-                return new RADTransferable(COMPONENT_COPY_FLAVOR, sourceComponent);
             }
+
+            // return new copy flavor, as the first one was used already
+            return new RADTransferable(COMPONENT_COPY_FLAVOR, sourceComponent);
         }
     }
 

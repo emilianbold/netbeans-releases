@@ -16,6 +16,7 @@ package org.netbeans.modules.form;
 import java.beans.*;
 import java.io.*;
 import java.util.*;
+import java.lang.reflect.*;
 
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
@@ -27,7 +28,8 @@ import org.openide.loaders.XMLDataObject;
 import org.openide.util.io.NbObjectInputStream;
 
 import org.netbeans.modules.form.layoutsupport.*;
-import org.netbeans.modules.form.compat2.layouts.*;
+import org.netbeans.modules.form.layoutsupport.delegates.*;
+import org.netbeans.modules.form.codestructure.*;
 
 /**
  *
@@ -83,6 +85,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private org.w3c.dom.Document topDocument =
         org.openide.xml.XMLUtil.createDocument("topDocument",null,null,null); // NOI18N
+
+    private FormModel formModel;
 
     private Map containerDependentProperties;
 
@@ -228,7 +232,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @exception IOException if any problem occured when loading the form
      */
     public void loadForm(FormDataObject formObject, FormModel formModel)
-    throws IOException {
+        throws IOException
+    {
         formFile = formObject.getFormEntry().getFile();
         org.w3c.dom.Document doc;
         org.w3c.dom.Element mainElement;
@@ -237,7 +242,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
             encoding = readEncoding(formFile.getURL().openStream());
             doc = org.openide.loaders.XMLDataObject.parse(formFile.getURL());
             mainElement = doc.getDocumentElement();
-        } catch (org.xml.sax.SAXException e) {
+        }
+        catch (org.xml.sax.SAXException e) {
             throw new IOException(e.getMessage());
         }
 
@@ -250,9 +256,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (!NB32_VERSION.equals(version) && !CURRENT_VERSION.equals(version))
             throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLVersion"));
 
+        // [what is this check good for ??]
+        org.w3c.dom.NodeList childNodes = mainElement.getChildNodes();
+        if (childNodes == null)
+            throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLFormat"));
+
         formInfoName = mainElement.getAttribute(ATTR_FORM_TYPE);
 
-//        FormModel formModel = new FormModel();
+        this.formModel = formModel;
         formModel.setName(formObject.getName());
 
         try {
@@ -270,7 +281,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             Class formClass = getCompatibleFormClass(formInfoName);
             if (formClass != null) {
                 try {
-                    System.out.println("[WARNING] Form type detection falls back to FormInfo type."); // NOI18N
+                    System.err.println("[WARNING] Form type detection falls back to FormInfo type."); // NOI18N
                     formModel.setFormBaseClass(formClass);
                 }
                 catch (Throwable ex) {
@@ -286,21 +297,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                       .getString("MSG_ERR_FormType")); // NOI18N
             }
         }
-        org.w3c.dom.NodeList childNodes = mainElement.getChildNodes();
-        if (childNodes == null) {
-            throw new IOException(FormEditor.getFormBundle().getString("ERR_BadXMLFormat"));
-        }
 
         containerDependentProperties = null;
 
-        loadNonVisuals(mainElement, formModel);
+        loadNonVisuals(mainElement); //, formModel
 
         RADComponent topComp = formModel.getTopRADComponent();
         if (topComp != null) {
             try {
-                loadComponent(mainElement, topComp);
-                if (topComp instanceof ComponentContainer)
-                    loadContainer(mainElement, topComp);
+                loadComponent(mainElement, topComp, null);
             }
             catch (Exception ex) {
                 ex.printStackTrace();
@@ -308,10 +313,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         containerDependentProperties = null;
-//        return formModel;
     }
 
-    private void loadNonVisuals(org.w3c.dom.Node node, FormModel formModel) {
+    private void loadNonVisuals(org.w3c.dom.Node node/*, FormModel formModel*/) {
         org.w3c.dom.Node nonVisualsNode =
                                 findSubNode(node, XML_NON_VISUAL_COMPONENTS);
         org.w3c.dom.NodeList childNodes = nonVisualsNode == null ? null :
@@ -324,7 +328,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 if (subnode.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
                     continue; // ignore text nodes
 
-                RADComponent comp = restoreComponent(subnode, formModel);
+                RADComponent comp = restoreComponent(subnode, null);
                 if (comp != null)
                     list.add(comp);
             }
@@ -337,42 +341,41 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     // recognizes, creates, initializes and loads a meta component
     private RADComponent restoreComponent(org.w3c.dom.Node node,
-                                          FormModel formModel) {
+                                          RADComponent parentComponent)
+    {
         String className = findAttribute(node, ATTR_COMPONENT_CLASS);
         String compName = findAttribute(node, ATTR_COMPONENT_NAME);
 
         try {
             Class compClass = PersistenceObjectRegistry.loadClass(className);
 
-            RADComponent newComp;
+            RADComponent newComponent;
 
             if (XML_COMPONENT.equals(node.getNodeName())) {
                 if (java.awt.Component.class.isAssignableFrom(compClass))
-                    newComp = new RADVisualComponent();
-                else newComp = new RADComponent();
+                    newComponent = new RADVisualComponent();
+                else newComponent = new RADComponent();
             }
             else if (XML_MENU_COMPONENT.equals(node.getNodeName())) {
-                newComp = new RADMenuItemComponent();
+                newComponent = new RADMenuItemComponent();
             }
             else if (XML_MENU_CONTAINER.equals(node.getNodeName())) {
-                newComp = new RADMenuComponent();
+                newComponent = new RADMenuComponent();
             }
             else if (XML_CONTAINER.equals(node.getNodeName())) {
                 if (java.awt.Container.class.isAssignableFrom(compClass))
-                    newComp = new RADVisualContainer();
-                else newComp = new RADContainer();
+                    newComponent = new RADVisualContainer();
+                else newComponent = new RADContainer();
             }
             else return null;
 
-            newComp.initialize(formModel);
-            newComp.initInstance(compClass);
-            newComp.setName(compName);
+            newComponent.initialize(formModel);
+            newComponent.initInstance(compClass);
+            newComponent.setName(compName);
 
-            loadComponent(node, newComp);
-            if (newComp instanceof ComponentContainer)
-                loadContainer(node, newComp);
+            loadComponent(node, newComponent, parentComponent);
 
-            return newComp;
+            return newComponent;
         }
         catch (Exception ex) { // or Throwable?
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -391,32 +394,49 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     private void loadComponent(org.w3c.dom.Node node,
-                               RADComponent comp)
-    throws Exception {
+                               RADComponent component,
+                               RADComponent parentComponent)
+        throws Exception
+    {
         org.w3c.dom.NodeList childNodes = node.getChildNodes();
         if (childNodes == null)
             return;
 
+        org.w3c.dom.Node layoutNode = null;
+        org.w3c.dom.Node subCompsNode = null;
+        org.w3c.dom.Node constraintsNode = null;
+
         for (int i = 0; i < childNodes.getLength(); i++) {
-            org.w3c.dom.Node componentNode = childNodes.item(i);
-            if (componentNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
+            org.w3c.dom.Node childNode = childNodes.item(i);
+            if (childNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
                 continue; // ignore text nodes
 
-            if (XML_PROPERTIES.equals(componentNode.getNodeName())) {
-                loadProperties(componentNode, comp);
+            String nodeName = childNode.getNodeName();
+
+            if (XML_PROPERTIES.equals(nodeName)) {
+                loadProperties(childNode, component);
             }
-            else if (XML_EVENTS.equals(componentNode.getNodeName())) {
-                Collection events = loadEvents(componentNode);
+            else if (XML_EVENTS.equals(nodeName)) {
+                Collection events = loadEvents(childNode);
                 if (events != null) {
-                    comp.getEventHandlers().initEvents(events);
+                    component.getEventHandlers().initEvents(events);
                 }
             }
-            else if (XML_AUX_VALUES.equals(componentNode.getNodeName())) {
-                HashMap auxValues = loadAuxValues(componentNode);
+            else if (XML_CONSTRAINTS.equals(nodeName)) {
+                constraintsNode = childNode;
+            }
+            else if (XML_LAYOUT.equals(nodeName)) {
+                layoutNode = childNode;
+            }
+            else if (XML_SUB_COMPONENTS.equals(nodeName)) {
+                subCompsNode = childNode;
+            }
+            else if (XML_AUX_VALUES.equals(nodeName)) {
+                HashMap auxValues = loadAuxValues(childNode);
                 if (auxValues != null) {
                     for (Iterator it = auxValues.keySet().iterator(); it.hasNext();) {
                         String auxName =(String)it.next();
-                        comp.setAuxValue(auxName, auxValues.get(auxName));
+                        component.setAuxValue(auxName, auxValues.get(auxName));
                     }
 
                     // if the component is serialized, deserialize it
@@ -427,8 +447,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             String serFile = (String) auxValues.get(
                                              JavaCodeGenerator.AUX_SERIALIZE_TO);
                             if (serFile == null)
-                                serFile = formFile.getName() + "_" + comp.getName(); // NOI18N
+                                serFile = formFile.getName() + "_" + component.getName(); // NOI18N
 
+                            // !! [this won't work when filesystem root != classpath root]
                             String serName = formFile.getParent().getPackageName('.');
                             if (!"".equals(serName)) // NOI18N
                                 serName += "."; // NOI18N
@@ -438,7 +459,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                 TopManager.getDefault().currentClassLoader(),
                                 serName);
 
-                            comp.setInstance(instance);
+                            component.setInstance(instance);
                         }
                         catch (Exception ex) { // ignore
                             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
@@ -447,147 +468,92 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     }
                 }
             }
-            else if (XML_SYNTHETIC_PROPERTIES.equals(componentNode.getNodeName())) {
-                loadSyntheticProperties(componentNode, comp);
+            else if (XML_SYNTHETIC_PROPERTIES.equals(nodeName)) {
+                loadSyntheticProperties(childNode, component);
             }
         }
 
-        if (!(comp instanceof RADVisualComponent))
-            return; // not a visual component
+        if (component instanceof RADVisualComponent
+            && parentComponent instanceof RADVisualContainer)
+        { // load layout constraints for visual component
+            CodeElement compElement = component.getCodeElement();
+            LayoutSupportManager layoutSupport =
+                ((RADVisualContainer)parentComponent).getLayoutSupport();
 
-        org.w3c.dom.Node constraintsNode = findSubNode(node, XML_CONSTRAINTS);
-        if (constraintsNode == null)
-            return; // no constraints
+            org.w3c.dom.Node[] constrNodes = constraintsNode != null ?
+                findSubNodes(constraintsNode, XML_CONSTRAINT) : null;
 
-        // load layout constraints of the visual component
-        RADVisualComponent vcomp = (RADVisualComponent) comp;
-
-        org.w3c.dom.Node[] constrNodes = findSubNodes(constraintsNode, XML_CONSTRAINT);
-        for (int i = 0; i < constrNodes.length; i++) {
-            org.w3c.dom.Node constrNode = constrNodes[i];
-            String designLayoutName = findAttribute(constrNode,
-                                                    ATTR_CONSTRAINT_LAYOUT);
-            String cdName = findAttribute(constrNode,
-                                          ATTR_CONSTRAINT_VALUE);
-            if (designLayoutName == null || cdName == null)
-                continue;
-
-            DesignLayout.ConstraintsDescription cd =
-                (DesignLayout.ConstraintsDescription)
-                    PersistenceObjectRegistry.createInstance(cdName);
-
-            org.w3c.dom.NodeList children = constrNode.getChildNodes();
-            if (children != null) {
-                for (int j = 0; j < children.getLength(); j++) {
-                    if (children.item(j).getNodeType()
-                            == org.w3c.dom.Node.ELEMENT_NODE) {
-                        cd.readFromXML(children.item(j));
-                        break;
-                    }
-                }
-            }
-
-            String layoutSupportName = Compat31LayoutFactory
-                     .getCompatibleLayoutSupportName(designLayoutName);
-
-            if (layoutSupportName != null) { // convert constraints
-                LayoutSupport.ConstraintsDesc lsDesc =
-                    Compat31LayoutFactory.createCompatibleConstraints(cd);
-                if (lsDesc != null) { // use converted constraints for LayoutSupport
-                    ((RADVisualComponent)comp).setConstraintsDesc(
-                        PersistenceObjectRegistry.loadClass(layoutSupportName),
-                        lsDesc);
-                }
-            }
-            else { // use the original constraints (of DesignLayout)
-                ((RADVisualComponent)comp).setConstraints(
-                    PersistenceObjectRegistry.loadClass(designLayoutName), cd);
+            if (constrNodes == null || constrNodes.length == 0)
+                loadConstraints(null, compElement, layoutSupport);
+            else { // NB 3.1 used to save all constraints ever set, not only for
+                   // the current layout. We must go through all of them, but
+                   // only those of current layout will be loaded.
+                for (int i=0; i < constrNodes.length; i++)
+                    loadConstraints(constrNodes[i], compElement, layoutSupport);
             }
         }
-    }
 
-    // expects that the component has been already loaded by loadComponent(...)
-    private void loadContainer(org.w3c.dom.Node node,
-                               RADComponent comp)
-    throws Exception {
-        if (!(comp instanceof ComponentContainer))
-            return;
+        ComponentContainer container =
+                component instanceof ComponentContainer ?
+                       (ComponentContainer) component : null;
+        if (container == null)
+            return; // this component is not a container
 
-        org.w3c.dom.Node subCompsNode = findSubNode(node, XML_SUB_COMPONENTS);
-        org.w3c.dom.NodeList children = null;
-        if (subCompsNode != null)
-            children = subCompsNode.getChildNodes();
-        if (children != null) {
+        RADVisualContainer visualContainer =
+                component instanceof RADVisualContainer ?
+                        (RADVisualContainer) component : null;
+
+        int convIndex = -1;
+        if (layoutNode != null && visualContainer != null)
+            convIndex = loadLayout(layoutNode, visualContainer.getLayoutSupport());
+
+        // load subcomponents
+        RADComponent[] childComponents;
+        childNodes = subCompsNode != null ? subCompsNode.getChildNodes() : null;
+
+        if (childNodes != null) {
             ArrayList list = new ArrayList();
-            for (int i = 0; i < children.getLength(); i++) {
-                org.w3c.dom.Node componentNode = children.item(i);
+            for (int i=0, n=childNodes.getLength(); i < n; i++) {
+                org.w3c.dom.Node componentNode = childNodes.item(i);
                 if (componentNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
                     continue; // ignore text nodes
 
-                RADComponent newComp = restoreComponent(componentNode,
-                                                        comp.getFormModel());
+                // hack for dealing with multiple constraints saved by NB 3.1
+                layoutConvIndex = convIndex;
+
+                RADComponent newComp = restoreComponent(componentNode, component);
+
                 if (newComp != null)
                     list.add(newComp);
             }
 
-            RADComponent[] childComps = new RADComponent[list.size()];
-            list.toArray(childComps);
-            ((ComponentContainer)comp).initSubComponents(childComps);
+            childComponents = new RADComponent[list.size()];
+            list.toArray(childComponents);
         }
-        else {
-            ((ComponentContainer)comp).initSubComponents(new RADComponent[0]);
-        }
+        else childComponents = new RADComponent[0];
 
-        if (comp instanceof RADVisualContainer) {
-            org.w3c.dom.Node layoutNode = findSubNode(node, XML_LAYOUT);
-            if (layoutNode != null
-                    && LayoutSupportRegistry.getLayoutSupportForContainer(
-                                                comp.getBeanClass()) == null) {
-                String dlClassName = findAttribute(layoutNode, ATTR_LAYOUT_CLASS);
-//                try {
-                DesignLayout dl = (DesignLayout)
-                    PersistenceObjectRegistry.createInstance(dlClassName);
-
-                org.w3c.dom.Node[] propNodes = findSubNodes(layoutNode, XML_PROPERTY);
-                if (propNodes.length > 0) {
-                    HashMap propsMap = new HashMap(propNodes.length * 2);
-                    for (int i = 0; i < propNodes.length; i++) {
-                        try {
-                            Object propValue = getEncodedPropertyValue(propNodes[i], null);
-                            String propName = findAttribute(propNodes[i], ATTR_PROPERTY_NAME);
-                            if ((propName != null) &&(propValue != null) &&(propValue != NO_VALUE)) {
-                                propsMap.put(propName, propValue);
-                            }
-                        } catch (Exception e) {
-                            if (Boolean.getBoolean("netbeans.debug.exceptions"))
-                                e.printStackTrace(); // NOI18N
-                            // ignore property with problem
-                            // [PENDING - notify problem]
-                        }
-                    }
-                    dl.initChangedProperties(propsMap);
-                    dl.setRADContainer((RADVisualContainer)comp);
-                }
-                LayoutSupport layoutSupp =
-                    Compat31LayoutFactory.createCompatibleLayoutSupport(dl);
-                ((RADVisualContainer)comp).setLayoutSupport(layoutSupp);
-//                } catch (Exception e) {
-//                    // if (System.getProperty("netbeans.debug.exceptions") != null) // [PENDING]
-//                    if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
-//                    return false; // [PENDING - notify]
-//                }
+        // initialize layout support from restored code
+        if (visualContainer != null) {
+            if (visualContainer.getLayoutSupport().initializeFromCode()) {
+                visualContainer.initSubComponents(childComponents);
+                visualContainer.getLayoutSupport().setupPrimaryContainer();
             }
-            else { // no layout saved, or it is a dedicated layout support
-                ((RADVisualContainer)comp).initLayoutSupport();
+            else {
+                System.err.println("[WARNING] Cannot initialize layout support class for container: " // NOI18N
+                                   + visualContainer.getName() + " [" // NOI18N
+                                   + visualContainer.getBeanClass().getName() + "]"); // NOI18N
+                visualContainer.initSubComponents(childComponents);
+                // [this won't work !!]
             }
         }
+        else container.initSubComponents(childComponents);
 
         // hack for properties that can't be set until all children 
         // are added to the container
         List postProps;
         if (containerDependentProperties != null
             && (postProps = (List) containerDependentProperties
-                                       .get(comp)) != null)
+                                       .get(component)) != null)
         {
             for (Iterator it = postProps.iterator(); it.hasNext(); ) {
                 RADProperty prop = (RADProperty) it.next();
@@ -601,6 +567,727 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
             }
         }
+    }
+
+    private void loadConstraints(org.w3c.dom.Node node,
+                                 CodeElement compElement,
+                                 LayoutSupportManager layoutSupport)
+    {
+        int convIndex = -1;
+        String layout31ConstraintName = node != null ?
+                   findAttribute(node, ATTR_CONSTRAINT_VALUE) : null;
+        if (layout31ConstraintName != null)
+            for (int i=0; i < layout31ConstraintsNames.length; i++)
+                if (layout31ConstraintName.equals(layout31ConstraintsNames[i])) {
+                    convIndex = i;
+                    break;
+                }
+
+        // skip constraints saved by NB 3.1 which are not for the current layout
+        if (convIndex >= 0 && layoutConvIndex >= 0
+                && convIndex != layoutConvIndex)
+            return;
+
+        org.w3c.dom.Node constrNode = null;
+        if (convIndex >= 0 && reasonable31Constraints[convIndex]) {
+            org.w3c.dom.NodeList children = node.getChildNodes();
+            if (children != null)
+                for (int i=0, n=children.getLength(); i < n; i++) {
+                    org.w3c.dom.Node cNode = children.item(i);
+                    if (cNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                        constrNode = cNode;
+                        break;
+                    }
+                }
+        }
+
+        CodeStructure codeStructure = layoutSupport.getCodeStructure();
+        CodeElement contCodeElement = layoutSupport.getContainerCodeElement();
+        CodeElement contDelCodeElement =
+            layoutSupport.getContainerDelegateCodeElement();
+
+        if (constrNode == null) {
+            // create simple add method connection with no constraints
+            CodeStructure.createConnection(contDelCodeElement,
+                                           getSimpleAddMethod(),
+                                           new CodeElement[] { compElement });
+            return;
+        }
+
+        org.w3c.dom.NamedNodeMap constrAttr = constrNode.getAttributes();
+
+        try {
+        if (convIndex == LAYOUT_BORDER) {
+            if (!"BorderConstraints".equals(constrNode.getNodeName())) // NOI18N
+                return; // should not happen
+
+            node = constrAttr.getNamedItem("direction"); // NOI18N
+            if (node != null) {
+                String strValue = node.getNodeValue();
+                // create add method connection
+                CodeStructure.createConnection(
+                    contDelCodeElement,
+                    getAddWithConstrMethod(),
+                    new CodeElement[] { compElement,
+                                        codeStructure.createElement(
+                                            String.class, strValue, strValue) });
+            }
+        }
+
+        else if (convIndex == LAYOUT_GRIDBAG) {
+            if (!"GridBagConstraints".equals(constrNode.getNodeName())) // NOI18N
+                return; // should not happen
+
+            // create GridBagConstraints constructor element
+            if (gridBagConstrConstructor == null)
+                gridBagConstrConstructor =
+                    java.awt.GridBagConstraints.class.getConstructor(
+                                                          new Class[0]);
+
+            CodeElement constrElement = codeStructure.createElement(
+                    gridBagConstrConstructor, CodeStructure.EMPTY_PARAMS);
+
+            // create connections for GridBagConstraints fields
+            String[] gbcAttrs = new String[] {
+                "gridX", "gridY", "gridWidth", "gridHeight", // NOI18N
+                "fill", "ipadX", "ipadY", // NOI18N
+                "anchor", "weightX", "weightY" }; // NOI18N
+            String[] gbcFields = new String[] {
+                "gridx", "gridy", "gridwidth", "gridheight", // NOI18N
+                "fill", "ipadx", "ipady", // NOI18N
+                "anchor", "weightx", "weighty" }; // NOI18N
+
+            for (int i=0; i < gbcAttrs.length; i++) {
+                node = constrAttr.getNamedItem(gbcAttrs[i]);
+                if (node != null) {
+                    Class valueType;
+                    Object value;
+                    String strValue = node.getNodeValue();
+                    if (i < 8) { // treat as int
+                        valueType = Integer.TYPE;
+                        value = Integer.valueOf(strValue);
+                    }
+                    else { // treat as double
+                        valueType = Double.TYPE;
+                        value = Double.valueOf(strValue);
+                    }
+
+                    CodeStructure.createConnection(
+                        constrElement,
+                        java.awt.GridBagConstraints.class.getField(gbcFields[i]),
+                        codeStructure.createElement(valueType, value, strValue));
+                }
+            }
+
+            // Insets
+            CodeElement[] insetsParams = new CodeElement[4];
+            String[] insetsAttrs = new String[] {
+                "insetsTop", "insetsLeft", "insetsBottom", "insetsRight" }; // NOI18N
+
+            for (int i=0; i < insetsAttrs.length; i++) {
+                node = constrAttr.getNamedItem(insetsAttrs[i]);
+                String strValue = node != null ? node.getNodeValue() : "0"; // NOI18N
+                insetsParams[i] = codeStructure.createElement(
+                                                    Integer.TYPE,
+                                                    Integer.valueOf(strValue),
+                                                    strValue);
+            }
+
+            if (insetsConstructor == null)
+                insetsConstructor = java.awt.Insets.class.getConstructor(
+                    new Class[] { Integer.TYPE, Integer.TYPE,
+                                  Integer.TYPE, Integer.TYPE });
+
+            CodeStructure.createConnection(
+                          constrElement,
+                          java.awt.GridBagConstraints.class.getField("insets"), // NOI18N
+                          codeStructure.createElement(insetsConstructor,
+                                                      insetsParams));
+
+            // create add method connection
+            CodeStructure.createConnection(
+                contDelCodeElement,
+                getAddWithConstrMethod(),
+                new CodeElement[] { compElement, constrElement });
+        }
+
+        else if (convIndex == LAYOUT_JTAB) {
+            if (!"JTabbedPaneConstraints".equals(constrNode.getNodeName())) // NOI18N
+                return; // should not happen
+
+            Object tabName = null;
+            Object toolTip = null;
+            Object icon = null;
+
+            org.w3c.dom.Node[] propNodes = findSubNodes(constrNode, XML_PROPERTY);
+            if (propNodes != null)
+                for (int i=0; i < propNodes.length; i++) {
+                    node = propNodes[i];
+                    Object value;
+                    try {
+                        value = getEncodedPropertyValue(node);
+                    }
+                    catch (Exception ex) {
+                        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                            ex.printStackTrace();
+                        continue;
+                    }
+
+                    String name = findAttribute(node, ATTR_PROPERTY_NAME);
+                    if ("tabTitle".equals(name)) // NOI18N
+                        tabName = value;
+                    else if ("tabToolTip".equals(name)) // NOI18N
+                        toolTip = value;
+                    else if ("icon".equals(name)) // NOI18N
+                        icon = value;
+                }
+
+            if (tabName == null
+                    && (node = constrAttr.getNamedItem("tabName")) != null) // NOI18N
+                tabName = node.getNodeValue();
+            if (toolTip == null
+                    && (node = constrAttr.getNamedItem("toolTip")) != null) // NOI18N
+                toolTip = node.getNodeValue();
+
+            if (tabName != null && icon != null && toolTip != null) {
+                if (addTabMethod1 == null)
+                    addTabMethod1 = javax.swing.JTabbedPane.class.getMethod(
+                                    "addTab", // NOI18N
+                                    new Class[] { String.class,
+                                                  javax.swing.Icon.class,
+                                                  java.awt.Component.class,
+                                                  String.class });
+                CodeStructure.createConnection(
+                    contCodeElement,
+                    addTabMethod1,
+                    new CodeElement[] { codeStructure.createElement(
+                                                      tabName.getClass(),
+                                                      tabName,
+                                                      tabName.toString()),
+                                        codeStructure.createElement(
+                                                      icon.getClass(),
+                                                      icon,
+                                                      icon.toString()), // [??]
+                                        compElement,
+                                        codeStructure.createElement(
+                                                      toolTip.getClass(),
+                                                      toolTip,
+                                                      toolTip.toString()) });
+            }
+            else if (tabName != null && icon != null) {
+                if (addTabMethod2 == null)
+                    addTabMethod2 = javax.swing.JTabbedPane.class.getMethod(
+                                    "addTab", // NOI18N
+                                    new Class[] { String.class,
+                                                  javax.swing.Icon.class,
+                                                  java.awt.Component.class });
+                CodeStructure.createConnection(
+                    contCodeElement,
+                    addTabMethod2,
+                    new CodeElement[] { codeStructure.createElement(
+                                                      tabName.getClass(),
+                                                      tabName,
+                                                      tabName.toString()),
+                                        codeStructure.createElement(
+                                                      icon.getClass(),
+                                                      icon,
+                                                      icon.toString()), // [??]
+                                        compElement });
+            }
+            else if (tabName != null) {
+                if (addTabMethod3 == null)
+                    addTabMethod3 = javax.swing.JTabbedPane.class.getMethod(
+                                    "addTab", // NOI18N
+                                    new Class[] { String.class,
+                                                  java.awt.Component.class });
+                CodeStructure.createConnection(
+                    contCodeElement,
+                    addTabMethod3,
+                        new CodeElement[] { codeStructure.createElement(
+                                                      tabName.getClass(),
+                                                      tabName,
+                                                      tabName.toString()),
+                                        compElement });
+            }
+        }
+
+        else if (convIndex == LAYOUT_JSPLIT) {
+            if (!"JSplitPaneConstraints".equals(constrNode.getNodeName())) // NOI18N
+                return;
+
+            node = constrAttr.getNamedItem("position");
+            if (node != null) {
+                String position = node.getNodeValue();
+                Method addMethod;
+
+                if ("top".equals(position)) { // NOI18N
+                    if (setTopComponentMethod == null)
+                        setTopComponentMethod =
+                            javax.swing.JSplitPane.class.getMethod(
+                                    "setTopComponent", // NOI18N
+                                    new Class[] { java.awt.Component.class });
+                    addMethod = setTopComponentMethod;
+                }
+                else if ("bottom".equals(position)) { // NOI18N
+                    if (setBottomComponentMethod == null)
+                        setBottomComponentMethod =
+                            javax.swing.JSplitPane.class.getMethod(
+                                    "setBottomComponent", // NOI18N
+                                    new Class[] { java.awt.Component.class });
+                    addMethod = setBottomComponentMethod;
+                }
+                else if ("left".equals(position)) { // NOI18N
+                    if (setLeftComponentMethod == null)
+                        setLeftComponentMethod =
+                            javax.swing.JSplitPane.class.getMethod(
+                                    "setLeftComponent", // NOI18N
+                                    new Class[] { java.awt.Component.class });
+                    addMethod = setLeftComponentMethod;
+                }
+                else if ("right".equals(position)) { // NOI18N
+                    if (setRightComponentMethod == null)
+                        setRightComponentMethod =
+                            javax.swing.JSplitPane.class.getMethod(
+                                    "setRightComponent", // NOI18N
+                                    new Class[] { java.awt.Component.class });
+                    addMethod = setRightComponentMethod;
+                }
+                else return;
+
+                CodeStructure.createConnection(contCodeElement,
+                                               addMethod,
+                                               new CodeElement[] { compElement });
+            }
+        }
+
+        else if (convIndex == LAYOUT_CARD) {
+            if (!"CardConstraints".equals(constrNode.getNodeName())) // NOI18N
+                return;
+
+            node = constrAttr.getNamedItem("cardName"); // NOI18N
+            if (node != null) {
+                String strValue = node.getNodeValue();
+                // create add method connection
+                CodeStructure.createConnection(
+                    contDelCodeElement,
+                    getAddWithConstrMethod(),
+                    new CodeElement[] { compElement,
+                                        codeStructure.createElement(
+                                            String.class, strValue, strValue) });
+            }
+        }
+
+        else if (convIndex == LAYOUT_JLAYER) {
+            if (!"JLayeredPaneConstraints".equals(constrNode.getNodeName())) // NOI18N
+                return;
+
+            CodeElement[] boundsParams = new CodeElement[4];
+            String[] boundsAttrs = new String[] { "x", "y", "width", "height" }; // NOI18N
+
+            for (int i=0; i < boundsAttrs.length; i++) {
+                node = constrAttr.getNamedItem(boundsAttrs[i]);
+                String strValue = node != null ?
+                                      node.getNodeValue() :
+                                      (i < 2 ? "0" : "-1"); // NOI18N
+                boundsParams[i] = codeStructure.createElement(
+                                                    Integer.TYPE,
+                                                    Integer.valueOf(strValue),
+                                                    strValue);
+            }
+
+            if (setBoundsMethod == null)
+                setBoundsMethod = java.awt.Component.class.getMethod(
+                                    "setBounds", // NOI18N
+                                    new Class[] { Integer.TYPE, Integer.TYPE,
+                                                  Integer.TYPE, Integer.TYPE });
+            CodeStructure.createConnection(
+                compElement, setBoundsMethod, boundsParams);
+
+            node = constrAttr.getNamedItem("layer"); // NOI18N
+            if (node != null) {
+                String strValue = node.getNodeValue();
+                // create add method connection
+                CodeStructure.createConnection(
+                    contDelCodeElement,
+                    getAddWithConstrMethod(),
+                    new CodeElement[] { compElement,
+                                        codeStructure.createElement(
+                                            String.class, strValue, strValue) });
+            }
+        }
+
+        else if (convIndex == LAYOUT_ABSOLUTE) {
+            if (!"AbsoluteConstraints".equals(constrNode.getNodeName())) // NOI18N
+                return;
+
+            CodeElement[] boundsParams = new CodeElement[4];
+            String[] boundsAttrs = new String[] { "x", "y", "width", "height" }; // NOI18N
+
+            for (int i=0; i < boundsAttrs.length; i++) {
+                node = constrAttr.getNamedItem(boundsAttrs[i]);
+                String strValue = node != null ?
+                                      node.getNodeValue() :
+                                      (i < 2 ? "0" : "-1"); // NOI18N
+                boundsParams[i] = codeStructure.createElement(
+                                                    Integer.TYPE,
+                                                    Integer.valueOf(strValue),
+                                                    strValue);
+            }
+
+            CodeConnection[] connections = CodeStructure.getConnections(
+                                                         contDelCodeElement,
+                                                         getSetLayoutMethod());
+            boolean nullLayout;
+            if (connections.length > 0) {
+                CodeElement layoutElement =
+                    connections[0].getConnectionParameters()[0];
+                nullLayout = layoutElement.getOrigin().getType()
+                             != org.netbeans.lib.awtextra.AbsoluteLayout.class;
+            }
+            else nullLayout = true;
+
+            if (nullLayout) {
+                if (setBoundsMethod == null)
+                    setBoundsMethod = java.awt.Component.class.getMethod(
+                                      "setBounds", // NOI18N
+                                      new Class[] { Integer.TYPE, Integer.TYPE,
+                                                    Integer.TYPE, Integer.TYPE });
+                CodeStructure.createConnection(
+                    compElement, setBoundsMethod, boundsParams);
+
+                // create add method connection
+                CodeStructure.createConnection(contDelCodeElement,
+                                               getSimpleAddMethod(),
+                                               new CodeElement[] { compElement });
+            }
+            else {
+                if (absoluteConstraintsConstructor == null)
+                    absoluteConstraintsConstructor =
+                        org.netbeans.lib.awtextra.AbsoluteConstraints.class
+                                                      .getConstructor(
+                            new Class[] { Integer.TYPE, Integer.TYPE,
+                                          Integer.TYPE, Integer.TYPE });
+
+                // create add method connection
+                CodeStructure.createConnection(
+                    contDelCodeElement,
+                    getAddWithConstrMethod(),
+                    new CodeElement[] { compElement,
+                                        codeStructure.createElement(
+                                            absoluteConstraintsConstructor,
+                                            boundsParams) });
+            }
+        }
+        }
+        catch (NoSuchMethodException ex) { // should not happen
+            ex.printStackTrace();
+        }
+        catch (NoSuchFieldException ex) { // should not happen
+            ex.printStackTrace();
+        }
+    }
+
+    private static Method getSimpleAddMethod() {
+        if (simpleAddMethod == null) {
+            try {
+                simpleAddMethod = java.awt.Container.class.getMethod(
+                                      "add", // NOI18N
+                                      new Class[] { java.awt.Component.class });
+            }
+            catch (NoSuchMethodException ex) { // should not happen
+                ex.printStackTrace();
+            }
+        }
+        return simpleAddMethod;
+    }
+
+    private static Method getAddWithConstrMethod() {
+        if (addWithConstrMethod == null) {
+            try {
+                addWithConstrMethod = java.awt.Container.class.getMethod(
+                                      "add", // NOI18N
+                                      new Class[] { java.awt.Component.class,
+                                                    Object.class });
+            }
+            catch (NoSuchMethodException ex) { // should not happen
+                ex.printStackTrace();
+            }
+        }
+        return addWithConstrMethod;
+    }
+
+    private static Method getSetLayoutMethod() {
+        if (setLayoutMethod == null) {
+            try {
+                setLayoutMethod = java.awt.Container.class.getMethod(
+                            "setLayout", // NOI18N
+                            new Class[] { java.awt.LayoutManager.class });
+            }
+            catch (NoSuchMethodException ex) { // should not happen
+                ex.printStackTrace();
+            }
+        }
+        return setLayoutMethod;
+    }
+
+    private int loadLayout(org.w3c.dom.Node layoutNode,
+                           LayoutSupportManager layoutSupport)
+    {
+        org.w3c.dom.NamedNodeMap layoutAttr = layoutNode.getAttributes();
+        org.w3c.dom.Node node = layoutAttr.getNamedItem(ATTR_LAYOUT_CLASS);
+        if (node == null)
+            return -1;
+
+        String layout31Name = PersistenceObjectRegistry.getClassName(
+                                                            node.getNodeValue());
+        int convIndex = -1;
+        for (int i=0; i < layout31Names.length; i++)
+            if (layout31Name.equals(layout31Names[i])) {
+                convIndex = i;
+                break;
+            }
+
+        if (convIndex < 0)
+            return -1; // unknown layout
+
+        org.w3c.dom.Node[] propNodes = findSubNodes(layoutNode, XML_PROPERTY);
+        String[] propertyNames;
+        Object[] propertyValues;
+
+        if (propNodes != null && propNodes.length > 0) {
+            propertyNames = new String[propNodes.length];
+            propertyValues = new Object[propNodes.length];
+            for (int i=0; i < propNodes.length; i++) {
+                node = propNodes[i];
+                propertyNames[i] = findAttribute(node, ATTR_PROPERTY_NAME);
+                try {
+                    propertyValues[i] = getEncodedPropertyValue(node);
+                }
+                catch (Exception ex) {
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                        ex.printStackTrace();
+                }
+            }
+        }
+        else {
+            propertyNames = null;
+            propertyValues = null;
+        }
+
+        CodeStructure codeStructure = layoutSupport.getCodeStructure();
+        CodeElement[] layoutParams = null;
+        Class[] paramTypes = null;
+        Class layoutClass = null;
+
+        String[] layoutPropNames = layout31PropertyNames[convIndex];
+        if (convIndex == LAYOUT_BORDER) {
+            int hgap = findName(layoutPropNames[0], propertyNames);
+            int vgap = findName(layoutPropNames[1], propertyNames);
+            if (hgap >= 0 || vgap >= 0) {
+                layoutParams = new CodeElement[2];
+                Object value;
+
+                value = hgap >= 0 ? propertyValues[hgap] : new Integer(0);
+                layoutParams[0] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                value = vgap >= 0 ? propertyValues[vgap] : new Integer(0);
+                layoutParams[1] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                paramTypes = new Class[] { Integer.TYPE, Integer.TYPE };
+            }
+            else {
+                layoutParams = CodeStructure.EMPTY_PARAMS;
+                paramTypes = new Class[0];
+            }
+            layoutClass = java.awt.BorderLayout.class;
+        }
+
+        else if (convIndex == LAYOUT_FLOW) {
+            int alignment = findName(layoutPropNames[0], propertyNames);
+            int hgap = findName(layoutPropNames[1], propertyNames);
+            int vgap = findName(layoutPropNames[2], propertyNames);
+            if (alignment >= 0) {
+                layoutParams = new CodeElement[3];
+                Object value;
+
+                value = alignment >= 0 ? propertyValues[alignment] : new Integer(1);
+                layoutParams[0] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                value = hgap >= 0 ? propertyValues[hgap] : new Integer(5);
+                layoutParams[1] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                value = vgap >= 0 ? propertyValues[vgap] : new Integer(5);
+                layoutParams[2] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                paramTypes = new Class[] { Integer.TYPE, Integer.TYPE, Integer.TYPE };
+            }
+            else if (hgap >= 0 || vgap >= 0) {
+                layoutParams = new CodeElement[2];
+                Object value;
+
+                value = hgap >= 0 ? propertyValues[hgap] : new Integer(5);
+                layoutParams[0] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                value = vgap >= 0 ? propertyValues[vgap] : new Integer(5);
+                layoutParams[1] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                paramTypes = new Class[] { Integer.TYPE, Integer.TYPE };
+            }
+            else {
+                layoutParams = CodeStructure.EMPTY_PARAMS;
+                paramTypes = new Class[0];
+            }
+            layoutClass = java.awt.FlowLayout.class;
+        }
+
+        else if (convIndex == LAYOUT_GRIDBAG) {
+            layoutParams = CodeStructure.EMPTY_PARAMS;
+            paramTypes = new Class[0];
+            layoutClass = java.awt.GridBagLayout.class;
+        }
+
+        else if (convIndex == LAYOUT_BOX) {
+            int axis = findName(layoutPropNames[0],
+                                propertyNames);
+            Object axisObj = axis >= 0 ?
+                                 propertyValues[axis] :
+                                 new Integer(javax.swing.BoxLayout.X_AXIS);
+
+            layoutParams = new CodeElement[2];
+            layoutParams[0] = layoutSupport.getContainerCodeElement();
+            layoutParams[1] = codeStructure.createElement(Integer.TYPE,
+                                                          axisObj,
+                                                          axisObj.toString());
+            paramTypes = new Class[] { java.awt.Container.class, Integer.TYPE };
+            layoutClass = javax.swing.BoxLayout.class;
+        }
+
+        else if (convIndex == LAYOUT_GRID) {
+            int rows = findName(layoutPropNames[0], propertyNames);
+            int columns = findName(layoutPropNames[1], propertyNames);
+            int hgap = findName(layoutPropNames[2], propertyNames);
+            int vgap = findName(layoutPropNames[3], propertyNames);
+            if (hgap >= 0 || vgap >= 0) {
+                layoutParams = new CodeElement[4];
+                Object value;
+
+                value = rows >= 0 ? propertyValues[rows] : new Integer(1);
+                layoutParams[0] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                value = columns >= 0 ? propertyValues[columns] : new Integer(0);
+                layoutParams[1] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                value = hgap >= 0 ? propertyValues[hgap] : new Integer(0);
+                layoutParams[2] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                value = vgap >= 0 ? propertyValues[vgap] : new Integer(0);
+                layoutParams[3] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                paramTypes = new Class[] { Integer.TYPE, Integer.TYPE,
+                                           Integer.TYPE, Integer.TYPE };
+            }
+            else if (rows >= 0 || columns >= 0) {
+                layoutParams = new CodeElement[2];
+                Object value;
+
+                value = rows >= 0 ? propertyValues[rows] : new Integer(1);
+                layoutParams[0] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                value = columns >= 0 ? propertyValues[columns] : new Integer(0);
+                layoutParams[1] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                paramTypes = new Class[] { Integer.TYPE, Integer.TYPE };
+            }
+            else {
+                layoutParams = CodeStructure.EMPTY_PARAMS;
+                paramTypes = new Class[0];
+            }
+            layoutClass = java.awt.GridLayout.class;
+        }
+
+        else if (convIndex == LAYOUT_CARD) {
+            int hgap = findName(layoutPropNames[0], propertyNames);
+            int vgap = findName(layoutPropNames[1], propertyNames);
+            if (hgap >= 0 && vgap >= 0) {
+                layoutParams = new CodeElement[2];
+                Object value;
+
+                value = hgap >= 0 ? propertyValues[hgap] : new Integer(0);
+                layoutParams[0] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                value = vgap >= 0 ? propertyValues[vgap] : new Integer(0);
+                layoutParams[1] = codeStructure.createElement(
+                                      Integer.TYPE, value, value.toString());
+
+                paramTypes = new Class[] { Integer.TYPE, Integer.TYPE };
+            }
+            else {
+                layoutParams = CodeStructure.EMPTY_PARAMS;
+                paramTypes = new Class[0];
+            }
+            layoutClass = java.awt.CardLayout.class;
+        }
+
+        else if (convIndex == LAYOUT_ABSOLUTE) {
+            boolean nullLayout = false;
+            int i = findName("useNullLayout", propertyNames); // NOI18N
+            if (i >= 0)
+                nullLayout = Boolean.TRUE.equals(propertyValues[i]); 
+
+            layoutParams = CodeStructure.EMPTY_PARAMS;
+            paramTypes = new Class[0];
+            layoutClass = nullLayout ? null :
+                          org.netbeans.lib.awtextra.AbsoluteLayout.class;
+        }
+
+        else return -1; // no layout manager
+
+        CodeElement layoutElement;
+        if (layoutClass != null) {
+            Constructor layoutConstructor;
+            try {
+                layoutConstructor = layoutClass.getConstructor(paramTypes);
+            }
+            catch (NoSuchMethodException ex) { // should not happen
+                ex.printStackTrace();
+                return -1;
+            }
+            layoutElement = layoutSupport.getCodeStructure().createElement(
+                                layoutConstructor, layoutParams);
+        }
+        else {
+            layoutElement = layoutSupport.getCodeStructure()
+                              .createNullElement(java.awt.LayoutManager.class);
+        }
+
+        CodeStructure.createConnection(
+            layoutSupport.getContainerDelegateCodeElement(),
+            getSetLayoutMethod(),
+            new CodeElement[] { layoutElement });
+
+        return convIndex;
+    }
+
+    private int findName(String name, String[] names) {
+        if (names != null)
+            for (int i=0; i < names.length; i++)
+                if (name.equals(names[i]))
+                    return i;
+        return -1;
     }
 
     private void loadProperties(org.w3c.dom.Node node, RADComponent comp) {
@@ -632,7 +1319,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     try {
                         Class editorClass = PersistenceObjectRegistry.loadClass(propertyEditor);
                         Class propertyClass = findPropertyType(propType);
-                        PropertyEditor ed = FormEditor.createPropertyEditor(editorClass, propertyClass, prop);
+                        PropertyEditor ed = createPropertyEditor(editorClass, propertyClass, prop);
                         ((RADProperty)prop).setCurrentEditor(ed);
                     } catch (Exception e) {
                         if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
@@ -725,7 +1412,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         {
                             RADMenuComponent menuComp = (RADMenuComponent) nvComps[j];
                             RADVisualFormContainer formCont = (RADVisualFormContainer) comp;
-                            menuComp.getFormModel().removeComponent(menuComp);
+                            menuComp.getFormModel().removeComponentFromContainer(menuComp);
                             formCont.add(menuComp);
                             menuComp.setParentComponent(formCont);
                             break;
@@ -840,10 +1527,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @param manager the FormModel representing the form to be saved
      * @exception IOException if any problem occured when saving the form
      */
-    public void saveForm(FormDataObject formObject, FormModel manager) throws IOException {
-        FileObject formFile = formObject.getFormEntry().getFile();
+    public void saveForm(FormDataObject formObject, FormModel formModel)
+        throws IOException
+    {
+        formFile = formObject.getFormEntry().getFile();
         if (formFile.isReadOnly()) // should not happen
             throw new IllegalStateException("Tried to save read-only form: "+formFile.getName()); // NOI18N
+
+        if (formModel != this.formModel) {
+            this.formModel = formModel;
+            formInfoName = null;
+        }
 
         FileLock lock = null;
         java.io.OutputStream os = null;
@@ -859,7 +1553,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             // will be compatible with NB 3.2
             formatVersion = NB32_VERSION;
 
-            RADComponent topComp = manager.getTopRADComponent();
+            RADComponent topComp = formModel.getTopRADComponent();
             RADVisualFormContainer formCont =
                 topComp instanceof RADVisualFormContainer ?
                     (RADVisualFormContainer) topComp : null;
@@ -870,7 +1564,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             buf1.append("\" ?>\n\n"); // NOI18N
 
             // store "Other Components"
-            RADComponent[] nonVisuals = manager.getNonVisualComponents();
+            RADComponent[] nonVisuals = formModel.getNonVisualComponents();
 
             // compatibility hack for saving form's menu bar (part I)
             if (formCont != null && formCont.getContainerMenu() != null) {
@@ -904,7 +1598,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
             // determine FormInfo type (for backward compatibility)
             String compatFormInfo = getCompatibleFormInfoName(
-                                                   manager.getFormBaseClass(),
+                                                   formModel.getFormBaseClass(),
                                                    formInfoName);
 
             // add form specification element at the beginning of the form file
@@ -987,7 +1681,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if (container instanceof RADVisualContainer) {
             saveVisualComponent((RADVisualComponent)container, buf, indent);
-            saveLayout(((RADVisualContainer)container).getLayoutSupport(), buf, indent);
+            saveLayout(((RADVisualContainer)container), buf, indent);
 
             // compatibility hack for saving form's menu bar (part II)
             if (container instanceof RADVisualFormContainer)
@@ -1011,112 +1705,296 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private void saveLayout(LayoutSupport layout, StringBuffer buf, String indent) {
-        DesignLayout dl = Compat31LayoutFactory.createCompatibleDesignLayout(layout);
-        if (dl != null)
-            saveLayout(dl, buf, indent);
-    }
-    
-    private void saveLayout(DesignLayout layout, StringBuffer buf, String indent) {
+    private void saveLayout(RADVisualContainer container,
+                            StringBuffer buf, String indent)
+    {
+        LayoutSupportManager layoutSupport = container.getLayoutSupport();
+        String delegateName = layoutSupport.getLayoutDelegate().getClass().getName();
+        int convIndex = -1; // index in conversion table
+
+        for (int i=0; i < layoutDelegateNames.length; i++)
+            if (delegateName.equals(layoutDelegateNames[i])) {
+                convIndex = i;
+                break;
+            }
+
+        if (convIndex < 0)
+            return; // [to do: XML code persistence]
+
+        StringBuffer buf2 = new StringBuffer();
+        boolean anyPropertySaved = false;
+
+        if (convIndex != LAYOUT_ABSOLUTE && convIndex != LAYOUT_NULL) {
+            Node.Property[] properties = layoutSupport.getAllProperties();
+            for (int i=0; i < properties.length; i++) {
+                FormProperty property = (FormProperty) properties[i];
+                if (property.isChanged()) {
+                    String delegatePropName = property.getName();
+                    String layout31PropName = null;
+                    String[] delPropNames = layoutDelegatePropertyNames[convIndex];
+                    for (int j=0; j < delPropNames.length; j++)
+                        if (delegatePropName.equals(delPropNames[j])) {
+                            layout31PropName = layout31PropertyNames[convIndex][j];
+                            break;
+                        }
+
+                    if (layout31PropName != null) {
+                        saveProperty(property, layout31PropName,
+                                     buf2, indent + ONE_INDENT);
+                        anyPropertySaved = true;
+                    }
+                }
+            }
+        }
+        else { // AbsoluteLayout and null layout are special...
+            String nullLayout = convIndex == LAYOUT_NULL ? "true" : "false"; // NOI18N
+            buf2.append(indent);
+            buf2.append(ONE_INDENT);
+            addLeafElementOpenAttr(
+                buf2,
+                XML_PROPERTY,
+                new String[] { ATTR_PROPERTY_NAME,
+                               ATTR_PROPERTY_TYPE,
+                               ATTR_PROPERTY_VALUE },
+                new String[] { "useNullLayout", "boolean", nullLayout } // NOI18N
+            );
+            anyPropertySaved = true;
+        }
+
         buf.append("\n"); // NOI18N
         buf.append(indent);
-        List changedProperties = layout.getChangedProperties();
-        if (changedProperties.size() == 0) {
-            addLeafElementOpenAttr(
-                buf,
-                XML_LAYOUT,
-                new String[] { ATTR_LAYOUT_CLASS },
-                new String[] { PersistenceObjectRegistry.getPrimaryName(layout) }
-                );
-        } else {
+        if (anyPropertySaved) {
             addElementOpenAttr(
                 buf,
                 XML_LAYOUT,
                 new String[] { ATTR_LAYOUT_CLASS },
-                new String[] { PersistenceObjectRegistry.getPrimaryName(layout) }
-                );
-            for (Iterator it = changedProperties.iterator(); it.hasNext();) {
-                Node.Property prop =(Node.Property)it.next();
-                String propertyName = prop.getName();
-                Object value = null;
-                try {
-                    value = prop.getValue();
-                } catch (java.lang.reflect.InvocationTargetException e) {
-                    continue; // ignore this property
-                } catch (IllegalAccessException e) {
-                    continue; // ignore this property
-                }
-                PropertyEditor ed = prop.getPropertyEditor();
-
-                String encodedValue = null;
-                String encodedSerializeValue = null;
-                org.w3c.dom.Node valueNode = null;
-                if (ed instanceof XMLPropertyEditor) {
-                    ed.setValue(value);
-                    valueNode =((XMLPropertyEditor)ed).storeToXML(topDocument);
-                    if (valueNode == null) continue; // editor refused to save the value
-                } else {
-                    encodedValue = encodePrimitiveValue(value);
-                    if (encodedValue == null) encodedSerializeValue = encodeValue(value);
-                    if ((encodedValue == null) &&(encodedSerializeValue == null)) {
-                        // [PENDING - notify problem?]
-                        continue;
-                    }
-                }
-
-                buf.append(indent + ONE_INDENT);
-
-                if (encodedValue != null) {
-                    addLeafElementOpenAttr(
-                        buf,
-                        XML_PROPERTY,
-                        new String[] { ATTR_PROPERTY_NAME, ATTR_PROPERTY_TYPE, ATTR_PROPERTY_VALUE },
-                        new String[] { propertyName, prop.getValueType().getName(), encodedValue }
-                        );
-                } else {
-                    addElementOpenAttr(
-                        buf,
-                        XML_PROPERTY,
-                        new String[] {
-                            ATTR_PROPERTY_NAME,
-                            ATTR_PROPERTY_TYPE,
-                            ATTR_PROPERTY_EDITOR,
-                        },
-                        new String[] {
-                            prop.getName(),
-                            prop.getValueType().getName(),
-                            ed.getClass().getName(), // XXX ed == null?
-                        }
-                        );
-                    if (valueNode != null) {
-                        saveNodeIntoText(buf, valueNode, indent + ONE_INDENT);
-                    } else {
-                        addLeafElementOpenAttr(
-                            buf,
-                            XML_SERIALIZED_PROPERTY_VALUE,
-                            new String[] {
-                                ATTR_PROPERTY_VALUE,
-                            },
-                            new String[] {
-                                encodedSerializeValue,
-                            }
-                            );
-                    }
-                    buf.append(indent);
-                    addElementClose(buf, XML_PROPERTY);
-                }
-            }
-            buf.append(indent); addElementClose(buf, XML_LAYOUT);
+                new String[] { PersistenceObjectRegistry.getPrimaryName(
+                                   layout31Names[convIndex]) }
+            );
+            buf.append(buf2);
+            buf.append(indent);
+            addElementClose(buf, XML_LAYOUT);
+        }
+        else {
+            addLeafElementOpenAttr(
+                buf,
+                XML_LAYOUT,
+                new String[] { ATTR_LAYOUT_CLASS },
+                new String[] { PersistenceObjectRegistry.getPrimaryName(
+                                   layout31Names[convIndex]) }
+            );
         }
     }
 
-    private void saveVisualComponent(RADVisualComponent component, StringBuffer buf, String indent) {
+    private void saveVisualComponent(RADVisualComponent component,
+                                     StringBuffer buf, String indent)
+    {
         saveComponent(component, buf, indent);
-        if (!(component instanceof FormContainer)) {
-//            buf.append(indent); addElementOpen(buf, XML_CONSTRAINTS);
-            saveConstraints(component, buf, indent); // + ONE_INDENT);
-//            buf.append(indent); addElementClose(buf, XML_CONSTRAINTS);
+
+        RADVisualContainer container = component.getParentContainer();
+        if (container == null)
+            return;
+
+        LayoutConstraints constr = container.getLayoutSupport().getConstraints(
+                                       container.getIndexOf(component));
+        if (constr == null)
+            return;
+
+        StringBuffer buf2 = new StringBuffer();
+        int convIndex = saveConstraints(constr, buf2,
+                                        indent + ONE_INDENT + ONE_INDENT);
+        if (convIndex < 0)
+            return;
+
+        buf.append(indent);
+        addElementOpen(buf, XML_CONSTRAINTS);
+        buf.append(indent + ONE_INDENT);
+        addElementOpenAttr(
+            buf,
+            XML_CONSTRAINT,
+            new String[] { ATTR_CONSTRAINT_LAYOUT, ATTR_CONSTRAINT_VALUE },
+            new String[] { PersistenceObjectRegistry.getPrimaryName(
+                               layout31Names[convIndex]),
+                           PersistenceObjectRegistry.getPrimaryName(
+                               layout31ConstraintsNames[convIndex]) }
+        );
+        buf.append(buf2);
+        buf.append(indent + ONE_INDENT);
+        addElementClose(buf, XML_CONSTRAINT);
+        buf.append(indent);
+        addElementClose(buf, XML_CONSTRAINTS);
+    }
+
+    private int saveConstraints(LayoutConstraints constr,
+                                StringBuffer buf,
+                                String indent)
+    {
+        // constraints of BorderLayout
+        if (constr instanceof BorderLayoutSupport.BorderConstraints) {
+            String position = (String) constr.getConstraintsObject();
+            buf.append(indent);
+            addLeafElementOpenAttr(
+                buf,
+                "BorderConstraints", // NOI18N
+                new String[] { "direction" }, // NOI18N
+                new String[] { position }
+            );
+            return LAYOUT_BORDER;
         }
+
+        // constraints of GridBagLayout
+        if (constr instanceof GridBagLayoutSupport.GridBagLayoutConstraints) {
+            java.awt.GridBagConstraints gbConstr =
+                (java.awt.GridBagConstraints) constr.getConstraintsObject();
+
+            buf.append(indent);
+            addLeafElementOpenAttr(
+                buf,
+                "GridBagConstraints", // NOI18N
+                new String[] { "gridX", "gridY", "gridWidth", "gridHeight", // NOI18N
+                               "fill", "ipadX", "ipadY", // NOI18N
+                               "insetsTop", "insetsLeft", // NOI18N
+                               "insetsBottom", "insetsRight", // NOI18N
+                               "anchor", "weightX", "weightY" }, // NOI18N
+                new String[] { Integer.toString(gbConstr.gridx),
+                               Integer.toString(gbConstr.gridy),
+                               Integer.toString(gbConstr.gridwidth),
+                               Integer.toString(gbConstr.gridheight),
+                               Integer.toString(gbConstr.fill),
+                               Integer.toString(gbConstr.ipadx),
+                               Integer.toString(gbConstr.ipady),
+                               Integer.toString(gbConstr.insets.top),
+                               Integer.toString(gbConstr.insets.left),
+                               Integer.toString(gbConstr.insets.bottom),
+                               Integer.toString(gbConstr.insets.right),
+                               Integer.toString(gbConstr.anchor),
+                               Double.toString(gbConstr.weightx),
+                               Double.toString(gbConstr.weighty) }
+            );
+            return LAYOUT_GRIDBAG;
+        }
+
+        // constraints of JTabbedPane
+        if (constr instanceof JTabbedPaneSupport.TabConstraints) {
+            JTabbedPaneSupport.TabConstraints tabConstr =
+                (JTabbedPaneSupport.TabConstraints) constr;
+
+            StringBuffer buf2 = new StringBuffer();
+            boolean anyPropertySaved = false;
+            Node.Property[] tabProperties = constr.getProperties();
+
+            for (int i=0; i < tabProperties.length; i++) {
+                FormProperty prop = (FormProperty) tabProperties[i];
+                if (prop.isChanged()) {
+                    saveProperty(prop, prop.getName(),
+                                 buf2, indent + ONE_INDENT);
+                    anyPropertySaved = true;
+                }
+            }
+
+            buf.append(indent);
+            if (anyPropertySaved) {
+                addElementOpenAttr(
+                    buf,
+                    "JTabbedPaneConstraints", // NOI18N
+                    new String[] { "tabName", "toolTip" }, // NOI18N
+                    new String[] { tabConstr.getTitle(), tabConstr.getToolTip() }
+                );
+                buf.append(buf2);
+                buf.append(indent);
+                addElementClose(buf, "JTabbedPaneConstraints"); // NOI18N
+            }
+            else {
+                addLeafElementOpenAttr(
+                    buf,
+                    "JTabbedPaneConstraints", // NOI18N
+                    new String[] { "tabName", "toolTip" }, // NOI18N
+                    new String[] { tabConstr.getTitle(), tabConstr.getToolTip() }
+                );
+            }
+            return LAYOUT_JTAB;
+        }
+
+        // constraints of JSplitPane
+        if (constr instanceof JSplitPaneSupport.SplitConstraints) {
+            Object constrObject = constr.getConstraintsObject();
+            String position;
+
+            if (javax.swing.JSplitPane.TOP.equals(constrObject))
+                position = "top"; // NOI18N
+            else if (javax.swing.JSplitPane.BOTTOM.equals(constrObject))
+                position = "bottom"; // NOI18N
+            else if (javax.swing.JSplitPane.LEFT.equals(constrObject))
+                position = "left"; // NOI18N
+            else
+                position = "right"; // NOI18N
+
+            buf.append(indent);
+            addLeafElementOpenAttr(
+                buf,
+                "JSplitPaneConstraints", // NOI18N
+                new String[] { "position" }, // NOI18N
+                new String[] { position }
+            );
+            return LAYOUT_JSPLIT;
+        }
+
+        // constraints of CardLayout
+        if (constr instanceof CardLayoutSupport.CardConstraints) {
+            String card = (String) constr.getConstraintsObject();
+            buf.append(indent);
+            addLeafElementOpenAttr(
+                buf,
+                "CardConstraints", // NOI18N
+                new String[] { "cardName" }, // NOI18N
+                new String[] { card }
+            );
+            return LAYOUT_CARD;
+        }
+
+        // constraints of JLayeredPane (must be tested before AbsoluteLayout)
+        if (constr instanceof JLayeredPaneSupport.LayeredConstraints) {
+            int layer =
+                ((JLayeredPaneSupport.LayeredConstraints)constr).getLayer();
+            java.awt.Rectangle r =
+                ((JLayeredPaneSupport.LayeredConstraints)constr).getBounds();
+
+            buf.append(indent);
+            addLeafElementOpenAttr(
+                buf,
+                "JLayeredPaneConstraints", // NOI18N
+                new String[] { "x", "y", "width", "height",
+                               "layer", "position" }, // NOI18N
+                new String[] { Integer.toString(r.x),
+                               Integer.toString(r.y),
+                               Integer.toString(r.width),
+                               Integer.toString(r.height),
+                               Integer.toString(layer),
+                               "-1" } // NOI18N
+            );
+            return LAYOUT_JLAYER;
+        }
+
+        // constraints of AbsoluteLayout
+        if (constr instanceof AbsoluteLayoutSupport.AbsoluteLayoutConstraints) {
+            java.awt.Rectangle r =
+                ((AbsoluteLayoutSupport.AbsoluteLayoutConstraints)constr)
+                    .getBounds();
+
+            buf.append(indent);
+            addLeafElementOpenAttr(
+                buf,
+                "AbsoluteConstraints", // NOI18N
+                new String[] { "x", "y", "width", "height" }, // NOI18N
+                new String[] { Integer.toString(r.x),
+                               Integer.toString(r.y),
+                               Integer.toString(r.width),
+                               Integer.toString(r.height) }
+            );
+            return LAYOUT_ABSOLUTE;
+        }
+
+        return -1;
     }
 
     private void saveMenuComponent(RADMenuItemComponent component, StringBuffer buf, String indent) {
@@ -1188,10 +2066,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         // 3. Aux Values
-        if (component.getAuxValues().size() > 0) {
+        Map auxValues = component.getAuxValues();
+        if (auxValues != null && auxValues.size() > 0) {
             buf.append("\n"); // NOI18N
             buf.append(indent); addElementOpen(buf, XML_AUX_VALUES);
-            saveAuxValues(component.getAuxValues(), buf, indent + ONE_INDENT);
+            saveAuxValues(auxValues, buf, indent + ONE_INDENT);
             buf.append(indent); addElementClose(buf, XML_AUX_VALUES);
         }
     }
@@ -1199,10 +2078,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private void saveProperties(RADComponent component, StringBuffer buf, String indent) {
         RADProperty[] props = component.getAllBeanProperties();
         for (int i = 0; i < props.length; i++) {
-            RADProperty prop =(RADProperty) props[i];
-
-            if (!props[i].isChanged()) {
-                if (props[i].getPreCode() != null || props[i].getPostCode() != null) {
+            RADProperty prop = (RADProperty) props[i];
+            if (!prop.isChanged()) {
+                if (prop.getPreCode() != null || prop.getPostCode() != null) {
                     buf.append(indent);
                     // in this case save only the pre/post code
                     addLeafElementOpenAttr(
@@ -1223,88 +2101,100 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 continue; // not changed, so do not save value
             }
 
-            Object value = null;
-            try {
-                value = prop.getValue();
-            } catch (Exception e) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
-                // problem getting value => ignore this property
-                continue;
-            }
-            String encodedValue = null;
-            String encodedSerializeValue = null;
-            org.w3c.dom.Node valueNode = null;
-            if (prop.getCurrentEditor() instanceof XMLPropertyEditor) {
-                prop.getCurrentEditor().setValue(value);
-                valueNode =((XMLPropertyEditor)prop.getCurrentEditor()).storeToXML(topDocument);
-                if (valueNode == null) continue; // property editor refused to save the value
-            } else {
-                encodedValue = encodePrimitiveValue(value);
-                if (encodedValue == null) encodedSerializeValue = encodeValue(value);
-                if ((encodedValue == null) &&(encodedSerializeValue == null)) {
-                    // [PENDING - notify problem?]
-                    continue;
-                }
-            }
-            buf.append(indent);
+            saveProperty(prop, prop.getName(), buf, indent);
+        }
+    }
 
-            if (encodedValue != null) {
-                addLeafElementOpenAttr(
-                    buf,
-                    XML_PROPERTY,
-                    new String[] {
-                        ATTR_PROPERTY_NAME,
-                        ATTR_PROPERTY_TYPE,
-                        ATTR_PROPERTY_VALUE,
-                        ATTR_PROPERTY_PRE_CODE,
-                        ATTR_PROPERTY_POST_CODE,
-                    },
-                    new String[] {
-                        prop.getName(),
-                        prop.getValueType().getName(),
-                        encodedValue,
-                        prop.getPreCode(),
-                        prop.getPostCode(),
-                    }
-                    );
-            } else {
-                addElementOpenAttr(
-                    buf,
-                    XML_PROPERTY,
-                    new String[] {
-                        ATTR_PROPERTY_NAME,
-                        ATTR_PROPERTY_TYPE,
-                        ATTR_PROPERTY_EDITOR,
-                        ATTR_PROPERTY_PRE_CODE,
-                        ATTR_PROPERTY_POST_CODE,
-                    },
-                    new String[] {
-                        prop.getName(),
-                        prop.getValueType().getName(),
-                        prop.getCurrentEditor().getClass().getName(),
-                        prop.getPreCode(),
-                        prop.getPostCode(),
-                    }
-                    );
-                if (valueNode != null) {
-                    saveNodeIntoText(buf, valueNode, indent + ONE_INDENT);
-                } else {
-                    buf.append(indent + ONE_INDENT);
-                    addLeafElementOpenAttr(
-                        buf,
-                        XML_SERIALIZED_PROPERTY_VALUE,
-                        new String[] {
-                            ATTR_PROPERTY_VALUE,
-                        },
-                        new String[] {
-                            encodedSerializeValue,
-                        }
-                        );
+    private boolean saveProperty(FormProperty property,
+                                 String propertyName,
+                                 StringBuffer buf,
+                                 String indent)
+    {
+        Object value;
+        try {
+            value = property.getValue();
+        }
+        catch (Exception ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace(); // problem getting value => ignore
+            return false;
+        }
+
+        String encodedValue = null;
+        String encodedSerializeValue = null;
+        org.w3c.dom.Node valueNode = null;
+
+        PropertyEditor prEd = property.getCurrentEditor();
+        if (prEd instanceof XMLPropertyEditor) {
+            prEd.setValue(value);
+            valueNode = ((XMLPropertyEditor)prEd).storeToXML(topDocument);
+            if (valueNode == null)
+                return false; // property editor refused to save the value
+        }
+        else {
+            encodedValue = encodePrimitiveValue(value);
+            if (encodedValue == null) {
+                encodedSerializeValue = encodeValue(value);
+                if (encodedSerializeValue == null) {
+                    System.err.println("[WARNING] Cannot save property to XML: " // NOI18N
+                                       + propertyName + ", " // NOI18N
+                                       + property.getValueType().getName());
+                    return false;
                 }
-                buf.append(indent);
-                addElementClose(buf, XML_PROPERTY);
             }
         }
+
+        buf.append(indent);
+
+        if (encodedValue != null) {
+            addLeafElementOpenAttr(
+                buf,
+                XML_PROPERTY,
+                new String[] {
+                    ATTR_PROPERTY_NAME,
+                    ATTR_PROPERTY_TYPE,
+                    ATTR_PROPERTY_VALUE,
+                    ATTR_PROPERTY_PRE_CODE,
+                    ATTR_PROPERTY_POST_CODE },
+                new String[] {
+                    propertyName,
+                    property.getValueType().getName(),
+                    encodedValue,
+                    property.getPreCode(),
+                    property.getPostCode() });
+        }
+        else {
+            addElementOpenAttr(
+                buf,
+                XML_PROPERTY,
+                new String[] {
+                    ATTR_PROPERTY_NAME,
+                    ATTR_PROPERTY_TYPE,
+                    ATTR_PROPERTY_EDITOR,
+                    ATTR_PROPERTY_PRE_CODE,
+                    ATTR_PROPERTY_POST_CODE },
+                new String[] {
+                    propertyName,
+                    property.getValueType().getName(),
+                    prEd.getClass().getName(),
+                    property.getPreCode(),
+                    property.getPostCode() });
+
+            if (valueNode != null) {
+                saveNodeIntoText(buf, valueNode, indent + ONE_INDENT);
+            }
+            else {
+                buf.append(indent + ONE_INDENT);
+                addLeafElementOpenAttr(
+                    buf,
+                    XML_SERIALIZED_PROPERTY_VALUE,
+                    new String[] { ATTR_PROPERTY_VALUE },
+                    new String[] { encodedSerializeValue });
+            }
+            buf.append(indent);
+            addElementClose(buf, XML_PROPERTY);
+        }
+        return true;
     }
 
     private void saveSyntheticProperties(RADComponent component, StringBuffer buf, String indent) {
@@ -1422,96 +2312,21 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private void saveConstraints(RADVisualComponent component,
-                                 StringBuffer buf,
-                                 String indent) {
-        RADVisualContainer parentCont = component.getParentContainer();
-        if (parentCont == null)
-            return;
+    private static PropertyEditor createPropertyEditor(Class editorClass,
+                                                       Class propertyType,
+                                                       FormProperty property)
+        throws InstantiationException,
+               IllegalAccessException
+    {
+        PropertyEditor ed =
+            editorClass.equals(RADConnectionPropertyEditor.class) ?
+                new RADConnectionPropertyEditor(propertyType) :
+                (PropertyEditor) editorClass.newInstance();
 
-        LayoutSupport laySup = parentCont.getLayoutSupport();
-        if (laySup == null)
-            return;
+        if (property != null)
+            property.getPropertyContext().initPropertyEditor(ed);
 
-        LayoutSupport.ConstraintsDesc lsConstr = laySup.getConstraints(component);
-        if (lsConstr == null)
-            return;
-
-        DesignLayout.ConstraintsDescription dlConstr =
-            Compat31LayoutFactory.createCompatibleConstraints(lsConstr);
-        if (dlConstr == null) return;
-
-        org.w3c.dom.Node constrNode = dlConstr.storeToXML(topDocument);
-        if (constrNode != null) {
-            buf.append(indent);
-            addElementOpen(buf, XML_CONSTRAINTS);
-            buf.append(indent + ONE_INDENT);
-            addElementOpenAttr(
-                buf,
-                XML_CONSTRAINT,
-                new String[] {
-                    ATTR_CONSTRAINT_LAYOUT,
-                    ATTR_CONSTRAINT_VALUE },
-                new String[] {
-                    Compat31LayoutFactory.getCompatibleDesignLayoutName(
-                                                laySup.getClass().getName()),
-                    PersistenceObjectRegistry.getPrimaryName(dlConstr),
-                });
-
-            saveNodeIntoText(buf, constrNode, indent + ONE_INDENT + ONE_INDENT);
-
-            buf.append(indent + ONE_INDENT);
-            addElementClose(buf, XML_CONSTRAINT);
-            buf.append(indent);
-            addElementClose(buf, XML_CONSTRAINTS);
-        }
-/** XXX        
-        Map constraintsMap = component.getConstraintsMap();
-        for (Iterator it = constraintsMap.keySet().iterator(); it.hasNext();) {
-            String layoutName =(String)it.next();
-            DesignLayout.ConstraintsDescription cd =
-                (DesignLayout.ConstraintsDescription)constraintsMap.get(layoutName);
-
-            org.w3c.dom.Node constrNode = cd.storeToXML(topDocument);
-            if (constrNode != null) {
-                buf.append(indent);
-                addElementOpenAttr(
-                    buf,
-                    XML_CONSTRAINT,
-                    new String[] {
-                        ATTR_CONSTRAINT_LAYOUT,
-                        ATTR_CONSTRAINT_VALUE
-                    },
-                    new String[] {
-                        layoutName,
-                        PersistenceObjectRegistry.getPrimaryName(cd),
-                    }
-                    );
-
-                saveNodeIntoText(buf, constrNode, indent + ONE_INDENT);
-
-                buf.append(indent);
-                addElementClose(
-                    buf,
-                    XML_CONSTRAINT
-                    );
-            } else {
-                buf.append(indent);
-                addLeafElementOpenAttr(
-                    buf,
-                    XML_CONSTRAINT,
-                    new String[] {
-                        ATTR_CONSTRAINT_LAYOUT,
-                        ATTR_CONSTRAINT_VALUE
-                    },
-                    new String[] {
-                        layoutName,
-                        PersistenceObjectRegistry.getPrimaryName(cd),
-                    }
-                    );
-            }
-        }
-        ****/
+        return ed;
     }
 
     // --------------------------------------------------------------------------------------
@@ -1522,13 +2337,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @param radComponent the RADComponent of which the property is to be loaded
      * @return the property value decoded from the node
      */
-    private Object getEncodedPropertyValue(org.w3c.dom.Node propertyNode, RADComponent radComponent)
-        throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException
+    private Object getEncodedPropertyValue(org.w3c.dom.Node propertyNode,
+                                           RADComponent radComponent)
+        throws IOException,
+               ClassNotFoundException,
+               IllegalAccessException,
+               InstantiationException
     {
         org.w3c.dom.NamedNodeMap attrs = propertyNode.getAttributes();
-        if (attrs == null) {
+        if (attrs == null)
             throw new IOException(); // [PENDING - explanation of problem]
-        }
+
         org.w3c.dom.Node nameNode = attrs.getNamedItem(ATTR_PROPERTY_NAME);
         org.w3c.dom.Node typeNode = attrs.getNamedItem(ATTR_PROPERTY_TYPE);
         org.w3c.dom.Node editorNode = attrs.getNamedItem(ATTR_PROPERTY_EDITOR);
@@ -1540,17 +2359,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
             throw new IOException(); // [PENDING - explanation of problem]
         }
 
-        RADProperty prop = null;
-        if (radComponent != null) prop = radComponent.getPropertyByName(nameNode.getNodeValue());
+        RADProperty prop = radComponent != null ?
+               radComponent.getPropertyByName(nameNode.getNodeValue()) : null;
 
         if (typeNode == null) {
-            if (preCodeNode != null) {
-                prop.setPreCode(preCodeNode.getNodeValue());
+            if (prop != null) {
+                if (preCodeNode != null)
+                    prop.setPreCode(preCodeNode.getNodeValue());
+                if (postCodeNode != null)
+                    prop.setPostCode(postCodeNode.getNodeValue());
             }
-            if (postCodeNode != null) {
-                prop.setPostCode(postCodeNode.getNodeValue());
-            }
-            return NO_VALUE; // value is not stored for this property, just the pre/post code
+            return NO_VALUE; // value is not stored for this property
         }
 
         Class propertyType = findPropertyType(typeNode.getNodeValue());
@@ -1559,11 +2378,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
             Class editorClass =
                 PersistenceObjectRegistry.loadClass(editorNode.getNodeValue());
             if (prop != null) {
-                ed = FormEditor.createPropertyEditor(editorClass, propertyType, prop);
+                ed = createPropertyEditor(editorClass, propertyType, prop);
             } else {
-                if (Boolean.getBoolean("netbeans.debug.form")) { // NOI18N
-                    System.out.println("Property: "+nameNode.getNodeValue()+", of component: "+radComponent.getName()+"["+radComponent.getBeanClass().getName()+"] not found."); // NOI18N
-                } // [PENDING better notification, localize]
+//                if (Boolean.getBoolean("netbeans.debug.form")) { // NOI18N
+                    System.err.println("[WARNING] Property: "+nameNode.getNodeValue()+", of component: "+radComponent.getName()+"["+radComponent.getBeanClass().getName()+"] not found."); // NOI18N
+//                } // [PENDING better notification, localize]
             }
         }
         Object value = null;
@@ -1623,6 +2442,80 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             if (serValue != null) {
                                 value = decodeValue(serValue);
                             }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return value;
+    }
+
+    private Object getEncodedPropertyValue(org.w3c.dom.Node propertyNode)
+        throws IOException,
+               ClassNotFoundException,
+               IllegalAccessException,
+               InstantiationException
+    {
+        org.w3c.dom.NamedNodeMap attrs = propertyNode.getAttributes();
+        if (attrs == null)
+            throw new IOException(); // [PENDING - explanation of problem]
+
+        org.w3c.dom.Node typeNode = attrs.getNamedItem(ATTR_PROPERTY_TYPE);
+        org.w3c.dom.Node editorNode = attrs.getNamedItem(ATTR_PROPERTY_EDITOR);
+        org.w3c.dom.Node valueNode = attrs.getNamedItem(ATTR_PROPERTY_VALUE);
+
+        if (typeNode == null)
+            return null; // value is not stored for this property
+
+        Class valueType = findPropertyType(typeNode.getNodeValue());
+        Object value = null;
+
+        PropertyEditor prEd = null;
+        if (editorNode != null) {
+            Class editorClass = PersistenceObjectRegistry
+                                    .loadClass(editorNode.getNodeValue());
+            prEd = createPropertyEditor(editorClass, valueType, null);
+        }
+
+        if (valueNode != null) {
+            try {
+                value = decodePrimitiveValue(valueNode.getNodeValue(),
+                                             valueType);
+                if (prEd != null) {
+                    prEd.setValue(value);
+                    value = prEd.getValue();
+                }
+            }
+            catch (IllegalArgumentException e) { // should not happen
+                value = null;
+            }
+        }
+        else {
+            org.w3c.dom.NodeList propChildren = propertyNode.getChildNodes();
+            if (propChildren != null && propChildren.getLength() > 0) {
+                boolean isXMLSerialized = false;
+                for (int i=0, n=propChildren.getLength(); i < n; i++) {
+                    org.w3c.dom.Node node = propChildren.item(i);
+                    if (XML_SERIALIZED_PROPERTY_VALUE.equals(
+                                                        node.getNodeName()))
+                    {
+                        isXMLSerialized = true;
+                        String serValue = findAttribute(node,
+                                                        ATTR_PROPERTY_VALUE);
+                        if (serValue != null)
+                            value = decodeValue(serValue);
+                        break;
+                    }
+                }
+
+                if (!isXMLSerialized && prEd instanceof XMLPropertyEditor) {
+                    for (int i=0, n=propChildren.getLength(); i < n; i++) {
+                        org.w3c.dom.Node node = propChildren.item(i);
+                        if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                            ((XMLPropertyEditor)prEd).readFromXML(node);
+                            value = prEd.getValue();
                             break;
                         }
                     }
@@ -1975,7 +2868,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     // --------------
-    // FormInfo conversion methods
+    // NB 3.2 compatibility - FormInfo conversions
 
     /**
      * @return class corresponding to given FormInfo class name
@@ -2084,4 +2977,136 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         return "org.netbeans.modules.form.forminfo." + shortName; // NOI18N
     }
+
+    // --------
+    // NB 3.1 compatibility - layout persistence conversion tables
+
+    private static final int LAYOUT_BORDER = 0;
+    private static final int LAYOUT_FLOW = 1;
+    private static final int LAYOUT_BOX = 2;
+    private static final int LAYOUT_GRIDBAG = 3;
+    private static final int LAYOUT_GRID = 4;
+    private static final int LAYOUT_CARD = 5;
+    private static final int LAYOUT_ABSOLUTE = 6;
+    private static final int LAYOUT_NULL = 7;
+    private static final int LAYOUT_JSCROLL = 8;
+    private static final int LAYOUT_SCROLL = 9;
+    private static final int LAYOUT_JSPLIT = 10;
+    private static final int LAYOUT_JTAB = 11;
+    private static final int LAYOUT_JLAYER = 12;
+    private static final int LAYOUT_TOOLBAR = 13;
+
+    private static final String[] layout31Names = {
+        "org.netbeans.modules.form.compat2.layouts.DesignBorderLayout", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignFlowLayout", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignBoxLayout", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignGridLayout", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignCardLayout", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.support.ScrollPaneSupportLayout", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.support.JLayeredPaneSupportLayout", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignBoxLayout" // NOI18N
+    }; // fixed table, do not change!
+
+    private static final String[] layout31ConstraintsNames = {
+        "org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignFlowLayout$FlowConstraintsDescription", // NOI18N,
+        "org.netbeans.modules.form.compat2.layouts.DesignBoxLayout$BoxConstraintsDescription", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignGridLayout$GridConstraintsDescription", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.support.ScrollPaneSupportLayout$ScrollPaneConstraintsDescription", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.support.JSplitPaneSupportLayout$JSplitPaneConstraintsDescription", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.support.JLayeredPaneSupportLayout$JLayeredPaneConstraintsDescription", // NOI18N
+        "org.netbeans.modules.form.compat2.layouts.DesignBoxLayout$BoxConstraintsDescription" // NOI18N
+    }; // fixed table, do not change!
+
+    private static final boolean[] reasonable31Constraints = {
+        true, false, false, true, false, true, true,
+        true, false, false, true, true, true, false
+    }; // fixed table, do not change!
+
+    private static final String[] layoutDelegateNames = {
+        "org.netbeans.modules.form.layoutsupport.delegates.BorderLayoutSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.delegates.FlowLayoutSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.delegates.BoxLayoutSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.delegates.GridBagLayoutSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.delegates.GridLayoutSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.delegates.CardLayoutSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.delegates.AbsoluteLayoutSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.delegates.NullLayoutSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.delegates.JScrollPaneSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.delegates.ScrollPaneSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.delegates.JSplitPaneSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.delegates.JTabbedPaneSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.delegates.JLayeredPaneSupport", // NOI18N
+        "org.netbeans.modules.form.layoutsupport.delegates.JToolBarSupport" // NOI18N
+    }; // fixed table, do not change!
+
+    private static final String[][] layout31PropertyNames = {
+        { "horizontalGap", "verticalGap" }, // BorderLayout // NOI18N
+        { "alignment", "horizontalGap", "verticalGap" }, // FlowLayout // NOI18N
+        { "axis" }, // BoxLayout // NOI18N
+        { }, // GridBagLayout
+        { "rows", "columns", "horizontalGap", "verticalGap" }, // GridLayout // NOI18N
+        { "horizontalGap", "verticalGap" }, // CardLayout (ignoring "currentCard") // NOI18N
+        { "useNullLayout" }, // AbsoluteLayout // NOI18N
+        { "useNullLayout" }, // AbsoluteLayout // NOI18N
+        { }, // JScrollPane
+        { }, // ScrollPane
+        { }, // JSplitPane
+        { }, // JTabbedPane
+        { }, // JLayeredPane
+        { "axis" } // BoxLayout // NOI18N
+    }; // fixed table, do not change!
+
+    private static final String[][] layoutDelegatePropertyNames = {
+        { "hgap", "vgap" }, // BorderLayout // NOI18N
+        { "alignment", "hgap", "vgap" }, // FlowLayout // NOI18N
+        { "axis" }, // BoxLayout // NOI18N
+        { }, // GridBagLayout
+        { "rows", "columns", "hgap", "vgap" }, // GridLayout // NOI18N
+        { "hgap", "vgap" }, // CardLayout (ignoring "currentCard") // NOI18N
+        { null }, // AbsoluteLayout
+        { null }, // null layout
+        { }, // JScrollPane
+        { }, // ScrollPane
+        { }, // JSplitPane
+        { }, // JTabbedPane
+        { }, // JLayeredPane
+        { null } // JToolBar
+    }; // fixed table, do not change!
+
+    // methods and constructors for creating code structure
+    private static Method setLayoutMethod;
+    private static Method simpleAddMethod;
+    private static Method addWithConstrMethod;
+    private static Method addTabMethod1;
+    private static Method addTabMethod2;
+    private static Method addTabMethod3;
+    private static Method setLeftComponentMethod;
+    private static Method setRightComponentMethod;
+    private static Method setTopComponentMethod;
+    private static Method setBottomComponentMethod;
+    private static Method setBoundsMethod;
+    private static Constructor gridBagConstrConstructor;
+    private static Constructor insetsConstructor;
+    private static Constructor absoluteConstraintsConstructor;
+
+    // Special static field holding last loaded layout index. This is hack for
+    // dealing with multiple constraints types saved by NB 3.1 - we load only
+    // constraints matching with the current layout. At time of loading
+    // constraints, the layout is already loaded but the layout support is not
+    // established yet, so the loadConstraints method cannot find out what the
+    // current layout of container is.
+    private static int layoutConvIndex = -1;
 }

@@ -25,7 +25,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 
 import org.netbeans.modules.form.layoutsupport.*;
-import org.netbeans.modules.form.compat2.layouts.DesignLayout;
 import org.netbeans.modules.form.CreationDescriptor;
 import org.netbeans.modules.form.CreationFactory;
 import org.netbeans.modules.form.compat2.border.BorderInfo;
@@ -69,13 +68,11 @@ public class PaletteItem implements java.io.Serializable {
             (InstanceDataObject)itemNode.getCookie(InstanceDataObject.class);
         if (ic != null) {
             instanceDO = (InstanceDataObject)ic;
-//            beanClass = instanceDO.instanceClass();
         }
         else {
             ic = (InstanceCookie)itemNode.getCookie(InstanceCookie.class);
             if (ic == null)
                 throw new InstantiationException();
-//            beanClass = ic.instanceClass();
         }
         instanceCookie = ic;
     }
@@ -183,30 +180,25 @@ public class PaletteItem implements java.io.Serializable {
         }
     }
 
-    public LayoutSupport createLayoutSupportInstance()
-    throws InstantiationException, IllegalAccessException {
-
-        LayoutSupport layoutSupport = null;
+    public LayoutSupportDelegate createLayoutDelegateInstance()
+        throws InstantiationException, IllegalAccessException
+    {
+        LayoutSupportDelegate layoutDelegate = null;
         getBeanClass();
 
         if (LayoutManager.class.isAssignableFrom(beanClass)) {
-            // LayoutManager -> find LayoutSupport for it
-            Class laysupClass = LayoutSupportRegistry
-                        .getLayoutSupportForLayout(beanClass);
-            if (laysupClass != null) layoutSupport =
-                LayoutSupportRegistry.createLayoutSupport(laysupClass);
+            // LayoutManager -> find LayoutSupportDelegate for it
+            Class layoutDelegateClass = LayoutSupportRegistry
+                        .getLayoutDelegateForLayout(beanClass);
+            if (layoutDelegateClass != null) layoutDelegate =
+                LayoutSupportRegistry.createLayoutDelegate(layoutDelegateClass);
         }
-        else if (LayoutSupport.class.isAssignableFrom(beanClass)) {
-            // LayoutSupport -> use it directly
-            layoutSupport = (LayoutSupport) createInstance();
-        }
-        else if (DesignLayout.class.isAssignableFrom(beanClass)) {
-            // DesignLayout -> convert to LayoutSupport
-            DesignLayout dl = (DesignLayout) createInstance();
-            layoutSupport = Compat31LayoutFactory.createCompatibleLayoutSupport(dl);
+        else if (LayoutSupportDelegate.class.isAssignableFrom(beanClass)) {
+            // LayoutSupportDelegate -> use it directly
+            layoutDelegate = (LayoutSupportDelegate) createInstance();
         }
 
-        return layoutSupport;
+        return layoutDelegate;
     }
 
     public Class getItemClass() {
@@ -235,15 +227,10 @@ public class PaletteItem implements java.io.Serializable {
         return Component.class.isAssignableFrom(getBeanClass());
     }
 
-//    public boolean isDesignLayout() {
-//        return DesignLayout.class.isAssignableFrom(beanClass);
-//    }
-
     public boolean isLayout() {
         getBeanClass();
-        return LayoutSupport.class.isAssignableFrom(beanClass)
-               || LayoutManager.class.isAssignableFrom(beanClass)
-               || DesignLayout.class.isAssignableFrom(beanClass);
+        return LayoutSupportDelegate.class.isAssignableFrom(beanClass)
+               || LayoutManager.class.isAssignableFrom(beanClass);
     }
 
 /*    public boolean isContainer() {

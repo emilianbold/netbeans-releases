@@ -16,34 +16,29 @@ package org.netbeans.modules.form;
 import java.awt.*;
 import java.applet.Applet;
 import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.text.JTextComponent;
-import javax.swing.border.*;
 import java.beans.*;
 import java.lang.reflect.*;
 import java.util.*;
 import java.io.*;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.text.JTextComponent;
 
 import org.openide.*;
 import org.openide.windows.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.explorer.ExplorerPanel;
+import org.openide.filesystems.*;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.*;
-import org.netbeans.modules.form.layoutsupport.*;
-import org.netbeans.modules.form.layoutsupport.dedicated.*;
-
-import org.netbeans.modules.form.compat2.border.*;
 import org.netbeans.modules.form.fakepeer.FakePeerContainer;
-import org.netbeans.modules.form.fakepeer.FakePeerSupport;
-
-import org.openide.filesystems.*;
+import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 
 /**
  *
- * @author Tran Duc Trung
+ * @author Tran Duc Trung, Tomas Pavek, Josef Kozak
  */
 
 public class FormDesigner extends TopComponent
@@ -410,11 +405,11 @@ public class FormDesigner extends TopComponent
         RADVisualContainer metacont = metacomp.getParentContainer();
 
         if (comp == null) { // visual component doesn't exist yet
-            LayoutSupport ls;
-            if (metacont != null && (ls = metacont.getLayoutSupport())
-                                  instanceof LayoutSupportArranging)
-                ((LayoutSupportArranging)ls).selectComponent(metacomp);
-
+            if (metacont != null) {
+                LayoutSupportManager laysup = metacont.getLayoutSupport();
+                if (laysup.supportsArranging())
+                    laysup.selectComponent(metacont.getIndexOf(metacomp));
+            }
             return;
         }
 
@@ -428,21 +423,20 @@ public class FormDesigner extends TopComponent
             return; // designer is not showing
 
         RADVisualComponent child = metacomp;
-        Container parentComp;
-        Component childComp = comp;
 
         while (metacont != null) {
-            parentComp = (Container) getComponent(metacont);
-            if (metacont.getLayoutSupport() instanceof LayoutSupportArranging) {
-                LayoutSupportArranging lsa =
-                    (LayoutSupportArranging)metacont.getLayoutSupport();
-                lsa.selectComponent(child);
-                lsa.arrangeContainer(parentComp);
+            Container cont = (Container) getComponent(metacont);
+            LayoutSupportManager laysup = metacont.getLayoutSupport();
+            if (laysup.supportsArranging()) {
+                Container contDelegate = metacont.getContainerDelegate(cont);
+                laysup.selectComponent(child.getComponentIndex());
+                laysup.arrangeContainer(cont, contDelegate);
             }
-            if (metacont == topDesignComponent || parentComp.isShowing())
+
+            if (metacont == topDesignComponent || cont.isShowing())
                 break;
+
             child = metacont;
-            childComp = parentComp;
             metacont = metacont.getParentContainer();
         }
     }
@@ -1125,13 +1119,17 @@ public class FormDesigner extends TopComponent
             int h = fdPanel.getPreferredSize().height;
             int border = fdPanel.getBorderThickness();
             
-            if (resize == (LayoutSupport.RESIZE_DOWN | LayoutSupport.RESIZE_RIGHT)) {
+            if (resize == (LayoutSupportManager.RESIZE_DOWN
+                           | LayoutSupportManager.RESIZE_RIGHT))
+            {
                 w = p.x - border;
                 h = p.y - border;
-            } else if (resize == LayoutSupport.RESIZE_DOWN) {
+            }
+            else if (resize == LayoutSupportManager.RESIZE_DOWN) {
                 w = w - 2 * border;
                 h = p.y - border;
-            } else if (resize == LayoutSupport.RESIZE_RIGHT) {
+            }
+            else if (resize == LayoutSupportManager.RESIZE_RIGHT) {
                 w = p.x - border;
                 h = h - 2 * border;
             }

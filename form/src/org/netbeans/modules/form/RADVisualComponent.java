@@ -17,7 +17,7 @@ import java.util.*;
 import java.beans.*;
 
 import org.openide.nodes.*;
-import org.netbeans.modules.form.layoutsupport.LayoutSupport;
+import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.compat2.layouts.DesignLayout;
 
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
@@ -32,6 +32,7 @@ public class RADVisualComponent extends RADComponent {
     // -----------------------------------------------------------------------------
     // Private properties
 
+    // [??]
     private HashMap constraints = new HashMap();
 //    transient private RADVisualContainer parent;
 
@@ -45,7 +46,7 @@ public class RADVisualComponent extends RADComponent {
 //        this.parent = parent;
 //    }
 
-    protected void setBeanInstance(Object beanInstance) {
+/*    protected void setBeanInstance(Object beanInstance) {
         if (beanInstance instanceof java.awt.Component) {
             boolean attached = FakePeerSupport.attachFakePeer(
                                             (java.awt.Component)beanInstance);
@@ -55,7 +56,7 @@ public class RADVisualComponent extends RADComponent {
         }
 
         super.setBeanInstance(beanInstance);
-    }
+    } */
 
     // -----------------------------------------------------------------------------
     // Public interface
@@ -69,10 +70,14 @@ public class RADVisualComponent extends RADComponent {
         return (RADVisualContainer) getParentComponent();
     }
 
-    /** @return The index of this component within all the subcomponents of its parent */
-    public int getComponentIndex() { // [is it needed ???]
+    /** @return The index of this component within visual components of its parent */
+    public final int getComponentIndex() {
         return ((ComponentContainer)getParentComponent()).getIndexOf(this);
-//        return getParentContainer().getIndexOf(this);
+    }
+
+    final LayoutSupportManager getParentLayoutSupport() {
+        RADVisualContainer parent = (RADVisualContainer) getParentComponent();
+        return parent != null ? parent.getLayoutSupport() : null;
     }
 
     // -----------------------------------------------------------------------------
@@ -80,18 +85,21 @@ public class RADVisualComponent extends RADComponent {
 
     /** Sets component's constraints description for given layout-support class. 
      */
-    public void setConstraintsDesc(Class layoutClass,
-                                   LayoutSupport.ConstraintsDesc constr) {
-        constraints.put(layoutClass.getName(), constr);
+    public void setLayoutConstraints(Class layoutDelegateClass,
+                                     LayoutConstraints constr)
+    {
+        if (constr != null)
+            constraints.put(layoutDelegateClass.getName(), constr);
     }
 
     /** Gets component's constraints description for given layout-support class.
      */
-    public LayoutSupport.ConstraintsDesc getConstraintsDesc(Class layoutClass) {
-        return (LayoutSupport.ConstraintsDesc)constraints.get(layoutClass.getName());
+    public LayoutConstraints getLayoutConstraints(Class layoutDelegateClass) {
+        return (LayoutConstraints)
+               constraints.get(layoutDelegateClass.getName());
     }
 
-    public LayoutSupport.ConstraintsDesc getCurrentConstraintsDesc() {
+/*    public LayoutConstraints getCurrentConstraintsDesc() {
         RADVisualContainer parent = (RADVisualContainer) getParentComponent();
         if (parent != null) {
             LayoutSupport laySup = parent.getLayoutSupport();
@@ -99,11 +107,21 @@ public class RADVisualComponent extends RADComponent {
                 return laySup.getConstraints(this);
         }
         return null;
-    }
+    } */
+
+/*    public LayoutConstraints getLayoutConstraints() {
+        RADVisualContainer container = (RADVisualContainer) getParentComponent();
+        if (container == null)
+            return null;
+
+        return getLayoutConstraints(
+            container.getLayoutSupport().getLayoutDelegate().getClass());
+    } */
 
     /** Setter for attaching old version of constraints description
      * (DesignLayout.ConstraintsDescription) to this component.
      */ 
+    // [to be removed]
     public void setConstraints(Class layoutClass,
                                DesignLayout.ConstraintsDescription constr) {
         constraints.put(layoutClass.getName(), constr);
@@ -112,6 +130,7 @@ public class RADVisualComponent extends RADComponent {
     /** Getter for obtaining old version of constraints description
      * (DesignLayout.ConstraintsDescription) attached to this component.
      */
+    // [to be removed]
     public DesignLayout.ConstraintsDescription getConstraints(Class layoutClass) {
         return(DesignLayout.ConstraintsDescription)constraints.get(layoutClass.getName());
     }
@@ -202,12 +221,27 @@ public class RADVisualComponent extends RADComponent {
         return constraintsProperties;
     }
 
-    void createConstraintsProperties() {
-        LayoutSupport.ConstraintsDesc constr = getCurrentConstraintsDesc();
-        constraintsProperties = constr != null ?
-                                constr.getProperties() : null;
+    public void resetConstraintsProperties() {
+        constraintsProperties = null;
+        beanPropertySets = null;
+
+        RADComponentNode node = getNodeReference();
+        if (node != null)
+            node.fireComponentPropertySetsChange();
+    }
+
+    private void createConstraintsProperties() {
+        constraintsProperties = null;
+
+        LayoutSupportManager layoutSupport = getParentLayoutSupport();
+        if (layoutSupport != null) {
+            LayoutConstraints constr = layoutSupport.getConstraints(this);
+            if (constr != null)
+                constraintsProperties = constr.getProperties();
+        }
+
         if (constraintsProperties == null) {
-            constraintsProperties = new Node.Property[0];
+            constraintsProperties = NO_PROPERTIES;
             return;
         }
 
@@ -227,40 +261,34 @@ public class RADVisualComponent extends RADComponent {
         }
     }
 
-    void resetConstraintsProperties() {
-        constraintsProperties = null;
-        beanPropertySets = null;
-
-        RADComponentNode node = getNodeReference();
-        if (node != null)
-            node.fireComponentPropertySetsChange();
-    }
-
     private PropertyChangeListener getConstraintsListener() {
         if (constraintsListener == null)
             constraintsListener = new ConstraintsListener();
         return constraintsListener;
     }
 
-    class ConstraintsListener extends PropertyListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            super.propertyChange(evt);
+    class ConstraintsListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent ev) {
+            Object source = ev.getSource();
+            if (!(source instanceof FormProperty))
+                return;
 
-            // re-add components to reflect changed constraints
-            RADVisualContainer parent = (RADVisualContainer) getParentComponent();
-            LayoutSupport laysup = parent.getLayoutSupport();
-            RADVisualComponent[] components = parent.getSubComponents();
+            int index = getComponentIndex();
+            LayoutSupportManager layoutSupport = getParentLayoutSupport();
+            LayoutConstraints constraints = layoutSupport.getConstraints(index);
 
-            for (int i=0; i < components.length; i++)
-                laysup.removeComponent(components[i]);
-            for (int i=0; i < components.length; i++)
-                laysup.addComponent(components[i],
-                                    laysup.getConstraints(components[i]));
+            ev = FormProperty.PROP_VALUE.equals(ev.getPropertyName()) ?
+                new PropertyChangeEvent(constraints,
+                                        ((FormProperty)source).getName(),
+                                        ev.getOldValue(), ev.getNewValue())
+                :
+                new PropertyChangeEvent(constraints, null, null, null);
 
-            getFormModel().fireComponentLayoutChanged(RADVisualComponent.this,
-                                                      evt.getPropertyName(),
-                                                      evt.getOldValue(),
-                                                      evt.getNewValue());
+            layoutSupport.componentLayoutChanged(index, ev);
+//            getFormModel().fireComponentLayoutChanged(RADVisualComponent.this,
+//                                                      evt.getPropertyName(),
+//                                                      evt.getOldValue(),
+//                                                      evt.getNewValue());
         }
     }
 

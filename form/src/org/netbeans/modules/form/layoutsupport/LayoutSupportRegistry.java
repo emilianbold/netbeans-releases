@@ -20,19 +20,18 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.form.*;
 
 /**
- *
  * @author Tomas Pavek
  */
 
 public class LayoutSupportRegistry {
 
-    private static HashMap containerToLayoutSupport;
-    private static HashMap layoutToLayoutSupport;
+    private static HashMap containerToLayoutDelegate;
+    private static HashMap layoutToLayoutDelegate;
 
     // --------------
     // getting methods
 
-    public static Class getLayoutSupportForContainer(Class containerClass) {
+    public static Class getLayoutDelegateForContainer(Class containerClass) {
         String className = (String)
             getContainersMap().get(containerClass.getName());
         if (className == null)
@@ -49,7 +48,7 @@ public class LayoutSupportRegistry {
         return null;
     }
 
-    public static String getLayoutSupportForContainer(String containerClassName) {
+    public static String getLayoutDelegateForContainer(String containerClassName) {
         String className = (String) getContainersMap().get(containerClassName);
         if (className == null) {
             try {
@@ -61,7 +60,7 @@ public class LayoutSupportRegistry {
         return className;
     }
 
-    public static Class getLayoutSupportForLayout(Class layoutClass) {
+    public static Class getLayoutDelegateForLayout(Class layoutClass) {
         String className = (String)
             getLayoutsMap().get(layoutClass.getName());
         if (className == null)
@@ -80,7 +79,7 @@ public class LayoutSupportRegistry {
         return null;
     }
 
-    public static String getLayoutSupportForLayout(String layoutClassName) {
+    public static String getLayoutDelegateForLayout(String layoutClassName) {
         String className = (String) getLayoutsMap().get(layoutClassName);
         if (className == null) {
             try {
@@ -92,82 +91,93 @@ public class LayoutSupportRegistry {
         return className;
     }
 
-    public static Node.Property[] getLayoutProperties(LayoutSupport ls) {
-        Node.PropertySet[] propsets = ls.getPropertySets();
-        if (propsets == null || propsets.length == 0)
-            return new Node.Property[0];
-        if (propsets.length == 1)
-            return propsets[0].getProperties();
-
-        ArrayList proplist = new ArrayList(10);
-        for (int i=0; i < propsets.length; i++) {
-            if ("properties".equals(propsets[i].getName()) // NOI18N
-                    || "properties2".equals(propsets[i].getName())) { // NOI18N
-                Node.Property[] props = propsets[i].getProperties();
-                for (int j=0; j < props.length; j++)
-                    proplist.add(props[j]);
-            }
-        }
-        Node.Property[] properties = new Node.Property[proplist.size()];
-        proplist.toArray(properties);
-        return properties;
-    }
-
     // ------------
     // registering methods
 
-    public static void registerLayoutSupportForContainer(Class containerClass,
-                                                    Class layoutSupportClass) {
+    public static void registerLayoutDelegateForContainer(
+                           Class containerClass,
+                           Class layoutDelegateClass)
+    {
         getContainersMap().put(containerClass.getName(),
-                               layoutSupportClass.getName());
+                               layoutDelegateClass.getName());
     }
 
-    public static void registerLayoutSupportForContainer(
-                    String containerClassName, String layoutSupportClassName) {
-        getContainersMap().put(containerClassName, layoutSupportClassName);
+    public static void registerLayoutDelegateForContainer(
+                           String containerClassName,
+                           String layoutDelegateClassName)
+    {
+        getContainersMap().put(containerClassName, layoutDelegateClassName);
     }
 
-    public static void registerLayoutSupportForLayout(Class layoutClass,
-                                                    Class layoutSupportClass) {
+    public static void registerLayoutDelegateForLayout(
+                           Class layoutClass,
+                           Class layoutDelegateClass)
+    {
         getLayoutsMap().put(layoutClass.getName(),
-                            layoutSupportClass.getName());
+                            layoutDelegateClass.getName());
     }
 
-    public static void registerLayoutSupportForLayout(String layoutClassName,
-                                               String layoutSupportClassName) {
-        getLayoutsMap().put(layoutClassName, layoutSupportClassName);
+    public static void registerLayoutDelegateForLayout(
+                           String layoutClassName,
+                           String layoutDelegateClassName)
+    {
+        getLayoutsMap().put(layoutClassName, layoutDelegateClassName);
     }
 
     // ------------
     // creating methods
 
-    public static LayoutSupport createLayoutSupport(Class layoutSupportClass)
-    throws InstantiationException, IllegalAccessException {
-        return (LayoutSupport) layoutSupportClass.newInstance();
+    public static LayoutSupportDelegate createLayoutDelegate(Class delegateClass)
+        throws InstantiationException, IllegalAccessException
+    {
+        return (LayoutSupportDelegate) delegateClass.newInstance();
     }
 
-    public static LayoutSupport createLayoutSupport(String laysupClassName)
-    throws ClassNotFoundException, InstantiationException,
-           IllegalAccessException {
-
-        Class layoutSupportClass = Class.forName(laysupClassName);
-        return (LayoutSupport) layoutSupportClass.newInstance();
+    public static LayoutSupportDelegate createLayoutDelegate(
+                                            String delegateClassName)
+        throws ClassNotFoundException,
+               InstantiationException,
+               IllegalAccessException
+    {
+        Class delegateClass = Class.forName(delegateClassName);
+        return (LayoutSupportDelegate) delegateClass.newInstance();
     }
 
-    public static LayoutSupport copyLayoutSupport(LayoutSupport laysup,
-                                                  RADVisualContainer targetCont)
-    throws InstantiationException, IllegalAccessException {
+    public static LayoutSupportDelegate createLayoutDelegate(
+                                            Container container,
+                                            Container containerDelegate)
+    {
+        Class layoutDelegateClass = getLayoutDelegateForContainer(
+                                        container.getClass());
 
-        if (laysup == null) return null;
-        LayoutSupport newLaysup = createLayoutSupport(laysup.getClass());
-        if (newLaysup == null) return null;
-        newLaysup.initialize(targetCont);
+        if (layoutDelegateClass == null) {
+            // the container must be empty by default, it cannot be designed
+            // as container otherwise
+            if (containerDelegate.getComponentCount() > 0)
+                return null;
+            
+            // try to find support for LayoutManager used by the container
+            LayoutManager lm = containerDelegate.getLayout();
+            if (lm == null)
+                return null; // not NullLayoutSupport
 
-        Node.Property[] sourceProps = getLayoutProperties(laysup);
-        Node.Property[] targetProps = getLayoutProperties(newLaysup);
-        FormUtils.copyProperties(sourceProps, targetProps, true, false);
+            layoutDelegateClass = getLayoutDelegateForLayout(lm.getClass());
+            if (layoutDelegateClass == null)
+                return null;
+        }
 
-        return newLaysup;
+        try {
+            return (LayoutSupportDelegate) layoutDelegateClass.newInstance();
+            // [shouldn't we use CreationFactory ??]
+        }
+        catch (Exception ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
+                System.err.println("[WARNING] Cannot create layout manager instance: " // NOI18N
+                                   + layoutDelegateClass.getName());
+                ex.printStackTrace();
+            }
+        }
+        return null;
     }
 
     // -----------
@@ -188,57 +198,57 @@ public class LayoutSupportRegistry {
     }
 
     private static Map getContainersMap() {
-        if (containerToLayoutSupport == null) {
-            containerToLayoutSupport = new HashMap();
+        if (containerToLayoutDelegate == null) {
+            containerToLayoutDelegate = new HashMap();
             // fill in default containers
-            containerToLayoutSupport.put(
-                "javax.swing.JScrollPane",
-                "org.netbeans.modules.form.layoutsupport.dedicated.ScrollPaneSupport");
-            containerToLayoutSupport.put(
-                "java.awt.ScrollPane",
-                "org.netbeans.modules.form.layoutsupport.dedicated.ScrollPaneSupport");
-            containerToLayoutSupport.put(
-                "javax.swing.JSplitPane",
-                "org.netbeans.modules.form.layoutsupport.dedicated.JSplitPaneSupport");
-            containerToLayoutSupport.put(
-                "javax.swing.JTabbedPane",
-                "org.netbeans.modules.form.layoutsupport.dedicated.JTabbedPaneSupport");
-            containerToLayoutSupport.put(
-                "javax.swing.JLayeredPane",
-                "org.netbeans.modules.form.layoutsupport.dedicated.JLayeredPaneSupport");
-            containerToLayoutSupport.put(
-                "javax.swing.JToolBar",
-                "org.netbeans.modules.form.layoutsupport.dedicated.JToolBarSupport");
+            containerToLayoutDelegate.put(
+                "javax.swing.JScrollPane", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.JScrollPaneSupport"); // NOI18N
+            containerToLayoutDelegate.put(
+                "java.awt.ScrollPane", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.ScrollPaneSupport"); // NOI18N
+            containerToLayoutDelegate.put(
+                "javax.swing.JSplitPane", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.JSplitPaneSupport"); // NOI18N
+            containerToLayoutDelegate.put(
+                "javax.swing.JTabbedPane", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.JTabbedPaneSupport"); // NOI18N
+            containerToLayoutDelegate.put(
+                "javax.swing.JLayeredPane", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.JLayeredPaneSupport"); // NOI18N
+            containerToLayoutDelegate.put(
+                "javax.swing.JToolBar", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.JToolBarSupport"); // NOI18N
         }
-        return containerToLayoutSupport;
+        return containerToLayoutDelegate;
     }
 
     private static Map getLayoutsMap() {
-        if (layoutToLayoutSupport == null) {
-            layoutToLayoutSupport = new HashMap();
+        if (layoutToLayoutDelegate == null) {
+            layoutToLayoutDelegate = new HashMap();
             // fill in default layouts
-            layoutToLayoutSupport.put(
-                "java.awt.BorderLayout",
-                "org.netbeans.modules.form.layoutsupport.BorderLayoutSupport");
-            layoutToLayoutSupport.put(
-                "java.awt.FlowLayout",
-                "org.netbeans.modules.form.layoutsupport.FlowLayoutSupport");
-            layoutToLayoutSupport.put(
-                "javax.swing.BoxLayout",
-                "org.netbeans.modules.form.layoutsupport.BoxLayoutSupport");
-            layoutToLayoutSupport.put(
-                "java.awt.GridBagLayout",
-                "org.netbeans.modules.form.layoutsupport.GridBagLayoutSupport");
-            layoutToLayoutSupport.put(
-                "java.awt.GridLayout",
-                "org.netbeans.modules.form.layoutsupport.GridLayoutSupport");
-            layoutToLayoutSupport.put(
-                "java.awt.CardLayout",
-                "org.netbeans.modules.form.layoutsupport.CardLayoutSupport");
-            layoutToLayoutSupport.put(
-                "org.netbeans.lib.awtextra.AbsoluteLayout",
-                "org.netbeans.modules.form.layoutsupport.AbsoluteLayoutSupport");
+            layoutToLayoutDelegate.put(
+                "java.awt.BorderLayout", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.BorderLayoutSupport"); // NOI18N
+            layoutToLayoutDelegate.put(
+                "java.awt.FlowLayout", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.FlowLayoutSupport"); // NOI18N
+            layoutToLayoutDelegate.put(
+                "javax.swing.BoxLayout", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.BoxLayoutSupport"); // NOI18N
+            layoutToLayoutDelegate.put(
+                "java.awt.GridBagLayout", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.GridBagLayoutSupport"); // NOI18N
+            layoutToLayoutDelegate.put(
+                "java.awt.GridLayout", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.GridLayoutSupport"); // NOI18N
+            layoutToLayoutDelegate.put(
+                "java.awt.CardLayout", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.CardLayoutSupport"); // NOI18N
+            layoutToLayoutDelegate.put(
+                "org.netbeans.lib.awtextra.AbsoluteLayout", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.AbsoluteLayoutSupport"); // NOI18N
         }
-        return layoutToLayoutSupport;
+        return layoutToLayoutDelegate;
     }
 }

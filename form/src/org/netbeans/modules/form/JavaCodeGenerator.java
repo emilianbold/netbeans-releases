@@ -25,7 +25,8 @@ import org.openide.loaders.MultiDataObject.Entry;
 import org.netbeans.modules.java.JavaEditor;
 
 import org.netbeans.modules.form.editors.CustomCodeEditor;
-import org.netbeans.modules.form.layoutsupport.LayoutSupport;
+import org.netbeans.modules.form.codestructure.*;
+import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -101,6 +102,7 @@ class JavaCodeGenerator extends CodeGenerator {
     private JavaEditor.SimpleSection variablesSection;
 
     private Map containerDependentProperties;
+//    private Map initGeneratedElements;
 
     /** Creates new JavaCodeGenerator */
 
@@ -578,9 +580,6 @@ class JavaCodeGenerator extends CodeGenerator {
             variablesWriter.write("\n"); // NOI18N
 
             addVariables(formModel.getModelContainer(), variablesWriter);
-//            addVariables(formModel.getNonVisualsContainer(), variablesWriter);
-//            addVariables((ComponentContainer)formModel.getTopRADComponent(),
-//                         variablesWriter);
 
             variablesWriter.write(VARIABLES_FOOTER);
             variablesWriter.write("\n"); // NOI18N
@@ -628,9 +627,12 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void addInitCode(RADComponent comp,
                              Writer initCodeWriter,
-                             int level) throws IOException {
+                             int level)
+        throws IOException
+    {
         if (comp == null)
             return;
+
         generateComponentInit(comp, initCodeWriter);
         generateComponentEvents(comp, initCodeWriter);
 
@@ -660,8 +662,8 @@ class JavaCodeGenerator extends CodeGenerator {
             // are added to the container
             List postProps;
             if (containerDependentProperties != null
-                && (postProps = (List) containerDependentProperties
-                                       .get(comp)) != null)
+                && (postProps = (List)containerDependentProperties.get(comp))
+                    != null)
             {
                 for (Iterator it = postProps.iterator(); it.hasNext(); ) {
                     RADProperty prop = (RADProperty) it.next();
@@ -669,6 +671,8 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
                 initCodeWriter.write("\n");
             }
+//            if (comp instanceof RADVisualContainer)
+//                generateVisualCode((RADVisualContainer)comp, initCodeWriter);
         }
     }
 
@@ -700,6 +704,7 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(comp.getBeanClass().getName());
             initCodeWriter.write(")java.beans.Beans.instantiate(getClass().getClassLoader(), \""); // NOI18N
             // write package name
+            // !! [this won't work when filesystem root != classpath root]
             String packageName = formEditorSupport.getFormDataObject()
                             .getPrimaryFile().getParent().getPackageName('.');
             if (!"".equals(packageName)) { // NOI18N
@@ -742,16 +747,23 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private void generateComponentInit(RADComponent comp, Writer initCodeWriter) throws IOException {
+    private void generateComponentInit(RADComponent comp,
+                                       Writer initCodeWriter)
+        throws IOException
+    {
         if (comp instanceof RADVisualContainer) {
-            RADVisualContainer container = (RADVisualContainer) comp;
-            if (container.isLayoutChanged()) {
-                String setLayoutString =
-                    container.getLayoutSupport().getJavaSetLayoutString();
-                if (setLayoutString != null) {
-                    initCodeWriter.write(setLayoutString);
-                    initCodeWriter.write("\n");
+            LayoutSupportManager layoutSupport =
+                ((RADVisualContainer)comp).getLayoutSupport();
+
+            if (layoutSupport.isLayoutChanged()) {
+                Iterator it = layoutSupport.getLayoutCode()
+                                                .getConnectionsIterator();
+                while (it.hasNext()) {
+                    CodeConnection connection = (CodeConnection) it.next();
+                    initCodeWriter.write(getConnectionJavaString(connection, "")); // NOI18N
+                    initCodeWriter.write("\n"); // NOI18N
                 }
+                initCodeWriter.write("\n"); // NOI18N
             }
         }
 
@@ -802,14 +814,66 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
+    // This method generates all layout and add code in one block.
+    // Currently not used.
+    private void generateVisualCode(RADVisualContainer container,
+                                    Writer initCodeWriter)
+        throws IOException
+    {
+        LayoutSupportManager layoutSupport = container.getLayoutSupport();
+
+        if (layoutSupport.isLayoutChanged()) {
+            Iterator it = layoutSupport.getLayoutCode()
+                                            .getConnectionsIterator();
+            while (it.hasNext()) {
+                CodeConnection connection = (CodeConnection) it.next();
+                initCodeWriter.write(getConnectionJavaString(connection, "")); // NOI18N
+                initCodeWriter.write("\n"); // NOI18N
+            }
+        }
+
+        for (int i=0, n=layoutSupport.getComponentCount(); i < n; i++) {
+            Iterator it = layoutSupport.getComponentCode(i)
+                                            .getConnectionsIterator();
+            while (it.hasNext()) {
+                CodeConnection connection = (CodeConnection) it.next();
+                initCodeWriter.write(getConnectionJavaString(connection, "")); // NOI18N
+                initCodeWriter.write("\n"); // NOI18N
+            }
+        }
+
+        initCodeWriter.write("\n");
+
+        // hack for properties that can't be set until all children 
+        // are added to the container
+        List postProps;
+        if (containerDependentProperties != null
+            && (postProps = (List)containerDependentProperties.get(container))
+                != null)
+        {
+            for (Iterator it = postProps.iterator(); it.hasNext(); ) {
+                RADProperty prop = (RADProperty) it.next();
+                generatePropertySetter(container, prop, initCodeWriter);
+            }
+            initCodeWriter.write("\n");
+        }
+    }
+
     private void generateComponentAddCode(RADComponent comp,
                                           RADVisualContainer container,
-                                          Writer initCodeWriter) throws IOException {
+                                          Writer initCodeWriter)
+        throws IOException
+    {
         if (comp instanceof RADVisualComponent) {
-            LayoutSupport layoutSupp = container.getLayoutSupport();
-            if (layoutSupp != null) {
-                initCodeWriter.write(layoutSupp.getJavaAddComponentString(
-                                                    (RADVisualComponent)comp));
+            CodeConnectionGroup componentCode = container.getLayoutSupport()
+                                 .getComponentCode((RADVisualComponent)comp);
+            if (componentCode != null) {
+                Iterator it = componentCode.getConnectionsIterator();
+                while (it.hasNext()) {
+                    CodeConnection connection = (CodeConnection) it.next();
+                    initCodeWriter.write(getConnectionJavaString(connection, "")); // NOI18N
+                    initCodeWriter.write("\n"); // NOI18N
+                }
             }
         }
         else if (comp instanceof RADMenuComponent) {
@@ -1047,7 +1111,8 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     private boolean generateTryCode(Class[] exceptions, Writer initCodeWriter)
-    throws IOException {
+        throws IOException
+    {
         if (exceptions != null)
             for (int i=0; i < exceptions.length; i++)
                 if (Exception.class.isAssignableFrom(exceptions[i])
@@ -1061,9 +1126,10 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     private void generateCatchCode(Class[] exceptions, Writer initCodeWriter)
-    throws IOException {
+        throws IOException
+    {
         initCodeWriter.write("}"); // NOI18N
-        for (int i=0; i < exceptions.length; i++) {
+        for (int i=0, exCount=0; i < exceptions.length; i++) {
             Class exception = exceptions[i];
             if (!Exception.class.isAssignableFrom(exception)
                     || RuntimeException.class.isAssignableFrom(exception))
@@ -1082,10 +1148,10 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(exception.getName());
             initCodeWriter.write(" "); // NOI18N
 
-            String varName = "e"; // NOI18N
-            int varCount = 0;
-            while (formModel.getVariablePool().isReserved(varName))
-                varName = "e" + (++varCount); // NOI18N
+            String varName = "e" + ++exCount; // NOI18N
+//            int varCount = 0;
+//            while (formModel.getVariablePool().isReserved(varName))
+//                varName = "e" + (++varCount); // NOI18N
 
             initCodeWriter.write(varName);
             initCodeWriter.write(") {\n"); // NOI18N
@@ -1095,6 +1161,59 @@ class JavaCodeGenerator extends CodeGenerator {
                         
         }
         initCodeWriter.write("\n"); // NOI18N
+    }
+
+    // ---------
+    // generating general code structure
+
+    // java code for a connection
+    private static String getConnectionJavaString(CodeConnection connection,
+                                                  String thisStr)
+    {
+        CodeElement parent = connection.getParentElement();
+        String parentStr;
+        if (parent != null) {
+            parentStr = getElementJavaString(parent, thisStr);
+            if ("this".equals(parentStr)) // NOI18N
+                parentStr = thisStr;
+        }
+        else parentStr = null;
+
+        CodeElement[] params = connection.getConnectionParameters();
+        String[] paramsStr = new String[params.length];
+        for (int i=0; i < params.length; i++)
+            paramsStr[i] = getElementJavaString(params[i], thisStr);
+
+        return connection.getJavaCodeString(parentStr, paramsStr);
+    }
+
+    // java code for an element
+    private static String getElementJavaString(CodeElement element,
+                                               String thisStr)
+    {
+        CodeElementVariable var = element.getVariable();
+        if (var != null)
+            return var.getName();
+
+        CodeElementOrigin origin = element.getOrigin();
+        if (origin == null)
+            return null;
+
+        CodeElement parent = origin.getParentElement();
+        String parentStr;
+        if (parent != null) {
+            parentStr = getElementJavaString(parent, thisStr);
+            if ("this".equals(parentStr)) // NOI18N
+                parentStr = thisStr;
+        }
+        else parentStr = null;
+
+        CodeElement[] params = origin.getCreationParameters();
+        String[] paramsStr = new String[params.length];
+        for (int i=0; i < params.length; i++)
+            paramsStr[i] = getElementJavaString(params[i], thisStr);
+
+        return origin.getJavaCodeString(parentStr, paramsStr);
     }
 
     // -----------------------------------------------------------------------------
@@ -1113,7 +1232,6 @@ class JavaCodeGenerator extends CodeGenerator {
               || getEventHandlerSection(handlerName) != null)
             return false;
 
-//        FormEditorSupport s = formModel.getFormEditorSupport();
         IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
         StringWriter buffer = new StringWriter();
         Writer codeWriter = engine.createWriter(
@@ -1131,10 +1249,10 @@ class JavaCodeGenerator extends CodeGenerator {
                 codeWriter.write(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
                 codeWriter.flush();
                 i1 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerBody(bodyText)); //handlerName, paramTypes, bodyText));
+                codeWriter.write(getEventHandlerBody(bodyText));
                 codeWriter.flush();
                 i2 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerFooter()); //handlerName, paramTypes));
+                codeWriter.write(getEventHandlerFooter());
                 codeWriter.flush();
 
                 sec.setHeader(buffer.getBuffer().substring(0,i1));
@@ -1167,7 +1285,6 @@ class JavaCodeGenerator extends CodeGenerator {
         if (sec == null || !initialized || !canGenerate)
             return false;
 
-//        FormEditorSupport s = formModel.getFormEditorSupport();
         IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
         StringWriter buffer = new StringWriter();
         Writer codeWriter = engine.createWriter(formEditorSupport.getDocument(),
@@ -1180,10 +1297,10 @@ class JavaCodeGenerator extends CodeGenerator {
                 codeWriter.write(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
                 codeWriter.flush();
                 i1 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerBody(bodyText)); //handlerName, paramTypes, bodyText));
+                codeWriter.write(getEventHandlerBody(bodyText));
                 codeWriter.flush();
                 i2 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerFooter()); //handlerName, paramTypes));
+                codeWriter.write(getEventHandlerFooter());
                 codeWriter.flush();
 
                 sec.setHeader(buffer.getBuffer().substring(0,i1));
@@ -1254,7 +1371,6 @@ class JavaCodeGenerator extends CodeGenerator {
         return buf.toString();
     }
 
-//    private String getEventHandlerBody(String handlerName, String[] paramTypes, String bodyText) {
     private String getEventHandlerBody(String bodyText) {
         if (bodyText == null) {
             bodyText = getDefaultEventBody();
@@ -1262,7 +1378,6 @@ class JavaCodeGenerator extends CodeGenerator {
         return bodyText;
     }
 
-//    private String getEventHandlerFooter(String handlerName, String[] paramTypes) {
     private String getEventHandlerFooter() {
         return "}\n"; // NOI18N
     }
@@ -1281,7 +1396,6 @@ class JavaCodeGenerator extends CodeGenerator {
         if (sec == null || !initialized || !canGenerate)
             return false;
 
-//        FormEditorSupport s = formModel.getFormEditorSupport();
         IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
         StringWriter buffer = new StringWriter();
         Writer codeWriter = engine.createWriter(formEditorSupport.getDocument(),
@@ -1292,7 +1406,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 codeWriter.write(getEventHandlerHeader(newHandlerName, paramTypes, exceptTypes));
                 codeWriter.flush();
                 int i1 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerFooter()); //newHandlerName, paramTypes));
+                codeWriter.write(getEventHandlerFooter());
                 codeWriter.flush();
 
                 sec.setHeader(buffer.getBuffer().substring(0,i1));
@@ -1347,7 +1461,6 @@ class JavaCodeGenerator extends CodeGenerator {
     // sections acquirement
 
     private JavaEditor.InteriorSection getEventHandlerSection(String eventName) {
-//        FormEditorSupport s = formModel.getFormEditorSupport();
         return formEditorSupport.findInteriorSection(getEventSectionName(eventName));
     }
 

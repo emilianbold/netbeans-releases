@@ -189,7 +189,7 @@ public abstract class FormProperty extends Node.Property {
             setChanged(false);
             propertyValue = value;
             lastRealValue = null;
-            firePropertyValueChange(oldValue, value);
+            propertyValueChanged(oldValue, value);
             return;
         }
 
@@ -242,7 +242,7 @@ public abstract class FormProperty extends Node.Property {
         // or use Utilities.compareObjects(defValue,value) ?
 
         settleDesignValueListener(oldValue, value);
-        firePropertyValueChange(oldValue, value);
+        propertyValueChanged(oldValue, value);
     }
 
     /** This method gets the real value of the property. This is a support
@@ -334,7 +334,7 @@ public abstract class FormProperty extends Node.Property {
             setCurrentEditor(prEd);
 
         settleDesignValueListener(oldValue, defValue);
-        firePropertyValueChange(oldValue, defValue);
+        propertyValueChanged(oldValue, defValue);
     }
 
     /** This method re-sets cached value of the property to the target object.
@@ -472,7 +472,7 @@ public abstract class FormProperty extends Node.Property {
         propertyContext.initPropertyEditor(editor);
         currentEditor = editor;
 
-        fireCurrentEditorChange(old, editor);
+        currentEditorChanged(old, editor);
     }
 
     /** Gets the property editor explicitly designated for this property.
@@ -596,17 +596,20 @@ public abstract class FormProperty extends Node.Property {
         fireChanges = fire;
     }
 
-    protected void firePropertyValueChange(Object old, Object current) {
-        firePropertyChange(PROP_VALUE, old, current);
+    protected void propertyValueChanged(Object old, Object current) {
+        if (fireChanges)
+            firePropertyChange(PROP_VALUE, old, current);
     }
 
-    protected void fireCurrentEditorChange(PropertyEditor old, PropertyEditor current) {
-        firePropertyChange(CURRENT_EDITOR, old, current);
+    protected void currentEditorChanged(PropertyEditor old,
+                                           PropertyEditor current)
+    {
+        if (fireChanges)
+            firePropertyChange(CURRENT_EDITOR, old, current);
     }
 
     private void firePropertyChange(String propName, Object old, Object current) {
-        if (!fireChanges) return;
-
+//        if (!fireChanges) return;
         ArrayList targets;
         synchronized (this) {
             if (listeners == null) return;

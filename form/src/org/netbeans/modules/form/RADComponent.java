@@ -25,6 +25,8 @@ import org.openide.nodes.*;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
 
+import org.netbeans.modules.form.codestructure.*;
+
 /**
  *
  * @author Ian Formanek
@@ -48,7 +50,7 @@ public class RADComponent implements FormDesignValue {
     private Class beanClass;
     private Object beanInstance;
     private BeanInfo beanInfo;
-    private String componentName;
+//    private String componentName;
 
     private boolean readOnly;
 
@@ -72,6 +74,8 @@ public class RADComponent implements FormDesignValue {
 
     private RADComponentNode componentNode;
 
+    private CodeElement componentCodeElement;
+
 //    private String gotoMethod;
 
     private String storedName; // component name preserved between Cut and Paste
@@ -81,21 +85,27 @@ public class RADComponent implements FormDesignValue {
 
     /** Creates a new RADComponent */
     public RADComponent() {
-        auxValues = new HashMap(10);
+//        auxValues = new HashMap(10);
     }
 
     /** Called to initialize the component with specified FormModel.
      * @param formModel the FormModel of the form into which this component
      * will be added 
      */
-    public void initialize(FormModel formModel) {
+    public boolean initialize(FormModel formModel) {
         if (this.formModel != formModel) {
             this.formModel = formModel;
             readOnly = formModel.isReadOnly();
 
             // properties and events will be created on first request
             clearProperties();
+
+            if (beanClass != null)
+                createCodeElement();
+
+            return true;
         }
+        return false;
     }
 
     public void setParentComponent(RADComponent parentComp) {
@@ -110,8 +120,10 @@ public class RADComponent implements FormDesignValue {
         // properties and events will be created on first request
         clearProperties();
 
-        beanInfo = null;
+        if (this.beanClass == null || this.beanClass != beanClass)
+            beanInfo = null;
         this.beanClass = beanClass;
+        createCodeElement();
         setBeanInstance(createBeanInstance());
 
         return beanInstance;
@@ -133,8 +145,11 @@ public class RADComponent implements FormDesignValue {
         // properties and events will be created on first request
         clearProperties();
 
-        beanInfo = null;
+        if (this.beanClass == null || this.beanClass != beanClass)
+            beanInfo = null;
         this.beanClass = beanClass;
+        createCodeElement();
+
         try {
             setBeanInstance(createBeanInstance());
         }
@@ -155,7 +170,10 @@ public class RADComponent implements FormDesignValue {
         // properties and events will be created on first request
         clearProperties();
 
+        if (beanClass == null || beanClass != beanInstance.getClass())
+            beanInfo = null;
         beanClass = beanInstance.getClass();
+        createCodeElement();
         setBeanInstance(beanInstance);
 
         RADProperty[] props = getAllBeanProperties();
@@ -173,8 +191,8 @@ public class RADComponent implements FormDesignValue {
         }
     }
 
-    /** Updates the bean instance - e.g. when setting a property
-     * requires to re-create the bean.
+    /** Updates the bean instance - e.g. when setting a property requires
+     * to create new instance of the bean.
      */
     public void updateInstance(Object beanInstance) {
         if (this.beanInstance != null && this.beanClass == beanInstance.getClass())
@@ -204,6 +222,10 @@ public class RADComponent implements FormDesignValue {
      * other instance of another metacomponent needs to be modified too.
      */
     protected void setBeanInstance(Object beanInstance) {
+        if (beanClass == null) {
+            beanClass = beanInstance.getClass();
+            createCodeElement();
+        }
         this.beanInstance = beanInstance;
     }
 
@@ -215,6 +237,26 @@ public class RADComponent implements FormDesignValue {
 
     void setNodeReference(RADComponentNode node) {
         this.componentNode = node;
+    }
+
+    protected void createCodeElement() {
+        resetCodeElement();
+        componentCodeElement = formModel.getCodeStructure().createElement(
+//                                   beanClass,
+                                   FormCodeSupport.createOrigin(this));
+        if (formModel.getTopRADComponent() != this)
+            formModel.getCodeStructure().createVariable(
+                componentCodeElement, CodeElementVariable.FIELD, storedName);
+    }
+
+    void resetCodeElement() {
+        if (componentCodeElement != null) {
+            CodeElementVariable var = componentCodeElement.getVariable();
+            if (var != null && var.getType() != CodeElementVariable.NO_VARIABLE)
+                storedName = var.getName();
+            CodeStructure.removeElement(componentCodeElement);
+            componentCodeElement = null;
+        }
     }
 
     // -----------------------------------------------------------------------------
@@ -318,57 +360,83 @@ public class RADComponent implements FormDesignValue {
         return getBeanInfo().getBeanDescriptor().getValue("hidden-state") != null; // NOI18N
     }
 
+    public CodeElement getCodeElement() {
+        return componentCodeElement;
+    }
+
     /** Getter for the Name of the component - usually maps to variable
      * declaration for holding the instance of the component
      * @return current value of the Name property
      */
     public String getName() {
-        return componentName;
+        if (componentCodeElement != null) {
+            CodeElementVariable var = componentCodeElement.getVariable();
+            return var != null ? var.getName() : null;
+        }
+        return null;
+        // [maybe component name could generally differ from variable name ...]
     }
 
     /** Setter for the name of the component - it is the name of component's
      * node and the name of variable declaration for the component in generated code.
      * @param value new name of the component
      */
-    public void setName(String value) {
-        if (componentName != null && componentName.equals(value))
+    public void setName(String name) {
+        if (componentCodeElement == null)
             return;
-        
-        if (formModel.getVariablePool().findVariableType(value) != null) {
-            IllegalArgumentException iae =
-                new IllegalArgumentException("Component name already in use"); // NOI18N
-            TopManager.getDefault ().getErrorManager().annotate(
-                iae, ErrorManager.USER, null, 
-                FormEditor.getFormBundle().getString("ERR_COMPONENT_NAME_ALREADY_IN_USE"), null, null);
-            throw iae;
-        }
+        CodeElementVariable var = componentCodeElement.getVariable();
+        if (var != null && name.equals(var.getName())) //&& var.getType() == 0
+            return;
+        // [maybe we should distinguish between component name and variable
+        //  name when componentCodeElement.getVariableType() == 0]
 
-        if (!org.openide.util.Utilities.isJavaIdentifier(value)) {
+        if (!org.openide.util.Utilities.isJavaIdentifier(name)) {
             IllegalArgumentException iae =
                 new IllegalArgumentException("Invalid component name"); // NOI18N
             TopManager.getDefault ().getErrorManager().annotate(
                 iae, ErrorManager.USER, null, 
-                FormEditor.getFormBundle().getString("ERR_INVALID_COMPONENT_NAME"), null, null);
+                FormEditor.getFormBundle().getString("ERR_INVALID_COMPONENT_NAME"),
+                null, null);
             throw iae;
         }
-        
-        String oldName = componentName;
-        componentName = value;
+
+//        if (formModel.getVariablePool().findVariableType(value) != null)
+        if (formModel.getCodeStructure().isVariableNameReserved(name)) {
+            IllegalArgumentException iae =
+                new IllegalArgumentException("Component name already in use: "+name); // NOI18N
+            TopManager.getDefault ().getErrorManager().annotate(
+                iae, ErrorManager.USER, null, 
+                FormEditor.getFormBundle().getString("ERR_COMPONENT_NAME_ALREADY_IN_USE"),
+                null, null);
+            throw iae;
+        }
+
+        String oldName = var != null ? var.getName() : null;
+        formModel.getCodeStructure().createVariable(
+                componentCodeElement, CodeElementVariable.FIELD, name);
+
+//        if (oldName != null)
+//            formModel.getVariablePool().deleteVariable(oldName);
+//        formModel.getVariablePool().createVariable(componentName, beanClass);
 
         if (oldName != null)
-            formModel.getVariablePool().deleteVariable(oldName);
-        formModel.getVariablePool().createVariable(componentName, beanClass);
-
-        if (oldName != null)
-            renameDefaultEventHandlers(oldName, componentName);
+            renameDefaultEventHandlers(oldName, name);
         // [PENDING] renaming of default event handlers could be in global options...
 
         formModel.fireSyntheticPropertyChanged(this, PROP_NAME,
-                                               oldName, componentName);
+                                               oldName, name);
 
         if (getNodeReference() != null) {
             getNodeReference().updateName();
         }
+    }
+
+//    String getStoredName() {
+//        return storedName;
+//    }
+
+    void setStoredName(String name) {
+        storedName = name;
     }
 
     void renameDefaultEventHandlers(String oldName, String newName) {
@@ -400,8 +468,9 @@ public class RADComponent implements FormDesignValue {
         }
     }
 
-    /** Restore name of component. If stored name is already in use or is
-     * null then create a new name. */
+/*
+    / ** Restore name of component. If stored name is already in use or is
+     * null then create a new name. * /
     void useStoredName() {
         if (storedName == null && componentName != null
             //&& !formModel.getVariablePool().isReserved(componentName)
@@ -426,15 +495,16 @@ public class RADComponent implements FormDesignValue {
         }
     }
 
-    /** @return component name preserved between Cut and Paste */
+    / ** @return component name preserved between Cut and Paste * /
     String getStoredName() {
         return storedName;
     }
 
-    /** Can be called to store the component name into special variable to preserve it between Cut and Paste */
+    / ** Can be called to store the component name into special variable to preserve it between Cut and Paste * /
     void storeName() {
         storedName = componentName;
     }
+*/
 
     /** Allows to add an auxiliary <name, value> pair, which is persistent
      * in Gandalf. The current value can be obtained using
@@ -444,6 +514,8 @@ public class RADComponent implements FormDesignValue {
      * @param value new value of the aux property or null to remove it
      */
     public void setAuxValue(String key, Object value) {
+        if (auxValues == null)
+            auxValues = new HashMap(10);
         auxValues.put(key, value);
     }
 
@@ -452,7 +524,7 @@ public class RADComponent implements FormDesignValue {
      * @return null if the aux value for specified name is not set
      */
     public Object getAuxValue(String key) {
-        return auxValues.get(key);
+        return auxValues != null ? auxValues.get(key) : null;
     }
 
     /** Provides access to the FormModel class which manages the form in which
@@ -702,7 +774,8 @@ public class RADComponent implements FormDesignValue {
         if (getBeanInstance() instanceof javax.swing.AbstractButton)
             try {
                 RADProperty prop = new ButtonGroupProperty(this);
-                prop.addPropertyChangeListener(getPropertyListener());
+                setPropertyListener(prop);
+//                prop.addPropertyChangeListener(getPropertyListener());
                 nameToProperty.put(prop.getName(), prop);
 
                 Object propType = FormUtils.getPropertyType(
@@ -737,7 +810,8 @@ public class RADComponent implements FormDesignValue {
             return null;
 
         RADProperty prop = new RADProperty(this, desc);
-        prop.addPropertyChangeListener(getPropertyListener());
+        setPropertyListener(prop);
+//        prop.addPropertyChangeListener(getPropertyListener());
         nameToProperty.put(desc.getName(), prop);
 
         // should or should not values of "visible" and "enabled" properties
@@ -753,11 +827,17 @@ public class RADComponent implements FormDesignValue {
         return new PropertyListener();
     }
 
-    protected PropertyChangeListener getPropertyListener() {
+    protected void setPropertyListener(FormProperty property) {
         if (propertyListener == null)
             propertyListener = createPropertyListener();
-        return propertyListener;
+        if (propertyListener != null)
+            property.addPropertyChangeListener(propertyListener);
     }
+//    protected PropertyChangeListener getPropertyListener() {
+//        if (propertyListener == null)
+//            propertyListener = createPropertyListener();
+//        return propertyListener;
+//    }
 
     // -----------------------------------------------------------------------------
     // Debug methods
