@@ -316,7 +316,7 @@ final class LibrariesNode extends AbstractNode {
                 raw = privateProps.getProperty(currentClassPath);
             }
             if (raw == null) {
-                return Collections.EMPTY_LIST;
+                return result;
             }
             List pe = new ArrayList(Arrays.asList(PropertyUtils.tokenizePath( raw )));
             while (pe.size()>0){
