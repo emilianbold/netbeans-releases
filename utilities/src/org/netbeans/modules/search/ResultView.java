@@ -139,7 +139,10 @@ final class ResultView extends TopComponent
         buttonGroup.add(sortButton);
         buttonGroup.add(unsortButton);
         
+        Node root = createTreeViewRoot();
         explorerManager = new ExplorerManager();
+        explorerManager.setRootContext(root);
+        selectAndActivateNode(root);
         explorerManager.addPropertyChangeListener(
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
@@ -155,7 +158,6 @@ final class ResultView extends TopComponent
         treeView.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(ResultView.class, "ACS_TREEVIEW")); //NOI18N
         treeView.setBorder(Utils.getExplorerViewBorder());
-        explorerManager.setRootContext(createTreeViewRoot());
 
         /* Create the right part of the window: */
         detailsPanel = new DetailsPanel();
@@ -205,6 +207,32 @@ final class ResultView extends TopComponent
                                          "TEXT_Search_in_filesystems"));//NOI18N
         node.setIconBase("org/netbeans/modules/search/res/find");       //NOI18N
         return node;
+    }
+
+    /**
+     * Selects and activates a given node.
+     * Selects a given node in the tree of found objects.
+     * If the nodes cannot be selected and/or activated,
+     * clears the selection (and notifies that no node is currently
+     * activated).
+     * 
+     * @param  node  node to be selected and activated
+     */
+    private final void selectAndActivateNode(final Node node) {
+        Node[] nodeArray = new Node[] {node};
+        try {
+            explorerManager.setSelectedNodes(nodeArray);
+            setActivatedNodes(nodeArray);
+        } catch (PropertyVetoException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            nodeArray = new Node[0];
+            try {
+                explorerManager.setSelectedNodes(nodeArray);
+                setActivatedNodes(nodeArray);
+            } catch (PropertyVetoException ex2) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex2);
+            }
+        }
     }
     
     /** Overriden to explicitely set persistence type of ResultView
@@ -319,7 +347,10 @@ final class ResultView extends TopComponent
         }
         
         this.resultModel = resultModel;
-        explorerManager.setRootContext(resultModel.getRoot());
+        
+        Node root = resultModel.getRoot();
+        explorerManager.setRootContext(root);
+        selectAndActivateNode(root);
         
         resultModel.addChangeListener(this);
         
@@ -354,11 +385,9 @@ final class ResultView extends TopComponent
      */
     private void nodeSelectionChanged() {
         Node[] nodes = explorerManager.getSelectedNodes();
-        if (nodes != null && nodes.length == 1) {
-            Node selectedNode = nodes[0];
-            if (resultModel != null) {
-                showDetails(selectedNode);
-            }
+        setActivatedNodes(nodes);
+        if (nodes.length == 1 && resultModel != null) {
+            showDetails(nodes[0]);
         } else {
             showDetails(null);
         }
@@ -466,15 +495,12 @@ final class ResultView extends TopComponent
         Node root = resultModel.sortNodes(sorted);
         explorerManager.setRootContext(root);
         initButtons();
-
-        if (selectedNodes != null) {        
-            try {
-                explorerManager.setSelectedNodes(selectedNodes);
-            } catch(PropertyVetoException pve) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                                 pve);
-                // OK it was vetoed.
-            }
+        try {
+            explorerManager.setSelectedNodes(selectedNodes);
+            setActivatedNodes(selectedNodes);
+        } catch(PropertyVetoException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            selectAndActivateNode(root);
         }
     }
     
