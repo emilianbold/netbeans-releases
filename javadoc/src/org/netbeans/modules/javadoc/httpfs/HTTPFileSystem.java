@@ -76,7 +76,7 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
 
     private static final long   serialVersionUID = 200104;
     // Default URL to use for a new filesystem
-    private static final String DEFAULT_URL = "http://www.netbeans.org/download/apis/"; // NO I18N
+    private static final String DEFAULT_URL = "http://www.netbeans.org/download/apis/"; //NOI18N
     
     
     // URL to the Javadocs
@@ -400,7 +400,7 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
                 
             }
             // If this URL doesn't point to a directory,
-            if( !newURL.toExternalForm( ).endsWith( "/" ) ){    // NO I18N
+            if( !newURL.toExternalForm( ).endsWith( "/" ) ){    //NOI18N
 
                 // Reject this URL
                 throw new PropertyVetoException( ResourceUtils.getBundledString( "MSG_NotDirectory" ), propertyChangeEvent );    //NOI18N
@@ -462,13 +462,13 @@ public class HTTPFileSystem extends FileSystem implements VetoableChangeListener
         if( getState( ) == STATE_READING ) {
 
             // Use the "scanning" message
-            messageKey = "DisplayName_Scanning";
+            messageKey = "DisplayName_Scanning"; // NOI18N
 
         // If the web server is not being scanned,
         } else {
 
             // Use the "normal" message
-            messageKey = "DisplayName_Normal";
+            messageKey = "DisplayName_Normal"; // NOI18N
 
         }
 

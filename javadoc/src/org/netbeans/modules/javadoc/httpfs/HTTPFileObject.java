@@ -326,7 +326,7 @@ class HTTPFileObject extends FileObject {
             
         } else {
             
-            throw new FileStateInvalidException( ResourceUtils.getBundledString( "MSG_FilesystemNotFound" ) );  // NO I18N
+            throw new FileStateInvalidException( ResourceUtils.getBundledString( "MSG_FilesystemNotFound" ) );  //NOI18N
             
         }
     }

@@ -116,7 +116,7 @@ public class IndexSearch
         initComponents ();
         
         // Force winsys to not show tab when this comp is alone                                                                                                                 
-        putClientProperty("TabPolicy", "HideWhenAlone");  
+        putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
 
         javax.swing.ComboBoxEditor editor = searchComboBox.getEditor();
         editor.addActionListener (new java.awt.event.ActionListener () {

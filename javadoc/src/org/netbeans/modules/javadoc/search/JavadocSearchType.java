@@ -49,7 +49,7 @@ public abstract class JavadocSearchType extends ServiceType {
         if (overviewLabelFilters != null)
             return;
         String filter = NbBundle.getMessage(JavadocSearchType.class, "FILTER_OverviewIndiceLabel"); // NOI18N
-        StringTokenizer tok = new StringTokenizer(filter, "\n");
+        StringTokenizer tok = new StringTokenizer(filter, "\n"); // NOI18N
         LinkedList ll = new LinkedList();
         for (int i = 0; tok.hasMoreTokens(); i++) {
             try {

@@ -183,7 +183,7 @@ class HTTPRootFileObject
 
 
         // Get the local "package-list" file
-        packageFile = child( "package-list", false );   //NO I18N
+        packageFile = child( "package-list", false );   //NOI18N
 
         // If there is a local "package-list" file,
         if( packageFile != null ) {
@@ -244,26 +244,26 @@ class HTTPRootFileObject
         removeAllChildren( );
 
         // Add the standard files for a Javadoc directory structre
-        if( addOptionalChild( "/package-list" ) ) { //NO I18N
+        if( addOptionalChild( "/package-list" ) ) { //NOI18N
 
-            packageFile = child( "package-list", false );       //NO I18N
-            addChild( "/allclasses-frame.html" );        //NO I18N
-            addOptionalChild( "/deprecated-list.html" ); //NO I18N
-            addOptionalChild( "/help-doc.html" );        //NO I18N
-            addOptionalChild( "/index.html" );           //NO I18N
-            addChild( "/overview-frame.html" );          //NO I18N
-            addChild( "/overview-summary.html" );        //NO I18N
-            addOptionalChild( "/overview-tree.html" );   //NO I18N
-            addChild( "/packages.html" );                //NO I18N
-            addChild( "/serialized-form.html" );         //NO I18N
-            addChild( "/stylesheet.css" );               //NO I18N
+            packageFile = child( "package-list", false );       //NOI18N
+            addChild( "/allclasses-frame.html" );        //NOI18N
+            addOptionalChild( "/deprecated-list.html" ); //NOI18N
+            addOptionalChild( "/help-doc.html" );        //NOI18N
+            addOptionalChild( "/index.html" );           //NOI18N
+            addChild( "/overview-frame.html" );          //NOI18N
+            addChild( "/overview-summary.html" );        //NOI18N
+            addOptionalChild( "/overview-tree.html" );   //NOI18N
+            addChild( "/packages.html" );                //NOI18N
+            addChild( "/serialized-form.html" );         //NOI18N
+            addChild( "/stylesheet.css" );               //NOI18N
 
             // Add the full index file
-            if( !addOptionalChild( "/index-all.html" ) ) {   //NO I18N
+            if( !addOptionalChild( "/index-all.html" ) ) {   //NOI18N
 
                 // If there was no full index, search for split index files
                 indexFileNumber = 1;
-                while( addOptionalChild( "/index-" + indexFileNumber + ".html" ) ) { //NO I18N
+                while( addOptionalChild( "/index-" + indexFileNumber + ".html" ) ) { //NOI18N
 
                     indexFileNumber++;                    
 
@@ -273,13 +273,13 @@ class HTTPRootFileObject
                 if( indexFileNumber == 1 ) {
 
                     // Look in /index-files/
-                    indexDirectory = new HTTPFileObject( "/index-files/", parentFileSystem );   //NO I18N
+                    indexDirectory = new HTTPFileObject( "/index-files/", parentFileSystem );   //NOI18N
                     // Add the full index file
-                    if( !indexDirectory.addOptionalChild( "/index-files/index-all.html" ) ) {   //NO I18N
+                    if( !indexDirectory.addOptionalChild( "/index-files/index-all.html" ) ) {   //NOI18N
 
                         // If there was no full index, search for split index files
                         indexFileNumber = 1;
-                        while( indexDirectory.addOptionalChild( "/index-files/index-" + indexFileNumber + ".html" ) ) { //NO I18N
+                        while( indexDirectory.addOptionalChild( "/index-files/index-" + indexFileNumber + ".html" ) ) { //NOI18N
 
                             indexFileNumber++;
 
