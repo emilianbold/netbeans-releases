@@ -419,7 +419,6 @@
 <mapID target="debug.sessions.64bit" url="debug/sessions/64bit_jvm_debug.html" />
 <mapID target="debug.current-context" url="debug/environment/context.html" />
 
-<mapID target="debug.sessions.finishdialog" url="debug/sessions/finishdialog.html" />
 <mapID target="debug.attachvm.window" url="debug/environment/attachvm_window.html" />
 
 <mapID target="debug.breakpoint" url="debug/breakpoint/breakpoint_set.html" />
