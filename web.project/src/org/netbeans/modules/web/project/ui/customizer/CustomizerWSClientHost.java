@@ -105,7 +105,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
             wsCompileEditor = editorSupport.getWsCompileSupport();
         }
         
-        wsCompileEditor.initValues(serviceSettings);
+        wsCompileEditor.initValues(serviceSettings, WsCompileEditorSupport.TYPE_CLIENT);
     }   
     
     public void validatePanel() throws WizardValidationException {
