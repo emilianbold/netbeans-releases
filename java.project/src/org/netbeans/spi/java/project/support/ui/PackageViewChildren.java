@@ -206,7 +206,9 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     private void add( FileObject fo ) {
         String path = FileUtil.getRelativePath( root, fo );
         assert path != null : "Adding wrong folder " + fo;
-        names2nodes.put( path, NODE_NOT_CREATED );
+        if ( get( fo ) == null ) { 
+            names2nodes.put( path, NODE_NOT_CREATED );
+        }
     }
 
     private void remove( FileObject fo ) {
