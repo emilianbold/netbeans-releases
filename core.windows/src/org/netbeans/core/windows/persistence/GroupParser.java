@@ -180,7 +180,7 @@ class GroupParser {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                 continue;
             }
-            boolean tcGroupAccepted = acceptTCGroup(tcGroupParser);
+            boolean tcGroupAccepted = acceptTCGroup(tcGroupParser, tcGroupCfg);
             if (tcGroupAccepted) {
                 tcGroupCfgList.add(tcGroupCfg);
             } else {
@@ -209,13 +209,19 @@ class GroupParser {
     /** Checks if module for given tcGroup exists.
      * @return true if tcGroup is valid - its module exists
      */
-    private boolean acceptTCGroup (TCGroupParser tcGroupParser) {
+    private boolean acceptTCGroup (TCGroupParser tcGroupParser, TCGroupConfig config) {
         InternalConfig cfg = tcGroupParser.getInternalConfig();
         //Check module info
         if (cfg.moduleCodeNameBase != null) {
             ModuleInfo curModuleInfo = PersistenceManager.findModule
-            (cfg.moduleCodeNameBase, cfg.moduleCodeNameRelease,
-             cfg.moduleSpecificationVersion);
+                                        (cfg.moduleCodeNameBase, cfg.moduleCodeNameRelease,
+                                         cfg.moduleSpecificationVersion);
+            if (curModuleInfo == null) {
+                ErrorManager em = ErrorManager.getDefault();
+                em.log (ErrorManager.INFORMATIONAL, "Cannot find module \'" + 
+                          cfg.moduleCodeNameBase + " " + cfg.moduleCodeNameRelease + " " + 
+                          cfg.moduleSpecificationVersion + "\' for tcgrp with name \'" + config.tc_id + "\'"); // NOI18N
+            }
             if ((curModuleInfo != null) && curModuleInfo.isEnabled()) {
                 //Module is present and is enabled
                 return true;

@@ -278,7 +278,7 @@ class ModeParser {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                 continue;
             }
-            boolean tcRefAccepted = acceptTCRef(tcRefParser);
+            boolean tcRefAccepted = acceptTCRef(tcRefParser, tcRefCfg);
             if (tcRefAccepted) {
                 tcRefCfgList.add(tcRefCfg);
             } else {
@@ -320,14 +320,21 @@ class ModeParser {
     /** Checks if module for given tcRef exists.
      * @return true if tcRef is valid - its module exists
      */
-    private boolean acceptTCRef (TCRefParser tcRefParser) {
+    private boolean acceptTCRef (TCRefParser tcRefParser, TCRefConfig config) {
         InternalConfig cfg = tcRefParser.getInternalConfig();
         //Check module info
         if (cfg.moduleCodeNameBase != null) {
             ModuleInfo curModuleInfo = PersistenceManager.findModule
-            (cfg.moduleCodeNameBase, cfg.moduleCodeNameRelease,
-             cfg.moduleSpecificationVersion);
-             return (curModuleInfo != null) && curModuleInfo.isEnabled();
+                                            (cfg.moduleCodeNameBase, cfg.moduleCodeNameRelease,
+                                             cfg.moduleSpecificationVersion);
+            if (curModuleInfo == null) {
+                ErrorManager em = ErrorManager.getDefault();
+                em.log (ErrorManager.INFORMATIONAL, "Cannot find module \'" + 
+                          cfg.moduleCodeNameBase + " " + cfg.moduleCodeNameRelease + " " + 
+                          cfg.moduleSpecificationVersion + "\' for tcref with id \'" + config.tc_id + "\'"); // NOI18N
+                
+            }
+            return (curModuleInfo != null) && curModuleInfo.isEnabled();
         } else {
             //No module info
             return true;

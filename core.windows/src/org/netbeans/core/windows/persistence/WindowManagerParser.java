@@ -410,7 +410,7 @@ public class WindowManagerParser {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                 continue;
             }
-            boolean modeAccepted = acceptMode(modeParser);
+            boolean modeAccepted = acceptMode(modeParser, modeCfg);
             if (modeAccepted) {
                 modeCfgList.add(modeCfg);
             } else {
@@ -431,13 +431,19 @@ public class WindowManagerParser {
     /** Checks if module for given mode exists.
      * @return true if mode is valid - its module exists
      */
-    private boolean acceptMode (ModeParser modeParser) {
+    private boolean acceptMode (ModeParser modeParser, ModeConfig config) {
         InternalConfig cfg = modeParser.getInternalConfig();
         //Check module info
         if (cfg.moduleCodeNameBase != null) {
             ModuleInfo curModuleInfo = PersistenceManager.findModule
             (cfg.moduleCodeNameBase, cfg.moduleCodeNameRelease,
              cfg.moduleSpecificationVersion);
+            if (curModuleInfo == null) {
+                ErrorManager em = ErrorManager.getDefault();
+                em.log (ErrorManager.INFORMATIONAL, "Cannot find module \'" + 
+                          cfg.moduleCodeNameBase + " " + cfg.moduleCodeNameRelease + " " + 
+                          cfg.moduleSpecificationVersion + "\' for wsmode with name \'" + config.name + "\'"); // NOI18N
+            }
             if ((curModuleInfo != null) && curModuleInfo.isEnabled()) {
                 //Module is present and is enabled
                 return true;
@@ -527,7 +533,7 @@ public class WindowManagerParser {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                 continue;
             }
-            boolean groupAccepted = acceptGroup(groupParser);
+            boolean groupAccepted = acceptGroup(groupParser, groupCfg);
             if (groupAccepted) {
                 groupCfgList.add(groupCfg);
             } else {
@@ -548,13 +554,20 @@ public class WindowManagerParser {
     /** Checks if module for given group exists.
      * @return true if group is valid - its module exists
      */
-    private boolean acceptGroup (GroupParser groupParser) {
+    private boolean acceptGroup (GroupParser groupParser, GroupConfig config) {
         InternalConfig cfg = groupParser.getInternalConfig();
         //Check module info
         if (cfg.moduleCodeNameBase != null) {
             ModuleInfo curModuleInfo = PersistenceManager.findModule
-            (cfg.moduleCodeNameBase, cfg.moduleCodeNameRelease,
-             cfg.moduleSpecificationVersion);
+                                        (cfg.moduleCodeNameBase, cfg.moduleCodeNameRelease,
+                                         cfg.moduleSpecificationVersion);
+            if (curModuleInfo == null) {
+                ErrorManager em = ErrorManager.getDefault();
+                em.log (ErrorManager.INFORMATIONAL, "Cannot find module \'" + 
+                          cfg.moduleCodeNameBase + " " + cfg.moduleCodeNameRelease + " " + 
+                          cfg.moduleSpecificationVersion + "\' for group with name \'" + config.name + "\'"); // NOI18N
+                
+            }
             if ((curModuleInfo != null) && curModuleInfo.isEnabled()) {
                 //Module is present and is enabled
                 return true;
