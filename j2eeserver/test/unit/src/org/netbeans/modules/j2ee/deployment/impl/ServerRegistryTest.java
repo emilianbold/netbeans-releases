@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
+import javax.enterprise.deploy.shared.ModuleType;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.*;
@@ -73,6 +74,21 @@ public class ServerRegistryTest extends ServerRegistryTestBase {
         ServerInstance instance = registry.getServerInstance(url);
         if (instance == null || ! instance.getUrl().equals(url)) {
             fail("Failed: expected: " + url + " got: " + instance);
+        }
+    }
+    
+    public void testDeploymentFileNames() {
+        ServerRegistry registry = ServerRegistry.getInstance();
+        Server testPlugin = registry.getServer("Test");
+        if (testPlugin == null || ! testPlugin.getShortName().equals("Test")) {
+            fail("Could not get testPlugin: "+testPlugin);
+        }
+        String expected = "META-INF/context.xml";
+        String[] names = testPlugin.getDeploymentPlanFiles(ModuleType.WAR);
+        if (names == null || names.length != 1) {
+            fail("Got null or incorrect deploy plan file paths: " + names);
+        } else if (! names[0].equals(expected)) {
+            fail("Expected: "+expected+" Got: "+names[0]);
         }
     }
     
