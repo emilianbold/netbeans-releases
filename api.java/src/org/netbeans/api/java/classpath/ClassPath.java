@@ -134,8 +134,8 @@ public abstract class ClassPath {
      * to a given ResourceName; only the first one is seen by the ClassLoader
      * at runtime or can be linked against.  The resource name uses slashes ('/')
      * as folder separator and must not start with slash.
+     * @param resourceName resource name
      * @return list of resources identified by the given name.
-     * @param java-style resource name
      */
     public final List findAllResources(String resourceName) {
 	FileObject[] roots = getRoots();
