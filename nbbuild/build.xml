@@ -29,7 +29,8 @@ workspaceswitcher
 
   <target name="bootstrap-init">
     <property name="binroot" location="../../nbextra"/>
-    <available property="have-binaries-already" file="${binroot}/core/release/lib/ext/jh.jar"/>
+    <property name="checked.binary.file" location="${binroot}/core/release/lib/ext/jh.jar"/>
+    <available property="have-binaries-already" file="${checked.binary.file}"/>
   </target>
 
   <target name="bootstrap" depends="check-for-binaries"
@@ -107,7 +108,7 @@ workspaceswitcher
   </target>
 
   <target name="check-for-binaries" depends="bootstrap-init" unless="have-binaries-already">
-    <fail message="You seem to be missing the required download of binaries which are required to build the IDE. Please see: http://www.netbeans.org/downloads.html"/>
+    <fail message="You seem to be missing the required download of binaries which are required to build the IDE (I was looking for ${checked.binary.file}). Please see: http://www.netbeans.org/downloads.html"/>
   </target>
 
   <!-- How to build the IDE core: -->
