@@ -210,13 +210,15 @@ public final class ActionUtils {
             }
             if (i > 0) {
                 b.append(',');
-            }
-            b.append(path);
-            if (files[i].isFolder()) {
-                if (!files[i].equals (dir)) {
+            }            
+            if (path.length() > 0) {
+                b.append(path);
+                if (files[i].isFolder()) {
                     b.append('/');
                 }
-                b.append ("**/*");
+            } else {
+                // files[i] == dir, cannot use "/".
+                b.append("**");
             }
         }
         return b.toString();

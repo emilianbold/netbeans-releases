@@ -102,10 +102,10 @@ public class ActionUtilsTest extends NbTestCase {
         assertEquals("2 includes", "f1.data,sub/f3.data", ActionUtils.antIncludesList(new FileObject[] {f1, f3}, dir));
         assertEquals("1 include", "f1.data", ActionUtils.antIncludesList(new FileObject[] {f1}, dir));
         assertEquals("no includes", "", ActionUtils.antIncludesList(new FileObject[0], dir));
-        assertEquals("1 folder include","sub/**/*",ActionUtils.antIncludesList(new FileObject[]{subdir}, dir));
-        assertEquals("root folder include","**/*",ActionUtils.antIncludesList(new FileObject[]{dir}, dir));        
-        assertEquals("2 folder includes","sub/**/*,subdir2/sub/**/*",ActionUtils.antIncludesList(new FileObject[]{subdir, subsubdir}, dir));
-        assertEquals("mixed files and folder includes","sub/f3.data,subdir2/sub/**/*",ActionUtils.antIncludesList(new FileObject[]{f3, subsubdir}, dir));
+        assertEquals("1 folder include","sub/",ActionUtils.antIncludesList(new FileObject[]{subdir}, dir));
+        assertEquals("root folder include","**",ActionUtils.antIncludesList(new FileObject[]{dir}, dir));        
+        assertEquals("2 folder includes","sub/,subdir2/sub/",ActionUtils.antIncludesList(new FileObject[]{subdir, subsubdir}, dir));
+        assertEquals("mixed files and folder includes","sub/f3.data,subdir2/sub/",ActionUtils.antIncludesList(new FileObject[]{f3, subsubdir}, dir));
     }
     
     public void testRegexpMapFiles() throws Exception {
