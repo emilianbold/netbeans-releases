@@ -180,15 +180,13 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
                     //AntModule.err.log ("doc=" + doc);
                     // Xerces DOM parser implements DOM event model.
                     EventTarget targ = (EventTarget) doc;
-                    // This one is generic and should suffice for them all.
-                    // But Xerces seems to have a bug that listening to this one
-                    // *sometimes* fires other changes, sometimes not! Erratic.
-                    //targ.addEventListener ("DOMSubtreeModified", this, false); // NOI18N
+                    targ.addEventListener ("DOMSubtreeModified", this, false); // NOI18N
                     // Normal bubbling mutation events:
-                    targ.addEventListener ("DOMNodeInserted", this, false); // NOI18N
-                    targ.addEventListener ("DOMNodeRemoved", this, false); // NOI18N
+                    //targ.addEventListener ("DOMNodeInserted", this, false); // NOI18N
+                    //targ.addEventListener ("DOMNodeRemoved", this, false); // NOI18N
+                    // See comment in ElementNode:
                     targ.addEventListener ("DOMAttrModified", this, false); // NOI18N
-                    targ.addEventListener ("DOMCharacterDataModified", this, false); // NOI18N
+                    //targ.addEventListener ("DOMCharacterDataModified", this, false); // NOI18N
                 }
                 projDoc = doc;
                 exception = null;
@@ -362,8 +360,6 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
             AntModule.err.log (ErrorManager.WARNING, "AntProjectSupport.handleEvent on stale DOM tree");
             return;
         }
-        // Careful! DOMNodeRemoved is fired *before* the removal!
-        // So it is necessary to do updates asynchronously.
         RequestProcessor.postRequest (this);
     }
     
