@@ -405,7 +405,6 @@ public class NonGui extends NbTopManager implements Runnable {
                     "org.netbeans.beaninfo", // NOI18N
                     "org.netbeans.beaninfo.awt", // NOI18N
                     "org.netbeans.beaninfo.swing", // NOI18N
-                    "javax.swing.beaninfo", // NOI18N
                     "sun.beans.infos" // NOI18N
                 });
         java.beans.PropertyEditor pe = java.beans.PropertyEditorManager.findEditor(java.lang.Byte.TYPE); // to enforce initialization of registering PE for primitive types
