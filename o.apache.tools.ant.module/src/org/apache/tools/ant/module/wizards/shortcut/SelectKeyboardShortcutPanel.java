@@ -48,7 +48,8 @@ public class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements W
 
     
     private void initAccessibility () {        
-        testField.getAccessibleContext().setAccessibleName(NbBundle.getMessage (SelectKeyboardShortcutPanel.class, "ACS_LBL_type_here")); 
+        testField.getAccessibleContext().setAccessibleName(NbBundle.getMessage (SelectKeyboardShortcutPanel.class, "ACSN_LBL_type_here")); 
+        testField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (SelectKeyboardShortcutPanel.class, "ACSD_LBL_type_here")); 
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectKeyboardShortcutPanel.class, "SKSP_TEXT_press_any_key_seq"));
     }
     

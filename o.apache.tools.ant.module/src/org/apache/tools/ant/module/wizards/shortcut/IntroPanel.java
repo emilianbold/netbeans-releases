@@ -49,6 +49,11 @@ public class IntroPanel extends javax.swing.JPanel implements WizardDescriptor.P
     
     private void initAccessibility () {    
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroPanel.class, "IP_TEXT_select_how_to_install_shortcut"));
+        menuCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroPanel.class, "ACS_IP_LBL_add_menu_item"));
+        toolbarCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroPanel.class, "ACS_IP_LBL_add_toolbar_button"));
+        projectCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroPanel.class, "ACS_IP_LBL_add_to_project"));
+        keyboardCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroPanel.class, "ACS_IP_LBL_add_kbd_shortcut"));        
+        customizeCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroPanel.class, "ACS_IP_LBL_cust_code_checkbox"));
     }
     
     /** This method is called from within the constructor to

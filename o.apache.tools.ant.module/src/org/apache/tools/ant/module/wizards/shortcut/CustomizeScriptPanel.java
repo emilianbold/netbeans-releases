@@ -58,7 +58,8 @@ public class CustomizeScriptPanel extends javax.swing.JPanel implements WizardDe
     }
 
     private void initAccessibility () {        
-        scriptPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage (CustomizeScriptPanel.class, "ACS_TEXT_you_may_customize_gend2"));          
+        scriptPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage (CustomizeScriptPanel.class, "ACSN_TEXT_you_may_customize_gend2"));          
+        scriptPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (CustomizeScriptPanel.class, "ACSD_TEXT_you_may_customize_gend2"));          
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizeScriptPanel.class, "CSP_TEXT_you_may_customize_gend2"));
     }
     

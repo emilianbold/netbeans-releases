@@ -98,6 +98,8 @@ public class SelectFolderPanel extends javax.swing.JPanel implements WizardDescr
 
     private void initAccessibility(String hint) {        
         this.getAccessibleContext().setAccessibleDescription(hint);
+        treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SelectFolderPanel.class, "ACSN_treeView"));
+        treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectFolderPanel.class, "ACSD_treeView"));        
     }
     
     /** This method is called from within the constructor to
