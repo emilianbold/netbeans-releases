@@ -88,12 +88,4 @@ Microsystems, Inc. All Rights Reserved.
 
   </folder>
   
-  <folder name="Web">
-    <folder name="MonitorSupport">
-        <file name="java-lang-Runnable.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.monitor.MonitorModule.getMonitorStartRunnable" />
-        </file>    
-    </folder>
-  </folder>
-
 </filesystem>

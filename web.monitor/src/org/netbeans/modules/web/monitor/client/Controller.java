@@ -99,15 +99,22 @@ public class Controller  {
     private SystemOption settings = null;
 
     private boolean useBrowserCookie = true;
-    
-    public Controller() {
 
+    private static Controller instance = null; 
+    
+    private Controller() {
 	currBeans = new Hashtable();
 	saveBeans = new Hashtable();
 	createNodeStructure();
 	registerBrowserListener();
     }
 
+    public static Controller getInstance() { 
+	if(instance == null) 
+	    instance = new Controller(); 
+	return instance;
+    }
+ 
     /**
      * Invoked at startup, creates the root folder and the folder for
      * current and saved transactions (and their children arrays).
@@ -132,6 +139,11 @@ public class Controller  {
 	root = new NavigateNode(children);
 
 	    
+    }
+
+    public static void removeFiles() { 
+	if(instance == null) return; 
+	instance.cleanup(); 
     }
 
     public void cleanup() {

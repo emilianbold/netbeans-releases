@@ -33,12 +33,10 @@ import org.netbeans.modules.web.monitor.server.Constants;
   
 public class PutTransaction extends HttpServlet {
 
-
     private static FileObject currDir = null;
     private static boolean debug = false;
      
     private ServletConfig servletConfig = null;
-    
 
     public void doPost(HttpServletRequest req, HttpServletResponse res) 
 	throws ServletException, IOException {
@@ -137,10 +135,10 @@ public class PutTransaction extends HttpServlet {
         // window system code must be run in AWT thread
         SwingUtilities.invokeLater(new Runnable() {
             public void run () {
-                if(success2 && MonitorAction.tv != null && MonitorAction.tv.isOpened()) 
-                    MonitorAction.getController().addTransaction(id2); 
-            }
-        });
+                if(success2) {
+		    MonitorAction.addTransaction(id2); 
+		}
+	    }});
     }
 
     // PENDING - deal better with this

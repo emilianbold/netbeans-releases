@@ -35,6 +35,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;    
 import java.beans.PropertyChangeEvent;
 import java.io.ObjectStreamException;
+import java.io.Serializable;
 import javax.swing.Icon;     
 import javax.swing.ImageIcon;     
 import javax.swing.JFrame;     
@@ -74,12 +75,13 @@ import org.netbeans.modules.web.monitor.data.MonitorData;
  * Update title does not work like it should. Maybe there is a getName
  * method for this that I can override.
  */
-public class TransactionView extends ExplorerPanel implements
+class TransactionView extends ExplorerPanel implements
 				     PropertyChangeListener, ChangeListener {
 
     // Handles all the files etc. 
-    private static Controller controller = null;
-    
+    private transient static TransactionView instance = null; 
+    private transient static Controller controller = null;
+
     // Misc
     private transient JLabel transactionTitle = null;
     private transient ToolbarToggleButton timeAButton, 	timeDButton,
@@ -180,9 +182,9 @@ public class TransactionView extends ExplorerPanel implements
      * time. Because all this is done at startup, we don't actually
      * retrieve any data until the Monitor is opened.
      */
-    public TransactionView(Controller c) {
+    private TransactionView() {
         setIcon(frameIcon.getImage());
-	controller = c;
+	controller = Controller.getInstance();
 	initialize();
 	DisplayAction.setTransactionView(this);
 	SaveAction.setTransactionView(this);
@@ -192,6 +194,12 @@ public class TransactionView extends ExplorerPanel implements
 	this.getAccessibleContext().setAccessibleName(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_monitorName"));
 
 	if (debug) log ("Calling opentransactions from constructor"); // NOI18N
+    }
+
+    static TransactionView getInstance() { 
+	if(instance == null) 
+	    instance = new TransactionView(); 
+	return instance; 
     }
 
     private void initialize() {
@@ -220,7 +228,7 @@ public class TransactionView extends ExplorerPanel implements
     /**
      * Open the transaction nodes (i.e. first level children of the root).
      */
-    public void openTransactionNodes() {
+    void openTransactionNodes() {
 
 	// Post the request for later in case there are timing issues
 	// going on here. 
@@ -245,7 +253,7 @@ public class TransactionView extends ExplorerPanel implements
 	    openTransactionNodes();
 	}
 
-	public void openTransactionNodes() {
+	void openTransactionNodes() {
 	    if (debug) 
 		log("TransactionView::openTransactionNodes"); // NOI18N
 	    NavigateNode root = controller.getRoot();
@@ -282,7 +290,7 @@ public class TransactionView extends ExplorerPanel implements
 	}
     }
 
-    public void selectNode(Node n) {
+    void selectNode(Node n) {
 
 	try {
 	    mgr.setSelectedNodes(new Node[] {n});
@@ -296,22 +304,20 @@ public class TransactionView extends ExplorerPanel implements
     }
     
     /**
-     * Starts the monitor client in a specific workspace */
+     * Loads the transactions into the monitor on opening. */
     private boolean openedOnceAlready = false;
-    public void open(Workspace w) {
-
-	if(debug) log("running open(Workspace)"); //NOI18N
-	if(w == null) super.open();
-
-	if(debug) log("opening in workspace: " + String.valueOf(w)); //NOI18N
-	super.open(w); 
-	setName(NbBundle.getBundle(TransactionView.class).getString("MON_Title"));	
+    public void open() {
+	if(debug) log("::open()"); //NOI18N
+	super.open();
+	//setName(NbBundle.getBundle(TransactionView.class).getString("MON_Title"));	
 	if (!openedOnceAlready) {
 	    openedOnceAlready = true;
 	    controller.getTransactions();
 	    openTransactionNodes();
+	    //this.revalidate(); 
+	    //this.repaint(); 
 	}
-
+	//PENDING ...
 	controller.checkServer(false);
         requestFocus();
     }
@@ -329,9 +335,8 @@ public class TransactionView extends ExplorerPanel implements
     /**
      * Do not serialize this component, substitute null instead.
      */
-    public Object writeReplace ()
-	throws ObjectStreamException {
-	return null;
+    public Object writeReplace() throws ObjectStreamException {
+        return new ResolvableHelper();
     }
 
 
@@ -553,7 +558,7 @@ public class TransactionView extends ExplorerPanel implements
      * node. 
      * PENDING - register this as a listener for the display action
      */
-    public void displayTransaction(Node node) {
+    void displayTransaction(Node node) {
 	if(debug) log("Displaying a transaction. Node: "  + (node == null ? "null" : node.getName())); //NOI18N
 	if (node == null)
 	    return;
@@ -579,7 +584,7 @@ public class TransactionView extends ExplorerPanel implements
 	if(debug) log("Finished displayTransaction())"); // NOI18N
     }
 
-    public void saveTransaction(Node[] nodes) {
+    void saveTransaction(Node[] nodes) {
 	if(debug) log("In saveTransaction())"); // NOI18N
 	if((nodes == null) || (nodes.length == 0)) return;
 	controller.saveTransaction(nodes);
@@ -592,7 +597,7 @@ public class TransactionView extends ExplorerPanel implements
     /**
      * Invoked by EditReplayAction. 
      */
-    public void editTransaction(Node node) {
+    void editTransaction(Node node) {
 	if(debug) log("Editing a transaction"); //NOI18N
 	// Exit if the internal server is not running - the user
 	// should start it before they do this. 
@@ -749,7 +754,7 @@ public class TransactionView extends ExplorerPanel implements
     /**
      * Blanks out the displays - this is used by the delete actions
      */
-    public void blank() {
+    void blank() {
 	selected = null;
 	selectNode(null);
 	showData(); 
@@ -805,5 +810,13 @@ public class TransactionView extends ExplorerPanel implements
     private void log(String s) {
 	System.out.println("TransactionView::" + s); //NOI18N
     }
-     
+
+
+    public static final class ResolvableHelper implements Serializable {
+        static final long serialVersionUID = 1234546018839457544L;
+        Object readResolve() {
+	    Controller.getInstance().getTransactions();
+            return TransactionView.getInstance(); 
+        }
+    }
 }

@@ -33,7 +33,6 @@ import org.openide.windows.WindowManager;
 
 public class MonitorAction extends CallableSystemAction {
 
-    static transient TransactionView tv = null; 
     static transient Controller controller = null;
     private static final boolean debug = false;
      
@@ -41,8 +40,7 @@ public class MonitorAction extends CallableSystemAction {
     }
 
     protected static Controller getController() {
-	if(controller == null) controller = new Controller();
-	return controller;
+	return Controller.getInstance();
     }
     
     public String getName () {
@@ -69,36 +67,18 @@ public class MonitorAction extends CallableSystemAction {
      */
   
     public void performAction() {
-	
-	if (tv == null) tv = new TransactionView(getController());
-        openTransactionView(tv);
+	openTransactionView(); 
     }
-    
+   
+    static void addTransaction(String id) { 
+	if(!TransactionView.getInstance().isOpened()) {
+	    openTransactionView(); 
+	} 
+	Controller.getInstance().addTransaction(id); 
+    } 
 
-    /**
-     * This method is used by the JSP/servlet debugger to start the
-     * monitor. 
-     */
-    public static void runMonitor() {
-	if(debug) log("runMonitor()"); //NOI18N
-	if (tv == null) 
-	    tv = new TransactionView(getController());
-	openTransactionView(tv);
-    }  
-
-    /**
-     * This method is used by the JSP/servlet debugger to start the
-     * monitor. 
-     */
-    public static void runMonitor(Workspace workspace) {
-	if(debug) log("runMonitor(workspace)" + //NOI18N
-		      workspace.toString());
-	if (tv == null) 
-	    tv = new TransactionView(getController());
-	openTransactionView(tv);
-    }  
-    
-    private static void openTransactionView(TransactionView tv) {
+    private static void openTransactionView() {
+	TransactionView tv = TransactionView.getInstance(); 
         WindowManager wm = WindowManager.getDefault();
         Mode mode = wm.findMode(tv);
         
@@ -112,24 +92,8 @@ public class MonitorAction extends CallableSystemAction {
         tv.open();
     }
 
-    /**
-     * This method is used by the executor to set the hostname and the
-     * port name for the monitor, for those situations where the user
-     * starts it from the debugging menu. 
-     */
-    public static void setProperties(String server, int port) {
-	getController().setServer(server, port); 
-    }  
-
-    /**
-     * This method is used by the executor to set the hostname and the
-     * port name for the monitor, for those situations where the user
-     * starts it from the debugging menu. 
-     */
     public static void cleanupMonitor() {
-	// Controller is null when running headless
-	if(controller != null) controller.cleanup(); 
-	if(tv != null) tv.close();
+	Controller.removeFiles(); 
     }
 
     public static void log(String s) {
