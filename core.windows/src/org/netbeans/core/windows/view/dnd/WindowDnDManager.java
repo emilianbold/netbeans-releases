@@ -114,7 +114,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     private static WeakReference centerDropWRef = new WeakReference(null);
     
     /** Debugging flag. */
-    private static boolean DEBUG = Debug.isLoggable(WindowDnDManager.class);
+    private static final boolean DEBUG = Debug.isLoggable(WindowDnDManager.class);
     
     
     /** Creates a new instance of <code>WindowsDnDManager</code>. */

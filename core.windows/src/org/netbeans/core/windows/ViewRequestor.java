@@ -55,7 +55,8 @@ class ViewRequestor {
      * Manipulate it in AWT thread only. */
     private WindowSystemSnapshot snapshot;
     
-    private static boolean DEBUG = Debug.isLoggable(ViewRequestor.class);
+    /** Debugging flag. */
+    private static final boolean DEBUG = Debug.isLoggable(ViewRequestor.class);
     
     
     /** Creates a new instance of ViewRequestor */

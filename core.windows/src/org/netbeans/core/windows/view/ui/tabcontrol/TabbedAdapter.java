@@ -50,7 +50,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
     private transient java.util.ArrayList changeListenerList;
     
     /** Debugging flag. */
-    private static boolean DEBUG = Debug.isLoggable(TabbedAdapter.class);
+    private static final boolean DEBUG = Debug.isLoggable(TabbedAdapter.class);
     
     /** Creates a new instance of TabbedAdapter */
     public TabbedAdapter (int type) {

@@ -67,7 +67,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     private TopComponentDroppable droppable;
     
     /** Debugging flag. */
-    private static boolean DEBUG = Debug.isLoggable(DropTargetGlassPane.class);
+    private static final boolean DEBUG = Debug.isLoggable(DropTargetGlassPane.class);
 
     
 

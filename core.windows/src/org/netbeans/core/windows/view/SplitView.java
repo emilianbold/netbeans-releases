@@ -44,7 +44,7 @@ public class SplitView extends ViewElement {
     private JSplitPane splitPane;
     
     /** Debugging flag. */
-    private static boolean DEBUG = Debug.isLoggable(SplitView.class);
+    private static final boolean DEBUG = Debug.isLoggable(SplitView.class);
 
     
     

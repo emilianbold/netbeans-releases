@@ -52,7 +52,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     
     /** Debugging flag. */
-    private static boolean DEBUG = Debug.isLoggable(RegistryImpl.class);
+    private static final boolean DEBUG = Debug.isLoggable(RegistryImpl.class);
 
     /** Creates new RegistryImpl */
     public RegistryImpl() {

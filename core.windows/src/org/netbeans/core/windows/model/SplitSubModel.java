@@ -57,8 +57,7 @@ class SplitSubModel {
     protected Node root;
     
     /** Debugging flag. */
-    private static boolean DEBUG = Debug.isLoggable(SplitSubModel.class);
-
+    private static final boolean DEBUG = Debug.isLoggable(SplitSubModel.class);
 
     
     /** Creates a new instance of SplitModel */

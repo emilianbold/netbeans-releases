@@ -41,7 +41,8 @@ public final class ModeImpl implements Mode {
     /** asociated property change support for firing property changes */
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
-    private static boolean DEBUG = Debug.isLoggable(ModeImpl.class);
+    /** Debugging flag. */
+    private static final boolean DEBUG = Debug.isLoggable(ModeImpl.class);
     
     
     /** Construct new mode with given properties */

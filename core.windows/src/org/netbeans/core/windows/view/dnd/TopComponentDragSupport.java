@@ -138,7 +138,7 @@ implements AWTEventListener, DragSourceListener {
     private static final String NAME_CURSOR_COPY_NO_MOVE = "CursorTopComponentCopyNoMove"; // NOI18N
     
     /** Debugging flag. */
-    private static boolean DEBUG = Debug.isLoggable(TopComponentDragSupport.class);
+    private static final boolean DEBUG = Debug.isLoggable(TopComponentDragSupport.class);
     
     private final WindowDnDManager windowDnDManager;
 

@@ -58,7 +58,7 @@ final class PersistenceHandler implements PersistenceObserver {
     private static PersistenceHandler defaultInstance;
 
     /** Debugging flag. */
-    private static boolean DEBUG = Debug.isLoggable(PersistenceHandler.class);
+    private static final boolean DEBUG = Debug.isLoggable(PersistenceHandler.class);
     
     
     /** Creates a new instance of PersistenceHanlder */

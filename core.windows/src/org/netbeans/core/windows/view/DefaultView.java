@@ -66,7 +66,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     private final Set showingTopComponents = new WeakSet(10);
 
     /** Debugging flag. */
-    private static boolean DEBUG = Debug.isLoggable(DefaultView.class);
+    private static final boolean DEBUG = Debug.isLoggable(DefaultView.class);
 
     
     public DefaultView(ControllerHandler controllerHandler) {

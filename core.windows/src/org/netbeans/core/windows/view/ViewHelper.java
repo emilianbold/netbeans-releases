@@ -43,7 +43,7 @@ import org.netbeans.core.windows.WindowSystemSnapshot;
 final class ViewHelper {
     
     /** Debugging flag. */
-    private static boolean DEBUG = Debug.isLoggable(ViewHelper.class);
+    private static final boolean DEBUG = Debug.isLoggable(ViewHelper.class);
     
     
     /** Creates a new instance of ViewHelper */
