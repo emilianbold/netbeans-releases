@@ -198,6 +198,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                     .append("pt; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
         
         categoriesPanel.requestFocus ();
+        ((CategoriesPanel)categoriesPanel).selectFirst ();
     }
     
     /** This method is called from within the constructor to
@@ -411,6 +412,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             super ();
             this.tree.setEditable(false);
         }
+        public void selectFirst () {
+            tree.setSelectionRow (0);
+        }
     }
 
     private static final class CategoriesPanel extends ExplorerProviderPanel {
@@ -425,6 +429,10 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 this.btv.setDefaultActionAllowed(false);
             }
             return this.btv;
+        }
+        
+        public void selectFirst () {
+            ((CategoriesBeanTreeView)btv).selectFirst ();
         }
         
     }
