@@ -142,6 +142,7 @@ public class JPDAStart extends Task implements Runnable {
                 }
             }
         } catch (Throwable t) {
+            t.printStackTrace ();
             throw new BuildException (t);
         }
     }

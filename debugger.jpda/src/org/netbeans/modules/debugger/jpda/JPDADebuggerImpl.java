@@ -211,7 +211,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @return <code>true</code> if this debugger supports Pop action
      */
     public boolean canPopFrames () {
-        return getVirtualMachine ().canRedefineClasses ();
+        VirtualMachine vm = getVirtualMachine ();
+        if (vm == null) return false;
+        return vm.canRedefineClasses ();
     }
 
     /**
@@ -221,7 +223,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @return <code>true</code> if this debugger supports fix & continue
      */
     public boolean canFixClasses () {
-        return getVirtualMachine ().canPopFrames ();
+        VirtualMachine vm = getVirtualMachine ();
+        if (vm == null) return false;
+        return vm.canPopFrames ();
     }
 
     /**
