@@ -105,6 +105,15 @@ public class TargetExecutor implements Runnable {
 
         final ExecutorTask task;
         synchronized (this) {
+            // OutputWindow
+            if (AntSettings.getDefault ().getReuseOutput ()) {
+                io = TopManager.getDefault ().getIO (NbBundle.getMessage (TargetExecutor.class, "TITLE_output_reused"), false);
+            } else {
+                io = TopManager.getDefault ().getIO (name, false);
+            }
+            // this will delete the output even if a script is still running.
+            io.getOut ().reset ();
+                
             // Note that this redirects stdout/stderr from
             // Ant. This ought not be necessary, as the logger also
             // redirects to the Output Window, but <echo> in Ant 1.2
@@ -113,7 +122,6 @@ public class TargetExecutor implements Runnable {
             // are apparently not trapped! (#9953)
             task = TopManager.getDefault ().getExecutionEngine ().execute (name, this, null);
             //System.err.println("execute #2: " + this);
-            io = task.getInputOutput ();
             //System.err.println("execute #3: " + this);
         }
         //System.err.println("execute #5: " + this);

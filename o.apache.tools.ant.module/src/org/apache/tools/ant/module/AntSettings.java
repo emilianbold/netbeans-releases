@@ -39,6 +39,7 @@ public class AntSettings extends SystemOption {
     public static final String PROP_CUSTOM_DEFS = "customDefs"; // NOI18N
     public static final String PROP_COMPILER = "compiler"; // NOI18N
     public static final String PROP_EXECUTOR = "executor"; // NOI18N
+    public static final String PROP_REUSE_OUTPUT = "reuseOutput"; // NOI18N
     
     private static final String DEF_CLASS_PATH = "netbeans.class.path"; // NOI18N
     private static final String DEF_BOOTCLASS_PATH = "netbeans.bootclass.path"; // NOI18N
@@ -59,6 +60,7 @@ public class AntSettings extends SystemOption {
         p.setProperty (DEF_FILESYSTEMS_PATH, dummy);
         p.setProperty ("build.sysclasspath", "ignore"); // #9527 NOI18N
         setProperties (p);
+        setReuseOutput (false);
         setSaveAll (true);
         setCustomDefs (new IntrospectedInfo ());
         setCompiler (AntCompilerSupport.NoCompiler.NO_COMPILER);
@@ -145,5 +147,14 @@ public class AntSettings extends SystemOption {
     /** sets an executor */
     public void setExecutor(Executor ct) {
         putProperty(PROP_EXECUTOR, new ServiceType.Handle(ct), true);
+    }
+    
+    /** If true, Ant Execution uses always the same Output tab. */
+    public boolean getReuseOutput () {
+        return ((Boolean) getProperty (PROP_REUSE_OUTPUT)).booleanValue ();
+    }
+    /** Sets the reuseOutput property. */
+    public void setReuseOutput (boolean b) {
+        putProperty (PROP_REUSE_OUTPUT, new Boolean (b), true);
     }
 }
