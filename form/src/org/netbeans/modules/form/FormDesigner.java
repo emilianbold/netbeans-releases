@@ -1136,9 +1136,12 @@ public class FormDesigner extends TopComponent
             if (h < minSize) h = minSize;
             
             fdPanel.updatePanel(new Dimension(w, h));
-            if (resizingFinished)
-                ((RADVisualFormContainer)formDesigner.getModel().getTopRADComponent())
-                    .setFormSize(new Dimension(w, h));
+            
+            if (resizingFinished) {
+                RADComponent component = formDesigner.getModel().getTopRADComponent();
+                if (component instanceof RADVisualFormContainer)
+                    ((RADVisualFormContainer) component).setFormSize(new Dimension(w, h));
+            }
             setStatusText("FMT_MSG_RESIZING_FORMDESIGENR", // NOI18N
                             new Object[] { new Integer(w).toString(), new Integer(h).toString() } );
         }
