@@ -60,11 +60,7 @@ public class PhadhailViews {
         }
         Object key = "org.openide.actions.PopupAction";
         KeyStroke ks = KeyStroke.getKeyStroke("shift F10");
-        // XXX this does not work:
-        // tree.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ks, key);
-        // since actually the BeanTreeView itself does not bind the ActionMap, rather the
-        // JTree in the viewport. When that is fixed, simplify.
-        ((JComponent)((JScrollPane)tree).getViewport().getView()).getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ks, key);
+        tree.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ks, key);
         return p;
     }
     
