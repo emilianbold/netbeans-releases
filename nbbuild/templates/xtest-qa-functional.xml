@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -79,8 +79,8 @@ Microsystems, Inc. All Rights Reserved.
         <property name="compile.destdir.root" location="../build/test"/>
         <!-- Destination directory for compiled tests. Used in basic_compiler_targets.xml. -->
         <property name="compile.destdir" location="${compile.destdir.root}/${xtest.testtype}/classes"/>
-        <!-- JUnit, NbJUnit and NBJUnit-ide should be in classpath by default -->
-        <property name="junit.classpath" value="${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar:${xtest.home}/lib/nbjunit-ide.jar"/>        
+        <!-- JUnit, NbJUnit, NBJUnit-ide and Insane should be in classpath by default -->
+        <property name="junit.classpath" value="${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar:${xtest.home}/lib/nbjunit-ide.jar:${xtest.home}/lib/insanelib.jar"/>
 
         <!-- This target runs main method of given class in IDE's JVM. 
             You have -->
