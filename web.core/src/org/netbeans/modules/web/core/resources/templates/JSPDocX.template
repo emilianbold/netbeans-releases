@@ -2,7 +2,7 @@
     <jsp:directive.include file="/WEB-INF/jspf/segment.jspf" />
 --%>
 
-<%-- any content can be cpecified here e.g.: --%>
+<%-- any content can be specified here e.g.: --%>
 <jsp:element name="title">
     <jsp:body>Cat In The Rain</jsp:body>
 </jsp:element>
