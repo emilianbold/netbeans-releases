@@ -649,11 +649,12 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         NbDialogOperator nbDialogOperator =new NbDialogOperator(questionTitle);
         nbDialogOperator.yes();
         
+         patternsNode.waitNotPresent();
         // Delete indexProperty
          JavaNode patternsNode2 = new JavaNode(sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+NAME_INDEX_PROPERTY);
          patternsNode2.select();
          patternsNode2.delete();
-
+ 
         confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
         new NbDialogOperator(confirmTitle).yes();
         new EventTool().waitNoEvent(1500);
@@ -662,6 +663,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator.yes();
         new EventTool().waitNoEvent(2500);
         
+        patternsNode2.waitNotPresent();
         // Delete action listener
         JavaNode patternsNode3 = new JavaNode(sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"actionListener");
         patternsNode3.select();
@@ -675,6 +677,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator.yes();
         new EventTool().waitNoEvent(2500);
 
+        patternsNode3.waitNotPresent();
         // Delete focus listener
         JavaNode patternsNode4 = new JavaNode(sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"focusListener");
         patternsNode4.select();
@@ -687,6 +690,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator =new NbDialogOperator(questionTitle);
         nbDialogOperator.yes();
         new EventTool().waitNoEvent(2500);
+        patternsNode4.waitNotPresent();
         try {
             File workDir = getWorkDir();
             (new File(workDir,"testDeleteAnyPropertiesAndEventsModified.ref")).createNewFile();
