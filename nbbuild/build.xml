@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -2287,7 +2287,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
       <ant dir="../projects/libraries" target="netbeans"/>
   </target>
-  <target name="all-projects/projectui" depends="init,all-projects/projectapi,all-projects/projectuiapi,all-openidex">
+  <target name="all-projects/projectui" depends="init,all-projects/projectapi,all-projects/projectuiapi,all-openidex,all-xml/catalog">
       <echo message="Building module projects/projectui..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -3553,7 +3553,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     *** Public packages has changed! ***
     
     Differences were found while comparing file 
-    ${check.public.packages.template} 
+    ${check.public.packages.template}
     with 
     ${check.public.packages.generated}
     
@@ -3600,7 +3600,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     *** List of external libraries has changed! ***
     
     Differences were found while comparing file 
-    ${check.external.libraries.template} 
+    ${check.external.libraries.template}
     with 
     ${check.external.libraries.generated}
     
@@ -3646,7 +3646,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     *** List of modules has changed! ***
     
     Differences were found while comparing file 
-    ${check.modules.template} 
+    ${check.modules.template}
     with 
     ${check.modules.generated}
     
@@ -3713,7 +3713,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     *** List of dependencies has changed! ***
     
     Differences were found while comparing file 
-    ${check.dependencies.template} 
+    ${check.dependencies.template}
     with 
     ${check.dependencies.generated}
     
