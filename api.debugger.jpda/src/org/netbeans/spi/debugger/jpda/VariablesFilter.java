@@ -14,7 +14,6 @@
 package org.netbeans.spi.debugger.jpda;
 
 import javax.swing.Action;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.NoInformationException;
@@ -148,7 +147,6 @@ public abstract class VariablesFilter {
      *
      * @throws  UnknownTypeException if this NodeActionsProvider implementation 
      *          is not able to resolve actions for given node type
-     * @return  default action for given variable
      */
     public abstract void performDefaultAction (
         NodeActionsProvider original, 
@@ -161,12 +159,12 @@ public abstract class VariablesFilter {
     /**
      * Returns filterred value to be displayed in column <code>columnID</code>
      * and for variable <code>variable</code>. Column ID is defined in by 
-     * {@link ColumnModel#getID}, and variables are defined by values returned from 
-     * {@TreeModel#getChildren}.
+     * {@link org.netbeans.spi.viewmodel.ColumnModel#getID}, and variables are defined by values returned from
+     * {@link TreeModel#getChildren}.
      *
      * @param   original the original table model
-     * @param   variable a variable returned from {@TreeModel#getChildren} for this row
-     * @param   columnID a id of column defined by {@link ColumnModel#getID}
+     * @param   variable a variable returned from {@link TreeModel#getChildren} for this row
+     * @param   columnID a id of column defined by {@link org.netbeans.spi.viewmodel.ColumnModel#getID}
      * @throws  ComputingException if the value is not known yet and will 
      *          be computed later
      * @throws  UnknownTypeException if there is no TableModel defined for given
@@ -184,8 +182,8 @@ public abstract class VariablesFilter {
      * Filters original isReadOnly value from given table model.
      *
      * @param  original the original table model
-     * @param  variable a variable returned from {@TreeModel#getChildren} for this row
-     * @param  columnID a id of column defined by {@link ColumnModel#getID}
+     * @param  variable a variable returned from {@link TreeModel#getChildren} for this row
+     * @param  columnID a id of column defined by {@link org.netbeans.spi.viewmodel.ColumnModel#getID}
      * @throws UnknownTypeException if there is no TableModel defined for given
      *         parameter type
      *
@@ -200,12 +198,12 @@ public abstract class VariablesFilter {
     /**
      * Changes a value displayed in column <code>columnID</code>
      * for variable <code>variable</code>. Column ID is defined in by 
-     * {@link ColumnModel#getID}, and variable are defined by values returned from 
-     * {@TreeModel#getChildren}.
+     * {@link org.netbeans.spi.viewmodel.ColumnModel#getID}, and variable are defined by values returned from
+     * {@link TreeModel#getChildren}.
      *
      * @param  original the original table model
-     * @param  variable a variable returned from {@TreeModel#getChildren} for this row
-     * @param  columnID a id of column defined by {@link ColumnModel#getID}
+     * @param  variable a variable returned from {@link TreeModel#getChildren} for this row
+     * @param  columnID a id of column defined by {@link org.netbeans.spi.viewmodel.ColumnModel#getID}
      * @param  value a new value of variable on given position
      * @throws UnknownTypeException if there is no TableModel defined for given
      *         parameter type
