@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import java.awt.Dialog;
 import java.util.*;
 import javax.swing.*;
+import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.spi.viewmodel.Models;
@@ -38,11 +39,18 @@ Models.ActionPerformer {
     
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
-            return new Action [0];
+            return new Action [] {
+                Models.createAction ("New Watch ...", null, this),
+                Models.createAction ("Delete All", null, this)
+            };
         if (node instanceof JPDAWatch)
             return new Action [] {
-                Models.createAction ("Delete", node, this),
-                Models.createAction ("Customize", node, this)
+                Models.createAction ("Delete", (JPDAWatch) node, this),
+                null,
+                Models.createAction ("New Watch ...", null, this),
+                Models.createAction ("Delete All", null, this),
+                null,
+                Models.createAction ("Customize", (JPDAWatch) node, this)
             };
         throw new UnknownTypeException (node);
     }
@@ -67,57 +75,49 @@ Models.ActionPerformer {
             ((JPDAWatch) node).remove ();
         } else
         if ("Customize".equals (action)) {
-            customize((JPDAWatch) node);
+            customize ((JPDAWatch) node);
+        } else
+        if (action.equals ("Delete All")) {
+            DebuggerManager.getDebuggerManager ().removeAllWatches ();
+        } else
+        if (action.equals ("New Watch ...")) {
+            newWatch ();
         }
     }    
 
     private static void customize (JPDAWatch w) {
+        WatchPanel wp = new WatchPanel (w.getExpression ());
+        JComponent panel = wp.getPanel ();
 
-        WatchPanel wp = new WatchPanel(w.getExpression());
-        JComponent panel = wp.getPanel();
-
-        ResourceBundle bundle = NbBundle.getBundle(WatchesActionsProvider.class);
-        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
+        ResourceBundle bundle = NbBundle.getBundle (WatchesActionsProvider.class);
+        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (
             panel,
-            bundle.getString ("CTL_WatchDialog_Title") // NOI18N
+            bundle.getString ("CTL_Edit_Watch_Dialog_Title") // NOI18N
         );
-        dd.setHelpCtx(new HelpCtx("debug.add.watch"));
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        dialog.dispose();
+        dd.setHelpCtx (new HelpCtx ("debug.customize.watch"));
+        Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
+        dialog.setVisible (true);
+        dialog.dispose ();
 
-        if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
-        w.setExpression(wp.getExpression());
+        if (dd.getValue () != org.openide.DialogDescriptor.OK_OPTION) return;
+        w.setExpression (wp.getExpression ());
     }
 
-    // innerclasses ............................................................
-    
-//    private static class CustomizeAction extends AbstractAction {
-//        
-//        private JPDAWatch w;
-//        
-//        
-//        CustomizeAction (JPDAWatch w) {
-//            super ("Customize");
-//            this.w = w;
-//        }
-//        
-//        public void actionPerformed (ActionEvent e) {
-//        }
-//    }
-//    
-//    private static class DeleteAction extends AbstractAction {
-//        
-//        private JPDAWatch w;
-//        
-//        
-//        DeleteAction (JPDAWatch w) {
-//            super ("Delete");
-//            this.w = w;
-//        }
-//        
-//        public void actionPerformed (ActionEvent e) {
-//            w.remove ();
-//        }
-//    }
+    private static void newWatch () {
+        WatchPanel wp = new WatchPanel ("");
+        JComponent panel = wp.getPanel ();
+
+        ResourceBundle bundle = NbBundle.getBundle (WatchesActionsProvider.class);
+        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (
+            panel,
+            bundle.getString ("CTL_New_Watch_Dialog_Title") // NOI18N
+        );
+        dd.setHelpCtx (new HelpCtx ("debug.new.watch"));
+        Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
+        dialog.setVisible (true);
+        dialog.dispose ();
+
+        if (dd.getValue () != org.openide.DialogDescriptor.OK_OPTION) return;
+        DebuggerManager.getDebuggerManager ().createWatch (wp.getExpression ());
+    }
 }

@@ -52,8 +52,7 @@ Models.ActionPerformer {
         if (node instanceof JPDAThreadGroup) {
             return new Action [] {
                 Models.createAction ("Resume", node, this),
-                Models.createAction ("Suspend", node, this),
-                Models.createAction ("Properties", node, this)
+                Models.createAction ("Suspend", node, this)
             };
         } else
         if (node instanceof JPDAThread) {
@@ -77,8 +76,7 @@ Models.ActionPerformer {
                     node, 
                     this,
                     isGoToSourceSupported (t)
-                ),
-                Models.createAction ("Properties", node, this)
+                )
             };
         } else
         throw new UnknownTypeException (node);
@@ -134,8 +132,6 @@ Models.ActionPerformer {
                 getDebuggerManager ().getCurrentSession ().lookupFirst 
                 (EngineContext.class);
             ectx.showSource ((JPDAThread) node, language);
-        } else
-        if ("Properties".equals (action)) {
         }
     }    
 

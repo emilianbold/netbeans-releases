@@ -49,9 +49,7 @@ Models.ActionPerformer {
                     node, 
                     this,
                     isSourceAvailable ((Variable) node)
-                ),
-//                Models.createAction ("Create Fixed Watch", node, this, true),
-                Models.createAction ("Properties", node, this, false),
+                )
             };
         throw new UnknownTypeException (node);
     }
@@ -85,10 +83,6 @@ Models.ActionPerformer {
             EngineContext ectx = (EngineContext) lookupProvider.lookupFirst
                 (EngineContext.class);
             ectx.showSource ((Variable) node);
-        } else
-        if ("Create Fixed Watch".equals (action)) {
-        } else
-        if ("Properties".equals (action)) {
         }
     }
 

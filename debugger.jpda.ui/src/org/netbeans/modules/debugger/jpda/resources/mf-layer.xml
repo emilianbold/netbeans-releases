@@ -21,13 +21,17 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-debugger-jpda-ui-ToolTipAnnotation.instance"/>
                 </folder>
                 <folder name="GlyphGutterActions">
-                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                    </file>
                 </folder>
                 <folder name="Popup">
-                    <attr name="Separator7.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance" boolvalue="true"/>
+                    <attr name="Separator7.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true"/>
 
-                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
-                    <attr name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true"/>
 
                     <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
                     <attr name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance/Separator8.instance" boolvalue="true"/>

@@ -48,6 +48,10 @@ Models.ActionPerformer {
         if (node instanceof Watch)
             return new Action [] {
                 Models.createAction ("Delete", (Watch) node, this),
+                null,
+                Models.createAction ("New Watch ...", null, this),
+                Models.createAction ("Delete All", null, this),
+                null,
                 Models.createAction ("Customize", (Watch) node, this)
             };
         throw new UnknownTypeException (node);
@@ -57,6 +61,7 @@ Models.ActionPerformer {
         if (node == TreeModel.ROOT) 
             return;
         if (node instanceof Watch) {
+            customize ((Watch) node);
             return;
         }
         throw new UnknownTypeException (node);
@@ -73,7 +78,7 @@ Models.ActionPerformer {
             ((Watch) node).remove ();
         } else
         if (action.equals ("Customize")) {
-            customize((Watch) node);
+            customize ((Watch) node);
         } else
         if (action.equals ("Delete All")) {
             DebuggerManager.getDebuggerManager ().removeAllWatches ();
@@ -101,51 +106,4 @@ Models.ActionPerformer {
         if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
         w.setExpression(wp.getExpression());
     }
-
-
-    // innerclasses ............................................................
-    
-//    private static class CustomizeAction extends AbstractAction {
-//        
-//        private Watch w;
-//        
-//        
-//        CustomizeAction (Watch w) {
-//            super ("Customize");
-//            this.w = w;
-//        }
-//        
-//        public void actionPerformed (ActionEvent e) {
-//        }
-//    }
-//    
-//    private static class DeleteAction extends AbstractAction {
-//        
-//        private Watch w;
-//        
-//        
-//        DeleteAction (Watch w) {
-//            super ("Delete");
-//            this.w = w;
-//        }
-//        
-//        public void actionPerformed (ActionEvent e) {
-//            w.remove ();
-//        }
-//    }
-//    
-//    private static class DeleteAllAction extends AbstractAction {
-//        
-//        private Watch w;
-//        
-//        
-//        DeleteAction (Watch w) {
-//            super ("Delete");
-//            this.w = w;
-//        }
-//        
-//        public void actionPerformed (ActionEvent e) {
-//            w.remove ();
-//        }
-//    }
 }

@@ -33,7 +33,15 @@ Models.ActionPerformer {
     
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
-            return new Action [0];
+            return new Action [] {
+                Models.createAction (
+                    "Finish All", 
+                    node, 
+                    this,
+                    DebuggerManager.getDebuggerManager ().getCurrentSession ()
+                        != node
+                )
+            };
         if (node instanceof Session)
             return new Action [] {
                 Models.createAction (
@@ -43,8 +51,15 @@ Models.ActionPerformer {
                     DebuggerManager.getDebuggerManager ().getCurrentSession ()
                         != node
                 ),
-                Models.createAction ("Kill", node, this)
-//                Models.createAction ("Properties", node, this, false)
+                Models.createAction ("Finish", node, this),
+                null,
+                Models.createAction (
+                    "Finish All", 
+                    node, 
+                    this,
+                    DebuggerManager.getDebuggerManager ().getCurrentSession ()
+                        != node
+                )
             };
         throw new UnknownTypeException (node);
     }
@@ -73,10 +88,14 @@ Models.ActionPerformer {
                 (Session) node
             );
         } else
-        if ("Kill".equals (action)) {
+        if ("Finish".equals (action)) {
             ((Session) node).kill ();
         } else
-        if ("Properties".equals (action)) {
+        if ("Finish All".equals (action)) {
+            Session[] ss = DebuggerManager.getDebuggerManager ().getSessions ();
+            int i, k = ss.length;
+            for (i = 0; i < k; i++)
+                ss [i].kill ();
         }
     }    
 
