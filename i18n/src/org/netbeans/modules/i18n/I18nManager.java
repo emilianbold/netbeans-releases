@@ -17,6 +17,8 @@ package org.netbeans.modules.i18n;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -262,6 +264,8 @@ public class I18nManager {
         TopComponent topComponent = (TopComponent)topComponentWRef.get();
         I18nPanel i18nPanel = (I18nPanel)i18nPanelWRef.get();
 
+        Mode createdMode = null;
+        
         // Dialog was not created yet or garbaged already.
         if(i18nPanel == null) {
             
@@ -313,8 +317,11 @@ public class I18nManager {
             topComponent.setCloseOperation(TopComponent.CLOSE_EACH);
             topComponent.setLayout(new BorderLayout());
             topComponent.add(i18nPanel, BorderLayout.CENTER);
-            topComponent.setName(name);            
+            topComponent.setName(name);               
             topComponent.setToolTipText(I18nUtil.getBundle().getString("CTL_I18nDialogTitle"));
+
+            // #24106
+            topComponent.putClientProperty("TabPolicy", "HideWhenAlone");       // NOI18N
             
              // dock into I18N mode if possible
             Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
@@ -326,7 +333,9 @@ public class I18nManager {
                         I18nUtil.getBundle().getString("CTL_I18nDialogTitle"),
                         I18nManager.class.getResource("/org/netbeans/modules/i18n/i18nAction.gif") // NOI18N
                     );
+                    createdMode = i18nMode;
                 }
+                                               
                 i18nMode.dockInto(topComponent);
             }
                 
@@ -336,6 +345,17 @@ public class I18nManager {
         
         topComponent.open();
         topComponent.requestFocus();
+        
+        if (createdMode != null) {
+            // adjust mode size to sice of the first TopComponent(i18nPanel)
+            Rectangle bounds = createdMode.getBounds();
+            if (bounds == null) bounds = new Rectangle();
+            Dimension size = i18nPanel.getPreferredSize();
+            size.width += 50;
+            bounds.setSize(size);
+            createdMode.setBounds(bounds);
+        }
+        
     }
     
     /** Shows dialog. In our case opens top component if it is necessary and
