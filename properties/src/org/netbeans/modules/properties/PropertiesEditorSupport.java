@@ -593,7 +593,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     */
     public void propertyChange(PropertyChangeEvent ev) {
       if ((ev.getSource() == myEntry) &&
-          (ev.getPropertyName() == PropertiesFileEntry.PROP_MODIFIED)) {
+          (PropertiesFileEntry.PROP_MODIFIED.equals(ev.getPropertyName()))) {
         
         if (((Boolean) ev.getNewValue()).booleanValue()) {
           addSaveCookie();
