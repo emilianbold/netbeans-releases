@@ -375,7 +375,7 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Shortcuts">
     <file name="CS-F6[org-openide-actions-ExecuteProjectAction].instance" />
     <file name="CS-F5[org-openide-actions-DebugProjectAction].instance" />
-    <file name="CA-C[org-netbeans-core-actions-StopCompileAction].instance" />
+    <file name="SA-C[org-netbeans-core-actions-StopCompileAction].instance" />
     <file name="C-Z[org-openide-actions-UndoAction].instance" />
     <file name="CS-O[org-openide-actions-OpenProjectAction].instance" />
     <file name="S-F11[org-openide-actions-BuildAllAction].instance" />
