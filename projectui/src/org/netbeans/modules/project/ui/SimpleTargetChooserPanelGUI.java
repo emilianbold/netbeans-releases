@@ -79,12 +79,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         projectTextField.setText(ProjectUtils.getInformation(p).getDisplayName());
         
         Sources sources = ProjectUtils.getSources( p );
-        
-        if ( sources == null ) {
-            // Project does not have sources => create generic
-            sources = GenericSources.genericOnly( p );
-        }
-                
+                        
         folders = sources.getSourceGroups( Sources.TYPE_GENERIC );
         
         if ( folders.length < 2 ) {
@@ -104,7 +99,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         SourceGroup preselectedGroup = getPreselectedGroup( folders, preselectedFolder );        
         locationComboBox.setSelectedItem( preselectedGroup );               
         // Create OS dependent relative name
-        folderTextField.setText( getReleativeNativeName( preselectedGroup.getRootFolder(), preselectedFolder ) );
+        folderTextField.setText( getRelativeNativeName( preselectedGroup.getRootFolder(), preselectedFolder ) );
         
         String ext = template == null ? "" : template.getExt(); // NOI18N
         expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
@@ -340,7 +335,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         return groups[0];
     }
     
-    private String getReleativeNativeName( FileObject root, FileObject folder ) {
+    private String getRelativeNativeName( FileObject root, FileObject folder ) {
         
         String path;
         
@@ -354,7 +349,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             path = FileUtil.getRelativePath( root, folder );            
         }
         
-        return path.replace( '/', File.separatorChar ); // NOI18N
+        return path == null ? "" : path.replace( '/', File.separatorChar ); // NOI18N
     }
     
     private void updateCreatedFolder() {
