@@ -83,27 +83,34 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
     transient boolean passwordWasSet = false;
     
-    public static Map getGlobalNodeInfo()
-    {
-        if (gtab == null) try {
-                ClassLoader cl = DatabaseNodeInfo.class.getClassLoader();
-                InputStream stream = cl.getResourceAsStream(gtabfile);
-                if (stream == null) {
-                    String message = MessageFormat.format(bundle.getString("EXC_UnableToOpenStream"), new String[] {gtabfile}); // NOI18N
-                    throw new Exception(message);
-                }
-                PListReader reader = new PListReader(stream);
-                gtab = reader.getData();
-                stream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-                gtab = null;
-            }
+    public static Map getGlobalNodeInfo() {
+        if (gtab == null)
+            gtab = readInfo();
+        
         return gtab;
     }
+    
+    public static Map readInfo() {
+        Map data;
+        try {
+            ClassLoader cl = DatabaseNodeInfo.class.getClassLoader();
+            InputStream stream = cl.getResourceAsStream(gtabfile);
+            if (stream == null) {
+                String message = MessageFormat.format(bundle.getString("EXC_UnableToOpenStream"), new String[] {gtabfile}); // NOI18N
+                throw new Exception(message);
+            }
+            PListReader reader = new PListReader(stream);
+            data = reader.getData();
+            stream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            data = null;
+        }
+        
+        return data;
+    }
 
-    public static Object getGlobalNodeInfo(String key)
-    {
+    public static Object getGlobalNodeInfo(String key) {
         return getGlobalNodeInfo().get(key);
     }
 

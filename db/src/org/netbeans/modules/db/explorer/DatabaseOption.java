@@ -62,27 +62,13 @@ public class DatabaseOption extends SystemOption {
     }
 
     /** Returns vector of registered drivers */
-    public Vector getAvailableDrivers()
-    {
-        Vector rvec = null;
+    public Vector getAvailableDrivers() {
         if (drivers.size() == 0) {
-            Map xxx = (Map)DatabaseNodeInfo.getGlobalNodeInfo(DatabaseNode.DRIVER_LIST);
-            Vector def = (Vector)xxx.get("defaultdriverlist"); //NOI18N
-            if (def != null && def.size()>0) {
-                rvec = new Vector(def.size());
-                Enumeration defe = def.elements();
-                while(defe.hasMoreElements()) {
-                    Object rit = defe.nextElement();
-                    String name = (String)((Map)rit).get("name"); //NOI18N
-                    String drv = (String)((Map)rit).get("driver"); //NOI18N
-                    String prefix = (String)((Map)rit).get("prefix"); //NOI18N
-                    String adaptor = (String)((Map)rit).get("adaptor"); //NOI18N
-                    rit = new DatabaseDriver(name, drv, prefix, adaptor);
-                    if (rit != null) rvec.add(rit);
-                }
-            } else rvec = new Vector();
-            drivers = rvec;
+            //get serialized drivers
+            Map xxx = (Map) DatabaseNodeInfo.getGlobalNodeInfo(DatabaseNode.DRIVER_LIST);
+            drivers = createDrivers(xxx);
         }
+        
         return drivers;
     }
 
@@ -206,8 +192,44 @@ public class DatabaseOption extends SystemOption {
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
     {
         super.readExternal(in);
-        drivers = (Vector)in.readObject();
+        drivers = (Vector) in.readObject();
+        drivers = checkDrivers(drivers);
         connections = (Vector)in.readObject();
         fetchlimit = in.readInt();
+    }
+    
+    private Vector checkDrivers(Vector old) {
+        //get the drivers from explorer.plist
+        Map xxx = (Map) DatabaseNodeInfo.readInfo().get(DatabaseNode.DRIVER_LIST);
+        Vector plistDrv = createDrivers(xxx);
+        
+        //add missing drivers from explorer.plist to the list of serialized drivers
+        for (int i = 0; i < plistDrv.size(); i++)
+            if (! old.contains(plistDrv.get(i)))
+                old.add(plistDrv.get(i));
+        
+        return old;
+    }
+    
+    private Vector createDrivers(Map drvMap) {
+        Vector def = (Vector) drvMap.get("defaultdriverlist"); //NOI18N
+        Vector rvec = null;
+        if (def != null && def.size() > 0) {
+            rvec = new Vector(def.size());
+            Enumeration defe = def.elements();
+            while (defe.hasMoreElements()) {
+                Object rit = defe.nextElement();
+                String name = (String) ((Map)rit).get("name"); //NOI18N
+                String drv = (String) ((Map)rit).get("driver"); //NOI18N
+                String prefix = (String) ((Map)rit).get("prefix"); //NOI18N
+                String adaptor = (String) ((Map)rit).get("adaptor"); //NOI18N
+                rit = new DatabaseDriver(name, drv, prefix, adaptor);
+                if (rit != null)
+                    rvec.add(rit);
+            }
+        } else
+            rvec = new Vector();
+        
+        return rvec;
     }
 }
