@@ -1,8 +1,3 @@
-package org.netbeans.modules.java.j2seproject.ui;
-
-import org.openide.options.SystemOption;
-import org.openide.util.NbBundle;
-
 /*
  *                 Sun Public License Notice
  *
@@ -12,17 +7,21 @@ import org.openide.util.NbBundle;
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
+package org.netbeans.modules.java.j2seproject.ui;
+
+import org.openide.options.SystemOption;
+import org.openide.util.NbBundle;
+
+/**
+ * Misnamed storage of information application to the new j2seproject wizard.
+ */
 public class FoldersListSettings extends SystemOption {
 
-    static final long serialVersionUID = 2386225041150479082L;
-
-    private static final String LAST_EXTERNAL_TEST_ROOT = "testRoot";   //NOI18N
-
-    private static final String LAST_EXTERNAL_SOURCE_ROOT = "srcRoot";  //NOI18N
+    private static final long serialVersionUID = 2386225041150479082L;
 
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
     
@@ -30,25 +29,12 @@ public class FoldersListSettings extends SystemOption {
     
     private static final String NEW_LIB_COUNT = "newLibraryCount"; //NOI18N
 
+    public static FoldersListSettings getDefault () {
+        return (FoldersListSettings) SystemOption.findObject (FoldersListSettings.class, true);
+    }
+    
     public String displayName() {
-        return NbBundle.getMessage (FoldersListSettings.class,"TXT_J2SEProjectFolderList");
-    }
-
-
-    public String getLastExternalSourceRoot () {
-        return (String) getProperty(LAST_EXTERNAL_SOURCE_ROOT);
-    }
-
-    public void setLastExternalSourceRoot (String path) {
-        putProperty (LAST_EXTERNAL_SOURCE_ROOT, path, true);
-    }
-
-    public String getLastExternalTestRoot () {
-        return (String) getProperty(LAST_EXTERNAL_TEST_ROOT);
-    }
-
-    public void setLastExternalTestRoot (String path) {
-        putProperty (LAST_EXTERNAL_TEST_ROOT, path, true);
+        return NbBundle.getMessage(FoldersListSettings.class, "TXT_J2SEProjectFolderList");
     }
 
     public int getNewProjectCount () {
@@ -78,7 +64,4 @@ public class FoldersListSettings extends SystemOption {
         this.putProperty(NEW_LIB_COUNT, new Integer(count),true);
     }
 
-    public static FoldersListSettings getDefault () {
-        return (FoldersListSettings) SystemOption.findObject (FoldersListSettings.class, true);
-    }
 }
