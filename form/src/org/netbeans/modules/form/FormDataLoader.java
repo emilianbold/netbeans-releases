@@ -105,6 +105,7 @@ public class FormDataLoader extends JavaDataLoader {
   */
   protected MultiDataObject createMultiObject (FileObject primaryFile)
   throws DataObjectExistsException, java.io.IOException {
+//    Thread.dumpStack ();
     return new FormDataObject(findFile (primaryFile, FORM_EXTENSION), primaryFile, this);
   }
 
@@ -124,6 +125,7 @@ public class FormDataLoader extends JavaDataLoader {
   * @return the entry
   */
   protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, FileObject secondaryFile) {
+//    Thread.dumpStack ();
     String ext = secondaryFile.getExt();
     if (ext.equals(CLASS_EXTENSION)) {
       secondaryFile.setImportant(false);
@@ -139,6 +141,7 @@ public class FormDataLoader extends JavaDataLoader {
 
 /*
  * Log
+ *  16   Gandalf   1.15        7/20/99  Ian Formanek    
  *  15   Gandalf   1.14        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  14   Gandalf   1.13        6/2/99   Ian Formanek    ToolsAction, Reorder
