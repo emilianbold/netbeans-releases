@@ -19,9 +19,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
@@ -83,6 +85,10 @@ public final class ReferenceHelper {
      * XML namespace used to store references in <code>project.xml</code>.
      */
     static final String REFS_NS = "http://www.netbeans.org/ns/ant-project-references/1"; // NOI18N
+    
+    /** Set of property names which values can be used as additional base
+     * directories. */
+    private Set/*<String>*/ extraBaseDirectories = new HashSet();
     
     private final AntProjectHelper h;
     final PropertyEvaluator eval;
@@ -218,9 +224,14 @@ public final class ReferenceHelper {
                     assert forProjPath != null : "These dirs are not really collocated: " + myProjDir + " & " + forProjDir;
                     propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
                 } else {
-                    // Use an absolute path.
-                    forProjPath = forProjDir.getAbsolutePath();
-                    propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
+                    forProjPath = relativizeFileToExtraBaseFolders(forProjDir);
+                    if (forProjPath != null) {
+                        propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
+                    } else {
+                        // Use an absolute path.
+                        forProjPath = forProjDir.getAbsolutePath();
+                        propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
+                    }
                 }
                 EditableProperties props = h.getProperties(propertiesFile);
                 String forProjPathProp = "project." + forProjName; // NOI18N
@@ -643,8 +654,13 @@ public final class ReferenceHelper {
                         path = PropertyUtils.relativizeFile(myProjDir, file);
                         assert path != null : "expected relative path from " + myProjDir + " to " + file;
                     } else {
-                        propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
-                        path = file.getAbsolutePath();
+                        path = relativizeFileToExtraBaseFolders(file);
+                        if (path != null) {
+                            propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
+                        } else {
+                            propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
+                            path = file.getAbsolutePath();
+                        }
                     }
                     EditableProperties props = h.getProperties(propertiesFile);
                     String fileID = file.getName();
@@ -669,7 +685,116 @@ public final class ReferenceHelper {
             }
         });
     }
+    
+    /**
+     * Test whether file does not lie under an extra base folder and if it does
+     * then return string in form of "${extra.base}/remaining/path"; or null.
+     */
+    private String relativizeFileToExtraBaseFolders(File f) {
+        File base = FileUtil.toFile(h.getProjectDirectory());
+        String fileToRelativize = f.getAbsolutePath();
+        Iterator it = extraBaseDirectories.iterator();
+        while (it.hasNext()) {
+            String prop = (String)it.next();
+            String path = eval.getProperty(prop);
+            File extraBase = PropertyUtils.resolveFile(base, path);
+            path = extraBase.getAbsolutePath();
+            if (!path.endsWith(File.separator)) {
+                path += File.separator;
+            }
+            if (fileToRelativize.startsWith(path)) {
+                return "${"+prop+"}/"+fileToRelativize.substring(path.length()).replace('\\', '/'); // NOI18N
+            }
+        }
+        return null;
+    }
 
+    /**
+     * Add extra folder which can be used as base directory (in addition to
+     * project base folder) for creating references. Duplicate property names
+     * are not allowed. Any newly created reference to a file lying under an
+     * extra base directory will be based on that property and will be stored in
+     * shared project properties.
+     * <p>Acquires write access.
+     * @param propertyName property name which value is path to folder which
+     *  can be used as alternative project's base directory; cannot be null;
+     *  property must exist
+     * @throws IllegalArgumentException if propertyName is null or such a 
+     *   property does not exist
+     * @since 1.4
+     */
+    public void addExtraBaseDirectory(final String propertyName) {
+        if (propertyName == null || eval.getProperty(propertyName) == null) {
+            throw new IllegalArgumentException("propertyName is null or such a property does not exist: "+propertyName); // NOI18N
+        }
+        ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    if (!extraBaseDirectories.add(propertyName)) {
+                        throw new IllegalArgumentException("Already extra base directory property: "+propertyName); // NOI18N
+                    }
+                }
+            });
+    }
+    
+    /**
+     * Remove extra base directory. The base directory property had to be added
+     * by {@link #addExtraBaseDirectory} method call. At the time when this
+     * method is called the property must still exist and must be valid. This
+     * method will replace all references of the extra base directory property
+     * with its current value and if needed it may move such a property from
+     * shared project properties into the private properties.
+     * <p>Acquires write access.
+     * @param propertyName property name which was added by 
+     * {@link #addExtraBaseDirectory} method.
+     * @throws IllegalArgumentException if given property is not extra base 
+     *   directory
+     * @since 1.4
+     */
+    public void removeExtraBaseDirectory(final String propertyName) {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    if (!extraBaseDirectories.remove(propertyName)) {
+                        throw new IllegalArgumentException("Non-existing extra base directory property: "+propertyName); // NOI18N
+                    }
+                    // substitute all references of removed extra base folder property with its value
+                    String tag = "${"+propertyName+"}"; // NOI18N
+                    // was extra base property defined in shared file or not:
+                    boolean shared = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).containsKey(propertyName);
+                    String value = eval.getProperty(propertyName);
+                    EditableProperties propProj = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    EditableProperties propPriv = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    boolean modifiedProj = false;
+                    boolean modifiedPriv = false;
+                    Iterator it = propProj.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry entry = (Map.Entry)it.next();
+                        String val = (String)entry.getValue();
+                        int index;
+                        if ((index = val.indexOf(tag)) != -1) {
+                            val = val.substring(0, index) +value + val.substring(index+tag.length());
+                            if (shared) {
+                                // substitute extra base folder property with its value
+                                entry.setValue(val);
+                                modifiedProj = true;
+                            } else {
+                                // move property to private properties file
+                                it.remove();
+                                propPriv.put(entry.getKey(), val);
+                                modifiedPriv = true;
+                                modifiedProj = true;
+                            }
+                        }
+                    }
+                    if (modifiedProj) {
+                        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, propProj);
+                    }
+                    if (modifiedPriv) {
+                        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, propPriv);
+                    }
+                }
+            });
+    }
+    
     /**
      * Find reference ID (e.g. something you can then pass to RawReference 
      * as foreignProjectName) for the given property base name, prefix and path.

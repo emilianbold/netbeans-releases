@@ -702,4 +702,45 @@ public class ReferenceHelperTest extends NbTestCase {
         assertNull("wrong target name, will not be found", art);
     }
 
+    public void testAddRemoveExtraBaseDirectory() throws Exception {
+        // test foreign file reference for non-collocated jar under extra base folder
+        FileObject nonCollocatedLib = scratch.getFileObject("separate").createFolder("jars").createData("mylib.jar");
+        File f = FileUtil.toFile(nonCollocatedLib);
+        EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        props.setProperty("externalSourceRoot", "../separate");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        r.addExtraBaseDirectory("externalSourceRoot");
+        String ref = r.createForeignFileReference(f, "jar");
+        assertEquals("foreign file reference created", "${file.reference.mylib.jar}", ref);
+        String refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
+        assertEquals("reference is using extra base folder", "${externalSourceRoot}/jars/mylib.jar", refval);
+        assertEquals("reference is correctly evaluated", f, h.resolveFile(h.getStandardPropertyEvaluator().evaluate(refval)));
+        // test removal of extra base folder
+        r.removeExtraBaseDirectory("externalSourceRoot");
+        refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
+        assertEquals("reference does not contain extra base folder", "../separate/jars/mylib.jar", refval);
+        assertEquals("reference is correctly evaluated", f, h.resolveFile(refval));
+
+        // the same test as above but with extra base folder defined in PRIVATE props
+        nonCollocatedLib = scratch.createFolder("separate2").createFolder("jars").createData("mylib2.jar");
+        f = FileUtil.toFile(nonCollocatedLib);
+        props = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        String absolutePath = FileUtil.toFile(scratch.getFileObject("separate2")).getAbsolutePath();
+        props.setProperty("externalSourceRootAbsolute", absolutePath);
+        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, props);
+        r.addExtraBaseDirectory("externalSourceRootAbsolute");
+        ref = r.createForeignFileReference(f, "jar");
+        assertEquals("foreign file reference created", "${file.reference.mylib2.jar}", ref);
+        refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
+        assertEquals("reference is using extra base folder", "${externalSourceRootAbsolute}/jars/mylib2.jar", refval);
+        assertEquals("reference is correctly evaluated", f, h.resolveFile(h.getStandardPropertyEvaluator().evaluate(refval)));
+        r.removeExtraBaseDirectory("externalSourceRootAbsolute");
+        refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
+        assertNull("reference was removed from PROJECT_PROPERTIES_PATH", refval);
+        refval = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
+        assertNotNull("reference was moved to PRIVATE_PROPERTIES_PATH", refval);
+        assertEquals("reference does not contain extra base folder", absolutePath+"/jars/mylib2.jar", refval);
+        assertEquals("reference is correctly evaluated", f, h.resolveFile(h.getStandardPropertyEvaluator().evaluate(refval)));
+    }
+    
 }
