@@ -378,7 +378,6 @@ class OpenFile extends Object {
         new HelpCtx (OpenFile.class.getName () + ".dialog"), // help
         new ActionListener () { // listener
           public void actionPerformed (ActionEvent evt) {
-            dialog[0].dispose ();
             if (evt.getSource () == okButton) {
               int idx = list.getSelectedIndex ();
               if (idx != -1) {
@@ -388,6 +387,7 @@ class OpenFile extends Object {
                 System.err.println ("Should not have accepted OK button");
               }
             }
+            dialog[0].dispose ();
           }
         }));
     dialog[0].show ();
@@ -409,24 +409,12 @@ class OpenFile extends Object {
     }
   }
   
-  /** Test run of askForMountPoint. */
-  /*
-  public static void main (String[] ign) {
-    JFileChooser chooser = new JFileChooser ();
-    chooser.showOpenDialog (null);
-    File f = chooser.getSelectedFile ();
-    int lvl = Integer.parseInt (JOptionPane.showInputDialog ("Level"));
-    File[] mount = new File[] { null };
-    String[] pkg = new String[] { null };
-    askForMountPoint (f, lvl, mount, pkg);
-//    System.out.println ("Mount dir: " + mount[0] + " package: " + pkg[0]);
-  }
-  */
-  
 }
 
 /*
  * Log
+ *  25   Gandalf   1.24        11/10/99 Jesse Glick     Fixed race condition in 
+ *       mount dialog.
  *  24   Gandalf   1.23        11/2/99  Jesse Glick     Commented out testing 
  *       code.
  *  23   Gandalf   1.22        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
