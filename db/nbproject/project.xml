@@ -44,7 +44,24 @@ Microsystems, Inc. All Rights Reserved.
 					</run-dependency>
 				</dependency>
             </module-dependencies>
-            <public-packages/>
+
+            <public-packages>
+                <!-- Added manually src public packages -->
+                <package>org.netbeans.modules.db</package>
+                <package>org.netbeans.modules.db.explorer</package>
+                <package>org.netbeans.modules.db.explorer.actions</package>
+                <package>org.netbeans.modules.db.explorer.dataview</package>
+                <package>org.netbeans.modules.db.explorer.dlg</package>
+                <package>org.netbeans.modules.db.explorer.driver</package>
+                <package>org.netbeans.modules.db.explorer.infos</package>
+                <package>org.netbeans.modules.db.explorer.nodes</package>
+                <package>org.netbeans.modules.db.util</package>
+                <!-- Added manually libsrc public packages -->
+                <package>org.netbeans.lib.ddl</package>
+                <package>org.netbeans.lib.ddl.adaptors</package>
+                <package>org.netbeans.lib.ddl.impl</package>
+                <package>org.netbeans.lib.ddl.util</package>
+            </public-packages>
 
             <extra-compilation-unit>
 				<package-root>libsrc</package-root>
