@@ -88,6 +88,11 @@ public class SearchTask extends Task {
     }
     
     /**
+     * Called when a matching object is found by the <code>SearchGroup</code>.
+     * Notifies the result model of the found object and stops searching
+     * if number of the found objects reached the limit.
+     *
+     * @param  object  found matching object
      */
     private void matchingObjectFound(Object object) {
         boolean canContinue = resultModel.objectFound(object);
