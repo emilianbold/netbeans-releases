@@ -636,11 +636,10 @@ final class XMLSettingsSupport {
                 }
                 return instance;
             } catch (Exception ex) {
-                IOException ioe = new IOException("Wrong settings format."); // NOI18N
+                IOException ioe = new IOException("Error reading " + source + ": " + ex); // NOI18N
                 ErrorManager emgr = ErrorManager.getDefault();
                 emgr.annotate(ioe, ex);
-                emgr.annotate(ioe, "Content: \n" + getFileContent(source)); // NOI18N
-                emgr.annotate(ioe, "Source: " + source); // NOI18N
+                emgr.annotate(ioe, "Content:\n" + getFileContent(source)); // NOI18N
                 throw ioe;
             }
         }
