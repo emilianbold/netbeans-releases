@@ -179,9 +179,9 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                     }
 
                     if (list == null) { // broken document
-                        return cannotSuggest(component);
+                        return cannotSuggest(component, sup.requestedAutoCompletion());
                     } else { // grammar has no suggestion
-                        return noSuggestion(component);
+                        return noSuggestion(component, sup.requestedAutoCompletion());
                     }
                 }
             } else {
@@ -200,7 +200,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         );
                     }
                 }
-                return noSuggestion(component);
+                return noSuggestion(component, sup.requestedAutoCompletion());
             }
 
         } catch (BadLocationException e) {
@@ -208,7 +208,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         }
 
         // nobody knows what happened...
-        return noSuggestion(component);
+        return noSuggestion(component, sup.requestedAutoCompletion());
     }
 
     /**
@@ -216,7 +216,8 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
      * a hint because document is too broken or invalid. Grammar
      * knows that it's broken.
      */
-    private static Result cannotSuggest(JTextComponent component) {
+    private static Result cannotSuggest(JTextComponent component, boolean auto) {
+        if (auto) return null;
         return new CompletionQuery.DefaultResult(
             component,
             Util.THIS.getString("BK0002"),
@@ -231,7 +232,8 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
      * a hint because in given context is not nothing allowed what
      * the grammar know of. May grammar is missing at all.
      */
-    private static Result noSuggestion(JTextComponent component) {
+    private static Result noSuggestion(JTextComponent component, boolean auto) {
+        if (auto) return null;
         return new CompletionQuery.DefaultResult(
             component,
             Util.THIS.getString("BK0003"),

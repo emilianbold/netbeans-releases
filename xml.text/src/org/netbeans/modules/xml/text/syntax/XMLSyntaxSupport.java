@@ -39,7 +39,8 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
     private Reference reference = new SoftReference(null);  // cached helper
     private String systemId = null;  // cached refernce to DTD
     private String publicId = null;  // cached refernce to DTD
-    
+    private volatile boolean requestedAutoCompletion = false;
+
     /** Creates new XMLSyntaxSupport */
     public XMLSyntaxSupport(BaseDocument doc) {
         super(doc);
@@ -538,8 +539,9 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
      *
      */
     public int checkCompletion(JTextComponent target, String typedText, boolean visible ) {
-        
-        
+
+        requestedAutoCompletion = false;
+
         if( !visible ) {
             int retVal = COMPLETION_CANCEL;
             switch( typedText.charAt( typedText.length()-1 ) ) {
@@ -562,6 +564,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                     retVal = COMPLETION_POPUP;
                     break;
              }
+            if (retVal == COMPLETION_POPUP) requestedAutoCompletion = true;
             return retVal;
         } else { // the pane is already visible
             switch (typedText.charAt(0)) {
@@ -569,8 +572,17 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 case ';':
                     return COMPLETION_HIDE;
             }
+            requestedAutoCompletion = true;
             return COMPLETION_POST_REFRESH; //requery it
         }
+    }
+
+    /**
+     * Return true is this syntax requested auto completion.
+     * XMLCompletionQuery can utilize it to not show needless 'No suggestion.'.
+     */
+    public boolean requestedAutoCompletion() {
+        return requestedAutoCompletion;
     }
 
     /**
