@@ -253,8 +253,9 @@ final class HardStringWizardPanel extends JPanel {
                                     false,            //isSelected
                                     false,            //hasFocus
                                     0, 0);            //row, column
-        int cellHeight = Math.max(16, cellSample.getPreferredSize().height);
-        hardStringTable.setRowHeight(cellHeight + hardStringTable.getRowMargin());
+        int cellHeight = cellSample.getPreferredSize().height;
+        int rowHeight = cellHeight + hardStringTable.getRowMargin();
+        hardStringTable.setRowHeight(Math.max(16, rowHeight));
         
         hardStringTable.getColumnModel().getColumn(COLUMN_INDEX_CUSTOM).setCellEditor(new CustomizeCellEditor());
 

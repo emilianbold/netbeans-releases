@@ -158,8 +158,9 @@ final class ResourceWizardPanel extends JPanel {
                                     false,          //isSelected
                                     false,          //hasFocus
                                     0, 0);          //row, column
-        int cellHeight = Math.max(16, cellSample.getPreferredSize().height);
-        resourcesTable.setRowHeight(cellHeight + resourcesTable.getRowMargin());
+        int cellHeight = cellSample.getPreferredSize().height;
+        int rowHeight = cellHeight + resourcesTable.getRowMargin();
+        resourcesTable.setRowHeight(Math.max(16, rowHeight));
 
         resourcesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent evt) {
