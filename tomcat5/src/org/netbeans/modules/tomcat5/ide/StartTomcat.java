@@ -323,16 +323,12 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
                 String addressStr = "JPDA_ADDRESS=11555";
                 
                 if (org.openide.util.Utilities.isWindows()) {
-                    String dbgType = "dt_socket";                                    // NOI18N                    
-                    InstanceProperties ip = tm.getInstanceProperties();
-                    if (ip != null) {
-                        dbgType = ip.getProperty(TomcatManager.DEBUG_TYPE);
-                        if (dbgType.toLowerCase().indexOf("socket") > -1) {         // NOI18N
-                            addressStr = "JPDA_ADDRESS=" + tm.getDebugPort().toString(); // NOI18N
-                        } else {
-                            transportStr = "JPDA_TRANSPORT=dt_shmem";                // NOI18N
-                            addressStr = "JPDA_ADDRESS=" + "shmem";  /* TODO-*/                    // NOI18N
-                        }
+                    String dbgType = tm.getDebugType();
+                    if ((dbgType.toLowerCase().indexOf("socket") > -1) || (dbgType == null)) {         // NOI18N
+                        addressStr = "JPDA_ADDRESS=" + tm.getDebugPort().toString(); // NOI18N
+                    } else {
+                        transportStr = "JPDA_TRANSPORT=dt_shmem";                // NOI18N
+                        addressStr = "JPDA_ADDRESS=" + "shmem";  /* TODO-*/                    // NOI18N
                     }
                 } else {
                     addressStr = "JPDA_ADDRESS=" + tm.getDebugPort().toString();         // NOI18N
