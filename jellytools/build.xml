@@ -59,6 +59,12 @@ Microsystems, Inc. All Rights Reserved.
             <sourcepath>
                 <pathelement location="src"/>
             </sourcepath>
+            <classpath>
+                <pathelement location="../openide/netbeans/lib/openide.jar"/>
+                <pathelement location="../core/netbeans/lib/core.jar"/>
+                <pathelement location="../core/netbeans/lib/ext/terminalemulator.jar"/>
+                <pathelement location="../jemmy/jemmy.jar"/>
+            </classpath>
         </javadoc>
         <zip zipfile="jelly-nb-javadoc.zip" basedir="." includes="javadoc/**"/>
     </target>
