@@ -41,6 +41,7 @@ public class InstancePropertiesParser extends Task {
     public static final String CVS_ROOT = "xtest.instance.cvs.root";
     public static final String CONFIG = "xtest.instance.config";
     public static final String MASTER_CONFIG = "xtest.instance.master-config";
+    public static final String MODULE_BRANCHES = "xtest.instance.re.conf.prefix";
     
     public void setProperty(String p) {
         output_property = p;
@@ -58,8 +59,8 @@ public class InstancePropertiesParser extends Task {
            String o = (String) it.next();
            if (buff.length()>0) buff.append(",");
            buff.append(o);
-           getProject().setProperty(output_property,buff.toString());
         }
+        getProject().setProperty(output_property,buff.toString());
     }
     
     protected static HashSet getPostfixes(Project project) {
@@ -76,6 +77,7 @@ public class InstancePropertiesParser extends Task {
             if (name.startsWith(CVS_ROOT)) { prefix = CVS_ROOT; }
             if (name.startsWith(CONFIG)) { prefix = CONFIG; }
             if (name.startsWith(MASTER_CONFIG)) { prefix = MASTER_CONFIG; }
+            if (name.startsWith(MODULE_BRANCHES)) { prefix = MODULE_BRANCHES; }
             if (prefix != null) {
               if (name.equals(prefix)) {
                 onlyone = true;

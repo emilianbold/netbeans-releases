@@ -94,6 +94,8 @@ public class CheckoutNeeded extends Task {
                 
                 if (!branch.equals("trunk")) //NOI18N
                     cvs.setTag( branch );
+                else
+                    cvs.setTag( "HEAD" );
                 cvs.setPackage( module );
                 cvs.setQuiet( quiet );
                 cvs.setFailOnError(true);
@@ -164,6 +166,7 @@ public class CheckoutNeeded extends Task {
           String cvs_root = getProject().getProperty(InstancePropertiesParser.CVS_ROOT + postfix);
           String cvs_workdir = getProject().getProperty(InstancePropertiesParser.CVS_WORKDIR + postfix);
           String master_config = getProject().getProperty(InstancePropertiesParser.MASTER_CONFIG + postfix);
+          String re_branches = getProject().getProperty(InstancePropertiesParser.MODULE_BRANCHES + postfix);
           if (testroot==null) testroot = "";
           else 
               if (!testroot.endsWith("/"))
@@ -187,11 +190,22 @@ public class CheckoutNeeded extends Task {
           while (mod.hasNext()) {
              String module = (String)mod.next();   
              if (getProject().getProperty(module+"/test.branch") == null) {
+                 String new_branch = cvs_root;
+                 if (re_branches != null) {
+                    String re_module = module;
+                    if (module.indexOf("/") > 0)
+                        re_module = module.substring(0,module.indexOf("/"));
+                    String re_branch = getProject().getProperty(re_branches+"."+re_module);
+                    if (re_branch != null) {
+                        new_branch = cvs_root.substring(0,cvs_root.indexOf("{"))+"{"+re_branch+"}";
+                    }
+                 }
                  String branches = (String)module_branches.get(module);
                  if (branches == null)
-                     module_branches.put(module,cvs_root);
-                 else 
-                     branches = branches + "," + cvs_root;
+                    module_branches.put(module,new_branch);
+                 else {
+                    module_branches.put(module,branches+","+new_branch);
+                 }
              }
           }
        }
