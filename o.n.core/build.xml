@@ -36,21 +36,19 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   <target name="jars" depends="compile,tojar">
     <mkdir dir="netbeans/lib/ext"/>
-    <!-- Hack to subst a key in Versioning.properties, but not permanently change it: -->
-    <rename src="src/org/netbeans/core/Versioning.properties"
-           dest="src/org/netbeans/core/Versioning.properties-"/>
+    <mkdir dir="versioning-tmp/org/netbeans/core"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copyfile src="src/org/netbeans/core/Versioning.properties-"
-             dest="src/org/netbeans/core/Versioning.properties"
-	     filtering="on"/>
+    <copy file="src/org/netbeans/core/Versioning.properties"
+          tofile="versioning-tmp/org/netbeans/core/Versioning.properties"
+	  filtering="on"/>
     <jar jarfile="netbeans/lib/developer.jar"
-         basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false">
-      <exclude name="**/org/netbeans/core/Versioning.properties-"/>
+      <fileset dir="src">
+        <exclude name="org/netbeans/core/Versioning.properties"/>
+      </fileset>
+      <fileset dir="versioning-tmp"/>
     </jar>
-    <rename src="src/org/netbeans/core/Versioning.properties-"
-           dest="src/org/netbeans/core/Versioning.properties"/>
     <!-- XXX does this really need to be built? -->
     <jar jarfile="netbeans/lib/ext/regexp.jar"
          basedir="libsrc"
@@ -72,5 +70,6 @@ Microsystems, Inc. All Rights Reserved.
       <include name="**/*.class"/>
     </delete>
     <deltree dir="netbeans"/>
+    <delete dir="versioning-tmp"/>
   </target>
 </project>
