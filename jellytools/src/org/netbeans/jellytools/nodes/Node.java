@@ -190,6 +190,7 @@ public class Node {
     /** returns list of names of children
      * @return String[] list of names of children */    
     public String[] getChildren() {
+	tree().expandPath(treePath);
         Object o[]=tree().getChildren(treePath.getLastPathComponent());
         if (o==null) return new String[0];
         String s[]=new String[o.length];
