@@ -26,6 +26,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 
 
 
