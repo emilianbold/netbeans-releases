@@ -60,9 +60,9 @@ public class URLUtil {
         
         // map to an external URL using the anchor-less URL
         try {
-            FileObject fos[] = URLMapper.findFileObjects(new URL(urlString));
-            if ((fos != null) && (fos.length > 0)) {
-                URL newUrl = getURLOfAppropriateType(fos[0], allowJar);
+            FileObject fo = URLMapper.findFileObject(new URL(urlString));
+            if (fo != null) {
+                URL newUrl = getURLOfAppropriateType(fo, allowJar);
                 if (newUrl != null) {
                     // re-add the anchor if exists
                     urlString = newUrl.toString();
