@@ -58,7 +58,7 @@ public class AccessibilityQuery {
      */
     public static Boolean isPubliclyAccessible(FileObject pkg) {
         if (!pkg.isFolder()) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Not a folder: " + pkg); // NOI18N
         }
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
