@@ -75,15 +75,9 @@ Microsystems, Inc. All Rights Reserved.
                                 It also does some other less important stuff.
                             </answer>
                             -->
-                            <xsl:variable name="first-sentence" select="substring-before(description, '. ')" />
-                            <xsl:choose>
-                                <xsl:when test="$first-sentence" >
-                                    <xsl:value-of select="$first-sentence" />.
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="substring-before(description, '.')" />.
-                                </xsl:otherwise>
-                            </xsl:choose>
+                          <xsl:comment>Begin of first sentenece</xsl:comment>
+                          <xsl:apply-templates mode="first-sentence" select="description" />
+                          <xsl:comment>End of first sentenece</xsl:comment>.
                         </li>
                     </xsl:when>
                     <xsl:otherwise>
@@ -153,6 +147,7 @@ Microsystems, Inc. All Rights Reserved.
                     </div>
                 </xsl:if>
 
+                <p/>
                 <table border="3" cellpadding="6" width="90%">
                     <thead>
                         <th valign="bottom" width="30%"><b>Interface Name</b></th>
@@ -265,6 +260,45 @@ Microsystems, Inc. All Rights Reserved.
         </xsl:copy>
     </xsl:template>
 
+    <!-- Gets the first sentence with HTML tags -->
+    
+    <xsl:template mode="first-sentence" match="api-ref">
+        <b><xsl:value-of select="@name" /></b><xsl:text> </xsl:text>
+    </xsl:template>
+
+    <xsl:template mode="first-sentence" match="node()">
+        <xsl:choose>
+            <xsl:when test="count(child::*) = 0" >
+                <xsl:variable name="first-sentence" select="substring-before(normalize-space(), '. ')" />
+                <xsl:variable name="first-dot" select="substring-before(normalize-space(), '.')" />
+                <xsl:choose>
+                    <xsl:when test="$first-sentence" >
+                        <xsl:value-of select="$first-sentence" />
+                        <!-- this trick starts comment which disables output produces after 
+                           Which means comments out everything after the .
+                           -->
+                        <xsl:text disable-output-escaping="yes">&lt;!--</xsl:text>
+                    </xsl:when>
+                    <xsl:when test="$first-dot" >
+                        <xsl:value-of select="$first-dot" />
+                        <!-- this trick starts comment which disables output produces after 
+                           Which means comments out everything after the .
+                           -->
+                        <xsl:text disable-output-escaping="yes">&lt;!--</xsl:text>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:value-of select="." />
+                    </xsl:otherwise>
+                </xsl:choose>
+                <xsl:apply-templates mode="first-sentence" select="child::*"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:apply-templates mode="first-sentence" select="node()"/>
+            </xsl:otherwise>
+        </xsl:choose>
+        
+    </xsl:template>
+    
 </xsl:stylesheet>
 
 
