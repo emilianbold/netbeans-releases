@@ -126,7 +126,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/nodes/FilterNodeTest.class/testEquals"/>
                 <!-- #24851: -->
                 <include name="org/openide/nodes/ChildrenArrayTest.class/testNodeEventsFiredAtOnce"/>
-                <!-- Implementation was apparently killed during a refactoring: -->
+                <!-- Implementation was apparently killed during a refactoring (see #16430): -->
                 <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetRow"/>
             </patternset>
         </testset>      
