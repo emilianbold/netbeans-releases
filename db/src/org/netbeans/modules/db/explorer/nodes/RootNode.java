@@ -99,8 +99,6 @@ public class RootNode extends DatabaseNode {
         }
         option.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
-                System.out.println("EVENT: "+(e==null?"NULL":e.getPropertyName()));
-                System.out.println("EVENT: "+(DatabaseOption.PROP_AUTO_CONNECTION==null?"NULL":DatabaseOption.PROP_AUTO_CONNECTION));
                 if (e.getPropertyName().equals(DatabaseOption.PROP_AUTO_CONNECTION))
                     if(((Boolean)e.getNewValue()).booleanValue())
                         try {
