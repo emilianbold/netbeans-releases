@@ -84,9 +84,12 @@ public class JspMultiSyntaxTest extends NbTestCase {
 //    }
 //    
     public void test50283_1() {
-        dumpTokensForContent("< /jsp:element >");
+        dumpTokensForContent("< /jsp:element >"); //should be marked as an error
     }
      
+    public void test50283_2() {
+        dumpTokensForContent("</ jsp:element >"); //should be marked as an error
+    }
     
     //helper methods -----------
     
