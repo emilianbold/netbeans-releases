@@ -367,7 +367,11 @@ public final class Actions extends Object {
                 //#50482: Check if selected file exists eg. user can enter any file name to text box.
                 if (!selectedFile.exists()) {
                     String message = NbBundle.getMessage(Actions.class,"ERR_FileDoesNotExist",selectedFile.getPath());
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+                    String title = NbBundle.getMessage(Actions.class,"ERR_FileDoesNotExistDlgTitle");
+                    DialogDisplayer.getDefault().notify
+                    (new NotifyDescriptor(message,title,NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.INFORMATION_MESSAGE, new Object[] { NotifyDescriptor.OK_OPTION },
+                    NotifyDescriptor.OK_OPTION));
                 } else {
                     retVal = FileUtil.toFileObject(selectedFile);
                     assert retVal != null;
