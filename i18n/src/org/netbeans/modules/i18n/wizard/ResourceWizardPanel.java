@@ -74,11 +74,13 @@ public class ResourceWizardPanel extends JPanel {
      * @see org.openide.WizardDescriptor.Panel 
      * @see Panel */
     private final Panel descPanel;
-    
+
+    private final boolean testMode;
     
     /** Creates new form SourceChooserPanel. */
-    private ResourceWizardPanel(Panel descPanel) {
+    private ResourceWizardPanel(Panel descPanel, boolean testMode) {
         this.descPanel = descPanel;
+        this.testMode = testMode;
         
         initComponents();        
         
@@ -104,7 +106,15 @@ public class ResourceWizardPanel extends JPanel {
        
         descPanel.fireStateChanged();
     }
-
+    
+    private String getPanelDescription() {
+        if (testMode == false) {
+            return Util.getString("MSG_ResourcePanel_desc");
+        } else {
+            return Util.getString("MSG_ResourcePanel_test_desc");
+        }
+    }
+    
     /** Does additional components initialization. Sets mnemonics. */
     private void postInitComponents() {
         addAllButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_SelectResourceAll_Mnem").charAt(0));
@@ -168,7 +178,7 @@ public class ResourceWizardPanel extends JPanel {
         descTextArea.setColumns(20);
         descTextArea.setEditable(false);
         descTextArea.setLineWrap(true);
-        descTextArea.setText(Util.getString("MSG_ResourcePanel_desc"));
+        descTextArea.setText(getPanelDescription());
         descTextArea.setWrapStyleWord(true);
         descTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -368,7 +378,7 @@ public class ResourceWizardPanel extends JPanel {
     public static class Panel extends I18nWizardDescriptor.Panel implements I18nWizardDescriptor.ProgressMonitor {
 
         /** Component. */
-        private final ResourceWizardPanel resourcePanel = new ResourceWizardPanel(this);
+        private final ResourceWizardPanel resourcePanel;
         
         /** Indicates whether this panel is used in i18n test wizard or not. */
         private boolean testWizard;
@@ -382,6 +392,7 @@ public class ResourceWizardPanel extends JPanel {
         /** Constructs panel for i18n wizard or i18n test wizard. */
         public Panel(boolean testWizard) {
             this.testWizard = testWizard;
+            resourcePanel = new ResourceWizardPanel(this, testWizard);
         }
         
         
@@ -406,7 +417,7 @@ public class ResourceWizardPanel extends JPanel {
             constraints.weightx = 1.0;
             constraints.weighty = 1.0;
             constraints.fill = GridBagConstraints.BOTH;
-            panel.add(resourcePanel, constraints);
+            panel.add(resourcePanel, constraints);            
             
             return panel;
         }

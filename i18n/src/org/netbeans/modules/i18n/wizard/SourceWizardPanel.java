@@ -46,7 +46,7 @@ import org.openide.WizardDescriptor;
 
 
 /**
- * First panel used in I18N Wizard.
+ * First panel used in I18N (test) Wizard.
  *
  * @author  Peter Zavadsky
  * @see Panel
@@ -60,12 +60,17 @@ public class SourceWizardPanel extends JPanel {
      * @see org.openide.WizardDescriptor.Panel 
      * @see Panel */
     private final Panel descPanel;
-    
+
+    /**
+     * Panel role true (test wizard) false (i18n) wizard
+     */
+    private boolean testRole = false;
     
     /** Creates new form SourceChooserPanel.
      * @param it's panel wizard descriptor */
-    private SourceWizardPanel(Panel descPanel) {
+    private SourceWizardPanel(Panel descPanel, boolean testRole) {
         this.descPanel = descPanel;
+        this.testRole = testRole;
         
         initComponents();        
 
@@ -100,6 +105,17 @@ public class SourceWizardPanel extends JPanel {
     private void postInitComponents() {
         addButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_AddSource_Mnem").charAt(0));
         removeButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_RemoveSource_Mnem").charAt(0));
+    }
+
+    /**
+     * Panel description depend of its container test or i18n role
+     */
+    private String getPanelDescription() {
+        if (testRole == false)   {
+            return Util.getString("MSG_SourcesPanel_desc");
+        } else {
+            return Util.getString("MSG_SourcesPanel_test_desc");
+        }        
     }
     
     /** Init list componnet. */
@@ -137,7 +153,7 @@ public class SourceWizardPanel extends JPanel {
 
         descTextArea.setEditable(false);
         descTextArea.setLineWrap(true);
-        descTextArea.setText(Util.getString("MSG_SorcesPanel_desc"));
+        descTextArea.setText(getPanelDescription());
         descTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -326,7 +342,7 @@ public class SourceWizardPanel extends JPanel {
         /** Gets component to display. Implements superclass abstract method. 
          * @return this instance */
         protected Component createComponent() {                                    
-            Component component = new SourceWizardPanel(this);            
+            Component component = new SourceWizardPanel(this, testWizard);            
             if(testWizard)
                 component.setName(NbBundle.getBundle(SourceWizardPanel.class).getString("TXT_SelecTestSources"));
             else

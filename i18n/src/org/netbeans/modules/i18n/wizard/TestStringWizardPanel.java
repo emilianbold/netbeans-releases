@@ -59,10 +59,8 @@ import org.openide.WizardDescriptor;
 
 
 /**
- * <code>WizardDescriptor.Panel</code> used for to show found hard coded strings
- * for sepcified sources. It offers default key-value pairs and allows modify them.
- * These values will be used by actual i18n-zation of those sources.
- * It is the fourth and last panel of I18N Wizard.
+ * <code>WizardDescriptor.Panel</code> used for to show found missing keys.
+ * It is the fourth and last panel of I18N Test Wizard.
  *
  * @author  Peter Zavadsky
  * @see Panel
@@ -84,9 +82,9 @@ public class TestStringWizardPanel extends JPanel {
     /** Table model for <code>stringTable</code>. */
     private final AbstractTableModel tableModel = new TestStringTableModel();
     
-    
     /** Creates new form HardCodedStringsPanel */
     private TestStringWizardPanel() {
+        
         initComponents();        
         
         postInitComponents();
@@ -96,7 +94,7 @@ public class TestStringWizardPanel extends JPanel {
         setComboModel(sourceMap);
     }
 
-    
+        
     /** Sets combo model only for source which were some found strings in. */
     private void setComboModel(Map sourceMap) {
         Object[] sources = sourceMap.keySet().toArray();
@@ -114,9 +112,9 @@ public class TestStringWizardPanel extends JPanel {
     /** Adds additional init of components. */
     private void postInitComponents() {
         sourceLabel.setLabelFor(sourceCombo);
-        sourceLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_Source").charAt(0));
+        sourceLabel.setDisplayedMnemonic(Util.getString("LBL_Source_Mnem").charAt(0));
         testStringLabel.setLabelFor(testStringTable);
-        testStringLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_FoundStrings_Mnem").charAt(0));
+        testStringLabel.setDisplayedMnemonic(Util.getString("LBL_missing_keys_mne").charAt(0));
     }
 
     /** Getter for <code>resources</code> property. */
@@ -258,7 +256,7 @@ public class TestStringWizardPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(sourceCombo, gridBagConstraints);
 
-        testStringLabel.setText(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_FoundStrings"));
+        testStringLabel.setText(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_missing_keys"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -295,11 +293,11 @@ public class TestStringWizardPanel extends JPanel {
     }//GEN-LAST:event_sourceComboActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox sourceCombo;
+    private javax.swing.JLabel testStringLabel;
     private javax.swing.JLabel sourceLabel;
     private javax.swing.JScrollPane scrollPane;
-    private javax.swing.JLabel testStringLabel;
     private javax.swing.JTable testStringTable;
-    private javax.swing.JComboBox sourceCombo;
     // End of variables declaration//GEN-END:variables
 
     /** Table model for this class. */
@@ -485,17 +483,19 @@ public class TestStringWizardPanel extends JPanel {
     implements WizardDescriptor.FinishPanel, I18nWizardDescriptor.ProgressMonitor {
 
         /** Empty label component. */
-        private final JLabel emptyLabel;
-        
-        /** Test wizard panel component. */
-        private final TestStringWizardPanel testStringPanel = new TestStringWizardPanel();
+        private final JLabel emptyLabel;        
 
-        {
+        /** Test wizard panel component. */
+        private final TestStringWizardPanel testStringPanel;
+        
+        public Panel() {
+            testStringPanel = new TestStringWizardPanel();
             emptyLabel = new JLabel(NbBundle.getBundle(TestStringWizardPanel.class).getString("TXT_AllI18nStrings"));
             emptyLabel.setHorizontalAlignment(JLabel.CENTER);
-            emptyLabel.setVerticalAlignment(JLabel.CENTER);
+            emptyLabel.setVerticalAlignment(JLabel.CENTER);            
         }
         
+
         
         /** Gets component to display. Implements superclass abstract method. 
          * @return this instance */
@@ -512,7 +512,6 @@ public class TestStringWizardPanel extends JPanel {
             constraints.weighty = 1.0;
             constraints.fill = GridBagConstraints.BOTH;
             panel.add(testStringPanel, constraints);
-            
             return panel;
         }
 
@@ -595,7 +594,7 @@ public class TestStringWizardPanel extends JPanel {
                 // Do actual replacement.
                 Iterator it = stringMap.keySet().iterator();
 
-                progressPanel.setSubText(NbBundle.getBundle(getClass()).getString("LBL_Source")+" "+((DataObject)source).getPrimaryFile().getPackageName('.'));
+                progressPanel.setSubText(Util.getString("LBL_Source")+" "+((DataObject)source).getPrimaryFile().getPackageName('.'));
 
                 for(int j=0; it.hasNext(); j++) {
                     HardCodedString hcString = (HardCodedString)it.next();

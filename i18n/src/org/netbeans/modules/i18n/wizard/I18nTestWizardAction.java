@@ -76,14 +76,14 @@ public class I18nTestWizardAction extends NodeAction {
     /** Gets wizard iterator thru panels used in wizard invoked by this action, 
      * i.e I18N wizard. */
     private WizardDescriptor.Iterator getWizardIterator() {
-        ArrayList panels = new ArrayList(3);
+        WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];
         
-        panels.add(new SourceWizardPanel.Panel(true));
-        panels.add(new ResourceWizardPanel.Panel(true));
-        panels.add(new TestStringWizardPanel.Panel());
+        panels[0] = new SourceWizardPanel.Panel(true);
+        panels[1] = new ResourceWizardPanel.Panel(true);
+        panels[2] = new TestStringWizardPanel.Panel();
         
-        return new WizardDescriptor.ArrayIterator(
-            (WizardDescriptor.Panel[])panels.toArray(new WizardDescriptor.Panel[panels.size()]));
+        return new WizardDescriptor.ArrayIterator(panels);
+            
     }
     
     /** Initializes wizard descriptor. */
