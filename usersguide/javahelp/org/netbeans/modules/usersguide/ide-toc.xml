@@ -367,36 +367,12 @@
 <tocitem text="About Web Applications">
    <tocitem text="About Web Applications" target="intro" />
    <tocitem text="Working with Web Applications" target="mod_process" />
-   <tocitem text="Project Tasks: Quick Reference" target="proj_quickref"/>
+   <tocitem text="Web Application Tasks: Quick Reference" target="mod_quickref"/>
    <tocitem text="How the IDE Supports Web Application Development" target="webmod_idesupport" />
    <tocitem text="Which Technology Versions Are Supported" target="webmod_techsupport" />
    <tocitem text="How to Structure Web Applications" target="webmod_struct" />
    <tocitem text="Where to Put Web Application Files" target="webmod_placefiles" />
 </tocitem> <!-- About Web Applications -->
-
-<tocitem text="Creating Web Applications">
-    <tocitem text="Creating a Project" target="proj_creating"/>
-    <tocitem text="Java Project Templates" target="proj_templates" />
-    <tocitem text="Setting the Main Project" target="proj_main" />
-    <tocitem text="Standard Projects">
-      <tocitem text="About Standard Projects" target="proj_stand_about" />
-      <tocitem text="Creating a Standard Web Application Project" target="proj_creating" />
-      <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
-      <tocitem text="Managing the Classpath" target="comp_classpath" />
-      <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
-      <tocitem text="Setting the Target JDK" target="proj_jdk" />
-      <tocitem text="Customizing the IDE-Generated Ant Script" target="proj_stand_customize" />
-    </tocitem>
-    <tocitem text="Free-Form Projects">
-      <tocitem text="About Free-Form Projects" target="proj_free_about" />
-      <tocitem text="Creating a Web Application with Existing Ant Script" target="proj_creating" />
-      <tocitem text="Adding a Source Directory to a Free-Form Project" target="proj_free_add" />
-      <tocitem text="Declaring the Classpath in Free-Form Projects" target="proj_free_classpath" />
-      <tocitem text="Setting the JDK for an Ant Script" target="ant_target-jdk" />
-      <tocitem text="Linking Ant Targets to IDE Commands" target="proj_free_targets" />
-      <tocitem text="Writing Ant Targets for IDE Commands" target="proj_webfree_debug" />
-    </tocitem>
-</tocitem>
 
 <tocitem text="Developing Web Applications"> 	
   <tocitem text="Applets" >

@@ -401,6 +401,7 @@
 <mapID target="war_delete" url="web/warpkg/war_delete.html" />
 <mapID target="war_xtrafiles" url="web/warpkg/war_xtrafiles.html" />
 <mapID target="mod_process" url="web/overvw/mod_process.html" />
+<mapID target="mod_quickref" url="web/overvw/mod_quickref.html" />
 <mapID target="filter_addtodd" url="web/servlet/filter_addtodd.html" />
 <mapID target="filter_create" url="web/servlet/filter_create.html" />
 <mapID target="listen_addtodd" url="web/servlet/listen_addtodd.html" />
