@@ -181,6 +181,9 @@ public class TableNodeInfo extends DatabaseNodeInfo {
 
     public void refreshChildren() throws DatabaseException
     {
+        // force init collection
+        getNode().getChildren().getNodes();
+        
         // create list of columns (infos)
         Vector charr = new Vector();
         put(DatabaseNodeInfo.CHILDREN, charr);
