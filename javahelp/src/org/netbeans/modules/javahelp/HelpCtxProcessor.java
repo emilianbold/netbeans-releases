@@ -7,34 +7,31 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.javahelp;
 
-import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.xml.sax.*;
 
-import org.openide.awt.Actions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.XMLDataObject;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListener;
-import org.openide.util.actions.Presenter;
 
 import org.netbeans.api.javahelp.Help;
 
@@ -53,9 +50,9 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
      */
     private XMLDataObject xml;
     
-    /** the cached menu/toolbar presenter
+    /** the cached action
      */
-    private Presenter p;
+    private Action p;
     
     /** Bind to an XML file.
      * @param xml the file to parse
@@ -71,14 +68,14 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
      * @return the presenter class
      */
     public Class instanceClass() throws IOException, ClassNotFoundException {
-        return ShortcutPresenter.class;
+        return ShortcutAction.class;
     }
     
     /** Get the name of the class produced.
      * @return the name of the presenter class
      */
     public String instanceName() {
-        return "org.netbeans.modules.javahelp.HelpCtxProcessor$ShortcutPresenter"; // NOI18N
+        return "org.netbeans.modules.javahelp.HelpCtxProcessor$ShortcutAction"; // NOI18N
     }
     
     /** Test if this instance is of a suitable type.
@@ -86,7 +83,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
      * @return true if it can be assigned to the desired superclass
      */
     public boolean instanceOf(Class type) {
-        return type == Presenter.Menu.class || type == Presenter.Toolbar.class;
+        return type == Action.class;
     }
     
     /** Create the presenter.
@@ -112,7 +109,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
                     String id = amap.getValue("id"); // NOI18N
                     String showmaster = amap.getValue("showmaster"); // NOI18N
                     if (id != null && !"".equals(id)) { // NOI18N
-                        p = new ShortcutPresenter(xml, id, Boolean.valueOf(showmaster).booleanValue());
+                        p = new ShortcutAction(xml, id, Boolean.valueOf(showmaster).booleanValue());
                     }
                 }
             }
@@ -130,12 +127,16 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
             throw ioe;
         }
         
+        if (p == null) {
+            throw new IOException("No <helpctx> element in " + xml.getPrimaryFile()); // NOI18N
+        }
+        
         return p;
     }
     
     /** The presenter to be shown in a menu, e.g.
      */
-    private static final class ShortcutPresenter implements Presenter.Menu, Presenter.Toolbar, ActionListener {
+    private static final class ShortcutAction extends AbstractAction implements HelpCtx.Provider, NodeListener, ChangeListener {
         
         /** associated XML file representing it
          */
@@ -152,40 +153,19 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
         /** Create a new presenter.
          * @param obj XML file describing it
          */
-        public ShortcutPresenter(XMLDataObject obj, String helpID, boolean showmaster) {
+        public ShortcutAction(XMLDataObject obj, String helpID, boolean showmaster) {
             this.obj = obj;
             this.helpID = helpID;
             this.showmaster = showmaster;
-        }
-        
-        /** Make a menu item.
-         * @return a menu item which when selected
-         * will show the help
-         */
-        public JMenuItem getMenuPresenter() {
-            if (!obj.isValid()) {
-                // #16364
-                return new JMenuItem("dead"); // NOI18N
+            updateText();
+            updateIcon();
+            updateEnabled();
+            if (obj.isValid()) {
+                Node n = obj.getNodeDelegate();
+                n.addNodeListener(WeakListener.node(this, n));
             }
-            JMenuItem m = new JMenuItem();
-            m.addActionListener(this);
-            new NodeBridge(m);
-            return m;
-        }
-        
-        /** Get a toolbar presenter.
-         * @return a button which when clicked will show
-         * the help
-         */
-        public Component getToolbarPresenter() {
-            if (!obj.isValid()) {
-                // #16364
-                return new JLabel("dead"); // NOI18N
-            }
-            JButton b = new JButton();
-            b.addActionListener(this);
-            new NodeBridge(b);
-            return b;
+            Help h = findHelp();
+            if (h != null) h.addChangeListener(WeakListener.change(this, h));
         }
         
         /** Show the help.
@@ -200,82 +180,78 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
             }
         }
         
-        /** Bridge between the data node of the XML file
-         * and the presenter component, which keeps the
-         * display name and icon in synch.
+        /**
+         * Help for the shortcut itself is generic.
+         * @return a neutral help context - welcome page
          */
-        private class NodeBridge extends NodeAdapter implements ChangeListener {
-            
-            /** associated menu item or button
-             */
-            private AbstractButton b;
-            
-            /** Create a new bridge,
-             * @param b the menu item or button
-             * @param n the node delegate of the XML file
-             */
-            public NodeBridge(AbstractButton b) {
-                this.b = b;
-                updateText();
-                updateIcon();
-                updateEnabled();
-                obj.getNodeDelegate().addNodeListener(this);
-                Help h = findHelp();
-                if (h != null) h.addChangeListener(WeakListener.change(this, h));
-                // #23565:
-                HelpCtx.setHelpIDString(b, "ide.welcome"); // NOI18N
-            }
-            
-            /** Called when the node delegate changes somehow,
-             * @param ev event indicating whether the change
-             * was of display name, icon, or other
-             */
-            public void propertyChange(PropertyChangeEvent ev) {
-                String prop = ev.getPropertyName();
-                if (!obj.isValid()) return;
-                if (prop == null || prop.equals(Node.PROP_NAME) || prop.equals(Node.PROP_DISPLAY_NAME)) {
-                    updateText();
-                }
-                if (prop == null || prop.equals(Node.PROP_ICON)) {
-                    updateIcon();
-                }
-            }
-            
-            /** Update the text of the button according to node's
-             * display name. Handle mnemonics sanely.
-             */
-            private void updateText() {
-                String text = obj.getNodeDelegate().getDisplayName();
-                Actions.setMenuText(b, text, true);
-                //b.setToolTipText (Actions.cutAmpersand(text));
-            }
-            
-            /** Update the icon of the button according to the
-             * node delegate.
-             */
-            private void updateIcon() {
-                b.setIcon(new ImageIcon(obj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)));
-            }
-            
-            private void updateEnabled() {
-                Help h = findHelp();
-                Boolean valid = h == null ? Boolean.FALSE : h.isValidID(helpID, false);
-                if (valid != null) {
-                    b.setEnabled(valid.booleanValue());
-                }
-                Installer.err.log("enabled: xml=" + obj.getPrimaryFile() + " id=" + helpID + " enabled=" + valid);
-            }
-            
-            /** Help sets may have changed.
-             * @param changeEvent ignore
-             */
-            public void stateChanged(ChangeEvent changeEvent) {
-                updateEnabled();
-            }
-            
+        public HelpCtx getHelpCtx() {
+            // #23565:
+            return new HelpCtx("ide.welcome"); // NOI18N
         }
+        
+        /** Help sets may have changed.
+         * @param changeEvent ignore
+         */
+        public void stateChanged(ChangeEvent e) {
+            updateEnabled();
+        }
+        
+        /** Called when the node delegate changes somehow,
+         * @param ev event indicating whether the change
+         * was of display name, icon, or other
+         */
+        public void propertyChange(PropertyChangeEvent ev) {
+            String prop = ev.getPropertyName();
+            if (!obj.isValid()) return;
+            if (prop == null || prop.equals(Node.PROP_NAME) || prop.equals(Node.PROP_DISPLAY_NAME)) {
+                updateText();
+            }
+            if (prop == null || prop.equals(Node.PROP_ICON)) {
+                updateIcon();
+            }
+        }
+
+        /** Update the text of the button according to node's
+         * display name. Handle mnemonics sanely.
+         */
+        private void updateText() {
+            String text;
+            if (obj.isValid()) {
+                text = obj.getNodeDelegate().getDisplayName();
+            } else {
+                // #16364
+                text = "dead"; // NOI18N
+            }
+            putValue(Action.NAME, text);
+        }
+
+        /** Update the icon of the button according to the
+         * node delegate.
+         */
+        private void updateIcon() {
+            if (obj.isValid()) {
+                putValue(Action.SMALL_ICON, new ImageIcon(obj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)));
+            }
+        }
+
+        private void updateEnabled() {
+            Help h = findHelp();
+            Boolean valid = h == null ? Boolean.FALSE : h.isValidID(helpID, false);
+            if (valid != null) {
+                setEnabled(valid.booleanValue());
+            }
+            Installer.err.log("enabled: xml=" + obj.getPrimaryFile() + " id=" + helpID + " enabled=" + valid);
+        }
+
+        public void nodeDestroyed(NodeEvent ev) {
+            setEnabled(false);
+            updateText();
+        }
+        
+        public void childrenAdded(NodeMemberEvent ev) {}
+        public void childrenRemoved(NodeMemberEvent ev) {}
+        public void childrenReordered(NodeReorderEvent ev) {}
         
     }
     
 }
-
