@@ -340,7 +340,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module editor..."/>
     <ant dir="../editor" target="netbeans"/>
   </target>
-  <target name="all-diff" depends="all-openide,all-editor,all-openide/deprecated">
+  <target name="all-diff" depends="all-openide,all-editor,all-openide/loaders">
     <echo message="Building module diff..."/>
     <ant dir="../diff" target="netbeans"/>
   </target>
@@ -645,16 +645,16 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module vcscvs..."/>
     <ant dir="../vcscvs" target="netbeans"/>
   </target>
-  <target name="all-vcscvs/compat" depends="all-openide,all-openidex,all-editor,all-vcscore,all-vcsgeneric">
+  <target name="all-vcscvs/compat" depends="all-openide,all-openidex,all-vcscore,all-vcsgeneric">
     <echo message="Building module vcscvs compat..."/>
     <ant dir="../vcscvs/compat" target="netbeans"/>
   </target>
-  <target name="all-vcsgeneric" depends="all-openide,all-openidex,all-vcscore,all-diff,all-openide/deprecated">
+  <target name="all-vcsgeneric" depends="all-openide,all-openidex,all-vcscore,all-diff">
     <echo message="Building module vcsgeneric..."/>
     <ant dir="../vcsgeneric" target="netbeans"/>
   </target>
 
-  <target name="all-vcsgeneric/profiles/cvsprofiles" depends="all-vcsgeneric,all-openide/deprecated,all-javacvs/libmodule">
+  <target name="all-vcsgeneric/profiles/cvsprofiles" depends="all-vcsgeneric,all-javacvs/libmodule">
     <echo message="Building module vcsgeneric/profiles/cvsprofiles"/>
     <ant dir="../vcsgeneric/profiles/cvsprofiles" target="netbeans"/>
   </target>
@@ -664,7 +664,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../vcsgeneric/profiles/clearcase" target="netbeans"/>
   </target>
 
-  <target name="all-vcsgeneric/profiles/pvcs" depends="all-vcsgeneric,all-openide/deprecated">
+  <target name="all-vcsgeneric/profiles/pvcs" depends="all-vcsgeneric">
     <echo message="Building module vcsgeneric/profiles/pvcs"/>
     <ant dir="../vcsgeneric/profiles/pvcs" target="netbeans"/>
   </target>
@@ -674,14 +674,17 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../vcsgeneric/profiles/vss" target="netbeans"/>
   </target>
 
-  <!-- XXX check editor dependecy -->
-  <target name="all-vcscore" depends="all-openide,all-openidex,all-editor,all-openide/deprecated,all-openide/io,all-openide/execution">
+  <target name="all-vcscore" depends="all-openide,all-openidex,all-openide/io,all-openide/execution,all-openide/loaders">
     <echo message="Building module vcscore..."/>
     <ant dir="../vcscore" target="netbeans"/>
   </target>
   <target name="all-javacvs" depends="all-openide,all-openidex,all-vcscore, all-diff,all-openide/deprecated">
     <echo message="Building module javacvs..."/>
     <ant dir="../javacvs" target="netbeans"/>
+  </target>
+  <target name="all-javacvs/compat" depends="all-openide,all-vcscore,all-vcsgeneric,all-vcsgeneric/profiles/cvsprofiles">
+    <echo message="Building module javacvs compat..."/>
+    <ant dir="../javacvs/compat" target="netbeans"/>
   </target>
   <target name="all-javacvs/libmodule">
     <echo message="Building module javacvs/libmodule..."/>
