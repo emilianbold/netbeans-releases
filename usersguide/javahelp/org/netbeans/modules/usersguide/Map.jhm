@@ -873,7 +873,6 @@
    <mapID target="org.netbeans.modules.form.ParametersPicker" url="pending.html"/>
    <mapID target="org.netbeans.modules.java.JavaConnections.dialog" url="pending.html"/>
    <mapID target="org.netbeans.modules.url.BookmarksNode" url="webbrowser/bookmark.html" />
-   <mapID target="org.netbeans.modules.html.HtmlLoader.Obj" url="pending.html" /> 
    <mapID target="org.netbeans.modules.image.ImageViewer" url="pending.html" /> 
    <mapID target="org.netbeans.modules.url.OpenInNewWindowAction" url="pending.html" /> 
    <mapID target="org.netbeans.modules.url.BookmarksAction" url="pending.html" />
@@ -913,7 +912,6 @@
    <mapID target="org.netbeans.modules.editor.options.BaseOptionsBeanInfo$KeyBindingListPropertyEditor" url="shortcuts/kybdshortcuts.html" />
    <mapID target="org.netbeans.modules.editor.options.BaseOptionsBeanInfo$AbbrevMapEditor" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.CompilerTypeEditor$NoCompiler" url="pending.html" />
-   <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="pending.html" /> 
    <mapID target="org.netbeans.modules.javadoc.search.Jdk12SearchType" url="javadoc/searchengine.html" /> 
    <mapID target="org.netbeans.modules.javadoc.search.Jdk12SearchType_japan" url="javadoc/searchengine.html" /> 
 
@@ -954,7 +952,7 @@
    <mapID target="org.netbeans.modules.projects.NewProjectAction" url="project/project_creating.html" /> 
    <mapID target="org.openide.actions.CompileProjectAction" url="project/project_comp-run-debug.html" /> 
    <mapID target="org.openide.actions.OpenProjectAction" url="project/project_switching.html" /> 
-   <mapID target="org.openide.actions.SaveProjectAction" url="project/project_save-options.html" /> 
+   <mapID target="org.openide.actions.SaveProjectAction" url="pending.html" /> 
    <mapID target="org.netbeans.modules.projects.SetMainClassAction" url="run/mainclass.html" /> 
    <mapID target="org.openide.actions.ExecuteProjectAction" url="project/project_comp-run-debug.html" />
    <mapID target="org.openide.actions.DebugProjectAction" url="project/project_comp-run-debug.html" />
