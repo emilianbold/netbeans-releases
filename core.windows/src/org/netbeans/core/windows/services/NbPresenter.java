@@ -30,6 +30,7 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
@@ -418,7 +419,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         // -----------------------------------------------------------------------------
         // If there were any buttons previously, remove them and removeActionListener from them
         
-        Component focusOwner = SwingUtilities.findFocusOwner(this);
+        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getFocusOwner ();
 
         boolean helpButtonShown =
             stdHelpButton.isShowing() || descriptor instanceof WizardDescriptor;
@@ -619,7 +620,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         updateDefaultButton();
         
         
-        Component fo = SwingUtilities.findFocusOwner(this);
+        Component fo = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getFocusOwner ();
         
         if (fo != focusOwner && focusOwner != null) {
             focusOwner.requestFocus();
@@ -794,10 +795,13 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         } else if (DialogDescriptor.PROP_TITLE.equals(evt.getPropertyName())) {
             setTitle(descriptor.getTitle());
         } else if (DialogDescriptor.PROP_HELP_CTX.equals(evt.getPropertyName())) {
+            // bugfix #40057, restore focus owner after help update
+            Component fo = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getFocusOwner ();
             updateHelp();
             // In case buttons have changed: //just buttons!!
             currentButtonsPanel.revalidate();
             currentButtonsPanel.repaint();
+            if (fo != null) fo.requestFocus();
         } else if (DialogDescriptor.PROP_VALID.equals(evt.getPropertyName())) {
             updateOKButton(((Boolean)(evt.getNewValue())).booleanValue());
         }
