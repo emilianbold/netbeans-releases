@@ -66,24 +66,16 @@ public class ClassPathUtils {
         // LinkageError left uncaught
 
         // try execution classpath - in case the class is within the same project
-        // (first check there is a java source file for the class available)
-        int i = name.indexOf('$');
-        String resourceName = (i > -1 ? name.substring(0, i) : name)
-                               .replace('.', '/') + ".java"; // NOI18N
-        if (ClassPath.getClassPath(fileInProject, ClassPath.SOURCE)
-                               .findResource(resourceName) != null)
-        {
-            loader = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE)
-                                     .getClassLoader(true);
-            try {
-                return loader.loadClass(name);
-            }
-            catch (ClassNotFoundException ex) {
-                // report failure against compilation classpath (just annotate by this one)
-                ErrorManager.getDefault().annotate(cnfe, ex);
-            }
-            // LinkageError left uncaught
+        loader = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE)
+                    .getClassLoader(true);
+        try {
+            return loader.loadClass(name);
         }
+        catch (ClassNotFoundException ex) {
+            // report failure against compilation classpath (just annotate by this one)
+            ErrorManager.getDefault().annotate(cnfe, ex);
+        }
+        // LinkageError left uncaught
 
         throw cnfe;
     }
