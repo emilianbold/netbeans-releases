@@ -707,6 +707,7 @@
 <mapID target="NetbeansDebuggerMonitorNode" url="debug/environment/threads_view.html" />
 <mapID target="NetbeansDebuggerCallStackNode" url="debug/environment/threads_view.html" />
 <mapID target="NetbeansDebuggerLocalsRootNode" url="debug/environment/threads_view.html" />
+<mapID target="debug.add.watch" url="debug/watches/watch_window.html" />
 
 <mapID target="execution.view.window" url="run/workspace.html" />
 <mapID target="set.arguments.window" url="run/arguments.html" />

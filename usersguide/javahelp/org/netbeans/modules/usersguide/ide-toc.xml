@@ -299,7 +299,7 @@
   <tocitem text="Examining Classes Loaded by the Program" target="debug.environment.classes" />
 
 
-  <tocitem text="Customizing the Debugger" target="debug.debugger.customize">
+  <tocitem text="Configuring the Debugger" target="debug.debugger.customize">
     <tocitem text="Customizing Debug Views" target="debug.view.customize"></tocitem>
     <tocitem text="Setting General Debugging Options" target="debug.options"/>
     <tocitem text="Setting Options for Java Debugging" target="debug.java.options"></tocitem>
