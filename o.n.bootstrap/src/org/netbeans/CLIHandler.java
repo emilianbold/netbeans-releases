@@ -364,6 +364,17 @@ public abstract class CLIHandler extends Object {
         OUTPUT = sb;
     }
     
+    /** Enhanced search for localhost address that works also behind VPN
+     */
+    private static InetAddress localHostAddress () throws IOException {
+        java.net.NetworkInterface net = java.net.NetworkInterface.getByName ("lo");
+        if (net == null || !net.getInetAddresses ().hasMoreElements ()) {
+            return InetAddress.getLocalHost (); 
+        } else {
+            return (InetAddress)net.getInetAddresses ().nextElement ();
+        }
+    }
+    
     /** Initializes the system by creating lock file.
      *
      * @param args the command line arguments to recognize
@@ -493,7 +504,7 @@ public abstract class CLIHandler extends Object {
                     try {
                         // ok, try to connect
                         enterState(28, block);
-                        Socket socket = new Socket(InetAddress.getLocalHost(), port);
+                        Socket socket = new Socket(localHostAddress (), port);
                         // wait max of 1s for reply
                         socket.setSoTimeout(5000);
                         DataOutputStream os = new DataOutputStream(socket.getOutputStream());
