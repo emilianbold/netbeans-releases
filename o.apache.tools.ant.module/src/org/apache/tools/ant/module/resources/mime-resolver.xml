@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
@@ -25,6 +25,15 @@ Microsystems, Inc. All Rights Reserved.
                 <element name="project">
                     <attr name="default"/>
                 </element>
+            </xml-rule>
+        </resolver>
+    </file>
+    <!-- Ant 1.6 defines antlib:org.apache.tools.ant as the master namespace: -->
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-ant+xml">
+            <xml-rule>
+                <element name="project" ns="antlib:org.apache.tools.ant"/>
             </xml-rule>
         </resolver>
     </file>

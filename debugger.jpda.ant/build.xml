@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="debuggerjpda/ant" basedir="." default="netbeans">
@@ -40,15 +40,15 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="src">
                 <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
                 <exclude name="**/*.class"/>
-                <exclude name="META-INF/*.properties"/>
+                <exclude name="org/netbeans/modules/debugger/jpda/ant/antlib.xml"/>
             </fileset>
         </jar>
         <mkdir dir="netbeans/ant/nblib"/>
-        <jar jarfile="netbeans/ant/nblib/nbjpda.jar" compress="false">
+        <jar jarfile="netbeans/ant/nblib/org-netbeans-modules-debugger-jpda-ant.jar" compress="false">
             <fileset dir="src">
                 <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
                 <include name="**/*.class"/>
-                <include name="META-INF/*.properties"/>
+                <include name="org/netbeans/modules/debugger/jpda/ant/antlib.xml"/>
             </fileset>
         </jar>
     </target>

@@ -7,14 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.bridge;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.URL;
 import java.util.Enumeration;
 import org.openide.util.enum.*;
 
@@ -22,8 +22,8 @@ import org.openide.util.enum.*;
  * Loads classes in the following order:
  * 1. JRE
  * 2. Ant JARs - whatever is in the "main" class loader.
- * 3. NetBeans JARs - modules etc.
- * 4. Contents of $nbhome/ant/nblib/*.jar, incl. bridge.jar and special tasks.
+ * 3. Some NetBeans module class loader.
+ * 4. Some other JAR from $nbhome/ant/nblib/*.jar.
  * Lightly inspired by ProxyClassLoader, but much less complex.
  * @author Jesse Glick
  */
@@ -31,8 +31,8 @@ final class AuxClassLoader extends AntBridge.AllPermissionURLClassLoader {
     
     private final ClassLoader nbLoader;
     
-    public AuxClassLoader(ClassLoader nbLoader, ClassLoader antLoader, URL[] urls) {
-        super(urls, antLoader);
+    public AuxClassLoader(ClassLoader nbLoader, ClassLoader antLoader, URL extraJar) {
+        super(new URL[] {extraJar}, antLoader);
         this.nbLoader = nbLoader;
     }
     

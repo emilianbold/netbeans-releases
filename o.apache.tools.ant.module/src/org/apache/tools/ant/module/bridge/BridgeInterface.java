@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,6 +37,12 @@ public interface BridgeInterface {
      * @return the version
      */
     String getAntVersion();
+    
+    /**
+     * Check whether Ant 1.6 is loaded.
+     * If so, additional abilities may be possible, such as namespace support.
+     */
+    boolean isAnt16();
     
     /**
      * Get a proxy for IntrospectionHelper, to introspect task + type structure.

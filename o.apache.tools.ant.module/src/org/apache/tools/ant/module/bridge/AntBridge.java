@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,7 +30,15 @@ import org.openide.execution.NbClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.*;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Utility class providing entry points to the bridging functionality.
@@ -41,33 +49,62 @@ public final class AntBridge {
     private AntBridge() {}
     
     private static final String KEY_MAIN_CLASS_LOADER = "mainClassLoader"; // NOI18N
-    private static final String KEY_AUX_CLASS_LOADER = "auxClassLoader"; // NOI18N
+    private static final String KEY_BRIDGE_CLASS_LOADER = "bridgeClassLoader"; // NOI18N
     private static final String KEY_BRIDGE = "bridge"; // NOI18N
-    private static final String KEY_CUSTOM_DEFS = "customDefs";
+    private static final String KEY_CUSTOM_DEFS = "customDefs"; // NOI18N
+    private static final String KEY_CUSTOM_DEF_CLASS_LOADERS = "customDefClassLoaders"; // NOI18N
     private static Reference stuff = null; // Reference<Map>
     
     private static List listeners = new ArrayList(); // List<ChangeListener>
     
     private static final class MiscListener implements PropertyChangeListener, LookupListener {
+        MiscListener() {}
+        private ModuleInfo[] modules = null;
         public void propertyChange(PropertyChangeEvent ev) {
             String prop = ev.getPropertyName();
-            if (prop == null ||
-                    AntSettings.PROP_ANT_HOME.equals(prop) ||
+            if (AntSettings.PROP_ANT_HOME.equals(prop) ||
                     AntSettings.PROP_EXTRA_CLASSPATH.equals(prop)) {
                 AntModule.err.log("AntBridge got settings change in " + prop);
+                fireChange();
+            } else if (ModuleInfo.PROP_ENABLED.equals(prop)) {
+                AntModule.err.log("AntBridge got module enablement change on " + ev.getSource());
                 fireChange();
             }
         }
         public void resultChanged(LookupEvent ev) {
-            AntModule.err.log("AntModule got ClassLoader change");
+            AntModule.err.log("AntModule got ModuleInfo change");
+            synchronized (this) {
+                if (modules != null) {
+                    for (int i = 0; i < modules.length; i++) {
+                        modules[i].removePropertyChangeListener(this);
+                    }
+                    modules = null;
+                }
+            }
             fireChange();
+        }
+        public synchronized ModuleInfo[] getEnabledModules() {
+            if (modules == null) {
+                Collection c = modulesResult.allInstances();
+                modules = (ModuleInfo[])c.toArray(new ModuleInfo[c.size()]);
+                for (int i = 0; i < modules.length; i++) {
+                    modules[i].addPropertyChangeListener(this);
+                }
+            }
+            List/*<ModuleInfo>*/ enabledModules = new ArrayList(modules.length);
+            for (int i = 0; i < modules.length; i++) {
+                if (modules[i].isEnabled()) {
+                    enabledModules.add(modules[i]);
+                }
+            }
+            return (ModuleInfo[])enabledModules.toArray(new ModuleInfo[enabledModules.size()]);
         }
     }
     private static MiscListener miscListener = new MiscListener();
-    private static Lookup.Result classpathResult = Lookup.getDefault().lookup(new Lookup.Template(ClassLoader.class));
+    private static Lookup.Result modulesResult = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class));
     static {
         AntSettings.getDefault().addPropertyChangeListener(miscListener);
-        classpathResult.addLookupListener(miscListener);
+        modulesResult.addLookupListener(miscListener);
     }
     
     /**
@@ -106,19 +143,61 @@ public final class AntBridge {
     }
     
     /**
-     * Get the loader which contains the bridge code as well as any
-     * custom-defined tasks.
+     * Get the loader which contains the bridge code.
      */
-    private static ClassLoader getAuxClassLoader() {
-        return (ClassLoader)getStuff().get(KEY_AUX_CLASS_LOADER);
+    private static ClassLoader getBridgeClassLoader() {
+        return (ClassLoader)getStuff().get(KEY_BRIDGE_CLASS_LOADER);
     }
     
     /**
      * Get any custom task/type definitions stored in $nbhome/ant/nblib/*.jar.
      * Some of the classes might not be fully resolvable, so beware.
+     * The names will include namespace prefixes.
+     * <p>
+     * Only minimal antlib syntax is currently interpreted here:
+     * only <code>&lt;taskdef&gt;</code> and <code>&lt;typedef&gt;</code>,
+     * and only the <code>name</code> and <code>classname</code> attributes.
      */
-    public static Map/*<String,Map<String,Class>>*/ getCustomDefs() {
+    public static Map/*<String,Map<String,Class>>*/ getCustomDefsWithNamespace() {
         return (Map)getStuff().get(KEY_CUSTOM_DEFS);
+    }
+    
+    /**
+     * Same as {@link #getCustomDefsWithNamespace} but without any namespace prefixes.
+     */
+    public static Map/*<String,Map<String,Class>>*/ getCustomDefsNoNamespace() {
+        Map/*<String,Map<String,Class>>*/ m = new HashMap();
+        Iterator it = getCustomDefsWithNamespace().entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry)it.next();
+            String type = (String)entry.getKey();
+            Map defs = (Map)entry.getValue();
+            Map/*Map<String,Class>*/ m2 = new HashMap();
+            Iterator it2 = defs.entrySet().iterator();
+            while (it2.hasNext()) {
+                Map.Entry entry2 = (Map.Entry)it2.next();
+                String fqn = (String)entry2.getKey();
+                Class clazz = (Class)entry2.getValue();
+                String name;
+                int idx = fqn.lastIndexOf(':');
+                if (idx != -1) {
+                    name = fqn.substring(idx + 1);
+                } else {
+                    name = fqn;
+                }
+                m2.put(name, clazz);
+            }
+            m.put(type, m2);
+        }
+        return m;
+    }
+    
+    /**
+     * Get a map from enabled module code name bases to class loaders containing
+     * JARs from ant/nblib/*.jar.
+     */
+    public static Map/*<String,ClassLoader>*/ getCustomDefClassLoaders() throws IOException {
+        return (Map)getStuff().get(KEY_CUSTOM_DEF_CLASS_LOADERS);
     }
     
     /**
@@ -177,12 +256,13 @@ public final class AntBridge {
             // Ensures that the loader is functional, and that it is at least 1.5.x
             // so that our classes can link against it successfully:
             main.loadClass("org.apache.tools.ant.input.InputHandler"); // NOI18N
-            File[] nblibs = getNblibs();
-            ClassLoader aux = createAuxClassLoader(nblibs, main);
-            m.put(KEY_AUX_CLASS_LOADER, aux);
-            Class impl = aux.loadClass("org.apache.tools.ant.module.bridge.impl.BridgeImpl"); // NOI18N
+            ClassLoader bridgeLoader = createBridgeClassLoader(main);
+            m.put(KEY_BRIDGE_CLASS_LOADER, bridgeLoader);
+            Class impl = bridgeLoader.loadClass("org.apache.tools.ant.module.bridge.impl.BridgeImpl"); // NOI18N
             m.put(KEY_BRIDGE, (BridgeInterface)impl.newInstance());
-            m.put(KEY_CUSTOM_DEFS, createCustomDefs(nblibs, aux));
+            Map cDCLs = createCustomDefClassLoaders(main);
+            m.put(KEY_CUSTOM_DEF_CLASS_LOADERS, cDCLs);
+            m.put(KEY_CUSTOM_DEFS, createCustomDefs(cDCLs));
         } catch (Exception e) {
             fallback(m, e);
         } catch (LinkageError e) {
@@ -195,12 +275,13 @@ public final class AntBridge {
         m.clear();
         ClassLoader dummy = ClassLoader.getSystemClassLoader();
         m.put(KEY_MAIN_CLASS_LOADER, dummy);
-        m.put(KEY_AUX_CLASS_LOADER, dummy);
+        m.put(KEY_BRIDGE_CLASS_LOADER, dummy);
         m.put(KEY_BRIDGE, new DummyBridgeImpl(e));
         Map defs = new HashMap();
         defs.put("task", new HashMap()); // NOI18N
         defs.put("type", new HashMap()); // NOI18N
         m.put(KEY_CUSTOM_DEFS, defs);
+        m.put(KEY_CUSTOM_DEF_CLASS_LOADERS, Collections.EMPTY_MAP);
     }
     
     private static final class JarFilter implements FilenameFilter {
@@ -239,62 +320,107 @@ public final class AntBridge {
         return new AllPermissionURLClassLoader((URL[])cp.toArray(new URL[cp.size()]), ClassLoader.getSystemClassLoader());
     }
     
-    private static File[] getNblibs() throws IOException {
-        // XXX this will not work for modules installed in the user dir...
-        // pending stronger semantics from IFL re. directories
-        // (cf. #36701)
-        // -> when this is fixed, remove ant/nblib check from org.netbeans.modules.autoupdate.ModuleUpdate
-        File nblibdir = InstalledFileLocator.getDefault().locate("ant/nblib", "org.apache.tools.ant.module", false); // NOI18N
-        File bridgeJar = new File(nblibdir, "bridge.jar");
-        if (!bridgeJar.isFile()) throw new IOException("No such Ant bridge JAR: " + bridgeJar); // NOI18N
-        File[] libs = nblibdir.listFiles(new JarFilter());
-        if (libs == null) throw new IOException("Listing: " + nblibdir); // NOI18N
-        return libs;
-    }
-    
-    private static ClassLoader createAuxClassLoader(File[] libs, ClassLoader main) throws Exception {
-        List cp = new ArrayList(); // List<URL>
-        for (int i = 0; i < libs.length; i++) {
-            cp.add(libs[i].toURI().toURL());
+    private static ClassLoader createBridgeClassLoader(ClassLoader main) throws Exception {
+        File bridgeJar = InstalledFileLocator.getDefault().locate("ant/nblib/bridge.jar", "org.apache.tools.ant.module", false); // NOI18N
+        if (bridgeJar == null) {
+            throw new IllegalStateException("no ant/nblib/bridge.jar found"); // NOI18N
         }
-        ClassLoader nbLoader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-        return new AuxClassLoader(nbLoader, main, (URL[])cp.toArray(new URL[cp.size()]));
+        return createAuxClassLoader(bridgeJar, main, AntBridge.class.getClassLoader());
     }
     
-    private static Map/*<String,Map<String,Class>>*/ createCustomDefs(File[] libs, ClassLoader aux) throws IOException {
-        Map m = new HashMap();
-        Map tasks = new HashMap();
-        Map types = new HashMap();
-        m.put("task", tasks); // NOI18N
-        m.put("type", types); // NOI18N
-        for (int i = 0; i < libs.length; i++) {
-            JarFile j = new JarFile(libs[i]);
-            try {
-                JarEntry e = j.getJarEntry("META-INF/taskdefs.properties"); // NOI18N
-                if (e != null) {
-                    AntModule.err.log("Loading custom taskdefs from " + libs[i]);
-                    loadDefs(j.getInputStream(e), tasks, aux);
-                }
-                e = j.getJarEntry("META-INF/typedefs.properties"); // NOI18N
-                if (e != null) {
-                    AntModule.err.log("Loading custom typedefs from " + libs[i]);
-                    loadDefs(j.getInputStream(e), tasks, aux);
-                }
-            } finally {
-                j.close();
+    private static ClassLoader createAuxClassLoader(File lib, ClassLoader main, ClassLoader moduleLoader) throws IOException {
+        return new AuxClassLoader(moduleLoader, main, lib.toURI().toURL());
+    }
+    
+    /**
+     * Get a map from enabled module code name bases to class loaders containing
+     * JARs from ant/nblib/*.jar.
+     */
+    private static Map/*<String,ClassLoader>*/ createCustomDefClassLoaders(ClassLoader main) throws IOException {
+        Map/*<String,ClassLoader>*/ m = new HashMap();
+        ModuleInfo[] modules = miscListener.getEnabledModules();
+        InstalledFileLocator ifl = InstalledFileLocator.getDefault();
+        for (int i = 0; i < modules.length; i++) {
+            String cnb = modules[i].getCodeNameBase();
+            String cnbDashes = cnb.replace('.', '-');
+            File lib = ifl.locate("ant/nblib/" + cnbDashes + ".jar", cnb, false); // NOI18N
+            if (lib == null) {
+                continue;
             }
+            ClassLoader l = createAuxClassLoader(lib, main, modules[i].getClassLoader());
+            m.put(cnb, l);
         }
         return m;
     }
     
-    private static void loadDefs(InputStream is, Map defs, ClassLoader l) throws IOException {
-        // Similar to IntrospectedInfo.load, but just picks up the classes.
-        Properties p = new Properties();
-        try {
-            p.load(is);
-        } finally {
-            is.close();
+    private static Map/*<String,Map<String,Class>>*/ createCustomDefs(Map cDCLs) throws IOException {
+        Map m = new HashMap();
+        Map tasks = new HashMap();
+        Map types = new HashMap();
+        // XXX #36776: should eventually support <macrodef>s here
+        m.put("task", tasks); // NOI18N
+        m.put("type", types); // NOI18N
+        Iterator it = cDCLs.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry)it.next();
+            String cnb = (String)entry.getKey();
+            ClassLoader l = (ClassLoader)entry.getValue();
+            String resource = cnb.replace('.', '/') + "/antlib.xml"; // NOI18N
+            URL antlib = l.getResource(resource);
+            if (antlib == null) {
+                throw new IOException("Could not find " + antlib + " in ant/nblib/" + cnb.replace('.', '-') + ".jar"); // NOI18N
+            }
+            Document doc;
+            try {
+                doc = XMLUtil.parse(new InputSource(antlib.toExternalForm()), false, true, /*XXX needed?*/null, null);
+            } catch (SAXException e) {
+                throw (IOException)new IOException(e.toString()).initCause(e);
+            }
+            Element docEl = doc.getDocumentElement();
+            if (!docEl.getLocalName().equals("antlib")) { // NOI18N
+                throw new IOException("Bad root element for " + antlib + ": " + docEl); // NOI18N
+            }
+            NodeList nl = docEl.getChildNodes();
+            Properties newTaskDefs = new Properties();
+            Properties newTypeDefs = new Properties();
+            for (int i = 0; i < nl.getLength(); i++) {
+                Node n = nl.item(i);
+                if (n.getNodeType() != Node.ELEMENT_NODE) {
+                    continue;
+                }
+                Element def = (Element)n;
+                boolean type;
+                if (def.getNodeName().equals("taskdef")) { // NOI18N
+                    type = false;
+                } else if (def.getNodeName().equals("typedef")) { // NOI18N
+                    type = true;
+                } else {
+                    AntModule.err.log(ErrorManager.WARNING, "Warning: unrecognized definition " + def + " in " + antlib);
+                    continue;
+                }
+                String name = def.getAttribute("name"); // NOI18N
+                if (name == null) {
+                    // Not a hard error since there might be e.g. <taskdef resource="..."/> here
+                    // which we do not parse but which is permitted in antlib by Ant.
+                    AntModule.err.log(ErrorManager.WARNING, "Warning: skipping definition " + def + " with no 'name' in " + antlib);
+                    continue;
+                }
+                String classname = def.getAttribute("classname"); // NOI18N
+                if (classname == null) {
+                    // But this is a hard error.
+                    throw new IOException("No 'classname' attr on def of " + name + " in " + antlib); // NOI18N
+                }
+                // XXX would be good to handle at least onerror attr too
+                (type ? newTypeDefs : newTaskDefs).setProperty(name, classname);
+            }
+            loadDefs(newTaskDefs, tasks, l);
+            loadDefs(newTypeDefs, types, l);
         }
+        return m;
+    }
+    
+    private static void loadDefs(Properties p, Map defs, ClassLoader l) throws IOException {
+        // Similar to IntrospectedInfo.load, after having parsed the properties.
         Iterator it = p.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry)it.next();

@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.debugger.jpda.ant
-OpenIDE-Module-Specification-Version: 1.0.7
+OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Module-Dependencies: 
-  org.apache.tools.ant.module/3 > 3.1,
+  org.apache.tools.ant.module/3 > 3.6,
   org.netbeans.modules.debugger.jpda/1 > 1.16,
   org.netbeans.modules.debugger.core/3 > 2.10,
   org.openide.debugger > 1.0

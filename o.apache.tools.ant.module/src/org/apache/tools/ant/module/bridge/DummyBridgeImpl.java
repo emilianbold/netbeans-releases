@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -36,6 +36,10 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
     
     public String getAntVersion() {
         return NbBundle.getMessage(DummyBridgeImpl.class, "ERR_ant_not_loadable", problem);
+    }
+    
+    public boolean isAnt16() {
+        return false;
     }
     
     public IntrospectionHelperProxy getIntrospectionHelper(Class clazz) {

@@ -30,12 +30,27 @@ import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.bridge.*;
 import org.openide.util.Utilities;
 
+// XXX in order to support Ant 1.6 interface addition types, need to keep
+// track of which classes implement a given interface
+
 /** Represents Ant-style introspection info for a set of classes.
  * There should be one instance which is loaded automatically
  * from defaults.properties files, i.e. standard tasks/datatypes.
  * A second is loaded from settings and represents custom tasks/datatypes.
  * Uses Ant's IntrospectionHelper for the actual work, but manages the results
  * and makes them safely serializable (stores only classnames, etc.).
+ * <p>
+ * All task and type names may be namespace-qualified for use
+ * in Ant 1.6: a name of the form <samp>nsuri:localname</samp> refers to
+ * an XML element with namespace <samp>nsuri</samp> and local name <samp>localname</samp>.
+ * Attribute names could also be similarly qualified, but in practice attributes
+ * used in Ant never have a defined namespace. The prefix <samp>antlib:org.apache.tools.ant:</samp>
+ * is implied, not expressed, on Ant core element names (for backwards compatibility).
+ * Subelement names are *not* namespace-qualified here, even though in the script
+ * they would be - because the namespace used in the script will actually vary
+ * according to how an antlib is imported and used. An unqualified subelement name
+ * should be understood to inherit a namespace from its parent element.
+ * <em>(Namespace support since <code>org.apache.tools.ant.module/3 3.6</code>)</em>
  */
 public final class IntrospectedInfo implements Serializable {
     
@@ -340,7 +355,14 @@ public final class IntrospectedInfo implements Serializable {
     }
     
     private void loadNetBeansSpecificDefinitions() {
-        Map defsByKind = AntBridge.getCustomDefs();
+        loadNetBeansSpecificDefinitions0(AntBridge.getCustomDefsNoNamespace());
+        if (AntBridge.getInterface().isAnt16()) {
+            // Define both.
+            loadNetBeansSpecificDefinitions0(AntBridge.getCustomDefsWithNamespace());
+        }
+    }
+    
+    private void loadNetBeansSpecificDefinitions0(Map defsByKind) {
         Iterator kindIt = defsByKind.entrySet().iterator();
         while (kindIt.hasNext()) {
             Map.Entry kindE = (Map.Entry)kindIt.next();

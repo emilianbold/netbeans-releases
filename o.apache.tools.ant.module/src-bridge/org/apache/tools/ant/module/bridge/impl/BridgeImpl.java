@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,6 +16,7 @@ package org.apache.tools.ant.module.bridge.impl;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.*;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.input.InputHandler;
@@ -46,6 +47,16 @@ public class BridgeImpl implements BridgeInterface {
         } catch (BuildException be) {
             AntModule.err.notify(ErrorManager.INFORMATIONAL, be);
             return NbBundle.getMessage(BridgeImpl.class, "LBL_ant_version_unknown");
+        }
+    }
+    
+    public boolean isAnt16() {
+        try {
+            Class.forName("org.apache.tools.ant.taskdefs.Antlib"); // NOI18N
+            return true;
+        } catch (ClassNotFoundException e) {
+            // Fine, 1.5
+            return false;
         }
     }
     
@@ -90,16 +101,10 @@ public class BridgeImpl implements BridgeInterface {
         try {
             project = new Project();
             project.init();
-            Map customDefs = AntBridge.getCustomDefs();
-            Iterator defs = ((Map)customDefs.get("task")).entrySet().iterator(); // NOI18N
-            while (defs.hasNext()) {
-                Map.Entry entry = (Map.Entry)defs.next();
-                project.addTaskDefinition((String)entry.getKey(), (Class)entry.getValue());
-            }
-            defs = ((Map)customDefs.get("type")).entrySet().iterator(); // NOI18N
-            while (defs.hasNext()) {
-                Map.Entry entry = (Map.Entry)defs.next();
-                project.addDataTypeDefinition((String)entry.getKey(), (Class)entry.getValue());
+            try {
+                addCustomDefs(project);
+            } catch (IOException e) {
+                throw new BuildException(e);
             }
             project.setUserProperty("ant.file", buildFile.getAbsolutePath()); // NOI18N
             // #14993:
@@ -228,6 +233,45 @@ public class BridgeImpl implements BridgeInterface {
         }
         
         return ok;
+    }
+    
+    private static void addCustomDefs(Project project) throws BuildException, IOException {
+        long start = System.currentTimeMillis();
+        if (AntBridge.getInterface().isAnt16()) {
+            Map/*<String,ClassLoader>*/ antlibLoaders = AntBridge.getCustomDefClassLoaders();
+            Iterator it = antlibLoaders.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry entry = (Map.Entry)it.next();
+                String cnb = (String)entry.getKey();
+                ClassLoader l = (ClassLoader)entry.getValue();
+                String resource = cnb.replace('.', '/') + "/antlib.xml"; // NOI18N
+                URL antlib = l.getResource(resource);
+                if (antlib == null) {
+                    throw new IOException("Could not find " + antlib + " in ant/nblib/" + cnb.replace('.', '-') + ".jar"); // NOI18N
+                }
+                // Once with no namespaces.
+                NbAntlib.process(project, antlib, null, l);
+                // Once with.
+                String antlibUri = "antlib:" + cnb; // NOI18N
+                NbAntlib.process(project, antlib, antlibUri, l);
+            }
+        } else {
+            // For Ant 1.5, just dump in old-style defs in the simplest manner.
+            Map customDefs = AntBridge.getCustomDefsNoNamespace();
+            Iterator defs = ((Map)customDefs.get("task")).entrySet().iterator(); // NOI18N
+            while (defs.hasNext()) {
+                Map.Entry entry = (Map.Entry)defs.next();
+                project.addTaskDefinition((String)entry.getKey(), (Class)entry.getValue());
+            }
+            defs = ((Map)customDefs.get("type")).entrySet().iterator(); // NOI18N
+            while (defs.hasNext()) {
+                Map.Entry entry = (Map.Entry)defs.next();
+                project.addDataTypeDefinition((String)entry.getKey(), (Class)entry.getValue());
+            }
+        }
+        if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            AntModule.err.log("addCustomDefs took " + (System.currentTimeMillis() - start) + "msec");
+        }
     }
     
     private static boolean doHack36393 = true;

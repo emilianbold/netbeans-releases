@@ -39,15 +39,15 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="src">
                 <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
                 <exclude name="**/*.class"/>
-                <exclude name="META-INF/*.properties"/>
+                <exclude name="org/netbeans/modules/ant/browsetask/antlib.xml"/>
             </fileset>
         </jar>
         <mkdir dir="netbeans/ant/nblib"/>
-        <jar jarfile="netbeans/ant/nblib/nbbrowse.jar" compress="false">
+        <jar jarfile="netbeans/ant/nblib/org-netbeans-modules-ant-browsetask.jar" compress="false">
             <fileset dir="src">
                 <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
                 <include name="**/*.class"/>
-                <include name="META-INF/*.properties"/>
+                <include name="org/netbeans/modules/ant/browsetask/antlib.xml"/>
             </fileset>
         </jar>
     </target>

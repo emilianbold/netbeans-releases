@@ -11,7 +11,7 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project basedir="." default="run" name="performance/threaddemo">
+<project basedir="." default="run" name="performance/threaddemo" xmlns:nbj="antlib:org.netbeans.modules.debugger.jpda.ant" xmlns:nbb="antlib:org.netbeans.modules.ant.browsetask">
 
     <!-- Put any overrides here (check for "???" below): -->
     <property file="user.build.properties"/>
@@ -140,7 +140,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="debug-nb" depends="build">
-        <nbjpdastart transport="dt_socket" addresspropertyname="jpda.address"/>
+        <nbj:nbjpdastart transport="dt_socket" addresspropertyname="jpda.address"/>
         <antcall target="do-debug"/>
     </target>
     
@@ -183,7 +183,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="javadoc-nb" depends="javadoc">
-        <nbbrowse file="javadoc/overview-summary.html"/>
+        <nbb:nbbrowse file="javadoc/overview-summary.html"/>
     </target>
     
     <target name="test-build" depends="build">
@@ -221,7 +221,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="test-nb" depends="test">
-        <nbbrowse file="test-results/junit-noframes.html"/>
+        <nbb:nbbrowse file="test-results/junit-noframes.html"/>
     </target>
     
     <target name="clean">
