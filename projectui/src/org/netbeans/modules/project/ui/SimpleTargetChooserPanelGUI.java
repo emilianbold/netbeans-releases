@@ -40,10 +40,12 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private Project project;
     private String expectedExtension;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private SourceGroup[] folders;
     
     /** Creates new form SimpleTargetChooserGUI */
     public SimpleTargetChooserPanelGUI( Project project, SourceGroup[] folders ) {
         this.project = project;
+        this.folders=folders;
         initComponents();
         initValues( project, null, null );
         browseButton.addActionListener( this );
@@ -236,14 +238,16 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if ( browseButton == e.getSource() ) {
-            
-            // Show the browse dialog            
-            Sources sources = (Sources)project.getLookup().lookup( Sources.class );
-            if (sources == null) {
-                sources = SourceContainers.genericOnly(project);
+            FileObject fo=null;
+            // Show the browse dialog 
+            if (folders!=null) fo = BrowseFolders.showDialog(folders);
+            else {		           
+                Sources sources = (Sources)project.getLookup().lookup( Sources.class );
+                if (sources == null) {
+                    sources = SourceContainers.genericOnly(project);
+                }
+                fo = BrowseFolders.showDialog( sources.getSourceGroups( Sources.TYPE_GENERIC ) );
             }
-            
-            FileObject fo = BrowseFolders.showDialog( sources.getSourceGroups( Sources.TYPE_GENERIC ) );
             
             if ( fo != null && fo.isFolder() ) {
                 folderTextField.setText( FileUtil.getRelativePath( project.getProjectDirectory(), fo ) );
