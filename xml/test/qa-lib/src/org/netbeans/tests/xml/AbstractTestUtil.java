@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Random;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.modules.xml.core.cookies.TreeDocumentCookie;
 import org.netbeans.tax.TreeDocument;
 import org.netbeans.tax.TreeException;
@@ -144,6 +145,14 @@ public abstract class AbstractTestUtil {
     //                      * * *  S T R I N G   L O C A L I Z A T I O N * * *
     //--------------------------------------------------------------------------
     
+    /** Get localized string, removes '&' and cuts parameters like{0} from the end.
+     * @param key key of localized value.
+     * @return localized value.
+     */
+    public final String getStringTrimmed(String key) {
+        return Bundle.getStringTrimmed(getBundel(), key);
+    }
+    
     /** Get localized string.
      * @param key key of localized value.
      * @return localized value.
@@ -177,6 +186,10 @@ public abstract class AbstractTestUtil {
      */
     public final char getChar(String key) {
         return NbBundle.getMessage(this.getClass(), key).charAt(0);
+    }
+    
+    private String getBundel() {
+        return this.getClass().getPackage().getName() + ".Bundle";
     }
     
     //--------------------------------------------------------------------------
