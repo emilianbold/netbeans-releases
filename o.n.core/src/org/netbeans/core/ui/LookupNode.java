@@ -255,7 +255,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
         Node parent;
         
         Leaf (Node node, DataObject data, Node parent) {
-            super(node, (data instanceof XMLDataObject) ? Children.LEAF : new FilterNode.Children(node));
+            super(node, ((data instanceof XMLDataObject) || node.isLeaf()) ? Children.LEAF : new FilterNode.Children(node));
             this.data = data;
             this.parent = parent;
         }
@@ -303,7 +303,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
             super(folder.getNodeDelegate ());
         }
 
-        /** Refreshes a key */
+        /** Overridden to provide package-private access. */
         protected void refreshKey (Node node) {
             super.refreshKey (node);
         }
