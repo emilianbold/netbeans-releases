@@ -317,6 +317,9 @@ public class TomcatManager implements DeploymentManager {
             throw new IllegalStateException ("TomcatManager.distribute called on disconnected instance");   // NOI18N
         }
         
+        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            TomcatFactory.getEM ().log ("TomcatManager.distribute streams");
+        }
         TomcatManagerImpl impl = new TomcatManagerImpl (this);
         impl.deploy (targets[0], is, deplPlan);
         return impl;
@@ -328,6 +331,9 @@ public class TomcatManager implements DeploymentManager {
             throw new IllegalStateException ("TomcatManager.distribute called on disconnected instance");   // NOI18N
         }
         
+        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            TomcatFactory.getEM ().log ("TomcatManager.distribute archive="+moduleArchive.getPath ()+", plan="+deplPlan.getPath ());
+        }
         TomcatManagerImpl impl = new TomcatManagerImpl (this);
         impl.install (targets[0], moduleArchive, deplPlan);
         return impl;
