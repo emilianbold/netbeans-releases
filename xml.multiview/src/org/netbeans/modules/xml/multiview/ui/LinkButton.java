@@ -33,6 +33,18 @@ public class LinkButton extends javax.swing.JButton {
         setFocusPainted(false);
         setContentAreaFilled(false);
         setAction(new LinkAction(panel, ddBean, ddProperty));
+        
+        this.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                LinkButton.this.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+                setForeground(SectionVisualTheme.hyperlinkColorFocused);
+            }
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                LinkButton.this.setCursor(java.awt.Cursor.getDefaultCursor());
+                setForeground(SectionVisualTheme.hyperlinkColor);
+            }
+        
+        });
     }
     
     public void setText(String text) {

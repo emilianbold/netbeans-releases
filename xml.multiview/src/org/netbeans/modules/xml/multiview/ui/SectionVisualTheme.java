@@ -39,6 +39,7 @@ public class SectionVisualTheme {
      static Color tableGridColor = new java.awt.Color(255, 255, 255);
      static Color sectionHeaderLineColor = new java.awt.Color(204, 204, 204);
      static Color hyperlinkColor = new java.awt.Color(0, 0, 255);
+     static Color hyperlinkColorFocused = new java.awt.Color(04,84,145);
      static Color textColor = new java.awt.Color(0, 0, 0);
      static Color errorLabelColor = javax.swing.UIManager.getDefaults().getColor("ToolBar.dockingForeground"); //NOI18N
    
@@ -70,6 +71,10 @@ public class SectionVisualTheme {
     
     static public Color getHyperlinkColor(){
         return hyperlinkColor;
+    }
+    
+    static public Color getHyperlinkColorFocused(){
+        return hyperlinkColorFocused;
     }
     
     static public Color getTextColor(){
