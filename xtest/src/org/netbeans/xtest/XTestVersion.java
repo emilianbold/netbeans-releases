@@ -49,10 +49,14 @@ public class XTestVersion  extends Task {
         return getManifest().getMainAttributes().getValue("XTest-MinorVersion");
     }
     
+    public static String getBranch() {
+        return getManifest().getMainAttributes().getValue("XTest-Branch");
+    }
+    
     public void execute() throws BuildException {        
         String version = "unknown";
         try {
-            version = XTestVersion.getMajorVersion()+"."+XTestVersion.getMinorVersion();
+            version = XTestVersion.getMajorVersion()+"."+XTestVersion.getMinorVersion()+" "+XTestVersion.getBranch();
         } catch (MissingResourceException mre) {
             // cannot find resource --- unkonwn version
         }
