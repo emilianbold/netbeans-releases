@@ -179,6 +179,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         HttpServerSettings op = HttpServerSettings.OPTIONS;
 
         ContextManager cm = new ContextManager();
+        cm.setDebug(0);
 
         cm.addContextInterceptor(new LogEvents());
         //cm.addContextInterceptor(new AutoSetup());
