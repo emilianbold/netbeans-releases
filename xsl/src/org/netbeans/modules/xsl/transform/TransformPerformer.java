@@ -214,12 +214,22 @@ public class TransformPerformer {
                 Util.THIS.debug("    baseFileObject = " + baseFO);
                 Util.THIS.debug("    data = " + data);
             }
-            
-            xmlSource = TransformUtil.createSource(baseURL, data.getInput()); // throws IOException, MalformedURLException, FileStateInvalidException, ParserConfigurationException, SAXException
+
+            try {
+                xmlSource = TransformUtil.createSource(baseURL, data.getInput()); // throws IOException, MalformedURLException, FileStateInvalidException, ParserConfigurationException, SAXException
+            } catch (IOException ex) {
+                ErrorManager.getDefault().annotate(ex, Util.THIS.getString("MSG_sourceError"));
+                throw ex;
+            }
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("    xmlSource = " + xmlSource.getSystemId());
             
             if ( data.getXSL() != null ) {
-                xslSource = TransformUtil.createSource(baseURL, data.getXSL()); // throws IOException, MalformedURLException, FileStateInvalidException, ParserConfigurationException, SAXException
+                try {
+                    xslSource = TransformUtil.createSource(baseURL, data.getXSL()); // throws IOException, MalformedURLException, FileStateInvalidException, ParserConfigurationException, SAXException
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().annotate(ex, Util.THIS.getString("MSG_transError"));
+                    throw ex;
+                }
             } else {
                 xslSource = xmlStylesheetSource;
             }
@@ -228,8 +238,13 @@ public class TransformPerformer {
             
             if ( data.getOutput() != null ) { // not Preview
                 String fileName = data.getOutput().toString().replace('\\', '/');
-                resultFO = FileUtilities.createFileObject(baseFO.getParent(), fileName, data.isOverwriteOutput()); // throws IOException
-                
+                try {
+                    resultFO = FileUtilities.createFileObject(baseFO.getParent(), fileName, data.isOverwriteOutput()); // throws IOException
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().annotate(ex, Util.THIS.getString("MSG_resultError"));
+                    throw ex;
+                }
+
                 if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("    resultFO = " + resultFO);
             }
         }
