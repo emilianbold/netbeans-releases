@@ -50,6 +50,9 @@ import com.netbeans.developer.impl.output.OutputTab;
 * @author Ian Formanek, David Simonek
 */
 public final class NbMainExplorer extends TopComponent implements ItemListener {
+  static final long serialVersionUID=6021472310669753679L; 
+//  static final long serialVersionUID=-9070275145808944151L;
+  
   /** The message formatter for Explorer title */
   private static MessageFormat formatExplorerTitle;
 
@@ -497,7 +500,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     int selIndex = ((Integer)in.readObject()).intValue();
     managers = new ExplorerManager[panels.length];
     roots = new Node[panels.length];
-    
+
     for (int i = 0; i < panels.length; i++) {
       managers[i] = panels[i].getExplorerManager ();
       roots[i] = managers[i].getRootContext ();
@@ -523,7 +526,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
       );
     }
     */
-    
+
     if (tabs.getTabCount () > selIndex) {
       currentManager = panels[selIndex].getExplorerManager();
       tabs.setSelectedIndex(selIndex);
@@ -599,6 +602,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  25   Gandalf   1.24        8/2/99   Jaroslav Tulach 
 *  24   Gandalf   1.23        8/1/99   Jaroslav Tulach MainExplorer now listens 
 *       to changes in root elements.
 *  23   Gandalf   1.22        7/30/99  David Simonek   
