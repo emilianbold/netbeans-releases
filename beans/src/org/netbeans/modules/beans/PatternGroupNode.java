@@ -17,6 +17,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ResourceBundle;
+import java.beans.Introspector;
 
 import org.openide.src.SourceException;
 import org.openide.nodes.Node;
@@ -216,7 +217,8 @@ public class  PatternGroupNode extends AbstractNode {
       if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
         PropertyPatternPanel.Result result = propertyPanel.getResult();
         PropertyPattern.create( ((PatternChildren)getChildren()).getPatternAnalyser(), 
-                                  result.name, result.type, result.mode,
+                                  Introspector.decapitalize( result.name ),
+                                  result.type, result.mode,
                                   result.bound, result.constrained,
                                   result.withField, result.withReturn, result.withSet,
                                   result.withSupport);
@@ -242,7 +244,8 @@ public class  PatternGroupNode extends AbstractNode {
       if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
         IdxPropertyPatternPanel.Result result = idxPropertyPanel.getResult();
         IdxPropertyPattern.create( ((PatternChildren)getChildren()).getPatternAnalyser(), 
-                                  result.name, result.type, result.mode,
+                                  Introspector.decapitalize( result.name ),
+                                  result.type, result.mode,
                                   result.bound, result.constrained,
                                   result.withField, result.withReturn, result.withSet,
                                   result.withSupport,
@@ -309,6 +312,8 @@ public class  PatternGroupNode extends AbstractNode {
 
 /* 
  * Log
+ *  5    Gandalf   1.4         8/9/99   Petr Hrebejk    Decapitalization of 
+ *       property name
  *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of
  *       patterns resolving
  *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
