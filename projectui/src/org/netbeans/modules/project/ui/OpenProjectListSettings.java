@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,8 +16,6 @@ package org.netbeans.modules.project.ui;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.File;
-import java.util.Map;
-
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
@@ -50,12 +48,12 @@ public class OpenProjectListSettings extends SystemOption {
         return NbBundle.getMessage (OpenProjectListSettings.class,"TXT_UISettings"); //NOI18N
     }        
 
-    public List getDirNames() {
+    public List/*<String>*/ getDirNames() {
         List list = (List)getProperty( DIR_NAMES );
         return list == null ? new ArrayList( 3 ) : list;
     }
 
-    public void setDirNames( List list ) {
+    public void setDirNames( List/*<String>*/ list ) {
         putProperty( DIR_NAMES, list, true  );
     }
     
@@ -93,12 +91,12 @@ public class OpenProjectListSettings extends SystemOption {
         putProperty( LAST_OPEN_PROJECT_DIR, path, true  );
     }
 
-    public List getRecentProjectsDirNames() {
+    public List/*<String>*/ getRecentProjectsDirNames() {
         List list = (List)getProperty( RECENT_PROJECTS_DIR_NAMES );
         return list == null ? new ArrayList( 5 ) : list;
     }
 
-    public void setRecentProjectsDirNames( List list ) {
+    public void setRecentProjectsDirNames( List/*<String>*/ list ) {
         putProperty( RECENT_PROJECTS_DIR_NAMES, list, true  );
     }
 
@@ -145,4 +143,3 @@ public class OpenProjectListSettings extends SystemOption {
     }
 
 }
-
