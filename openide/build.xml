@@ -546,6 +546,14 @@ use -Dopen-apis-up-to-date=true
 To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
 </echo>
   </target>
+  <target name="javadoc" depends="open-apis">
+    <copy todir="javadoc">
+      <fileset dir=".">
+        <include name="OpenAPIs/**"/>
+	<include name="OpenAPIs.zip"/>
+      </fileset>
+    </copy>
+  </target>
   <target name="open-apis" depends="open-apis-check-timestamps,open-apis-maybe-skip" if="open-apis-force-rebuild"
           description="Create Open API documentation.">
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
