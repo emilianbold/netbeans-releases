@@ -33,7 +33,7 @@
 
 
 <tocitem text="Filesystems and Objects" target="filesystems-objects">
-   <tocitem text="Filesystems and the Java Classpath" target="filesystems.classpath"/>
+   <tocitem text="Filesystems and the Java Class Path" target="filesystems.classpath"/>
    <tocitem text="Mounting a Filesystem" target="filesystems.mount" />
    <tocitem text="Changing the Mount Order of Filesystems" target="filesystems.order" />
    <tocitem text="Opening a File Not Mounted in a Filesystem" target="filesystems.openfile" />
@@ -95,7 +95,7 @@
 <tocitem text="Editing Source Files" target="editing.intro">
   <tocitem text="Source Editor" target="editing.editorwindow"/>
   <tocitem text="Opening a File in the Source Editor" target="editing.opening"/>
-  <tocitem text="Creating New Code" target="editing.newcode"/>
+  <tocitem text="Creating New Java Code" target="editing.newcode"/>
   <tocitem text="Formatting Code" target="editing.formatting"/>
   <tocitem text="Working With Tabs" target="editing.tabs"/>
   <tocitem text="Finding and Replacing Text" target="editing.find"/>
@@ -122,15 +122,16 @@
     <tocitem text="Using Quick Browse for Java Elements" target="editing.toolbar"/>
     <tocitem text="Using 'Go To' Shortcuts" target="editing.goto"/>
     <tocitem text="Opening a Java File With 'Go To Class'" target="editing.fastopen"/>
-    <tocitem text="Adding an Import Statement With Fast Import" target="editing.fastimport"/>
+    <tocitem text="Adding a Java Import Statement With Fast Import" target="editing.fastimport"/>
   </tocitem>
   <tocitem text="Updating the Parser Database" target="editing.parserdatabase"/>
   <tocitem text="Deleting Parser Database Files" target="editing.deleting-pdb"/>
   <tocitem text="Sharing Source Editor Settings" target="editing.xmlsettings"/>
   <tocitem text="Configuring the Source Editor" target="editing.configuring">    
-    <tocitem text="Source Editor Properties" target="editing.javaeditor-props"/>
+    <tocitem text="Source Editor Properties" target="editing.editor-props"/>
     <tocitem text="Annotation Properties" target="editing.configuring.annotations"/>
     <tocitem text="Indentation Properties" target="editing.indentation"/>
+    <tocitem text="Print Properties" target="editing.printing"/>
     <tocitem text="Setting Fonts and Colors" target="editing.fontsandcolors"/>
     <tocitem text="Color Chooser" target="editing.colorchooser"/>
     <tocitem text="Setting Keyboard Shortcuts for the Source Editor" target="editing.settingkeybdshorts"/>
@@ -148,8 +149,9 @@
     <tocitem text="Saving Compiler Messages" target="compile.messages"/>
     <tocitem text="Disabling Compilation of a Java Source File" target="compile.disable"/>
     <tocitem text="Deleting .class Files" target="compile.delete"/>
+    <tocitem text="Output Window" target="output.window"/>
   </tocitem>
-  <tocitem text="Setting Compiler Options" target="compile.options.jump">
+  <tocitem text="Configuring the Compiler" target="compile.options.jump">
     <tocitem text="External Compiler" target="compile.external"/>
     <tocitem text="Internal Compiler" target="compile.internal"/>
     <tocitem text="Fastjavac Compiler" target="compile.fastjavac"/>
@@ -173,13 +175,14 @@
     <tocitem text="Passing Arguments to the Java Virtual Machine" target="run.vm_arguments" />
     <tocitem text="Setting Runtime Options for the Environment" target="run.options" />
   </tocitem>
-  <tocitem text="Setting Executor Options" target="run.executor.options">
+  <tocitem text="Configuring the Executor" target="run.executor.options">
     <tocitem text="External Executor" target="run.external"/>
     <tocitem text="Internal Executor" target="run.internal"/>
     <tocitem text="Applet Executor" target="run.applet"/>
     <tocitem text="JAR Executor" target="run.jarexecutor"/>
     <tocitem text="Debugger Executor" target="run.debugexecutor"/>
     <tocitem text="Locale Executor" target="run.localeexecutor"/>
+    <tocitem text="Enabling Assertion Checking for Program Execution" target="run.assertion" />
     <tocitem text="Specifying the Default Executor" target="run.project" />
     <tocitem text="Defining a New Executor Type" target="run.new" />
     <tocitem text="Setting an Executor Type in a Template" target="run.template" />
@@ -226,19 +229,27 @@
      <tocitem text="Setting a Breakpoint on a Class" target="debug.breakpoint.class" />
      <tocitem text="Setting a Breakpoint on a Thread" target="debug.breakpoint.thread" />
      <tocitem text="Setting a Breakpoint on a Variable" target="debug.breakpoint.variable" />
+     <tocitem text="Conditional Breakpoints" target="debug.breakpoint.condition" />
      <tocitem text="Viewing the Source for a Line Breakpoint" target="debug.breakpoint.source" />                       
-     <tocitem text="Modifying Breakpoint Properties" target="debug.breakpoint.properties" />    
+     <tocitem text="Modifying Breakpoint Properties" target="debug.breakpoint.properties" > 
+        <tocitem text="Line Breakpoint Properties" target="debug.window.brkpt_line" />    
+        <tocitem text="Method Breakpoint Properties" target="debug.window.brkpt_method" />    
+        <tocitem text="Thread Breakpoint Properties" target="debug.window.brkpt_thread" />    
+        <tocitem text="Variable Breakpoint Properties" target="debug.window.brkpt_variable" />    
+        <tocitem text="Exception Breakpoint Properties" target="debug.window.brkpt_exception" />    
+        <tocitem text="Class Breakpoint Properties" target="debug.window.brkpt_class" />    
+     </tocitem>
      <tocitem text="Organizing Breakpoints Into a Group" target="debug.breakpoint.group" />    
      <tocitem text="Disabling and Enabling a Breakpoint" target="debug.breakpoint.enable" />
      <tocitem text="Removing a Breakpoint" target="debug.breakpoint.remove" />
   </tocitem>
-  <tocitem text="Examining Threads" target="debug.threads.jump">
-    <tocitem text="Suspending Execution of a Thread" target="debug.threads.suspend" />
-    <tocitem text="Resuming Execution of a Thread" target="debug.threads.resume" />
+  <tocitem text="Debugging Threads" target="debug.threads.jump">
+    <tocitem text="Suspending and Resuming Execution of a Thread" target="debug.threads.suspend" />
+    <tocitem text="Switching Between Threads to Debug" target="debug.threads.change" />
     <tocitem text="Viewing the Source Code of a Thread" target="debug.threads.source" />
     <tocitem text="Viewing the Variables in a Thread" target="debug.threads.variables" />
     <tocitem text="Viewing the Call Stack for a Thread" target="debug.threads.callstack" />
-    <tocitem text="Changing the Current Thread" target="debug.threads.change" />
+    <tocitem text="Thread Properties" target="debug.threads.properties" />
   </tocitem>
   <tocitem text="Using the Call Stack" target="debug.callstack.jump" >
     <tocitem text="Moving Up and Down the Call Stack" target="debug.callstack.callingmethod" />
@@ -252,10 +263,11 @@
     <tocitem text="Deleting a Watch" target="debug.watch.delete" />
   </tocitem>
   <tocitem text="Examining the Classes Loaded by the Program" target="debug.environment.classes" />
-  <tocitem text="Setting Debugger Options" target="debug.debugger.jump">
+  <tocitem text="Configuring the Debugger" target="debug.debugger.jump">
     <tocitem text="Default Debugger" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
     <tocitem text="JDK 1.1 Debugger" target="debug.debugger.jdk"/>
+    <tocitem text="Enabling Assertion Checking for Debugging" target="debug.debugger.assertion"/>
     <tocitem text="Specifying the Default Debugger" target="debug.debugger.project_default"/>
     <tocitem text="Defining a New Debugger Type" target="debug.service.new"/>
     <tocitem text="Setting a Debugger Type in a Template" target="debug.debugger.template" />
@@ -398,6 +410,7 @@
   </tocitem>
   <tocitem text="Overriding Methods" target="java.override" />
   <tocitem text="Configuring Java Settings" target="java.java_sources" />
+  <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
 </tocitem>
 
 
@@ -521,9 +534,11 @@
 
 
 <tocitem text="Configuring the Environment" target="configure">
-    <tocitem text="Options Window" target="configure.options" />
+    <tocitem text="Using the Options Window" target="configure.options" />
   <tocitem text="Managing Modules" target="modules.manage">
     <tocitem text="Updating the IDE" target="ide.autoupdate" />
+    <tocitem text="Installing Modules Offline" target="update.offline" />
+    <tocitem text="Setting the Update Prompt Frequency" target="update.prompt" />
     <tocitem text="Enabling or Disabling a Module" target="configure.module" />
   </tocitem>
   <tocitem text="Using a Web Browser With the IDE" target="webbrowser">

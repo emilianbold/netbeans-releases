@@ -32,6 +32,8 @@
 <mapID target="modules.manage" url="modules/managingmods.html" />
 <mapID target="ide.autoupdate" url="modules/autoupdate.html" />
 <mapID target="configure.module" url="modules/module.html" />
+<mapID target="update.offline" url="modules/updateoffline.html" />
+<mapID target="update.prompt" url="modules/updateprompt.html" />
 
 <mapID target="project" url="project/project.html" />
 <mapID target="project.adding-existing" url="project/project_adding-existing.html" />
@@ -148,10 +150,11 @@
 <mapID target="gui.custompalette.creating" url="gui/custompalette/creating.html" />
 <mapID target="gui.custompalette.moving" url="gui/custompalette/moving.html" />
 <mapID target="gui.custompalette.removing" url="gui/custompalette/removing.html" />
+<!-- csh page for Component Palette node in options window -->
+<mapID target="gui.options.component-palette" url="gui/custompalette/intro.html" />
 <!-- GUI csh pages needed -->
 <mapID target="gui.csh.icon" url="pending.html" />
 <mapID target="gui.csh.handlers" url="pending.html" />
-<mapID target="gui.options.component-palette" url="pending.html" />
 
 
 <mapID target="beans.intro" url="beans/intro.html" />
@@ -192,6 +195,7 @@
 <mapID target="java.import.remove-unused" url="java/imt/remove-unused.html" />
 <mapID target="java.import.configuring" url="java/imt/configuring.html" />
 <mapID target="java.java_sources" url="java/java_sources.html" />
+<mapID target="java.encoding" url="java/encoding.html" />
 <!--csh page for Options|IDE Configuration|System|Filesystems Settings|Java Libraries-->
 <mapID target="org.netbeans.modules.java.Filesystem.libraries" url="filesystems/filesystems_classpath.html" />
 <!--csh page for Options|IDE Configuration|System|Filesystems Settings|Javadoc Documentation-->
@@ -265,6 +269,7 @@
 <mapID target="run.remove" url="run/remove.html" />
 <mapID target="run.template" url="run/template.html" />
 <mapID target="run.mainclass" url="run/mainclass.html" />
+<mapID target="run.assertion" url="run/assertion.html" />
 <mapID target="output.window" url="run/output_window.html" />
 
 
@@ -302,7 +307,7 @@
 <mapID target="editing.xmlsettings" url="editing/xmlsettings.html" />
 <mapID target="editing.configuring" url="editing/configuring/configuring.html" />
 <mapID target="editing.settingkeybdshorts" url="editing/configuring/settingkeybdshorts.html" />
-<mapID target="editing.javaeditor-props" url="editing/configuring/javaeditor-props.html" />
+<mapID target="editing.editor-props" url="editing/configuring/editor-props.html" />
 <mapID target="editing.indentation" url="editing/configuring/indentation.html" />
 <mapID target="editing.configuring.annotations" url="editing/configuring/annotations.html" />
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
@@ -310,8 +315,8 @@
 <mapID target="editing.keybindings" url="editing/configuring/keybindings.html" />
 <!-- Csh page for the Add Keybinding dialog box... -->
 <mapID target="editing.csh.shortcutseq" url="editing/configuring/shortcut-seq.html" />
-<!-- Need csh page (and help topic) for Tools->Options, Printing node and subnodes -->
-<mapID target="editing.printing" url="pending.html" />
+<!-- Csh page (and help topic) for Tools->Options, Printing node and subnodes -->
+<mapID target="editing.printing" url="editing/configuring/printing.html" />
 <!-- Csh pages for separate indentation engines, currently hooked to same page-->
 <mapID target="editing.indentation.simple" url="editing/configuring/indentation.html" />
 <mapID target="editing.indentation.java" url="editing/configuring/indentation.html" />
@@ -319,11 +324,11 @@
 <mapID target="org.netbeans.core.services.IndentEngines" url="editing/configuring/indentation.html" />
 <!-- These are csh pages hooked up to Editor Settings nodes of Options window -->
 <mapID target="editing.global" url="editing/configuring/keybindings.html" />
-<mapID target="editing.editor.java" url="editing/configuring/javaeditor-props.html" />
-<mapID target="editing.editor.html" url="editing/configuring/javaeditor-props.html" />
-<mapID target="editing.editor.plain" url="editing/configuring/javaeditor-props.html" />
-<mapID target="editing.editor.jsp" url="editing/configuring/javaeditor-props.html" />
-<mapID target="editing.editor.properties" url="editing/configuring/javaeditor-props.html" />
+<mapID target="editing.editor.java" url="editing/configuring/editor-props.html" />
+<mapID target="editing.editor.html" url="editing/configuring/editor-props.html" />
+<mapID target="editing.editor.plain" url="editing/configuring/editor-props.html" />
+<mapID target="editing.editor.jsp" url="editing/configuring/editor-props.html" />
+<mapID target="editing.editor.properties" url="editing/configuring/editor-props.html" />
 <!-- Csh pages for scroll insets and Fonts and Color property editors -->
 <mapID target="editing.scrollinsets" url="editing/configuring/insets.html" />
 <mapID target="editing.fonts" url="editing/configuring/fontsandcolors.html" />
@@ -368,6 +373,7 @@
 <mapID target="debug.breakpoint.variable" url="debug/breakpoint/breakpoint_variable.html" />
 <mapID target="debug.breakpoint.exception" url="debug/breakpoint/breakpoint_exception.html" />
 <mapID target="debug.breakpoint.class" url="debug/breakpoint/breakpoint_class.html" />
+<mapID target="debug.breakpoint.condition" url="debug/breakpoint/breakpoint_condition.html" />
 <mapID target="debug.breakpoint.group" url="debug/breakpoint/group.html" />
 <mapID target="debug.breakpoint.properties" url="debug/breakpoint/breakpoint_properties.html" />
 <mapID target="debug.breakpoint.source" url="debug/breakpoint/breakpoint_source.html" />
@@ -398,11 +404,11 @@
 
 <mapID target="debug.threads.jump" url="debug/threads/threads_jump.html" />
 <mapID target="debug.threads.suspend" url="debug/threads/suspend.html" />
-<mapID target="debug.threads.resume" url="debug/threads/resume.html" />
 <mapID target="debug.threads.change" url="debug/threads/change.html" />
 <mapID target="debug.threads.source" url="debug/threads/source.html" />
 <mapID target="debug.threads.variables" url="debug/threads/variables.html" />
 <mapID target="debug.threads.callstack" url="debug/threads/callstack.html" />
+<mapID target="debug.threads.properties" url="debug/threads/thread_props.html" />
 
 <mapID target="debug.debugger.jump" url="debug/debugger/debugger_jump.html" />
 <mapID target="debug.debugger.default" url="debug/debugger/default.html" />
@@ -412,6 +418,7 @@
 <mapID target="debug.service.new" url="debug/debugger/new.html" />
 <mapID target="debug.service.remove" url="debug/debugger/remove.html" />
 <mapID target="debug.debugger.template" url="debug/debugger/template.html" />
+<mapID target="debug.debugger.assertion" url="debug/debugger/assertion.html" />
 
 <mapID target="javadoc.jump" url="javadoc/javadoc_jump.html" />
 <mapID target="javadoc.search" url="javadoc/search.html" />
@@ -438,6 +445,7 @@
 <mapID target="javadoc.search.window" url="javadoc/search_window.html" />
 <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
 <mapID target="javadoc.doc.window" url="javadoc/doc_comment_window.html" />
+<mapID target="javadoc.tab.explorer" url="javadoc/javadoc_tab.html" />
 
 <mapID target="jarpackager" url="jarpackager/jarpackager.html" />
 <mapID target="jarpackager.creating" url="jarpackager/jarpackager_creating.html" />
@@ -888,7 +896,7 @@
    <mapID target="org.netbeans.modules.autoupdate.Wizard" url="modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.CertDialog" url="pending.html" />
    <mapID target="org.netbeans.modules.autoupdate.ProxyDialog" url="modules/autoupdate.html" />   
-   <mapID target="org.netbeans.modules.autoupdate.Settings" url="pending.html" />
+   <mapID target="org.netbeans.modules.autoupdate.Settings" url="modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.AutoCheckInfo" url="pending.html" />
 
    <mapID target="org.netbeans.modules.beans.BiFeatureNode" url="pending.html" />
@@ -959,7 +967,7 @@
    <mapID target="org.netbeans.modules.debugger.debug.ToolsDebugger11Type" url="debug/debugger/jdk.html" />
    <mapID target="org.netbeans.modules.debugger.delegator.DefaultDebuggerType" url="debug/debugger/default.html" />
 
-   <mapID target="org.netbeans.beaninfo.editors.NbProcessDescriptorCustomEditor" url="pending.html" />
+   <mapID target="org.netbeans.beaninfo.editors.NbProcessDescriptorCustomEditor" url="compile/process_descriptor.html" />
    <mapID target="org.netbeans.modules.editor.options.BaseOptionsBeanInfo$KeyBindingListPropertyEditor" url="shortcuts/kybdshortcuts.html" />
    <mapID target="org.netbeans.modules.editor.options.BaseOptionsBeanInfo$AbbrevMapEditor" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.CompilerTypeEditor$NoCompiler" url="pending.html" />

@@ -7,20 +7,20 @@
 -->
 <html>
 <head>
-<title>Options Window</title>
+<title>Using the Options Window</title>
 <link rel="stylesheet" href="../ide.css" type="text/css"></head>
 <body>
-<h2>Options Window</h2>
+<h2>Using the Options Window</h2>
 
-<p>You can use the Options window to change any of the IDE's configurable settings. You can have specific settings 
-applied globally or by project.</p>
+<p>You can use the Options window to change any of the IDE's configurable settings. You can apply 
+specific settings globally or by project.</p>
 
 <p>The left pane of the window contains a tree view of all of the configurable items in the IDE. 
 The column under the Show Levels (&lt;&lt;) button displays the <img src="images/project.gif" alt="Project Setting">&nbsp;
 icon for settings that have a configuration specific to the current project. 
 The right pane displays a property sheet, which contains the names and values of the 
-settings for the item selected in the left pane. For some types of settings, 
-there are multiple tabs for distinct categories of properties.</p>
+settings for the item selected in the left pane. Some settings require 
+multiple tabs for distinct categories of properties.</p>
 
 <p><b>To open the Options window:</b></p>
 <ul>
@@ -31,7 +31,7 @@ there are multiple tabs for distinct categories of properties.</p>
 <ul>
 <li>If the value is a string,  
 you can edit the value inline and press Enter to save the change.</li>
-<li>If a drop-down arrow appears when you click the value, you can select the arrow and select the 
+<li>If a drop-down arrow appears when you click the value, you can click the arrow and select the 
 value from the combo box.</li>
 <li>If an ellipsis (...) button appears, you can click the ellipsis button to open a property editor.</li>
 </ul>
@@ -39,13 +39,13 @@ value from the combo box.</li>
 <p>The IDE can store settings at three levels:</p>
 
 <ul>
-<li><b>Default.</b>&nbsp;  Holds the default settings that come with the IDE installation. You can not change 
+<li><b>Default.</b>&nbsp;  Holds the default settings that come with the IDE installation. You cannot change 
 the default settings, but you can override the default settings at the user or project level.
-If you modify a setting that is only defined in the default level, a definition with the modified values 
-you provide is moved to the User level.</li>
+If you modify a setting that is defined only in the Default level, a definition with your modified values 
+is moved to the User level.</li>
 <li><b>User.</b>&nbsp;  Like default settings, settings defined at the User level apply to all of your projects. Settings 
 defined at the User level override settings at the Default level.</li>
-<li><b>Project.</b>&nbsp;  Settings configured at the Project level only apply to the project in which they are configured. 
+<li><b>Project.</b>&nbsp;  Settings configured at the Project level apply only to the project in which they are configured. 
 Any settings configured at the Project level override user settings and default settings. </li>
 </ul>
 
@@ -58,7 +58,7 @@ contains the <img src="images/project.gif" alt="Project Setting">&nbsp;icon, any
 Show Levels (&lt;&lt;) cell. There are columns for project, user, and default settings. Each row 
 represents a group of settings.
 
-<p>The following table displays the icons used to indicate the levels for settings:</p>
+<p>The following table defines the icons used to indicate the levels for settings.</p>
 
 <table border="1" cellpadding="5" cellspacing="0">
 <tr>
@@ -75,13 +75,13 @@ inherited from a higher level.</td></tr>
 ignored.</td></tr>
 </table>
 
-<p><b>To configure a setting for the current project only:</b></p>
+<p><b>To configure a setting only for the current project:</b></p>
 <ol>
 <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.</li>
 <li>In the top row of cells, click the Origin of Setting (&lt;&lt;) cell to display the 
 levels for the settings.</li>
 <li>Navigate to and select the node for the settings you want to configure.</li>
-<li>Click the cell in the Projects column for the settings node you have selected and choose 
+<li>Click the cell in the Projects column for the settings node you have selected. Choose 
 Define Here.
 <p>The <img src="images/project.gif" alt="Project Setting">&nbsp;icon appears in the Origin of 
 Setting (&lt;&lt;) column.</p></li>
@@ -105,10 +105,10 @@ for other projects.
 <li>In the top row of cells, click the Origin of Setting (&lt;&lt;) cell to display the 
 levels for the settings.</li>
 <li>Navigate to and select the node for the settings you want to configure.</li>
-<li>Click the cell in the User column for the settings node you have selected and choose 
+<li>Click the cell in the User column for the settings node you have selected. Choose 
 Revert Definition.
-<p>You are then prompted to make sure you want to remove that settings node's configuration for 
-the current project. If you click Yes, the project reverts to using the setting stored at the User 
+<p>You are then prompted to check your work. Make sure you want to remove that node's configuration for 
+the current project. If you click Yes, the project reverts to the setting stored at the User 
 level.</p></li>
 </ol>
 
@@ -119,9 +119,9 @@ level.</p></li>
 <li>In the top row of cells, click the Origin of Setting (&lt;&lt;) cell to display the 
 levels for the settings.</li>
 <li>Navigate to and select the node for the settings you want to configure.</li>
-<li>Click the cell in the Default column for the settings node you have selected and choose 
+<li>Click the cell in the Default column for the settings node you have selected. Choose 
 Revert Definition.
-<p>You are then prompted to make sure you want to remove that settings node's configuration for 
+<p>You are then prompted to check your work. Make sure you want to remove that node's configuration for 
 the current project. If you click Yes, the project reverts to using the setting stored at the Default 
 level.</p></li>
 </ol>
