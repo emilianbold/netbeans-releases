@@ -383,7 +383,7 @@ public final class IntrospectedInfo implements Serializable {
     }*/
     
     private void analyze (Class clazz) {
-        if (isKnown (clazz.getName ()) || getDefaults ().isKnown (clazz.getName ())) {
+        if (getDefaults ().isKnown (clazz.getName ())) {
             // Will not try to redefine anything.
             return;
         }
