@@ -15,9 +15,7 @@ package org.netbeans.modules.xml.multiview.ui;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
-import java.awt.GridBagLayout;
 import org.openide.nodes.Node;
-import org.openide.loaders.DataObject;
 import org.netbeans.modules.xml.multiview.cookies.SectionFocusCookie;
 /**
  *
@@ -29,14 +27,9 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
     private java.util.Hashtable map;
     private int sectionCount=0;
     private NodeSectionPanel activePanel;
-    private InnerPanelFactory factory;
+    private InnerPanelFactory factory = null;
     boolean sectionSelected;
-    private DataObject dataObject = null;
 
-    public SectionView(DataObject dataObject) {
-
-        this.dataObject = dataObject;
-    }
 
     public SectionView(InnerPanelFactory factory) {
         super();
@@ -69,7 +62,7 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         return true;
     }
 
-    private void openSection(Node node){
+    protected void openSection(Node node){
         NodeSectionPanel panel = (NodeSectionPanel) map.get(node);
         if (panel != null) {
             focusSection(panel);
@@ -256,7 +249,4 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         }
     }
 
-    public DataObject getDataObject() {
-        return dataObject;
-    }
 }
