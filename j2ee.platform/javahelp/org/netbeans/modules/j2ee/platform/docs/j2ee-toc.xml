@@ -23,6 +23,9 @@
 	<tocitem text="Registering a Server" target="server_register" />
 	<tocitem text="Starting and Stopping a Server" target="server_start" />
 	<tocitem text="Deploying a Web Application" target="deploy_webapp" />
+	<tocitem text="Deploying a Web Service" target="expose_ws" />
+	<tocitem text="Deploying an EJB Module" target="deploy_ejb" />
+	<tocitem text="Deploying an Enterprise Application" target="ent_app_deploy" />
 	<tocitem text="Removing an Application from a Server" target="server_remove" />
     </tocitem>
 
