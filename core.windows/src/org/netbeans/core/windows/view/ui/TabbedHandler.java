@@ -65,7 +65,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
     private static ActivationManager activationManager = null;
 
     /** Creates new SimpleContainerImpl */
-    public TabbedHandler(ModeView modeView, int kind) {
+    public TabbedHandler(ModeView modeView, int kind, Tabbed tbd) {
         this.modeView = modeView;
         this.kind = kind;
 
@@ -76,31 +76,33 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
                     activationManager, AWTEvent.MOUSE_EVENT_MASK);
             }
         }
-
-        tabbed = createTabbedComponent(kind);
+        tabbed = tbd;
+        tabbed.addChangeListener(this);
+        tabbed.addActionListener(this);
+//        tabbed = createTabbedComponent(kind);
 
         // E.g. when switching tabs in mode.
         ((Container)tabbed.getComponent()).setFocusCycleRoot(true);
     }
 
     
-    /** Gets tabbed container on supplied position */
-    private Tabbed createTabbedComponent(int kind) {
-        Tabbed tabbed;
-
-        if(kind == Constants.MODE_KIND_EDITOR) {
-            tabbed = new TabbedAdapter(Constants.MODE_KIND_EDITOR);
-        } else if (kind == Constants.MODE_KIND_SLIDING) {
-            tabbed = new TabbedSlideAdapter(((SlidingView)modeView).getSide());
-        } else {
-            tabbed = new TabbedAdapter(Constants.MODE_KIND_VIEW);
-        }
-        
-        tabbed.addChangeListener(this);
-        tabbed.addActionListener(this);
-
-        return tabbed;
-    }
+//    /** Gets tabbed container on supplied position */
+//    private Tabbed createTabbedComponent(int kind) {
+//        Tabbed tabbed;
+//
+//        if(kind == Constants.MODE_KIND_EDITOR) {
+//            tabbed = new TabbedAdapter(Constants.MODE_KIND_EDITOR);
+//        } else if (kind == Constants.MODE_KIND_SLIDING) {
+//            tabbed = new TabbedSlideAdapter(((SlidingView)modeView).getSide());
+//        } else {
+//            tabbed = new TabbedAdapter(Constants.MODE_KIND_VIEW);
+//        }
+//        
+//        tabbed.addChangeListener(this);
+//        tabbed.addActionListener(this);
+//
+//        return tabbed;
+//    }
     
     public void requestAttention (TopComponent tc) {
         tabbed.requestAttention(tc);

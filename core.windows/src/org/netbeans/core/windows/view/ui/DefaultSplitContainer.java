@@ -21,6 +21,7 @@ import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.ViewElement;
 import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
+import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.openide.windows.TopComponent;
 
 import javax.swing.*;
@@ -63,6 +64,16 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
     protected Component getModeComponent() {
         return panel;
     }
+    
+    protected Tabbed createTabbed() {
+        Tabbed tabbed;
+        if(kind == Constants.MODE_KIND_EDITOR) {
+            tabbed = new TabbedAdapter(Constants.MODE_KIND_EDITOR);
+        } else {
+            tabbed = new TabbedAdapter(Constants.MODE_KIND_VIEW);
+        }
+        return tabbed;    
+    }    
     
     protected void updateTitle(String title) {
         // no op

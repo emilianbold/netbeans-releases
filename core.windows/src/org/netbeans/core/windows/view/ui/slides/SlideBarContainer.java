@@ -24,11 +24,13 @@ import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ModeView;
+import org.netbeans.core.windows.view.SlidingView;
 import org.netbeans.core.windows.view.ViewElement;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.AbstractModeContainer;
 import org.netbeans.core.windows.view.ui.ModeComponent;
 import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
+import org.netbeans.core.windows.view.ui.Tabbed;
 import org.openide.windows.TopComponent;
 
 
@@ -68,6 +70,10 @@ public final class SlideBarContainer extends AbstractModeContainer {
 
     protected Component getModeComponent() {
         return panel;
+    }
+    
+    protected Tabbed createTabbed() {
+        return new TabbedSlideAdapter(((SlidingView)modeView).getSide());
     }
     
     protected boolean isAttachingPossible() {

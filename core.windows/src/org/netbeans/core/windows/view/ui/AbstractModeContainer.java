@@ -45,7 +45,7 @@ public abstract class AbstractModeContainer implements ModeContainer {
     // PENDING
     protected final WindowDnDManager windowDnDManager;
     // XXX
-    private final int kind;
+    protected final int kind;
     
 
     /** Creates a DefaultSeparateContainer. */
@@ -56,7 +56,7 @@ public abstract class AbstractModeContainer implements ModeContainer {
     public AbstractModeContainer(ModeView modeView, WindowDnDManager windowDnDManager, int kind) {
         this.modeView = modeView;
         this.windowDnDManager = windowDnDManager;
-        this.tabbedHandler = new TabbedHandler(modeView, kind);
+        this.tabbedHandler = new TabbedHandler(modeView, kind, createTabbed());
         this.kind = kind;
     }
 
@@ -71,6 +71,8 @@ public abstract class AbstractModeContainer implements ModeContainer {
     }
     
     protected abstract Component getModeComponent();
+    
+    protected abstract Tabbed createTabbed();
 
     public void addTopComponent(TopComponent tc) {
         tabbedHandler.addTopComponent(tc, kind);
