@@ -925,7 +925,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../javaembeddedserver" target="netbeans"/>
   </target>
   -->
-  <target name="all-jellytools" depends="init,all-jemmy,all-xtest">
+  <target name="all-jellytools" depends="init,all-jemmy/idemodule,all-xtest/nbjunit">
     <echo message="Building module jellytools..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -934,16 +934,16 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../jellytools" target="netbeans"/>
   </target>
-  <target name="all-jemmy" depends="init">
-    <echo message="Building module jemmy..."/>
+  <target name="all-jemmy/idemodule" depends="init">
+    <echo message="Building module jemmy/idemodule..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
-    <ant dir="../jemmy" target="netbeans"/>
+    <ant dir="../jemmy/idemodule" target="netbeans"/>
   </target>
-  <target name="all-jemmysupport" depends="init,all-jemmy,all-diff">
+  <target name="all-jemmysupport" depends="init,all-jemmy/idemodule,all-diff">
     <echo message="Building module jemmysupport..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1453,7 +1453,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../tasklist/compiler" target="netbeans"/>
   </target>
 
-  <target name="all-testtools" depends="init,all-openide/compiler,all-java,all-ant,all-jemmy,all-jemmysupport,all-jellytools">
+  <target name="all-testtools" depends="init,all-openide/compiler,all-java,all-ant,all-jemmy/idemodule,all-jemmysupport,all-jellytools">
     <echo message="Building module testtools..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1990,7 +1990,17 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../utilities/loaderswitcher" target="netbeans"/>
   </target>
 
-  <target name="all-xtest" depends="init,all-java/j2seproject,all-projects/projectui,all-java/javacore">
+  <target name="all-xtest/nbjunit" depends="init,all-java/j2seproject,all-projects/projectui,all-java/javacore">
+      <echo message="Building module xtest/nbjunit..."/>
+    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+      <ant dir="../xtest/nbjunit" target="netbeans"/>
+  </target>
+
+  <target name="all-xtest" depends="init,all-xtest/nbjunit">
       <echo message="Building module xtest..."/>
     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
