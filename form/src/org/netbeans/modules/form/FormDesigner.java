@@ -82,7 +82,7 @@ public class FormDesigner extends TopComponent
     
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
-    
+
 
     public FormDesigner() {
         this(null);
@@ -91,7 +91,7 @@ public class FormDesigner extends TopComponent
     public void initialize() {
         updateWholeDesigner();
     }
-    
+
     //////
     
     public HelpCtx getHelpCtx() {
@@ -112,17 +112,18 @@ public class FormDesigner extends TopComponent
         if (o instanceof FormDataObject) {
             formEditorSupport = ((FormDataObject)o).getFormEditor();
             formEditorSupport.setFormDesigner(this);
-
-            // invoke loading in AWT event queue, but don't block it
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    if (formEditorSupport.loadForm()) {
-                        setModel(formEditorSupport.getFormModel());
-                        initialize();
-                        ComponentInspector.getInstance().focusForm(formEditorSupport);
+            if (!formEditorSupport.isOpened())
+                // invoke loading in AWT event queue, but don't block it
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        if (formEditorSupport.loadForm()) {
+                            setModel(formEditorSupport.getFormModel());
+                            initialize();
+                            ComponentInspector.getInstance()
+                                .focusForm(formEditorSupport);
+                        }
                     }
-                }
-            });
+                });
         }
     }
 
@@ -217,14 +218,14 @@ public class FormDesigner extends TopComponent
     FormDesigner(FormModel formModel) {
         // instruct winsys to save state of this top component only if opened
         putClientProperty("PersistenceType", "OnlyOpened"); // NOI18N
-        
+
         setIcon(Utilities.loadImage(iconURL));
-        
+
         formModelListener = new FormListener();
-        
+
         componentLayer = new ComponentLayer();
         handleLayer = new HandleLayer(this);
-        
+
         layeredPane = new JLayeredPane();
         layeredPane.setLayout(new OverlayLayout(layeredPane));
         layeredPane.add(componentLayer, new Integer(1000));

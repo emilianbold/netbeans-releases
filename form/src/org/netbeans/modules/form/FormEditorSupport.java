@@ -89,7 +89,6 @@ public class FormEditorSupport extends JavaEditor
                              FormDataObject formDataObject) {
         super(javaEntry);
         this.formDataObject = formDataObject;
-        formLoaded = false;
     }
 
     // ----------
@@ -339,6 +338,7 @@ public class FormEditorSupport extends JavaEditor
     FormDesigner getFormDesigner() {
         if (!formLoaded)
             return null;
+
         if (formDesigner == null) {
             formDesigner = new FormDesigner(formModel);
             // not very nice hack - it's better FormEditorSupport has its
@@ -348,6 +348,9 @@ public class FormEditorSupport extends JavaEditor
                 formModel.addFormModelListener(formListener);
             }
         }
+        else if (formDesigner.getModel() == null)
+            formDesigner.setModel(formModel);
+
         return formDesigner;
     }
 
@@ -679,6 +682,8 @@ public class FormEditorSupport extends JavaEditor
     synchronized private void openGUI() {
         // open FormDesigner
         FormDesigner designer = getFormDesigner();
+        if (designer == null)
+            return;
         designer.initialize();
         designer.open();
 
