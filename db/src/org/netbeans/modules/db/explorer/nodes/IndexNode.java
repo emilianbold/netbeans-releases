@@ -101,7 +101,7 @@ public class IndexNode extends DatabaseNode {
                     boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false); //NOI18N
 
                     DriverSpecification drvSpec = info.getDriverSpecification();
-                    drvSpec.getIndexInfo(catalog, dmd, info.getTable(), true, false);
+                    drvSpec.getIndexInfo(catalog, dmd, info.getTable(), false, false);
                     if (drvSpec.rs != null) {
                         String index = destinfo.getName();
                         HashSet ixrm = new HashSet();
@@ -129,7 +129,7 @@ public class IndexNode extends DatabaseNode {
                         spec.createCommandDropIndex(index).execute();
                         icmd.execute();
 
-                        drvSpec.getIndexInfo(catalog, dmd, destinfo.getTable(), true, false);
+                        drvSpec.getIndexInfo(catalog, dmd, destinfo.getTable(), false, false);
                         if (drvSpec.rs != null) {
                             while (drvSpec.rs.next()) {
                                 if (jdbcOdbcBridge) drvSpec.rsTemp.next();

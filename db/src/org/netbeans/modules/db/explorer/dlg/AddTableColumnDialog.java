@@ -274,7 +274,7 @@ public class AddTableColumnDialog {
 
                 //				ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),table, true, false);
 
-                drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+                drvSpec.getIndexInfo(catalog, dmd, table, false, false);
 
                 //if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
                 //	rs = dmd.getIndexInfo(catalog, null, table, true, false);

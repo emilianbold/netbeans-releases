@@ -55,7 +55,7 @@ public class AddToIndexAction extends DatabaseAction {
             // List columns used in current index (do not show)
             HashSet ixrm = new HashSet();
 
-            drvSpec.getIndexInfo(catalog, dmd, tablename, true, false);
+            drvSpec.getIndexInfo(catalog, dmd, tablename, false, false);
             while (drvSpec.rs.next()) {
                 String ixname = drvSpec.rs.getString("INDEX_NAME"); // NOI18N
                 if (ixname != null) {
