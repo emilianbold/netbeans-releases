@@ -297,6 +297,8 @@
 <!-- These are csh pages for separate indentation engines, currently hooked to same page-->
 <mapID target="editing.indentation.simple" url="editing/configuring/indentation.html" />
 <mapID target="editing.indentation.java" url="editing/configuring/indentation.html" />
+<!-- This is a csh mapping for the indentation node in the Options window -->
+<mapID target="org.netbeans.core.services.IndentEngines" url="editing/configuring/indentation.html" />
 <!-- These are csh pages hooked up to Editor Settings nodes of Options window -->
 <mapID target="editing.global" url="editing/configuring/keybindings.html" />
 <mapID target="editing.editor.java" url="editing/configuring/javaeditor-props.html" />
