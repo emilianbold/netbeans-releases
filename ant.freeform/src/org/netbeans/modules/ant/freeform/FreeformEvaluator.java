@@ -68,7 +68,11 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
             while (it.hasNext()) {
                 Element e = (Element)it.next();
                 if (e.getLocalName().equals("property")) { // NOI18N
-                    defs.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap(e.getAttribute("name"), Util.findText(e)))); // NOI18N
+                    String val = Util.findText(e);
+                    if (val == null) {
+                        val = "";
+                    }
+                    defs.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap(e.getAttribute("name"), val))); // NOI18N
                 } else {
                     assert e.getLocalName().equals("property-file") : e;
                     String fname = Util.findText(e);
@@ -120,6 +124,9 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
         try {
             init();
         } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+        } catch (RuntimeException ex) {
+            // Something else? E.g. IAE when parsing <properties> block.
             ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
         }
         fireChange(null);
