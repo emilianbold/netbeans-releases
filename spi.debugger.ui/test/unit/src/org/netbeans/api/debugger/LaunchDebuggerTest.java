@@ -15,6 +15,8 @@ package org.netbeans.api.debugger;
 
 import org.netbeans.api.debugger.test.TestDICookie;
 import org.netbeans.api.debugger.test.TestDebugger;
+import org.netbeans.api.debugger.test.TestDebuggerManagerListener;
+import org.netbeans.api.debugger.test.TestLazyDebuggerManagerListener;
 
 import java.util.*;
 import java.beans.PropertyChangeEvent;
@@ -32,12 +34,12 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
 
     public void testLookup() throws Exception {
 
-        List events;
-        Event event;
-
         DebuggerManager dm = DebuggerManager.getDebuggerManager();
         TestDebuggerManagerListener dml = new TestDebuggerManagerListener();
         dm.addDebuggerListener(dml);
+
+        TestLazyDebuggerManagerListener ldml = (TestLazyDebuggerManagerListener) dm.lookupFirst(LazyDebuggerManagerListener.class);
+        assertNotNull("Lazy debugger manager listener not loaded", ldml);
 
         Map args = new HashMap();
         TestDICookie tdi = TestDICookie.create(args);
@@ -49,25 +51,8 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
         assertEquals("Wrong number of debugger engines started", engines.length, 1);
         assertInstanceOf("Bad debugger engine started", engines[0], TestDebugger.class);
 
-        events = dml.getEvents();
-        assertEquals("Wrong number of events generated", events.size(), 4);
-        for (Iterator i = events.iterator(); i.hasNext();) {
-            event = (Event) i.next();
-            if (event.name.equals("sessionAdded")) {
-                i.remove();
-            } else if (event.name.equals("propertyChange")) {
-                PropertyChangeEvent pce = (PropertyChangeEvent) event.param;
-                if (pce.getPropertyName().equals("sessions")) {
-                    i.remove();
-                } else if (pce.getPropertyName().equals("currentEngine")) {
-                    assertSame("Bad PCE new current engine", pce.getNewValue(), engines[0]);
-                    i.remove();
-                } else if (pce.getPropertyName().equals("currentSession")) {
-                    i.remove();
-                }
-            }
-        }
-        assertEquals("Wrong events generated", events.size(), 0);
+        testStartEvents(dml, engines);
+        testStartEvents(ldml, engines);
 
         DebuggerEngine debugger = engines[0];
         DebuggerInfo dic = (DebuggerInfo) debugger.lookupFirst(DebuggerInfo.class);
@@ -77,14 +62,23 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
         dm.getCurrentSession().kill();
         assertTrue("Engine did not finish", tdi.hasInfo(DebuggerManager.ACTION_KILL));
 
+        testKillEvents(dml);
+        testKillEvents(ldml);
+
+        dm.removeDebuggerListener(dml);
+    }
+
+    private void testKillEvents(TestDebuggerManagerListener dml) {
+        List events;
+        TestDebuggerManagerListener.Event event;
         events = dml.getEvents();
         assertEquals("Wrong number of events generated", events.size(), 4);
         for (Iterator i = events.iterator(); i.hasNext();) {
-            event = (Event) i.next();
-            if (event.name.equals("sessionRemoved")) {
+            event = (TestDebuggerManagerListener.Event) i.next();
+            if (event.getName().equals("sessionRemoved")) {
                 i.remove();
-            } else if (event.name.equals("propertyChange")) {
-                PropertyChangeEvent pce = (PropertyChangeEvent) event.param;
+            } else if (event.getName().equals("propertyChange")) {
+                PropertyChangeEvent pce = (PropertyChangeEvent) event.getParam();
                 if (pce.getPropertyName().equals("sessions")) {
                     i.remove();
                 } else if (pce.getPropertyName().equals("currentEngine")) {
@@ -97,7 +91,29 @@ public class LaunchDebuggerTest extends DebuggerApiTestBase {
             }
         }
         assertEquals("Wrong events generated", events.size(), 0);
+    }
 
-        dm.removeDebuggerListener(dml);
+    private void testStartEvents(TestDebuggerManagerListener dml, DebuggerEngine[] engines) {
+        List events;
+        TestDebuggerManagerListener.Event event;
+        events = dml.getEvents();
+        assertEquals("Wrong number of events generated", events.size(), 4);
+        for (Iterator i = events.iterator(); i.hasNext();) {
+            event = (TestDebuggerManagerListener.Event) i.next();
+            if (event.getName().equals("sessionAdded")) {
+                i.remove();
+            } else if (event.getName().equals("propertyChange")) {
+                PropertyChangeEvent pce = (PropertyChangeEvent) event.getParam();
+                if (pce.getPropertyName().equals("sessions")) {
+                    i.remove();
+                } else if (pce.getPropertyName().equals("currentEngine")) {
+                    assertSame("Bad PCE new current engine", pce.getNewValue(), engines[0]);
+                    i.remove();
+                } else if (pce.getPropertyName().equals("currentSession")) {
+                    i.remove();
+                }
+            }
+        }
+        assertEquals("Wrong events generated", events.size(), 0);
     }
 }

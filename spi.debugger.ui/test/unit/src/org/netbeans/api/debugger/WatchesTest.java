@@ -13,6 +13,8 @@
 
 package org.netbeans.api.debugger;
 
+import org.netbeans.api.debugger.test.TestDebuggerManagerListener;
+
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 
@@ -48,29 +50,29 @@ public class WatchesTest extends DebuggerApiTestBase {
         dm.removeDebuggerListener(dml);
     }
 
-    private void initWatches(DebuggerManager dm, DebuggerApiTestBase.TestDebuggerManagerListener dml) {
+    private void initWatches(DebuggerManager dm, TestDebuggerManagerListener dml) {
         dm.getWatches();    // trigger the "watchesInit" property change
-        DebuggerApiTestBase.Event event;
+        TestDebuggerManagerListener.Event event;
         List events = dml.getEvents();
         assertEquals("Wrong PCS", 1, events.size());
-        event = (DebuggerApiTestBase.Event) events.get(0);
-        assertEquals("Wrong PCS", "propertyChange", event.name);
-        PropertyChangeEvent pce = (PropertyChangeEvent) event.param;
+        event = (TestDebuggerManagerListener.Event) events.get(0);
+        assertEquals("Wrong PCS", "propertyChange", event.getName());
+        PropertyChangeEvent pce = (PropertyChangeEvent) event.getParam();
         assertEquals("Wrong PCE name", "watchesInit", pce.getPropertyName());
     }
 
-    private void removeWatch(DebuggerManager dm, Watch w, DebuggerApiTestBase.TestDebuggerManagerListener dml) {
+    private void removeWatch(DebuggerManager dm, Watch w, TestDebuggerManagerListener dml) {
         List events;
-        DebuggerApiTestBase.Event event;
+        TestDebuggerManagerListener.Event event;
         Watch [] watches = dm.getWatches();
 
         dm.removeWatch(w);
         events = dml.getEvents();
         assertEquals("Wrong PCS", 2, events.size());
-        assertTrue("Wrong PCS", events.remove(new DebuggerApiTestBase.Event("watchRemoved", w)));
-        event = (DebuggerApiTestBase.Event) events.get(0);
-        assertEquals("Wrong PCS", "propertyChange", event.name);
-        PropertyChangeEvent pce = (PropertyChangeEvent) event.param;
+        assertTrue("Wrong PCS", events.remove(new TestDebuggerManagerListener.Event("watchRemoved", w)));
+        event = (TestDebuggerManagerListener.Event) events.get(0);
+        assertEquals("Wrong PCS", "propertyChange", event.getName());
+        PropertyChangeEvent pce = (PropertyChangeEvent) event.getParam();
         assertEquals("Wrong PCE name", "watches", pce.getPropertyName());
         Watch [] newWatches = dm.getWatches();
         for (int i = 0; i < newWatches.length; i++) {
@@ -79,18 +81,18 @@ public class WatchesTest extends DebuggerApiTestBase {
         assertEquals("Wrong number of installed watches", watches.length - 1, newWatches.length);
     }
 
-    private Watch addWatch(DebuggerManager dm, DebuggerApiTestBase.TestDebuggerManagerListener dml) {
+    private Watch addWatch(DebuggerManager dm, TestDebuggerManagerListener dml) {
         List events;
-        DebuggerApiTestBase.Event event;
+        TestDebuggerManagerListener.Event event;
 
         int watchesSize = dm.getWatches().length;
         Watch newWatch = dm.createWatch("watch");
         events = dml.getEvents();
         assertEquals("Wrong PCS", 2, events.size());
-        assertTrue("Wrong PCS", events.remove(new DebuggerApiTestBase.Event("watchAdded", newWatch)));
-        event = (DebuggerApiTestBase.Event) events.get(0);
-        assertEquals("Wrong PCS", "propertyChange", event.name);
-        PropertyChangeEvent pce = (PropertyChangeEvent) event.param;
+        assertTrue("Wrong PCS", events.remove(new TestDebuggerManagerListener.Event("watchAdded", newWatch)));
+        event = (TestDebuggerManagerListener.Event) events.get(0);
+        assertEquals("Wrong PCS", "propertyChange", event.getName());
+        PropertyChangeEvent pce = (PropertyChangeEvent) event.getParam();
         assertEquals("Wrong PCE name", "watches", pce.getPropertyName());
         Watch [] watches = dm.getWatches();
         assertEquals("Wrong number of installed watches", watchesSize + 1, watches.length);

@@ -13,6 +13,8 @@
 
 package org.netbeans.api.debugger;
 
+import org.netbeans.api.debugger.test.TestDebuggerManagerListener;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
@@ -49,48 +51,48 @@ public class BreakpointsTest extends DebuggerApiTestBase {
         dm.removeDebuggerListener(dml);
     }
 
-    private void initBreakpoints(DebuggerManager dm, DebuggerApiTestBase.TestDebuggerManagerListener dml) {
+    private void initBreakpoints(DebuggerManager dm, TestDebuggerManagerListener dml) {
         dm.getBreakpoints();    // trigger the "breakpointsInit" property change
-        DebuggerApiTestBase.Event event;
+        TestDebuggerManagerListener.Event event;
         List events = dml.getEvents();
         assertEquals("Wrong PCS", 1, events.size());
-        event = (DebuggerApiTestBase.Event) events.get(0);
-        assertEquals("Wrong PCS", "propertyChange", event.name);
-        PropertyChangeEvent pce = (PropertyChangeEvent) event.param;
+        event = (TestDebuggerManagerListener.Event) events.get(0);
+        assertEquals("Wrong PCS", "propertyChange", event.getName());
+        PropertyChangeEvent pce = (PropertyChangeEvent) event.getParam();
         assertEquals("Wrong PCE name", "breakpointsInit", pce.getPropertyName());
     }
 
-    private void removeBreakpoint(DebuggerManager dm, TestBreakpoint tb, DebuggerApiTestBase.TestDebuggerManagerListener dml) {
+    private void removeBreakpoint(DebuggerManager dm, TestBreakpoint tb, TestDebuggerManagerListener dml) {
         List events;
-        DebuggerApiTestBase.Event event;
+        TestDebuggerManagerListener.Event event;
         Breakpoint [] bpts;
 
         int bptSize = dm.getBreakpoints().length;
         dm.removeBreakpoint(tb);
         events = dml.getEvents();
         assertEquals("Wrong PCS", 2, events.size());
-        assertTrue("Wrong PCS", events.remove(new DebuggerApiTestBase.Event("breakpointRemoved", tb)));
-        event = (DebuggerApiTestBase.Event) events.get(0);
-        assertEquals("Wrong PCS", "propertyChange", event.name);
-        PropertyChangeEvent pce = (PropertyChangeEvent) event.param;
+        assertTrue("Wrong PCS", events.remove(new TestDebuggerManagerListener.Event("breakpointRemoved", tb)));
+        event = (TestDebuggerManagerListener.Event) events.get(0);
+        assertEquals("Wrong PCS", "propertyChange", event.getName());
+        PropertyChangeEvent pce = (PropertyChangeEvent) event.getParam();
         assertEquals("Wrong PCE name", "breakpoints", pce.getPropertyName());
         bpts = dm.getBreakpoints();
         assertEquals("Wrong number of installed breakpoionts", bptSize - 1, bpts.length);
     }
 
-    private void addBreakpoint(DebuggerManager dm, TestBreakpoint tb, DebuggerApiTestBase.TestDebuggerManagerListener dml) {
+    private void addBreakpoint(DebuggerManager dm, TestBreakpoint tb, TestDebuggerManagerListener dml) {
         List events;
-        DebuggerApiTestBase.Event event;
+        TestDebuggerManagerListener.Event event;
         Breakpoint [] bpts;
 
         int bptSize = dm.getBreakpoints().length;
         dm.addBreakpoint(tb);
         events = dml.getEvents();
         assertEquals("Wrong PCS", 2, events.size());
-        assertTrue("Wrong PCS", events.remove(new DebuggerApiTestBase.Event("breakpointAdded", tb)));
-        event = (DebuggerApiTestBase.Event) events.get(0);
-        assertEquals("Wrong PCS", "propertyChange", event.name);
-        PropertyChangeEvent pce = (PropertyChangeEvent) event.param;
+        assertTrue("Wrong PCS", events.remove(new TestDebuggerManagerListener.Event("breakpointAdded", tb)));
+        event = (TestDebuggerManagerListener.Event) events.get(0);
+        assertEquals("Wrong PCS", "propertyChange", event.getName());
+        PropertyChangeEvent pce = (PropertyChangeEvent) event.getParam();
         assertEquals("Wrong PCE name", "breakpoints", pce.getPropertyName());
         bpts = dm.getBreakpoints();
         assertEquals("Wrong number of installed breakpoints", bptSize + 1, bpts.length);

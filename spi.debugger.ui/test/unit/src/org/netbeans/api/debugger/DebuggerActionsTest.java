@@ -14,6 +14,8 @@
 package org.netbeans.api.debugger;
 
 import org.netbeans.api.debugger.test.TestDICookie;
+import org.netbeans.api.debugger.test.TestActionsManagerListener;
+import org.netbeans.api.debugger.test.TestLazyActionsManagerListener;
 
 import java.util.*;
 
@@ -43,6 +45,9 @@ public class DebuggerActionsTest extends DebuggerApiTestBase {
         ActionsManager am = debugger.getActionsManager();
         TestActionsManagerListener tam = new TestActionsManagerListener();
         am.addActionsManagerListener(tam);
+
+        TestLazyActionsManagerListener laml = (TestLazyActionsManagerListener) debugger.lookupFirst(LazyActionsManagerListener.class);
+        assertNotNull("Lazy actions manager listener not loaded", laml);
 
         am.doAction(DebuggerManager.ACTION_CONTINUE);
         am.doAction(DebuggerManager.ACTION_FIX);
@@ -77,7 +82,12 @@ public class DebuggerActionsTest extends DebuggerApiTestBase {
         assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_TOGGLE_BREAKPOINT));
         assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_KILL));
 
-        List eventActions = tam.getPerformedActions();
+        testReceivedEvents(tam.getPerformedActions(), false);
+        testReceivedEvents(laml.getPerformedActions(), true);
+    }
+
+    private void testReceivedEvents(List eventActions, boolean expectStartAction) {
+        if (expectStartAction) assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_START));
         assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_CONTINUE));
         assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_FIX));
         assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_MAKE_CALLEE_CURRENT));
@@ -93,6 +103,5 @@ public class DebuggerActionsTest extends DebuggerApiTestBase {
         assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_TOGGLE_BREAKPOINT));
         assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_KILL));
         assertEquals("ActionListener notification failed", eventActions.size(), 0);
-
     }
 }
