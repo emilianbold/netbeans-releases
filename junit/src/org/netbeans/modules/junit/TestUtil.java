@@ -16,6 +16,9 @@
  * Created on October 17, 2000, 5:09 PM
  */
 package org.netbeans.modules.junit;
+
+import java.io.File;
+import java.io.IOException;
 import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.execution.*;
@@ -27,16 +30,91 @@ import java.lang.reflect.*;
 import org.openide.cookies.*;
 
 import java.util.*;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author  rmatous
- * @version 1.0
+ * @author  Marian Petras
+ * @version 1.1
  */
-class TestUtil extends Object {
+public class TestUtil {
     static private final String JAVA_SOURCES_SUFFIX               = "java";
     static private final String JAVA_SOURCES_FULL_SUFFIX          = "." + JAVA_SOURCES_SUFFIX;
 
 
+    /**
+     * Finds localized variants of a file.
+     *
+     * @param  lib  file to found localized variants for
+     * @return  non-empty list of found <code>File</code>s;
+     *          or <code>null</code> if no localized variant was found
+     */
+    public static List findLocalizedLibs(File lib) {
+        String libDir = lib.getParent();
+        String libNameExt = lib.getName();
+        String libName;
+        String extName;
+        int dotIndex = libNameExt.indexOf('.');
+        if (dotIndex != -1) {
+            libName = libNameExt.substring(0, dotIndex);
+            extName = libNameExt.substring(dotIndex + 1);
+        } else {
+            libName = libNameExt;
+            extName = null;
+        }
+
+        List locLibs = new ArrayList(4);
+        for (Iterator i = NbBundle.getLocalizingSuffixes(); i.hasNext(); ) {
+            String suffix = (String) i.next();
+            StringBuffer buf = new StringBuffer(
+                    libDir != null ? libDir.length() : 0
+                    + libNameExt.length()
+                    + 25);
+            if (libDir != null) {
+                buf.append(libDir)
+                   .append(File.separatorChar)
+                   .append("locale")                                    //NOI18N
+                   .append(File.separatorChar);
+            }
+            buf.append(libName).append(suffix);
+            if (extName != null) {
+                buf.append('.').append(extName);
+            }
+            String locLibName = buf.toString();
+            File locLib = new File(locLibName);
+            if (locLib.exists() && locLib.isFile()) {
+                locLibs.add(locLib);
+            }
+        }
+
+        return locLibs.isEmpty() ? null : locLibs;
+    }
+
+    /**
+     * Creates a canonical file from a given file, using
+     * {@link File#getCanonicalFile(File)}. In case of a failure, tries
+     * to absolutize it.
+     * If the file could not be canonicalized, logs a message
+     * instead of throwing <code>java.io.IOException</code>.
+     *
+     * @param  file  file to find a canonical path for
+     * @return  canonical form of the file,
+     *          or an absolute form of the file if canonicalization failed
+     */
+    public static File canonicalize(File file) {
+        boolean canonicalized = false;
+        boolean absolutized = false;
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException ex) {
+            ErrorManager.getDefault().log(
+                    ErrorManager.WARNING,
+                    "Could not canonicalize file "                      //NOI18N
+                            + file.getPath() + '.');
+            return file.getAbsoluteFile();
+        }
+    }
 
     static private String getTestClassSuffix() {
         return JUnitSettings.getDefault().getTestClassNameSuffix();
@@ -438,10 +516,22 @@ class TestUtil extends Object {
         return getClassElementFromDataObject(DataObject.find(fo));
     }    
     
+    /**
+     * Returns an object describing the main class of the specified
+     * Java data object.
+     *
+     * @param  dO  data object to examine
+     * @return  <code>ClassElement</code> describing the data object's
+     *          main class; or <code>null</code> if the class element was not
+     *          found (e.g. because of a broken data object's source file)
+     */
     static ClassElement getClassElementFromDataObject(DataObject dO) {
         SourceCookie    sc;
         SourceElement   se;
         sc = (SourceCookie) dO.getCookie(SourceCookie.class);
+        if (sc == null) {
+            return null;
+        }
         se = sc.getSource();
         return se.getClass(Identifier.create(dO.getPrimaryFile().getName()));
     }    
