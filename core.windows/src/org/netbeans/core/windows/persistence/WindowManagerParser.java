@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1038,7 +1039,7 @@ public class WindowManagerParser {
             try {
                 s = attrs.getValue("relative-x"); // NOI18N
                 if (s != null) {
-                    winMgrConfig.relativeXJoined = Float.parseFloat(s);
+                    winMgrConfig.relativeXJoined = floatParse(s);
                 } else {
                     winMgrConfig.relativeXJoined = -1;
                 }
@@ -1054,8 +1055,9 @@ public class WindowManagerParser {
             
             try {
                 s = attrs.getValue("relative-y"); // NOI18N
+                
                 if (s != null) {
-                    winMgrConfig.relativeYJoined = Float.parseFloat(s);
+                    winMgrConfig.relativeYJoined = floatParse(s);
                 } else {
                     winMgrConfig.relativeYJoined = -1;
                 }
@@ -1072,7 +1074,7 @@ public class WindowManagerParser {
             try {
                 s = attrs.getValue("relative-width"); // NOI18N
                 if (s != null) {
-                    winMgrConfig.relativeWidthJoined = Float.parseFloat(s);
+                    winMgrConfig.relativeWidthJoined = floatParse(s);
                 } else {
                     winMgrConfig.relativeWidthJoined = -1;
                 }
@@ -1089,7 +1091,7 @@ public class WindowManagerParser {
             try {
                 s = attrs.getValue("relative-height"); // NOI18N
                 if (s != null) {
-                    winMgrConfig.relativeHeightJoined = Float.parseFloat(s);
+                    winMgrConfig.relativeHeightJoined = floatParse(s);
                 } else {
                     winMgrConfig.relativeHeightJoined = -1;
                 }
@@ -1263,7 +1265,7 @@ public class WindowManagerParser {
             try {
                 s = attrs.getValue("relative-x"); // NOI18N
                 if (s != null) {
-                    winMgrConfig.relativeXSeparated = Float.parseFloat(s);
+                    winMgrConfig.relativeXSeparated = floatParse(s);
                 } else {
                     winMgrConfig.relativeXSeparated = -1;
                 }
@@ -1280,7 +1282,7 @@ public class WindowManagerParser {
             try {
                 s = attrs.getValue("relative-y"); // NOI18N
                 if (s != null) {
-                    winMgrConfig.relativeYSeparated = Float.parseFloat(s);
+                    winMgrConfig.relativeYSeparated = floatParse(s);
                 } else {
                     winMgrConfig.relativeYSeparated = -1;
                 }
@@ -1297,7 +1299,7 @@ public class WindowManagerParser {
             try {
                 s = attrs.getValue("relative-width"); // NOI18N
                 if (s != null) {
-                    winMgrConfig.relativeWidthSeparated = Float.parseFloat(s);
+                    winMgrConfig.relativeWidthSeparated = floatParse(s);
                 } else {
                     winMgrConfig.relativeWidthSeparated = -1;
                 }
@@ -1314,7 +1316,7 @@ public class WindowManagerParser {
             try {
                 s = attrs.getValue("relative-height"); // NOI18N
                 if (s != null) {
-                    winMgrConfig.relativeHeightSeparated = Float.parseFloat(s);
+                    winMgrConfig.relativeHeightSeparated = floatParse(s);
                 } else {
                     winMgrConfig.relativeHeightSeparated = -1;
                 }
@@ -2152,4 +2154,23 @@ public class WindowManagerParser {
         }
     }
     
+    /** Float.parseFloat() shows up as a startup hotspot (classloading?), so this uses a 
+     * lookup table for common values */
+    private static final float floatParse (String s) throws NumberFormatException {
+        int i = Arrays.binarySearch(floatStrings, s);
+        if (i >= 0) {
+            return floatVals[i];
+        }
+        return Float.parseFloat(s);
+    }
+    
+    private static final String[] floatStrings = new String[] {
+        "0", "0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8",
+        "0.9","1","1.0"
+    };
+    
+    private static final float[] floatVals = new float[] {
+        0f, 0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f,
+        1f, 1f
+    };
 }
