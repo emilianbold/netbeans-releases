@@ -21,6 +21,8 @@ package org.netbeans.modules.junit;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.*;
+import org.netbeans.modules.javacore.jmiimpl.javamodel.DiffElement;
+import org.netbeans.modules.javacore.jmiimpl.javamodel.ResourceImpl;
 
 import org.openide.util.NbBundle;
 import org.netbeans.jmi.javamodel.*;
@@ -42,8 +44,10 @@ public final class TestCreator {
     
     static private final String GENERATED_SUITE_BLOCK_START                = "--JUNIT:";
     static private final String GENERATED_SUITE_BLOCK_END                  = ":JUNIT--";
-    private static final String METHOD_NAME_SETUP = "setUp";            //NOI18N
-    private static final String METHOD_NAME_TEARDOWN = "tearDown";      //NOI18N
+    static private final String METHOD_NAME_SETUP = "setUp";            //NOI18N
+    static private final String METHOD_NAME_TEARDOWN = "tearDown";      //NOI18N
+    static private final String CLASS_COMMENT_LINE1 = "TestCreator.javaClass.addTestsHereComment.l1";
+    static private final String CLASS_COMMENT_LINE2 = "TestCreator.javaClass.addTestsHereComment.l2";
     
     /**
      * bitmap combining modifiers PUBLIC, PROTECTED and PRIVATE
@@ -99,7 +103,7 @@ public final class TestCreator {
      * @see  #generateDefMethodBody
      * @see  #generateMethodJavadoc
      */
-    private boolean generateMethodBodyComment = true;
+    private boolean generateSourceCodeHints = true;
     /**
      * should <code>setUp()</code> method be generated in test classes?
      *
@@ -166,7 +170,7 @@ public final class TestCreator {
         
         generateDefMethodBody = settings.isBodyContent();
         generateMethodJavadoc = settings.isJavaDoc();
-        generateMethodBodyComment = settings.isBodyComments();
+        generateSourceCodeHints = settings.isBodyComments();
         generateSetUp = settings.isGenerateSetUp();
         generateTearDown = settings.isGenerateTearDown();
         generateMainMethod = settings.isGenerateMainMethod();
@@ -307,7 +311,7 @@ public final class TestCreator {
      *                   be generated; <code>false</code> otherwise
      */
     public void setGenerateMethodBodyComment(boolean generate) {
-        this.generateMethodBodyComment = generate;
+        this.generateSourceCodeHints = generate;
     }
     
     /**
@@ -642,7 +646,7 @@ public final class TestCreator {
             // generate default bodies, printing the name of method
             newBody.append("System.out.println(\"" + newName + "\");\n");
         }
-        if (generateMethodBodyComment) {
+        if (generateSourceCodeHints) {
             // generate comments to bodies
             newBody.append("\n"+NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.defaultComment")+"\n");
         }
@@ -995,7 +999,7 @@ public final class TestCreator {
         
         // prepare the body of method implementation
         StringBuffer    body = new StringBuffer(200);
-        if (generateMethodBodyComment) {
+        if (generateSourceCodeHints) {
             body.append(NbBundle.getMessage(TestCreator.class,"TestCreator.methodImpl.bodyComment"));
             body.append("\n\n");
         }
@@ -1129,10 +1133,50 @@ public final class TestCreator {
     }
     
     public void createEmptyTest(Resource srcRc, JavaClass cls) {
-        addFrameworkImport(srcRc);
-        fillGeneral(cls);
+        // public entry points are wrapped in MDR transactions
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {   
+            addFrameworkImport(srcRc);
+            fillGeneral(cls);
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
+        }
+
+        if (generateSourceCodeHints) addClassBodyComment(cls);
     }
     
+    /**
+     * This method must be run outside of JMI transaction in order to be
+     * able to correctly acquire source code offsets. The comment is generated
+     * at the end of the class passed in in the parameter.
+     *
+     * @param cls JavaClass to generate the comment to.
+     */
+    private void addClassBodyComment(JavaClass cls) {
+        JavaModel.getJavaRepository().beginTrans(true);
+        int off = cls.getEndOffset() - 1;        
+        try {   
+            String thecomment1 = NbBundle.getMessage(TestCreator.class, CLASS_COMMENT_LINE1);
+            String thecomment2 = NbBundle.getMessage(TestCreator.class, CLASS_COMMENT_LINE2);
+            String indent = getIndentString();
+            DiffElement diff = new DiffElement(off, off, indent + thecomment1 + "\n" + indent + thecomment2 + "\n\n");
+            ((ResourceImpl)cls.getResource()).addExtDiff(diff);
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
+        }
+    }
+    
+    private static String getIndentString() {
+        int spt = org.netbeans.modules.javacore.jmiimpl.javamodel.MetadataElement.getIndentSpace(); // spaces per tab
+        String tabString;
+        if (org.netbeans.modules.javacore.jmiimpl.javamodel.MetadataElement.isExpandTab()) {
+            tabString = "";
+            for (int i = 0; i<spt; i++) tabString += " ";
+        } else
+            tabString = "\t";
+        
+        return tabString;
+    }
     
     
 }
