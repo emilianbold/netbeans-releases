@@ -795,6 +795,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             "Templates/Classes/Class.java",
             "Templates/Other/Folder",
             "Templates/JSP_Servlet/WebService",
+            "Templates/JSP_Servlet/MessageHandler",
             "Templates/JSP_Servlet/WebServiceClient"
         };
         

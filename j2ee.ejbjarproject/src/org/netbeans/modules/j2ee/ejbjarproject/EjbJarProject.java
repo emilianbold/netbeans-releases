@@ -446,6 +446,7 @@ final class EjbJarProject implements Project, AntProjectListener {
             "Templates/J2EE/Entity",  // NOI18N
             "Templates/J2EE/Message", //NOI18N
             "Templates/J2EE/WebService", // NOI18N
+            "Templates/J2EE/MessageHandler", // NOI18N
             "Templates/Classes/Class.java" // NOI18N
         };
         
