@@ -22,6 +22,7 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
+import org.openide.loaders.ExtensionList;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 
@@ -35,6 +36,9 @@ public final class PropertiesDataLoader extends MultiFileLoader {
                                         
   static final String PROPERTIES_EXTENSION = "properties";
                                         
+  /** Table of recognized extensions for this data loader */
+  private ExtensionList extensions;
+
   /** Character used to separate parts of bundle properties file name */                                                                                     
   public static final char PRB_SEPARATOR_CHAR = '_';
 
@@ -49,9 +53,10 @@ public final class PropertiesDataLoader extends MultiFileLoader {
   private void initialize () {
     setDisplayName(NbBundle.getBundle(PropertiesDataLoader.class).
                    getString("PROP_PropertiesLoader_Name"));
-//    ExtensionList ext = new ExtensionList();
-//    ext.addExtension("properties");
-//    setExtensions(ext);
+    ExtensionList ext = new ExtensionList();
+    ext.addExtension("properties");
+    ext.addExtension("impl"); // for CORBA module
+    setExtensions(ext);
 
     setActions(new SystemAction[] {
       SystemAction.get(OpenAction.class),
@@ -104,7 +109,7 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     }
 
     else 
-      return null;
+      return getExtensions().isRegistered(fo) ? fo : null;
   }
 
   /** Creates the right primary entry for given primary file.
@@ -128,10 +133,27 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     return pfe;
   }
 
+  /** Set the extension list for this data loader.
+  * @param ext new list of extensions
+  */
+  public void setExtensions(ExtensionList ext) {
+    extensions = ext;
+  }
+
+  /** Get the extension list for this data loader.
+  * @return list of extensions
+  */
+  public ExtensionList getExtensions() {
+    if (extensions == null)
+      extensions = new ExtensionList();
+    return extensions;
+  }
 }
 
 /*
 * <<Log>>
+*  10   Gandalf   1.9         8/31/99  Petr Jiricka    Allowed extension 
+*       settings, "impl" added to extensions
 *  9    Gandalf   1.8         7/16/99  Petr Jiricka    
 *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
