@@ -1,5 +1,5 @@
 OpenIDE-Module: org.netbeans.modules.usersguide/1
-OpenIDE-Module-Name: User's Guide
+OpenIDE-Module-Name: General Online Help
 OpenIDE-Module-Description: org.netbeans.modules.usersguide.ide
 OpenIDE-Module-Specification-Version: 1.5
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
