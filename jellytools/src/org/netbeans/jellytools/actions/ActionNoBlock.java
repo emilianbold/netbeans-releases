@@ -19,7 +19,9 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.drivers.input.KeyRobotDriver;
-import org.netbeans.jemmy.operators.*;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.util.EmptyVisualizer;
 import org.openide.util.actions.SystemAction;
 
@@ -124,7 +126,7 @@ public class ActionNoBlock extends Action {
         if(oldVisualizer != null) {
             Operator.setDefaultComponentVisualizer(oldVisualizer);
         }
-        popup.setComparator(new Operator.DefaultStringComparator(false, true));
+        popup.setComparator(getComparator());
         popup.pushMenuNoBlock(popupPath, "|");
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
@@ -144,7 +146,7 @@ public class ActionNoBlock extends Action {
         new EventTool().waitNoEvent(500);
         component.clickForPopup();
         JPopupMenuOperator popup=new JPopupMenuOperator(component);
-        popup.setComparator(new Operator.DefaultStringComparator(false, true));
+        popup.setComparator(getComparator());
         popup.pushMenuNoBlock(popupPath, "|");
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
