@@ -16,10 +16,10 @@ package org.netbeans.modules.form.layoutsupport.delegates;
 import java.awt.*;
 import java.beans.*;
 import java.util.*;
+import java.lang.ref.*;
 import java.lang.reflect.*;
 
 import org.openide.nodes.Node;
-import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.codestructure.*;
@@ -41,6 +41,8 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
     private static Constructor constrConstructor;
 
+    private static Reference customizerRef;
+
     /** Gets the supported layout manager class - GridBagLayout.
      * @return the class supported by this delegate
      */
@@ -52,14 +54,20 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
      * @return layout customizer class
      */
     public Class getCustomizerClass() {
-        return GridBagCustomizer.class;
+        return GridBagCustomizer.Window.class;
     }
 
     /** Creates an instance of customizer for GridBagLayout.
      * @return layout customizer class
      */
     public Component getSupportCustomizer() {
-        GridBagCustomizer customizer = new GridBagCustomizer();
+        GridBagCustomizer.Window customizer = null;
+        if (customizerRef != null)
+            customizer = (GridBagCustomizer.Window) customizerRef.get();
+        if (customizer == null) {
+            customizer = new GridBagCustomizer.Window();
+            customizerRef = new WeakReference(customizer);
+        }
         customizer.setObject(this);
         return customizer;
     }
@@ -79,331 +87,126 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                                    LayoutConstraints[] currentConstraints,
                                    Component[] components)
     {
-        if (previousConstraints == null || currentConstraints == null
-            || components == null
-            || previousConstraints.length == 0
-            || !(previousConstraints[0]
-                 instanceof AbsoluteLayoutSupport.AbsoluteLayoutConstraints))
+        if (currentConstraints == null || components == null
+                || components.length > currentConstraints.length
+                || components.length == 0)
             return;
 
-        int MAX_VALUE = 99999;
-        int MIN_VALUE = -99999;
-
-        int[] axisX = new int[previousConstraints.length + 1];
-        int[] axisY = new int[previousConstraints.length + 1];
-        int[] crossingsX = new int[previousConstraints.length + 1];
-        int[] crossingsY = new int[previousConstraints.length + 1];
-        int axisXnumber = 1;
-        int axisYnumber = 1;
-
-        for (int i=0; i < axisX.length; i++) {
-            axisX[i] = MAX_VALUE;
-            axisY[i] = MAX_VALUE;
-        }
-
-        // define the most left and right components.
-        int minX = MAX_VALUE;
-        int maxX = MIN_VALUE;
-        int minY = MAX_VALUE;
-        int maxY = MIN_VALUE;
-
-        int mostLeft = 0;
-        int mostRight = 0;
-        int mostTop = 0;
-        int mostBottom = 0;
+        ArrayList xlines = new ArrayList();
+        ArrayList ylines = new ArrayList();
 
         for (int i=0; i < components.length; i++) {
-            int x = components[i].getBounds().x;
-            int x1 = x + components[i].getBounds().width;
-            int y = components[i].getBounds().y;
-            int y1 = y + components[i].getBounds().height;
-            if (x < minX) {
-                mostLeft = i;
-                minX = x;
-            }
-            if (x1 > maxX) {
-                mostRight = i;
-                maxX = x1;
-            }
-            if (y < minY) {
-                mostTop = i;
-                minY = y;
-            }
-            if (y1 > maxY) {
-                mostBottom = i;
-                maxY = y1;
-            }
-        }
-        // define basic axises, all right axises, but not if it's most right one...
-        if (components.length > 1) {
-            axisX[0] = MIN_VALUE;
-            axisY[0] = MIN_VALUE;
-            for (int i=0; i < components.length; i++) {
-                int x1 = components[i].getBounds().x + components[i].getBounds().width;
-                if (x1 != maxX) {
-                    axisX[axisXnumber] = x1;
-                    axisXnumber++;
-                }
-                int y1 = components[i].getBounds().y + components[i].getBounds().height;
-                if (y1!= maxY) {
-                    axisY[axisYnumber] = y1;
-                    axisYnumber++;
-                }
-            }
-            Arrays.sort(axisX);
-            Arrays.sort(axisY);
+            Rectangle ibounds = components[i].getBounds();
 
-            // define basic crossings (i.e. number of components which are
-            // crossed by an axis); the algorithm is trying to minimize the
-            // crossings
-            for (int i=1; i < axisXnumber; i++)
-                crossingsX[i] = getCrossings(components, X_AXIS, axisX[i]);
-            for (int i=1; i < axisYnumber; i++)
-                crossingsY[i] = getCrossings(components, Y_AXIS, axisY[i]);
+            insertLines(ibounds.x, xlines);
+            if (ibounds.width > 0)
+                insertLines(ibounds.x + ibounds.width, xlines);
 
-            // shift basic axis if the number of crossings for new place is lower
-            for (int i=1; i < axisXnumber; i++) {
-                for (int j=0; j < components.length; j++) {
-                    if (j != mostLeft) {
-                        int x = components[j].getBounds().x;
-                        int x1 = x + components[j].getBounds().width;
-                        if (x < axisX[i] && x > axisX[i-1]
-                            && crossingsX[i] > getCrossings(components, X_AXIS, x)
-                            && x != minX) {
-                            axisX[i] = x;
-                            crossingsX[i] = getCrossings(components, X_AXIS, x);
-                        }
-                        if (x1 > axisX[i] && x1 < axisX[i+1]
-                            && crossingsX[i] > getCrossings(components, X_AXIS, x1)) {
-                            axisX[i] = x1;
-                            crossingsX[i] = getCrossings(components, X_AXIS, x1);
-                        }
-                    }
-                }
-            }
-
-            for (int i=1; i < axisYnumber; i++) {
-                for (int j=0; j < components.length; j++) {
-                    if (j != mostTop) {
-                        int y = components[j].getBounds().y;
-                        int y1 = y + components[j].getBounds().height;
-                        if (y < axisY[i] && y > axisY[i-1]
-                            && crossingsY[i] > getCrossings(components, Y_AXIS, y)
-                            && y != minY) {
-                            axisY[i] = y;
-                            crossingsY[i] = getCrossings(components, Y_AXIS, y);
-                        }
-                        if (y1 > axisY[i] && y1 < axisY[i+1]
-                            && crossingsY[i] > getCrossings(components, Y_AXIS, y1)) {
-                            axisY[i] = y1;
-                            crossingsY[i] = getCrossings(components, Y_AXIS, y1);
-                        }
-                    }
-                }
-            }
-
-            // checking validity of all axis
-            // checking if any axis is doubled (2 same axis)
-            int removedX = 0;
-            for (int i=1; i < axisXnumber; i++) {
-                if (axisX[i] == axisX[i+1]) {
-                    axisX[i] = MAX_VALUE;
-                    removedX++;
-                }
-            }
-            if (removedX > 0) {
-                Arrays.sort(axisX);
-                axisXnumber = axisXnumber - removedX;
-            }
-            int removedY = 0;
-            for (int i=1; i < axisYnumber; i++) {
-                if (axisY[i] == axisY[i+1]) {
-                    axisY[i] = MAX_VALUE;
-                    removedY++;
-                }
-            }
-            if (removedY > 0) {
-                Arrays.sort(axisY);
-                axisYnumber = axisYnumber - removedY;
-            }
-            // checking if any axis is redundand (i.e. no component is
-            // fixing size of this axis)
-            int last = axisX[0];
-            removedX = 0;
-            for (int i=1; i < axisXnumber; i++) {
-                boolean removing = true;
-                for (int j=0; j < components.length; j++) {
-                    int x = components[j].getBounds().x;
-                    int x1 = x + components[j].getBounds().width;
-                    if (x < axisX[i] && x >= last && x1 <= axisX[i]) {
-                        removing = false;
-                        break;
-                    }
-                }
-                last = axisX[i];
-                if (removing) {
-                    axisX[i] = MAX_VALUE;
-                    removedX++;
-                }
-            }
-            if (removedX > 0) {
-                Arrays.sort(axisX);
-                axisXnumber = axisXnumber - removedX;
-            }
-            last = axisY[0];
-            removedY = 0;
-            for (int i=1; i < axisYnumber; i++) {
-                boolean removing = true;
-                for (int j=0; j < components.length; j++) {
-                    int y = components[j].getBounds().y;
-                    int y1 = y + components[j].getBounds().height;
-                    if (y < axisY[i] && y >= last && y1 <= axisY[i]) {
-                        removing = false;
-                        break;
-                    }
-                }
-                last = axisY[i];
-                if (removing) {
-                    axisY[i] = MAX_VALUE;
-                    removedY++;
-                }
-            }
-            if (removedY > 0) {
-                Arrays.sort(axisY);
-                axisYnumber = axisYnumber - removedY;
-            }
-            // removing most right and bottom axises if they are invalid
-            if (axisX[axisXnumber-1] == maxX)
-                axisXnumber--;
-            if (axisY[axisYnumber-1] == maxY)
-                axisYnumber--;
+            insertLines(ibounds.y, ylines);
+            if (ibounds.height > 0)
+                insertLines(ibounds.y + ibounds.height, ylines);
         }
 
-        // seting first and last axis to proper values (i.e to form size)
-        axisX[0]=0;
-        axisX[axisXnumber] = components[0].getParent().getSize().width;
-        axisY[0]=0;
-        axisY[axisYnumber] = components[0].getParent().getSize().height;
+        LayoutInfo[] layouts = new LayoutInfo[components.length];
+        for (int i=0; i < layouts.length; i++)
+            layouts[i] = new LayoutInfo();
 
-        // define constraints based on axis
+        int x1, x2;
+        for (int i=0; i < xlines.size() - 1; i++) {
+            x1 = ((Integer)xlines.get(i)).intValue();
+            x2 = ((Integer)xlines.get(i+1)).intValue();
+
+            for (int j=0; j < components.length; j++) {
+                Rectangle jbounds = components[j].getBounds();
+                if (isOverlapped(x1, x2, jbounds.x, jbounds.x + jbounds.width - 1))
+                    layouts[j].incGridWidth(i);
+            }
+        }
+
+        int y1;
+        int y2;
+        for (int i=0; i < ylines.size() - 1; i++) {
+            y1 = ((Integer)ylines.get(i)).intValue();
+            y2 = ((Integer)ylines.get(i+1)).intValue();
+
+            for (int j=0; j < components.length; j++) {
+                Rectangle jbounds = components[j].getBounds();
+                if (isOverlapped(y1, y2, jbounds.y, jbounds.y + jbounds.height - 1))
+                    layouts[j].incGridHeight(i);
+            }
+        }
+
         for (int i=0; i < components.length; i++) {
-            GridBagConstraints cons = new GridBagConstraints();
-            int gridX = 0;
-            int gridY = 0;
-            int gridWidth = 1;
-            int gridHeight = 1;
-            int left = 0;
-            int right = 0;
-            int top = 0;
-            int bottom = 0;
-            int x = components[i].getBounds().x;
-            int x1 = x + components[i].getBounds().width;
-            int y = components[i].getBounds().y;
-            int y1 = y + components[i].getBounds().height;
-            for (int j=1; j < axisXnumber+1; j++) {
-                if (x< axisX[j] && x>= axisX[j-1]) {
-                    gridX = j-1;
-                    left = x - axisX[j-1];
-                }
-                if (x1<= axisX[j] && x1 > axisX[j-1]) {
-                    gridWidth = j-gridX;
-                    right = axisX[j] - x1;
-                }
-            }
-            for (int j=1; j < axisYnumber+1; j++) {
-                if (y< axisY[j] && y>= axisY[j-1]) {
-                    gridY = j-1;
-                    top = y - axisY[j-1];      
-                }
-                if (y1<= axisY[j] && y1 > axisY[j-1]) {
-                    gridHeight = j-gridY;
-                    bottom = axisY[j] - y1;
-                }
-            }
-            // checking whether the preffered size must be adjusted
-            cons.ipadx = 0;
-            cons.ipady = 0;
-            if(components[i].getWidth() > 0)
-                cons.ipadx = components[i].getWidth() - components[i].getPreferredSize().width;
-            if(components[i].getHeight() > 0)
-                cons.ipady = components[i].getHeight() - components[i].getPreferredSize().height;
-            // storing calculated values
-            cons.gridx = gridX;
-            cons.gridy = gridY;
-            cons.gridwidth = gridWidth;
-            cons.gridheight = gridHeight;
-            cons.insets = new Insets(top, left, bottom, right);
-            cons.fill = GridBagConstraints.NONE;
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = layouts[i].gridx;
+            gbc.gridy = layouts[i].gridy;
+            gbc.gridwidth = layouts[i].gridwidth;
+            gbc.gridheight = layouts[i].gridheight;
+            gbc.insets = new java.awt.Insets(3, 3, 3, 3);
 
-            currentConstraints[i] = new GridBagLayoutConstraints(cons);
+            if (components[i].getClass().getName().equals("javax.swing.JScrollPane")) {
+                gbc.weightx = 1.0;
+                gbc.weighty = 1.0;
+                gbc.fill = java.awt.GridBagConstraints.BOTH;
+            }
+
+            Rectangle bounds = components[i].getBounds();
+            Dimension minsize = components[i].getMinimumSize();
+            Dimension prefsize = components[i].getPreferredSize();
+            if (bounds.width > minsize.width)
+                gbc.ipadx = (bounds.width - minsize.width);
+            else if (bounds.width < prefsize.width)
+                gbc.ipadx = (bounds.width - prefsize.width);
+            if (bounds.height > minsize.height)
+                gbc.ipady = (bounds.height - minsize.height);
+            else if (bounds.height < prefsize.height)
+                gbc.ipady = (bounds.height - prefsize.height);
+
+            currentConstraints[i] = new GridBagLayoutConstraints(gbc);
         }
-
-        // the old algorithm
-/*        for (int i=0, n=currentConstraints.length; i < n; i++) {
-            if (currentConstraints[i] == null
-                && previousConstraints[i] instanceof
-                    AbsoluteLayoutSupport.AbsoluteLayoutConstraints)
-            {
-                Rectangle iBounds = components[i].getBounds();
-                Dimension prefSize = components[i].getPreferredSize();
-                GridBagConstraints constr = new GridBagConstraints();
-
-                int gx = 0, gy = 0, gw = 1, gh = 1;
-                int ix1 = iBounds.x;
-                int iy1 = iBounds.y;
-                int ix2 = ix1 + iBounds.width;
-                int iy2 = iy1 + iBounds.height;
-                int fromX = 0, fromY = 0;
-
-                for (int j=0; j < n; j++) {
-                    Rectangle jBounds = components[j].getBounds();
-                    int jx2 = jBounds.x + jBounds.width;
-                    int jy2 = jBounds.y + jBounds.height;
-                    if (jx2 <= ix1) {
-                        gx++;
-                        fromX = Math.max(fromX, jx2);
-                    }
-                    if (jy2 <= iy1) {
-                        gy++;
-                        fromY = Math.max(fromY, jy2);
-                    }
-                    if (jx2 > ix1 && jx2 < ix2) gw++;
-                    if (jy2 > iy1 && jy2 < iy2) gh++;
-                }
-
-                constr.gridx = gx;
-                constr.gridy = gy;
-                constr.gridwidth = gw;
-                constr.gridheight = gh;
-                constr.insets = new Insets(iy1 - fromY, ix1 - fromX, 0, 0);
-                constr.fill = GridBagConstraints.BOTH;
-                constr.ipadx = iBounds.width - prefSize.width;
-                constr.ipady = iBounds.height - prefSize.height;
-
-                currentConstraints[i] = new GridBagLayoutConstraints(constr);
-            }
-        } */
     }
 
-    private static int getCrossings(Component[] components, int axis, int value) {
-        int number = 0;
-        if (axis == X_AXIS) {
-            for (int i=0; i < components.length; i++) {
-                int x = components[i].getBounds().x;
-                int x1 = x+ components[i].getBounds().width;
-                if (x < value && x1 > value)
-                    number++;
+    private static boolean isOverlapped(int border1, int border2,
+                                        int compPos1, int compPos2)
+    {
+        return compPos2 >= border1 && compPos1 < border2;
+    }
+
+    private static void insertLines(int line, java.util.List lines) {
+        if (line < 0)
+            line = 0;
+        for (int i=0; i < lines.size(); i++) {
+            int ival = ((Integer)lines.get(i)).intValue();
+            if (line < ival) {
+                lines.add(i, new Integer(line));
+                return;
             }
+            else if (line == ival)
+                return;
         }
-        else {
-            for (int i=0; i < components.length; i++) {
-                int y = components[i].getBounds().y;
-                int y1 = y + components[i].getBounds().height;
-                if (y < value && y1 > value)
-                    number++;
-            }
+        lines.add(new Integer(line));
+    }
+
+    private static class LayoutInfo {
+//		int minWidth = 0, minHeight = 0;
+//		int prefWidth = 0, prefHeight = 0;
+//		int maxWidth = 0, maxHeight = 0;
+        int gridx, gridy;
+        int gridwidth, gridheight;
+//		int top = 3, left = 3, bottom = 3, right = 3;
+//		String name = "";
+
+        void incGridWidth(int gridx) {
+            if (gridwidth == 0)
+                this.gridx = gridx;
+            gridwidth++;
         }
-        return number;
+
+        void incGridHeight(int gridy) {
+            if (gridheight == 0)
+                this.gridy = gridy;
+            gridheight++;
+        }
     }
 
     // --------
@@ -790,6 +593,12 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                              getBundle().getString("HINT_weighty"), // NOI18N
                              null)
             };
+
+            // properties with editable combo box
+            properties[0].setValue("canEditAsText", Boolean.TRUE); // NOI18N
+            properties[1].setValue("canEditAsText", Boolean.TRUE); // NOI18N
+            properties[2].setValue("canEditAsText", Boolean.TRUE); // NOI18N
+            properties[3].setValue("canEditAsText", Boolean.TRUE); // NOI18N
         }
 
         private void reinstateProperties() {
@@ -950,8 +759,8 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         }
     }
 
-    public static final class GridPosEditor extends GridBagConstrEditor
-                                        implements EnhancedPropertyEditor {
+    public static final class GridPosEditor extends GridBagConstrEditor {
+
         public GridPosEditor() {
             tags = new String[] {
                 getBundle().getString("VALUE_relative") // NOI18N
@@ -964,20 +773,10 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             };
             otherValuesAllowed = true;
         }
-
-        public Component getInPlaceCustomEditor() {
-            return null;
-        }
-        public boolean hasInPlaceCustomEditor() {
-            return false;
-        }
-        public boolean supportsEditingTaggedValues() {
-            return true;
-        }
     }
 
-    public static final class GridSizeEditor extends GridBagConstrEditor
-                                        implements EnhancedPropertyEditor {
+    public static final class GridSizeEditor extends GridBagConstrEditor {
+
         public GridSizeEditor() {
             tags = new String[] {
                 getBundle().getString("VALUE_relative"), // NOI18N
@@ -992,16 +791,6 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 "java.awt.GridBagConstraints.REMAINDER" // NOI18N
             };
             otherValuesAllowed = true;
-        }
-
-        public Component getInPlaceCustomEditor() {
-            return null;
-        }
-        public boolean hasInPlaceCustomEditor() {
-            return false;
-        }
-        public boolean supportsEditingTaggedValues() {
-            return true;
         }
     }
 
@@ -1041,6 +830,14 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 getBundle().getString("VALUE_anchor_southwest"), // NOI18N
                 getBundle().getString("VALUE_anchor_west"), // NOI18N
                 getBundle().getString("VALUE_anchor_northwest"), // NOI18N
+                getBundle().getString("VALUE_anchor_pagestart"), // NOI18N
+                getBundle().getString("VALUE_anchor_pageend"), // NOI18N
+                getBundle().getString("VALUE_anchor_linestart"), // NOI18N
+                getBundle().getString("VALUE_anchor_lineend"), // NOI18N
+                getBundle().getString("VALUE_anchor_firstlinestart"), // NOI18N
+                getBundle().getString("VALUE_anchor_firstlineend"), // NOI18N
+                getBundle().getString("VALUE_anchor_lastlinestart"), // NOI18N
+                getBundle().getString("VALUE_anchor_lastlineend") // NOI18N
             };
             values = new Integer[] {
                 new Integer(GridBagConstraints.CENTER),
@@ -1051,7 +848,15 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 new Integer(GridBagConstraints.SOUTH),
                 new Integer(GridBagConstraints.SOUTHWEST),
                 new Integer(GridBagConstraints.WEST),
-                new Integer(GridBagConstraints.NORTHWEST)
+                new Integer(GridBagConstraints.NORTHWEST),
+                new Integer(GridBagConstraints.PAGE_START),
+                new Integer(GridBagConstraints.PAGE_END),
+                new Integer(GridBagConstraints.LINE_START),
+                new Integer(GridBagConstraints.LINE_END),
+                new Integer(GridBagConstraints.FIRST_LINE_START),
+                new Integer(GridBagConstraints.FIRST_LINE_END),
+                new Integer(GridBagConstraints.LAST_LINE_START),
+                new Integer(GridBagConstraints.LAST_LINE_END)
             };
             javaInitStrings = new String[] {
                 "java.awt.GridBagConstraints.CENTER", // NOI18N
@@ -1062,7 +867,15 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 "java.awt.GridBagConstraints.SOUTH", // NOI18N
                 "java.awt.GridBagConstraints.SOUTHWEST", // NOI18N
                 "java.awt.GridBagConstraints.WEST", // NOI18N
-                "java.awt.GridBagConstraints.NORTHWEST" // NOI18N
+                "java.awt.GridBagConstraints.NORTHWEST", // NOI18N
+                "java.awt.GridBagConstraints.PAGE_START", // NOI18N
+                "java.awt.GridBagConstraints.PAGE_END", // NOI18N
+                "java.awt.GridBagConstraints.LINE_START", // NOI18N
+                "java.awt.GridBagConstraints.LINE_END", // NOI18N
+                "java.awt.GridBagConstraints.FIRST_LINE_START", // NOI18N
+                "java.awt.GridBagConstraints.FIRST_LINE_END", // NOI18N
+                "java.awt.GridBagConstraints.LAST_LINE_START", // NOI18N
+                "java.awt.GridBagConstraints.LAST_LINE_END" // NOI18N
             };
             otherValuesAllowed = false;
         }
