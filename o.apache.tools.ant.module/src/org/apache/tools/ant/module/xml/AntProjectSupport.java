@@ -17,38 +17,62 @@ package org.apache.tools.ant.module.xml;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.JEditorPane;
-import javax.swing.event.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.xml.sax.*;
-import org.w3c.dom.*;
-import org.w3c.dom.events.*;
+import org.apache.tools.ant.module.AntModule;
+import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
-
-import org.openide.*;
+import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
-import org.openide.nodes.*;
-import org.openide.loaders.*;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.events.Event;
+import org.w3c.dom.events.EventTarget;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
-import org.apache.tools.ant.module.AntModule;
-import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.openide.filesystems.Repository;
-
-public class AntProjectSupport implements AntProjectCookie.ParseStatus, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable, PropertyChangeListener {
+public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.swing.event.DocumentListener,
+    FileChangeListener, org.w3c.dom.events.EventListener, Runnable, PropertyChangeListener {
     
     /**
      * XML parser to use.
@@ -290,34 +314,46 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         FileObject fo = getFileObject ();
         AntModule.err.log ("AntProjectSupport.parseDocument: fo=" + fo);
         try {
-            Reader rd;
-            EditorCookie editor = getEditor ();
-            File file = getFile(); // #19705
-            if (editor != null) {
-                StyledDocument doc = editor.openDocument ();
-                rd = new DocumentReader (doc, fo);
-                // add only one Listener (listeners for doc are hold in a List!)
-                if ((styledDocRef != null && styledDocRef.get () != doc) || styledDocRef == null) {
-                    doc.addDocumentListener (this);
-                    styledDocRef = new java.lang.ref.WeakReference (doc);
-                }
-            } else if (fo != null) {
-                rd = new InputStreamReader (fo.getInputStream ());
-                fo.addFileChangeListener (this);
-            } else if (file != null) {
-                rd = new FileReader (file);
-            } else {
-                // [PENDING] this happens sometimes...why?
-                exception = new NullPointerException ();
-                return;
+            if (documentBuilder == null) {
+                documentBuilder = createDocumentBuilder();
             }
-            try {
-                InputSource in = new InputSource (rd);
+            File file = getFile(); // #19705
+            EditorCookie editor = getEditor ();
+            Document doc;
+            if (editor != null) {
+                final StyledDocument document = editor.openDocument();
+                final StringWriter w = new StringWriter(document.getLength());
+                final EditorKit kit;
+                JEditorPane[] panes = editor.getOpenedPanes();
+                if (panes != null) {
+                    kit = panes[0].getEditorKit();
+                } else {
+                    kit = JEditorPane.createEditorKitForContentType("text/xml"); // NOI18N
+                }
+                final IOException[] ioe = new IOException[1];
+                final BadLocationException[] ble = new BadLocationException[1];
+                document.render(new Runnable() {
+                    public void run() {
+                        try {
+                            kit.write(w, document, 0, document.getLength());
+                        } catch (IOException e) {
+                            ioe[0] = e;
+                        } catch (BadLocationException e) {
+                            ble[0] = e;
+                        }
+                    }
+                });
+                if (ioe[0] != null) {
+                    throw ioe[0];
+                } else if (ble[0] != null) {
+                    throw ble[0];
+                }
+                InputSource in = new InputSource(new StringReader(w.toString()));
                 if (file != null) { // #10348
                     try {
                         in.setSystemId(file.toURI().toURL().toString());
                     } catch (MalformedURLException mfue) {
-                        AntModule.err.notify (ErrorManager.WARNING, mfue);
+                        AntModule.err.notify(ErrorManager.WARNING, mfue);
                     }
                     // [PENDING] Ant's ProjectHelper has an elaborate set of work-
                     // arounds for inconsistent parser behavior, e.g. file:foo.xml
@@ -325,27 +361,49 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
                     // as the system ID. If necessary, Ant's algorithm could be copied
                     // here to make the behavior match perfectly, but it ought not be necessary.
                 }
-                if (documentBuilder == null) {
-                    documentBuilder = createDocumentBuilder();
+                doc = documentBuilder.parse(in);
+                // add only one Listener (listeners for doc are hold in a List!)
+                if ((styledDocRef != null && styledDocRef.get () != document) || styledDocRef == null) {
+                    document.addDocumentListener(this);
+                    styledDocRef = new WeakReference(document);
                 }
-                Document doc = documentBuilder.parse(in);
-                if (editor != null) {
-                    //AntModule.err.log ("doc=" + doc);
-                    // Xerces DOM parser implements DOM event model.
-                    EventTarget targ = (EventTarget) doc;
-                    targ.addEventListener ("DOMSubtreeModified", this, false); // NOI18N
-                    // Normal bubbling mutation events:
-                    //targ.addEventListener ("DOMNodeInserted", this, false); // NOI18N
-                    //targ.addEventListener ("DOMNodeRemoved", this, false); // NOI18N
-                    // See comment in ElementNode:
-                    targ.addEventListener ("DOMAttrModified", this, false); // NOI18N
-                    //targ.addEventListener ("DOMCharacterDataModified", this, false); // NOI18N
+            } else if (fo != null) {
+                InputStream is = fo.getInputStream();
+                try {
+                    InputSource in = new InputSource(is);
+                    if (file != null) { // #10348
+                        try {
+                            in.setSystemId(file.toURI().toURL().toString());
+                        } catch (MalformedURLException mfue) {
+                            AntModule.err.notify(ErrorManager.WARNING, mfue);
+                        }
+                    }
+                    doc = documentBuilder.parse(is);
+                } finally {
+                    is.close();
                 }
-                projDoc = doc;
-                exception = null;
-            } finally {
-                rd.close ();
+            } else if (file != null) {
+                InputSource in = new InputSource(file.toURI().toURL().toString());
+                doc = documentBuilder.parse(in);
+            } else {
+                // XXX this happens sometimes while the file is being closed...why?
+                exception = new NullPointerException();
+                return;
             }
+            if (editor != null) {
+                //AntModule.err.log ("doc=" + doc);
+                // Xerces DOM parser implements DOM event model.
+                EventTarget targ = (EventTarget) doc;
+                targ.addEventListener ("DOMSubtreeModified", this, false); // NOI18N
+                // Normal bubbling mutation events:
+                //targ.addEventListener ("DOMNodeInserted", this, false); // NOI18N
+                //targ.addEventListener ("DOMNodeRemoved", this, false); // NOI18N
+                // See comment in ElementNode:
+                targ.addEventListener ("DOMAttrModified", this, false); // NOI18N
+                //targ.addEventListener ("DOMCharacterDataModified", this, false); // NOI18N
+            }
+            projDoc = doc;
+            exception = null;
         } catch (Exception e) {
             // leave projDoc the way it is...
             exception = e;
@@ -401,7 +459,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         try {
             EditorCookie editor = getEditor ();
             if (editor != null) {
-                StyledDocument doc = editor.openDocument ();
+                final StyledDocument doc = editor.openDocument ();
                 // Gack. What a mess. Have to regenerate whole document.
                 // XXX replace with XMLUtil.write when possible....
                 // but that method is not well suited to regenerating hand-edited text
@@ -413,14 +471,43 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
                 }
                 OutputFormat format = new OutputFormat (projDoc);
                 format.setPreserveSpace (true);
-                Writer wr = new DocumentWriter (doc, fo);
+                StringWriter wr = new StringWriter();
+                XMLSerializer ser = new XMLSerializer(wr, format);
+                ser.serialize(projDoc);
+                // Apache serializer also fails to include trailing newline, sigh.
+                wr.write('\n');
+                final String content = wr.toString();
+                final EditorKit kit;
+                if (panes != null) {
+                    kit = panes[0].getEditorKit();
+                } else {
+                    kit = JEditorPane.createEditorKitForContentType("text/xml"); // NOI18N
+                }
                 try {
-                    XMLSerializer ser = new XMLSerializer (wr, format);
-                    ser.serialize (projDoc);
-                    // Apache serializer also fails to include trailing newline, sigh.
-                    wr.write ('\n');
-                } finally {
-                    wr.close ();
+                    final IOException[] ioe = new IOException[1];
+                    final BadLocationException[] ble = new BadLocationException[1];
+                    NbDocument.runAtomicAsUser(doc, new Runnable() {
+                        public void run() {
+                            doc.putProperty(expectingDocUpdates, Boolean.TRUE);
+                            try {
+                                doc.remove(0, doc.getLength());
+                                kit.read(new StringReader(content), doc, 0);
+                            } catch (IOException e) {
+                                ioe[0] = e;
+                            } catch (BadLocationException e) {
+                                ble[0] = e;
+                            } finally {
+                                doc.putProperty(expectingDocUpdates, null);
+                            }
+                        }
+                    });
+                    if (ioe[0] != null) {
+                        throw ioe[0];
+                    } else if (ble[0] != null) {
+                        throw ble[0];
+                    }
+                } catch (BadLocationException e) {
+                    throw (IOException)new IOException(e.toString()).initCause(e);
                 }
                 for (int i = 0; i < carets.length; i++) {
                     if (carets[i] < doc.getLength ()) {
@@ -505,27 +592,27 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         }
     }
     
-    public void fileDeleted (org.openide.filesystems.FileEvent p1) {
+    public void fileDeleted(FileEvent p1) {
         // Hmm, not our problem.
     }
     
-    public void fileDataCreated (org.openide.filesystems.FileEvent p1) {
+    public void fileDataCreated(FileEvent p1) {
         // ignore
     }
     
-    public void fileFolderCreated (org.openide.filesystems.FileEvent p1) {
+    public void fileFolderCreated(FileEvent p1) {
         // ignore
     }
     
-    public void fileRenamed (org.openide.filesystems.FileRenameEvent p1) {
+    public void fileRenamed(FileRenameEvent p1) {
         // ignore
     }
     
-    public void fileAttributeChanged (org.openide.filesystems.FileAttributeEvent p1) {
+    public void fileAttributeChanged(FileAttributeEvent p1) {
         // ignore
     }
     
-    public void handleEvent (org.w3c.dom.events.Event ev) {
+    public void handleEvent(Event ev) {
         AntModule.err.log ("AntProjectSupport.handleEvent: fo=" + fo);
         //Thread.dumpStack ();
         AntModule.err.log("\tev=" + ev);
@@ -553,83 +640,8 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         }
     }
     
-    public void fileChanged (org.openide.filesystems.FileEvent p1) {
+    public void fileChanged(FileEvent p1) {
         invalidate ();
-    }
-    
-    private static class DocumentReader extends PipedReader implements Runnable {
-        private StyledDocument doc;
-        private PipedWriter wr;
-        public DocumentReader (StyledDocument doc, FileObject fo) throws IOException {
-            this.doc = doc;
-            wr = new PipedWriter ();
-            connect (wr);
-            new Thread (this, "ant DocumentReader: " + fo).start (); // NOI18N
-        }
-        public void run () {
-            try {
-                doc.render (new Runnable () {
-                        public void run () {
-                            try {
-                                new DefaultEditorKit ().write (wr, doc, 0, doc.getLength ());
-                            } catch (IOException e) {
-                                AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
-                            } catch (BadLocationException e) {
-                                AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
-                            }
-                        }
-                    });
-            } finally {
-                try {
-                    wr.close ();
-                } catch (IOException e) {
-                    AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
-                }
-            }
-        }
-    }
-    
-    private static class DocumentWriter extends PipedWriter implements Runnable {
-        private StyledDocument doc;
-        private PipedReader rd;
-        private Thread t;
-        public DocumentWriter (StyledDocument doc, FileObject fo) throws IOException {
-            this.doc = doc;
-            rd = new PipedReader ();
-            connect (rd);
-            (t = new Thread (this, "ant DocumentWriter: " + fo)).start (); // NOI18N
-        }
-        public void run () {
-            try {
-                NbDocument.runAtomicAsUser (doc, new Runnable () {
-                        public void run () {
-                            doc.putProperty (expectingDocUpdates, Boolean.TRUE);
-                            try {
-                                doc.remove (0, doc.getLength ());
-                                new DefaultEditorKit ().read (rd, doc, 0);
-                            } catch (IOException e) {
-                                AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
-                            } catch (BadLocationException e) {
-                                AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
-                            } finally {
-                                doc.putProperty (expectingDocUpdates, null);
-                            }
-                        }
-                    });
-            } catch (BadLocationException e) {
-                AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
-            }
-        }
-        public void close () throws IOException {
-            super.close ();
-            try {
-                t.join ();
-            } catch (InterruptedException ie) {
-                IOException ioe = new IOException ();
-                AntModule.err.annotate (ioe, ie);
-                throw ioe;
-            }
-        }
     }
     
     // Firing processor which tells AntProjectSupport's when to fire changes.
@@ -639,7 +651,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     
     // set of supports which should fire changes soon, to times when changes should be fired
     // also serves as a monitor for thread-safe communication with the processor
-    private static final java.util.Map tofire = new HashMap (); // Map<AntProjectSupport,Date>
+    private static final Map tofire = new HashMap(); // Map<AntProjectSupport,Date>
     
     protected final void invalidate () {
         AntModule.err.log ("AntProjectSupport.invalidate: fo=" + fo);
