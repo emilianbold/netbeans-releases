@@ -522,7 +522,6 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
             chooser.setColor ((Color)editor.getValue ());
             selectionModel.addChangeListener (this);
             
-            HelpCtx.setHelpIDString (this, NbColorChooser.class.getName ());
             getAccessibleContext().setAccessibleDescription(getString("ACSD_CustomColorEditor"));
         }
 

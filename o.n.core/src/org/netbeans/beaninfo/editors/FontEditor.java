@@ -340,8 +340,6 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             c.insets = new Insets (12, 0, 0, 0);
             la.setConstraints (p, c);
             add (p);
-
-            HelpCtx.setHelpIDString (this, FontPanel.class.getName ());
         }
 
         public Dimension getPreferredSize () {
