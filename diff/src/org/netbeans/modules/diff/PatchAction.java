@@ -165,6 +165,7 @@ public class PatchAction extends NodeAction {
         ArrayList notFoundFileNames = new ArrayList();
         ArrayList appliedFiles = new ArrayList();
         HashMap backups = new HashMap();
+        boolean patchFailed = false;
         for (int i = 0; i < fileDiffs.length; i++) {
             //System.out.println("applyFileDiffs(): fileName = "+fileDiffs[i].getFileName());
             FileObject file;
@@ -180,6 +181,9 @@ public class PatchAction extends NodeAction {
                     backups.put(file, backup);
                     file.refresh(true);
                 }
+                else {
+                    patchFailed = true;
+                }
             }
         }
         if (notFoundFileNames.size() > 0) {
@@ -194,9 +198,10 @@ public class PatchAction extends NodeAction {
                 NbBundle.getMessage(PatchAction.class, "MSG_NotFoundFiles", files)));
         }
         if (appliedFiles.size() > 0) {
+            String message = patchFailed ? NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedPartially") : NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedSuccessfully");
             Object notifyResult = DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedSuccessfully"),
+                    message,
                     NotifyDescriptor.YES_NO_OPTION));
             if (NotifyDescriptor.YES_OPTION.equals(notifyResult)) {
                 showDiffs(appliedFiles, backups);
