@@ -12,6 +12,7 @@
  */
 package org.netbeans.qa.form.visualDevelopment;
 
+import java.awt.Point;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -111,7 +112,10 @@ public class AddComponents_SWING extends JellyTestCase {
             String component = comp.getDisplayName();
             System.out.println("component: " + component);
             sleep(1000);
-            formeditor.addComponent(categoryName_1, component, formDesigner.componentLayer().getSource()  );            
+            //formeditor.addComponent(categoryName_1, component, formDesigner.componentLayer().getSource());            
+            formeditor.palette().selectPage(categoryName_1);
+            formeditor.palette().selectComponent(component);
+            formeditor.designer().clickOnComponent(formDesigner.componentLayer().getSource(), new Point(20,100));
         }        
         
         list = palette.selectPage(categoryName_2);
@@ -121,7 +125,10 @@ public class AddComponents_SWING extends JellyTestCase {
             String component = comp.getDisplayName();
             System.out.println("component: " + component);
             sleep(1000);
-            formeditor.addComponent(categoryName_2, component, formDesigner.componentLayer().getSource()  );            
+            //formeditor.addComponent(categoryName_2, component, formDesigner.componentLayer().getSource());            
+            formeditor.palette().selectPage(categoryName_2);
+            formeditor.palette().selectComponent(component);
+            formeditor.designer().clickOnComponent(formDesigner.componentLayer().getSource(), new Point(20,100));
         }        
         
         // close form editor window
