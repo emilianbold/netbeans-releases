@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,14 +15,12 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-
 
 /**
  * Tests for J2SEProjectGenerator
@@ -83,6 +81,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "javadoc.use",
         "javadoc.version",
         "javadoc.windowtitle",
+        "javadoc.additionalparam",
         "main.class",
         "manifest.file",
         "platform.active",
@@ -123,6 +122,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "javadoc.use",
         "javadoc.version",
         "javadoc.windowtitle",
+        "javadoc.additionalparam",
         "main.class",
         "manifest.file",
         "platform.active",
