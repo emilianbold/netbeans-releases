@@ -29,6 +29,7 @@ import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.*;
 
 import org.apache.tools.ant.module.AntModule;
@@ -112,15 +113,20 @@ public class RunTargetsAction extends CookieAction implements Presenter.Popup {
             return new HelpCtx ("org.apache.tools.ant.module.executing-target"); // NOI18N
         }
 
-        public void performActionAt (int index) {
-            String target = (String) targets.get (index);
-            try {
-                TargetExecutor te = new TargetExecutor(project, new String[] {target});
-                te.setSwitchWorkspace(true);
-                te.execute();
-            } catch (IOException ioe) {
-                AntModule.err.notify (ioe);
-            }
+        public void performActionAt (final int index) {
+            // #16720 part 2: don't do this in the event thread...
+            RequestProcessor.postRequest(new Runnable() {
+                public void run() {
+                    String target = (String) targets.get (index);
+                    try {
+                        TargetExecutor te = new TargetExecutor(project, new String[] {target});
+                        te.setSwitchWorkspace(true);
+                        te.execute();
+                    } catch (IOException ioe) {
+                        AntModule.err.notify (ioe);
+                    }
+                }
+            });
         }
 
         void addNotify () {
