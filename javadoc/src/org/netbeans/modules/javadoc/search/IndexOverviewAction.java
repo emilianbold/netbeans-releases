@@ -45,7 +45,7 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
     private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.javadoc.search.IndexOverviewAction.IndexMenu"); // NOI18N
  
     public IndexOverviewAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
     public void actionPerformed(ActionEvent ev) {

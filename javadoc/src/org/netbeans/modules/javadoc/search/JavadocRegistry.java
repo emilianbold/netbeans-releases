@@ -297,7 +297,7 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
             if (t == HTML.Tag.META) {
                 String value = (String) a.getAttribute(HTML.Attribute.CONTENT);
                 if (value != null) {
-                    StringTokenizer tk = new StringTokenizer(value,";");
+                    StringTokenizer tk = new StringTokenizer(value,";"); // NOI18N
                     while (tk.hasMoreTokens()) {
                         String str = tk.nextToken().trim();
                         if (str.startsWith("charset")) {        //NOI18N

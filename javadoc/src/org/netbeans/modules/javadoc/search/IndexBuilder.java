@@ -225,7 +225,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
                 }
                 if ("".equals(title)) { // NOI18N
                     title = java.text.MessageFormat.format(ResourceUtils.getBundledString(
-                            "FMT_NoOverviewTitle"), new Object[] { index.getPath(),
+                            "FMT_NoOverviewTitle"), new Object[] { index.getPath(), // NOI18N
                                                                    fo.getName(),
                                                                    fo.getName() });
                 }

@@ -22,11 +22,11 @@ public class NoJavadocException extends Exception {
 
     /** Creates new NoJavadocException */
     public NoJavadocException() {
-        super(ResourceUtils.getBundledString( "MSG_NoDoc" ));
+        super(ResourceUtils.getBundledString( "MSG_NoDoc" )); // NOI18N
     }
     
     /** Overrides toString() method */
     public String toString(){
-        return ResourceUtils.getBundledString( "MSG_NoDoc" );
+        return ResourceUtils.getBundledString( "MSG_NoDoc" ); // NOI18N
     }
 }

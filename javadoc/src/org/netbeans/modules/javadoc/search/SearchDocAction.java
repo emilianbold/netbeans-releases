@@ -27,7 +27,7 @@ import javax.swing.SwingUtilities;
 public final class SearchDocAction extends CallableSystemAction {
 
     public SearchDocAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
     /** Human presentable name of the action. This should be
