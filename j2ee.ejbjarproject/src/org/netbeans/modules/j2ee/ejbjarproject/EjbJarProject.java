@@ -734,6 +734,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             "XML",                  // NOI18N
             "ant-script",           // NOI18N
             "ant-task",             // NOI18N
+            "junit",                // NOI18N
             "simple-files"          // NOI18N
         };
         
