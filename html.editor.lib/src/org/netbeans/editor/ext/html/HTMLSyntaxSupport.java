@@ -213,7 +213,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
 	    }
             
             //match html comments
-            if(tokenOnOffset.getTokenID() == HTMLTokenContext.BLOCK_COMMENT) {
+            if(tokenOnOffset != null && tokenOnOffset.getTokenID() == HTMLTokenContext.BLOCK_COMMENT) {
                 String tokenImage = tokenOnOffset.getImage();
                 TokenItem toki = tokenOnOffset;
                 if(tokenImage.startsWith("<!--") && (offset < (tokenOnOffset.getOffset()) + "<!--".length())) { //NOI18N
