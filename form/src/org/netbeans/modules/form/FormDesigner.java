@@ -120,19 +120,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         add(scrollPane, BorderLayout.CENTER);
 
         setModel(formModel);
-
-//        // for multiview - propagate activated nodes
-        // mkleint - disabled - multiview now checks for activated nodes itself.
-//        addPropertyChangeListener(new PropertyChangeListener() {
-//            public void propertyChange(PropertyChangeEvent e) {
-//                if ("activatedNodes".equals(e.getPropertyName())) {
-//                    TopComponent tc = multiViewObserver != null ?
-//                                      multiViewObserver.getTopComponent() : null;
-//                    if (tc != null)
-//                        tc.setActivatedNodes((Node[])e.getNewValue());
-//                }
-//            }
-//        });
     }
 
     public void initialize() {

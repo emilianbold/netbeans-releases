@@ -55,6 +55,10 @@ public class FormEditorSupport extends JavaEditor
     /** ID of the java editor (in the multiview) */
     private static final String MV_JAVA_ID = "java"; // NOI18N
 
+    private static final int JAVA_ELEMENT_INDEX = 0;
+    private static final int FORM_ELEMENT_INDEX = 1;
+    private int elementToOpen; // this is the default element when multiview TC is created
+
     /** Icon for the form editor multiview window */
     private static final String iconURL =
         "org/netbeans/modules/form/resources/formDesigner.gif"; // NOI18N
@@ -102,7 +106,6 @@ public class FormEditorSupport extends JavaEditor
     /** Table of FormModel instances (FormModel to FormEditorSupport map) */
     private static Hashtable openForms = new Hashtable();
 
-    private boolean openForm = false;
     // --------------
     // constructor
 
@@ -119,35 +122,34 @@ public class FormEditorSupport extends JavaEditor
      * @see OpenCookie#open
      */
     public void openFormEditor() {
-        // set status text "Opening Form: ..."
-        openForm = true;
+        elementToOpen = FORM_ELEMENT_INDEX;
         openCloneableTopComponent();
-//        if (multiviewTC == null)
-//            multiviewTC = createMultiViewTC(true);
-//
-//        multiviewTC.open();
-        openForm = false;
         multiviewTC.requestActive();
+
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
+        handler.requestActive(handler.getPerspectives()[FORM_ELEMENT_INDEX]);
     }
 
     /** Overriden from JavaEditor - opens editor and ensures it is selected
      * in the multiview.
      */
     public void open() {
+        elementToOpen = JAVA_ELEMENT_INDEX;
         super.open();
 
         MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
-        handler.requestActive(handler.getPerspectives()[0]);
+        handler.requestActive(handler.getPerspectives()[JAVA_ELEMENT_INDEX]);
     }
 
     /** Overriden from JavaEditor - opens editor at given position and ensures
      * it is selected in the multiview.
      */
     protected EditorSupport.Editor openAt(PositionRef pos) {
+        elementToOpen = JAVA_ELEMENT_INDEX;
         openCloneableTopComponent();
 
         MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
-        handler.requestActive(handler.getPerspectives()[0]);
+        handler.requestActive(handler.getPerspectives()[JAVA_ELEMENT_INDEX]);
 
         return super.openAt(pos);
     }
@@ -1068,21 +1070,18 @@ public class FormEditorSupport extends JavaEditor
     // -------
     // multiview
 
-    private CloneableTopComponent createMultiViewTC(boolean formDefault) {
-        MultiViewDescription[] descs = new MultiViewDescription[] {
-            new JavaDesc(formDataObject), new FormDesc(formDataObject) };
-
-        return MultiViewFactory.createCloneableMultiView(
-            descs, descs[formDefault ? 1:0], new CloseHandler(formDataObject));
-    }
-
-
     /** Overriden from JavaEditor. Gets called if java editor is opened first
      * via EditCookie. */
     protected CloneableTopComponent createCloneableTopComponent() {
         if (multiviewTC == null) {
-            multiviewTC = createMultiViewTC(openForm);
-        } 
+            MultiViewDescription[] descs = new MultiViewDescription[] {
+                new JavaDesc(formDataObject), new FormDesc(formDataObject) };
+
+            multiviewTC = MultiViewFactory.createCloneableMultiView(
+                                             descs,
+                                             descs[elementToOpen],
+                                             new CloseHandler(formDataObject));
+        }
         return multiviewTC;
     }
 
@@ -1240,17 +1239,6 @@ public class FormEditorSupport extends JavaEditor
 
         JavaEditorTopComponent(DataObject dobj) {
             super(dobj);
-//            // for multiview - propagate activated nodes
-//            addPropertyChangeListener(new PropertyChangeListener() {
-//                public void propertyChange(PropertyChangeEvent e) {
-//                    if ("activatedNodes".equals(e.getPropertyName())) {
-//                        TopComponent tc = multiViewObserver != null ?
-//                                    multiViewObserver.getTopComponent() : null;
-//                        if (tc != null)
-//                            tc.setActivatedNodes((Node[])e.getNewValue());
-//                    }
-//                }
-//            });
         }
 
         public JComponent getToolbarRepresentation() {
