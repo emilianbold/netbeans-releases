@@ -28,7 +28,7 @@ import java.util.*;
  * @author  Thomas Ball
  */
 public class Annotation {
-    CPClassInfo type;
+    ClassName type;
     AnnotationComponent[] components;
     boolean runtimeVisible;
 
@@ -40,7 +40,15 @@ public class Annotation {
 		     boolean visible, Map map) throws IOException {
 	int nattrs = in.readUnsignedShort();
 	for (int i = 0; i < nattrs; i++) {
-	    int type = in.readUnsignedShort();
+	    final ClassName type;
+	    CPEntry entry = pool.get(in.readUnsignedShort());
+	    if (entry.getTag() == ConstantPool.CONSTANT_Class)
+		// 1.5 build 51 and earlier
+		type = ((CPClassInfo)entry).getClassName();
+	    else {
+		String s = ((CPName)entry).getName();
+		type = ClassName.getClassName(s);
+	    }
 	    int npairs = in.readUnsignedShort();
 	    List pairList = new ArrayList();
 	    for (int j = 0; j < npairs; j++)
@@ -49,13 +57,13 @@ public class Annotation {
 		new AnnotationComponent[pairList.size()];
 	    pairList.toArray(acs);
 	    Annotation ann = new Annotation(pool, type, acs, visible);
-	    map.put(ann.getType().getClassName(), ann);
+	    map.put(ann.getType(), ann);
 	}
     }
 
-    Annotation(ConstantPool pool, int iClass, AnnotationComponent[] components,
-			boolean runtimeVisible) {
-	this.type = (CPClassInfo)pool.get(iClass);
+    Annotation(ConstantPool pool, ClassName type, 
+	       AnnotationComponent[] components, boolean runtimeVisible) {
+	this.type = type;
 	this.components = components;
 	this.runtimeVisible = runtimeVisible;
     }
@@ -63,7 +71,7 @@ public class Annotation {
     /**
      * Returns the annotation type.
      */
-    public final CPClassInfo getType() {
+    public final ClassName getType() {
 	return type;
     }
 
@@ -98,7 +106,7 @@ public class Annotation {
 
     public String toString() {
 	StringBuffer sb = new StringBuffer("@");
-	sb.append(type.getClassName());
+	sb.append(type);
 	sb.append(" runtimeVisible=");
 	sb.append(runtimeVisible);
 	int n = components.length;
