@@ -491,14 +491,11 @@ public final class LoaderPoolNode extends AbstractNode {
     public LoaderPoolItemNode(DataLoader loader) throws IntrospectionException {
       super(loader);
       isSystem = ! loaders.contains (loader);
-      // [PENDING] uncomment when can check in bundle change
-      /*
       if (isSystem) {
         setSynchronizeName (false);
         setDisplayName (MessageFormat.format (NbBundle.getBundle (LoaderPoolNode.class).getString ("LBL_system_data_loader"),
                                               new Object[] { getDisplayName () }));
       }
-      */
     }
 
     /** Getter for set of actions that should be present in the
@@ -716,6 +713,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  35   Gandalf   1.34        1/13/00  Jesse Glick     System loaders are 
+*       annotated as such.
 *  34   Gandalf   1.33        1/13/00  Jaroslav Tulach I18N
 *  33   Gandalf   1.32        1/13/00  Jesse Glick     All loaders are displayed
 *       and persisted, incl. system ones, though these cannot be reordered.
