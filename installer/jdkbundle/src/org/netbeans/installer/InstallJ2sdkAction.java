@@ -39,6 +39,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     
     private String statusDesc = "";
     private String j2seInstallDir = "";
+    private String tempDir = "";
     
     private boolean success = false;
     
@@ -70,6 +71,9 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
         instDirPath = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation")); */
 	j2seInstallDir = (String) System.getProperties().get("j2seInstallDir");
+        
+        tempDir = resolveString("$J(temp.dir)");
+        logEvent(this, Log.DBG,"Tempdir: " + tempDir);
         
         mutableOperationState = support.getOperationState();
     }
@@ -128,11 +132,15 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             String cmdArray[] = new String[paramCount];
             String execPath   = uninstDir + File.separator + execName;
             String logPath    = j2seInstallDir + File.separator + "install.log";
+            String envP[] = null;
             
 	    // Put the command and arguments together for windows
             if (Util.isWindowsNT() || Util.isWindows98()) {
                 cmdArray[0]  = execPath
                                + " /s /v\"/qn ADDLOCAL=ToolsFeature,DemosFeature,SourceFeature INSTALLDIR=\\\"" + j2seInstallDir + "\\\"\"";
+                envP = new String[2];
+                envP[0] = "TMP=" + tempDir;
+                envP[1] = "TEMP=" + tempDir;
             } else if (Util.isWindowsOS()) {
                 cmdArray[0] = execPath;
                 cmdArray[1] = "\"" + logPath + "\""; //logfile
@@ -145,7 +153,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
 
 	    // Invoke the correct command
             logEvent(this, Log.DBG,"Start Invoking: cmdArray -> " + Arrays.asList(cmdArray).toString());
-            runCommand(cmdArray, support);
+            runCommand(cmdArray, envP, support);
             
             // Clean up
             File file = new File(cmdArray[0]);
@@ -191,7 +199,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     }
     
     //threads should only run in install mode until ISMP supports them
-    private void runCommand(String[] cmdArray, ProductActionSupport support)
+    private void runCommand(String[] cmdArray, String [] envP, ProductActionSupport support)
     throws Exception{
         boolean doProgress = !(Boolean.getBoolean("no.progress"));
         logEvent(this, Log.DBG,"doProgress -> " + doProgress);
@@ -201,10 +209,10 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         try {
             if (Util.isWindowsNT() || Util.isWindows98()) {
                 //HACK: don't exec script for NT or 98
-                runCommand.execute(cmdArray[0]);
+                runCommand.execute(cmdArray[0], envP, null);
             }
             else {
-                runCommand.execute(cmdArray, null, null);
+                runCommand.execute(cmdArray, envP, null);
             }
             
             if ((installMode == INSTALL) && doProgress)
@@ -229,6 +237,8 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             }
             
             int status = runCommand.getReturnStatus();
+            
+            logEvent(this, Log.DBG,"Return status: " + status);
             
             if((installMode == INSTALL) && doProgress) {
                 stopProgress();
@@ -547,6 +557,10 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("SET INSTALLER_NAME=")) {
                 line = "SET INSTALLER_NAME=" + installerName;
+            } else if (line.startsWith("SET TMP=")) {
+                line = "SET TMP=" + tempDir;
+            } else if (line.startsWith("SET TEMP=")) {
+                line = "SET TEMP=" + tempDir;
             }
             writer.write(line + System.getProperty("line.separator"));
         }
@@ -582,6 +596,10 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         while ((line = reader.readLine()) != null) {
             if (line.startsWith("SET INSTALLER_NAME=")) {
                 line = "SET INSTALLER_NAME=" + installerName;
+            } else if (line.startsWith("SET TMP=")) {
+                line = "SET TMP=" + tempDir;
+            } else if (line.startsWith("SET TEMP=")) {
+                line = "SET TEMP=" + tempDir;
             }
             writer.write(line + System.getProperty("line.separator"));
         }
