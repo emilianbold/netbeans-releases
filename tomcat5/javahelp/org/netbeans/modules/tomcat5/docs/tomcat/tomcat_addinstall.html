@@ -50,7 +50,10 @@ you can run from the IDE to deploy an application, JSP page, or servlet to an un
   is a port number conflict with other installed servers, the IDE will not
   be able to resolve the conflict.</li>
   <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Server Manager.</li>
-  <li>Click Add New Server to display the Add New Server wizard.</li>
+  <li>Click Add Server to display the Add Server wizard.</li>
+  <li>Select the Tomcat Web Server from the combo box.</li>
+  <li>Enter a name for the server instance. This name is used to identify the server in the IDE.
+  <li>Click Next.</li>
   <li>In the Install Directory text box, type or browse to the Tomcat installation 
     directory on your local system. Note that the system verifies that you have 
     specified a valid Tomcat home directory.</li>
@@ -80,18 +83,19 @@ you can run from the IDE to deploy an application, JSP page, or servlet to an un
     node, choose Start/Stop Server from the contextual menu, and stop the server. 
     Next, right-click the server node and choose Properties from the contextual 
     menu. Change the server port number and restart the server.</li>
-  <li>(Optional) If you want the IDE to set this server as the default when a 
-    new web application is created, right-click the server's node and choose Set 
-    as Default from the contextual menu. The URL for the default server appears 
-    in parentheses next to the Servers node. 
-  <li>(Optional) If you want the IDE to use this server for executing an existing 
-    web application, right-click the project node in the Projects window or Files 
-    window, select Properties and then select Running Project. In the Server drop-down, 
+  <li>(Optional) If you want the IDE to set this server as the target server for a 
+  project, right-click the project node in the Projects window, choose Properties,
+  and click Run. In the Server drop-down, 
     select the server that you want to use.</li>
 </ol>
 <p>If you want to change any setting that you entered in the New Server dialog box,
 right-click the server's node in the Runtime window and choose Properties
 from the contextual menu.</p>
+<b>To remove an instance of the Tomcat Web Server:</b>
+<ul><li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Server Manager.</li>
+	<li>In the Server Manager, select the Tomcat Web Server from the list of servers in the left pane.</li>
+	<li>Click Remove.<li>
+	<li>Click Close.</li></ul>
 
 <table>
 
