@@ -489,7 +489,10 @@ public class RADComponentNode extends FormNode
                                              component)
                     || (!cut && MetaComponentCreator.canApplyComponent(
                                                      transComp.getBeanClass(),
-                                                     component))))
+                                                     component)))
+                // hack needed due to screwed design of menu metacomponents
+                && (transComp instanceof RADMenuItemComponent)
+                   == (component instanceof RADMenuComponent))
             {   // pasting is allowed
                 s.add(new CopySupport.RADPaste(t,
                                                component.getFormModel(),

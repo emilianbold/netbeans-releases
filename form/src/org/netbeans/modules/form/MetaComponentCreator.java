@@ -126,6 +126,11 @@ public class MetaComponentCreator {
         if (targetPlacement == NO_TARGET)
             return null;
 
+        // hack needed due to screwed design of menu metacomponents
+        if (targetPlacement == TARGET_MENU
+                && !(sourceComp instanceof RADMenuItemComponent))
+            return null;
+
         // in other cases let's copy the source meta component
 
         if (sourceComp instanceof RADVisualComponent)
@@ -942,7 +947,8 @@ public class MetaComponentCreator {
 
         if (targetComp instanceof RADMenuComponent) {
             // adding to a menu
-            if (((RADMenuComponent)targetComp).canAddItem(beanClass))
+            if (newMenuComp instanceof RADMenuItemComponent
+                    && ((RADMenuComponent)targetComp).canAddItem(beanClass))
                 menuContainer = (ComponentContainer) targetComp;
         }
         else if (targetComp instanceof RADVisualComponent) {
