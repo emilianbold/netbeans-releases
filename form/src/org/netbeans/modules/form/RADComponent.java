@@ -1328,7 +1328,18 @@ public class RADComponent {
         else 
           return (String) getValue ();
       }
-      
+
+      public void setAsText (String selected) {
+        HandlerSetChange change = new HandlerSetChange ();
+        if (getValue () == null) {               // new event
+          change.getAdded ().add (selected);
+        } else {                                 // rename
+          change.getRenamedNewNames ().add (selected);
+          change.getRenamedOldNames ().add (getAsText ());
+        }
+        setValue (change);
+      }
+
       public boolean supportsEditingTaggedValues () {
         return false;
       }
@@ -1444,6 +1455,9 @@ public class RADComponent {
 
 /*
  * Log
+ *  72   Gandalf   1.71        1/13/00  Pavel Buzek     setText() added to 
+ *       EventEditor (it did not work with forms that do not support advanced 
+ *       features)
  *  71   Gandalf   1.70        1/12/00  Pavel Buzek     I18N
  *  70   Gandalf   1.69        1/10/00  Pavel Buzek     
  *  69   Gandalf   1.68        1/7/00   Pavel Buzek     patch created in rev. 63
