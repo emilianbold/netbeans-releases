@@ -214,24 +214,4 @@ Microsystems, Inc. All Rights Reserved.
     	</folder>
     </folder>
 
-        
-    <!-- TEMP temporary setting -->
-    <folder name="WindowSystem">
-        <file name="org-netbeans-core-windows-WindowSystemSettingsNode.instance"/>
-    </folder>
-
-    <!-- TEMP -->
-    <folder name="UI">
-    <!-- settings categories UI presentation -->
-        <folder name="Services">
-            <folder name="IDEConfiguration">
-                <folder name="LookAndFeel"> 
-                    <file name="org-netbeans-core-windows-WindowSystemSettingsNode.shadow">
-                        <attr name="originalFile" stringvalue="WindowSystem/org-netbeans-core-windows-WindowSystemSettingsNode.instance"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
-
 </filesystem>
