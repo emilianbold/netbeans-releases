@@ -33,11 +33,11 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="compile" depends="web-core.compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <include name="org/netbeans/modules/web/core/syntax/"/>
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${nb_root}/editor/netbeans/modules/ext/nb-editor.jar"/>
         <pathelement location="${nb_root}/editor/netbeans/modules/editor.jar"/>
+        <pathelement location="${nb_root}/xml/netbeans/modules/xml-text-edit.jar"/>
         <pathelement location="${core_root}/src/"/>
         <pathelement location="${binroot}/web/servletapi23/release/modules/ext/servlet-2.3.jar"/>
         <fileset dir="${nb_root}/openide/netbeans/lib">
@@ -57,7 +57,6 @@ Microsystems, Inc. All Rights Reserved.
             basedir="src"
 	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
 	    compress="false">
-      <include name="org/netbeans/modules/web/core/syntax/"/>
       <locale name="ja"/>
     </locjar>
   </target>
@@ -72,7 +71,6 @@ Microsystems, Inc. All Rights Reserved.
     <genlist targetname="nbm" outputfiledir="${nb_root}/nbbuild/netbeans"/>
   </target>
 
-  <!-- Complicated: actually two NBMs must be made. -->
   <target name="nbm" depends="netbeans">
     <delete dir="Info"/>
     <makenbm file="web-jspsyntax.nbm"

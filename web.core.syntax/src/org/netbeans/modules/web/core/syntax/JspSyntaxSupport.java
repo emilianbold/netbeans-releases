@@ -104,7 +104,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         if (support != null)
             return support;
         DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
-        final JspDataObject jspdo = (dobj instanceof JspDataObject) ? (JspDataObject)dobj : null;
+        JspDataObject jspdo = (JspDataObject)dobj.getCookie(JspDataObject.class);
         if (jspdo != null) {
             EditorKit kit;
             // try the content language support
@@ -123,6 +123,26 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
         }
         return null;
+    }
+
+    /** Returns SyntaxSupport corresponding to content type of JSP data object. 
+     *  HTMLSyntaxSupport is used when we can't find it. */
+    protected ExtSyntaxSupport getContentLanguageSyntaxSupport() {
+        ExtSyntaxSupport contentLanguageSyntaxSupport = null;
+        DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
+        JspDataObject jspdo = (JspDataObject)dobj.getCookie (JspDataObject.class);
+        if (jspdo != null) {
+            EditorKit kit =
+                JEditorPane.createEditorKitForContentType(jspdo.getContentLanguage());
+            if (kit instanceof BaseKit) {
+                SyntaxSupport support = ((BaseKit)kit).createSyntaxSupport(getDocument());
+                if (support != null && support instanceof ExtSyntaxSupport) {
+                    contentLanguageSyntaxSupport = (ExtSyntaxSupport) support;
+                    return contentLanguageSyntaxSupport;
+                }
+            }
+        }
+        return (ExtSyntaxSupport)get( org.netbeans.editor.ext.html.HTMLSyntaxSupport.class );
     }
 
     public int checkCompletion(JTextComponent target, String typedText, boolean visible ) {
@@ -160,9 +180,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 // CONTENT LANGUAGE
                 case JspSyntaxSupport.CONTENTL_COMPLETION_CONTEXT :
 // System.err.println("CONTENTL_COMPLETION_CONTEXT");
-                    jspdo = (dobj instanceof JspDataObject) ? (JspDataObject)dobj : null;
-                    if (jspdo != null && jspdo.getContentLanguage().equals ("text/html")) { // NOI18N
-                        return ((ExtSyntaxSupport)get( org.netbeans.editor.ext.html.HTMLSyntaxSupport.class )).checkCompletion( target, typedText, visible );
+                    ExtSyntaxSupport support = getContentLanguageSyntaxSupport();
+                    if (support != null) {
+                        return support.checkCompletion( target, typedText, visible );
                     }
                     break;
 //                    TBD:Combining
