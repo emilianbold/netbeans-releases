@@ -486,12 +486,18 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 
     public String getIconBase()
     {
-        return (String)get("iconbase");
+        if (getName().equals("Oracle thin") || getName().equals("PointBase Mobile Edition") || getName().equals("PointBase Server Edition"))
+            return (String)get("iconbaseprefered");
+        else
+            return (String)get("iconbase");
     }
 
     public void setIconBase(String base)
     {
-        put("iconbase", base);
+        if (getName().equals("Oracle thin") || getName().equals("PointBase Mobile Edition") || getName().equals("PointBase Server Edition"))
+            put("iconbaseprefered", base);
+        else
+            put("iconbase", base);
     }
 
     public String getDisplayname()

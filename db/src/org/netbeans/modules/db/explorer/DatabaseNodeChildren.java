@@ -32,7 +32,8 @@ public class DatabaseNodeChildren extends Children.Array
     {
         DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();
         java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
-        TreeSet children = new TreeSet(new NodeComparator(nodeord));
+        boolean sort = nodeinfo.getName().equals("Drivers") ? false : true;
+        TreeSet children = new TreeSet(new NodeComparator(nodeord, sort));
 
         try {
             Vector chlist = nodeinfo.getChildren();
@@ -72,14 +73,19 @@ public class DatabaseNodeChildren extends Children.Array
     class NodeComparator implements Comparator
     {
         private java.util.Map map = null;
+        private boolean sort;
 
-        public NodeComparator(java.util.Map map)
+        public NodeComparator(java.util.Map map, boolean sort)
         {
             this.map = map;
+            this.sort = sort;
         }
 
         public int compare(Object o1, Object o2)
         {
+            if (! sort)
+                return 1;
+            
             int o1val, o2val, diff;
             Integer o1i = (Integer)map.get(o1.getClass().getName());
             if (o1i != null) o1val = o1i.intValue();
