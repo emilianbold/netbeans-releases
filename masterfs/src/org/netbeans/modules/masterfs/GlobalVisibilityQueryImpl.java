@@ -56,7 +56,8 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
     }
 
     public boolean isVisible(FileObject file) {
-        return !(getIgnoreFilesPattern().matcher(file.getNameExt()).find());
+        Pattern ignoreFilesPattern = getIgnoreFilesPattern();
+        return (ignoreFilesPattern != null) ? !(ignoreFilesPattern.matcher(file.getNameExt()).find()) : true;
     }
 
     /**
@@ -91,7 +92,8 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
 
     private Pattern getIgnoreFilesPattern() {
         if (ignoreFilesPattern == null) {
-            ignoreFilesPattern = Pattern.compile(getIgnoredFiles());
+            String ignoredFiles = getIgnoredFiles();
+            ignoreFilesPattern = (ignoredFiles != null && ignoredFiles.length() > 0) ? Pattern.compile(ignoredFiles) : null;
         }
         return ignoreFilesPattern;
     }
@@ -107,7 +109,7 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
                     mIgnoredFiles = clazz.getMethod("getIgnoredFiles", null); // NOI18N
                     ideSettings.addPropertyChangeListener(new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {
-                            if (ignoreFilesPattern != null && PROP_IGNORED_FILES.equals(evt.getPropertyName())) {
+                            if (PROP_IGNORED_FILES.equals(evt.getPropertyName())) {
                                 ignoreFilesPattern = null;
                                 fireChange();
                             }
