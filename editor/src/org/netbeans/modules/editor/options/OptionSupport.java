@@ -145,7 +145,11 @@ public class OptionSupport extends SystemOption {
         }
     }
 
-    
+    protected void firePropertyChange(String name, Object oldValue, Object newValue){
+        // ignore firing... Quick fix of #47261. 
+        // BaseOptions should be rewritten to not extend SystemOption ...
+        // there is no need to be compatile with NB 3.2 and deserialize its options...
+    }
     
     public void doSetSettingValue(String settingName, Object newValue,
     String propertyName) {
