@@ -179,9 +179,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             wizardDescriptor.putProperty( "WizardPanel_errorMessage",
             NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectFolderExists"));
             return false;
-        }
-        
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "" );
+        }                
         return true;
     }
     

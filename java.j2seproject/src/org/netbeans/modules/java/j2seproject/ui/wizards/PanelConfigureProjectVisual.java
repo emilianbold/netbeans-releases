@@ -68,7 +68,8 @@ public class PanelConfigureProjectVisual extends JPanel {
         optionsContainer.add( optionsPanel, java.awt.BorderLayout.CENTER );
     }
     
-    boolean valid( WizardDescriptor wizardDescriptor ) {        
+    boolean valid( WizardDescriptor wizardDescriptor ) {
+        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "" ); //NOI18N
         return projectLocationPanel.valid( wizardDescriptor ) && optionsPanel.valid(wizardDescriptor);
     }
     

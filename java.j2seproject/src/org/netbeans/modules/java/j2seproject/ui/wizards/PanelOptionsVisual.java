@@ -19,6 +19,9 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
+import java.util.StringTokenizer;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -33,6 +36,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
     
     private PanelConfigureProject panel;
+    private boolean valid;
     
     /** Creates new form PanelOptionsVisual */
     public PanelOptionsVisual( PanelConfigureProject panel, int type ) {
@@ -56,13 +60,29 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                 mainClassTextField.setVisible( false );
                 break;
         }
-
+        
+        this.mainClassTextField.getDocument().addDocumentListener( new DocumentListener () {
+            
+            public void insertUpdate(DocumentEvent e) {
+                mainClassChanged ();
+            }
+            
+            public void removeUpdate(DocumentEvent e) {
+                mainClassChanged ();
+            }
+            
+            public void changedUpdate(DocumentEvent e) {
+                mainClassChanged ();
+            }
+            
+        });
     }
 
     public void actionPerformed( ActionEvent e ) {        
         if ( e.getSource() == createMainCheckBox ) {
             lastMainClassCheck = createMainCheckBox.isSelected();
             mainClassTextField.setEnabled( lastMainClassCheck );        
+            this.panel.fireChangeEvent();
         }                
     }
     
@@ -133,7 +153,16 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     }//GEN-END:initComponents
     
     boolean valid(WizardDescriptor settings) {
-        return true;
+        if (mainClassTextField.isVisible () && mainClassTextField.isEnabled ()) {
+            if (!valid) {
+                settings.putProperty( "WizardPanel_errorMessage",
+                    NbBundle.getMessage(PanelOptionsVisual.class,"ERROR_IllegalMainClassName")); //NOI18N
+            }
+            return this.valid;
+        }
+        else {
+            return true;
+        }
     }
     
     void read (WizardDescriptor d) {
@@ -152,5 +181,26 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     private javax.swing.JCheckBox setAsMainCheckBox;
     // End of variables declaration//GEN-END:variables
     
+    private void mainClassChanged () {
+        String mainClassName = this.mainClassTextField.getText ();
+        StringTokenizer tk = new StringTokenizer (mainClassName, "."); //NOI18N
+        boolean valid = true;
+out:        while (tk.hasMoreTokens()) {
+            String token = tk.nextToken();
+            if (token.length() == 0) {
+                valid = false;
+                break out;
+            }
+            for (int i=0; i< token.length();i++) {
+                if ((i == 0 && !Character.isJavaIdentifierStart(token.charAt(0)))
+                    || (i != 0 && !Character.isJavaIdentifierPart(token.charAt(i)))) {
+                        valid = false;                        
+                        break out;
+                }
+            }
+        }
+        this.valid = valid;
+        this.panel.fireChangeEvent();
+    }
 }
 
