@@ -296,6 +296,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="test.class" value="org.netbeans.xtest.AntRunner"/>
         <property name="test.classpath" refid="test.classpath"/>
         <property name="test.target" value="ide_test_helper"/>
+	<property name="xtest.classloader" value="org.openidex.util"/>
         <property name="xtest.ide.path" refid="xtest.ide.path">
             <classpath id="xtest.ide.path">
                 <!-- XXX this is bad, it assumes the Ant module is installed! -->
@@ -305,7 +306,7 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </property>
 
-        <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -nosplash -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dxtest.distexec=true -J-Dtest.exit=true -J-Dxtest.useclassloader=org.openidex.util -J-Dnetbeans.full.hack=true -J-Dnetbeans.windows=${xtest.ide.winsys}"/>
+        <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -nosplash -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dxtest.distexec=true -J-Dtest.exit=true -J-Dtest.output.redirect=true -J-Dxtest.useclassloader=${xtest.classloader} -J-Dnetbeans.full.hack=true -J-Dnetbeans.windows=${xtest.ide.winsys}"/>
         <echo message="ARGUMENTS = ${args}"/>
 
         <copy file="${xtest.home}/lib/patches/testmain.jar" todir="${netbeans.test.home}/lib/patches"/>
