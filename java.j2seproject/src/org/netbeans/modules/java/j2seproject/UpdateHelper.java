@@ -280,6 +280,7 @@ public class UpdateHelper {
         return new Notifier() {
             public boolean canUpdate() {
                 JButton updateOption = new JButton (NbBundle.getMessage(UpdateHelper.class, "CTL_UpdateOption"));
+                updateOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(UpdateHelper.class, "AD_UpdateOption"));
                 return DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor (NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdate"),
                         NbBundle.getMessage(UpdateHelper.class,"TXT_ProjectUpdateTitle"),
