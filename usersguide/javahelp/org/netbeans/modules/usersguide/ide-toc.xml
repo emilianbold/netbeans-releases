@@ -233,9 +233,9 @@
   </tocitem>
 
   <tocitem text="Debugging Java Applications">
-    <tocitem text="About Debugging Java Applications" target="tbd"/>
+    <tocitem text="About Debugging Java Applications" target="debug.about"/>
     <tocitem text="Working with Debugging" target="debug.process"/>
-    <tocitem text="Debugging Tasks: Quick Reference" target="tbd"/>
+    <tocitem text="Debugging Tasks: Quick Reference" target="debug.quickref"/>
     <tocitem text="Current Context in the Debugger" target="debug.context"></tocitem>
     <tocitem text="Attaching Source Code to Java Class Libraries" target="debug.source"></tocitem>
     <tocitem text="Setting Breakpoints">
