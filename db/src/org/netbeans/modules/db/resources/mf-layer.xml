@@ -3,18 +3,6 @@
 
 <filesystem>
 
-    <folder name="Menu">
-        <folder name="Help">
-            <folder name="HelpShortcuts">
-                <attr name="org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-db-mainpage.xml" boolvalue="true"/>
-                <file name="org-netbeans-modules-db-mainpage.xml" url="org-netbeans-modules-db-mainpage.xml">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.resources.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/db/resources/helpset.gif"/>
-                </file>
-                <attr name="org-netbeans-modules-db-mainpage.xml/org-netbeans-modules-usersguide-lower-sep.instance" boolvalue="true"/>
-            </folder>
-        </folder>
-    </folder>
 
     <folder name="Services">
         <file name="org-netbeans-modules-db-explorer-DatabaseOption.settings" url="DatabaseOption.settings">
@@ -37,14 +25,6 @@
 
     </folder>
 
-    <folder name="Actions">
-        <folder name="Help">
-            <file name="org-netbeans-modules-db-mainpage.xml" url="org-netbeans-modules-db-mainpage.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/db/resources/optionIcon.gif"/>
-            </file>
-        </folder>
-    </folder>
 
     <!-- UI -->
     <folder name="UI">
