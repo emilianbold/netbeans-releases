@@ -40,9 +40,9 @@ public class Utils {
 
     // COPIED FROM TOMCAT
     private static final String javaKeywords[] = {
-        "abstract", "boolean", "break", "byte", "case",
+        "abstract", "assert", "boolean", "break", "byte", "case",
         "catch", "char", "class", "const", "continue",
-        "default", "do", "double", "else", "extends",
+        "default", "do", "double", "else", "enum", "extends",
         "final", "finally", "float", "for", "goto",
         "if", "implements", "import", "instanceof", "int",
         "interface", "long", "native", "new", "package",
