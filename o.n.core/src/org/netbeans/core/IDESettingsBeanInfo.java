@@ -106,6 +106,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             desc[12].setDisplayName(bundleTabbedContainerUI.getString("PROP_TabbedContainerUI"));
             desc[12].setShortDescription(bundleTabbedContainerUI.getString("HINT_TabbedContainerUI"));
             desc[12].setPropertyEditorClass(TabbedContainerUIPropertyEditor.class);
+            desc[12].setHidden(true);
 
 	    return desc;
         } catch (IntrospectionException ex) {
