@@ -265,11 +265,15 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             wiz.setTitle(NbBundle.getMessage(PlatformsCustomizer.class,"CTL_AddPlatformTitle"));
             wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
             Dialog dlg = DialogDisplayer.getDefault().createDialog(wiz);
-            dlg.setVisible(true);
-            if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
-                this.getChildren().refreshPlatforms();
-                Set result = wiz.getInstantiatedObjects();
-                this.expandPlatforms (result.size() == 0 ? null : (JavaPlatform)result.iterator().next());
+            try {
+                dlg.setVisible(true);
+                if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
+                    this.getChildren().refreshPlatforms();
+                    Set result = wiz.getInstantiatedObjects();
+                    this.expandPlatforms (result.size() == 0 ? null : (JavaPlatform)result.iterator().next());
+                }
+            } finally {
+                dlg.dispose();
             }
         } catch (DataObjectNotFoundException dfne) {
             ErrorManager.getDefault().notify (dfne);

@@ -13,10 +13,13 @@
 
 package org.netbeans.modules.java.platform.wizard;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.*;
 import java.util.*;
 import java.awt.*;
 import java.io.File;
+import javax.swing.KeyStroke;
 import javax.swing.event.*;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -65,8 +68,23 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         this.setFileView( new PlatformFileView( this.getFileSystemView(), this.regs));                
         this.addPropertyChangeListener (this);
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LocationChooser.class,"AD_LocationChooser"));
+
+        //XXX JFileChooser workaround
+        getActionMap().put("cancel",
+                new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        Container parent = LocationChooser.this.getParent();
+                        do {
+                            parent = parent.getParent();
+                        } while (parent != null && !(parent instanceof Window));
+                        if (parent != null) {
+                            ((Window)parent).setVisible(false);
+                        }
+        }});
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put (KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel");
+        
     }
-    
+
     
     public Dimension getPreferredSize () {
         return PREFERRED_SIZE;
