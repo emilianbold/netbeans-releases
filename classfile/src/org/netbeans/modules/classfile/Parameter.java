@@ -107,7 +107,10 @@ public final class Parameter extends Field {
             assert signature.charAt(0) == '(';
             isig = 1;  // skip '('
             ivar = 0;
-            localVars = method.getCode().getLocalVariableTable();
+	    Code code = method.getCode();
+            localVars = code != null ? 
+		code.getLocalVariableTable() : 
+		new LocalVariableTableEntry[0];
         }
         
         public boolean hasNext() {
