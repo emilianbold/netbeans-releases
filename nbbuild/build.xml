@@ -101,6 +101,10 @@ workspaceswitcher
       <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web"/>
       <!-- You are on your own for getting the binaries for some of these: -->
       <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcscvs/compat,vcsgeneric,web"/>
+      <config name="settings-test" modules="ant,apisupport,applet,autoupdate,beans,classfile,clazz,core,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,jini,jndi,j2eeserver,logger,makefile,multicompile,objectbrowser,openide,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web"/>
+<!--
+      <config name="settings-test" modules="ant,antlr,apisupport,applet,autoupdate,beans,classfile,clazz,corba,core,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,jasm,java,javacvs,javadoc,javaembeddedserver,jini,jndi,junit,j2eeserver,logger,makefile,multicompile,objectbrowser,openide,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,treefs,usersguide,utilities,vcscore,vcscvs/compat,vcsgeneric,web,workspaceswitcher,xml"/>
+-->
     </configmods>
   </target>
 

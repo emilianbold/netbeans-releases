@@ -36,13 +36,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-i18n-jsp-JspI18nSupportFactory.settings" url="jsp/JspI18nSupportFactory.settings"/>
         </folder>
     
-        <folder name="Editing">
-            <!-- I18N Settings -->
-            <file name="org-netbeans-modules-i18n-I18nOptions.settings" url="I18nOptions.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.i18n.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/i18n/i18nAction.gif"/>
-            </file>
-        </folder>
+        <!-- I18N Settings -->
+        <file name="org-netbeans-modules-i18n-I18nOptions.settings" url="I18nOptions.settings">
+            <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.i18n.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/i18n/i18nAction.gif"/>
+        </file>
 
         <!-- Locale External Execution -->
         <folder name="Executor">
@@ -54,6 +52,19 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
+    <folder name="UI">
+      <folder name="Services">
+        <folder name="Editing">
+          <!-- I18N Settings -->
+          <file name="org-netbeans-modules-i18n-I18nOptions.shadow">
+            <![CDATA[Services/org-netbeans-modules-i18n-I18nOptions.settings
+SystemFileSystem
+]]>
+          </file>
+        </folder> <!-- Editing -->
+      </folder> <!-- Services -->
+    </folder> <!-- UI -->
+
     <folder name="Templates">
         <folder name="Services">
             <folder name="Executor">

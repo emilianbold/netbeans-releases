@@ -246,6 +246,8 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
                     if (orig instanceof DataFolder) {
                         node = parent.createChild ((DataFolder) orig);
                         return new Node[] { node };
+                    } else {
+                        return new Node[] { orig.getNodeDelegate().cloneNode() };
                     }
                 }
             }

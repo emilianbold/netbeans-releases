@@ -178,6 +178,11 @@ Microsystems, Inc. All Rights Reserved.
             <attr boolvalue="true" name="hidden"/>
         </file>
         
+        <file name="org-netbeans-modules-debugger-support-DebuggerSettings.settings" url="DebuggerSettings.settings">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/debuggerSettings.gif"/>
+        </file>
+
         <folder name="DebuggerType">
             <!-- DefaultDebuggerType should be the first one -->
             <attr name="OpenIDE-Folder-Order" stringvalue="org-netbeans-modules-debugger-delegator-DefaultDebuggerType.settings" />
@@ -196,13 +201,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
 
-        <folder name="DebuggingAndExecuting">
-
-            <file name="org-netbeans-modules-debugger-support-DebuggerSettings.settings" url="DebuggerSettings.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/debuggerSettings.gif"/>
-            </file>
-        </folder>
     </folder>
 
     <folder name="Templates">
@@ -225,6 +223,22 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+
+    <folder name="UI">
+
+      <folder name="Services">
+
+        <folder name="DebuggingAndExecuting">
+
+          <file name="org-netbeans-modules-debugger-support-DebuggerSettings.shadow">
+<![CDATA[Services/org-netbeans-modules-debugger-support-DebuggerSettings.settings
+SystemFileSystem
+]]>
+          </file>
+
+        </folder> <!-- DebuggingAndExecuting -->
+      </folder> <!-- Services -->
+    </folder> <!-- UI -->
 
     <folder name="Editors"> 
         <folder name="AnnotationTypes"> 

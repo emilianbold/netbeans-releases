@@ -87,6 +87,10 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
 
+    </folder>
+
+    <folder name="UI">
+      <folder name="Services">
         <folder name="Editing">
             <file name="AnnotationTypes.instance">
                 <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.options.AnnotationTypesNode" />
@@ -96,9 +100,9 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.options.AllOptionsNode" />
                 <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
             </file>
-        </folder>
-
-    </folder>
+        </folder> <!-- Editing -->
+      </folder> <!-- Services -->
+    </folder> <!-- UI -->
 
     <folder name="Templates">
         <folder name="Services">

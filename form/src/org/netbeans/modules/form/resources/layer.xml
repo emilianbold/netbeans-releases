@@ -28,6 +28,16 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Services">
+        <file name="formsettings.settings" url="formsettings.settings">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/resources/formSettings.gif"/>
+        </file>
+    </folder>
+
+    <folder name="UI">
+
+      <folder name="Services">
+
         <folder name="IDEConfiguration">
             <folder name="LookAndFeel">
                 <file name="org-netbeans-modules-form-palette-PaletteNode.instance"/>
@@ -35,12 +45,16 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="Editing">
-            <file name="formsettings.settings" url="formsettings.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/form/resources/formSettings.gif"/>
+            <file name="formsettings.shadow" url="formsettings.settings">
+<![CDATA[Services/formsettings.settings
+SystemFileSystem
+]]>
             </file>
-        </folder>
-    </folder>
+        </folder> <!-- Editing -->
+
+      </folder> <!-- Services -->
+
+    </folder> <!-- UI -->
 
     <folder name="Actions">
         <folder name="Form">

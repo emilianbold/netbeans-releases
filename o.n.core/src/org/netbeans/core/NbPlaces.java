@@ -309,7 +309,7 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
             if (defaultNode == null) {
                 if (ManifestSection.NodeSection.TYPE_SESSION.equals (section)) {
                     defaultNode = new org.netbeans.core.ui.LookupNode (
-                        findSessionFolder ("Services") // NOI18N
+                        findSessionFolder ("UI/Services") // NOI18N
                     );
                 } else {
                     defaultNode = Node.EMPTY;

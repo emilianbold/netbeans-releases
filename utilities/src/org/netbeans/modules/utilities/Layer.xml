@@ -164,27 +164,20 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Services">
         
-        <!-- Search Services -->
-        <folder name="IDEConfiguration">
-            <folder name="ServerAndExternalToolSettings">
-                <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.openfile.Bundle"/>
-                <!-- Open File Server Settings -->
-                <file name="org-netbeans-modules-openfile-Settings.settings" url="../openfile/Openfile.settings">
-                    <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.openfile.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/openfile/openFile.gif"/>
-                </file>
-                <!-- PDF Settings -->
-                <file name="org-netbeans-modules-pdf-PDFSettings.settings" url="../pdf/PDF.settings">
-                    <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.pdf.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/pdf/PDFDataIcon.gif"/>
-                </file>
-            </folder>
-            <folder name="System">
-                <!-- Bookmarks Node -->
-                <file name="org-netbeans-modules-url-BookmarksNode.instance"/>
-            </folder>
-        </folder>
+        <!-- Open File Server Settings -->
+        <file name="org-netbeans-modules-openfile-Settings.settings" url="../openfile/Openfile.settings">
+            <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.openfile.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/openfile/openFile.gif"/>
+        </file>
+        <!-- PDF Settings -->
+        <file name="org-netbeans-modules-pdf-PDFSettings.settings" url="../pdf/PDF.settings">
+            <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.pdf.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/modules/pdf/PDFDataIcon.gif"/>
+        </file>
+        <!-- Bookmarks Node -->
+        <file name="org-netbeans-modules-url-BookmarksNode.instance"/>
 
+        <!-- Search Services -->
         <folder name="SearchType">
             <file name="org-netbeans-modules-search-FullTextType.settings" url="../search/FullTextType.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.search.Bundle"/>
@@ -212,6 +205,36 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-search-ObjectNameType.settings/org-netbeans-modules-search-ObjectTypeType.settings" boolValue="true"/>
             <attr name="org-netbeans-modules-search-ObjectTypeType.settings/org-netbeans-modules-search-ModificationDateType.settings" boolValue="true"/>
             <attr name="org-netbeans-modules-search-ModificationDateType.settings/org-netbeans-modules-vcscore-search-VcsSearchType.settings" boolValue="true"/>
+        </folder>
+    </folder>
+
+    <folder name="UI">
+        <folder name="Services">
+
+            <!-- Search Services -->
+            <folder name="IDEConfiguration">
+                <folder name="ServerAndExternalToolSettings">
+                    <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.openfile.Bundle"/>
+
+                    <file name="org-netbeans-modules-openfile-Settings.shadow">
+<![CDATA[Services/org-netbeans-modules-openfile-Settings.settings
+SystemFileSystem
+]]>
+                    </file>
+                    <file name="org-netbeans-modules-pdf-PDFSettings.shadow">
+<![CDATA[Services/org-netbeans-modules-pdf-PDFSettings.settings
+SystemFileSystem
+]]>
+                    </file>
+                </folder>
+                <folder name="System">
+                    <file name="org-netbeans-modules-url-BookmarksNode.shadow">
+<![CDATA[Services/org-netbeans-modules-url-BookmarksNode.instance
+SystemFileSystem
+]]>
+                    </file>
+                </folder>
+            </folder>
         </folder>
     </folder>
     

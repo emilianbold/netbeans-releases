@@ -99,19 +99,17 @@ Microsystems, Inc. All Rights Reserved.
         </file>
     </folder>
 
+    <file name="org-apache-tools-ant-module-AntSettings.settings" url="AntSettings.settings">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+    </file>
+
     <!-- Recognize text/x-ant+xml: -->
     <folder name="MIMEResolver">
       <file name="org-apache-tools-ant-module-mime-resolver.xml" url="mime-resolver.xml">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
       </file>
-    </folder>
-
-    <folder name="Building">
-        <file name="org-apache-tools-ant-module-AntSettings.settings" url="AntSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
-        </file>
     </folder>
 
     <folder name="Hidden">
@@ -132,6 +130,22 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
   </folder>
+
+  <folder name="UI">
+
+    <folder name="Services">
+
+      <folder name="Building">
+        <file name="org-apache-tools-ant-module-AntSettings.shadow">
+<![CDATA[Services/org-apache-tools-ant-module-AntSettings.settings
+SystemFileSystem
+]]>
+        </file>
+      </folder> <!-- Building -->
+
+    </folder> <!-- Services -->
+
+  </folder> <!-- UI -->
 
   <folder name="Menu">
     <folder name="Help">

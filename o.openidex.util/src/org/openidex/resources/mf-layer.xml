@@ -47,6 +47,16 @@ Microsystems, Inc. All Rights Reserved.
 
 	</folder>
 
+        <folder name="SearchType">
+            <attr name="hidden" boolValue="true"/>
+            <attr name="SystemFileSystem.localizingBundle" stringValue="org.openidex.search.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlValue="nbresloc:/org/openidex/search/res/find.gif"/>
+            <attr name="SystemFileSystem.layer" stringValue="project"/>
+       </folder>
+   </folder>
+
+   <folder name="UI">	
+     <folder name="Services">	
         <folder name="IDEConfiguration">
             <folder name="System">
                 <file name="SearchType.shadow">
@@ -56,15 +66,8 @@ SystemFileSystem
                 </file>
             </folder>
         </folder>
-
-        <folder name="SearchType">
-            <attr name="hidden" boolValue="true"/>
-            <attr name="SystemFileSystem.localizingBundle" stringValue="org.openidex.search.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlValue="nbresloc:/org/openidex/search/res/find.gif"/>
-            <attr name="SystemFileSystem.layer" stringValue="project"/>
-       </folder>
-
-   </folder>
+      </folder>
+    </folder>
        
     <folder name="Templates">
         <folder name="Services">
