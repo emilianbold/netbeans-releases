@@ -1,9 +1,9 @@
 OpenIDE-Module: com.netbeans.developer.modules.httpserver/1
-OpenIDE-Module-Name: Http Server
+OpenIDE-Module-Name: HTTP Server
 OpenIDE-Module-Install: com/netbeans/developer/modules/httpserver/HttpServerModule.class
 OpenIDE-Module-Specification-Version: 0.9
 OpenIDE-Module-Implementation-Version: 0.9
-Class-Path: ext/javax.servlet.jar
+Class-Path: ext/webserver.jar
 
 Name: com/netbeans/developer/modules/httpserver/HttpServerSettings.class
 OpenIDE-Module-Class: Option
