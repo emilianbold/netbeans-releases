@@ -166,7 +166,7 @@ public class Hacks {
     /**
      * Set the disk roots by default to ignore the same junk files that Ant
      * itself ignores by default.
-     * CURRENTLY UNUSED: cf #40400
+     * CURRENTLY UNUSED: cf #40400, #42050
      * @author Jesse Glick
      */
     static void setDefaultExcludesList() {
