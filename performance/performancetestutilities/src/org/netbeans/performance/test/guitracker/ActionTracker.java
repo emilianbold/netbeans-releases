@@ -338,7 +338,7 @@ public class ActionTracker {
         }
         else if (event instanceof WindowEvent) {
             WindowEvent we = (WindowEvent) event;
-            System.out.println("WindowEvent " + we.toString());
+            System.out.println("WindowEvent " + we.paramString());
         }
         else if (event instanceof FocusEvent) {
             FocusEvent fe = (FocusEvent) event;
@@ -369,28 +369,29 @@ public class ActionTracker {
                       add(id == ComponentEvent.COMPONENT_HIDDEN
                         ? ActionTracker.TRACK_FRAME_HIDE
                         : ActionTracker.TRACK_FRAME_SHOW,
-                        ce.toString());
+                        ce.paramString());
                  }
                  else if (c instanceof Dialog || c instanceof JDialog) {
                       add(id == ComponentEvent.COMPONENT_HIDDEN
                         ? ActionTracker.TRACK_DIALOG_HIDE
                         : ActionTracker.TRACK_DIALOG_SHOW,
-                        ce.toString());
+                        ce.paramString());
                  }
                  else if (c instanceof Window || c instanceof JWindow) {
                       add(id == ComponentEvent.COMPONENT_HIDDEN
                         ? ActionTracker.TRACK_COMPONENT_HIDE
                         : ActionTracker.TRACK_COMPONENT_SHOW,
-                        ce.toString());
+                        ce.paramString());
                  }
             }
         }
         else if (event instanceof InvocationEvent) {
-            InvocationEvent ie = (InvocationEvent)event;
-            add(TRACK_INVOCATION, ie.toString());
+            // there is way too many InvocationEvents
+//            InvocationEvent ie = (InvocationEvent)event;
+//            add(TRACK_INVOCATION, ie.paramString());
         }
         else {
-            add(TRACK_UNKNOWN, "unknown event: " + event.toString());
+            add(TRACK_UNKNOWN, "unknown event: " + event.paramString());
         }
     }
     
