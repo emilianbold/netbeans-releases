@@ -53,6 +53,11 @@ Microsystems, Inc. All Rights Reserved.
         </patternset>
     </target>
             
+    <!-- Need to unscramble the libs before continuing-->
+    <target name="build-init" depends="projectized.build-init">
+      <ant dir="../external" target="unscramble"/>
+    </target>
+
     <!-- Rewritten to capture two licenses. -->                           
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
         <mkdir dir="build"/>
