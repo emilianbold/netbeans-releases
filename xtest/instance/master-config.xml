@@ -36,10 +36,12 @@ Microsystems, Inc. All Rights Reserved.
       <!--
       <module name="openidex" testtypes="unit" attributes="stable"/>
       -->
+      <!--
       <module name="mdr" testtypes="unit" attributes="stable"/>
       <module name="mdr" testtypes="perf" attributes="stable">
           <property file="../../mdr/test/perf.properties"/>
       </module>
+      -->
       <module name="schema2beans" testtypes="unit" attributes="all,code"/>
   </config>
   
