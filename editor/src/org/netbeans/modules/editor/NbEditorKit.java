@@ -344,7 +344,7 @@ public class NbEditorKit extends ExtKit {
         private void addTopComponentActions(JTextComponent component, JPopupMenu popupMenu) {
             Lookup contextLookup = getContextLookup(component);
             // Get the cloneable-editor instance
-            TopComponent tc = NbEditorUtilities.getTopComponent(component);
+            TopComponent tc = NbEditorUtilities.getOuterTopComponent(component);
             if (tc != null) {
                 // Add all the actions
                 Action[] actions = tc.getActions();

@@ -147,6 +147,18 @@ public class NbEditorUtilities {
         return (TopComponent)SwingUtilities.getAncestorOfClass(TopComponent.class, target);
     }
 
+    /** Get the top-component for the target copmonent */
+    public static TopComponent getOuterTopComponent(JTextComponent target) {
+        TopComponent tc = null;
+        TopComponent parent = (TopComponent)SwingUtilities.getAncestorOfClass(TopComponent.class, target);
+        while (parent != null) {
+            tc = parent;
+            parent = (TopComponent)SwingUtilities.getAncestorOfClass(TopComponent.class, tc);
+        }
+        return tc;
+    }
+    
+
     /** Add the jump-list entry for the for the component that's opened
     * over the given dataobject if any.
     */

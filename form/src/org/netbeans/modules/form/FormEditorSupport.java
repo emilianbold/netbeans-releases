@@ -1567,13 +1567,6 @@ public class FormEditorSupport extends JavaEditor
                 MultiViewFactory.NOOP_CLOSE_ACTION);
         }
 
-        public Action[] getActions() {
-            // need to delegate to multiview's actions because of the way editor
-            // constructs actions : NbEditorKit.NbBuildPopupMenuAction
-            return multiViewObserver != null ?
-                multiViewObserver.createDefaultActions() : super.getActions();
-        }
-
         protected boolean isActiveTC() {
             TopComponent selected = getRegistry().getActivated();
 
