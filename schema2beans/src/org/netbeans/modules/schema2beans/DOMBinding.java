@@ -46,30 +46,30 @@ public class DOMBinding {
 
     //	This integer uniquely identify this BeanProp in the graph
     int			id;
-    
+
     Node		node;
-    
+
     //	This is used by the BeanProp.setter(obj[]) to optimize its parsing
     int			pos;
     //	The same purpose but for ordering the DOM nodes
     int			posDOM;
-    
-    private static final Class charArrayClass = 
+
+    private static final Class charArrayClass =
 	java.lang.reflect.Array.newInstance(java.lang.Character.TYPE, 0).getClass();
-    
+
     class BeanProperty {
         //boolean 	changed;
 	// BeanProp object containing the property
 	BeanProp	beanProp;
-	
+
 	// Null if the property is a String.
 	Object		value;
-	
+
 	// Last known real index into the BeanProp array before the removal
 	int		lastIndex;
-	
+
 	ArrayList	attributes;
-	
+
 	BeanProperty(BeanProp b) {
 	    this.beanProp = b;
 	    this.value = null;
@@ -78,62 +78,62 @@ public class DOMBinding {
 	    this.attributes = null;
 	}
     }
-    
+
     class CacheAttr {
         String name;
         String value;
-	
+
         CacheAttr(String name, String value) {
             this.name = name;
             this.value = value;
         }
     }
-    
+
     private BeanProperty prop;
-    
+
     public DOMBinding() {
         this.id = DDFactory.getUniqueId();
     }
-    
+
     public DOMBinding(Node node) {
         this();
         // DOM node this DOMBinding refers to
         this.node = node;
     }
-    
+
     void setNode(Node node) {
         this.node = node;
     }
-    
+
     void moveBefore(BeanProp prop, Node node) {
         Node parent = prop.getParentNode();
-	
+
         parent.removeChild(this.node);
         parent.insertBefore(this.node, node);
     }
-    
+
     public int getId() {
 	return this.id;
     }
-    
+
     String idToString() {
 	return Integer.toHexString(this.id);
     }
-    
+
     Node getNode() {
 	return this.node;
     }
-    
+
     /**
      */
     void register(BeanProp prop, Object value) {
 	BeanProperty bp = new BeanProperty(prop);
-	
+
 	if (Common.isBean(prop.type))
 	    ((BaseBean)value).setDomBinding(this);
-	
+
 	this.prop = bp;
-	
+
 	if (DDLogFlags.debug) {
 	    TraceLogger.put(TraceLogger.DEBUG,
 			    TraceLogger.SVC_DD,
@@ -142,7 +142,7 @@ public class DOMBinding {
 			    "property " + prop.getDtdName() +
 			    " bound to B(" + this.hashCode() + ")");
 	}
-	
+
 	//
 	// Following is a little trick to deal with attribute that are not
 	// defined in the dtd. When we register this new element, we ask
@@ -157,7 +157,7 @@ public class DOMBinding {
 	    }
 	}
     }
-    
+
     /**
      *  Look in the list of BeanProperty, the one corresponding
      *  to the BeanProp object.
@@ -168,8 +168,8 @@ public class DOMBinding {
 	else
 	    return null;
     }
-    
-    
+
+
     /**
      *  Returns the property BeanProp object associated to the bean object
      *  instance bean. Return null if not found.
@@ -180,7 +180,7 @@ public class DOMBinding {
 	else
 	    return null;
     }
-    
+
     /**
      *  Used when we remove a property to set the index it used to be
      *  in the BeanProp bindings array. This is how when we build on event
@@ -192,19 +192,19 @@ public class DOMBinding {
 	if (bp != null)
 	    bp.lastIndex = index;
     }
-    
+
     /**
      *  Retreive the last known index stored before removal.
      */
     int getLastKnownIndex(BeanProp prop) {
 	BeanProperty bp = this.getBeanProperty(prop);
-	
+
 	if (bp != null)
 	    return bp.lastIndex;
 	else
 	    return -1;
     }
-    
+
     /**
      *  This method returns the bean associated to the BeanProp object.
      *  Since there can be only one Node per BeanProp (single content as
@@ -215,13 +215,13 @@ public class DOMBinding {
      */
     Object getBean(BeanProp prop) {
 	BeanProperty bp = this.getBeanProperty(prop);
-	
+
 	if (bp != null)
 	    return bp.value;
 	else
 	    return null;
     }
-    
+
     /**
      *	Return the value of the attribute. Get the value from the DOM Node
      *	or from the cache, depending on the existance of the DOM Node.
@@ -254,7 +254,7 @@ public class DOMBinding {
         }
         return null;
     }
-    
+
     /**
      *	Return the value of the attribute. Get the value from the DOM Node
      *	or from the cache, depending on the existance of the DOM Node.
@@ -294,7 +294,7 @@ public class DOMBinding {
             }
         }
     }
-    
+
     /**
      *	Fill the attribute with the default values - this is typically
      *	called when a new property is created, before it is synced into
@@ -313,7 +313,7 @@ public class DOMBinding {
 	    }
 	}
     }
-        
+
     /**
      * Get the value of the DOM node
      */
@@ -322,7 +322,7 @@ public class DOMBinding {
 	this.nodeToString(str, n, true);
 	return str.toString();
     }
-    
+
     //	Method related to XmlToString (see DDFactory)
     private void nodeToString(StringBuffer str, Node n, boolean root) {
 	if (root)
@@ -333,21 +333,21 @@ public class DOMBinding {
 		nodeChildrenToString(str, n);
 	}
     }
-    
-    
+
+
     //	Method related to XmlToString (see DDFactory)
     private void nodeChildrenToString(StringBuffer str, Node n) {
 	String 	value = n.getNodeValue();
 	short 	type = n.getNodeType();
-	
+
 	if ((type == Node.TEXT_NODE || type == Node.CDATA_SECTION_NODE) && (value != null))
 	    str.append(value);
-	
+
 	if (n.getFirstChild() != null)
 	    nodeToString(str, n.getFirstChild(), false);
     }
-    
-    
+
+
     /**
      *	Return the value of the property prop. If the property is of type
      *	String, we have to read the value from the DOM Node. If the
@@ -363,7 +363,7 @@ public class DOMBinding {
 		//  the cached value.
 		//
 		Class cls = prop.getPropClass();
-		
+
 		if (this.node != null)
 		    ret = this.getDomValue(this.node);
 		else
@@ -378,7 +378,7 @@ public class DOMBinding {
 		    //  but not a String class). The wrapper must have a
 		    //  String constructor or implements the Wrapper interface.
 		    //
-		    
+
 		    try {
                 //  If cls implements Wrapper, use it first
                 if ((Wrapper.class).isAssignableFrom(cls)) {
@@ -400,7 +400,7 @@ public class DOMBinding {
                     }
                     else
                         c = s.charAt(0);
-			    
+
                     return new Character(c);
                 }
                 if (charArrayClass.isAssignableFrom(cls))
@@ -436,13 +436,13 @@ public class DOMBinding {
                 //TraceLogger.error(e);
                 throw new Schema2BeansRuntimeException(
                              MessageFormat.format(Common.getMessage(
-                                         "CantInstanciatePropertyClass_msg"),
+                                         "CantInstantiatePropertyClass_msg"),
                                          new Object[] {cls.getName(), prop.getName(),
-                                                        ret}), e);
+                                                        ret, e.getLocalizedMessage()}), e);
 		    }
 		}
 		return ret;
-		
+
 	    case Common.TYPE_BEAN:
 		return this.getBean(prop);
 		//case BeanProp.TYPE_BOOLEAN:
@@ -493,7 +493,7 @@ public class DOMBinding {
         }
         return "";
     }
-    
+
     /**
      *	Return the value as a String of the object
      */
@@ -576,7 +576,7 @@ public class DOMBinding {
 		result += minutes;
 		return result;
 	}
-    
+
     /**
      *	The value is only stored locally. A later call to syncNodes()
      *	updates the DOM nodes with this local value.
@@ -584,14 +584,14 @@ public class DOMBinding {
     Object setValue(BeanProp prop, Object value) {
 	Object		oldValue = null;
 	BeanProperty 	bp = this.getBeanProperty(prop);
-	
+
 	if (bp != null) {
 	    oldValue = bp.value;
-	    
+
 	    //	Use the value cache, otherwise get the Node tree value
 	    if ((oldValue == null) && (this.node != null))
             oldValue = this.getValue(prop);
-	    
+
 	    if (Common.isBean(prop.type))
             bp.value = value;
 	    else
@@ -662,10 +662,10 @@ public class DOMBinding {
             } else
                 bp.value = value;
 	}
-	
+
 	return oldValue;
     }
-    
+
     /** Workaround for TimeZone.getOffset which is not in JDK1.3 */
     private static int timeZoneOffset (java.util.TimeZone tz, long date) {
 	if (tz.inDaylightTime(new Date(date))) {
@@ -674,15 +674,15 @@ public class DOMBinding {
 	return tz.getRawOffset();
     }
 
-    
+
     /**
      *	Removes the reference to the property prop and delete the DOM Nodes.
      *
      */
     void remove(BeanProp prop) {
     }
-    
-    
+
+
     void removeProp(BeanProp prop) {
 	if (this.prop != null && this.prop.beanProp == prop)
 	    this.prop = null;
@@ -692,7 +692,7 @@ public class DOMBinding {
     void removeNode(BeanProp prop) {
 	if (this.node != null) {
 	    Node parent = prop.getParentNode();
-	    
+
 	    if (DDLogFlags.debug) {
 		TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
 				DDLogFlags.DBG_BLD, 1,
@@ -700,28 +700,28 @@ public class DOMBinding {
 				this.node.getNodeName() + " from " +
 				parent.getNodeName());
 	    }
-	    
+
 	    parent.removeChild(this.node);
 	    this.node = null;
 	}
     }
-    
+
     /**
      *	The BeanProp that changed the value calls the DOMBinding after
      *	the setValue in order to propagate the Changed event to all the
      *	BeanProp that share this same Node.
      */
-    void notifyBeansForChange(Object oldValue, Object newValue, 
+    void notifyBeansForChange(Object oldValue, Object newValue,
 			      String attrName) {
 
 	if (this.prop != null) {
 	    PropertyChangeEvent e = this.prop.beanProp.
 		prepareForChangeEvent(this, oldValue, newValue, attrName);
-	    
+
 	    this.prop.beanProp.notifyInternal(e, true);
 	}
     }
-    
+
     /**
      *  This method is called when time has come to update the DOM nodes
      *  with the local value of the DOMBinding.
@@ -735,7 +735,7 @@ public class DOMBinding {
      */
     void syncNodes(BeanProp prop, BeanProp.Action a) {
         BeanProperty 	bp = this.getBeanProperty(prop);
-	
+
         if (DDLogFlags.debug) {
             TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
                             DDLogFlags.DBG_BLD, 1,
@@ -743,18 +743,18 @@ public class DOMBinding {
                             a.toString() + " " + prop.getDtdName() +
                             (bp==null?" - unknown prop!":""));
         }
-	
+
         if (bp == null)
             return;
-	
+
         if(a.action == a.REMOVE) {
             int i = prop.idToIndex(this.id);
             if (i != -1)
                 bp.lastIndex = i;
-	    
+
             PropertyChangeEvent e =
                 prop.prepareForChangeEvent(this, bp.value, null, null);
-	    
+
             if (Common.isBean(prop.type)) {
                 //  Recurse on all the properties of the bean
                 BaseBean bean = ((BaseBean)bp.value);
@@ -780,7 +780,7 @@ public class DOMBinding {
             if(a.action == a.ADD) {
                 if (Common.isBean(prop.type)) {
                     NodeFactory f = prop.getNodeFactory();
-		    
+
                     if (this.node != null) {
                         System.out.println("Removing from old graph.");
                         BeanProp.Action a2;
@@ -792,10 +792,10 @@ public class DOMBinding {
                                      node.toString()));
                         */
                     }
-		    
+
                     Node parent = prop.getParentNode();
                     this.node = f.createElement(prop);
-		    
+
                     if (DDLogFlags.debug) {
                         TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
                                         DDLogFlags.DBG_BLD, 1,
@@ -804,17 +804,17 @@ public class DOMBinding {
                                         this.node.getNodeName() +
                                         " to node " + parent.getNodeName());
                     }
-		    
+
                     Node sibling = prop.getFollowingSibling(this);
                     parent.insertBefore(this.node, sibling);
-		    
+
                     //  Recurse the syncNodes on all the properties of the bean
                     BaseBean bean = ((BaseBean)bp.value);
                     bean.setGraphManager(prop.bean.graphManager());
                     bean.syncNodes(a);
                 } else if (Common.isBoolean(prop.type)) {
                     boolean v = false;
-			
+
                     if (bp.value != null)
                         v = ((Boolean)bp.value).booleanValue();
 
@@ -827,10 +827,10 @@ public class DOMBinding {
                                             DDLogFlags.DBG_BLD, 1,
                                             DDLogFlags.SYNCING,
                                             (v?"adding new":"removing") +
-                                            " tag " +	
+                                            " tag " +
                                             prop.getDtdName());
                         }
-			    
+
                         Node parent = prop.getParentNode();
                         if (v || Common.shouldNotBeEmpty(prop.type)) {
                             NodeFactory f = prop.getNodeFactory();
@@ -877,7 +877,7 @@ public class DOMBinding {
                     if (this.node == null) {
                         Node parent = prop.getParentNode();
                         this.node = f.createElement(prop);
-			    
+
                         if (DDLogFlags.debug) {
                             TraceLogger.put(TraceLogger.DEBUG,
                                             TraceLogger.SVC_DD,
@@ -888,14 +888,14 @@ public class DOMBinding {
                                             " to node " +
                                             parent.getNodeName());
                         }
-			    
+
                         Node sibling = prop.getFollowingSibling(this);
                         parent.insertBefore(this.node, sibling);
                     }
-			
+
                     CharacterData text =
                         (CharacterData)this.node.getFirstChild();
-			
+
                     if (text == null) {
                         text = (CharacterData)f.createText();
                         this.node.appendChild(text);
@@ -910,16 +910,16 @@ public class DOMBinding {
                                             this.node.getNodeName());
                         }
                     }
-			
+
                     text.setData(bp.value.toString());
                 }
-		
+
                 //  Add any attribute cached for this new node
                 if (this.node != null) {
                     if (bp.attributes != null) {
                         for (int i=0; i<bp.attributes.size(); i++) {
                             CacheAttr ca = (CacheAttr)bp.attributes.get(i);
-                            // null value means, remove. 
+                            // null value means, remove.
                             // Ignore remove for a new node.
                             if (ca.value != null)
                                 ((Element)this.node).setAttribute(ca.name, ca.value);
@@ -932,7 +932,7 @@ public class DOMBinding {
                 throw new IllegalArgumentException(Common.getMessage(
                                                                      "UnknownAction_msg", new Integer(a.action)));
     }
-    
+
     boolean hasDomNode() {
 	return (this.node != null);
     }
