@@ -173,7 +173,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
 
     public void remove (TomcatModule tmId) {
         this.tmId = tmId;
-        command = "remove?path="+tmId.getPath (); // NOI18N
+        command = "undeploy?path="+tmId.getPath (); // NOI18N
         cmdType = CommandType.UNDEPLOY;
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);
