@@ -85,11 +85,24 @@ Microsystems, Inc. All Rights Reserved.
         </makenbm>
     </target>
 
+    <target name="reload-build" depends="jars"> <!-- do not depend on full netbeans, too slow -->
+        <mkdir dir="reload"/>
+        <copy file="netbeans/modules/apisupport-apidocs.jar" tofile="reload/apisupport-apidocs.jar"/>
+    </target>
+
+    <target name="reload" depends="reload-build" description="Test changes to the module.">
+        <nbinstaller module="reload/apisupport-apidocs.jar" action="reinstall"/>
+    </target>
+
     <target name="clean" description="Clean out build products.">
         <delete file="manifest-subst.mf"/>
         <delete file="apisupport-apidocs.nbm"/>
         <delete dir="netbeans"/>
         <delete dir="Info"/>
+    </target>
+
+    <target name="real-clean" depends="clean" description="Clean all build products and also test modules.">
+        <delete dir="reload"/>
     </target>
 
 </project>
