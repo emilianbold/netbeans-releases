@@ -268,7 +268,6 @@
      <tocitem text="Stepping Through Your Program" target="debug.step" />
      <tocitem text="Pausing a Program" target="debug.running.pause" />
      <tocitem text="Continuing a Program in the Debugger" target="debug.running.resume" />
-     <tocitem text="Finishing a Debugging Session" target="debug.running.end" />
   </tocitem>
   <tocitem text="Setting Breakpoints" target="debug.breakpoint">
      <tocitem text="Setting a Breakpoint on a Line" target="debug.breakpoint.line" />
@@ -293,7 +292,7 @@
   <tocitem text="Watching Variables and Expressions" target="debug.watches.jump">
      <tocitem text="Watching the Value of a Variable or Expression" target="debug.watch" />
      <tocitem text="Creating a Fixed Watch" target="debug.watch.fix" />
-     <tocitem text="Modifying a Variable from the Watches Tab" target="debug.watch.modify" />
+     <tocitem text="Modifying a Variable from the Watches View" target="debug.watch.modify" />
      <tocitem text="Deleting a Watch Variable or Expression" target="debug.watch.delete" />
    </tocitem>
   <tocitem text="Modifying a Variable" target="debug.variables.value"/>
@@ -305,8 +304,9 @@
     <tocitem text="Finishing or Destroying a Session" target="debug.sessions.finishsession" />
     <tocitem text="Restarting a Persistent Session" target="debug.sessions.restart" />
   </tocitem>
+  <tocitem text="Finishing a Debugging Session" target="debug.running.end" />
   <tocitem text="Setting Debugger Options" target="debug.debugger.jump">
-    <tocitem text="Default Debugger (JPDA)" target="debug.debugger.default"/>
+    <tocitem text="Default Debugger" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
     <tocitem text="JDK 1.1 Debugger" target="debug.debugger.jdk"/>
     <tocitem text="Setting Debugger Options for the Environment" target="debug.options"></tocitem>
@@ -590,6 +590,7 @@
   <tocitem text="Using the Setup Wizard After Startup" target="configure.setup" />
   <tocitem text="Configuring System Settings" target="configure.system.settings" />
   <tocitem text="Customizing the Output Window" target="configure.output" />
+  <tocitem text="Specifying a Style Sheet" target="accessibility.stylesheet"/>
   <tocitem text="Keyboard Shortcuts" target="shortcuts.kybd">
     <tocitem text="Menu Shortcuts" target="shortcuts.menus" />
     <tocitem text="Editor Shortcuts" target="shortcuts.editor" />
@@ -599,7 +600,6 @@
 </tocitem>
 
 <tocitem text="Accessibility" target="accessibility.home">
-  <tocitem text="Specifying a Style Sheet" target="accessibility.stylesheet">
 </tocitem>
 
 </toc>

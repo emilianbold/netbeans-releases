@@ -813,6 +813,7 @@
    <mapID target="org.netbeans.modules.debugger.support.actions.ConnectAction" url="pending.html" />
    <mapID target="org.netbeans.modules.java.FastJavacCompilerType" url="compile/fastjavac.html" />
    <mapID target="org.netbeans.modules.java.gj.JavaCompilerType" url="compile/internal.html" />
+   <mapID target="org.netbeans.modules.java.compilation.Jikes" url="compile/fastjavac.html" />
 
    <mapID target="org.netbeans.modules.java.settings.CompilerSettings" url="pending.html" />
    <mapID target="org.netbeans.modules.java.settings.ErrorExpressionPanel" url="pending.html" />
@@ -893,13 +894,13 @@
    <mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />
    <mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />
    <mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />
-   <mapID target="org.openide.compiler.CompilerType" url="compile/types_jump.html" />
-   <mapID target="org.openide.debugger.DebuggerType" url="debug/debugger/configure.html" />
+   <mapID target="org.openide.compiler.CompilerType" url="pending.html" />
+   <mapID target="org.openide.debugger.DebuggerType" url="pending.html" />
    <mapID target="org.openide.debugger.DebuggerType$Default" url="pending.html" />
    <mapID target="org.netbeans.modules.java.JavaExternalCompilerType" url="compile/external.html" />
    <mapID target="org.netbeans.modules.java.JavaInternalCompilerType" url="pending.html" />
 
-   <mapID target="org.openide.execution.Executor" url="run/executors.html" />
+   <mapID target="org.openide.execution.Executor" url="run/executor_options.html" />
 
    <mapID target="org.netbeans.modules.debugger.jpda.JPDADebuggerType" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.debug.ToolsDebuggerType" url="pending.html" />
