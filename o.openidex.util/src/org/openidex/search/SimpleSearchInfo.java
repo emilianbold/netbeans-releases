@@ -24,14 +24,57 @@ import org.openidex.search.SearchInfo;
 
 /**
  * Simple implementation of interface <code>SearchInfo</code>.
- * This implementation allows to easily create <code>SearchInfo</code> objects
- * from <code>DataObject</code> containers. It also allows to nest other
- * <code>SearchInfo</code> objects.
+ * This implementation is supposed to also serve as a building block for
+ * creating more complex <code>SearchInfo</code> objects.
+ * <p>
+ * In its simple form, it provides an iterator for searching a
+ * <code>DataObject</code> container. More complex <code>SearchInfo</code>
+ * objects may be built by nesting another <code>SearchInfo</code> objects
+ * or individual <code>DataObject</code>s.
+ * <p>
+ * Iterator returned by method {@link #objectsToSearch objectsToSearch()}
+ * iterates through the contained <code>DataObject</code>s, ordered according
+ * the following rules:
+ * <ul>
+ *     <li>
+ *         If a <code>DataObject</code> container has been passed
+ *         to the constructor, <code>DataObject</code>s contained
+ *         in the container are returned first. If there are
+ *         <code>DataObject</code> containers among the
+ *         <code>DataObject</code>s, they are processed recursively, using
+ *         depth-search, unless recursiveness was disabled by the second
+ *         argument of the two-arguments constructor.
+ *     </li>
+ *     <li>After all <code>DataObject</code>s from the container
+ *         passed to the constructor are processed, objects added by method
+ *         add(...) are processed in the order they were added to this
+ *         <code>SimpleSearchInfo</code> object.
+ *         <code>SearchInfo</code> objects added by method
+ *         <code>add(SearchInfo)</code> are always processed recursively, using
+ *         depth-search.
+ *         <code>DataObject</code>s added by method <code>add(DataObject)</code>
+ *         are always processed <em>non-recursively</em>, i.e. only the single
+ *         <code>DataObject</code> is processed. If the <code>DataObject</code>
+ *         argument is a container and should be processed recursively,
+ *         it must be wrapped into another instance
+ *         of <code>SimpleDataObject</code> and then added to this instance
+ *         using method <code>add(SearchInfo)</code>.
+ *     </li>
+ * </ul>
  *
+ * @see  #add(SearchInfo)  add(SearchInfo)
+ * @see  #add(DataObject)  add(DataObject)
  * @author  Marian Petras
  */
 public class SimpleSearchInfo implements SearchInfo {
 
+    /**
+     * Empty search info object.
+     * Its method {@link SearchInfo#canSearch canSearch()}
+     * always returns <code>true</code>. Its iterator
+     * (returned by method
+     * {@link SearchInfo#objectsToSearch objectsToSearch()}) has no elements.
+     */
     public static final SearchInfo EMPTY_SEARCH_INFO
         = new SearchInfo() {
             public boolean canSearch() {
@@ -55,22 +98,40 @@ public class SimpleSearchInfo implements SearchInfo {
     private boolean recursive;
     
     /**
+     * Creates an empty <code>SearchInfo</code> object.
+     * This empty object may be then expanded by nesting another
+     * <code>SearchInfo</code> objects or individual <code>DataObject</code>s.
      */
     public SimpleSearchInfo() {
     }
     
-    /** Creates a new instance of SimpleSearchInfo */
+    /**
+     * Creates a <code>SearchInfo</code> object for searching a single
+     * <code>DataObject</code> container recursively.
+     *
+     * @param  container  container of <code>DataObject</code>s to be searched
+     */
     public SimpleSearchInfo(DataObject.Container container) {
         this(container, true);
     }
     
-    /** Creates a new instance of SimpleSearchInfo */
+    /**
+     * Creates a <code>SearchInfo</code> object for searching a single
+     * <code>DataObject</code> container recursively or non-recursively.
+     *
+     * @param  container  container of <code>DataObject</code>s to be searched
+     * @param  recursive  whether the objects should be processed recursively
+     */
     public SimpleSearchInfo(DataObject.Container container, boolean recursive) {
         contentsBase = container;
         this.recursive = recursive;
     }
     
     /**
+     * Adds a single <code>DataObject</code> to the group of objects to be
+     * searched.
+     *
+     * @param  dataObject  <code>DataObject</code> to be searched
      */
     public void add(DataObject dataObject) {
         if (extraContents == null) {
@@ -80,6 +141,10 @@ public class SimpleSearchInfo implements SearchInfo {
     }
     
     /**
+     * Nests another <code>SearchInfo</code> object to this object.
+     * The nested <code>SearchInfo</code> will be processed recursively.
+     *
+     * @param  nestedInfo  <code>SearchInfo</code> object to be nested
      */
     public void add(SearchInfo nestedInfo) {
         if (extraContents == null) {
@@ -89,6 +154,14 @@ public class SimpleSearchInfo implements SearchInfo {
     }
 
     /**
+     * Removes a single <code>DataObject</code> from the group of objects to be
+     * searched. Only objects added by method
+     * {@link #add(DataObject) add(DataObject)} may be removed.
+     * If a <code>DataObject</code> which was not added by the
+     * <code>add(DataObject)</code> method is passed (or if it has already been
+     * removed since then), the call of this method has no effect.
+     *
+     * @param  dataObject  <code>DataObject</code> to be removed
      */
     public void remove(DataObject dataObject) {
         if (extraContents != null) {
@@ -100,6 +173,14 @@ public class SimpleSearchInfo implements SearchInfo {
     }
 
     /**
+     * Removes a <code>SearchInfo</code> object previously nested to this
+     * object. Only objects added by method
+     * {@link #add(SearchInfo) add(SearchInfo)} may be removed.
+     * If a <code>SearchInfo</code> object which was not added by the
+     * <code>add(SearchInfo)</code> method is passed (or if it has already been
+     * removed since then), the call of this method has no effect.
+     *
+     * @param  nestedInfo  <code>SearchInfo</code> object to be removed
      */
     public void remove(SearchInfo nestedInfo) {
         if (extraContents != null) {
@@ -111,12 +192,23 @@ public class SimpleSearchInfo implements SearchInfo {
     }
 
     /**
+     *
+     * @return  <code>true</code> if this <code>SimpleSearchInfo</code>
+     *          is not empty - i.e. if a <code>DataObject</code> container has
+     *          been passed to the constructor or if at least one
+     *          <code>DataObject</code> or <code>SearchInfo</code> object
+     *          was added using either of the two <code>add(...)</code>
+     *          methods (and not removed since then);
+     *          <code>false</code> otherwise
      */
     public boolean canSearch() {
         return (contentsBase != null) || (extraContents != null);
     }
 
     /**
+     *
+     * @return  iterator iterating over all <code>DataObject</code> directly
+     *          or indirectly added to this <code>SearchInfo</code> object
      */
     public Iterator objectsToSearch() {
 
