@@ -11,53 +11,43 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.search;
 
-
 import org.openide.modules.ModuleInstall;
-import org.openidex.search.SearchEngine;
 
+import org.netbeans.modules.search.types.*;
 
 /**
- * Installation class for former search module (org.netbeans.modules.search), now
- * part of utilities module. It's called from utilities instalation module class.
- * During restored() hooks SearchPresenter on FindAction and sets default search types order. 
- * During uninstalled() frees such hook.
- *
- * @author  Petr Kuzel
- */
+* During restored() hooks SearchPresenter on FindAction. 
+* During uninstalled() frees such hook.
+*
+* @author  Petr Kuzel
+*/
 public class Installer extends ModuleInstall {
 
-    // PENDING what to do with the freaky number?
-    /** Serial version UID. */
-    private final static long serialVersionUID = 1L;
+    private final static long serialVersionUID = 1;
 
     /** Holds hooking code. */
     private SearchHook hook;
 
-    
-    /** Called when installed module first time. Overrides superclass method. */
     public void installed() {
         restored();
     }
 
-    /** Called when module restored. Start listening at SELECTED_NODES. Overrides superclass method. 
-     * @see SearchHook */
+    /** Start listening at SELECTED_NODES.
+    */
     public void restored () {
-        // PENDING reodering here didn't work -> too early? Moved to static init of CriteriaModel.
-        // Set default criteria tab order.
-        //Registry.reorderBy(new Class[] {FullTextType.class, ObjectNameType.class, ObjectTypeType.class, ModificationDateType.class});
+        // define default criteria tab order
+        Registry.reorderBy(new Class[] {ObjectNameType.class, FullTextType.class, ObjectTypeType.class, ModificationDateType.class} );
 
-        if (SearchEngine.getDefault() == null)
-            SearchEngine.setDefault(new SearchEngineImpl());
-
-        hook = new SearchHook(new SearchPerformer());
+        hook = new SearchHook(SearchPerformer.getDefault());
         hook.hook();
+
+        // TODO listen on new project
     }
 
-    /** Unhooks listening at SELECTED_NODES and remove itself from menu.
-     * @see SearchHook */
+    /** Unhook listening at SELECTED_NODES and remove itself from menu.
+    */
     public void uninstalled () {
         hook.unhook();
     }

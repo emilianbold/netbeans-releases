@@ -19,27 +19,30 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.*;
 import java.text.MessageFormat;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.ImageIcon;
 
-import org.netbeans.modules.search.res.Res;
-import org.netbeans.modules.search.scanners.RepositoryScanner;
-import org.netbeans.modules.search.types.DetailHandler;
-
+import org.openide.actions.DeleteAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.TopManager;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
+import org.openide.util.Task;
 import org.openide.util.TaskListener;
-import org.openidex.search.DetailCookie;
-import org.openidex.search.SearchTask;
+import org.openide.util.WeakListener;
+import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;
 
 
@@ -48,8 +51,8 @@ import org.openidex.search.SearchType;
  * 
  * @author  Petr Kuzel
  */
-public class ResultModel implements NodeAcceptor, TaskListener {
-    
+public class ResultModel implements TaskListener {
+
     /** ChangeEvent object being used to notify about the search task finish. */
     private final ChangeEvent EVENT;
 
@@ -61,7 +64,7 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     private ResultRootNode root;
 
     /** Search task. */
-    private SearchTask task = null;
+    private SearchTask searchTask = null;
 
     /** Search state field. */
     private boolean done = false;
@@ -69,8 +72,8 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     /** Set of listeners. */
     private HashSet listeners = new HashSet();
 
-    /** Which criteria have produced this result. */
-    private CriteriaModel criteria;
+    /** Which search types creates were enabled for this model. */
+    private List searchTypeList;
 
     /** Indicates if to use search displayer. */
     private boolean useDisp = false;
@@ -81,58 +84,70 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     /** Porperty change support. */
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
+    /** Search group this result shows search results for. */
+    private SearchGroup searchGroup;
+
+    /** Listener on search group to reflect dynamically changes on search objects. */
+    private PropertyChangeListener propListener;
+    
 
     /** Creates new <code>ResultModel</code>. */
-    public ResultModel(CriteriaModel model) {
+    public ResultModel(List searchTypeList, SearchGroup searchGroup) {
+        this.searchTypeList = searchTypeList;
+        this.searchGroup = searchGroup;
+        
         EVENT = new ChangeEvent(this);
 
         root = new ResultRootNode();
-        criteria = model;
     }
 
     
     /** Accept nodes. Some nodes were found by engine. */
-    public synchronized boolean acceptNodes(Node[] nodes) {
-        root.addNodes(nodes);
+    public synchronized boolean acceptFoundObjects(Object[] foundObjects) {
+        root.addFoundObjects(foundObjects);
         
-        if (useDisp && disp != null) {
+/*        if(useDisp && disp != null) {
             disp.acceptNodes(nodes);
+        }
+ */ // PENDING important
+
+        if(!done) {
+            root.setDisplayName(MessageFormat.format(
+                NbBundle.getBundle(ResultModel.class).getString("TXT_RootSearchedNodes"),
+                new Object[] {Integer.toString(getFound())}
+            ));
         }
 
         return true;
     }
 
+    /** Getter for search group property. */
+    public SearchGroup getSearchGroup() {
+        return searchGroup;
+    }
+
     /** Send search details to output window. */
-    public void fillOutput () {
-        if (useDisp) {
+    public void fillOutput() {
+        if(useDisp) {
             disp.resetOutput();
         } else {
             disp = new SearchDisplayer();
             useDisp = true;
         }
-
-        disp.acceptNodes(root.getChildren().getNodes());
-    }
-
-    /** Does used criteria allow filling output window?
-     * Currently it checks for presence of DetailHandler.
-     * @return true it it can be used. */
-    synchronized boolean canFillOutput() {
-
-        SearchType[] crs = getCriteriaModel().getCustomizedCriteria();
-
-        for (int i=0; i < crs.length; i++) {
-
-            Class[] detCls = crs[i].getDetailClasses();
-            // We support just AND critera relation
-            // so if one of them support a detail then
-            // all search results (matched nodes) do.
-            if (detCls == null) continue;
-            for (int j=0; j < detCls.length; j++)
-                if (DetailHandler.class.isAssignableFrom(detCls[j]))
-                    return true;
+        
+        Node[] nodes = root.getChildren().getNodes();
+        
+        SearchType[] searchTypes = searchGroup.getSearchTypes();        
+        
+        List detailNodes = new ArrayList(nodes.length * searchTypes.length * 3);
+        
+        for(int i = 0; i < searchTypes.length; i++) {
+            for(int j = 0; j < nodes.length; j++) {
+                detailNodes.addAll(Arrays.asList(searchTypes[i].getDetails(nodes[j])));
+            }
         }
-        return false;
+        
+        disp.acceptNodes((Node[])detailNodes.toArray(new Node[detailNodes.size()]));
     }
 
     /** Is search engine still running? */
@@ -141,9 +156,9 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     }
 
     /** Sets search task. */
-    public void setTask (SearchTask task) {
-        this.task = task;
-        this.task.addTaskListener(this);
+    public void setTask(SearchTask searchTask) {
+        this.searchTask = searchTask;
+        this.searchTask.addTaskListener(this);
     }
 
     /** Gets result root node.
@@ -152,11 +167,11 @@ public class ResultModel implements NodeAcceptor, TaskListener {
         return root;
     }
 
-    /** Gets criteria model.
-     * @return criteria model that produces these results. */
-    public CriteriaModel getCriteriaModel() {
-        return criteria;
+    /** Gets all search types, all enabled not only customized ones. */
+    public List getEnabledSearchTypes() {
+        return searchTypeList;
     }
+
 
     /** Gets number of found nodes. */
     public int getFound() {
@@ -185,17 +200,38 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     }
 
 
-    /** Search task finished. Notify all listeners. */
-    public void taskFinished(final org.openide.util.Task task) {
+    /** Search task finished. Notify all listeners. Implements <code>TasListener</code>
+     * interface. */
+    public void taskFinished(Task task) {
         done = true;
         root.setDisplayName(getRootDisplayName());
         fireChange();
+        
+        registerListening();
+    }
+
+    /** Registers listening on search group to reflect dynamically changes
+     * made on search/found objects to reflect result of the original search. */
+    private void registerListening() {
+        searchGroup.addPropertyChangeListener(WeakListener.propertyChange(propListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(SearchGroup.PROP_RESULT.equals(evt.getPropertyName())) {
+                    if(evt.getNewValue() == null) {
+                        // Old object to remove.
+                        root.removeFoundObject(evt.getOldValue());
+                    } else {
+                        // New object to add.
+                        root.addFoundObjects(new Object[] {evt.getNewValue()});
+                    }
+                }
+            }
+        }, searchGroup));
     }
 
     /** Gets display name for root node. Utilitty method. */
     private String getRootDisplayName() {
         if (!isDone()) {
-            return Res.text("SEARCHING___"); // NOI18N
+            return NbBundle.getBundle(ResultModel.class).getString("TEXT_SEARCHING___");
         }
 
         int found = getFound();
@@ -207,19 +243,21 @@ public class ResultModel implements NodeAcceptor, TaskListener {
      * @param found number of found nodes. */
     private static String getRootDisplayNameHelp(int found) {
         if (found == 1) {
-            return MessageFormat.format(Res.text("MSG_FOUND_A_NODE"), // NOI18N
-                                        new Object[] { new Integer(found) } );
+            return MessageFormat.format(NbBundle.getBundle(ResultModel.class).getString("TEXT_MSG_FOUND_A_NODE"), // NOI18N
+                    new Object[] { new Integer(found) } );
         } else if (found > 1) {
-            return MessageFormat.format(Res.text("MSG_FOUND_X_NODES"), // NOI18N
-                                        new Object[] { new Integer(found) } );
+            return MessageFormat.format(NbBundle.getBundle(ResultModel.class).getString("TEXT_MSG_FOUND_X_NODES"),
+                    new Object[] { new Integer(found) } );
         } else { // <1
-            return Res.text("MSG_NO_NODE_FOUND"); // NOI18N
+            return NbBundle.getBundle(ResultModel.class).getString("TEXT_MSG_NO_NODE_FOUND");
         }
     }
 
-    /** Stops serach task. */
+    /** Stops search task. */
     public void stop() {
-        if (task != null) task.stop();
+        // PENDING important, stop search form here.
+        if(searchTask != null)
+            searchTask.stop();
     }
 
     /** Adds change listsner. */
@@ -256,30 +294,81 @@ public class ResultModel implements NodeAcceptor, TaskListener {
 
     
     /** Search Result root node. May contain some statistic properties. */
-    private static class ResultRootNode extends AbstractNode implements PropertyChangeListener {
+    private class ResultRootNode extends AbstractNode { 
 
-        /** Maps keys to nodes. The keys are fileobjects for which nodes are found or
-         * if there was not such one the node itself. The nodes are <code>FoundNode</code>'s. */
-        private final Map keys = Collections.synchronizedMap(new WeakHashMap());
-
-        /** Comparator used for sorting children nodes. */
-        private final Comparator comparator;
-        
-        /** Whether this node has sorted children. */
-        private boolean sorted = false;
-
-        
         /** Creates a new node with no content. */
         public ResultRootNode() {
-            super(new ResultRootChildren());
+            super(ResultModel.this.new ResultRootChildren());
+            
+            // displayed name indicates search in progress
+            setDisplayName(NbBundle.getBundle(ResultModel.class).getString("TEXT_SEARCHING___"));
+        }
 
+
+        /** Adds founds objects to root node. */
+        public void addFoundObjects(Object[] foundObjects) {
+            ((ResultRootChildren)getChildren()).addFoundObjects(foundObjects);
+             
+             ResultModel.this.root.setDisplayName(ResultModel.this.getRootDisplayName());
+        }
+        
+        /** Removes found node from root node. */
+        public void removeFoundObject(Object foundObject) {
+            ((ResultRootChildren)getChildren()).removeFoundObject(foundObject);
+             
+             ResultModel.this.root.setDisplayName(ResultModel.this.getRootDisplayName());
+        }
+        
+
+        /** Sorts/unsorts the children nodes. */
+        public void sort(boolean sort) {
+            ((ResultRootChildren)getChildren()).sort(sort);
+        }
+
+        /** Getter for sorted property. */
+        public boolean isSorted() {
+            return ((ResultRootChildren)getChildren()).isSorted();
+        }
+        
+
+        /** Gets number of found nodes. */
+        public int getNumberOfFoundNodes() {
+            return getChildren().getNodes().length;
+        }
+        
+        
+        /** Gets icon. Overrides superclass method.
+         * @return universal search icon. */
+        public Image getIcon(int type) {
+            return new ImageIcon(getClass().getResource("/org/netbeans/modules/search/res/find.gif")).getImage();
+        }
+
+        /** Gets opened icon. Overrides superclass method. */
+        public Image getOpenedIcon(int type) {
+            return getIcon(type);
+        }
+        
+    } // End of ResultRoorNode class.
+    
+
+    /** Children for result root node. */
+    private class ResultRootChildren extends Children.Keys {
+
+        /** Keys as found objects for the search. */
+        private Set keys;
+        
+        /** Comparator used for sorting children nodes. */
+        private final Comparator comparator;
+
+        /** Whether this node has sorted children. */
+        private boolean sorted = false;
+        
+        
+        /** Constructor. */
+        public ResultRootChildren() {
+            keys = searchGroup.getResultObjects();
+            
             this.comparator = new Comparator() {
-                public boolean equals(Object o) {
-                    if(this == o)
-                        return true;
-                    
-                    return false;
-                }
                 
                 public int compare(Object o1, Object o2) {
                     if(o1 == o2)
@@ -291,8 +380,8 @@ public class ResultModel implements NodeAcceptor, TaskListener {
                     if(o2 == null)
                         return -1;
                     
-                    Node node1 = (Node)keys.get(o1);
-                    Node node2 = (Node)keys.get(o2);
+                    Node node1 = searchGroup.getNodeForFoundObject(o1);
+                    Node node2 = searchGroup.getNodeForFoundObject(o2);
                     
                     if(node1 == node2)
                         return 0;
@@ -310,151 +399,16 @@ public class ResultModel implements NodeAcceptor, TaskListener {
                 }
 
             };
-            
-            // displayed name indicates search in progress
-            setDisplayName(Res.text("SEARCHING___")); // NOI18N
-        }
-
-
-        /** Adds found nodes. */
-        public void addNodes(Node[] nodes) {
-            for(int i = 0; i < nodes.length; i++) {
-                if(nodes[i] == null || keys.values().contains(nodes[i]))
-                    continue;
-                
-                if(nodes[i] instanceof RepositoryScanner.FoundNode) {
-                    FileObject keyFileObject = ((RepositoryScanner.FoundNode)nodes[i]).getOriginalDataObject().getPrimaryFile();
-                    
-                    if(keyFileObject != null) {
-                        keys.put(keyFileObject, nodes[i]);
-                        
-                        continue;
-                    }
-                    
-                    nodes[i].addPropertyChangeListener(this);
-                }
-                
-                keys.put(nodes[i], nodes[i]);
-            }
-            
-            updateChildren();
         }
         
-        /** Gets node for strings key. */
-        public Node getNodeForKey(FileObject key) {
-            if(key == null || !keys.containsKey(key))
-                return null;
-            
-            try {
-                RepositoryScanner.FoundNode oldNode = (RepositoryScanner.FoundNode)keys.get(key);
-                oldNode.removePropertyChangeListener(this);
-
-                DataObject dataObject = DataObject.find(key);
-                
-                Node originalNode = dataObject.getNodeDelegate(); 
-
-                // return new refreshed node with the original detail cookie.
-                Node newFoundNode = new RepositoryScanner.FoundNode(originalNode, (DetailCookie)oldNode.getCookie(DetailCookie.class));
-                newFoundNode.addPropertyChangeListener(this);
-
-                keys.put(key, newFoundNode);
-
-                return newFoundNode;
-            } catch(DataObjectNotFoundException dnfe) {
-                dnfe.printStackTrace();
-                
-                keys.remove(key);
-                setDisplayName(getRootDisplayNameHelp(getNumberOfFoundNodes()));
-                
-                return null;
-            }
-        }
         
-        /** Implements <code>PropertyChangeListener</code>. */
-        public void propertyChange(PropertyChangeEvent evt) {
-            if(RepositoryScanner.PROP_NODE_VALID.equals(evt.getPropertyName())) {
-                FileObject key = ((RepositoryScanner.FoundNode)evt.getOldValue()).getOriginalDataObject().getPrimaryFile();
-                
-                if(key != null)
-                    updateChild(key);
-            } else if(RepositoryScanner.PROP_NODE_DESTROYED.equals(evt.getPropertyName())) {
-                keys.values().remove(evt.getOldValue());
-                setDisplayName(getRootDisplayNameHelp(getNumberOfFoundNodes()));
-                
-                FileObject key = ((RepositoryScanner.FoundNode)evt.getOldValue()).getOriginalDataObject().getPrimaryFile();
-                
-                if(key != null)
-                    updateChild(key);
-                
-            }
-        }
-        
-        /** Sorts/unsorts the children nodes. */
-        public void sort(boolean sort) {
-            Set newKeys;
-            
-            if(sort)
-                newKeys = new TreeSet(comparator);
-            else
-                newKeys = new HashSet();
-            
-            newKeys.addAll(keys.keySet());
-            
-            updateChildren(newKeys);
-
-            sorted = sort;
-        }
-
-        /** Getter for sorted property. */
-        public boolean isSorted() {
-            return sorted;
-        }
-
-        /** Gets number of found nodes. */
-        public int getNumberOfFoundNodes() {
-            return keys.size();
-        }
-        
-        /** Updates one child. */
-        private void updateChild(FileObject key) {
-            ((ResultRootChildren)getChildren()).update(key);
-        }
-        
-        /** Updates all children. */
-        private void updateChildren() {
-            ((ResultRootChildren)getChildren()).update(keys.keySet());
-        }
-        
-        /** Updates all children by new keys. */
-        private void updateChildren(Set newKeys) {
-            ((ResultRootChildren)getChildren()).update(newKeys);
-        }
-        
-        /** Gets icon. Overrides superclass method.
-         * @return universal search icon. */
-        public Image getIcon(int type) {
-            return Res.image("SEARCH"); // NOI18N
-        }
-
-        /** Gets opened icon. Overrides superclass method. */
-        public Image getOpenedIcon(int type) {
-            return getIcon(type);
-        }
-        
-    } // End of ResultRoorNode class.
-    
-
-    /** Children for result root node. */
-    private static class ResultRootChildren extends Children.Keys {
         /** Overrides superclass method. */
         protected void addNotify() {
             setKeys(Collections.EMPTY_SET);
+            
             RequestProcessor.postRequest(new Runnable() {
                  public void run() {
-                     ResultRootNode root = (ResultRootNode)getNode();
-                     
-                     if(root != null)
-                        root.updateChildren();
+                     setKeys(keys);
                  }
              });
         }
@@ -466,31 +420,136 @@ public class ResultModel implements NodeAcceptor, TaskListener {
 
         /** Creates nodes. */
         protected Node[] createNodes(Object key) {
-            if(key instanceof FileObject) {
-                ResultRootNode root = (ResultRootNode)getNode();
-                
-                if(root == null)
-                    return new Node[0];
-                
-                Node node = root.getNodeForKey((FileObject)key);
-                
-                return node == null ? new Node[0] : new Node[] {node};
-            } else if(key instanceof Node)
-                return new Node[] {(Node)key};
-            else
-                return new Node[0];
+            return new Node[] { new FoundNode(key)};
         }
         
-        /** Updates key. */
-        public void update(FileObject key) {
-            refreshKey(key);
-        }
-        
-        /** Updates all keys from set. */
-        public void update(Set keys) {
+        public void addFoundObjects(Object[] foundObjects) {
+            keys.addAll(Arrays.asList(foundObjects));
             setKeys(keys);
+        }
+
+        public void removeFoundObject(Object foundObject) {
+            if(keys.remove(foundObject))
+                setKeys(keys);
+        }
+        
+        /** Sorts/unsorts the children nodes. */
+        public void sort(boolean sort) {
+            Set newKeys;
+            
+            if(sort)
+                newKeys = new TreeSet(comparator);
+            else
+                newKeys = new HashSet();
+            
+            newKeys.addAll(keys);
+            
+            setKeys(newKeys);
+
+            sorted = sort;
+        }
+
+        /** Getter for sorted property. */
+        public boolean isSorted() {
+            return sorted;
         }
         
     } // End of ResultRootChildren class.
-    
+
+
+    /** Node to show in result window. */
+    class FoundNode extends FilterNode implements PropertyChangeListener {
+        
+        /** Original data object if there is any. */
+        private DataObject originalDataObject;
+
+        /** Original found object. */
+        private Object foundObject;
+        
+
+        /** Constructs node. */
+        public FoundNode(Object foundObject) {
+            super(ResultModel.this.searchGroup.getNodeForFoundObject(foundObject));
+            
+            this.foundObject = foundObject;
+            
+            this.originalDataObject = (DataObject)getOriginal().getCookie(DataObject.class);
+
+            if (originalDataObject == null)
+                return; 
+
+            this.originalDataObject.addPropertyChangeListener(this);
+
+            FileObject fileFolder = originalDataObject.getPrimaryFile().getParent();
+            if(fileFolder != null) {
+                String packageName = fileFolder.getPackageName ('.');
+                String hint;
+                if(packageName.equals("")) // NOI18N
+                    hint = NbBundle.getBundle(ResultModel.class).getString("HINT_result_default_package"); // NOI18N                    
+                else
+                    hint = MessageFormat.format(NbBundle.getBundle(ResultModel.class).getString("HINT_result_package"), // NOI18N
+                         new Object[] { packageName });
+
+                disableDelegation(DELEGATE_SET_SHORT_DESCRIPTION |
+                                   DELEGATE_GET_SHORT_DESCRIPTION);
+                setShortDescription (hint);
+            }
+
+        }
+
+
+        /** Gets system actions for this node. Overrides superclass method. 
+         * Adds <code>RemoveFromSearchAction<code>. */
+        public SystemAction[] getActions() {
+            List originalActions = new ArrayList(Arrays.asList(super.getActions()));
+
+            int deleteIndex = originalActions.indexOf(SystemAction.get(DeleteAction.class));
+
+            SystemAction removeFromSearch = SystemAction.get(RemoveFromSearchAction.class);
+
+            if(deleteIndex != -1) {
+                originalActions.add(deleteIndex, removeFromSearch);
+            } else {
+                originalActions.add(null);
+                originalActions.add(removeFromSearch);
+            }
+
+            return (SystemAction[])originalActions.toArray(new SystemAction[originalActions.size()]);
+        }
+
+        /** Removes node from serach result window. <em>Note</em>: it doesn't delete the original. */
+        public void removeFromSearch() { 
+            if(originalDataObject != null)
+                originalDataObject.removePropertyChangeListener(this);
+
+            ResultModel.this.root.removeFoundObject(foundObject);
+            
+        }
+
+        /** Destroys node. Overrides superclass method. */
+        public void destroy() throws IOException {
+            super.destroy();
+
+            if(originalDataObject != null)
+                originalDataObject.removePropertyChangeListener(this);
+
+            ResultModel.this.root.removeFoundObject(foundObject);
+        }
+
+
+        /** Implements <code>PropertyChangeListener</code>. */
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(DataObject.PROP_VALID.equals(evt.getPropertyName())) {
+                // data object might be deleted
+                if (!originalDataObject.isValid()) { // link becomes invalid
+                    if(originalDataObject != null)
+                        originalDataObject.removePropertyChangeListener(this);
+
+                    ResultModel.this.root.removeFoundObject(foundObject);
+                }
+            }
+        }
+
+    } // End of FoundNode class.
+   
 }

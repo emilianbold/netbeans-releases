@@ -5,7 +5,7 @@ OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/netbeans/modules/utilities/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/utilities/Layer.xml
-OpenIDE-Module-Module-Dependencies: org.openidex.util/1 > 1.2
+OpenIDE-Module-Module-Dependencies: org.openidex.util/1 > 1.9
 OpenIDE-Module-Package-Dependencies: org.apache.regexp[RE]
 OpenIDE-Module-Short-Description: Support for file searching, bookmarks, and groups of objects.
 OpenIDE-Module-Long-Description: The User Utilities module provides miscellaneous pieces of functionality such as support 
