@@ -196,10 +196,16 @@ public class RADComponentNode extends AbstractNode
                 if (!(component instanceof RADVisualFormContainer))
                     actions.add(SystemAction.get(EditFormAction.class));
                 actions.add(null);
-                actions.add(SystemAction.get(SelectLayoutAction.class));
-                actions.add(SystemAction.get(CustomizeLayoutAction.class));
-                actions.add(null);
+
+                LayoutSupport ls = ((RADVisualContainer)component).getLayoutSupport();
+                if (ls == null || ls.getLayoutClass() != null
+                        || ls instanceof NullLayoutSupport) {
+                    actions.add(SystemAction.get(SelectLayoutAction.class));
+                    actions.add(SystemAction.get(CustomizeLayoutAction.class));
+                    actions.add(null);
+                }
             }
+
             actions.add(SystemAction.get(EventsAction.class));
             actions.add(null);
 

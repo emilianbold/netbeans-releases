@@ -291,7 +291,7 @@ class HandleLayer extends JPanel
     private void processDoubleClick(MouseEvent e) {
         if (e.isShiftDown() || e.isControlDown()) return;
 
-        RADComponent metacomp  = getMetaComponentAt(e.getPoint(), COMP_SELECTED);
+        RADComponent metacomp = getMetaComponentAt(e.getPoint(), COMP_SELECTED);
 
         if (e.isAltDown()) {
             if (metacomp instanceof RADVisualComponent) {
@@ -355,7 +355,18 @@ class HandleLayer extends JPanel
                 || !item.isLayout())
             return;
 
-        LayoutSupport layoutSupport = null;
+        // get container on which the layout will be set
+        RADVisualContainer metacont = metacomp instanceof RADVisualContainer ?
+            (RADVisualContainer) metacomp :
+            ((RADVisualComponent)metacomp).getParentContainer();
+
+        LayoutSupport layoutSupport = metacont.getLayoutSupport();
+        if (layoutSupport != null
+                && layoutSupport.getLayoutClass() == null
+                && !(layoutSupport instanceof NullLayoutSupport))
+            return; // layout cannot be changed
+
+        layoutSupport = null;
         try {
             layoutSupport = item.createLayoutSupportInstance();
         }
@@ -383,12 +394,7 @@ class HandleLayer extends JPanel
             return;
         }
 
-        // get container on which the layout will be set
-        RADVisualContainer metaCont = metacomp instanceof RADVisualContainer ?
-            (RADVisualContainer) metacomp :
-            ((RADVisualComponent)metacomp).getParentContainer();
-
-        metaCont.getFormModel().setContainerLayout(metaCont, layoutSupport);
+        metacont.getFormModel().setContainerLayout(metacont, layoutSupport);
     }
 
     private void addVisualBean(RADComponent metacomp, PaletteItem item,
@@ -437,7 +443,8 @@ class HandleLayer extends JPanel
             }
         }
 
-        Container cont = (Container) formDesigner.getComponent(parentCont);
+        Container cont = parentCont.getContainerDelegate(
+                                        formDesigner.getComponent(parentCont));
         Point p = SwingUtilities.convertPoint(HandleLayer.this,
                                               e.getPoint(), cont);
         LayoutSupport.ConstraintsDesc constraints =
@@ -547,7 +554,9 @@ class HandleLayer extends JPanel
         while (iter.hasNext()) {
             RADComponent metacomp = (RADComponent) iter.next();
             if (metacomp instanceof RADVisualComponent)
-                selComps.add(metacomp);
+                if (metacomp != formDesigner.getTopDesignContainer())
+                    selComps.add(metacomp);
+                else return null;
         }
 
         Set children = new HashSet();

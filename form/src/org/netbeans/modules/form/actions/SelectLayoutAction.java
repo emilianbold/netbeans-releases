@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* $Id$ */
-
 package org.netbeans.modules.form.actions;
 
 import java.util.ArrayList;
@@ -29,34 +27,17 @@ import org.openide.util.actions.*;
 import org.openide.nodes.Node;
 import org.netbeans.modules.form.palette.*;
 import org.netbeans.modules.form.*;
-import org.netbeans.modules.form.layoutsupport.LayoutSupport;
+import org.netbeans.modules.form.layoutsupport.*;
 
 /**
- * SelectLayout action - subclass of NodeAction - enabled on RADContainerNodes
- * and RADLayoutNodes.
+ * Action for setting layout on selected container(s).
  */
 
-public class SelectLayoutAction extends CookieAction
+public class SelectLayoutAction extends NodeAction
 {
     static final long serialVersionUID = 4760011790717781801L;
 
-    /**
-     * @return the mode of action. Possible values are disjunctions of
-     * MODE_XXX constants.
-     */
-    protected int mode() {
-        return MODE_ALL;
-    }
-
-    /**
-     * Creates new set of classes that are tested by the cookie.
-     * @return list of classes the that the cookie tests
-     */
-    protected Class[] cookieClasses() {
-        return new Class[] { RADComponentCookie.class, FormLayoutCookie.class };
-    }
-
-    /** Human presentable name of the action. This should be
+     /** Human presentable name of the action. This should be
      * presented as an item in a menu.
      * @return the name of the action
      */
@@ -86,6 +67,26 @@ public class SelectLayoutAction extends CookieAction
     protected void performAction(Node[] activatedNodes) {
     }
 
+    /**
+    * Test whether the action should be enabled based
+    * on the currently activated nodes.
+    *
+    * @param activatedNodes current activated nodes, may be empty but not <code>null</code>
+    * @return <code>true</code> to be enabled, <code>false</code> to be disabled
+    */
+    protected boolean enable(Node[] activatedNodes) {
+        for (int i=0; i < activatedNodes.length; i++) {
+            RADVisualContainer container = getContainer(activatedNodes[i]);
+            if (container == null) return false;
+
+            LayoutSupport ls = container.getLayoutSupport();
+            if (ls != null && ls.getLayoutClass() == null
+                    && !(ls instanceof NullLayoutSupport))
+                return false;
+        }
+        return true;
+    }
+
     private static RADVisualContainer getContainer(Node node) {
         RADVisualContainer container = null;
         FormLayoutCookie layoutCookie =
@@ -107,24 +108,6 @@ public class SelectLayoutAction extends CookieAction
         return container;
     }
     
-    /**
-     * In this method the enable / disable action logic can be defined.
-     *
-     * @param activatedNodes gives array of actually activated nodes.
-     */
-    protected boolean enable(Node[] activatedNodes) {
-        if (!super.enable(activatedNodes))
-            return false;
-        
-        for (int i = 0; i < activatedNodes.length; i++) {
-            RADVisualContainer container = getContainer(activatedNodes[i]);
-            
-            if (container != null) //XXX &&(!(container.getDesignLayout() instanceof DesignSupportLayout))
-                return true;
-        }
-        return false;
-    }
-
     /**
      * Returns a JMenuItem that presents the Action, that implements this
      * interface, in a MenuBar.
