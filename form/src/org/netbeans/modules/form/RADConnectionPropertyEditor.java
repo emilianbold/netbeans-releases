@@ -284,21 +284,35 @@ public class RADConnectionPropertyEditor
             throw new InternalError();
         }
 
-        PropertyDescriptor getProperty() {
+        public PropertyDescriptor getProperty() {
             if (needsInit) {
                 if (!initialize()) return null;
             }
             return property;
         }
 
-        MethodDescriptor getMethod() {
+        public MethodDescriptor getMethod() {
             if (needsInit) {
                 if (!initialize()) return null;
             }
             return method;
         }
 
-        RADComponent getRADComponent() {
+        public String getCode() {
+            if (needsInit) {
+                if (!initialize()) return null;
+            }
+            return userCode;
+        }
+
+        public String getValue() {
+            if (needsInit) {
+                if (!initialize()) return null;
+            }
+            return value;
+        }
+
+        public RADComponent getRADComponent() {
             if (needsInit) {
                 if (!initialize()) return null;
             }
