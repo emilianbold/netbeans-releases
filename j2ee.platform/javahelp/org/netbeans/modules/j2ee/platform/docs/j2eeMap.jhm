@@ -123,7 +123,7 @@
 
         <!-- PROJECT PROPERTIES DIALOG BOX FOR A STANDARD WEB APPLICATION: -->
 	<!-- The Non-Panel panel in Project Properties for a Standard Web Application: -->
-	<mapID target="org.netbeans.modules.web.project.ui.customizer.WebCustomizer" url="web/csh/dbox_projprops/WebCustomizer.html" />
+	<mapID target="org.netbeans.modules.web.project.ui.customizer.WebCustomizer" url="web/csh/dbox_projprops/WebCustomizerSources.html" />
 	<!-- The Sources panel in Project Properties for a Standard Web Application: -->
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerSources" url="web/csh/dbox_projprops/WebCustomizerSources.html" />
 	<!-- The Libraries panel in Project Properties for a Standard Web Application: -->
