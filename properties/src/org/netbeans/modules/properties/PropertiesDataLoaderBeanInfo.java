@@ -65,6 +65,8 @@ public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
       descriptors =  new PropertyDescriptor[] {
         new PropertyDescriptor ("displayName", PropertiesDataLoader.class,
                                 "getDisplayName", null),
+        new PropertyDescriptor ("extensions", PropertiesDataLoader.class,
+                                "getExtensions", "setExtensions")
       };
       descriptors[0].setDisplayName(bundle.getString("PROP_Name"));
       descriptors[0].setShortDescription(bundle.getString("HINT_Name"));
@@ -77,6 +79,7 @@ public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * <<Log>>
+*  4    Gandalf   1.3         8/31/99  Petr Jiricka    Added extensions property
 *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
 *  2    Gandalf   1.1         3/9/99   Ian Formanek    Moved images to this 
