@@ -1440,7 +1440,12 @@ public class FormEditorSupport extends JavaEditor
             JavaEditor javaEditor = getJavaEditor();
             if (javaEditor != null) {
                 javaEditor.prepareDocument();
-                return (MultiViewElement) new JavaEditorTopComponent(dataObject);
+                JavaEditorTopComponent editor = new JavaEditorTopComponent(dataObject);
+                Node[] nodes = editor.getActivatedNodes();
+                if ((nodes == null) || (nodes.length == 0)) {
+                    editor.setActivatedNodes(new Node[] {dataObject.getNodeDelegate()});
+                }
+                return (MultiViewElement) editor;
             }
             return MultiViewFactory.BLANK_ELEMENT;
         }
