@@ -94,9 +94,8 @@ public class PatternChildren extends ClassChildren {
     reassignMethodListener();
     reassignFieldListener();
     patternAnalyser.analyzeAll();
-
     super.refreshKeys (filter);
-    //System.out.println ( "Refresh keys" );
+    System.out.println ( "Refresh keys" );
     //Thread.dumpStack();
   }
 
@@ -167,9 +166,6 @@ public class PatternChildren extends ClassChildren {
   }
 
 
-
-  
-
   // Inner classes ----------------------------------------------------------------------
 
   /** The listener of method changes temporary used in PatternAnalyser to
@@ -178,7 +174,9 @@ public class PatternChildren extends ClassChildren {
 
   final class MethodElementListener implements PropertyChangeListener {
     public void propertyChange ( PropertyChangeEvent e ) {
-      patternAnalyser.analyzeAll();
+      System.out.println ("Method Element Changed" );
+      refreshKeys(PatternFilter.ALL);
+      //patternAnalyser.analyzeAll();
     }
   }  
   
@@ -188,14 +186,17 @@ public class PatternChildren extends ClassChildren {
 
   final class FieldElementListener implements PropertyChangeListener {
     public void propertyChange ( PropertyChangeEvent e ) {
-      reassignFieldListener();
-      patternAnalyser.resolveFields();
+      System.out.println ("Field Element Changed" );
+      refreshKeys(PatternFilter.ALL);
+      //reassignFieldListener();
+      //patternAnalyser.resolveFields();
     }
   }
 }
 
 /* 
  * Log
+ *  6    Gandalf   1.5         7/21/99  Petr Hrebejk    
  *  5    Gandalf   1.4         7/21/99  Petr Hamernik   some filter bugfix
  *  4    Gandalf   1.3         7/20/99  Petr Hrebejk    
  *  3    Gandalf   1.2         7/3/99   Ian Formanek    Overriden method 
