@@ -113,7 +113,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     
     private void showErrorMessage(String message) {
         // only display the messages if the project is opened
-        if(new Date().getTime() > notificationTimeout && isProjectOpened()) {
+        if(new Date().getTime() > notificationTimeout/* && isProjectOpened()*/) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
             // set timeout to suppress the same messages during next 20 seconds (feel free to adjust the timeout
             // using more suitable value)
@@ -431,7 +431,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         FileObject[] rootArray = new FileObject[roots.size()];
         return (FileObject[])roots.toArray(rootArray);        
     }
-    
+    /*
     private boolean isProjectOpened() {
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < projects.length; i++) {
@@ -440,7 +440,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
         return false;
     }
-    
+    */
 //    private Set versionListeners() {
 //        if (versionListeners == null) {
 //            versionListeners = new HashSet();

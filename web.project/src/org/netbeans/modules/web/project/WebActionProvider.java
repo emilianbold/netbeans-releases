@@ -1021,7 +1021,9 @@ class WebActionProvider implements ActionProvider {
         if (wmod != null) {
             WebApp webXml = null;
             try {
-                webXml = DDProvider.getDefault().getDDRoot(wmod.getDeploymentDescriptor());
+                FileObject webXmlFo = wmod.getDeploymentDescriptor();
+                if (webXmlFo==null) return false;
+                webXml = DDProvider.getDefault().getDDRoot(webXmlFo);
             } catch (IOException ioe) {
                 // ignore
             }
