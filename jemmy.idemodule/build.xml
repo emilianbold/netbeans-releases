@@ -57,8 +57,10 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Create jemmy javadoc to be published at http://www.netbeans.org/download/dev/javadoc/jemmy-api/index.html. -->
     <target name="javadoc" depends="init">
-        <ant dir=".." target="javadoc" inheritAll="false">
-            <property name="dist.javadoc.dir" location="javadoc"/>
-        </ant>
+        <ant dir=".." target="javadoc" inheritAll="false"/>
+        <!-- Copy javadoc from jemmy to this module. It is required by task in nbbuild. -->
+        <copy todir="javadoc">
+            <fileset dir="../dist/javadoc"/>
+        </copy>
     </target>
 </project>

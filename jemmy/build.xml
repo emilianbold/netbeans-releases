@@ -54,6 +54,7 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="${dist.javadoc.dir}"/>
     <javadoc packagenames="${package},${package}.util,${package}.explorer,${package}.operators,${package}.demo,${package}.drivers,${package}.drivers.buttons,${package}.drivers.input,${package}.drivers.lists,${package}.drivers.scrolling,${package}.drivers.tables,${package}.drivers.text,${package}.drivers.trees,${package}.image" 
              sourcepath="${src.dir}" destdir="${dist.javadoc.dir}" Protected="yes" Windowtitle="Jemmy API"/>
+    <zip zipfile="${dist.javadoc.zip}" basedir="${dist.javadoc.dir}"/>
   </target>
 
   <!-- Only shortcut to be available in project menu in IDE -->
