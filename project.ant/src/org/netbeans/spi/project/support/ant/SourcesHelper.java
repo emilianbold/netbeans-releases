@@ -15,9 +15,9 @@ package org.netbeans.spi.project.support.ant;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -32,11 +33,14 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.project.ant.FileChangeSupport;
+import org.netbeans.modules.project.ant.FileChangeSupportEvent;
+import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 
 // XXX should perhaps be legal to call add* methods at any time (should update things)
 // and perhaps also have remove* methods
@@ -55,12 +59,12 @@ public final class SourcesHelper {
         public Root(String location) {
             this.location = location;
         }
-        public final FileObject getActualLocation() {
+        public final File getActualLocation() {
             String val = evaluator.evaluate(location);
             if (val == null) {
                 return null;
             }
-            return project.resolveFileObject(val);
+            return project.resolveFile(val);
         }
     }
     
@@ -263,7 +267,8 @@ public final class SourcesHelper {
         Iterator it = allRoots.iterator();
         while (it.hasNext()) {
             Root r = (Root)it.next();
-            FileObject loc = r.getActualLocation();
+            File locF = r.getActualLocation();
+            FileObject loc = locF != null ? FileUtil.toFileObject(locF) : null;
             if (loc == null) {
                 // Not there; skip it.
                 continue;
@@ -355,9 +360,14 @@ public final class SourcesHelper {
         return new SourcesImpl();
     }
     
-    private final class SourcesImpl implements Sources {
+    private final class SourcesImpl implements Sources, PropertyChangeListener, FileChangeSupportListener {
         
-        public SourcesImpl() {}
+        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        private final Set/*<FileObject>*/ rootsListenedTo = new WeakSet();
+        
+        public SourcesImpl() {
+            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+        }
         
         public SourceGroup[] getSourceGroups(String type) {
             List/*<SourceGroup>*/ groups = new ArrayList();
@@ -370,7 +380,12 @@ public final class SourcesHelper {
                 // First collect all non-redundant existing roots.
                 while (it.hasNext()) {
                     SourceRoot r = (SourceRoot)it.next();
-                    FileObject loc = r.getActualLocation();
+                    File locF = r.getActualLocation();
+                    if (locF == null) {
+                        continue;
+                    }
+                    listen(locF);
+                    FileObject loc = FileUtil.toFileObject(locF);
                     if (loc == null) {
                         continue;
                     }
@@ -409,7 +424,12 @@ public final class SourcesHelper {
                     if (!r.getType().equals(type)) {
                         continue;
                     }
-                    FileObject loc = r.getActualLocation();
+                    File locF = r.getActualLocation();
+                    if (locF == null) {
+                        continue;
+                    }
+                    listen(locF);
+                    FileObject loc = FileUtil.toFileObject(locF);
                     if (loc == null) {
                         continue;
                     }
@@ -423,15 +443,58 @@ public final class SourcesHelper {
             return (SourceGroup[])groups.toArray(new SourceGroup[groups.size()]);
         }
         
+        private void listen(File rootLocation) {
+            // #40845. Need to fire changes if a source root is added or removed.
+            if (rootsListenedTo.add(rootLocation)) {
+                FileChangeSupport.DEFAULT.addListener(this, rootLocation);
+            }
+        }
+        
         public void addChangeListener(ChangeListener listener) {
-            // XXX implement - permit add/remove source root methods
-            // and listen to added/removed dirs, etc.
+            synchronized (listeners) {
+                listeners.add(listener);
+            }
         }
         
         public void removeChangeListener(ChangeListener listener) {
-            // XXX
+            synchronized (listeners) {
+                listeners.remove(listener);
+            }
         }
         
+        private void fireChange() {
+            ChangeListener[] _listeners;
+            synchronized (listeners) {
+                if (listeners.isEmpty()) {
+                    return;
+                }
+                _listeners = (ChangeListener[]) listeners.toArray(new ChangeListener[listeners.size()]);
+            }
+            ChangeEvent ev = new ChangeEvent(this);
+            for (int i = 0; i < _listeners.length; i++) {
+                _listeners[i].stateChanged(ev);
+            }
+        }
+
+        public void fileCreated(FileChangeSupportEvent event) {
+            // Root might have been created on disk.
+            fireChange();
+        }
+
+        public void fileDeleted(FileChangeSupportEvent event) {
+            // Root might have been deleted.
+            fireChange();
+        }
+
+        public void fileModified(FileChangeSupportEvent event) {
+            // ignore; generally should not happen (listening to dirs)
+        }
+        
+        public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+            // Properties may have changed so as cause external roots to move etc.
+            fireChange();
+        }
+
     }
     
     private final class PropChangeL implements PropertyChangeListener {

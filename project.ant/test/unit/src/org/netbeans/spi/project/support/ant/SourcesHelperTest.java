@@ -243,4 +243,32 @@ public final class SourcesHelperTest extends NbTestCase {
         assertEquals("otherfile still not registered", null, FileOwnerQuery.getOwner(otherfile));
     }
     
+    public void testSourceRootDeletion() throws Exception {
+        // Cf. #40845. Need to fire a change if a root is deleted while project is open.
+        Sources s = sh.createSources();
+        SourceGroup[] groups = s.getSourceGroups("java");
+        assertEquals("should have src1dir plus src3dir", 2, groups.length);
+        assertEquals("group #1 is src1dir", src1dir, groups[0].getRootFolder());
+        assertEquals("group #2 is src3dir", src3dir, groups[1].getRootFolder());
+        AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
+        s.addChangeListener(l);
+        src3dir.delete();
+        assertTrue("got a change after src3dir deleted", l.changed);
+        l.changed = false;
+        groups = s.getSourceGroups("java");
+        assertEquals("should have just src1dir", 1, groups.length);
+        assertEquals("group #1 is src1dir", src1dir, groups[0].getRootFolder());
+        src1dir.delete();
+        assertTrue("got a change after src1dir deleted", l.changed);
+        l.changed = false;
+        groups = s.getSourceGroups("java");
+        assertEquals("should have no dirs", 0, groups.length);
+        FileObject src5dir = scratch.createFolder("nonesuch");
+        assertTrue("got a change after src5dir created", l.changed);
+        l.changed = false;
+        groups = s.getSourceGroups("java");
+        assertEquals("should have src15dir now", 1, groups.length);
+        assertEquals("group #1 is src5dir", src5dir, groups[0].getRootFolder());
+    }
+    
 }
