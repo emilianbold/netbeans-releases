@@ -42,12 +42,16 @@ Microsystems, Inc. All Rights Reserved.
       <module name="openide" testtypes="qa-functional" attributes="stable"/>
       <module name="java" testtypes="qa-functional" attributes="stable"/>
       <module name="editor" testtypes="qa-functional" attributes="stable"/>
+      <module name="ant" testtypes="qa-functional" attributes="stable"/>
+      <module name="projects" testtypes="qa-functional" attributes="stable"/>
   </config>
   
   <!-- QA functional tests for FFJ CE -->
   <config name="qa-functional-ffjce">
       <module name="debuggercore" testtypes="qa-functional" attributes="stable"/>
       <module name="i18n" testtypes="qa-functional" attributes="stable"/>
+      <module name="ant" testtypes="qa-functional" attributes="stable"/>      
+      <module name="projects" testtypes="qa-functional" attributes="stable"/>
   </config>
 
   <!-- Deprecated, only for compatibility -->
