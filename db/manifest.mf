@@ -1,0 +1,10 @@
+Netbeans-Module: DB module
+Netbeans-Module-Name: DB module
+Netbeans-Module-Main: com/netbeans/enterprise/modules/db/DatabaseModule.class
+
+Name: com/netbeans/enterprise/modules/db/explorer/nodes/RootNode.class
+Netbeans-Module-Class: Node
+Type: Environment
+
+Name: com/netbeans/enterprise/modules/db/explorer/DatabaseOption.class
+Netbeans-Module-Class: Option
