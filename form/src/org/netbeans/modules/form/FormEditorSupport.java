@@ -57,7 +57,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
     /** An indicator whether the form should be opened additionally when
      * switching back from a non-editing workspace to an editing one */
-    private boolean openOnEditing = false;
+    private boolean openOnEditing = false; // [is this needed??]
 
     // listeners
     private FormModelListener formListener;
@@ -96,19 +96,24 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     /** OpenCookie implementation - opens the form (loads it first if needed).
      * @see OpenCookie#open
      */
-
     public void open() {
+        // set status text "Opening Form..."
+        TopManager.getDefault().setStatusText(
+            java.text.MessageFormat.format(
+                FormEditor.getFormBundle().getString("FMT_OpeningForm"), // NOI18N
+                new Object[] { formDataObject.getName() }));
+
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                // set status text "Opening Form..."
-                TopManager.getDefault().setStatusText(
-                    java.text.MessageFormat.format(
-                        FormEditor.getFormBundle().getString("FMT_OpeningForm"), // NOI18N
-                        new Object[] { formDataObject.getName() }));
-
-                if (loadFormImpl())
-                    openGUI();
+                // load form data
+                loadFormImpl();
+                // ensure GUI workspace is active (if form loading successful)
+                boolean openGui = formLoaded && activateWorkspace();
+                // open java editor (even if form loading failed)
                 FormEditorSupport.this.superOpen();
+                // open form designer (if loading successful and workspace active)
+                if (openGui)
+                    openGUI();
 
                 // clear status text
                 TopManager.getDefault().setStatusText(""); // NOI18N
@@ -116,7 +121,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         });
     }
 
-    /** Main loading method - loads form data from file.
+    /** Loads form data from file, does not open designer. Runs in AWT event
+     * queue thread. Returns after the form is loaded. The returned value
+     * indicates whether the form is loaded (also true if it already was).
      */
     public boolean loadForm() {
         if (formLoaded)
@@ -302,23 +309,27 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     private void openForm(final boolean openGui) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                if (loadFormImpl()) {
-                    if (openGui)
-                        openGUI();
+                loadFormImpl();
+                if (formLoaded) {
+                    boolean reallyOpenGui = openGui && activateWorkspace();
                     FormEditorSupport.this.superOpen();
+                    if (reallyOpenGui)
+                        openGUI();
                 }
             }
         });
     }
 
-    private boolean loadFormImpl() {
+    /** This method performs the form data loading.
+     */
+    private void loadFormImpl() {
         if (formLoaded)
-            return true; // form already loaded
+            return; // form already loaded
 
         // first find PersistenceManager for loading the form
         PersistenceManager[] pms = recognizeForm(formDataObject);
         if (pms == null)
-            return false;
+            return;
         PersistenceManager loadManager = pms[0];
         saveManager = pms[1];
 
@@ -343,8 +354,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             formModel = null;
 
             reportErrors(true, t); // fatal errors
-
-            return false;
+            return;
         }
 
         // form is successfully loaded...
@@ -361,8 +371,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         attachFormListener();
         attachSettingsListener();
         attachTopComponentsListener();
-
-        return true;
     }
 
     /** Finds PersistenceManager that can load and save the form.
@@ -436,9 +444,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         else FormEditor.displayErrorLog();
     }
 
-    /** Opens FormDesigner and ComponentInspector.
+    /** Activates GUI Editing workspace (on certain conditions). Returns
+     * whether the workspace was activated.
      */
-    private void openGUI() {
+    private boolean activateWorkspace() {
         if (isCurrentWorkspaceEditing()) {
             String formWorkspace = FormEditor.getFormSettings().getWorkspace();
             if (!formWorkspace.equalsIgnoreCase(FormEditor.getFormBundle()
@@ -449,24 +458,48 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                 if (visualWorkspace != null)
                     visualWorkspace.activate();
             }
+            return true;
+        }
+        else {
+            // if this is not "editing" workspace, attach a listener on
+            // workspace switching and wait for the editing one
+            attachWorkspacesListener();
+            return false;
+        }
+    }
 
-            // open FormDesigner
-            FormDesigner designer = formModel.getFormDesigner();
+    /** Opens FormDesigner and ComponentInspector.
+     */
+    private void openGUI() {
+/*        if (isCurrentWorkspaceEditing()) {
+            String formWorkspace = FormEditor.getFormSettings().getWorkspace();
+            if (!formWorkspace.equalsIgnoreCase(FormEditor.getFormBundle()
+                                        .getString("VALUE_WORKSPACE_NONE"))) {
+                Workspace visualWorkspace =
+                    TopManager.getDefault().getWindowManager()
+                        .findWorkspace(formWorkspace);
+                if (visualWorkspace != null)
+                    visualWorkspace.activate();
+            } */
+
+        // open FormDesigner
+            FormDesigner designer = getFormDesigner(formModel);
             designer.initialize();
             designer.open();
 
             // open ComponentInspector
             ComponentInspector.getInstance().open();
             ComponentInspector.getInstance().focusForm(this, true);
-            
+
             // open ComponentPalette
             PaletteTopComponent.getInstance().open();
-            
+
+            // bring the FormDesigner to front and give it the focus
             designer.requestFocus();
-        }
+//        }
         // if this is not "editing" workspace, attach a listener on
         // workspace switching and wait for the editing one
-        else attachWorkspacesListener();
+//        else attachWorkspacesListener();
     }
 
     private boolean isCurrentWorkspaceEditing() {
@@ -610,6 +643,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                     if (openOnEditing) {
                         if (isCurrentWorkspaceEditing()) {
                             openOnEditing = false;
+                            activateWorkspace();
                             openGUI();
                             detachWorkspacesListener();
                         }
