@@ -495,8 +495,7 @@ public class AntBasedTestUtil {
     
     /**
      * Change listener that can be polled.
-     * Handles asynchronous changes
-     * (since Filesystems threading obeys no known specification).
+     * Handles asynchronous changes.
      */
     public static final class TestCL implements ChangeListener {
         
