@@ -47,7 +47,7 @@ public class TopSecurityManager extends SecurityManager {
      * @throws SecurityException without RuntimePermission "TopSecurityManager.register"
      */
     public static void register(SecurityManager sm) throws SecurityException {
-        if (check) {
+/*        if (check) {
             try {
                 AccessController.checkPermission(new RuntimePermission("TopSecurityManager.register")); // NOI18N
             } catch (SecurityException se) {
@@ -59,6 +59,7 @@ public class TopSecurityManager extends SecurityManager {
                 throw se;
             }
         }
+*/
         synchronized (delegates) {
             if (delegates.contains(sm)) throw new SecurityException();
             delegates.add(sm);
@@ -69,9 +70,10 @@ public class TopSecurityManager extends SecurityManager {
      * @throws SecurityException without RuntimePermission "TopSecurityManager.unregister"
      */
     public static void unregister(SecurityManager sm) throws SecurityException {
-        if (check) {
+/*        if (check) {
             AccessController.checkPermission(new RuntimePermission("TopSecurityManager.unregister")); // NOI18N
         }
+*/
         synchronized (delegates) {
             if (!delegates.contains(sm)) throw new SecurityException();
             delegates.remove(sm);
@@ -260,18 +262,12 @@ public class TopSecurityManager extends SecurityManager {
 
     public void checkPermission(Permission perm) {
         checkSetSecurityManager(perm);
-        if (! check) {
-            return;
-        }
-        super.checkPermission(perm);
+        return;
     }
 
     public void checkPermission(Permission perm, Object context) {
         checkSetSecurityManager(perm);
-        if (! check) {
-            return;
-        }
-        super.checkPermission(perm, context);
+        return;
     }
     
     /** Prohibits to set another SecurityManager */

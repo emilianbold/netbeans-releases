@@ -22,11 +22,11 @@ Microsystems, Inc. All Rights Reserved.
             <include name="${nb.lib.dir}/ide.ks"/>
             <include name="${nb.bin.dir}/.runide_defaults.sh"/>
             <include name="${nb.bin.dir}/ide.cfg"/>
-            <include name="${nb.bin.dir}/ide.policy"/>
             <include name="${nb.bin.dir}/macosx_launcher.dmg"/>
             <include name="${nb.lib/ext.dir}/boot.jar"/>
-            <include name="${nb.bin.dir}/security.policy"/>
             <!--
+            <include name="${nb.bin.dir}/ide.policy"/>
+            <include name="${nb.bin.dir}/security.policy"/>
             <include name="${nb.bin.dir}/runide.exe"/>
             <include name="${nb.bin.dir}/runide.sh"/>
             <include name="${nb.bin.dir}/runide_exe_defaults"/>
@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="launcher/unix/nbexec" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" />
         <chmod file="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}/nbexec" perm="ugo+rx"/>
         <copy file="launcher/windows/nbexec.exe" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}/" />
-        <copy file="launcher/security.policy" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" />
+        <!-- copy file="launcher/security.policy" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" / -->
         <!-- copy file="release/lib/ide.ks" tofile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/keystore.ks" / -->
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" includeEmptyDirs="false">
             <fileset dir="release/bin" excludesfile="../nbbuild/standard-jar-excludes.txt">
