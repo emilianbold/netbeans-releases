@@ -151,8 +151,6 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             setDescription(NbBundle.getMessage(DataObjectListView.class, "ACSD_DataObjectPanel"));
         }
         
-        chooser.setFileView(new NodeFileView());
-        
         chooser.setControlButtonsAreShown(false);
         chooser.setMultiSelectionEnabled(multiSelection);
         chooser.setFileSelectionMode(selectionMode);
@@ -873,6 +871,15 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         
         NodeFileChooser (File currentDirectory, FileSystemView fsv) {
             super(currentDirectory, fsv);
+        }
+        
+        protected void setup(FileSystemView view) {
+            // MCF Bug 4972092
+            // If the  FileView is not set, the calls to getIcon will trigger
+            // null pointer exceptions. And getIcon is called indirectly from 
+            // the super version of JFileChooser.setup
+            setFileView(new DataObjectListView.NodeFileView());
+            super.setup(view);
         }
         
         public void setCurrentDirectory (File dir) {
