@@ -23,9 +23,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -41,6 +43,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     private Project project;
     private SourceGroup[] folders;
     private WizardDescriptor.Panel bottomPanel;
+    private WizardDescriptor wizard;
     private boolean isFolder;
     
     SimpleTargetChooserPanel( Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel, boolean isFolder ) {
@@ -67,8 +70,24 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     }
 
     public boolean isValid() {
-        return gui != null && gui.getTargetName() != null &&
-               ( bottomPanel == null || bottomPanel.isValid() );
+        boolean ok = ( gui != null && gui.getTargetName() != null &&
+               ( bottomPanel == null || bottomPanel.isValid() ) );
+        
+        if (!ok) {
+            return false;
+        }
+        
+        FileObject dir = Templates.getTargetFolder( wizard );
+        
+        DataFolder df = DataFolder.findFolder( dir );
+        FileObject template = Templates.getTemplate( wizard );
+
+        String errorMessage = ProjectUtilities.canUseFileName (dir, gui.getTargetName(), template.getExt ());
+        if (gui.isShowing ()) {
+            wizard.putProperty ("WizardPanel_errorMessage", errorMessage); // NOI18N
+        }
+
+        return errorMessage == null;
     }
 
     public synchronized void addChangeListener(ChangeListener l) {
@@ -93,27 +112,27 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
 
     public void readSettings( Object settings ) {
                 
-        WizardDescriptor wd = (WizardDescriptor)settings;
+        wizard = (WizardDescriptor)settings;
                 
         if ( gui == null ) {
             getComponent();
         }
         
-        Project project = Templates.getProject( wd );
+        Project project = Templates.getProject( wizard );
 
         // Try to preselect a folder            
-        FileObject preselectedTarget = Templates.getTargetFolder( wd );
+        FileObject preselectedTarget = Templates.getTargetFolder( wizard );
         // Init values
-        gui.initValues( project, Templates.getTemplate( wd ), preselectedTarget );
+        gui.initValues( project, Templates.getTemplate( wizard ), preselectedTarget );
         
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewFileWizard to modify the title
         Object substitute = gui.getClientProperty ("NewFileWizard_Title"); // NOI18N
         if (substitute != null) {
-            wd.putProperty ("NewFileWizard_Title", substitute); // NOI18N
+            wizard.putProperty ("NewFileWizard_Title", substitute); // NOI18N
         }
         
-        wd.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
+        wizard.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
             NbBundle.getBundle (SimpleTargetChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
             NbBundle.getBundle (SimpleTargetChooserPanel.class).getString ("LBL_SimpleTargetChooserPanel_Name")}); // NOI18N
             

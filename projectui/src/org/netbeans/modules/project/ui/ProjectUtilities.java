@@ -13,24 +13,27 @@
 
 package org.netbeans.modules.project.ui;
 
-import org.openide.util.Mutex;
-
 import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import javax.swing.SwingUtilities;
-import org.openide.util.ContextAwareAction;
-
 import java.util.*;
 
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+
+
+import org.openide.util.Utilities;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+
 
 
 /** The util methods for projectui module.
@@ -154,6 +157,66 @@ public class ProjectUtilities {
                 });
             }
         });
+    }
+    
+    /** Checks if the given file name can be created in the target folder.
+     *
+     * @param folder target folder
+     * @param newObjectName name of created file
+     * @param extension extension of created file
+     * @return localized error message or null if all right
+     */    
+    final public static String canUseFileName (FileObject folder, String newObjectName, String extension) {
+        if (extension != null && extension.length () > 0) {
+            StringBuffer sb = new StringBuffer ();
+            sb.append (newObjectName);
+            sb.append ('.'); // NOI18N
+            sb.append (extension);
+            newObjectName = sb.toString ();
+        }
+        // test whether the selected folder on selected filesystem already exists
+        if (folder == null) {
+            return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_or_folder_does_not_exist"); // NOI18N
+        }
+        
+        // target filesystem should be writable
+        if (!folder.canWrite ()) {
+            return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_is_readonly"); // NOI18N
+        }
+        
+        if (folder.getFileObject (newObjectName) != null) {
+            return NbBundle.getMessage (ProjectUtilities.class, "MSG_file_already_exist", newObjectName); // NOI18N
+        }
+        
+        if (Utilities.isWindows ()) {
+            if (checkCaseInsensitiveName (folder, newObjectName)) {
+                return NbBundle.getMessage (ProjectUtilities.class, "MSG_file_already_exist", newObjectName); // NOI18N
+            }
+        }
+
+        // all ok
+        return null;
+    }
+    
+    // helper check for windows, its filesystem is case insensitive (workaround the bug #33612)
+    /** Check existence of file on case insensitive filesystem.
+     * Returns true if folder contains file with given name and extension.
+     * @param folder folder for search
+     * @param name name of file
+     * @param extension extension of file
+     * @return true if file with name and extension exists, false otherwise.
+     */    
+    private static boolean checkCaseInsensitiveName (FileObject folder, String name) {
+        // bugfix #41277, check only direct children
+        Enumeration children = folder.getChildren (false);
+        FileObject fo;
+        while (children.hasMoreElements ()) {
+            fo = (FileObject) children.nextElement ();
+            if (name.equalsIgnoreCase (fo.getName ())) {
+                return true;
+            }
+        }
+        return false;
     }
     
 }
