@@ -62,13 +62,13 @@
          <tocitem text="About Filters" target="concepts_filter"  />
          <tocitem text="Creating a Filter" target="filter_create"/>
          <tocitem text="Registering a Filter" target="filter_addtodd"/>
-         <tocitem text="Running and Debugging a Filter" target="filter_run"/>
+         <tocitem text="Running a Filter" target="filter_run"/>
       </tocitem> <!-- Working With Filters -->
       <tocitem text="Web Application Listeners">
          <tocitem text="About Web Application Listeners" target="concepts_listener"  />       					
          <tocitem text="Creating a Web Application Listener" target="listen_create"/>
          <tocitem text="Registering a Web Application Listener" target="listen_addtodd"/>
-         <tocitem text="Running and Debugging a Web Application Listener" target="listener_run"/>
+         <tocitem text="Running a Web Application Listener" target="listener_run"/>
        </tocitem> <!-- Working With Listeners -->
        <tocitem text="Web Services">
          <tocitem text="About Web Services" target="about_web_service" />
@@ -118,7 +118,7 @@
       <tocitem text="Applets" >
               <tocitem text="Creating an Applet" target="webmod_addapplet"/>
               <tocitem text="Adding an Applet JAR File to a WAR File" target="webmod_addcompapplet"/>
-              <tocitem text="Running and Debugging an Applet" target="webmod_runapplet"/>
+              <tocitem text="Running an Applet" target="webmod_runapplet"/>
       </tocitem> <!-- Working With Applets -->
    </tocitem>
       
@@ -142,9 +142,9 @@
             <tocitem text="Running a Web Application" target="run_webapp" />
             <tocitem text="Running a JSP File" target="run_jsp" />
             <tocitem text="Running a Servlet" target="run_servlet" />
-            <tocitem text="Running and Debugging a Filter" target="filter_run"/>
-            <tocitem text="Running and Debugging a Listener" target="listener_run"/>
-            <tocitem text="Running and Debugging an Applet" target="webmod_runapplet"/>
+            <tocitem text="Running a Filter" target="filter_run"/>
+            <tocitem text="Running a Listener" target="listener_run"/>
+            <tocitem text="Running an Applet" target="webmod_runapplet"/>
             <tocitem text="Changing Web Servers" target="webmod_server_set" />
             <tocitem text="Changing Web Browsers" target="webmod_browser" />
             <tocitem text="Deployment Descriptors"> 
