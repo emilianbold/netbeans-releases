@@ -40,6 +40,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
+import org.netbeans.api.project.Project;
 
 
 /**
@@ -119,7 +120,7 @@ public class I18nManager {
             highlightHCString();
 
             // Add i18n panel to top component.
-            getDialog(sourceDataObject.getName());
+            getDialog(sourceDataObject.getName(), Util.getProjectFor(sourceDataObject));
 
             fillDialogValues();
         } else {
@@ -252,7 +253,7 @@ public class I18nManager {
     
     /** Gets dialog. In our case it is a top component. 
      * @param name name of top component */
-    private void getDialog(String name) {
+    private void getDialog(String name, Project project) {
         Dialog dialog = (Dialog) dialogWRef.get();
         I18nPanel i18nPanel = (I18nPanel)i18nPanelWRef.get();
 
@@ -262,7 +263,7 @@ public class I18nManager {
         if(i18nPanel == null) {
             
             // Create i18n panel.
-            i18nPanel = new I18nPanel(support.getPropertyPanel());
+            i18nPanel = new I18nPanel(support.getPropertyPanel(), project);
 
             // Helper final.
             final I18nPanel panel = i18nPanel;

@@ -51,6 +51,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.netbeans.api.project.Project;
 
 
 /**
@@ -97,13 +98,15 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
 
     /** Maximal index of arguments in one argument XML element. */
     private static final int MAX_INDEX       = 1000;
-    
-    
+
     /** Constructor. Creates new <code>ResourceBundleStringFormEditor</code>. */
     public FormI18nMnemonicEditor() {
         bundle = NbBundle.getBundle(FormI18nMnemonicEditor.class);
     }
 
+    private Project getProject() {
+      return org.netbeans.modules.i18n.Util.getProjectFor(sourceDataObject);
+    }
 
     /** Overrides superclass method.
      * @return null as we don't support this feature */
@@ -151,7 +154,7 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
     /** Overrides superclass method.
      * @return <code>ResourceBundlePanel</code> fed with <code>FormI18nMnemonic</code> value. */
     public Component getCustomEditor() {
-        return new CustomEditor(new FormI18nMnemonic((FormI18nMnemonic)getValue()));
+        return new CustomEditor(new FormI18nMnemonic((FormI18nMnemonic)getValue()), getProject());
     }
     
     /** Overrides superclass method. 
@@ -415,8 +418,8 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
         private final ResourceBundle bundle;
         
         /** Constructor. */
-        public CustomEditor(I18nString i18nString) {
-            super(i18nString.getSupport().getPropertyPanel(), false);
+        public CustomEditor(I18nString i18nString, Project project) {
+            super(i18nString.getSupport().getPropertyPanel(), false, project);
             setI18nString(i18nString);
             bundle = NbBundle.getBundle(FormI18nMnemonicEditor.class);
             HelpCtx.setHelpIDString(this, I18nUtil.HELP_ID_FORMED);

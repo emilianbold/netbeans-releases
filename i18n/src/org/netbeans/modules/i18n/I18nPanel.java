@@ -33,6 +33,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.WeakListener;
 import org.openide.util.Lookup;
 import org.netbeans.api.javahelp.Help;
+import org.netbeans.api.project.Project;
 
 
 /**
@@ -55,17 +56,21 @@ public class I18nPanel extends JPanel {
     
     /** Generated serial version ID. */
     static final long serialVersionUID =-6982482491017390786L;
+
+    private Project project;
     
     
     /** Creates new I18nPanel. */
-    public I18nPanel(PropertyPanel propertyPanel) {
-        this(propertyPanel, true);
+    public I18nPanel(PropertyPanel propertyPanel, Project project) {
+        this(propertyPanel, true, project);
     }
 
     /** Creates i18n panel.
      * @param propertyPanel panel for customizing i18n strings 
      * @param withButtons if panel with replace, skip ect. buttons should be added */
-    public I18nPanel(PropertyPanel propertyPanel, boolean withButtons) {
+    public I18nPanel(PropertyPanel propertyPanel, boolean withButtons, Project project) {
+        this.project = project;
+
         // Init bundle.
         bundle = I18nUtil.getBundle();
         
@@ -171,7 +176,7 @@ public class I18nPanel extends JPanel {
     
     /** Creates <code>ResourcePanel</code>. */
     private JPanel createResourcePanel() {
-        return  new ResourcePanel();
+        return new ResourcePanel(project);
     }
     
     private void initAccessibility() {

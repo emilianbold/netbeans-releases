@@ -818,7 +818,12 @@ public class FormI18nSupport extends JavaI18nSupport {
 
             return guardedPosition;        
         }
-        
+
+        DataObject getSourceDataObject() {
+	  return sourceDataObject;
+	}
+
+
     } // End of nested class I18nFormFinder.
 
     
@@ -895,7 +900,8 @@ public class FormI18nSupport extends JavaI18nSupport {
                        newValue = newConnectionValue;
                    } else {
                        // The old value is set via ResourceBundleStringFormEditor,
-                       // (in our case if value was "plain string" or RADConnectionDesignValue of type TYPE_VALUE.
+                       // (in our case if value was "plain string" or
+                       // RADConnectionDesignValue of type TYPE_VALUE.
                        ((FormProperty)nodeProperty).setCurrentEditor(new FormI18nStringEditor());
                        newValue = new FormI18nString(javaI18nString);
                    }

@@ -170,7 +170,7 @@ public class InsertI18nStringAction extends CookieAction {
         //If you decide for caching impl it must be invalidated on
         //dataobject and document instabce change and update properties keys regularly.
 
-        i18nPanel = new I18nPanel(support.getPropertyPanel(), false);
+        i18nPanel = new I18nPanel(support.getPropertyPanel(), false, Util.getProjectFor(dataObject));
         i18nPanel.setI18nString(support.getDefaultI18nString());
         i18nPanel.setDefaultResource(dataObject);
 

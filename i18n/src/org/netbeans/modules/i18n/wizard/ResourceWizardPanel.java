@@ -42,6 +42,7 @@ import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.I18nUtil;
+import org.netbeans.modules.i18n.SelectorUtils;
 import org.netbeans.modules.properties.PropertiesDataObject; // PENDING
 import org.netbeans.modules.properties.UtilConvert; // PENDING
 
@@ -284,15 +285,6 @@ final class ResourceWizardPanel extends JPanel {
 
     /** Helper method. Gets user selected resource. */
     private DataObject selectResource() {
-        DataFilter dataFilter = new DataFilter() {
-            public boolean acceptDataObject (DataObject dataObject) {
-                return (dataObject instanceof DataFolder
-                 || dataObject.getClass().equals(PropertiesDataObject.class)); // PENDING has to be more sophisticated
-            }
-        };
-
-        // take actual project from first data object
-
         Project prj = null;
         Iterator it = sourceMap.keySet().iterator();
         if (it.hasNext()) {
@@ -301,39 +293,7 @@ final class ResourceWizardPanel extends JPanel {
             prj = FileOwnerQuery.getOwner(fo);
         }
 
-
-        Node repositoryNode = Util.sourcesView(prj, dataFilter);
-
-        // Selects sources data object.
-        try {
-            Node[] selectedNodes= NodeOperation.getDefault().select(
-                NbBundle.getBundle(ResourceWizardPanel.class).getString("LBL_SelectResource"),
-                NbBundle.getBundle(ResourceWizardPanel.class).getString("LBL_Filesystems"),
-                repositoryNode,
-                new NodeAcceptor() {
-                    public boolean acceptNodes(Node[] nodes) {
-                        if(nodes == null || nodes.length != 1) {
-                            return false;
-                        }
-
-                        // Has to be data object.
-                        DataObject dataObject = (DataObject)nodes[0].getCookie(DataObject.class);
-                        if(dataObject == null)
-                            return false;
-                      
-                        // Has to be of resource class.
-                        return dataObject.getClass().equals(PropertiesDataObject.class); // PENDING same like above.
-                    }
-            });
-            
-            return (DataObject)selectedNodes[0].getCookie(DataObject.class);
-            
-        } catch (UserCancelException uce) {
-            if(I18nUtil.isDebug())
-                System.err.println("I18N module: User cancelled selection"); // NOI18N
-            
-            return null;
-        }
+	return SelectorUtils.selectBundle(prj);
     }
     
     

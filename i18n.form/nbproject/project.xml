@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
             <path>i18n/form</path>
             <module-dependencies>
-				<dependency>
+	        <dependency>
                     <code-name-base>org.netbeans.modules.form</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -82,6 +82,28 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
+
+                <!-- Project module set dependency -->
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+
             </module-dependencies>
             <public-packages/>
         </data>

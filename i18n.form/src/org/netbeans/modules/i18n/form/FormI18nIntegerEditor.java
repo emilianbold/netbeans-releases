@@ -50,6 +50,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.netbeans.api.project.Project;
 
 
 /**
@@ -96,7 +97,8 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
     private static final int MAX_INDEX       = 1000;
     
     private final ResourceBundle bundle;
-    
+
+ 
     /** Constructor. Creates new <code>ResourceBundleStringFormEditor</code>. */
     public FormI18nIntegerEditor() {
         bundle = NbBundle.getBundle(FormI18nIntegerEditor.class);
@@ -149,9 +151,14 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
     /** Overrides superclass method.
      * @return <code>ResourceBundlePanel</code> fed with <code>FormI18nInteger</code> value. */
     public Component getCustomEditor() {
-        return new CustomEditor(new FormI18nInteger((FormI18nInteger)getValue()));
+        return new CustomEditor(new FormI18nInteger((FormI18nInteger)getValue()), getProject());
     }
     
+    private Project getProject() {
+      return org.netbeans.modules.i18n.Util.getProjectFor(sourceDataObject);
+    }
+
+
     /** Overrides superclass method. 
      * @return true since we support this feature */
     public boolean supportsCustomEditor() {
@@ -414,8 +421,8 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
         private final ResourceBundle bundle;
         
         /** Constructor. */
-        public CustomEditor(I18nString i18nString) {
-            super(i18nString.getSupport().getPropertyPanel(), false);
+        public CustomEditor(I18nString i18nString, Project project) {
+            super(i18nString.getSupport().getPropertyPanel(), false, project);
             bundle = NbBundle.getBundle(FormI18nIntegerEditor.class);
             setI18nString(i18nString);
             
