@@ -939,7 +939,7 @@ is divided into following sections:
                 <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
                 <j2seproject:java classname="sun.applet.AppletViewer">
                     <customize>
-                        <arg line='"${{applet.url}}"'/>
+                        <arg value="${{applet.url}}"/>
                     </customize>
                 </j2seproject:java>
             </target>
