@@ -94,7 +94,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/util/UtilProgressCursorTest.class"/>
                 <include name="org/openide/util/actions/*Test.class"/>
                 <!-- #35856 -->
-                <exclude name="org/openide/util/actions/CookieActionTest.class/testCookiePrematureCreationInNodeWithDefaultLookup"/>
                 <include name="org/openide/xml/*.class"/>
                 <!-- following test was excluded because of issue #22629 
                 <include name="org/openide/explorer/FindHelpTest.class"/>
@@ -165,8 +164,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/nodes/ChildrenArrayTest.class/testNodeEventsFiredAtOnce"/>
                 <!-- Implementation was apparently killed during a refactoring (see #16430): -->
                 <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetRow"/>
-                <!-- #35856 -->
-                <include name="org/openide/util/actions/CookieActionTest.class/testCookiePrematureCreationInNodeWithDefaultLookup"/>
             </patternset>
         </testset>      
     </testbag>
