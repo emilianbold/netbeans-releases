@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -14,6 +14,7 @@
 package org.netbeans.modules.xml.text.syntax.dom;
 
 import java.util.*;
+import javax.swing.text.BadLocationException;
 
 import org.w3c.dom.*;
 import org.netbeans.modules.xml.text.syntax.*;
@@ -38,7 +39,7 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
         super( support, from,to );
         this.name = name;
     }
-
+    
     public final short getNodeType() {
         return Node.ELEMENT_NODE;
     }
@@ -50,7 +51,7 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
     public final String getTagName() {
         return name;
     }
-        
+    
     /**
      * Create properly bound attributes and cache results.
      * Parse attributes from first token.
@@ -59,10 +60,10 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
         
         // cached results not implemented
         if (domAttributes != null) return domAttributes;
-            
-        Map map = new HashMap(3);            
-            
-SCAN_LOOP:
+        
+        Map map = new HashMap(3);
+        
+        SCAN_LOOP:
         for (TokenItem next = first.getNext(); next != null; next = next.getNext()) {
             TokenID id = next.getTokenID();
             String name;
@@ -74,11 +75,11 @@ SCAN_LOOP:
                     next = next.getNext();
                     if (next == null) break SCAN_LOOP;
                 }
-                
+
                 // fuzziness to relax minor tokenization changes
                 String image = next.getImage();
                 char test = image.charAt(0);
-                if (image.length() == 1) {                    
+                if (image.length() == 1) {
                     if (test == '"' || test == '\'') {
                         next = next.getNext();
                     }
@@ -89,7 +90,7 @@ SCAN_LOOP:
 
                 Object key = NamedNodeMapImpl.createKey(name);
                 map.put(key, new AttrImpl(support, attributeStart, this));
-                
+
                 next = Util.skipAttributeValue(next, test);
                 if (next == null) break SCAN_LOOP;
             } else if (id == WS) {
@@ -98,7 +99,7 @@ SCAN_LOOP:
                 break; // end of element markup
             }
         }
-        
+
         // domAttributes = new NamedNodeMapImpl(map);
         return new NamedNodeMapImpl(map);
     }
@@ -110,7 +111,96 @@ SCAN_LOOP:
     }
     
     public final void setAttribute(String name, String value) {
-        throw new ROException();
+        // Holds the position in the document where the attribute name-value string should be inserted
+        int insertStart = -1;
+        
+        // Holds the lenght of an old name-value string which should be removed before the new one will be inserted
+        int removeCount = 0;
+        
+        // Check if an attribute with this name already exists for the element
+        SCAN_LOOP:
+        for (TokenItem next = first.getNext(); next != null; next = next.getNext()) {
+            TokenID id = next.getTokenID();
+            String curName;
+            String curValue;
+            if (id == ARGUMENT) {
+                TokenItem attributeStart = next;
+                curName = next.getImage();
+
+                if (name.equals(curName)) {
+                    // Found attribute to replace
+                    insertStart = attributeStart.getOffset();
+                }
+
+                while (next.getTokenID() != VALUE) {
+                    next = next.getNext();
+                    if (next == null) break SCAN_LOOP;
+                }
+
+                // fuzziness to relax minor tokenization changes
+                String image = next.getImage();
+                char test = image.charAt(0);
+                if (image.length() == 1) {
+                    if (test == '"' || test == '\'') {
+                        next = next.getNext();
+                    }
+                }
+
+                if (next == null) break SCAN_LOOP;
+                curValue = next.getImage();
+
+                if (insertStart != -1) {
+                    // Found the attribute, let's calculate removeCount
+                    removeCount = next.getOffset() + curValue.length() - insertStart;
+                    break SCAN_LOOP;
+                }
+
+                next = Util.skipAttributeValue(next, test);
+                if (next == null) break SCAN_LOOP;
+            } else if (id == WS) {
+                // just skip
+            } else {
+                break; // end of element markup
+            }
+        }
+
+        // Construct a new attribute name-value string to insert
+        String quoteCharString = value.indexOf('"') == -1 ? "\"" : "'";
+        String stringToInsert = name + "=" + quoteCharString + value + quoteCharString;
+        
+        if (insertStart == -1) {
+            // An attribute with the name was not found for the element
+            // Let's add it to the end
+            insertStart = offset + length - 1;
+            stringToInsert = " " + stringToInsert;
+        }
+
+        // Update the document
+        BaseDocument doc = (BaseDocument)support.getDocument();
+        doc.atomicLock();
+        try {
+            if (removeCount != 0) {
+                doc.remove(insertStart, removeCount);
+            }
+            doc.insertString(insertStart, stringToInsert, null);
+            doc.invalidateSyntaxMarks();
+        } catch( BadLocationException e ) {
+            throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
+        } finally {
+            doc.atomicUnlock();
+        }
+
+        // Update this object's member variables
+        try {
+            length += stringToInsert.length() - removeCount;
+            int endOffset = offset + length;
+            if (endOffset > doc.getLength()) {
+                endOffset = doc.getLength();
+            }
+            first = support.getTokenChain(offset, endOffset);
+        } catch (BadLocationException e) {
+            throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
+        }
     }
     
     public final void removeAttribute(String name) {
@@ -149,11 +239,11 @@ SCAN_LOOP:
             return prev;
         }
     }
-
+    
     /**
      * Returns next sibling by locating pairing end tag
      * and asking it for next non-end tag SyntaxNode.
-     */    
+     */
     public Node getNextSibling() {
         SyntaxNode next = getEndTag();
         if (next == null) return null;
@@ -178,34 +268,34 @@ SCAN_LOOP:
     
     protected abstract Tag getEndTag();
     
-//    public boolean equals(Object obj) {
-//        if ((obj instanceof Tag) == false) return false;
-//        return false;
-//    }
-            
+    //    public boolean equals(Object obj) {
+    //        if ((obj instanceof Tag) == false) return false;
+    //        return false;
+    //    }
+    
     
     // unsupported DOM level 2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     public String getAttributeNS(String namespaceURI, String localName) {
         throw new UOException();
     }
-
+    
     public void setAttributeNS(String namespaceURI, String qualifiedName, String value) {
         throw new UOException();
-    }                               
-
+    }
+    
     public void removeAttributeNS(String namespaceURI, String localName) {
         throw new UOException();
     }
-
+    
     public Attr getAttributeNodeNS(String namespaceURI, String localName) {
         throw new UOException();
     }
-
+    
     public Attr setAttributeNodeNS(Attr newAttr) {
         throw new UOException();
     }
-
+    
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
         throw new UOException();
     }
@@ -213,7 +303,7 @@ SCAN_LOOP:
     public boolean hasAttribute(String name) {
         throw new UOException();
     }
-
+    
     public boolean hasAttributeNS(String namespaceURI, String localName) {
         throw new UOException();
     }
