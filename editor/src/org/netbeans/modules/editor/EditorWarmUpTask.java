@@ -17,13 +17,10 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.Enumeration;
 import java.util.Iterator;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
-import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
@@ -35,7 +32,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.Registry;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
-import org.netbeans.modules.editor.java.JCStorage;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.plain.PlainKit;
 import org.openide.ErrorManager;
@@ -87,14 +83,6 @@ public class EditorWarmUpTask implements Runnable{
     private static final boolean debug
         = Boolean.getBoolean("netbeans.debug.editor.warmup"); // NOI18N
     
-    /**
-     * Option to skip warmup code in case e.g. when there are some debugging
-     * messages in the code and they would be shown many times
-     * thank to the warmup code.
-     */
-    private static final boolean warmupDisabled
-        = Boolean.getBoolean("netbeans.editor.warmup.disable"); // NOI18N
-
     private static final int STATUS_INIT = 0;
     private static final int STATUS_KITS_INITED = 1;
     private static final int STATUS_KIT_ASSIGNED = 2;
@@ -122,11 +110,6 @@ public class EditorWarmUpTask implements Runnable{
                 // Initialization of editor settings initializers and PrintOptions.
                 EditorModule.init();        
 
-                // Check whether warmup is disabled and if so return immediately
-                if (warmupDisabled) {
-                    return;
-                }
-                
                 // Init of JavaKit and JavaOptions
                 javaKit = BaseKit.getKit(JavaKit.class);
                 plainKit = BaseKit.getKit(PlainKit.class);
