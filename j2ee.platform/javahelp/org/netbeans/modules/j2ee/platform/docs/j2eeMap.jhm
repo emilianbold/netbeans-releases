@@ -159,6 +159,7 @@
 	<mapID target="ws_process" url="webservice/about/ws_process.html" />
 	<!-- End of "About" section -->
 	<!-- Start of "Create" section -->
+        <mapID target="set_ws_server" url="webservice/create/set_ws_server.html" />
 	<mapID target="create_ws_from_scratch" url="webservice/create/create_ws_from_scratch.html" />
 	<mapID target="create_ws_from_wsdl" url="webservice/create/create_ws_from_wsdl.html" />
 	<mapID target="create_ws_from_code" url="webservice/create/create_ws_from_code.html" />

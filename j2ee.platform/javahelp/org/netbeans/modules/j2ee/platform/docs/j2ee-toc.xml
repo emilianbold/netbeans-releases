@@ -170,7 +170,7 @@
             <tocitem text="About Session Beans" target="about_session_beans" />
             <tocitem text="About Message-Driven Beans" target="about_msg_driven_beans" />
         </tocitem>
-        <tocitem text="Creating and Editing Enterprise Beans" >
+	<tocitem text="Creating and Editing Enterprise Beans" >
             <tocitem text="Creating an EJB Module Project" target="create_ejb_project" />
             <tocitem text="Creating an Enterprise Bean" target="create_ejb" />
             <tocitem text="Generating CMP Entity Beans from a Database" target="generate_cmp_beans" />
@@ -210,7 +210,8 @@
 		<tocitem text="Web Service Tasks: Quick Reference" target="tbd" />
   	 </tocitem>
 	 <tocitem text="Creating and Editing Web Services" >
-		<tocitem text="Implementing an Existing WSDL File" target="create_ws_from_wsdl" />
+	        <tocitem text="Setting Up the Server for Web Services" target="set_ws_server" />
+                <tocitem text="Implementing an Existing WSDL File" target="create_ws_from_wsdl" />
 		<tocitem text="Exposing Existing Code as a Web Service" target="create_ws_from_code" />
 		<tocitem text="Creating a Web Service from Scratch" target="create_ws_from_scratch" />
     	        <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
