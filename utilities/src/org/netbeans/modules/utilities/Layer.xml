@@ -14,10 +14,11 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
+
     <folder name="Templates">
         <attr name="API_Support/Other" boolvalue="true"/>
         <folder name="Other">
-            <file name="bookmark.url" url="bookmark.url">
+            <file name="bookmark.url" url="nbresloc:/org/netbeans/modules/utilities/bookmark.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/url/TemplateHelp.html"/>
@@ -28,7 +29,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/group/resources/TemplateHelp.html"/>
             </file>
-        </folder>
+        </folder> <!-- Other -->
+
         <folder name="Services">
             <folder name="SearchType">
                 <attr name="helpID" stringvalue="org.openidex.search.SearchType"/>
@@ -53,9 +55,10 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.search.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/openidex/search/res/find.gif"/>
                 </file>
-            </folder>
-        </folder>
-    </folder>
+            </folder> <!-- SearchType -->
+        </folder> <!-- Services -->
+    </folder> <!-- Templates -->
+
     <!-- [PENDING] Eventually it may be a good idea to just kill BookmarksAction and simply place Bookmarks/ -->
     <!-- folder underneath Menu/Help/ and use SFS icons and so on to make it look pretty... -->
     <!-- (Or make Menu/Help/Bookmarks.shadow a symlink to Bookmarks; this works now.) -->
@@ -82,33 +85,40 @@ Microsystems, Inc. All Rights Reserved.
         <file name="ffj-kb.url" url="ffj-kb.url">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
+
         <attr name="netbeans-faq.url/ffj-kb.url" boolvalue="true"/>
         <attr name="ffj-kb.url/apis-online.url" boolvalue="true"/>
         <attr name="apis-online.url/java-web-site.url" boolvalue="true"/>
         <attr name="java-web-site.url/jdc.url" boolvalue="true"/>
         <attr name="jdc.url/swing.url" boolvalue="true"/>
-    </folder>
+    </folder> <!-- Bookmarks -->
+
     <folder name="Actions">
         <folder name="Help">
             <file name="org-netbeans-modules-url-BookmarksAction.instance"/>
-        </folder>
+        </folder> <!-- Help -->
+
         <folder name="System">
             <file name="org-netbeans-modules-url-OpenInNewWindowAction.instance"/>
             <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
-        </folder>
+        </folder> <!-- System -->
+
         <folder name="Tools">
             <file name="org-netbeans-modules-group-CreateGroupAction.instance"/>
-        </folder>
+        </folder> <!-- Tools -->
+
         <folder name="Edit">
             <file name="org-netbeans-modules-search-RepositorySearchAction.instance"/>
-        </folder>
-    </folder>
+        </folder> <!-- Edit -->
+    </folder> <!-- Actions -->
+
     <folder name="Menu">
         <folder name="File">
             <attr name="org-netbeans-core-actions-UnmountFSAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
             <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/Separator2.instance" boolvalue="true"/>
-        </folder>
+        </folder> <!-- File -->
+
         <folder name="Edit">
             <attr name="org-openide-actions-GotoAction.instance/sep-before-reposearch.instance" boolvalue="true"/>
             <file name="sep-before-reposearch.instance">
@@ -116,7 +126,8 @@ Microsystems, Inc. All Rights Reserved.
 	    </file>
             <attr name="sep-before-reposearch.instance/org-netbeans-modules-search-RepositorySearchAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-search-RepositorySearchAction.instance"/>
-        </folder>
+        </folder> <!-- Edit -->
+
         <folder name="Help">
             <attr name="Separator1.instance/netbeans-web-link.url" boolvalue="true"/>
             <file name="netbeans-web-link.url" url="netbeans-web-link.url">
@@ -140,27 +151,29 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="utilities-sep-3.instance/org-netbeans-modules-url-BookmarksAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-url-BookmarksAction.instance"/>
             <attr name="org-netbeans-modules-url-BookmarksAction.instance/org-netbeans-core-actions-WelcomeAction.instance" boolvalue="true"/>
-        </folder>
-    </folder>
+        </folder> <!-- Help -->
+    </folder> <!-- Menu -->
+
     <folder name="Toolbars">
         <folder name="System">
             <attr name="org-netbeans-core-actions-NewTemplateCallableAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
             <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/org-openide-actions-SaveAction.instance" boolvalue="true"/>
-        </folder>
-    </folder>
+        </folder> <!-- System -->
+    </folder> <!-- Toolbars -->
+
     <folder name="Shortcuts">
         <file name="C-O.instance">
     	    <attr name="instanceClass" stringvalue="org.netbeans.modules.openfile.OpenFileAction"/>
 	</file>
-    </folder>
+    </folder> <!-- Shortcuts -->
 
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans">
                 <!-- public ID for pdf link xml -->
                 <file name="DTD_PDF_Document_Menu_Link_1_0" url="nbrescurr:/org/netbeans/modules/pdf/pdf_link.dtd"/>
-            </folder>
+            </folder> <!-- NetBeans -->
 
             <folder name="NetBeans_org_netbeans_modules_pdf">
                 <file name="DTD_XML_PDFSettings_1_0"
@@ -178,7 +191,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="DTD_PDF_Document_Menu_Link_1_0.instance">
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.pdf.LinkProcessor" />
                 </file>
-            </folder>
+            </folder> <!-- NetBeans -->
 
             <folder name="NetBeans_org_netbeans_modules_pdf">
                 <file name="DTD_XML_PDFSettings_1_0.instance">
@@ -205,9 +218,9 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
         </folder> <!-- memory -->
-    </folder>
+    </folder> <!-- xml -->
     
-    <folder name="Services">        
+    <folder name="Services">
         <!-- Open File Server Settings -->
         <file name="org-netbeans-modules-openfile-Settings.settings" url="../openfile/Openfile.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.openfile.Bundle"/>
@@ -218,6 +231,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-pdf-PDFSettings.settings" url="../pdf/PDF.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.pdf.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/pdf/PDFDataIcon.gif"/>
+            <attr name="helpID" stringvalue="org.netbeans.modules.pdf.PDFSettings"/>
         </file>
 
         <!-- Bookmarks Node -->
@@ -257,8 +271,8 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-search-ObjectNameType.settings/org-netbeans-modules-search-ObjectTypeType.settings" boolvalue="true"/>
             <attr name="org-netbeans-modules-search-ObjectTypeType.settings/org-netbeans-modules-search-ModificationDateType.settings" boolvalue="true"/>
             <attr name="org-netbeans-modules-search-ModificationDateType.settings/org-netbeans-modules-vcscore-search-VcsSearchType.settings" boolvalue="true"/>
-        </folder>
-    </folder>
+        </folder> <!-- SearchType -->
+    </folder> <!-- Services -->
 
     <folder name="UI">
         <folder name="Services">
@@ -274,19 +288,22 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-pdf-PDFSettings.shadow">
                         <attr name="originalFile" stringvalue="Services/org-netbeans-modules-pdf-PDFSettings.settings"/>
                     </file>
-                </folder>
+                </folder> <!-- ServerAndExternalToolSettings -->
+
                 <folder name="System">
                     <file name="org-netbeans-modules-url-BookmarksNode.shadow">
                         <attr name="originalFile" stringvalue="Services/org-netbeans-modules-url-BookmarksNode.instance"/>
                     </file>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
+                </folder> <!-- System -->
+
+            </folder> <!-- IDEConfiguration -->
+        </folder> <!-- Services -->
+    </folder> <!-- UI -->
     
     <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-search-RegExpAnnotation.xml" url="../search/types/RegExpAnnotation.xml"/>
-        </folder>
-    </folder>
+        </folder> <!-- AnnotationTypes -->
+    </folder> <!-- Editors -->
+
 </filesystem>
