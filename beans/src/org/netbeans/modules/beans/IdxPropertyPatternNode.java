@@ -136,8 +136,7 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
       
       /** Define property editor for this property. */
       public PropertyEditor getPropertyEditor () {
-        //return new org.openide.src.nodes.PropertyEditors.TypeEditor();
-        return new com.netbeans.developer.editors.TypeEditor();
+        return new org.openide.explorer.propertysheet.editors.TypeEditor();
       }
     };
   }
@@ -192,6 +191,8 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
 
 /*
 * Log
+*  2    Gandalf   1.1         6/30/99  Ian Formanek    Reflecting package 
+*       changes of some property editors
 *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
 * $
 */
