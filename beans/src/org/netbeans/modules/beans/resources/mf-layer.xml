@@ -23,18 +23,22 @@ Microsystems, Inc. All Rights Reserved.
       <file name="Bean.java" url="templates/Bean.template">
          <attr name="template" boolvalue="true" />
          <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/beans/resources/Bean.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
       </file>
       <file name="BeanInfo.java" url="templates/BeanInfo.template">
          <attr name="template" boolvalue="true" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
          <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/beans/resources/BeanInfo.html" />
       </file>
       <file name="BeanInfoNoIcon.java" url="templates/BeanInfoNoIcon.template">
          <attr name="template" boolvalue="true" />
          <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/beans/resources/BeanInfo.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
       </file>
       <file name="Customizer.java" url="templates/Customizer.template">
          <attr name="template" boolvalue="true" />
          <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/beans/resources/Customizer.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
       </file>
       <file name="Customizer.form" url="templates/Customizer.form.template">
          <attr name="template" boolvalue="true" />
@@ -43,6 +47,7 @@ Microsystems, Inc. All Rights Reserved.
       <file name="PropertyEditor.java" url="templates/PropertyEditor.template">
          <attr name="template" boolvalue="true" />
          <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/beans/resources/PropertyEditor.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
       </file>
     </folder>
   </folder>
