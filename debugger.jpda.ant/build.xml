@@ -33,7 +33,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="compile" depends="init">
-        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+        <javac deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+            <src path="src"/>
+            <src path="antsrc"/>
             <classpath refID="cp"/>
         </javac>
     </target>
@@ -45,16 +47,16 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
         <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-debugger-jpda-ant.jar" manifest="manifest-subst.mf" compress="false">
             <fileset dir="src">
-                <include name="org/netbeans/modules/debugger/jpda/ant/Bundle.properties"/>
-                <include name="org/netbeans/modules/debugger/projects/**/*"/>
                 <include name="META-INF/**/*"/>
+                <include name="**/*.class"/>
+                <include name="**/Bundle.properties"/>
                 <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
             </fileset>
         </jar>
 
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
         <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/org-netbeans-modules-debugger-jpda-ant.jar" compress="false">
-            <fileset dir="src">
+            <fileset dir="antsrc">
                 <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
                 <include name="org/netbeans/modules/debugger/jpda/ant/**/*.class"/>
                 <include name="org/netbeans/modules/debugger/jpda/ant/antlib.xml"/>
@@ -87,6 +89,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="clean" depends="init" description="Clean build products.">
         <delete>
             <fileset dir="src">
+                <include name="**/*.class"/>
+            </fileset>
+            <fileset dir="antsrc">
                 <include name="**/*.class"/>
             </fileset>
             <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
