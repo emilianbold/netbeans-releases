@@ -79,8 +79,19 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
                     List/*<FileObject>*/ packageRoots = Classpaths.findPackageRoots(helper, evaluator, compilationUnitEl);
                     FileObject[] sources = (FileObject[])packageRoots.toArray(new FileObject[packageRoots.size()]);
                     Iterator it2 = binaries.iterator();
-                    while (it2.hasNext()) {
+                    while (it2.hasNext()) {                        
                         URL u = (URL)it2.next();
+                        FileObject[] orig = (FileObject[]) roots.get (u);
+                        //The case when sources are in the separate compilation units but
+                        //the output is built into a single archive is not very common.
+                        //It is better to recreate arrays rather then to add source roots 
+                        //into lists which will slow down creation of Result instances.
+                        if (orig != null) {
+                            FileObject[] merged = new FileObject[orig.length+sources.length];
+                            System.arraycopy(orig, 0, merged, 0, orig.length);
+                            System.arraycopy(sources, 0,  merged, orig.length, sources.length);
+                            sources = merged;
+                        }
                         roots.put(u, sources);
                     }
                 }
