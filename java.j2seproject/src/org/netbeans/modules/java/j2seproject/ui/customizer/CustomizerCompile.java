@@ -43,13 +43,14 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author  phrebejk
  */
-public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel {
+public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel, HelpCtx.Provider {
 
     // Helper for storing properties
     private J2SEProjectProperties j2seProperties;
@@ -85,7 +86,9 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel {
 
     }
 
-    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx( CustomizerCompile.class );
+    }
 
 
     /** This method is called from within the constructor to

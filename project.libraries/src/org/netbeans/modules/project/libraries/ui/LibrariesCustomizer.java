@@ -21,6 +21,7 @@ import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import javax.swing.event.*;
@@ -54,7 +55,7 @@ import org.openide.nodes.NodeOp;
  *
  * @author  tom
  */
-public final class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.Provider {
+public final class LibrariesCustomizer extends javax.swing.JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
     
     private static final Dimension PREFERRED_SIZE = new Dimension (720,400);
     
@@ -91,6 +92,10 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
         }
     }
 
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx( LibrariesCustomizer.class );
+    }
+    
     public boolean apply () {
         try {
             this.model.apply();

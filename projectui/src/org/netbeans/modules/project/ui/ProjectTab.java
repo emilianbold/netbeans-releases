@@ -108,7 +108,7 @@ public class ProjectTab extends TopComponent
         associateLookup( ExplorerUtils.createLookup(manager, map) );
         
     }
-    
+
     private void initValues( String tcID ) {
         
         String name = NbBundle.getMessage(ProjectTab.class, "LBL_" + tcID ); // NOI18N
@@ -142,7 +142,7 @@ public class ProjectTab extends TopComponent
      * For example ProjectTabAction uses this method to create instance if necessary.
      */
     public static synchronized ProjectTab findDefault( String tcID ) {
-                       
+
         ProjectTab tab = (ProjectTab)tabs.get( tcID );
         
         if ( tab == null ) {
@@ -205,8 +205,9 @@ public class ProjectTab extends TopComponent
     }
     
     public HelpCtx getHelpCtx() {
-        return ExplorerUtils.getHelpCtx( manager.getSelectedNodes(),
-                                         new HelpCtx( ProjectTab.class ) );
+        return ExplorerUtils.getHelpCtx( 
+            manager.getSelectedNodes(),
+            ID_LOGICAL.equals( id ) ? new HelpCtx( "ProjectTab_Projects" ) : new HelpCtx( "ProjectTab_Files" ) );
     }
 
      

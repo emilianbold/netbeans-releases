@@ -47,7 +47,7 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
     public TemplatesPanel() {
     }
     
-    public void readSettings (Object settings) {
+    public void readSettings (Object settings) {        
         TemplateWizard wd = (TemplateWizard) settings;
         wd.putProperty ("WizardPanel_contentSelectedIndex", new Integer (0)); // NOI18N
         wd.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
@@ -106,7 +106,7 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
     }
     
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx( TemplatesPanel.class );
     }
     
     public synchronized Component getComponent() {

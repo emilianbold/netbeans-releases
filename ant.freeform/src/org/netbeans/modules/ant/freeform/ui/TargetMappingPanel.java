@@ -36,11 +36,12 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
 
 /**
  * @author  David Konecny
  */
-public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCustomizer.Panel, MouseListener, ActionListener {
+public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCustomizer.Panel, MouseListener, ActionListener, HelpCtx.Provider {
 
     public static String BUILD_ACTION = "build"; // NOI18N
     public static String CLEAN_ACTION = "clean"; // NOI18N
@@ -84,6 +85,10 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         jLabel3.setVisible(projectType.equals("webapps")); // NOI18N
         redeployCombo.setVisible(projectType.equals("webapps")); // NOI18N
         showAdvancedPart(advancedPart);
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx( TargetMappingPanel.class );
     }
     
     private void showAdvancedPart(boolean show) {

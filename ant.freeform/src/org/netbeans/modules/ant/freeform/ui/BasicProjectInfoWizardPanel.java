@@ -50,7 +50,7 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
     }
     
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx( BasicProjectInfoWizardPanel.class );
     }
     
     public boolean isValid() {

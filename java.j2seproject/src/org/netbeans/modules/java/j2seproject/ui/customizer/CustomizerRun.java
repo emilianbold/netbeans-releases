@@ -17,13 +17,14 @@ import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
 
 
 /**
  *
  * @author  phrebejk
  */
-public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
+public class CustomizerRun extends JPanel implements J2SECustomizer.Panel, HelpCtx.Provider {
     
     // Helper for storing properties
     private J2SEProjectProperties j2seProperties;
@@ -69,6 +70,9 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
         jButtonEdit.setVisible( false );
     } 
         
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx( CustomizerRun.class );
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.

@@ -52,7 +52,7 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
     }
     
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx( TargetMappingWizardPanel.class );
     }
     
     public boolean isValid() {

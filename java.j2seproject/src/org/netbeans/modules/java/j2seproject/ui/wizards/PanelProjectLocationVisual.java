@@ -107,7 +107,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         add(projectLocationTextField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
-        browseButton.setActionCommand("BROWSE"); // NOI18N
+        browseButton.setActionCommand("BROWSE");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLocationAction(evt);

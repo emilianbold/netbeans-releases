@@ -30,13 +30,14 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** Customizer for general project attributes.
  *
  * @author  phrebejk
  */
-public class CustomizerJavadoc extends JPanel implements J2SECustomizer.Panel {
+public class CustomizerJavadoc extends JPanel implements J2SECustomizer.Panel, HelpCtx.Provider {
     
     private VisualPropertySupport vps;
         
@@ -73,7 +74,10 @@ public class CustomizerJavadoc extends JPanel implements J2SECustomizer.Panel {
         
         
     } 
-        
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx( CustomizerJavadoc.class );
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.

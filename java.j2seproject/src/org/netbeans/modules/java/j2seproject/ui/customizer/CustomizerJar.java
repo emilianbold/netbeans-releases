@@ -31,13 +31,14 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** Customizer for general project attributes.
  *
  * @author  phrebejk
  */
-public class CustomizerJar extends JPanel implements J2SECustomizer.Panel {
+public class CustomizerJar extends JPanel implements J2SECustomizer.Panel, HelpCtx.Provider {
     
     private VisualPropertySupport vps;
         
@@ -53,6 +54,10 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel {
         vps.register( jTextFieldExcludes, J2SEProjectProperties.BUILD_CLASSES_EXCLUDES );
         vps.register( jCheckBoxCommpress, J2SEProjectProperties.JAR_COMPRESS ); 
     } 
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx( CustomizerJar.class );
+    }
         
     
     /** This method is called from within the constructor to

@@ -21,12 +21,13 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.ant.freeform.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  * @author  David Konecny
  */
-public class BasicProjectInfoPanel extends javax.swing.JPanel {
+public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx.Provider{
     
     private DocumentListener documentListener;
     private ChangeListener listener;
@@ -65,6 +66,10 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
             this.projectFolder.getDocument().addDocumentListener(documentListener);
         }
         
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx( BasicProjectInfoPanel.class );
+        }
+    
         public File getProjectLocation() {
             return getAsFile(projectLocation.getText());
         }
