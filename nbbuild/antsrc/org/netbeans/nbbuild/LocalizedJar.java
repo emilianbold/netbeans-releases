@@ -44,7 +44,7 @@ import org.apache.tools.ant.types.*;
  * same name as a locale as being localized.  Now it does so by default.
  * <p>Based on <code>&lt;zip&gt;</code> and <code>&lt;jar&gt;</code> tasks in Ant,
  * but not feasible to simply subclass or compose them.
- * @see <a href="http://www.netbeans.org/i18n/">NetBeans I18N documentation</a>
+ * @see <a href="http://www.netbeans.org/devhome/docs/i18n/index.html">NetBeans I18N documentation</a>
  * @author Jesse Glick
  */
 public class LocalizedJar extends MatchingTask {
