@@ -85,6 +85,8 @@ final class LibrariesNode extends AbstractNode {
 
     private static final String ICON = "org/netbeans/modules/java/j2seproject/ui/resources/libraries";    //NOI18N
     static final RequestProcessor rp = new RequestProcessor ();
+    private static Icon folderIconCache;
+    private static Icon openedFolderIconCache;
 
     private final String displayName;
     private final Action[] librariesNodeActions;
@@ -141,6 +143,25 @@ final class LibrariesNode extends AbstractNode {
     public static Action createAddFolderAction (Project p, String classPathId) {
         return new AddFolderAction (p, classPathId);
     }
+    
+    /**
+     * Returns Icon of folder on active platform
+     * @param opened should the icon represent opened folder
+     * @return the folder icon
+     */
+    static synchronized Icon getFolderIcon (boolean opened) {
+        if (openedFolderIconCache == null) {
+            Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+            openedFolderIconCache = new ImageIcon(n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16));
+            folderIconCache = new ImageIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
+        }
+        if (opened) {
+            return openedFolderIconCache;
+        }
+        else {
+            return folderIconCache;
+        }
+    }
 
     //Static inner classes
     private static class LibrariesChildren extends Children.Keys implements PropertyChangeListener {
@@ -165,9 +186,7 @@ final class LibrariesNode extends AbstractNode {
         private static final String REF_PREFIX = "${"; //NOI18N
         
         private static final String LIBRARIES_ICON = "org/netbeans/modules/java/j2seproject/ui/resources/libraries.gif"; //NOI18N
-        private static final String ARCHIVE_ICON = "org/netbeans/modules/java/j2seproject/ui/resources/jar.gif";//NOI18N
-        private static Icon folderIconCache;
-        private static Icon openedFolderIconCache;
+        private static final String ARCHIVE_ICON = "org/netbeans/modules/java/j2seproject/ui/resources/jar.gif";//NOI18N        
 
         private final PropertyEvaluator eval;
         private final UpdateHelper helper;
@@ -230,7 +249,7 @@ final class LibrariesNode extends AbstractNode {
                 Key key = (Key) obj;
                 switch (key.getType()) {
                     case Key.TYPE_PLATFORM:
-                        result = new Node[] {new PlatformNode(eval, platformProperty)};
+                        result = new Node[] {PlatformNode.create(eval, platformProperty)};
                         break;
                     case Key.TYPE_PROJECT:
                         result = new Node[] {new ProjectNode(key.getProject(), helper, refHelper, key.getClassPathId(),
@@ -259,6 +278,7 @@ final class LibrariesNode extends AbstractNode {
                 result.add (new Key());
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files
+            // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
             ClassPath cp = ClassPathSupport.createClassPath ((URL[])rootsList.toArray(new URL[rootsList.size()]));
             cp.addPropertyChangeListener (this);
             cp.getRoots();
@@ -382,21 +402,7 @@ final class LibrariesNode extends AbstractNode {
                 ErrorManager.getDefault().notify(e);
             }
             return null;
-        }
-
-        private static synchronized Icon getFolderIcon (boolean opened) {
-            if (openedFolderIconCache == null) {
-                Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
-                openedFolderIconCache = new ImageIcon(n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16));
-                folderIconCache = new ImageIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
-            }
-            if (opened) {
-                return openedFolderIconCache;
-            }
-            else {
-                return folderIconCache;
-            }
-        }
+        }        
     }
 
     private static class Key {
