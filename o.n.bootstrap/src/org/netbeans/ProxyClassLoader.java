@@ -30,6 +30,10 @@ import java.security.PrivilegedAction;
  * @author  Petr Nejedly, Jesse Glick
  */
 public class ProxyClassLoader extends ClassLoader {
+    
+    /** #38368: Allow disabling the default package warning */
+    private static final boolean DO_NOT_WARN_DEFAULT_PACKAGE = Boolean.getBoolean("org.netbeans.do_not_warn_default_package"); // NOI18N
+    
     /** empty enumeration */
     private static final Enumeration EMPTY = new ArrayEnumeration (new Object[0]);
     
@@ -185,7 +189,9 @@ public class ProxyClassLoader extends ClassLoader {
         zombieCheck(name);
         
         final int slashIdx = name.lastIndexOf('/');
-        if (slashIdx == -1) return null;    // won't load from the default package
+        if (slashIdx == -1) {
+            printDefaultPackageWarning(name);
+        }
         final String pkg = name.substring(0, slashIdx + 1);
 
         if (isSpecialResource(pkg)) {
@@ -262,7 +268,9 @@ public class ProxyClassLoader extends ClassLoader {
     protected final synchronized Enumeration findResources(String name) throws IOException {
         zombieCheck(name);
         final int slashIdx = name.lastIndexOf('/');
-        if (slashIdx == -1) return EMPTY; // won't load from the default package
+        if (slashIdx == -1) {
+            printDefaultPackageWarning(name);
+        }
         final String pkg = name.substring(0, slashIdx + 1);
 
         // Don't bother optimizing this call by domains.
@@ -406,7 +414,15 @@ public class ProxyClassLoader extends ClassLoader {
         return getPackages();
     }
 
-    
+    /**
+     * #38368: Warn that the default package should not be used.
+     */
+    private static void printDefaultPackageWarning(String name) {
+        if (! DO_NOT_WARN_DEFAULT_PACKAGE) {
+            System.out.println("You are trying to access file: " + name + " from the default package."); // NOI18N
+            System.out.println("Please see http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/classpath.html#default_package"); // NOI18N
+        }
+    }
     
     /** Coalesce parent classloaders into an optimized set.
      * This means that all parents of the specified classloaders
@@ -574,6 +590,10 @@ public class ProxyClassLoader extends ClassLoader {
      */
     protected boolean isSpecialResource(String pkg) {
         if (pkg.startsWith("META-INF/")) return true; // NOI18N
+        
+        // #38368: do not cache the default package
+        if (pkg.length() == 0) return true;
+        
         return false;
     }
     
