@@ -414,6 +414,10 @@ is divided into following sections:
     =================
     </xsl:comment>
     <target name="debug">
+        <xsl:attribute name="depends">run-debug,run-display-browser</xsl:attribute>
+        <xsl:attribute name="description">Deploy to server.</xsl:attribute>
+    </target>
+    <target name="run-debug">
         <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
         <xsl:attribute name ="depends">init,compile</xsl:attribute>
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
@@ -431,7 +435,6 @@ is divided into following sections:
             </bootclasspath>
             </xsl:if>
         </nbjpdaconnect>
-        <nbbrowse url="${{client.url}}"/>
     </target>
 
     <target name="pre-debug-fix">
