@@ -301,16 +301,15 @@ public class JavadocModule extends ModuleInstall {
     public void readExternal(final java.io.ObjectInput objectInput )
     throws java.io.IOException, java.lang.ClassNotFoundException {
         super.readExternal( objectInput );
-        putProperty (PROP_INSTALL_COUNT, objectInput.readObject ());
+        putProperty (PROP_INSTALL_COUNT, new Integer(objectInput.readInt()));
         //numberOfStarts = objectInput.readInt();
-
     }
 
     public void writeExternal(final java.io.ObjectOutput objectOutput )
     throws java.io.IOException {
         super.writeExternal( objectOutput );
-        objectOutput.writeObject (getProperty (PROP_INSTALL_COUNT));
-        //objectOutput.writeInt( numberOfStarts );
+        //objectOutput.writeObject (getProperty (PROP_INSTALL_COUNT));
+        objectOutput.writeInt( ((Integer)(getProperty (PROP_INSTALL_COUNT))).intValue() );
     }
 
     private static void notify (Exception e) {
