@@ -21,11 +21,6 @@ import java.util.StringTokenizer;
 import java.util.Enumeration;
 import java.text.MessageFormat;
 
-/*import org.apache.jasper.JspCompilationContext;
-import org.apache.jasper.compiler.JspReader;
-import org.apache.jasper.compiler.Parser;
-import org.apache.jasper.runtime.JspLoader;*/
-
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -42,9 +37,6 @@ import org.openide.execution.NbClassPath;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.jsps.parserapi.*;
-// THIS IS THE ONLY ALLOWED IMPORT OF JAKARTA IN THIS PACKAGE
-//import org.netbeans.modules.web.core.jsploader.jakarta.JakartaServerPlugin;
-import org.netbeans.modules.j2ee.server.web.FfjJspCompileContext;
 import org.netbeans.modules.j2ee.server.web.WebServerInstance;
 import org.netbeans.modules.j2ee.server.datamodel.WebStandardData;
 import org.netbeans.modules.j2ee.server.ServerInstance;
@@ -65,14 +57,6 @@ public class JspCompileUtil {
     private static JspParserFactory parserFactory;
     
     private static final Object repositoryJobLock = new Object();
-
-    /** Returns the current JspCompileContext for the given page. */
-    public static FfjJspCompileContext getCurrentCompileContext(DataObject jsp) {
-        WebServerInstance inst = getCurrentServerInstance(jsp);
-        if (inst == null)
-            return null;
-        return inst.getJspCompiler();
-    }
 
     /** Returns the current ServerInstance for the given resource file. 
      *  May return null if the server registry does not contain any web server.
@@ -274,48 +258,7 @@ public class JspCompileUtil {
         return "/" + fo.getPackageNameExt('/','.'); // NOI18N
     }
 
-    /** Suggests to the plugin the base directory into which 
-     * output files for a context identified by a given FileObject 
-     * should be generated.
-     */
-    public static final FileObject suggestContextOutputRoot(FileObject fo, Server srv) throws IOException {
-        File serverSpecificRoot = suggestServerWorkDir(srv);
-        
-        FileSystem fs = fo.getFileSystem();
-        int hc = fs.getSystemName().hashCode();
-        String dirName = Long.toHexString(hc <= 0 ? -hc : hc);
-        
-        File contextRoot = new File(serverSpecificRoot, URLEncoder.encode(dirName));
-        return getAsRootOfFileSystem(contextRoot);
-    }
-    
-    /** Suggests to the plugin the base directory into which temporary 
-     * files should be generated. The directory is guaranteed to exist
-     * when this method returns.
-     */
-    public static final File suggestServerWorkDir(Server srv) {
-        File serverRoot = getOutputRootFolder();
-        File serverSpecificRoot;
-        if (srv != null)
-            serverSpecificRoot = new File(serverRoot, URLEncoder.encode(srv.getID()));
-        else 
-            serverSpecificRoot = serverRoot;
-        
-        if (!serverSpecificRoot.exists()) {
-            boolean success = WebExecUtil.myMkdirs(serverSpecificRoot);
-        }
-        return serverSpecificRoot;
-    }
 
-
-    /** Gets the root OUTPUT folder for all contexts in NB systm FileSystem. */
-    public static File getOutputRootFolder() {
-        String path = WebExecUtil.getUserNbHomeDirectory() + File.separator + "jspwork"; // NOI18N
-        File myRoot = (new File(path)).getAbsoluteFile();
-        return myRoot;
-    }
-
-    
     /** Does the following:
     * <ul>
     * <li>creates a hidden LocalFileSystem (with compile, execute and debug capabilities)
@@ -445,28 +388,6 @@ public class JspCompileUtil {
         return rootFolder.getFileSystem().findResource(rootPath + relativePath);
     }
     
-
-/*    public static JspInfo analyzePage(JspDataObject jspPage, String compilationURI, 
-    boolean doSaveIncluded, int errorReportingMode) throws Exception {
-        OptionsImpl options = new OptionsImpl(jspPage);
-        
-        CompilationDescriptor cd = new CompilationDescriptor(
-                                       getContextRoot(jspPage.getPrimaryFile()).getFileSystem(), compilationURI);
-        String jspResource = getContextPath(jspPage.getPrimaryFile());
-
-        AnalyzerCompilerContext ctxt = new AnalyzerCompilerContext(jspResource, cd, options);
-        JspReader reader = JspReader.createJspReader(jspResource, ctxt, "8859_1");
-        ctxt.setReader(reader);
-
-        AnalyzerParseEventListener listener = new AnalyzerParseEventListener(reader, ctxt, 
-            doSaveIncluded, errorReportingMode);
-        Parser parser = new Parser(reader, listener);
-        listener.beginPageProcessing();
-        parser.parse();
-        listener.endPageProcessing();
-        return listener.getJspInfo();
-    }*/
-
 
     public static FileSystem mountJarIfNotMounted(String jarFileName) throws IOException {
         //if(libs.containsKey(jarFileName)) return (FileSystem) libs.get(jarFileName);
