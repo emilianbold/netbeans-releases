@@ -29,10 +29,9 @@ you can pool database connections between an application's current users. For de
         <param name="textColor" value="blue">
 </object></p>
 The first step in creating a Tomcat database connection pool is to create a data source. You
- can do this manually in your <tt>server.xml</tt> or you can use Tomcat's Admintool to do so.</p>
-<p><b>To add a data source using the Tomcat Admintool:</b>
-<ol><li>Access the Tomcat Admintool as described in <a href="tomcat_edit_config.html">Reconfiguring a Tomcat Server</a>.</li>
-<li>In the Admin tool, click Data Sources.</li>
+ can do this manually in your <tt>server.xml</tt> or you can use Tomcat's Admin tool to do so.</p>
+<p><b>To add a data source using the Tomcat Admin tool:</b>
+<ol><li>Access the Tomcat Admin tool as described in <a href="tomcat_edit_config.html">Reconfiguring a Tomcat Server</a>.</li>	<li>In the Admin tool, click Data Sources.</li>
 <li>Choose Create New Data Source from the Data Source Actions drop down on the right.</li>
 <li>Type values such as the following to define your data source:
    <ul>
@@ -46,7 +45,7 @@ The first step in creating a Tomcat database connection pool is to create a data
 <li>Click Save. Then click Commit Changes. Then click Log Out.</li>
 </ol>
 <p><b>To reference a data source from a web application:</b>
-<ol><li><p>Expand the project node in the Projects window. Then expand the
+<ol><li>Expand the project node in the Projects window. Then expand the
 Web Pages node and the WEB-INF node. Double-click the web.xml node and use the
 Source Editor to add your resource reference to the <tt>web.xml</tt> file as follows:
 </p><blockquote>
@@ -54,8 +53,7 @@ Source Editor to add your resource reference to the <tt>web.xml</tt> file as fol
 
 </blockquote>
 </li>
-<li>Expand the project node in the Projects window. Then expand the
-Web Pages node and the META-INF node. Right-click the context.xml node, choose Edit from
+<li>Expand the META-INF node. Right-click the context.xml node, choose Edit from
 the contextual menu and use the Source Editor to add the
 following resource link between the <tt>&lt;context&gt;</tt> tags in the <tt>context.xml</tt> file:
 <blockquote>
@@ -93,7 +91,7 @@ if the <tt>context.xml</tt> file is opened in the Context Editor. <p>Your web ap
 <a href="tomcat_start.html">Starting and Stopping a Tomcat Server</a><br>
 <a href="tomcat_internal_props.html">Customizing a Tomcat Server</a><br>
 <a href="tomcat_edit_config.html">Reconfiguring a Tomcat Server</a><br>
-<a href="tomcat_use_tdcp.html">Using a Tomcat Database Connection Pool</a><br>
+      <a href="tomcat_use_tdcp.html">Connection Pooling from a JSP Pagee</a><br>
 <a href="tomcat_addinstall.html">Adding a Tomcat Server</a><br></td>
   </tr>
 

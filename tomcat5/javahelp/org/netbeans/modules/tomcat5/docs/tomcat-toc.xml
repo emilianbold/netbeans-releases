@@ -26,7 +26,7 @@
         <tocitem text="Customizing a Tomcat Server" target="tomcat_internal_props"/>
 	<tocitem text="Reconfiguring a Tomcat Server" target="tomcat_edit_config" />
 	<tocitem text="Setting Up a Tomcat Database Connection Pool" target="tomcat_setup_tdcp" />
-	<tocitem text="Connection Pooling from a JSP File" target="tomcat_use_tdcp" />
+	<tocitem text="Connection Pooling from a JSP Page" target="tomcat_use_tdcp" />
 	<tocitem text="Adding a Tomcat Server" target="tomcat_addinstall" />
 	</tocitem>
 	<tocitem text="Using the Tomcat Server">

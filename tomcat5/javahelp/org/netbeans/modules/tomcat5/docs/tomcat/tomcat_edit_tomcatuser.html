@@ -21,7 +21,7 @@
 </small></p> 
 <p>It would be quite unsafe to ship web servers with default settings that allowed 
 anyone on the Internet to execute them on your server. 
-Therefore, the web servers are shipped with the requirement that anyone 
+Therefore, web servers are shipped with the requirement that anyone 
 who attempts to use them must authenticate themselves, using a username and password 
 with the appropriate role associated with them.</p> 
 
@@ -37,38 +37,38 @@ with the appropriate role associated with them.</p>
       <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
       <td>
 	 You can only use the usernames and passwords that are defined in  
-	 your NetBeans <b>user</b> directory's <tt>tomcat-users.xml</tt> file, 
-	 and not those that are in the NetBeans <b>installation</b> directory.
+	 the IDE's user directory's <tt>tomcat-users.xml</tt> file, 
+	 and not those that are in the IDE's installation directory.
       </td>
    </tr>
 </table>
 <p>
-   During installation, the NetBeans IDE generates a user
-   called "ide" for use with the bundled Tomcat Server. This user
+   During installation, the IDE generates a user
+   called ide for use with the bundled Tomcat Server. This user
    is assigned the "manager" role and
    is created in your user directory's <tt>tomcat-users.xml</tt> file.</p>
-<p><b>To get the password for the "ide" username from your user directory:</b></p>
+   <p><b>To get the password for the ide username from your user directory:</b></p>
 <ol>
   <li>Right-click
    the Tomcat Server instance node in the Runtime window and select Properties.
    In the Properties
    dialog box, the Base Directory property points to the
-   <i>base-dir</i><tt></tt> directory.</li>
+   base directory.</li>
   <li>Make a note of the path to Tomcat's base directory.</li>
   <li>In your system, go to Tomcat's base directory and then to its 
   <tt>\conf</tt> subfolder.</li>
   <li>Open the <tt>tomcat-users.xml</tt> file and make a note of the password
-  that is defined for the "ide" username.</li>
+  that is defined for the ide username.</li>
 </ol>
 <table cellpadding="3" cellspacing="0" border="0">
   <tr valign="top">
       <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
       <td>
-	 The username and password are <b>not</b> saved when you enter them
+	 The username and password are not saved when you enter them
 	 in this dialog box. The username and password are only saved if
 	 you define them in the Tomcat Server's Properties dialog box. 
 	 To open the Properties dialog box, right-click the Tomcat Server's 
-	 instance node in the Runtime window and select
+	 instance node in the Runtime window and choose
 	 Properties.
       </td>
    </tr>
