@@ -70,7 +70,7 @@ public class HelpAction extends SystemAction {
     * @return name of resource for icon
     */
     protected String iconResource() {
-        return "/org/netbeans/modules/javahelp/resources/show-help.gif"; // NOI18N
+        return "org/netbeans/modules/javahelp/resources/show-help.gif"; // NOI18N
     }
 
     // Make sure this action works on dialogs, etc.--everywhere.
