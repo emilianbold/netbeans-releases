@@ -142,11 +142,13 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
         String packageName = (String) wiz.getProperty(WizardProperties.WSDL_PACKAGE_NAME);
         StubDescriptor stubDescriptor = (StubDescriptor) wiz.getProperty(WizardProperties.CLIENT_STUB_TYPE);
 
+        String sourceUrl;
         FileObject sourceWsdlFile = null;
         
         if(sourceWsdlDownload == null) {
             // Verify the existence of the source WSDL file and that we can get a file object for it.
             File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(wsdlFilePath));
+            sourceUrl = normalizedWsdlFilePath.toString();
             sourceWsdlFile = FileUtil.toFileObject(normalizedWsdlFilePath);
             if(sourceWsdlFile == null) {
                 String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_WsdlFileNotFound", normalizedWsdlFilePath); // NOI18N
@@ -168,7 +170,9 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                 }
             }
             
+            sourceUrl = (String) wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_URL);
             sourceWsdlFile = FileUtil.toFileObject(FileUtil.normalizeFile(wsdlFile));
+        
             if(sourceWsdlFile != null) {
                 FileLock wsdlLock = sourceWsdlFile.lock();
 
@@ -191,7 +195,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
         }
         
         // 2. add the service to the project.
-        ClientBuilder builder = new ClientBuilder(project, clientSupport, sourceWsdlFile, packageName, stubDescriptor);
+        ClientBuilder builder = new ClientBuilder(project, clientSupport, sourceWsdlFile, packageName, sourceUrl, stubDescriptor);
         result = builder.generate();
         
         if(sourceWsdlDownload != null) {

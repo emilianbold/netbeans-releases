@@ -46,7 +46,7 @@ import org.netbeans.modules.websvc.core.Utilities;
  *
  * @author Peter Williams
  */
-public final class ClientInfo extends JPanel {
+public final class ClientInfo extends JPanel implements WsdlRetriever.MessageReceiver {
 
     private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
     
@@ -381,7 +381,7 @@ public final class ClientInfo extends JPanel {
 //        System.out.println("storing wizard properties");
 
         if(wsdlSource == WSDL_FROM_SERVICE) {
-            d.putProperty(WizardProperties.WSDL_DOWNLOAD_URL, jTxtWsdlURL.getText().trim());
+            d.putProperty(WizardProperties.WSDL_DOWNLOAD_URL, getDownloadUrl());
             d.putProperty(WizardProperties.WSDL_DOWNLOAD_FILE, getDownloadWsdl());
             d.putProperty(WizardProperties.WSDL_FILE_PATH, jTxtLocalFilename.getText().trim());
         } else if(wsdlSource == WSDL_FROM_FILE) {
@@ -474,6 +474,21 @@ public final class ClientInfo extends JPanel {
         }
         return result;
     }
+    
+    private String getDownloadUrl() {
+        String result;
+        
+        if(retriever != null) {
+            // If we've done a download, save the URL that was actually used, not
+            // what the user typed in.
+            result = retriever.getWsdlUrl();
+        } else {
+            // If no download yet, then use what the user has typed.
+            result = jTxtWsdlURL.getText().trim();
+        }
+        
+        return result;
+    }
 
 	boolean valid(WizardDescriptor wizardDescriptor) {
 //        System.out.println("validating wizard properties");
@@ -509,7 +524,7 @@ public final class ClientInfo extends JPanel {
             }
             
             if(retriever.getState() < WsdlRetriever.STATUS_COMPLETE) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_RetrieveWSDL",  // NOI18N
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_DownloadProgress",  // NOI18N
                     ((downloadMsg != null) ? downloadMsg : NbBundle.getMessage(ClientInfo.class, "LBL_Unknown")))); // NOI18N
                 return false;
             }
