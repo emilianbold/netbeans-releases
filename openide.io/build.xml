@@ -71,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
         <makenbm file="openide-io.nbm"
                  topdir="."
                  module="netbeans/modules/autoload/openide-io.jar"
-                 homepage="http://java.${homepage.base}/"
+                 homepage="http://openide.${homepage.base}/"
                  distribution="http://${dist.base}/openide-io.nbm">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
