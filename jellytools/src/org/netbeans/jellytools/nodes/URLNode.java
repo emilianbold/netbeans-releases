@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -44,9 +44,6 @@ public class URLNode extends Node {
     }
 
     static final OpenAction openAction = new OpenAction();
-    static final ActionNoBlock editAction = 
-                         new ActionNoBlock(null, 
-                                           Bundle.getStringTrimmed("org.openide.actions.Bundle", "Edit"));
     static final CutAction cutAction = new CutAction();
     static final CopyAction copyAction = new CopyAction();
     static final PasteAction pasteAction = new PasteAction();
@@ -59,7 +56,6 @@ public class URLNode extends Node {
     public void verifyPopup() {
         verifyPopup(new Action[]{
             openAction,
-            editAction,
             cutAction,
             copyAction,
             pasteAction,
@@ -73,11 +69,6 @@ public class URLNode extends Node {
     /** performs OpenAction with this node */    
     public void open() {
         openAction.perform(this);
-    }
-
-    /** performs EditAction with this node */    
-    public void edit() {
-        editAction.perform(this);
     }
 
     /** performs CutAction with this node */    
