@@ -35,10 +35,6 @@ public final class BiNode extends AbstractNode {
 
     // static variables ...........................................................................
 
-    // Resource bundle
-    private static ResourceBundle bundle = NbBundle.getBundle (BiFeatureNode.class);
-
-
     /** generated Serialized Version UID */
     //static final long                      serialVersionUID = -6346315017458451778L;
 
@@ -64,8 +60,8 @@ public final class BiNode extends AbstractNode {
                 new PropertySupport.ReadWrite (
                     PROP_NULL_PROPERTIES,
                     Boolean.TYPE,
-                    bundle.getString ("PROP_Bi_" + PROP_NULL_PROPERTIES ),
-                    bundle.getString ("HINT_Bi_" + PROP_NULL_PROPERTIES )
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NULL_PROPERTIES ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NULL_PROPERTIES )
                 ) {
                     public Object getValue () {
                         return new Boolean( biAnalyser.isNullProperties () );
@@ -85,8 +81,8 @@ public final class BiNode extends AbstractNode {
                 new PropertySupport.ReadWrite (
                     PROP_NULL_EVENTS,
                     Boolean.TYPE,
-                    bundle.getString ("PROP_Bi_" + PROP_NULL_EVENTS ),
-                    bundle.getString ("HINT_Bi_" + PROP_NULL_EVENTS )
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NULL_EVENTS ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NULL_EVENTS )
                 ) {
                     public Object getValue () {
                         return new Boolean( biAnalyser.isNullEventSets () );
@@ -106,8 +102,8 @@ public final class BiNode extends AbstractNode {
                 new PropertySupport.ReadWrite (
                     PROP_NULL_PROPERTIES,
                     Boolean.TYPE,
-                    bundle.getString ("PROP_Bi_" + PROP_NULL_METHODS ),
-                    bundle.getString ("HINT_Bi_" + PROP_NULL_METHODS )
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NULL_METHODS ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NULL_METHODS )
                 ) {
                     public Object getValue () {
                         return new Boolean( biAnalyser.isNullMethods () );
@@ -170,8 +166,8 @@ public final class BiNode extends AbstractNode {
         ps.put( new PropertySupport.ReadWrite (
                     PROP_BI_ICON_C16,
                     String.class,
-                    bundle.getString ("PROP_Bi_" + PROP_BI_ICON_C16 ),
-                    bundle.getString ("HINT_Bi_" + PROP_BI_ICON_C16 )
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_C16 ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_C16 )
                 ) {
                     public Object getValue () {
                         return biAnalyser.getIconC16();
@@ -190,8 +186,8 @@ public final class BiNode extends AbstractNode {
         ps.put( new PropertySupport.ReadWrite (
                     PROP_BI_ICON_M16,
                     String.class,
-                    bundle.getString ("PROP_Bi_" + PROP_BI_ICON_M16 ),
-                    bundle.getString ("HINT_Bi_" + PROP_BI_ICON_M16 )
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_M16 ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_M16 )
                 ) {
                     public Object getValue () {
                         return biAnalyser.getIconM16();
@@ -210,8 +206,8 @@ public final class BiNode extends AbstractNode {
         ps.put( new PropertySupport.ReadWrite (
                     PROP_BI_ICON_C32,
                     String.class,
-                    bundle.getString ("PROP_Bi_" + PROP_BI_ICON_C32 ),
-                    bundle.getString ("HINT_Bi_" + PROP_BI_ICON_C32 )
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_C32 ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_C32 )
                 ) {
                     public Object getValue () {
                         return biAnalyser.getIconC32();
@@ -230,8 +226,8 @@ public final class BiNode extends AbstractNode {
         ps.put( new PropertySupport.ReadWrite (
                     PROP_BI_ICON_M32,
                     String.class,
-                    bundle.getString ("PROP_Bi_" + PROP_BI_ICON_M32 ),
-                    bundle.getString ("HINT_Bi_" + PROP_BI_ICON_M32 )
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_ICON_M32 ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_ICON_M32 )
                 ) {
                     public Object getValue () {
                         return biAnalyser.getIconM32();
@@ -250,8 +246,8 @@ public final class BiNode extends AbstractNode {
         ps.put( new PropertySupport.ReadWrite (
                     PROP_BI_DEFAULT_PROPERTY,
                     Integer.TYPE,
-                    bundle.getString ("PROP_Bi_" + PROP_BI_DEFAULT_PROPERTY ),
-                    bundle.getString ("HINT_Bi_" + PROP_BI_DEFAULT_PROPERTY )
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_DEFAULT_PROPERTY ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_DEFAULT_PROPERTY )
                 ) {
                     public Object getValue () {
                         return new Integer( biAnalyser.getDefaultPropertyIndex() );
@@ -269,8 +265,8 @@ public final class BiNode extends AbstractNode {
         ps.put( new PropertySupport.ReadWrite (
                     PROP_BI_DEFAULT_EVENT,
                     Integer.TYPE,
-                    bundle.getString ("PROP_Bi_" + PROP_BI_DEFAULT_EVENT ),
-                    bundle.getString ("HINT_Bi_" + PROP_BI_DEFAULT_EVENT )
+                    GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_DEFAULT_EVENT ),
+                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_DEFAULT_EVENT )
                 ) {
                     public Object getValue () {
                         return new Integer( biAnalyser.getDefaultEventIndex() );

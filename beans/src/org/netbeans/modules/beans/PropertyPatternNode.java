@@ -68,7 +68,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
      * "Indexed Property", "Property".
      */
     String getTypeForHint() {
-        return bundle.getString( "HINT_Property" );
+        return PatternNode.getString( "HINT_Property" );
     }
 
 
@@ -80,13 +80,13 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
         switch( ((PropertyPattern)pattern).getMode() ) {
         case PropertyPattern.READ_WRITE:
-            mode = bundle.getString("HINT_ReadWriteProperty") ;
+            mode = PatternNode.getString("HINT_ReadWriteProperty") ;
             break;
         case PropertyPattern.READ_ONLY:
-            mode = bundle.getString("HINT_ReadOnlyProperty");
+            mode = PatternNode.getString("HINT_ReadOnlyProperty");
             break;
         case PropertyPattern.WRITE_ONLY:
-            mode = bundle.getString("HINT_WriteOnlyProperty");
+            mode = PatternNode.getString("HINT_WriteOnlyProperty");
             break;
         default:
             mode = ""; // NOI18N
@@ -174,7 +174,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
         if (! Utilities.isJavaIdentifier( name ) ) {
             TopManager.getDefault().notify(
-                new NotifyDescriptor.Message(bundle.getString("MSG_Not_Valid_Identifier"),
+                new NotifyDescriptor.Message(PatternNode.getString("MSG_Not_Valid_Identifier"),
                                              NotifyDescriptor.ERROR_MESSAGE) );
             return false;
         }
@@ -281,7 +281,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
                        ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
                        MethodElement method = ((PropertyPattern)pattern).getGetterMethod();
                        if ( method == null )
-                           return bundle.getString("LAB_NoMethod");
+                           return PatternNode.getString("LAB_NoMethod");
                        else
                            return (fmt.format (method));
                    }
@@ -302,7 +302,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
                        ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
                        MethodElement method = ((PropertyPattern)pattern).getSetterMethod();
                        if ( method == null )
-                           return bundle.getString("LAB_NoMethod");
+                           return PatternNode.getString("LAB_NoMethod");
                        else
                            return (fmt.format (method));
                    }
@@ -323,7 +323,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
                        ElementFormat fmt = new ElementFormat ("{t} {n}"); // NOI18N
                        FieldElement field = ((PropertyPattern)pattern).getEstimatedField();
                        if ( field == null )
-                           return bundle.getString("LAB_NoField");
+                           return PatternNode.getString("LAB_NoField");
                        else
                            return (fmt.format (field));
                    }

@@ -31,9 +31,6 @@ import org.openide.src.Type;
 public class UEventSetPatternPanel extends javax.swing.JPanel
     implements java.awt.event.ActionListener {
 
-    /** The resource bundle */
-    private static final ResourceBundle bundle = NbBundle.getBundle( UEventSetPatternPanel.class );
-
     /** Dialog for displaiyng this panel */
     private Dialog dialog;
     /** Group node under which the new pattern will below */
@@ -58,15 +55,15 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
         bg.add( implRadioButton );
 
         ((TitledBorder)eventSetPanel.getBorder()).setTitle(
-            bundle.getString( "CTL_UEventSetPanel_eventSetPanel" ));
+            PatternNode.getString( "CTL_UEventSetPanel_eventSetPanel" ));
         ((TitledBorder)optionsPanel.getBorder()).setTitle(
-            bundle.getString( "CTL_UEventSetPanel_optionsPanel" ) );
-        typeLabel.setText( bundle.getString( "CTL_UEventSetPanel_typeLabel" ) );
-        textLabel.setText( bundle.getString( "CTL_UEventSetPanel_textLabel" ) );
-        emptyRadioButton.setText( bundle.getString( "CTL_UEventSetPanel_emptyRadioButton" ) );
-        implRadioButton.setText( bundle.getString( "CTL_UEventSetPanel_implRadioButton" ) );
-        fireCheckBox.setText( bundle.getString( "CTL_UEventSetPanel_fireCheckBox" ) );
-        passEventCheckBox.setText( bundle.getString( "CTL_UEventSetPanel_passEventCheckBox" ) );
+            PatternNode.getString( "CTL_UEventSetPanel_optionsPanel" ) );
+        typeLabel.setText( PatternNode.getString( "CTL_UEventSetPanel_typeLabel" ) );
+        textLabel.setText( PatternNode.getString( "CTL_UEventSetPanel_textLabel" ) );
+        emptyRadioButton.setText( PatternNode.getString( "CTL_UEventSetPanel_emptyRadioButton" ) );
+        implRadioButton.setText( PatternNode.getString( "CTL_UEventSetPanel_implRadioButton" ) );
+        fireCheckBox.setText( PatternNode.getString( "CTL_UEventSetPanel_fireCheckBox" ) );
+        passEventCheckBox.setText( PatternNode.getString( "CTL_UEventSetPanel_passEventCheckBox" ) );
     }
 
     /** This method is called from within the constructor to
@@ -301,7 +298,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
                 if ( typeComboBox.getEditor().getItem().toString().trim().length() <= 0) {
                     TopManager.getDefault().notify(
                         new NotifyDescriptor.Message(
-                            bundle.getString("MSG_Not_Valid_Type"),
+                            PatternNode.getString("MSG_Not_Valid_Type"),
                             NotifyDescriptor.ERROR_MESSAGE) );
                     typeComboBox.requestFocus();
                     return;
@@ -311,7 +308,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
                     Type type = Type.parse( typeComboBox.getEditor().getItem().toString() );
                     // Test wheter property with this name already exists
                     if ( groupNode.eventSetExists( type ) ) {
-                        String msg = MessageFormat.format( bundle.getString("MSG_EventSet_Exists"),
+                        String msg = MessageFormat.format( PatternNode.getString("MSG_EventSet_Exists"),
                                                            new Object[] { type.toString() } );
                         TopManager.getDefault().notify(
                             new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
@@ -323,7 +320,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
                 catch ( IllegalArgumentException ex ) {
                     TopManager.getDefault().notify(
                         new NotifyDescriptor.Message(
-                            bundle.getString("MSG_Not_Valid_Type"),
+                            PatternNode.getString("MSG_Not_Valid_Type"),
                             NotifyDescriptor.ERROR_MESSAGE) );
                     typeComboBox.requestFocus();
                     return;

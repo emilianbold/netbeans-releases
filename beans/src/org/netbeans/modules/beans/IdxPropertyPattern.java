@@ -34,9 +34,6 @@ import org.openide.util.NbBundle;
  */
 public class IdxPropertyPattern extends PropertyPattern {
 
-    /** ResourceBundle */
-    private static final ResourceBundle bundle = NbBundle.getBundle( IdxPropertyPattern.class );
-
     /** Getter method of this indexed property */
     protected MethodElement indexedGetterMethod = null;
     /** Setter method of this indexed property */
@@ -535,7 +532,7 @@ public class IdxPropertyPattern extends PropertyPattern {
             newGetter.setBody( body );
 
         if ( javadoc ) {
-            String comment = MessageFormat.format( bundle.getString( "COMMENT_IdxPropertyGetter" ),
+            String comment = MessageFormat.format( PatternNode.getString( "COMMENT_IdxPropertyGetter" ),
                                                    new Object[] { getName() } );
             newGetter.getJavaDoc().setRawText( comment );
         }
@@ -585,10 +582,10 @@ public class IdxPropertyPattern extends PropertyPattern {
         }
 
         if ( javadoc ) {
-            String comment = MessageFormat.format( bundle.getString( "COMMENT_IdxPropertySetter" ),
+            String comment = MessageFormat.format( PatternNode.getString( "COMMENT_IdxPropertySetter" ),
                                                    new Object[] { getName(), name } );
             if ( constrained )
-                comment = comment + bundle.getString( "COMMENT_Tag_ThrowsPropertyVeto" );
+                comment = comment + PatternNode.getString( "COMMENT_Tag_ThrowsPropertyVeto" );
             newSetter.getJavaDoc().setRawText( comment );
         }
 

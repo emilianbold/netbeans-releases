@@ -51,7 +51,7 @@ import org.openide.NotifyDescriptor;
 public abstract class PatternNode extends AbstractNode implements IconBases, PatternProperties, PropertyChangeListener {
 
     /** Source of the localized human presentable strings. */
-    static ResourceBundle bundle = NbBundle.getBundle(PatternNode.class);
+    private static ResourceBundle bundle;
 
     /** Options for the display name format. */
     protected static final SourceOptions sourceOptions = new SourceOptions();
@@ -317,8 +317,8 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
         */
         public PatternPropertySupport(String name, java.lang.Class type, boolean canW) {
             super(name, type,
-                  bundle.getString("PROP_" + name),
-                  bundle.getString("HINT_" + name),
+                  getString("PROP_" + name),
+                  getString("HINT_" + name),
                   true, canW);
         }
 
@@ -333,9 +333,16 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
         public void setValue (Object val) throws IllegalArgumentException,
             IllegalAccessException, InvocationTargetException {
             if (!canWrite())
-                throw new IllegalAccessException(bundle.getString("MSG_Cannot_Write"));
+                throw new IllegalAccessException(getString("MSG_Cannot_Write"));
         }
 
+    }
+    
+    static String getString(String key) {
+        if (bundle == null) {
+            bundle = NbBundle.getBundle("org.netbeans.modules.beans.Bundle");
+        }
+        return bundle.getString(key);
     }
 }
 

@@ -40,8 +40,6 @@ import org.openide.util.NbBundle;
  */
 public class EventSetPattern extends Pattern {
 
-    private static final ResourceBundle bundle = NbBundle.getBundle( EventSetPattern.class );
-
     static final String[] WELL_KNOWN_LISTENERS =  new String[] {
                 "java.awt.event.ActionListener", // NOI18N
                 "java.awt.event.ContainerListener", // NOI18N
@@ -286,7 +284,7 @@ public class EventSetPattern extends Pattern {
                     ClassElement.forName( "java.util.EventListener" ) ) ) { // NOI18N
 
             TopManager.getDefault().notify(
-                new NotifyDescriptor.Message(PatternNode.bundle.getString("MSG_InvalidListenerInterface"),
+                new NotifyDescriptor.Message(PatternNode.getString("MSG_InvalidListenerInterface"),
                                              NotifyDescriptor.ERROR_MESSAGE) );
             return;
         }
@@ -294,7 +292,7 @@ public class EventSetPattern extends Pattern {
     }
         catch ( java.lang.ClassNotFoundException ex ) {
          TopManager.getDefault().notify(
-             new NotifyDescriptor.Message(PatternNode.bundle.getString("MSG_ListenerInterfaceNotFound"),
+             new NotifyDescriptor.Message(PatternNode.getString("MSG_ListenerInterfaceNotFound"),
                                           NotifyDescriptor.ERROR_MESSAGE) );
              
          return;
@@ -313,7 +311,7 @@ public class EventSetPattern extends Pattern {
         }
 
         // Ask if we have to change the bame of the methods
-        String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_ChangeEventSourceName" ),
+        String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeEventSourceName" ),
                                             new Object[] { capitalizeFirstLetter( newType.getClassName().getName() ) } );
         //new Object[] { "Blah Blah !" } ); // NOI18N
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
@@ -385,7 +383,7 @@ public class EventSetPattern extends Pattern {
                         if (sourceMethods[j].getName().getName().equals(method)) {
                             if (!canDelete) {
                                 // Ask, if the fire methods can be deleted
-                                String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_DeleteFire" ),
+                                String mssg = MessageFormat.format( PatternNode.getString( "FMT_DeleteFire" ),
                                                                     new Object[] { } );
                                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                                 if ( TopManager.getDefault().notify( nd ).equals( NotifyDescriptor.NO_OPTION ) ) {
@@ -509,7 +507,7 @@ public class EventSetPattern extends Pattern {
         if ( isUnicast )
             newMethod.setExceptions( new Identifier[] { Identifier.create( "java.util.TooManyListenersException" ) } ); // NOI18N
         if ( javadoc ) {
-            String comment = MessageFormat.format( bundle.getString( "COMMENT_AddListenerMethod" ),
+            String comment = MessageFormat.format( PatternNode.getString( "COMMENT_AddListenerMethod" ),
                                                    new Object[] { type.getClassName().getName() } );
             newMethod.getJavaDoc().setRawText( comment );
         }
@@ -543,7 +541,7 @@ public class EventSetPattern extends Pattern {
             newMethod.setBody( body );
 
         if ( javadoc ) {
-            String comment = MessageFormat.format( bundle.getString( "COMMENT_RemoveListenerMethod" ),
+            String comment = MessageFormat.format( PatternNode.getString( "COMMENT_RemoveListenerMethod" ),
                                                    new Object[] { type.getClassName().getName() } );
             newMethod.getJavaDoc().setRawText( comment );
         }

@@ -40,9 +40,6 @@ import org.openide.util.NbBundle;
  */
 public class PropertyPattern extends Pattern {
 
-    /** ResourceBundle */
-    private static final ResourceBundle bundle = NbBundle.getBundle( PropertyPattern.class );
-
     /** Constant for READ/WRITE mode of properties */
     public static final int READ_WRITE = 1;
     /** Constant for READ ONLY mode of properties */
@@ -200,7 +197,7 @@ public class PropertyPattern extends Pattern {
         // Ask if to set the estimated field
         if ( estimatedField != null ) {
             ElementFormat fmt = new ElementFormat ("{m} {t} {n}"); // NOI18N
-            String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_ChangeFieldName" ),
+            String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeFieldName" ),
                                                 new Object[] { fmt.format (estimatedField) } );
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
             if ( TopManager.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
@@ -293,7 +290,7 @@ public class PropertyPattern extends Pattern {
                 getterMethod.setName( Identifier.create( "get" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
             }
             else if ( type.compareTo( Type.BOOLEAN, false ) ) {
-                String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_ChangeToIs" ),
+                String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeToIs" ),
                                                     new Object[] { capitalizeFirstLetter( getName() ) } );
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                 TopManager.getDefault().notify( nd );
@@ -318,7 +315,7 @@ public class PropertyPattern extends Pattern {
 
         if ( estimatedField != null ) {
             ElementFormat fmt = new ElementFormat ("{m} {t} {n}"); // NOI18N
-            String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_ChangeFieldType" ),
+            String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeFieldType" ),
                                                 new Object[] { fmt.format (estimatedField) } );
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
             if ( TopManager.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
@@ -365,7 +362,7 @@ public class PropertyPattern extends Pattern {
     public void destroy() throws SourceException {
         if ( estimatedField != null ) {
             ElementFormat fmt = new ElementFormat ("{m} {t} {n}"); // NOI18N
-            String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_DeleteField" ),
+            String mssg = MessageFormat.format( PatternNode.getString( "FMT_DeleteField" ),
                                                 new Object[] { fmt.format (estimatedField) } );
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
             if ( TopManager.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
@@ -511,7 +508,7 @@ public class PropertyPattern extends Pattern {
         }
 
         if ( javadoc ) {
-            String comment = MessageFormat.format( bundle.getString( "COMMENT_PropertyGetter" ),
+            String comment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyGetter" ),
                                                    new Object[] { getName() } );
             newGetter.getJavaDoc().setRawText( comment );
         }
@@ -559,10 +556,10 @@ public class PropertyPattern extends Pattern {
         }
 
         if ( javadoc ) {
-            String comment = MessageFormat.format( bundle.getString( "COMMENT_PropertySetter" ),
+            String comment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertySetter" ),
                                                    new Object[] { getName(), name } );
             if ( constrained )
-                comment = comment + bundle.getString( "COMMENT_Tag_ThrowsPropertyVeto" );
+                comment = comment + PatternNode.getString( "COMMENT_Tag_ThrowsPropertyVeto" );
             newSetter.getJavaDoc().setRawText( comment );
         }
 
@@ -597,7 +594,7 @@ public class PropertyPattern extends Pattern {
         newField.setType( type );
         newField.setModifiers( Modifier.PRIVATE );
         if ( javadoc ) {
-            String comment = MessageFormat.format( bundle.getString( "COMMENT_PropertyField" ),
+            String comment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyField" ),
                                                    new Object[] { getName() } );
             newField.getJavaDoc().setRawText( comment );
         }

@@ -27,21 +27,21 @@ public class ModePropertyEditor extends PropertyEditorSupport {
     */
 
 
-    private static final String[] tags = new String[3];
+    private static String[] tags;
     private static final int [] values = {
         PropertyPattern.READ_WRITE,
         PropertyPattern.READ_ONLY,
         PropertyPattern.WRITE_ONLY };
 
-    static {
-        tags[0]=PatternNode.bundle.getString( "LAB_ReadWriteMODE" );
-        tags[1]=PatternNode.bundle.getString( "LAB_ReadOnlyMODE" );
-        tags[2]=PatternNode.bundle.getString( "LAB_WriteOnlyMODE" );
-
-    }
-
     /** @return names of the supported member Acces types */
     public String[] getTags() {
+        if (tags == null) {
+            tags = new String[] {
+                PatternNode.getString( "LAB_ReadWriteMODE" ),
+                PatternNode.getString( "LAB_ReadOnlyMODE" ),
+                PatternNode.getString( "LAB_WriteOnlyMODE" )
+            };
+        }
         return tags;
     }
 
@@ -51,15 +51,15 @@ public class ModePropertyEditor extends PropertyEditorSupport {
 
         for (int i = 0; i < values.length ; i++)
             if (values[i] == value)
-                return tags[i];
+                return getTags()[i];
 
-        return PatternNode.bundle.getString( "LAB_Unsupported" );
+        return PatternNode.getString( "LAB_Unsupported" );
     }
 
     /** @param text A text for the current value. */
     public void setAsText (String text) {
-        for (int i = 0; i < tags.length ; i++)
-            if (tags[i] == text) {
+        for (int i = 0; i < getTags().length ; i++)
+            if (getTags()[i] == text) {
                 setValue(new Integer(values[i]));
                 return;
             }

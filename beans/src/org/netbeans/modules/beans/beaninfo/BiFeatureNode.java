@@ -89,9 +89,6 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     // feature mode asociated to this node
     private BiFeature  biFeature = null;
 
-    // Resource bundle
-    private static ResourceBundle bundle = NbBundle.getBundle (BiFeatureNode.class);
-
     // constructors .......................................................................
 
     /**
@@ -150,22 +147,22 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         ps.put(new PropertySupport.ReadOnly (
                    PROP_NAME,
                    String.class,
-                   bundle.getString ("PROP_Bi_" + PROP_NAME ),
-                   bundle.getString ("HINT_Bi_" + PROP_NAME )
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NAME ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NAME )
                ) {
                    public Object getValue () {
                        return biFeature.getName ();
                    }
                    public void setValue (Object val) throws IllegalAccessException {
-                       throw new IllegalAccessException(bundle.getString("MSG_Cannot_Write"));
+                       throw new IllegalAccessException(GenerateBeanInfoAction.getString("MSG_Cannot_Write"));
                    }
                });
 
         ps.put(new PropertySupport.ReadWrite (
                    PROP_EXPERT,
                    Boolean.TYPE,
-                   bundle.getString ("PROP_Bi_" + PROP_EXPERT ),
-                   bundle.getString ("HINT_Bi_" + PROP_EXPERT )
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_EXPERT ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_EXPERT )
                ) {
                    public Object getValue () {
                        return new Boolean( biFeature.isExpert () );
@@ -182,8 +179,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         ps.put(new PropertySupport.ReadWrite (
                    PROP_HIDDEN,
                    Boolean.TYPE,
-                   bundle.getString ("PROP_Bi_" + PROP_HIDDEN ),
-                   bundle.getString ("HINT_Bi_" + PROP_HIDDEN )
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_HIDDEN ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_HIDDEN )
                ) {
                    public Object getValue () {
                        return new Boolean( biFeature.isHidden () );
@@ -200,8 +197,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         ps.put(new PropertySupport.ReadWrite (
                    PROP_PREFERRED,
                    Boolean.TYPE,
-                   bundle.getString ("PROP_Bi_" + PROP_PREFERRED ),
-                   bundle.getString ("HINT_Bi_" + PROP_PREFERRED )
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_PREFERRED ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_PREFERRED )
                ) {
                    public Object getValue () {
                        return new Boolean( biFeature.isPreferred () );
@@ -218,8 +215,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         ps.put(new PropertySupport.ReadWrite (
                    PROP_DISPLAY_NAME,
                    String.class,
-                   bundle.getString ("PROP_Bi_" + PROP_DISPLAY_NAME ),
-                   bundle.getString ("HINT_Bi_" + PROP_DISPLAY_NAME )
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_DISPLAY_NAME ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_DISPLAY_NAME )
                ) {
                    public Object getValue () {
                        return biFeature.getDisplayName ();
@@ -237,8 +234,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         ps.put(new PropertySupport.ReadWrite (
                    PROP_SHORT_DESCRIPTION,
                    String.class,
-                   bundle.getString ("PROP_Bi_" + PROP_SHORT_DESCRIPTION ),
-                   bundle.getString ("HINT_Bi_" + PROP_SHORT_DESCRIPTION )
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_SHORT_DESCRIPTION ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_SHORT_DESCRIPTION )
                ) {
                    public Object getValue () {
                        return biFeature.getShortDescription ();
@@ -255,8 +252,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         ps.put(new PropertySupport.ReadWrite (
                    PROP_INCLUDED,
                    Boolean.TYPE,
-                   bundle.getString ("PROP_Bi_" + PROP_INCLUDED ),
-                   bundle.getString ("HINT_Bi_" + PROP_INCLUDED )
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_INCLUDED ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_INCLUDED )
                ) {
                    public Object getValue () {
                        return new Boolean( biFeature.isIncluded () );
@@ -290,8 +287,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         ps.put(new PropertySupport.ReadWrite (
                    PROP_BOUND,
                    Boolean.TYPE,
-                   bundle.getString ("PROP_Bi_" + PROP_BOUND ),
-                   bundle.getString ("HINT_Bi_" + PROP_BOUND )
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BOUND ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BOUND )
                ) {
                    public Object getValue () {
                        return new Boolean( ((BiFeature.Property)biFeature).isBound () );
@@ -308,8 +305,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         ps.put(new PropertySupport.ReadWrite (
                    PROP_CONSTRAINED,
                    Boolean.TYPE,
-                   bundle.getString ("PROP_Bi_" + PROP_CONSTRAINED ),
-                   bundle.getString ("HINT_Bi_" + PROP_CONSTRAINED )
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_CONSTRAINED ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_CONSTRAINED )
                ) {
                    public Object getValue () {
                        return new Boolean(((BiFeature.Property)biFeature).isConstrained () );
@@ -326,8 +323,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         ps.put(new PropertySupport (
                    PROP_MODE,
                    int.class,
-                   bundle.getString ("PROP_Bi_" + PROP_MODE ),
-                   bundle.getString ("HINT_Bi_" + PROP_MODE ),
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_MODE ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_MODE ),
                    true,
                    ((BiFeature.Property)biFeature).modeChangeable()
                ) {
@@ -350,8 +347,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         ps.put(new PropertySupport.ReadWrite (
                    PROP_EDITOR_CLASS,
                    String.class,
-                   bundle.getString ("PROP_Bi_" + PROP_EDITOR_CLASS ),
-                   bundle.getString ("HINT_Bi_" + PROP_EDITOR_CLASS )
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_EDITOR_CLASS ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_EDITOR_CLASS )
                ) {
                    public Object getValue () {
                        return ((BiFeature.Property)biFeature).getPropertyEditorClass ();
@@ -370,8 +367,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
             ps.put(new PropertySupport (
                        PROP_NI_GETTER,
                        Boolean.TYPE,
-                       bundle.getString ("PROP_Bi_" + PROP_NI_GETTER ),
-                       bundle.getString ("HINT_Bi_" + PROP_NI_GETTER ),
+                       GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NI_GETTER ),
+                       GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NI_GETTER ),
                        true,
                        ((BiFeature.IdxProperty)biFeature).hasNiGetter()
                    ) {
@@ -392,8 +389,8 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
             ps.put(new PropertySupport (
                        PROP_NI_SETTER,
                        Boolean.TYPE,
-                       bundle.getString ("PROP_Bi_" + PROP_NI_SETTER ),
-                       bundle.getString ("HINT_Bi_" + PROP_NI_SETTER ),
+                       GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_NI_SETTER ),
+                       GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NI_SETTER ),
                        true,
                        ((BiFeature.IdxProperty)biFeature).hasNiSetter()
                    ) {
@@ -422,22 +419,22 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         ps.put(new PropertySupport.ReadOnly (
                    PROP_UNICAST,
                    Boolean.TYPE,
-                   bundle.getString ("PROP_Bi_" + PROP_UNICAST ),
-                   bundle.getString ("HINT_Bi_" + PROP_UNICAST )
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_UNICAST ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_UNICAST )
                ) {
                    public Object getValue () {
                        return new Boolean( ((BiFeature.EventSet)biFeature).isUnicast () );
                    }
                    public void setValue (Object val) throws
                        IllegalAccessException {
-                       throw new IllegalAccessException(bundle.getString("MSG_Cannot_Write"));
+                       throw new IllegalAccessException(GenerateBeanInfoAction.getString("MSG_Cannot_Write"));
                    }
                });
         ps.put(new PropertySupport.ReadWrite (
                    PROP_IN_DEFAULT_EVENTSET,
                    Boolean.TYPE,
-                   bundle.getString ("PROP_Bi_" + PROP_IN_DEFAULT_EVENTSET ),
-                   bundle.getString ("HINT_Bi_" + PROP_IN_DEFAULT_EVENTSET )
+                   GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_IN_DEFAULT_EVENTSET ),
+                   GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_IN_DEFAULT_EVENTSET )
                ) {
                    public Object getValue () {
                        return new Boolean( ((BiFeature.EventSet)biFeature).isInDefaultEventSet () );

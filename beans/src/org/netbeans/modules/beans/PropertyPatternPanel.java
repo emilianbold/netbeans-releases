@@ -31,8 +31,6 @@ import org.openide.NotifyDescriptor;
 public class PropertyPatternPanel extends javax.swing.JPanel
     implements java.awt.event.ActionListener {
 
-    /** The resource bundle */
-    private static final ResourceBundle bundle = NbBundle.getBundle( PropertyPatternPanel.class );
     /** Dialog for displaiyng this panel */
     private Dialog dialog = null;
     /** Group node under which the new pattern will below */
@@ -46,9 +44,9 @@ public class PropertyPatternPanel extends javax.swing.JPanel
                                    };
     /** Human readable values of modes */
     private final String[] modes = new String[] {
-                                       bundle.getString( "LAB_ReadWriteMODE" ),
-                                       bundle.getString( "LAB_ReadOnlyMODE" ),
-                                       bundle.getString( "LAB_WriteOnlyMODE" )
+                                       PatternNode.getString( "LAB_ReadWriteMODE" ),
+                                       PatternNode.getString( "LAB_ReadOnlyMODE" ),
+                                       PatternNode.getString( "LAB_WriteOnlyMODE" )
                                    };
 
     /** Generated UID */
@@ -74,18 +72,18 @@ public class PropertyPatternPanel extends javax.swing.JPanel
         // i18n
 
         ((TitledBorder)propertyPanel.getBorder()).setTitle(
-            bundle.getString( "CTL_PropertyPanel_propertyPanel" ) );
+            PatternNode.getString( "CTL_PropertyPanel_propertyPanel" ) );
         ((TitledBorder)optionsPanel.getBorder()).setTitle(
-            bundle.getString( "CTL_PropertyPanel_optionsPanel" ) );
-        nameLabel.setText( bundle.getString( "CTL_PropertyPanel_nameLabel" ) );
-        typeLabel.setText( bundle.getString( "CTL_PropertyPanel_typeLabel" ) );
-        modeLabel.setText( bundle.getString( "CTL_PropertyPanel_modeLabel" ) );
-        boundCheckBox.setText( bundle.getString( "CTL_PropertyPanel_boundCheckBox" ) );
-        constrainedCheckBox.setText( bundle.getString( "CTL_PropertyPanel_constrainedCheckBox" ) );
-        fieldCheckBox.setText( bundle.getString( "CTL_PropertyPanel_fieldCheckBox" ) );
-        returnCheckBox.setText( bundle.getString( "CTL_PropertyPanel_returnCheckBox" ) );
-        setCheckBox.setText( bundle.getString( "CTL_PropertyPanel_setCheckBox" ) );
-        supportCheckBox.setText( bundle.getString( "CTL_PropertyPanel_supportCheckBox" ) );
+            PatternNode.getString( "CTL_PropertyPanel_optionsPanel" ) );
+        nameLabel.setText( PatternNode.getString( "CTL_PropertyPanel_nameLabel" ) );
+        typeLabel.setText( PatternNode.getString( "CTL_PropertyPanel_typeLabel" ) );
+        modeLabel.setText( PatternNode.getString( "CTL_PropertyPanel_modeLabel" ) );
+        boundCheckBox.setText( PatternNode.getString( "CTL_PropertyPanel_boundCheckBox" ) );
+        constrainedCheckBox.setText( PatternNode.getString( "CTL_PropertyPanel_constrainedCheckBox" ) );
+        fieldCheckBox.setText( PatternNode.getString( "CTL_PropertyPanel_fieldCheckBox" ) );
+        returnCheckBox.setText( PatternNode.getString( "CTL_PropertyPanel_returnCheckBox" ) );
+        setCheckBox.setText( PatternNode.getString( "CTL_PropertyPanel_setCheckBox" ) );
+        supportCheckBox.setText( PatternNode.getString( "CTL_PropertyPanel_supportCheckBox" ) );
 
     }
 
@@ -430,7 +428,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
                 if ( typeComboBox.getEditor().getItem().toString().trim().length() <= 0) {
                     TopManager.getDefault().notify(
                         new NotifyDescriptor.Message(
-                            bundle.getString("MSG_Not_Valid_Type"),
+                            PatternNode.getString("MSG_Not_Valid_Type"),
                             NotifyDescriptor.ERROR_MESSAGE) );
                     typeComboBox.requestFocus();
                     return;
@@ -440,7 +438,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
                 if ( !Utilities.isJavaIdentifier( nameTextField.getText() ) ) {
                     TopManager.getDefault().notify(
                         new NotifyDescriptor.Message(
-                            bundle.getString("MSG_Not_Valid_Identifier"),
+                            PatternNode.getString("MSG_Not_Valid_Identifier"),
                             NotifyDescriptor.ERROR_MESSAGE) );
                     nameTextField.requestFocus();
                     return;
@@ -448,7 +446,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
 
                 // Test wheter property with this name already exists
                 if ( groupNode.propertyExists( nameTextField.getText() ) ) {
-                    String msg = MessageFormat.format( bundle.getString("MSG_Property_Exists"),
+                    String msg = MessageFormat.format( PatternNode.getString("MSG_Property_Exists"),
                                                        new Object[] { nameTextField.getText() } );
                     TopManager.getDefault().notify(
                         new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
@@ -463,7 +461,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
                 catch ( IllegalArgumentException ex ) {
                     TopManager.getDefault().notify(
                         new NotifyDescriptor.Message(
-                            bundle.getString("MSG_Not_Valid_Type"),
+                            PatternNode.getString("MSG_Not_Valid_Type"),
                             NotifyDescriptor.ERROR_MESSAGE) );
                     typeComboBox.requestFocus();
                     return;

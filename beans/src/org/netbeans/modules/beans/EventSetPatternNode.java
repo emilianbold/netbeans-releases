@@ -80,13 +80,13 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
 
         if (! Utilities.isJavaIdentifier( name ) ) {
             TopManager.getDefault().notify(
-                new NotifyDescriptor.Message(bundle.getString("MSG_Not_Valid_Identifier"),
+                new NotifyDescriptor.Message(getString("MSG_Not_Valid_Identifier"),
                                              NotifyDescriptor.ERROR_MESSAGE) );
             return false;
         }
 
         if (name.indexOf( "Listener" ) <= 0 ) { // NOI18N
-            String msg = MessageFormat.format( PatternNode.bundle.getString("FMT_InvalidEventSourceName"),
+            String msg = MessageFormat.format( getString("FMT_InvalidEventSourceName"),
                                                new Object[] { name } );
             TopManager.getDefault().notify( new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE) );
             return false;
@@ -111,8 +111,8 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
     */
     public String getShortDescription() {
         return (((EventSetPattern)pattern).isUnicast () ?
-                bundle.getString( "HINT_UnicastEventSet" ) :
-                bundle.getString( "HINT_MulticastEventSet" ) )
+                PatternNode.getString( "HINT_UnicastEventSet" ) :
+                PatternNode.getString( "HINT_MulticastEventSet" ) )
                + " : " + getName(); // NOI18N
     }
 
@@ -251,7 +251,7 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
                        ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
                        MethodElement method = ((EventSetPattern)pattern).getAddListenerMethod();
                        if ( method == null )
-                           return bundle.getString("LAB_NoMethod");
+                           return PatternNode.getString("LAB_NoMethod");
                        else
                            return (fmt.format (method));
                    }
@@ -272,7 +272,7 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
                        ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
                        MethodElement method = ((EventSetPattern)pattern).getRemoveListenerMethod();
                        if ( method == null )
-                           return bundle.getString("LAB_NoMethod");
+                           return PatternNode.getString("LAB_NoMethod");
                        else
                            return (fmt.format (method));
                    }

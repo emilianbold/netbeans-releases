@@ -31,9 +31,6 @@ import org.openide.NotifyDescriptor;
 public class IdxPropertyPatternPanel extends javax.swing.JPanel
     implements java.awt.event.ActionListener {
 
-    /** The resource bundle */
-    private static final ResourceBundle bundle = NbBundle.getBundle( IdxPropertyPatternPanel.class );
-
     /** Dialog for displaiyng this panel */
     private Dialog dialog;
     /** Group node under which the new pattern will below */
@@ -49,9 +46,9 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
 
     /** Human representable form of properties modes */
     private final String[] modes = new String[] {
-                                       bundle.getString( "LAB_ReadWriteMODE" ),
-                                       bundle.getString( "LAB_ReadOnlyMODE" ),
-                                       bundle.getString( "LAB_WriteOnlyMODE" )
+                                       PatternNode.getString( "LAB_ReadWriteMODE" ),
+                                       PatternNode.getString( "LAB_ReadOnlyMODE" ),
+                                       PatternNode.getString( "LAB_WriteOnlyMODE" )
                                    };
 
     static final long serialVersionUID =8551245035767258531L;
@@ -74,24 +71,24 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
         // i18n
 
         ((TitledBorder)propertyPanel.getBorder()).setTitle(
-            bundle.getString( "CTL_IdxPropertyPanel_propertyPanel" ) );
+            PatternNode.getString( "CTL_IdxPropertyPanel_propertyPanel" ) );
         ((TitledBorder)optionsPanel.getBorder()).setTitle(
-            bundle.getString( "CTL_IdxPropertyPanel_optionsPanel" ) );
+            PatternNode.getString( "CTL_IdxPropertyPanel_optionsPanel" ) );
         ((TitledBorder)nonIndexOptionsPanel.getBorder()).setTitle(
-            bundle.getString( "CTL_IdxPropertyPanel_niOptionsPanel" ) );
-        nameLabel.setText( bundle.getString( "CTL_IdxPropertyPanel_nameLabel" ) );
-        typeLabel.setText( bundle.getString( "CTL_IdxPropertyPanel_typeLabel" ) );
-        modeLabel.setText( bundle.getString( "CTL_IdxPropertyPanel_modeLabel" ) );
-        boundCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_boundCheckBox" ) );
-        constrainedCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_constrainedCheckBox" ) );
-        fieldCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_fieldCheckBox" ) );
-        returnCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_returnCheckBox" ) );
-        setCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_setCheckBox" ) );
-        supportCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_supportCheckBox" ) );
-        niGetterCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_niGetterCheckBox" ) );
-        niReturnCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_niReturnCheckBox" ) );
-        niSetterCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_niSetterCheckBox" ) );
-        niSetCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_niSetCheckBox" ) );
+            PatternNode.getString( "CTL_IdxPropertyPanel_niOptionsPanel" ) );
+        nameLabel.setText( PatternNode.getString( "CTL_IdxPropertyPanel_nameLabel" ) );
+        typeLabel.setText( PatternNode.getString( "CTL_IdxPropertyPanel_typeLabel" ) );
+        modeLabel.setText( PatternNode.getString( "CTL_IdxPropertyPanel_modeLabel" ) );
+        boundCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_boundCheckBox" ) );
+        constrainedCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_constrainedCheckBox" ) );
+        fieldCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_fieldCheckBox" ) );
+        returnCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_returnCheckBox" ) );
+        setCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_setCheckBox" ) );
+        supportCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_supportCheckBox" ) );
+        niGetterCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_niGetterCheckBox" ) );
+        niReturnCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_niReturnCheckBox" ) );
+        niSetterCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_niSetterCheckBox" ) );
+        niSetCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_niSetCheckBox" ) );
 
     }
 
@@ -534,7 +531,7 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
                 if ( typeComboBox.getEditor().getItem().toString().trim().length() <= 0) {
                     TopManager.getDefault().notify(
                         new NotifyDescriptor.Message(
-                            bundle.getString("MSG_Not_Valid_Type"),
+                            PatternNode.getString("MSG_Not_Valid_Type"),
                             NotifyDescriptor.ERROR_MESSAGE) );
                     typeComboBox.requestFocus();
                     return;
@@ -543,7 +540,7 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
                 if ( !Utilities.isJavaIdentifier( nameTextField.getText() ) ) {
                     TopManager.getDefault().notify(
                         new NotifyDescriptor.Message(
-                            bundle.getString("MSG_Not_Valid_Identifier"),
+                            PatternNode.getString("MSG_Not_Valid_Identifier"),
                             NotifyDescriptor.ERROR_MESSAGE) );
                     nameTextField.requestFocus();
                     return;
@@ -551,7 +548,7 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
 
                 // Test wheter property with this name already exists
                 if ( groupNode.propertyExists( nameTextField.getText() ) ) {
-                    String msg = MessageFormat.format( bundle.getString("MSG_Property_Exists"),
+                    String msg = MessageFormat.format( PatternNode.getString("MSG_Property_Exists"),
                                                        new Object[] { nameTextField.getText() } );
                     TopManager.getDefault().notify(
                         new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
@@ -566,7 +563,7 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
                 catch ( IllegalArgumentException ex ) {
                     TopManager.getDefault().notify(
                         new NotifyDescriptor.Message(
-                            bundle.getString("MSG_Not_Valid_Type"),
+                            PatternNode.getString("MSG_Not_Valid_Type"),
                             NotifyDescriptor.ERROR_MESSAGE) );
                     typeComboBox.requestFocus();
                     return;

@@ -37,7 +37,7 @@ import org.netbeans.modules.beans.PatternAnalyser;
 public class GenerateBeanInfoAction extends NodeAction implements java.awt.event.ActionListener {
 
     /** Resource bundle */
-    private static final ResourceBundle bundle = NbBundle.getBundle( GenerateBeanInfoAction.class );
+    private static ResourceBundle bundle;
 
 
     /** generated Serialized Version UID */
@@ -53,7 +53,7 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
     * @return the name of the action
     */
     public String getName () {
-        return NbBundle.getBundle (GenerateBeanInfoAction.class).getString ("CTL_GENBI_MenuItem");
+        return getString ("CTL_GENBI_MenuItem");
     }
 
     /** The action's icon location.
@@ -100,7 +100,7 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
         final BiPanel biPanel;
 
         DialogDescriptor dd = new DialogDescriptor( (biPanel = new BiPanel()),
-                              bundle.getString( "CTL_TITLE_GenerateBeanInfo"),     // Title
+                              getString( "CTL_TITLE_GenerateBeanInfo"),     // Title
                               true,                                                 // Modal
                               NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                               NotifyDescriptor.OK_OPTION,                           // Default
@@ -153,6 +153,13 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
             RequestProcessor.postRequest( task );
         }
 
+    }
+    
+    static String getString(String key) {
+        if (bundle == null) {
+            bundle = NbBundle.getBundle("org.netbeans.modules.beans.beaninfo.Bundle");
+        }
+        return bundle.getString(key);
     }
 
     private static class BiAnalyserReference {

@@ -27,10 +27,6 @@ import org.openide.src.*;
  */
 class BeanPatternGenerator extends Object {
 
-    /** The ResourceBundle */
-    private static final ResourceBundle bundle = NbBundle.getBundle( BeanPatternGenerator.class );
-
-
     /** Constant for one Tab */
     private static final String TAB = "  "; // NOI18N
     /** Constant for two Tabs */
@@ -236,7 +232,7 @@ class BeanPatternGenerator extends Object {
             supportField.setType( Type.createClass( supportId ) );
             supportField.setModifiers( Modifier.PRIVATE );
             supportField.setInitValue( " new java.beans.PropertyChangeSupport (this)" ); // NOI18N
-            supportField.getJavaDoc().setRawText( bundle.getString( "COMMENT_PropertyChangeSupport" ) );
+            supportField.getJavaDoc().setRawText( PatternNode.getString( "COMMENT_PropertyChangeSupport" ) );
             ce.addField( supportField );
         }
 
@@ -270,7 +266,7 @@ class BeanPatternGenerator extends Object {
             supportField.setType( Type.createClass( vetoSupportId ) );
             supportField.setModifiers( Modifier.PRIVATE );
             supportField.setInitValue( " new java.beans.VetoableChangeSupport (this)" ); // NOI18N
-            supportField.getJavaDoc().setRawText( bundle.getString( "COMMENT_VetoableChangeSupport" ) );
+            supportField.getJavaDoc().setRawText( PatternNode.getString( "COMMENT_VetoableChangeSupport" ) );
             ce.addField( supportField );
         }
 
@@ -307,10 +303,10 @@ class BeanPatternGenerator extends Object {
             addMethod.setBody( body.toString() );
 
             /*
-            String comment = MessageFormat.format( bundle.getString( "COMMENT_AddPropertyChangeListener" ), 
+            String comment = MessageFormat.format( PatternNode.getString( "COMMENT_AddPropertyChangeListener" ), 
                                                    new Object[] { listenerType.getClassName().getName() } );
             */                                          
-            addMethod.getJavaDoc().setRawText( bundle.getString( "COMMENT_AddPropertyChangeListener" ) );
+            addMethod.getJavaDoc().setRawText( PatternNode.getString( "COMMENT_AddPropertyChangeListener" ) );
 
 
             classElement.addMethod( addMethod );
@@ -328,7 +324,7 @@ class BeanPatternGenerator extends Object {
             body.append( "\n" ).append( TAB + supportName ); // NOI18N
             body.append( ".removePropertyChangeListener (l);\n" ); // NOI18N
             removeMethod.setBody( body.toString() );
-            removeMethod.getJavaDoc().setRawText( bundle.getString( "COMMENT_RemovePropertyChangeListener" ) );
+            removeMethod.getJavaDoc().setRawText( PatternNode.getString( "COMMENT_RemovePropertyChangeListener" ) );
             classElement.addMethod( removeMethod );
         }
     }
@@ -362,7 +358,7 @@ class BeanPatternGenerator extends Object {
             body.append( "\n" ).append( TAB + supportName ); // NOI18N
             body.append( ".addVetoableChangeListener (l);\n" ); // NOI18N
             addMethod.setBody( body.toString() );
-            addMethod.getJavaDoc().setRawText( bundle.getString( "COMMENT_AddVetoableChangeListener" ) );
+            addMethod.getJavaDoc().setRawText( PatternNode.getString( "COMMENT_AddVetoableChangeListener" ) );
             classElement.addMethod( addMethod );
         }
 
@@ -378,7 +374,7 @@ class BeanPatternGenerator extends Object {
             body.append( "\n" ).append( TAB + supportName ); // NOI18N
             body.append( ".removeVetoableChangeListener (l);\n" ); // NOI18N
             removeMethod.setBody( body.toString() );
-            removeMethod.getJavaDoc().setRawText( bundle.getString( "COMMENT_RemoveVetoableChangeListener" ) );
+            removeMethod.getJavaDoc().setRawText( PatternNode.getString( "COMMENT_RemoveVetoableChangeListener" ) );
             classElement.addMethod( removeMethod );
         }
     }
@@ -415,7 +411,7 @@ class BeanPatternGenerator extends Object {
             field.setName( Identifier.create( fieldName ) );
             field.setType( Type.createClass( fieldTypeId ) );
             field.setModifiers( Modifier.PRIVATE | Modifier.TRANSIENT );
-            String comment = MessageFormat.format( bundle.getString( "COMMENT_ListenerArrayList" ),
+            String comment = MessageFormat.format( PatternNode.getString( "COMMENT_ListenerArrayList" ),
                                                    new Object[] { type.getClassName().getName() } );
             field.getJavaDoc().setRawText( comment );
 
@@ -456,7 +452,7 @@ class BeanPatternGenerator extends Object {
             field.setType( Type.createClass( fieldTypeId ) );
             field.setModifiers( Modifier.PRIVATE );
             field.setInitValue( " null" ); // NOI18N
-            String comment = MessageFormat.format( bundle.getString( "COMMENT_EventListenerList" ),
+            String comment = MessageFormat.format( PatternNode.getString( "COMMENT_EventListenerList" ),
                                                    new Object[] { type.getClassName().getName() } );
             field.getJavaDoc().setRawText( comment );
 
@@ -500,7 +496,7 @@ class BeanPatternGenerator extends Object {
             field.setType( type );
             field.setModifiers( Modifier.PRIVATE  | Modifier.TRANSIENT );
             field.setInitValue( " null" ); // NOI18N
-            String comment = MessageFormat.format( bundle.getString( "COMMENT_UnicastEventListener" ),
+            String comment = MessageFormat.format( PatternNode.getString( "COMMENT_UnicastEventListener" ),
                                                    new Object[] { type.getClassName().getName() } );
             field.getJavaDoc().setRawText( comment );
             ce.addField( field );
@@ -692,7 +688,7 @@ class BeanPatternGenerator extends Object {
 
         newMethod.setBody( body.toString() );
 
-        StringBuffer comment = new StringBuffer ( bundle.getString( "COMMENT_FireMethodMC" ) );
+        StringBuffer comment = new StringBuffer ( PatternNode.getString( "COMMENT_FireMethodMC" ) );
         if ( !usesConstructorParameters( eventClass, passEvent ) ) {
             comment.append( "\n@param e The event to be fired\n" ); // NOI18N
         }
@@ -768,7 +764,7 @@ class BeanPatternGenerator extends Object {
 
         newMethod.setBody( body.toString() );
 
-        StringBuffer comment = new StringBuffer ( bundle.getString( "COMMENT_FireMethodUC" ) );
+        StringBuffer comment = new StringBuffer ( PatternNode.getString( "COMMENT_FireMethodUC" ) );
         if ( !usesConstructorParameters( eventClass, passEvent ) ) {
             comment.append( "\n@param e The event to be fired\n" ); // NOI18N
         }

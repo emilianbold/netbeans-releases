@@ -44,8 +44,6 @@ import org.netbeans.modules.beans.EventSetPattern;
 
 public class BiAnalyser extends Object implements Node.Cookie {
 
-    private static final ResourceBundle bundle = NbBundle.getBundle( BiAnalyser.class );
-
     private static final String TAB = "  "; // NOI18N
     private static final String TABx2 = TAB +TAB;
     private static final String TABx3 = TAB + TABx2;
@@ -288,7 +286,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
             if ( !bis.isNbBeanInfo() ) {
                 
-                String mssg = NbBundle.getBundle(BiAnalyser.class).getString( "MSG_BeanInfoExists" );
+                String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoExists" );
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                 TopManager.getDefault().notify( nd );
                 if ( !nd.getValue().equals ( NotifyDescriptor.YES_OPTION ) ) {
@@ -299,7 +297,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
                     bis.delete();
                 }
                 catch ( java.io.IOException e ) {
-                    mssg = NbBundle.getBundle(BiAnalyser.class).getString( "MSG_BeanInfoCantDelete" );
+                    mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );
                     nd = new NotifyDescriptor.Message ( mssg );
                     TopManager.getDefault().notify( nd );
                     return;
@@ -336,7 +334,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
 
         if ( nullProperties ) {
-            sb.append( TAB + bundle.getString( "COMMENT_NullProperties" ) );
+            sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullProperties" ) );
             sb.append( TAB + "private static PropertyDescriptor[] properties = null;\n" ); // NOI18N
             bis.setPropertiesSection( sb.toString(), "  \n" ); // NOI18N
             return;
@@ -347,7 +345,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         allProperties.addAll( getProperties() );
         allProperties.addAll( getIdxProperties() );
 
-        sb.append( TAB + bundle.getString( "COMMENT_PropertyIdentifiers" ) );
+        sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_PropertyIdentifiers" ) );
 
         Iterator it = allProperties.iterator();
         while ( it.hasNext() ) {
@@ -361,7 +359,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
             }
         }
 
-        sb.append( "\n" + TAB + bundle.getString("COMMENT_PropertyArray" ));
+        sb.append( "\n" + TAB + GenerateBeanInfoAction.getString("COMMENT_PropertyArray" ));
         sb.append( TAB + "private static PropertyDescriptor[] properties = new PropertyDescriptor[" + // NOI18N
                    propertyCount + "];\n\n" ); // NOI18N
 
@@ -399,7 +397,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
 
         if ( nullMethods ) {
-            sb.append( TAB + bundle.getString( "COMMENT_NullMethods" ) );
+            sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullMethods" ) );
             sb.append( TAB + "private static MethodDescriptor[] methods = null;\n" ); // NOI18N
             bis.setMethodsSection( sb.toString(), "  \n" ); // NOI18N
             return;
@@ -409,7 +407,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         ArrayList allMethods = new ArrayList( getMethods().size());
         allMethods.addAll( getMethods() );
 
-        sb.append( TAB + bundle.getString( "COMMENT_MethodIdentifiers" ) );
+        sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_MethodIdentifiers" ) );
 
         Iterator it = allMethods.iterator();
         while ( it.hasNext() ) {
@@ -423,7 +421,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
             }
         }
 
-        sb.append( "\n" + TAB + bundle.getString("COMMENT_MethodArray" ));
+        sb.append( "\n" + TAB + GenerateBeanInfoAction.getString("COMMENT_MethodArray" ));
         sb.append( TAB + "private static MethodDescriptor[] methods = new MethodDescriptor[" + // NOI18N
                    methodCount + "];\n\n" ); // NOI18N
 
@@ -460,13 +458,13 @@ public class BiAnalyser extends Object implements Node.Cookie {
         int eventCount = 0;
 
         if ( nullEventSets ) {
-            sb.append( TAB + bundle.getString( "COMMENT_NullEventSets" ) );
+            sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullEventSets" ) );
             sb.append( TAB + "private static EventSetDescriptor[] eventSets = null;\n" ); // NOI18N
             bis.setEventSetsSection( sb.toString(), "  \n" ); // NOI18N
             return;
         }
 
-        sb.append( TAB + bundle.getString("COMMENT_EventSetsIdentifiers") );
+        sb.append( TAB + GenerateBeanInfoAction.getString("COMMENT_EventSetsIdentifiers") );
 
 
         Iterator it = eventSets.iterator();
@@ -481,7 +479,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
             }
         }
 
-        sb.append( "\n" + TAB + bundle.getString("COMMENT_EventSetsArray"));
+        sb.append( "\n" + TAB + GenerateBeanInfoAction.getString("COMMENT_EventSetsArray"));
         sb.append( TAB + "private static EventSetDescriptor[] eventSets = new EventSetDescriptor[" // NOI18N
                    + eventCount + "];\n\n" ); // NOI18N
 

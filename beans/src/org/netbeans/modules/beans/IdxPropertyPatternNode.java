@@ -80,7 +80,7 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
      * "Indexed Property", "Property".
      */
     String getTypeForHint() {
-        return bundle.getString( "HINT_IndexedProperty" );
+        return PatternNode.getString( "HINT_IndexedProperty" );
     }
 
     /* Removes the element from the class and calls superclass.
@@ -197,7 +197,7 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
                        ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
                        MethodElement method = ((IdxPropertyPattern)pattern).getIndexedGetterMethod();
                        if ( method == null )
-                           return bundle.getString("LAB_NoMethod");
+                           return PatternNode.getString("LAB_NoMethod");
                        else
                            return (fmt.format (method));
                    }
@@ -218,7 +218,7 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
                        ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
                        MethodElement method = ((IdxPropertyPattern)pattern).getIndexedSetterMethod();
                        if ( method == null )
-                           return bundle.getString("LAB_NoMethod");
+                           return PatternNode.getString("LAB_NoMethod");
                        else
                            return (fmt.format (method));
                    }

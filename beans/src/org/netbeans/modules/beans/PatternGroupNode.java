@@ -47,12 +47,6 @@ import org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction;
  */
 public class  PatternGroupNode extends AbstractNode {
 
-    /** Menu labels */
-    private static final String MENU_CREATE_PROPERTY;
-    private static final String MENU_CREATE_IDXPROPERTY;
-    private static final String MENU_CREATE_UNICASTSE;
-    private static final String MENU_CREATE_MULTICASTSE;
-
     /** Pattern types */
     static final int PATTERN_KIND_PROPERTY = 0;
     static final int PATTERN_KIND_IDX_PROPERTY = 1;
@@ -93,21 +87,13 @@ public class  PatternGroupNode extends AbstractNode {
             };
 
 
-    static {
-        ResourceBundle bundle = PatternNode.bundle;
-        MENU_CREATE_PROPERTY = bundle.getString("MENU_CREATE_PROPERTY");
-        MENU_CREATE_IDXPROPERTY = bundle.getString("MENU_CREATE_IDXPROPERTY");
-        MENU_CREATE_UNICASTSE = bundle.getString("MENU_CREATE_UNICASTSE");
-        MENU_CREATE_MULTICASTSE = bundle.getString("MENU_CREATE_MULTICASTSE");
-    }
-
     public static final String ICON_BASE =
         "/org/netbeans/modules/beans/resources/patternGroup"; // NOI18N
 
     public PatternGroupNode( PatternChildren children ) {
         super( (Children)children );
-        setName( PatternNode.bundle.getString( "Patterns" ) );
-        setShortDescription ( PatternNode.bundle.getString( "Patterns_HINT" ) );
+        setName( PatternNode.getString( "Patterns" ) );
+        setShortDescription ( PatternNode.getString( "Patterns_HINT" ) );
         setIconBase( ICON_BASE );
         setActions(DEFAULT_ACTIONS);
 
@@ -149,10 +135,10 @@ public class  PatternGroupNode extends AbstractNode {
     public NewType[] getNewTypes() {
         //if (writeable) {
         return new NewType[] {
-                   createNewType(MENU_CREATE_PROPERTY, PATTERN_KIND_PROPERTY ),
-                   createNewType(MENU_CREATE_IDXPROPERTY, PATTERN_KIND_IDX_PROPERTY ),
-                   createNewType(MENU_CREATE_UNICASTSE, PATTERN_KIND_UC_EVENT_SET ),
-                   createNewType(MENU_CREATE_MULTICASTSE, PATTERN_KIND_MC_EVENT_SET  ),
+                   createNewType(PatternNode.getString("MENU_CREATE_PROPERTY"), PATTERN_KIND_PROPERTY ),
+                   createNewType(PatternNode.getString("MENU_CREATE_IDXPROPERTY"), PATTERN_KIND_IDX_PROPERTY ),
+                   createNewType(PatternNode.getString("MENU_CREATE_UNICASTSE"), PATTERN_KIND_UC_EVENT_SET ),
+                   createNewType(PatternNode.getString("MENU_CREATE_MULTICASTSE"), PATTERN_KIND_MC_EVENT_SET  ),
                };
         /*
     }
@@ -212,7 +198,7 @@ public class  PatternGroupNode extends AbstractNode {
 
             /*
             dd = new DialogDescriptor( (propertyPanel = new PropertyPatternPanel()),
-              PatternNode.bundle.getString( "CTL_TITLE_NewProperty"),            // Title
+              PatternNode.getString( "CTL_TITLE_NewProperty"),            // Title
               true,                                                 // Modal
               new Object[] { NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION },  // Option list
               NotifyDescriptor.OK_OPTION,                           // Default
@@ -222,7 +208,7 @@ public class  PatternGroupNode extends AbstractNode {
             */
 
             dd = new DialogDescriptor( (propertyPanel = new PropertyPatternPanel()),
-                                       PatternNode.bundle.getString( "CTL_TITLE_NewProperty"),            // Title
+                                       PatternNode.getString( "CTL_TITLE_NewProperty"),            // Title
                                        true,                                                 // Modal
                                        propertyPanel );
             dd.setHelpCtx (new HelpCtx (PatternGroupNode.class.getName () + ".dialogProperty")); // NOI18N
@@ -250,7 +236,7 @@ public class  PatternGroupNode extends AbstractNode {
             IdxPropertyPatternPanel idxPropertyPanel;
 
             dd = new DialogDescriptor( (idxPropertyPanel = new IdxPropertyPatternPanel()),
-                                       PatternNode.bundle.getString( "CTL_TITLE_NewIdxProperty"),     // Title
+                                       PatternNode.getString( "CTL_TITLE_NewIdxProperty"),     // Title
                                        true,                                                       // Modal
                                        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                                        NotifyDescriptor.OK_OPTION,                           // Default
@@ -284,7 +270,7 @@ public class  PatternGroupNode extends AbstractNode {
             UEventSetPatternPanel uEventSetPanel;
 
             dd = new DialogDescriptor( (uEventSetPanel = new UEventSetPatternPanel()),
-                                       PatternNode.bundle.getString( "CTL_TITLE_NewUniCastES"),     // Title
+                                       PatternNode.getString( "CTL_TITLE_NewUniCastES"),     // Title
                                        true,                                                 // Modal
                                        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                                        NotifyDescriptor.OK_OPTION,                           // Default
@@ -310,7 +296,7 @@ public class  PatternGroupNode extends AbstractNode {
             EventSetPatternPanel eventSetPanel;
 
             dd = new DialogDescriptor( (eventSetPanel = new EventSetPatternPanel()),
-                                       PatternNode.bundle.getString( "CTL_TITLE_NewMultiCastES"),     // Title
+                                       PatternNode.getString( "CTL_TITLE_NewMultiCastES"),     // Title
                                        true,                                                 // Modal
                                        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                                        NotifyDescriptor.OK_OPTION,                           // Default
