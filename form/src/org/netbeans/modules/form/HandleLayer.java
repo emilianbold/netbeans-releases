@@ -53,8 +53,11 @@ class HandleLayer extends JPanel
     private Point lastLeftMousePoint;
     private Point prevLeftMousePoint;
     private boolean draggingCanceled = false;
-
     private int resizeType;
+    
+    private FormDesigner.Resizer fdResizer;
+    private int designerResizeType;
+    private boolean wasDragged = false;
 
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
@@ -285,6 +288,19 @@ class HandleLayer extends JPanel
 
         return hitMetaComp;
     }
+    
+    private void selectOtherComponentsNode() {
+        FormEditorSupport fes = FormEditorSupport.getSupport(formDesigner.getModel());
+        ComponentInspector ci = ComponentInspector.getInstance();
+        
+        try {
+            ci.setSelectedNodes(new Node[] { 
+                ((FormRootNode)fes.getFormRootNode()).getOthersNode() }, fes);
+        }
+        catch (java.beans.PropertyVetoException ex) {
+            ex.printStackTrace();
+        }        
+    }
 
     private void processDoubleClick(MouseEvent e) {
         if (e.isShiftDown() || e.isControlDown())
@@ -408,8 +424,32 @@ class HandleLayer extends JPanel
         }
         return false;
     }
+    
+    private boolean validDesignerResizing(int resizing) {
+        return ( (resizing == (LayoutSupport.RESIZE_DOWN | LayoutSupport.RESIZE_RIGHT)) ||
+                 (resizing == LayoutSupport.RESIZE_DOWN) ||
+                 (resizing == LayoutSupport.RESIZE_RIGHT) );
+    }
+    
+    private void checkDesignerResizing(Point p) {
+        int resizing = getSelectionResizable(p, formDesigner.getComponentLayer(), 7);
+        
+        if (validDesignerResizing(resizing)) {
+            setResizingCursor(resizing);
+        }
+        else {
+            Cursor cursor = getCursor();
+            if (cursor != null && cursor.getType() != Cursor.DEFAULT_CURSOR)
+                setCursor(Cursor.getDefaultCursor());
+        }
+        
+        designerResizeType = resizing;
+    }
 
     private void checkResizing(Point p) {
+        // check resizing of FormDesigner
+        checkDesignerResizing(p);
+        
         // check wheteher all selected components are in the same container
         RADComponent parent = null;
         Iterator selected = formDesigner.getSelectedComponents().iterator();
@@ -478,12 +518,12 @@ class HandleLayer extends JPanel
 
         int resizable = laySup.getResizableDirections(comp);
         if (resizable != 0)
-            resizable &= getSelectionResizable(p, comp);
+            resizable &= getSelectionResizable(p, comp, 2);
 
         return resizable;
     }
 
-    private int getSelectionResizable(Point p, Component comp) {
+    private int getSelectionResizable(Point p, Component comp, int borderWidth) {
         if (comp == null) return 0;
 
         Rectangle bounds = comp.getBounds();
@@ -494,7 +534,7 @@ class HandleLayer extends JPanel
         Rectangle r1 = new Rectangle(bounds);
         Rectangle r2 = new Rectangle(bounds);
 
-        r1.grow(2, 2);
+        r1.grow(borderWidth, borderWidth);
         r2.grow(-3, -3);
         if (r2.width < 0) r2.width = 0;
         if (r2.height < 0) r2.height = 0;
@@ -628,6 +668,11 @@ class HandleLayer extends JPanel
                 FormEditor.getFormBundle().getString(formatId),
                 args));
     }
+    
+    private boolean mouseOnComponentLayer(Point p) {
+        Rectangle bounds = formDesigner.getComponentLayer().getBounds();
+        return bounds.contains(p);
+    }
 
     // ---------
 
@@ -645,6 +690,16 @@ class HandleLayer extends JPanel
                 return;
 
             if (MouseUtils.isLeftMouseButton(e)) {
+                
+                if (fdResizer != null) {
+                    if (wasDragged) {
+                        fdResizer.dropDesigner(e.getPoint(), true);
+                    }
+                    fdResizer.hideCurrentSizeInStatus();
+                    fdResizer = null;
+                    wasDragged = false;
+                }
+                
                 if (componentDragger != null) {
                     componentDragger.dropComponents(e.getPoint());
                     componentDragger = null;
@@ -683,10 +738,15 @@ class HandleLayer extends JPanel
 
             if (MouseUtils.isRightMouseButton(e)) {
                 if (componentDragger == null) {
-                    RADComponent hitMetaComp =
-                        getMetaComponentAt(e.getPoint(), COMP_SELECTED);
-                    if (!formDesigner.isComponentSelected(hitMetaComp))
-                        formDesigner.setSelectedComponent(hitMetaComp);
+                    if (!mouseOnComponentLayer(e.getPoint())) {
+                        selectOtherComponentsNode();
+                    } else {
+                        RADComponent hitMetaComp =
+                            getMetaComponentAt(e.getPoint(), COMP_SELECTED);
+                        if (!formDesigner.isComponentSelected(hitMetaComp))
+                            formDesigner.setSelectedComponent(hitMetaComp);
+                    }
+
                 }
                 e.consume();
             }
@@ -700,8 +760,12 @@ class HandleLayer extends JPanel
                 if (palette.getMode() == PaletteAction.MODE_SELECTION) {
                     if (!modifier)
                         checkResizing(e.getPoint());
-
-                    if (resizeType == 0) {
+                    
+                    if (!mouseOnComponentLayer(e.getPoint())) {
+                        if (designerResizeType == 0) {
+                            selectOtherComponentsNode();
+                        }
+                    } else if (resizeType == 0) {
                         if (e.getClickCount() == 2)
                             processDoubleClick(e);
                         else {
@@ -709,6 +773,13 @@ class HandleLayer extends JPanel
                             if (!modifier) // plain single click
                                 processMouseClickInLayoutSupport(hitMetaComp, e);
                         }
+                    }
+                    
+                    if (fdResizer == null && 
+                        lastLeftMousePoint != null && 
+                        validDesignerResizing(designerResizeType)) {
+                            fdResizer = new FormDesigner.Resizer(formDesigner, designerResizeType);
+                            fdResizer.showCurrentSizeInStatus();
                     }
                 }
                 else if (!viewOnly) {
@@ -730,10 +801,16 @@ class HandleLayer extends JPanel
                         }
                         else constraints = null;
 
-                        formDesigner.getModel().getComponentCreator()
-                            .createComponent(item.getInstanceCookie(),
-                                             hitMetaComp,
-                                             constraints);
+                        if (!mouseOnComponentLayer(e.getPoint())) {
+                            formDesigner.getModel().getComponentCreator()
+                                .createComponent(item.getInstanceCookie(), null, null);
+                        }
+                        else {
+                            formDesigner.getModel().getComponentCreator()
+                                .createComponent(item.getInstanceCookie(),
+                                                 hitMetaComp,
+                                                 constraints);
+                        }
 
                         if ((e.getModifiers() & InputEvent.SHIFT_MASK) == 0)
                             palette.setMode(PaletteAction.MODE_SELECTION);
@@ -750,8 +827,12 @@ class HandleLayer extends JPanel
     {
         public void mouseDragged(MouseEvent e) {
             Point p = e.getPoint();
-
-            if (componentDragger == null
+            
+            wasDragged = true;
+            
+            if (fdResizer != null) {
+                fdResizer.dropDesigner(e.getPoint(), false);
+            } else if (componentDragger == null
                 && lastLeftMousePoint != null
                 && (resizeType != 0 || lastLeftMousePoint.distance(p) > 6))
             { // start dragging

@@ -26,6 +26,7 @@ import org.openide.util.Utilities;
 import org.openide.windows.*;
 
 import org.netbeans.modules.java.JavaEditor;
+import org.netbeans.modules.form.palette.PaletteTopComponent;
 
 /**
  *
@@ -422,6 +423,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             designer.requestFocus();
 
             ComponentInspector.getInstance().focusForm(this, true);
+            PaletteTopComponent.getInstance().open();
         }
         // if this is not "editing" workspace, attach a listener on
         // workspace switching and wait for the editing one
@@ -489,6 +491,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             ComponentInspector.getInstance().focusForm(null, false);
             detachSettingsListener();
             detachTopComponentsListener();
+
+            PaletteTopComponent.getInstance().close();
         }
         else { // still any opened forms - focus some
             FormEditorSupport next = (FormEditorSupport)
@@ -608,6 +612,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                           || FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR.equals(propName))
                     {
                         formModel.getFormDesigner().repaint();
+                    } else if (FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR.equals(propName)) {
+                        formModel.getFormDesigner().getFormDesignerPanel().updateBackgroundColor();
+                    } else if (FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR.equals(propName)) {
+                        formModel.getFormDesigner().getFormDesignerPanel().updateBorderColor();
                     }
                 }
             }

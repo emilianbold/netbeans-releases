@@ -18,6 +18,7 @@ import java.applet.Applet;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
+import javax.swing.border.*;
 import java.beans.*;
 import java.lang.reflect.*;
 import java.util.*;
@@ -38,6 +39,8 @@ import org.netbeans.modules.form.compat2.border.*;
 import org.netbeans.modules.form.fakepeer.FakePeerContainer;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
+import org.openide.filesystems.*;
+
 /**
  *
  * @author Tran Duc Trung
@@ -50,6 +53,7 @@ public class FormDesigner extends TopComponent
     private ComponentLayer componentLayer;
     private HandleLayer handleLayer;
     private InPlaceEditLayer textEditLayer;
+    private FormDesignerPanel fdPanel;
     private RADProperty editedProperty;
 
     private RADVisualComponent topDesignComponent;
@@ -76,6 +80,14 @@ public class FormDesigner extends TopComponent
 
     private RADComponent connectionSource;
     private RADComponent connectionTarget;
+    
+    private static final java.net.URL iconURL = 
+        FormDesigner.class.getResource("/org/netbeans/modules/form/resources/formDesigner.gif"); // NOI18N
+    private final static Image designerIcon = Toolkit.getDefaultToolkit().getImage(iconURL);
+    
+    /** The FormLoaderSettings instance */
+    private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
+    
 
     public FormDesigner() {
         this(null);
@@ -92,7 +104,8 @@ public class FormDesigner extends TopComponent
     }
 
     public Dimension getPreferredSize() {
-        return new Dimension(400, 300);
+        int padding = 2 * fdPanel.getBorderThickness();
+        return new Dimension(400 + padding + 15, 300 + padding + 50);
     }
 
     //
@@ -128,37 +141,33 @@ public class FormDesigner extends TopComponent
         
         if (workspace == null)
             workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
-
-        String formName = "Form " + formModel.getName(); // NOI18N
-        String modeName = formName;
-        int modeVar = 0;
-
-        Mode mode = workspace.findMode(modeName);
-        while (mode != null) {
-            TopComponent[] comps = mode.getTopComponents();
-            int i;
-            for (i=0; i < comps.length; i++)
-                if (comps[i].isOpened())
-                    break;
-
-            if (i == comps.length) { // all top components closed
-                mode.dockInto(this);
-                break;
-            }
-
-            modeName = formName + "_" + (++modeVar); // NOI18N
-            mode = workspace.findMode(modeName);
+        
+        super.open(workspace);
+        
+        String modeName = null;        
+        
+        if (formSettings.getOpenFormsInOneWindow()) {
+            modeName = "Form";
         }
+        else {
+            modeName = generateModeName(this);
+        }
+        
+        Mode mode = workspace.findMode(modeName);
+        
+        if (mode != null) {
+            mode.dockInto(this);
+        }        
 
-        if (mode == null) { // create new mode
+        if (mode == null) {
             mode = workspace.createMode(
                      modeName,
                      FormEditor.getFormBundle().getString("CTL_FormWindowTitle"), // NOI18N
-                     null);
+                     iconURL);
             mode.dockInto(this);
         }
 
-        super.open(workspace);
+        //super.open(workspace);
     }
 
     protected void componentActivated() {
@@ -213,17 +222,83 @@ public class FormDesigner extends TopComponent
             name += " " + FormEditor.getFormBundle().getString("CTL_FormTitle_RO"); // NOI18N
         setName(name);
     }
+    
+    private String generateModeName(FormDesigner fd) {
+        FileObject fo = fd.getModel().getFormDataObject().getFormFile();
+        String modeName = null;
+        try {
+            modeName = fo.getFileSystem().getDisplayName().replace(java.io.File.separatorChar, '.')
+                      + "." + fo.getPackageNameExt('.', '.');
+        }
+        catch (FileStateInvalidException ex) {
+            // nothing to do
+        }
+        return modeName;
+    }
+    
+    /*
+    private void updateFormsInOneWindow() {
+        Workspace workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+        String modeName = "Form";
+        Mode mode = workspace.findMode(modeName);
+        
+        if (formSettings.getOpenFormsInOneWindow()) {
+            if (mode == null) {
+                mode = workspace.createMode(
+                    modeName,
+                    FormEditor.getFormBundle().getString("CTL_FormWindowTitle"), // NOI18N
+                    null);                        
+            }
+            
+            Object[] modes = workspace.getModes().toArray();
+            for (int i=0; i<modes.length; i++) {
+                if (((Mode)modes[i]).getName().endsWith(".form")) {
+                    TopComponent[] comps = ((Mode)modes[i]).getTopComponents();
+                    for (int j=0; j<comps.length; j++) {
+                        if (comps[j].isOpened()) {
+                            mode.dockInto(comps[j]);
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            TopComponent[] comps = mode.getTopComponents();
+            
+            for (int i=0; i < comps.length; i++) {
+                if (comps[i].isOpened()) {
+                    
+                    modeName = generateModeName(((FormDesigner)comps[i]));
+                    mode = workspace.findMode(modeName);
+                    
+                    if (mode == null) {
+                        mode = workspace.createMode(
+                                modeName,
+                                FormEditor.getFormBundle().getString("CTL_FormWindowTitle"), // NOI18N
+                                null);                        
+                    }
+                    
+                    mode.dockInto(comps[i]);
+                }
+            }
+        }
+    }
+     */
 
     ////////////////
     
     FormDesigner(FormModel formModel) {
+        setIcon(designerIcon);
+        
         formModelListener = new FormListener();
         
         componentLayer = new ComponentLayer();
+        fdPanel = new FormDesignerPanel(formModel, componentLayer);
+        
         FakePeerContainer fakeContainer = new FakePeerContainer();
         fakeContainer.setLayout(new BorderLayout());
-        fakeContainer.add(componentLayer, BorderLayout.CENTER);
-
+        fakeContainer.add(fdPanel, BorderLayout.CENTER);
+        
         handleLayer = new HandleLayer(this);
         
         layeredPane = new JLayeredPane();
@@ -232,7 +307,9 @@ public class FormDesigner extends TopComponent
         layeredPane.add(handleLayer, new Integer(1001));
 
         setLayout(new BorderLayout());
-        add(layeredPane, BorderLayout.CENTER);
+        
+        JScrollPane sp = new JScrollPane(layeredPane);
+        add(sp);
 
         setModel(formModel);
     }
@@ -251,6 +328,12 @@ public class FormDesigner extends TopComponent
             resetTopDesignComponent(false);
             updateName(formModel.getName());
             handleLayer.setViewOnly(formModel.isReadOnly());
+            RADComponent topRADComponent = formModel.getTopRADComponent();
+            if (topRADComponent instanceof RADVisualFormContainer) {
+                Dimension formSize = ((RADVisualFormContainer)topRADComponent).getFormSize();
+                fdPanel.updatePanel(formSize);
+            }
+            else fdPanel.updatePanel(null);
         }
         else formEditorSupport = null;
     }
@@ -458,6 +541,10 @@ public class FormDesigner extends TopComponent
     ComponentLayer getComponentLayer() {
         return componentLayer;
     }
+    
+    FormDesignerPanel getFormDesignerPanel() {
+        return fdPanel;
+    }    
 
     public void setTopDesignComponent(RADVisualComponent component,
                                       boolean update) {
@@ -742,6 +829,13 @@ public class FormDesigner extends TopComponent
         public void componentPropertyChanged(FormModelEvent e) {
             placeUpdateTask(UpdateTask.PROPERTY, e.getComponentProperty());
         }
+        
+        public void syntheticPropertyChanged(FormModelEvent e) {
+            if (RADVisualFormContainer.PROP_FORM_SIZE.equals(e.getPropertyName())) {
+                Dimension formSize = (Dimension)e.getPropertyNewValue();
+                fdPanel.updatePanel(formSize);
+            }
+        }
     }
 
     // --------
@@ -912,6 +1006,144 @@ public class FormDesigner extends TopComponent
             }
 
             return false;
+        }
+    }
+    
+    
+    public static class FormDesignerPanel extends JPanel {
+        
+        private JComponent formDesignerLayer;
+        private int borderThickness;
+        private int lineThickness;
+        private int paddingThickness;
+        private FormModel formModel;
+        
+        
+        public FormDesignerPanel(FormModel formModel, JComponent container) {
+            this.formModel = formModel;
+            
+            JPanel panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+            panel.add(container, BorderLayout.CENTER);
+            
+            this.formDesignerLayer = panel;
+            
+            borderThickness = 5;
+            lineThickness = 1;
+            paddingThickness = 30;
+            
+            setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+            
+            updateBackgroundColor();
+            
+            int borderSize = 2 * getBorderThickness();
+            add(formDesignerLayer, new org.netbeans.lib.awtextra.AbsoluteConstraints(
+                                        0, 0, 
+                                        400 + borderSize, 
+                                        300 + borderSize 
+            ));
+        }
+        
+        
+        public int getBorderThickness() {
+            return borderThickness + lineThickness + paddingThickness;
+        }
+        
+        
+        public void updatePanel(Dimension d) {
+            remove(formDesignerLayer);
+            if (d == null) {
+                return;
+            }
+            
+            int padding = 2 * getBorderThickness();
+            add(formDesignerLayer, new org.netbeans.lib.awtextra.AbsoluteConstraints(
+                                        0, 0, 
+                                        d.width + padding, 
+                                        d.height + padding 
+            ));
+            formDesignerLayer.revalidate();
+            formDesignerLayer.repaint();
+        }
+        
+        
+        public void updateBackgroundColor() {
+            setBackground(formSettings.getFormDesignerBackgroundColor());
+            updateBorderColor();
+        }
+    
+        
+        public void updateBorderColor() {
+            CompoundBorder border = new CompoundBorder(
+                new CompoundBorder(
+                    new LineBorder(formSettings.getFormDesignerBackgroundColor(), 30), 
+                    new LineBorder(formSettings.getFormDesignerBackgroundColor(), 1)), //java.awt.Color.black ??
+                new LineBorder(formSettings.getFormDesignerBorderColor(), 5));
+            
+            formDesignerLayer.setBorder(border); 
+        }
+    }
+
+    
+    public static class Resizer  {
+
+        private FormDesigner formDesigner;
+        private FormDesignerPanel fdPanel;
+        private int resize;
+        
+        
+        public Resizer(FormDesigner formDesigner, int resize) {
+            this.formDesigner = formDesigner;
+            this.resize = resize;
+            this.fdPanel = formDesigner.getFormDesignerPanel();
+        }
+        
+        
+        private void setStatusText(String formatId, Object[] args) {
+            TopManager.getDefault().setStatusText(
+                java.text.MessageFormat.format(
+                    FormEditor.getFormBundle().getString(formatId), args));
+        }
+        
+        
+        public void showCurrentSizeInStatus() {
+            Dimension size = fdPanel.getPreferredSize();
+            int padding = 2 * fdPanel.getBorderThickness();
+            setStatusText("FMT_MSG_RESIZING_FORMDESIGENR", // NOI18N
+                            new Object[] { new Integer(size.width - padding).toString(), 
+                                           new Integer(size.height - padding).toString() } );            
+        }
+        
+        
+        public void hideCurrentSizeInStatus() {
+            TopManager.getDefault().setStatusText(""); // NOI18N
+        }
+        
+        
+        public void dropDesigner(Point p, boolean resizingFinished) {
+            int w = fdPanel.getPreferredSize().width;
+            int h = fdPanel.getPreferredSize().height;
+            int border = fdPanel.getBorderThickness();
+            
+            if (resize == (LayoutSupport.RESIZE_DOWN | LayoutSupport.RESIZE_RIGHT)) {
+                w = p.x - border;
+                h = p.y - border;
+            } else if (resize == LayoutSupport.RESIZE_DOWN) {
+                w = w - 2 * border;
+                h = p.y - border;
+            } else if (resize == LayoutSupport.RESIZE_RIGHT) {
+                w = p.x - border;
+                h = h - 2 * border;
+            }
+            
+            int minSize = 20;
+            if (w < minSize) w = minSize;
+            if (h < minSize) h = minSize;
+            
+            fdPanel.updatePanel(new Dimension(w, h));
+            if (resizingFinished) ((RADVisualFormContainer)formDesigner.getModel().getTopRADComponent()).setFormSize(new Dimension(w, h));
+            setStatusText("FMT_MSG_RESIZING_FORMDESIGENR", // NOI18N
+                            new Object[] { new Integer(w).toString(), new Integer(h).toString() } );
         }
     }
 }

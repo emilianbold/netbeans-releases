@@ -27,6 +27,9 @@ import org.openide.util.NbBundle;
 import org.openide.windows.Workspace;
 import org.openide.windows.WindowManager;
 
+import org.netbeans.modules.form.palette.*;
+
+
 /** A BeanInfo for FormLoaderSettings.
  * @author Ian Formanek
  * @version 0.11, May 22, 1998
@@ -48,8 +51,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             return desc;
         
         try {
-            java.util.ResourceBundle formBundle =
-                org.openide.util.NbBundle.getBundle(FormLoaderSettingsBeanInfo.class);
+            java.util.ResourceBundle formBundle = FormEditor.getFormBundle();
+                
             
             desc = new PropertyDescriptor[] {
 //                new PropertyDescriptor(FormLoaderSettings.PROP_INDENT_AWT_HIERARCHY, FormLoaderSettings.class,
@@ -88,10 +91,18 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 //                                       "isNullLayout", "setNullLayout"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_WORKSPACE, FormLoaderSettings.class,
                                        "getWorkspace", "setWorkspace"), // NOI18N
-                new PropertyDescriptor(FormLoaderSettings.PROP_PALETTE_TABS_VISIBLE, FormLoaderSettings.class,
-                                       "getPaletteTabsVisible", "setPaletteTabsVisible"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_SELECTED_PALETTE, FormLoaderSettings.class,
+                                       "getSelectedPalette", "setSelectedPalette"), // NOI18N
                 new PropertyDescriptor("containerBeans", FormLoaderSettings.class, // NOI18N
-                                       "getContainerBeans", "setContainerBeans") // NOI18N
+                                       "getContainerBeans", "setContainerBeans"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_OPEN_FORMS_IN_ONE_WINDOW, FormLoaderSettings.class, // NOI18N
+                                       "getOpenFormsInOneWindow", "setOpenFormsInOneWindow"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR, FormLoaderSettings.class, // NOI18N
+                                       "getFormDesignerBackgroundColor", "setFormDesignerBackgroundColor"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR, FormLoaderSettings.class, // NOI18N
+                                       "getFormDesignerBorderColor", "setFormDesignerBorderColor"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_SHOW_COMPONENTS_NAMES, FormLoaderSettings.class, // NOI18N
+                                       "getShowComponentsNames", "setShowComponentsNames") // NOI18N
             };
 
 //            desc[0].setDisplayName(formBundle.getString("PROP_INDENT_AWT_HIERARCHY"));
@@ -166,10 +177,24 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[13].setPropertyEditorClass(WorkspaceEditor.class);
             desc[13].setExpert(true);
 
-            desc[14].setDisplayName(formBundle.getString("PROP_PALETTE_TABS_VISIBLE"));
-            desc[14].setShortDescription(formBundle.getString("HINT_PALETTE_TABS_VISIBLE"));
+            desc[14].setDisplayName(formBundle.getString("PROP_SELECTED_PALETTE"));
+            desc[14].setShortDescription(formBundle.getString("HINT_SELECTED_PALETTE"));
+            desc[14].setPropertyEditorClass(PalettesEditor.class);
 
             desc[15].setHidden(true);
+            
+            desc[16].setDisplayName(formBundle.getString("PROP_OPEN_FORMS_IN_ONE_WINDOW"));
+            desc[16].setShortDescription(formBundle.getString("HINT_OPEN_FORMS_IN_ONE_WINDOW"));
+            desc[16].setHidden(true);
+            
+            desc[17].setDisplayName(formBundle.getString("PROP_FORMDESIGNER_BACKGROUND_COLOR"));
+            desc[17].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BACKGROUND_COLOR"));
+            
+            desc[18].setDisplayName(formBundle.getString("PROP_FORMDESIGNER_BORDER_COLOR"));
+            desc[18].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BORDER_COLOR"));
+            
+            desc[19].setHidden(true);
+            
         } catch (IntrospectionException ex) {
             throw new InternalError();
         }
@@ -210,8 +235,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
         /** @return names of the possible directions */
         public String[] getTags() {
             if (names == null) {
-                java.util.ResourceBundle formBundle =
-                    org.openide.util.NbBundle.getBundle(FormLoaderSettingsBeanInfo.class);
+                java.util.ResourceBundle formBundle = FormEditor.getFormBundle();
                 names = new String[] {
                     formBundle.getString("VALUE_OutputLevel_Minimum"),
                     formBundle.getString("VALUE_OutputLevel_Normal"),
@@ -340,4 +364,101 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
     }
 
+    
+    
+    final public static class PalettesEditor extends java.beans.PropertyEditorSupport {
+        private boolean initialized = false;
+        private CPElements.Palette[] registeredPalettes;
+
+        /*
+         * @return The property value as a human editable string.
+         * <p>   Returns null if the value can't be expressed as an editable string.
+         * <p>   If a non-null value is returned, then the PropertyEditor should
+         *       be prepared to parse that string back in setAsText().
+         */
+        public String getAsText() {
+            if (!initialized) {
+                initializePalettes();
+                initialized = true;
+            }
+            
+            if (registeredPalettes.length < 1) {
+                return FormEditor.getFormBundle().getString("VALUE_SELECTED_PALETTE_NONE"); // NOI18N
+            }
+            
+            Object value = getValue();
+            int index = 0;
+            if (value instanceof Integer)
+                index = ((Integer)value).intValue();
+            
+            if  (index < registeredPalettes.length)
+                return registeredPalettes[index].getPaletteName();
+            else return null;
+        }
+
+        
+        /* Set the property value by parsing a given String.  May raise
+         * java.lang.IllegalArgumentException if either the String is
+         * badly formatted or if this kind of property can't be expressed
+         * as text.
+         * @param text  The string to be parsed.
+         */
+        public void setAsText(String text) throws java.lang.IllegalArgumentException {
+            if (!initialized) {
+                initializePalettes();
+                initialized = true;
+            }
+            
+            int index = getIndexOfPalette(text);
+            setValue(new Integer(index));
+        }
+
+        
+        /*
+         * If the property value must be one of a set of known tagged values,
+         * then this method should return an array of the tag values.  This can
+         * be used to represent(for example) enum values.  If a PropertyEditor
+         * supports tags, then it should support the use of setAsText with
+         * a tag value as a way of setting the value.
+         *
+         * @return The tag values for this property.  May be null if this
+         *   property cannot be represented as a tagged value.
+         *
+         */
+        public String[] getTags() {
+            if (!initialized) {
+                initializePalettes();
+                initialized = true;
+            }
+            
+            String[] names;
+            
+            if (registeredPalettes.length > 0) {
+                names = new String [registeredPalettes.length];
+                
+                for (int i=0; i<registeredPalettes.length; i++) {
+                    names[i] = registeredPalettes[i].getPaletteName();
+                }
+            } else names = new String[] {FormEditor.getFormBundle().getString("VALUE_SELECTED_PALETTE_NONE")}; // NOI18N
+            
+            return names;
+        }
+
+        
+        /** gets array of available palettes from CPManager */
+        private void initializePalettes() {
+            registeredPalettes = CPManager.getDefault().getRegisteredPalettes();
+        }
+
+        
+        /** gets index of palette given by name */
+        private int getIndexOfPalette(String name) {
+            for (int i=0; i<registeredPalettes.length; i++) {
+                if (registeredPalettes[i].getPaletteName().equals(name))
+                    return i;
+            }
+            return -1;
+        }
+        
+    }
 }

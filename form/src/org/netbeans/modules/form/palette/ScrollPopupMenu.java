@@ -59,33 +59,8 @@ public class ScrollPopupMenu extends JPopupMenuPlus {
                         new JWindow((Window)comp) :
                         new JWindow(new JFrame());
             popWin.setLocation(posX, posY);
-
-            Dimension prefSize = getPreferredSize();
-            if (maxHeight == 0 || prefSize.height <= maxHeight) {
-                popWin.getContentPane().add(this, BorderLayout.CENTER);
-                popWin.pack();
-            }
-            else {
-                JPanel view = new JPanel(new BorderLayout());
-                view.add(this, BorderLayout.CENTER);
-
-                scrollPane = new JScrollPane(view);
-                scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//                scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-                JScrollBar bar = scrollPane.getVerticalScrollBar();
-                if (bar != null) {
-                    Dimension d = bar.getPreferredSize();
-                    d.width = 12;
-                    bar.setPreferredSize(d);
-                    bar.setUnitIncrement(21);
-                }
-
-                popWin.getContentPane().add(scrollPane, BorderLayout.CENTER);
-                popWin.pack();
-                popWin.setSize(popWin.getSize().width+12, maxHeight);
-                requestFocus();
-            }
-
+            
+            pack();
             popWin.setVisible(true);
         }
         else {
@@ -93,6 +68,8 @@ public class ScrollPopupMenu extends JPopupMenuPlus {
             if (popWin != null) {
                 firePopupMenuWillBecomeInvisible();
                 popWin.hide();
+                popWin = null;
+                scrollPane = null;
             }
         }
     }
@@ -107,6 +84,43 @@ public class ScrollPopupMenu extends JPopupMenuPlus {
         else {
             posX = x;
             posY = y;
+        }
+    }
+
+    public void pack() {
+        if (popWin == null)
+            return;
+        
+        Dimension prefSize = getPreferredSize();
+        if (maxHeight == 0 || prefSize.height <= maxHeight) {
+            if (scrollPane != null) {
+                popWin.getContentPane().remove(scrollPane);
+                scrollPane = null;
+            }
+            popWin.getContentPane().add(this, BorderLayout.CENTER);
+            popWin.pack();
+        }
+        else {
+            if (scrollPane == null) {
+                JPanel view = new JPanel(new BorderLayout());
+                view.add(this, BorderLayout.CENTER);
+
+                scrollPane = new JScrollPane(view);
+                scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    //                scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+                JScrollBar bar = scrollPane.getVerticalScrollBar();
+                if (bar != null) {
+                    Dimension d = bar.getPreferredSize();
+                    d.width = 12;
+                    bar.setPreferredSize(d);
+                    bar.setUnitIncrement(21);
+                }
+
+                popWin.getContentPane().add(scrollPane, BorderLayout.CENTER);
+            }
+            popWin.pack();
+            popWin.setSize(popWin.getSize().width+12, maxHeight);
+            requestFocus();
         }
     }
 

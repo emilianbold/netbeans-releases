@@ -178,10 +178,9 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             if (oldConstraints != null &&
                     layoutSupport.getConstraints(components[0]) == null) {
                 Container cont = (Container)
-                    getFormModel().getFormDesigner().getComponent(this);
+                    getContainerDelegate(getFormModel().getFormDesigner().getComponent(this));
                 Component[] comps = cont != null ? cont.getComponents() : null;
-                newConstraints = layoutSupport.convertConstraints(oldConstraints,
-                                                                  comps);
+                newConstraints = layoutSupport.convertConstraints(oldConstraints, comps);
             }
 
             // add components to the new layout

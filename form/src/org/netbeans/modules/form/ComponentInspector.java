@@ -41,9 +41,9 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     private static TestAction testAction = (TestAction)
                        SharedClassObject.findObject(TestAction.class, true);
 
-    private static ComponentInspectorAction inspectorAction =
-        (ComponentInspectorAction)
-            SharedClassObject.findObject(ComponentInspectorAction.class, true);
+    private static FormEditorAction inspectorAction =
+        (FormEditorAction)
+            SharedClassObject.findObject(FormEditorAction.class, true);
 
     /** The default width of the ComponentInspector */
     public static final int DEFAULT_INSPECTOR_WIDTH = 250;

@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
 
             <file name="org-netbeans-modules-form-actions-InstallToPaletteAction.instance" />
             <file name="org-netbeans-modules-form-actions-InstallBeanAction.instance" />
-            <file name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance" />
+            <file name="org-netbeans-modules-form-actions-FormEditorAction.instance" />
             <file name="org-netbeans-modules-form-actions-CustomizeLayoutAction.instance" />
             <file name="org-netbeans-modules-form-actions-GotoFormAction.instance" />
             <file name="org-netbeans-modules-form-actions-GotoInspectorAction.instance" />
@@ -49,27 +49,11 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-    <folder name="Toolbars">
-        <folder name="Form">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
-
-            <file name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance" />
-            <file name="org-netbeans-modules-form-actions-TestAction.instance" />
-
-            <attr name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance/org-netbeans-modules-form-actions-TestAction.instance" boolvalue="true" />
-        </folder>
-
-        <folder name="Palette">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
-            <file name="org-netbeans-modules-form-palette-PaletteAction.instance" />
-        </folder>
-    </folder>
-
     <folder name="Menu">
         <folder name="View">
-            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/org-netbeans-modules-form-actions-ComponentInspectorAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance" />
-            <attr name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance/org-netbeans-modules-objectbrowser-ShowBrowserAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/org-netbeans-modules-form-actions-FormEditorAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-form-actions-FormEditorAction.instance" />
+            <attr name="org-netbeans-modules-form-actions-FormEditorAction.instance/org-netbeans-modules-objectbrowser-ShowBrowserAction.instance" boolvalue="true" />
         </folder>
 
         <folder name="Tools">
@@ -481,55 +465,19 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="Layouts/Borders" boolvalue="true" />
     </folder>
 
+    <folder name="PaletteUI">
+        <file name="org-netbeans-modules-form-palette-CPComponentLarge.instance">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.palette.Bundle" />
+            <attr name="defaultDisplayName" stringvalue="Large Palette" />
+        </file>
+        <file name="org-netbeans-modules-form-palette-CPComponentSmall.instance">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.palette.Bundle" />
+            <attr name="defaultDisplayName" stringvalue="Small Palette" />
+        </file>
+    </folder>
+
     <folder name="Templates">
-        <folder name="AWTForms">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/AWTForms.html"/>
-
-            <file name="Applet.java" url="templates/AWTForms/Applet_java">
-                <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Applet.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/applet.gif"/>
-                <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420446562756767696e6774002e6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c657444656275676765725479706578"/>
-                <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420457865637574696f6e74002a6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c65744578656375746f7278"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
-            </file>
-            <file name="Applet.form" url="templates/AWTForms/Applet_form">
-                <attr name="template" boolvalue="true" />
-            </file>
-
-            <file name="Dialog.java" url="templates/AWTForms/Dialog_java">
-                <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialog.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/dialog.gif"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
-            </file>
-            <file name="Dialog.form" url="templates/AWTForms/Dialog_form">
-                <attr name="template" boolvalue="true" />
-            </file>
-
-            <file name="Frame.java" url="templates/AWTForms/Frame_java">
-                <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Frame.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/frame.gif"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
-            </file>
-            <file name="Frame.form" url="templates/AWTForms/Frame_form">
-                <attr name="template" boolvalue="true" />
-            </file>
-
-            <file name="Panel.java" url="templates/AWTForms/Panel_java">
-                <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Panel.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/beaninfo/awt/panel.gif"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
-            </file>
-            <file name="Panel.form" url="templates/AWTForms/Panel_form">
-                <attr name="template" boolvalue="true" />
-            </file>
-        </folder>
-
-        <folder name="SwingForms">
+        <folder name="GUIForms">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/SwingForms.html"/>
 
@@ -589,49 +537,144 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JPanel.form" url="templates/SwingForms/JPanel_form">
                 <attr name="template" boolvalue="true" />
             </file>
+
+            <file name="BeanForm.java" url="templates/SwingForms/BeanForm_java">
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/BeanForm.html"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+            </file>
+            <file name="BeanForm.form" url="templates/SwingForms/BeanForm_form">
+                <attr name="template" boolvalue="true" />
+            </file>
+
+            <folder name="AWTForms">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/AWTForms.html"/>
+
+                <file name="Applet.java" url="templates/AWTForms/Applet_java">
+                    <attr name="template" boolvalue="true" />
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Applet.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/applet.gif"/>
+                    <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420446562756767696e6774002e6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c657444656275676765725479706578"/>
+                    <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420457865637574696f6e74002a6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c65744578656375746f7278"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                </file>
+                <file name="Applet.form" url="templates/AWTForms/Applet_form">
+                    <attr name="template" boolvalue="true" />
+                </file>
+
+                <file name="Dialog.java" url="templates/AWTForms/Dialog_java">
+                    <attr name="template" boolvalue="true" />
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialog.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/dialog.gif"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                </file>
+                <file name="Dialog.form" url="templates/AWTForms/Dialog_form">
+                    <attr name="template" boolvalue="true" />
+                </file>
+
+                <file name="Frame.java" url="templates/AWTForms/Frame_java">
+                    <attr name="template" boolvalue="true" />
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Frame.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/frame.gif"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                </file>
+                <file name="Frame.form" url="templates/AWTForms/Frame_form">
+                    <attr name="template" boolvalue="true" />
+                </file>
+
+                <file name="Panel.java" url="templates/AWTForms/Panel_java">
+                    <attr name="template" boolvalue="true" />
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Panel.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/beaninfo/awt/panel.gif"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                </file>
+                <file name="Panel.form" url="templates/AWTForms/Panel_form">
+                    <attr name="template" boolvalue="true" />
+                </file>
+            </folder>
+
+            <folder name="Dialogs">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialogs.html"/>
+
+                <file name="Application.java" url="templates/Dialogs/Application_java">
+                    <attr name="template" boolvalue="true" />
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Application.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
+                    <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                </file>
+                <file name="Application.form" url="templates/Dialogs/Application_form">
+                    <attr name="template" boolvalue="true" />
+                </file>
+
+                <file name="MDIApplication.java" url="templates/Dialogs/MDIApplication_java">
+                    <attr name="template" boolvalue="true" />
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/MDIApplication.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
+                    <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                </file>
+                <file name="MDIApplication.form" url="templates/Dialogs/MDIApplication_form">
+                    <attr name="template" boolvalue="true" />
+                </file>
+
+                <file name="OkCancelDialog.java" url="templates/Dialogs/OkCancelDialog_java">
+                    <attr name="template" boolvalue="true" />
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/OKCancelDialog.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor16.gif"/>
+                    <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor32.gif"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                </file>
+                <file name="OkCancelDialog.form" url="templates/Dialogs/OkCancelDialog_form">
+                    <attr name="template" boolvalue="true" />
+                </file>
+            </folder>
+
         </folder>
 
-        <folder name="Dialogs">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialogs.html"/>
-
-            <file name="Application.java" url="templates/Dialogs/Application_java">
-                <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Application.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
-                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
-            </file>
-            <file name="Application.form" url="templates/Dialogs/Application_form">
-                <attr name="template" boolvalue="true" />
-            </file>
-
-            <file name="MDIApplication.java" url="templates/Dialogs/MDIApplication_java">
-                <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/MDIApplication.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
-                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
-            </file>
-            <file name="MDIApplication.form" url="templates/Dialogs/MDIApplication_form">
-                <attr name="template" boolvalue="true" />
-            </file>
-
-            <file name="OkCancelDialog.java" url="templates/Dialogs/OkCancelDialog_java">
-                <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/OKCancelDialog.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor16.gif"/>
-                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor32.gif"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
-            </file>
-            <file name="OkCancelDialog.form" url="templates/Dialogs/OkCancelDialog_form">
-                <attr name="template" boolvalue="true" />
-            </file>
-        </folder>
     </folder>
 
     <folder name="Shortcuts">
-        <file name="C-8[org.netbeans.modules.form.actions.ComponentInspectorAction].instance" />
+        <file name="C-8[org.netbeans.modules.form.actions.FormEditorAction].instance" />
+    </folder>
+
+
+    <!-- default workspaces, frames and their layout defined by core-->
+    <folder name="windows">
+        <folder name="windowmanager">
+            <file name="Visual.wswksp" url="windowmanager/Visual.wswksp" />
+            <folder name="Visual">
+                <file name="explorer.wsmode" url="windowmanager/Visual/explorer.wsmode" />
+                <folder name="explorer">
+                    <attr name="filesystems.wstcref/Javadoc.wstcref" boolvalue="true" />
+                    <file name="filesystems.wstcref" url="windowmanager/Visual/explorer/filesystems.wstcref" />
+                    <file name="Javadoc.wstcref" url="windowmanager/Visual/explorer/Javadoc.wstcref" />
+                </folder>
+                <file name="properties.wsmode" url="windowmanager/Visual/properties.wsmode" />
+                <folder name="properties">
+                    <file name="properties.wstcref" url="windowmanager/Visual/properties/properties.wstcref" />
+                </folder>
+                <file name="output.wsmode" url="windowmanager/Visual/output.wsmode" />
+                <folder name="output">
+                    <file name="output.wstcref" url="windowmanager/Visual/output/output.wstcref" />
+                </folder>
+                <file name="Form.wsmode" url="windowmanager/Visual/Form.wsmode" />
+                <folder name="Form">
+                    <file name="Component Inspector.wstcref" url="windowmanager/Visual/Form/Component Inspector.wstcref" />
+                    <file name="Component Palette.wstcref" url="windowmanager/Visual/Form/Component Palette.wstcref" />
+                </folder>
+                <file name="editor.wsmode" url="windowmanager/Visual/editor.wsmode" />
+                <folder name="editor">
+                </folder>
+            </folder>
+        </folder>
+        <folder name="components">
+            <file name="Javadoc.settings" url="components/Javadoc.settings" />
+            <file name="Component Inspector.settings" url="components/Component Inspector.settings" />
+            <file name="Component Palette.settings" url="components/Component Palette.settings" />
+        </folder>
     </folder>
 
 </filesystem>

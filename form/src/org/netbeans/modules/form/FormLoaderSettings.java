@@ -70,7 +70,17 @@ public class FormLoaderSettings extends SystemOption {
     /** Property name of the nullLayout property */
 //    public static final String PROP_NULL_LAYOUT = "nullLayout"; // NOI18N
 
-    public static final String PROP_PALETTE_TABS_VISIBLE = "paletteTabsVisible"; // NOI18N
+    /** Property name of the selectedPalette property */
+    public static final String PROP_SELECTED_PALETTE = "selectedPalette"; // NOI18N
+    /** Property name of the showComponentsNames property */
+    public static final String PROP_SHOW_COMPONENTS_NAMES = "showComponentsNames"; // NOI18N    
+    
+    /** Property name of the openFormsInOneWindow property */
+    public static final String PROP_OPEN_FORMS_IN_ONE_WINDOW = "openFormsInOneWindow"; // NOI18N
+    /** Property name of the formDesignerBackgroundColor property */
+    public static final String PROP_FORMDESIGNER_BACKGROUND_COLOR = "formDesignerBackgroundColor"; // NOI18N
+    /** Property name of the formDesignerBorderColor property */
+    public static final String PROP_FORMDESIGNER_BORDER_COLOR = "formDesignerBorderColor"; // NOI18N
 
     /** Minimum output detail level */
     public static final int OUTPUT_MINIMUM = 0;
@@ -139,7 +149,15 @@ public class FormLoaderSettings extends SystemOption {
 
     private static int emptyFormType = 0;
 
-    private static boolean paletteTabsVisible = true;
+    private static int selectedPalette = 0;
+    private static boolean showComponentsNames = false;
+    
+    /** Opened forms are docked into one FormDesigner window, otherwise each form into one single window */
+    private static boolean openFormsInOneWindow = true;
+    /** The color of FormDesigner window's background */
+    private static java.awt.Color formDesignerBackgroundColor = new java.awt.Color(255, 255, 255);
+    /** The color of border around designed component */
+    private static java.awt.Color formDesignerBorderColor = new java.awt.Color(230, 230, 255);
 
     private static final int MIN_SELECTION_BORDER_SIZE = 1;
     private static final int MAX_SELECTION_BORDER_SIZE = 15;
@@ -432,16 +450,71 @@ public class FormLoaderSettings extends SystemOption {
 //        firePropertyChange(PROP_NULL_LAYOUT, new Boolean(oldValue), new Boolean(nullLayout));
 //    }
 
-    public boolean getPaletteTabsVisible() {
-        return paletteTabsVisible;
+    public int getSelectedPalette() {
+        return selectedPalette;
     }
 
-    public void setPaletteTabsVisible(boolean value) {
-        if (value == paletteTabsVisible) return;
-        paletteTabsVisible = value;
+    public void setSelectedPalette(int index) {
+        if (index == selectedPalette) return;
+        int oldValue = selectedPalette;
+        selectedPalette = index;
         // fire the PropertyChange
-        firePropertyChange(PROP_PALETTE_TABS_VISIBLE, new Boolean(!value), new Boolean(value));
+        firePropertyChange(PROP_SELECTED_PALETTE, new Integer(oldValue), new Integer(selectedPalette));
     }
+    
+    public boolean getShowComponentsNames() {
+        return showComponentsNames;
+    }
+
+    public void setShowComponentsNames(boolean value) {
+        if (value == showComponentsNames) return;
+        showComponentsNames = value;
+        firePropertyChange(PROP_SHOW_COMPONENTS_NAMES, new Boolean(!value), new Boolean(value));
+    }    
+    
+    // :::::::::::: FormDesigner    
+    
+    /** Getter for the openFormsInOneWindow option */
+    public boolean getOpenFormsInOneWindow() {
+        return openFormsInOneWindow;
+    }
+    
+    /** Setter for the openFormsInOneWindow option */
+    public void setOpenFormsInOneWindow(boolean value) {
+        if (value == openFormsInOneWindow) return;
+        openFormsInOneWindow = value;
+        firePropertyChange(PROP_OPEN_FORMS_IN_ONE_WINDOW, new Boolean(!value), new Boolean(value));
+    }    
+    
+    /** Getter for the formDesignerBackgroundColor option */
+    public java.awt.Color getFormDesignerBackgroundColor() {
+        return formDesignerBackgroundColor;
+    }
+
+    /** Setter for the formDesignerBackgroundColor option */
+    public void setFormDesignerBackgroundColor(java.awt.Color value) {
+        if (value.equals(formDesignerBackgroundColor))
+            return;
+        java.awt.Color oldValue = formDesignerBackgroundColor;
+        formDesignerBackgroundColor = value;
+        firePropertyChange(PROP_FORMDESIGNER_BACKGROUND_COLOR, oldValue, formDesignerBackgroundColor);
+    }    
+    
+    /** Getter for the formDesignerBorderColor option */
+    public java.awt.Color getFormDesignerBorderColor() {
+        return formDesignerBorderColor;
+    }
+
+    /** Setter for the formDesignerBorderColor option */
+    public void setFormDesignerBorderColor(java.awt.Color value) {
+        if (value.equals(formDesignerBorderColor))
+            return;
+        java.awt.Color oldValue = formDesignerBorderColor;
+        formDesignerBorderColor = value;
+        firePropertyChange(PROP_FORMDESIGNER_BORDER_COLOR, oldValue, formDesignerBorderColor);
+    }      
+        
+    // ::::::::::::
 
     public Map getContainerBeans() {
         return containerBeans;

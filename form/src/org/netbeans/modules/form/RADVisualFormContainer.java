@@ -111,7 +111,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
     public Dimension getFormSize() {
         if (formSize == null) {
-            formSize = new Dimension(300, 200); //topContainer.getSize();
+            formSize = new Dimension(400, 300); //topContainer.getSize();
         }
         return formSize;
     }
