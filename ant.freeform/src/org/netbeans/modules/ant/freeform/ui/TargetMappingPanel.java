@@ -12,7 +12,11 @@
  */
 
 package org.netbeans.modules.ant.freeform.ui;
+
 import java.awt.Cursor;
+import java.awt.Frame;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -21,6 +25,7 @@ import java.util.StringTokenizer;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
@@ -33,7 +38,7 @@ import org.openide.filesystems.FileObject;
 /**
  * @author  David Konecny
  */
-public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCustomizer.Panel {
+public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCustomizer.Panel, MouseListener, ActionListener {
 
     public static String BUILD_ACTION = "build"; // NOI18N
     public static String CLEAN_ACTION = "clean"; // NOI18N
@@ -60,6 +65,10 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     private boolean dirtyCustom;
     
     public TargetMappingPanel(String type) {
+        this(type, false);
+    }
+    
+    private TargetMappingPanel(String type, boolean advancedPart) {
         initComponents();
         targetMappings = new ArrayList();
         projectType = type;
@@ -70,11 +79,9 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         
         link.setCursor(Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
         
-        jLabel7.setVisible(projectType.equals("j2se")); // NOI18N
-        testCombo.setVisible(projectType.equals("j2se")); // NOI18N
         jLabel3.setVisible(projectType.equals("webapps")); // NOI18N
         redeployCombo.setVisible(projectType.equals("webapps")); // NOI18N
-        showAdvancedPart(false);
+        showAdvancedPart(advancedPart);
     }
     
     private void showAdvancedPart(boolean show) {
@@ -88,6 +95,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         remainder.setVisible(!show);
         jLabel9.setVisible(show);
         debugCombo.setVisible(show);
+        jLabel1.setVisible(!show);
     }
     
     private void initAntTargetEditor(List targets) {
@@ -136,10 +144,10 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             selectItem(javadocCombo, "javadoc", false); //NOI18N
             selectItem(runCombo, "run", false); //NOI18N
             selectItem(debugCombo, "debug", false); //NOI18N
-            if (projectType.equals("j2se")) //NOI18N
-                selectItem(testCombo, "test", false);
-            else if (projectType.equals("webapps")) //NOI18N
+            selectItem(testCombo, "test", false);
+            if (projectType.equals("webapps")) { // NOI18N
                 selectItem(redeployCombo, "run-deploy", false); //NOI18N
+            }
         }
     }
 
@@ -273,7 +281,6 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
 
     public List/*<FreeformProjectGenerator.TargetMapping>*/ getMapping() {
         storeTarget(BUILD_ACTION, buildCombo);
-        storeTarget(CLEAN_ACTION, cleanCombo);
         // update rebuilt:
         if (cleanCombo.getModel().getSelectedItem() != null &&
                 ((String)cleanCombo.getModel().getSelectedItem()).length() > 0 &&
@@ -285,13 +292,15 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         } else {
             removeTargetMapping(REBUILD_ACTION);
         }
-        storeTarget(RUN_ACTION, runCombo);
+        storeTarget(CLEAN_ACTION, cleanCombo);
         storeTarget(JAVADOC_ACTION, javadocCombo);
-        storeTarget(DEBUG_ACTION, debugCombo);
-        if (projectType.equals("j2se")) //NOI18N
-            storeTarget(TEST_ACTION, testCombo);
-        else if (projectType.equals("webapps")) //NOI18N
+        if (projectType.equals("webapps")) { // NOI18N
             storeTarget(REDEPLOY_ACTION, redeployCombo);
+        }
+        // XXX should have separator here, when that is permitted
+        storeTarget(RUN_ACTION, runCombo);
+        storeTarget(DEBUG_ACTION, debugCombo);
+        storeTarget(TEST_ACTION, testCombo);
         return targetMappings;
     }
 
@@ -316,6 +325,8 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         testCombo = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
         redeployCombo = new javax.swing.JComboBox();
+        jLabel9 = new javax.swing.JLabel();
+        debugCombo = new javax.swing.JComboBox();
         jPanel1 = new javax.swing.JPanel();
         link = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
@@ -325,8 +336,6 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         add = new javax.swing.JButton();
         remove = new javax.swing.JButton();
         remainder = new javax.swing.JPanel();
-        jLabel9 = new javax.swing.JLabel();
-        debugCombo = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -445,31 +454,43 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_jLabel3"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 6);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLabel3, gridBagConstraints);
         jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "ACSD_TargetMappingPanel_jLabel3"));
 
         redeployCombo.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(redeployCombo, gridBagConstraints);
+
+        jLabel9.setLabelFor(debugCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_jLabel9"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
+        add(jLabel9, gridBagConstraints);
+        jLabel9.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "ACSD_TargetMappingPanel_jLabel9"));
+
+        debugCombo.setEditable(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        add(debugCombo, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         link.setForeground(new java.awt.Color(102, 102, 153));
         org.openide.awt.Mnemonics.setLocalizedText(link, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "URL_TargetMappingPanel_link"));
-        link.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                linkMouseReleased(evt);
-            }
-        });
+        link.addMouseListener(this);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -520,11 +541,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         add(jScrollPane1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(add, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "BTN_TargetMappingPanel_add"));
-        add.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addActionPerformed(evt);
-            }
-        });
+        add.addActionListener(this);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -536,11 +553,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         add.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "ACSD_TargetMappingPanel_add"));
 
         org.openide.awt.Mnemonics.setLocalizedText(remove, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "BTN_TargetMappingPanel_remove"));
-        remove.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeActionPerformed(evt);
-            }
-        });
+        remove.addActionListener(this);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -560,25 +573,35 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints.weighty = 1.0;
         add(remainder, gridBagConstraints);
 
-        jLabel9.setLabelFor(debugCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_jLabel9"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
-        add(jLabel9, gridBagConstraints);
-        jLabel9.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TargetMappingPanel.class, "ACSD_TargetMappingPanel_jLabel9"));
+    }
 
-        debugCombo.setEditable(true);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(debugCombo, gridBagConstraints);
+    // Code for dispatching events from components to event handlers.
 
+    public void actionPerformed(java.awt.event.ActionEvent evt) {
+        if (evt.getSource() == add) {
+            TargetMappingPanel.this.addActionPerformed(evt);
+        }
+        else if (evt.getSource() == remove) {
+            TargetMappingPanel.this.removeActionPerformed(evt);
+        }
+    }
+
+    public void mouseClicked(java.awt.event.MouseEvent evt) {
+    }
+
+    public void mouseEntered(java.awt.event.MouseEvent evt) {
+    }
+
+    public void mouseExited(java.awt.event.MouseEvent evt) {
+    }
+
+    public void mousePressed(java.awt.event.MouseEvent evt) {
+    }
+
+    public void mouseReleased(java.awt.event.MouseEvent evt) {
+        if (evt.getSource() == link) {
+            TargetMappingPanel.this.linkMouseReleased(evt);
+        }
     }//GEN-END:initComponents
 
     private void linkMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkMouseReleased
@@ -625,13 +648,12 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
                 initAntTargetEditor(l);
             }
             antScript = project.evaluator().getProperty(FreeformProjectGenerator.PROP_ANT_SCRIPT);
-            antScript = (antScript == null ? null : "${"+FreeformProjectGenerator.PROP_ANT_SCRIPT+"}");
+            antScript = (antScript == null ? null : "${" + FreeformProjectGenerator.PROP_ANT_SCRIPT + "}"); // NOI18N
             initMappings(FreeformProjectGenerator.getTargetMappings(helper), antScript);
             
             custTargets = FreeformProjectGenerator.getCustomContextMenuActions(helper);
             customTargetsModel.fireTableDataChanged();
             
-            jLabel1.setVisible(false);
             showAdvancedPart(true);
             
             updateButtons();
@@ -772,6 +794,22 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             dirtyCustom = true;
         }
         
+    }
+    
+    // For UI testing purposes.
+    public static void main(String[] ignore) {
+        String[] types = {"j2se", "webapps"}; // NOI18N
+        boolean[] adv = {false, true};
+        for (int i = 0; i < types.length; i++) {
+            for (int j = 0; j < adv.length; j++) {
+                JDialog dlg = new JDialog((Frame) null, "type=" + types[i] + " advancedMode=" + adv[j], true); // NOI18N
+                dlg.getContentPane().add(new TargetMappingPanel(types[i], adv[j]));
+                dlg.pack();
+                dlg.setSize(700, 500);
+                dlg.setVisible(true);
+            }
+        }
+        System.exit(0);
     }
     
 }

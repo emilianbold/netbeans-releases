@@ -12,5 +12,16 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="ant/freeform">
+
     <import file="../../nbbuild/templates/projectized.xml"/>
+    
+    <target name="try-TargetMappingPanel" depends="compile">
+        <java fork="true" classname="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel">
+            <classpath>
+                <path refid="cp"/>
+                <pathelement location="${build.classes.dir}"/>
+            </classpath>
+        </java>
+    </target>
+    
 </project>
