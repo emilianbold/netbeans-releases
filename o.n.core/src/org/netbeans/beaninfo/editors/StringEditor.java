@@ -16,12 +16,26 @@ package org.netbeans.beaninfo.editors;
 import java.beans.PropertyEditorSupport;
 import org.openide.util.Utilities;
 
+// bugfix# 9219 for attachEnv() method
+import org.openide.explorer.propertysheet.ExPropertyEditor; 
+import org.openide.explorer.propertysheet.PropertyEnv;
+import java.beans.FeatureDescriptor;
+import org.openide.nodes.Node;
+
+
 /** A property editor for String class.
 * @author   Ian Formanek
 * @version  1.00, 18 Sep, 1998
 */
-public class StringEditor extends PropertyEditorSupport
+public class StringEditor extends PropertyEditorSupport implements ExPropertyEditor
 {
+   // bugfix# 9219 added editable field and isEditable() "getter" to be used in StringCustomEditor    
+    private boolean editable=true;   
+    /** gets information if the text in editor should be editable or not */
+    public boolean isEditable(){
+        return (editable);
+    }
+                
     /** sets new value */
     public void setAsText(String s) {
         setValue(s);
@@ -68,6 +82,16 @@ public class StringEditor extends PropertyEditorSupport
         }
         return buf.toString();
     }
+    
+    // bugfix# 9219 added attachEnv() method checking if the user canWrite in text box 
+    public void attachEnv(PropertyEnv env) {        
+        FeatureDescriptor desc = env.getFeatureDescriptor();
+        if (desc instanceof Node.Property){
+            Node.Property prop = (Node.Property)desc;
+            editable = prop.canWrite() ? true : false;
+        }
+    }
+
 }
 
 /*

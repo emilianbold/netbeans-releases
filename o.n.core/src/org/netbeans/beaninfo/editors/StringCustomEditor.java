@@ -35,6 +35,10 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
         String s = (String) editor.getValue ();
         if (s == null) s = ""; // NOI18N
         initComponents ();
+        
+        // bugfix# 9219 sets the text editable or not
+        textArea.setEditable(editor.isEditable());
+        
         textArea.setText (s);
         setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(8, 8, 8, 8)));
         setPreferredSize (new java.awt.Dimension(500, 300));
