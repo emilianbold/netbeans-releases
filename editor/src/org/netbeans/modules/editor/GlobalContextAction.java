@@ -31,7 +31,9 @@ abstract class GlobalContextAction implements LookupListener{
         result = Utilities.actionsGlobalContext ().lookup (
             new Lookup.Template (ActionMap.class)
         );
-        result.addLookupListener(this);
+        
+        result.addLookupListener((LookupListener)org.openide.util.WeakListeners.create(
+            LookupListener.class, this, this.result));
     }
 
     protected ActionMap getContextActionMap () {
