@@ -46,7 +46,7 @@ public class MeasureDialogs  {
         
         suite.addTest(new FilesWindow("measureTime", "Files window open"));
         suite.addTest(new ProjectsWindow("measureTime", "Projects window open"));
-        suite.addTest(new FavoritesWindow("measureTime", "Projects window open"));
+        suite.addTest(new FavoritesWindow("measureTime", "Favorites window open"));
         suite.addTest(new RuntimeWindow("measureTime", "Runtime window open"));
         suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
         
