@@ -37,10 +37,12 @@ public class DatabaseNodeChildren extends Children.Array
 		try {		
 			Vector chlist = nodeinfo.getChildren();
 			for (int i=0;i<chlist.size();i++) {
-				DatabaseNodeInfo sinfo = (DatabaseNodeInfo)chlist.elementAt(i);
-				DatabaseNode snode = createNode(sinfo);
+				
+				Node snode = null;
+				Object sinfo = chlist.elementAt(i);
+				if (sinfo instanceof DatabaseNodeInfo) snode = createNode((DatabaseNodeInfo)sinfo);
+				else if (sinfo instanceof Node) snode = (Node)sinfo;
 				if (snode != null) children.add(snode);
-				else throw new Exception("unable to create node for "+sinfo.getCode());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
