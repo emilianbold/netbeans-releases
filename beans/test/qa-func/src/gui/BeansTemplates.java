@@ -85,14 +85,13 @@ public class BeansTemplates extends JellyTestCase {
         tlso.tree().setComparator(comparator);
         tlso.selectLocation(sampleDir);
         tlso.finish();
-        new EventTool().waitNoEvent(1500);
         
         writeResult(NAME_JAVA_BEAN);
         compareReferenceFiles();
     }
     
     private void writeResult(String name) {
-        new EventTool().waitNoEvent(1000);
+        new EditorWindowOperator().getEditor(name);
         ref(Utilities.unify(Utilities.getAsString(name+".java")));
         new EventTool().waitNoEvent(500);
     }
