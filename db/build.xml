@@ -75,27 +75,30 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="netbeans" depends="jars,javahelp"/>
 
-<!--
   <target name="nbm" depends="netbeans">
     <makenbm file="db.nbm"
              topdir="."
 	     manifest="manifest-subst.mf"
-	     homepage=""
-	     distribution="">
-      <license file=""/>
+	     homepage="http://${homepage.base}/db.html"
+	     distribution="${dist.base}/db.nbm">
+      <license file="${f4jroot}/core/release/LICENSE.txt"/>
       <description>
-        Database Explorer ...
+        Database Explorer
       </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
     </makenbm>
   </target>
--->
 
   <target name="clean">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
         <include name="**/*.jar"/>
+      </fileset>
+    </delete>
+    <delete>
+      <fileset dir="libsrc">
+        <include name="**/*.class"/>        
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
