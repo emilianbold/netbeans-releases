@@ -7,17 +7,22 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.lib.ddl.impl;
 
-import java.util.*;
-import java.sql.*;
-import java.text.ParseException;
-import org.netbeans.lib.ddl.*;
 import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Vector;
+
+import org.netbeans.lib.ddl.CheckConstraintDescriptor;
+import org.netbeans.lib.ddl.DatabaseSpecification;
+import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.lib.ddl.TableColumnDescriptor;
 
 /**
 * Implementation of table column.
@@ -65,94 +70,79 @@ public class TableColumn extends AbstractTableColumn implements Serializable, Ta
 
     static final long serialVersionUID =4298150043758715392L;
     /** Constructor */
-    public TableColumn()
-    {
+    public TableColumn() {
         size = 0;
         decsize = 0;
         nullable = true;
     }
 
     /** Returns type of column */
-    public int getColumnType()
-    {
+    public int getColumnType() {
         return type;
     }
 
     /** Sets type of column */
-    public void setColumnType(int columnType)
-    {
+    public void setColumnType(int columnType) {
         type = columnType;
     }
 
     /** Returns column size */
-    public int getColumnSize()
-    {
+    public int getColumnSize() {
         return size;
     }
 
     /** Sets size of column */
-    public void setColumnSize(int csize)
-    {
+    public void setColumnSize(int csize) {
         size = csize;
     }
 
     /** Returns decimal digits of column */
-    public int getDecimalSize()
-    {
+    public int getDecimalSize() {
         return decsize;
     }
 
     /** Sets decimal digits of column */
-    public void setDecimalSize(int dsize)
-    {
+    public void setDecimalSize(int dsize) {
         decsize = dsize;
     }
 
     /** Nulls allowed? */
-    public boolean isNullAllowed()
-    {
+    public boolean isNullAllowed() {
         return nullable;
     }
 
     /** Sets null property */
-    public void setNullAllowed(boolean flag)
-    {
+    public void setNullAllowed(boolean flag) {
         nullable = flag;
     }
 
     /** Returns default value of column */
-    public String getDefaultValue()
-    {
+    public String getDefaultValue() {
         return defval;
     }
 
     /** Sets default value of column */
-    public void setDefaultValue(String val)
-    {
+    public void setDefaultValue(String val) {
         defval = val;
     }
 
     /** Returns column check condition */
-    public String getCheckCondition()
-    {
+    public String getCheckCondition() {
         return checke;
     }
 
     /** Sets column check condition */
-    public void setCheckCondition(String val)
-    {
+    public void setCheckCondition(String val) {
         checke = val;
     }
 
     /** Returns table constraint columns */
-    public Vector getTableConstraintColumns()
-    {
+    public Vector getTableConstraintColumns() {
         return constraintColumns;
     }
 
     /** Sets column check condition */
-    public void setTableConstraintColumns(Vector columns)
-    {
+    public void setTableConstraintColumns(Vector columns) {
         constraintColumns = columns;
     }
 
@@ -170,7 +160,6 @@ public class TableColumn extends AbstractTableColumn implements Serializable, Ta
         DatabaseSpecification spec = cmd.getSpecification();
         Map args = super.getColumnProperties(cmd);
         String stype = spec.getType(type);
-        Vector decimaltypes = (Vector)spec.getProperties().get("DecimalTypes"); // NOI18N
         Vector charactertypes = (Vector)spec.getProperties().get("CharacterTypes"); // NOI18N
         String strdelim = (String)spec.getProperties().get("StringDelimiter"); // NOI18N
         Vector sizelesstypes = (Vector)spec.getProperties().get("SizelessTypes"); // NOI18N
@@ -179,25 +168,31 @@ public class TableColumn extends AbstractTableColumn implements Serializable, Ta
         // Decimal size for sizeless type
         if (sizelesstypes != null && size > 0) {
             if (!sizelesstypes.contains(stype)) {
-                if (size > 0) args.put("column.size", String.valueOf(size)); // NOI18N
-                if (decsize > 0) args.put("column.decsize", String.valueOf(decsize)); // NOI18N
+                if (size > 0)
+                    args.put("column.size", String.valueOf(size)); // NOI18N
+                if (decsize > 0)
+                    args.put("column.decsize", String.valueOf(decsize)); // NOI18N
             }
         }
 
         String qdefval = defval;
-        
+
         if (qdefval != null && charactertypes.contains(spec.getType(type)) && !qdefval.startsWith(strdelim) && !qdefval.endsWith(strdelim))
-            qdefval = strdelim + defval + strdelim;
+            if (!qdefval.startsWith("(" + strdelim) && !qdefval.endsWith(strdelim + ")")) //hack for MSSQLServer, default value is encapsulated in () so I can't generate '()'
+                qdefval = strdelim + defval + strdelim;
         
         args.put("column.type", spec.getType(type)); // NOI18N
-        if (!nullable) args.put("column.notnull", ""); // NOI18N
+        if (!nullable)
+            args.put("column.notnull", ""); // NOI18N
         
         if (!(! nullable && qdefval != null && (qdefval.equalsIgnoreCase("null") || qdefval.equalsIgnoreCase("'null'") || qdefval.equalsIgnoreCase("\"null\"")))) // NOI18N
-            if (defval != null && !defval.equals("")) args.put("default.value", qdefval); // NOI18N
+            if (defval != null && !defval.equals(""))
+                args.put("default.value", qdefval); // NOI18N
 
-        if (checke != null) args.put("check.condition", checke); // NOI18N
+        if (checke != null)
+            args.put("check.condition", checke); // NOI18N
         if (constraintColumns != null) {
-            String cols = new String();
+            String cols = "";
             Enumeration col_e = constraintColumns.elements();
             while (col_e.hasMoreElements()) {
                 Object zrus = col_e.nextElement();
@@ -211,9 +206,7 @@ public class TableColumn extends AbstractTableColumn implements Serializable, Ta
     }
 
     /** Reads object from stream */
-    public void readObject(java.io.ObjectInputStream in)
-    throws java.io.IOException, ClassNotFoundException
-    {
+    public void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
         super.readObject(in);
         type = in.readInt();
         size = in.readInt();
@@ -224,9 +217,7 @@ public class TableColumn extends AbstractTableColumn implements Serializable, Ta
     }
 
     /** Writes object to stream */
-    public void writeObject(java.io.ObjectOutputStream out)
-    throws java.io.IOException
-    {
+    public void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
         super.writeObject(out);
         out.writeInt(type);
         out.writeInt(size);
