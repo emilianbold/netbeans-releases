@@ -97,6 +97,20 @@ public class Annotation {
     }
 
     public String toString() {
-	return "@" + type.getClassName() + " runtimeVisible=" + runtimeVisible;
+	StringBuffer sb = new StringBuffer("@");
+	sb.append(type.getClassName());
+	sb.append(" runtimeVisible=");
+	sb.append(runtimeVisible);
+	int n = components.length;
+	if (n > 0) {
+	    sb.append(" { ");
+	    for (int i = 0; i < n; i++) {
+		sb.append(components[i]);
+		if (i < n - 1)
+		    sb.append(", ");
+	    }
+	    sb.append(" }");
+	}
+	return sb.toString();
     }
 }

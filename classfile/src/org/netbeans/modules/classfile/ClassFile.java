@@ -520,6 +520,7 @@ public class ClassFile {
                 sb.append("\n      ");
 		sb.append(iter.next().toString());
 	    }
+	    sb.append("\n   ");
 	}
         if (interfaces.length > 0) {
             sb.append(arrayToString("interfaces", interfaces)); //NOI18N

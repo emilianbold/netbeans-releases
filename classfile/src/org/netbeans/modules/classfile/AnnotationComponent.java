@@ -52,6 +52,8 @@ public abstract class AnnotationComponent {
 	  case '[': {
 	      AnnotationComponent[] values = 
 		  new AnnotationComponent[in.readShort()];
+	      for (int i = 0; i < values.length; i++)
+		  values[i] = AnnotationComponent.load(in, pool);
 	      return new ArrayAnnotation(pool, iName, tag, values);
 	  }
 	  default:
