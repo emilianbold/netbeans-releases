@@ -12,9 +12,9 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project basedir="." default="tarball" name="NetBeans.app">
+<project name="NetBeans.app" basedir="." default="tarball">
 
-  <property name="nbdir" value="../../nbbuild/netbeans"/>
+  <property name="nb.dir" value="../../nbbuild/netbeans"/>
   <property name="appname" value="NetBeans"/>
   <property name="appversion" value="4.0"/>
   <property name="version" value="4.0"/>
@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="create-app" description="Organize NetBeans into a standard mac-os NetBeans.app application layout">
     <echo>
-Creating NetBeans.app bundle using ${nbdir} as master
+Creating NetBeans.app bundle using ${nb.dir} as master
 ================================================================
     </echo>
 
@@ -37,7 +37,7 @@ Creating NetBeans.app bundle using ${nbdir} as master
     <echo message="Copying netbeans home dir to ${appdir}/Contents/Resources/NetBeans"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value="cp -r ${nbdir} ${appdir}/Contents/Resources/NetBeans"/>
+      <arg value="cp -r ${nb.dir} '${appdir}/Contents/Resources/NetBeans'"/>
     </exec>
     
     <echo message="Copying the icon into the correct place" />
@@ -57,7 +57,7 @@ Creating NetBeans.app bundle using ${nbdir} as master
     <echo message="Creating launch script symlink ${appdir}/Contents/MacOS/netbeans"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value="ln -s ../Resources/NetBeans/bin/netbeans ${appdir}/Contents/MacOS/netbeans"/>
+      <arg value="ln -s ../Resources/NetBeans/bin/netbeans '${appdir}/Contents/MacOS/netbeans'"/>
     </exec>
   </target>
   
@@ -65,7 +65,7 @@ Creating NetBeans.app bundle using ${nbdir} as master
     <echo message="Creating tarball ${tarball-name}"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
-      <arg value="tar cf - ${appdir} | gzip > ${tarball-name}"/>
+      <arg value="tar cf - '${appdir}' | gzip > ${tarball-name}"/>
     </exec>
   </target>
 
