@@ -14,67 +14,18 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="java unit test config">
 
-    <testbag testattribs="ide" executor="ide" name="Presence" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="unit-executor" name="Debugger JPDA API">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/test/debugger/basic/ActionsPresenceTestCase.class"/>
-                <include name="org/netbeans/test/debugger/basic/MenusPresenceTestCase.class"/>
-                <include name="org/netbeans/test/debugger/basic/ToolBarsPresenceTestCase.class"/>
+<!--                <include name="org/netbeans/api/debugger/jpda/CallStackTest.class"/>-->
+                <include name="org/netbeans/api/debugger/jpda/*Test.class"/>
             </patternset>
         </testset>
     </testbag>
 
-    <testbag testattribs="ide" executor="ide" name="Breakpoints" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="org/netbeans/test/debugger/breakpoints/clazz/ClassicClassBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/clazz/HotspotClassBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/conditional/ClassicConditionalBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/conditional/HotspotConditionalBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/disabled/ClassicDisabledBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/disabled/HotspotDisabledBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/exception/ClassicExceptionBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/exception/HotspotExceptionBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/hidden/ClassicHiddenBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/hidden/HotspotHiddenBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/line/ClassicLineBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/line/HotspotLineBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/method/ClassicMethodBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/method/HotspotMethodBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/suspending/ClassicSuspendingBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/suspending/HotspotSuspendingBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/thread/ClassicThreadBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/thread/HotspotThreadBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/variable/ClassicVariableBreakpointTestCase.class"/>
-                <include name="org/netbeans/test/debugger/breakpoints/variable/HotspotVariableBreakpointTestCase.class"/>
-            </patternset>
-        </testset>
-    </testbag>
+    <compiler name="default-compiler" antfile="build-unit.xml"
+        target="default-compiler" default="true"/>
 
-    <testbag testattribs="ide" executor="ide" name="Bugs" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="org/netbeans/test/debugger/bugs/ClassicBugsTestCase.class"/>
-                <include name="org/netbeans/test/debugger/bugs/HotspotBugsTestCase.class"/>
-            </patternset>
-        </testset>
-    </testbag>
+    <executor name="unit-executor" antfile="build-unit.xml" target="rununittest"/>
 
-    <testbag testattribs="ide" executor="ide" name="Watches" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="org/netbeans/test/debugger/watches/ClassicBasicWatchesTestCase.class"/>
-                <include name="org/netbeans/test/debugger/watches/HotspotBasicWatchesTestCase.class"/>
-                <include name="org/netbeans/test/debugger/parser/ClassicBasicEvaluationTestCase.class"/>
-                <include name="org/netbeans/test/debugger/parser/HotspotBasicEvaluationTestCase.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <executor name="ide" antfile="build.xml" target="runidetest"/>
-
-    <compiler name="unit-compiler" antfile="build.xml" target="unit-compiler" default="true"/>
-    
-    <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
-    
 </mconfig>
