@@ -81,7 +81,6 @@ public class ContentModelTest extends NbTestCase {
         gold = new InputEnumeration("");
         probe("(element)?", in, gold);        
         
-
         in = new InputEnumeration("element");
         gold = new InputEnumeration("");
         probe("(element)", in, gold);        
@@ -89,6 +88,10 @@ public class ContentModelTest extends NbTestCase {
         in = new InputEnumeration("invalid-element");
         gold = null;
         probe("(element)", in, gold);        
+
+        in = new InputEnumeration("invalid-element");
+        gold = null;
+        probe("(element*)", in, gold);        
         
         // test sequence ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         
@@ -99,7 +102,7 @@ public class ContentModelTest extends NbTestCase {
         in = new InputEnumeration("se invalid-qu");
         gold = null;
         probe("(se,qu,en,ce)", in, gold);        
-
+        
         // test choice ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         
         in = new InputEnumeration("");
@@ -134,14 +137,36 @@ public class ContentModelTest extends NbTestCase {
         gold = new InputEnumeration("");
         probe("((element|element2)|(element3|element4))", in, gold);
         
+        // group of optional CM is also optional
+        in = new InputEnumeration("");
+        gold = new InputEnumeration("element element2 element3");
+        probe("((element*|element2*),element3)", in, gold);
+
+        // uniq subpath of choice implies that other options are invalid 
+        in = new InputEnumeration("element");
+        gold = new InputEnumeration("element");
+        probe("(element*|element2*)", in, gold);
+        
         
         // test options in sequence ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        in = new InputEnumeration("se qu");
+        gold = new InputEnumeration("en ce");
+        probe("(se*,qu?,en?,ce)", in, gold);
         
         in = new InputEnumeration("se qu");
         gold = new InputEnumeration("en ce");        
         probe("(se,qu,en?,ce)", in, gold);
-        
-        
+
+        in = new InputEnumeration("se");
+        gold = new InputEnumeration("qu en ce");        
+        probe("(se?,(qu*|en*),ce?)", in, gold);        
+
+        // one sequence element is partialy feeded
+        in = new InputEnumeration("se partial");
+        gold = new InputEnumeration("partial en ce ");        
+        probe("(se?,(partial*|y*),(en+|ce+))", in, gold);        
+                
         // test a choice of conflicting sequences
 
         in = new InputEnumeration("conflict");

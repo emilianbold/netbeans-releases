@@ -122,6 +122,7 @@ abstract class ContentModel {
             tokens.pushback(next);
         }
 
+//        System.out.println("Model " + model);
         return model;
     }
 
@@ -139,7 +140,7 @@ abstract class ContentModel {
     }
 
     /**
-     * Reinitialize the content model to initial state.
+     * Reinitializes the content model to initial state.
      */
     protected void reset() {
     }
@@ -167,8 +168,7 @@ abstract class ContentModel {
     }
     
     /**
-     * Is the content model optional in current state?
-     * Called from possibilities.
+     * Is the content model optional? A static characteristics.
      */
     protected boolean isOptional() {
         return false;
@@ -242,9 +242,8 @@ abstract class ContentModel {
         /**
          * Reset all models upto (inclusive) current one.
          */
-        protected void reset() {
-            int bounds = Math.min(current+1, models.length);
-            for (int i = 0; i<bounds; i++) {
+        protected void reset() {            
+            for (int i = 0; i<models.length; i++) {
                 models[i].reset();
             }
             current = 0;
@@ -262,12 +261,13 @@ abstract class ContentModel {
                 int store = food.mark();
                 boolean accept = models[current].eat(food);
                 boolean more = food.hasNext();
+                boolean terminated = models[current].terminated();
                 
                 if (accept == false) {
                     return false;
-                } else if (more) {
+                } else if (more) {                    
                     current++;
-                } else {
+                } else if (terminated == false && store != food.mark()) {
                     
                     // last model is possibly partially full, it could disapprove
                     // if more food was provided -> move all subsequent automatons
@@ -276,15 +276,19 @@ abstract class ContentModel {
                     int level = food.mark();
                     for (int i = current + 1; i<models.length; i++) {
                         food.reset(store);
-                        if (models[i].eat(food)) continue;
+                        if (models[i].eat(food) == false) {
+                            models[i].reset();
+                            if (models[i].isOptional() == false) break;
+                        }
                     }
                     food.reset(level);
                     if (food.hasNext()) {
-                        throw new IllegalStateException("Food mark/reset invarint is broken!");
+                        throw new IllegalStateException("Food mark/reset invariant is broken!");
                     }
-
+                                        
+                } else if (terminated) {
                     // it accepted and is complete
-                    if (models[current].terminated()) current++;
+                    current++;                    
                 }
             }
                                     
@@ -298,6 +302,13 @@ abstract class ContentModel {
             return models[current].terminated();
         }
 
+        protected boolean isOptional() {
+            for (int i = 0; i<models.length; i++) {
+                if (models[i].isOptional() == false) return false;
+            }
+            return true;
+        }
+        
         protected Enumeration possibilities() {
             if (terminated() == false) {
                 Enumeration en = EmptyEnumeration.EMPTY;
@@ -332,7 +343,7 @@ abstract class ContentModel {
 
         // current occurence count
         private int current = 0;
-
+        
         public MultiplicityGroup (ContentModel model, int min, int max) {
             this.peer = model;
             this.min = min;
@@ -347,6 +358,7 @@ abstract class ContentModel {
 
         protected boolean eat(Food food) {
 
+            boolean accept = false;
             while (food.hasNext()) {
                 
                 if (current == max) return true;
@@ -355,26 +367,23 @@ abstract class ContentModel {
                 boolean accepted = peer.eat(food);                
                 
                 if (accepted == false) {
-                    if (current < min) {
-                        return false;
-                    } else {
-                        // back trace, it was OPTIONAL
-                        food.reset(store);
-                        return true;                        
-                    }
+                    return accept;
                 } else if (food.hasNext()) {
-                    current ++;
-                    peer.reset();                    
-                } else {                
+                    if (++current >= max) {
+                        return true;
+                    };
+                    peer.reset();
+                } else if (peer.terminated()) {
                     // no more food, do not increment current for unterminated
-                    if (peer.terminated()) current ++;
+                    current ++;
                 }
+                accept = true;
             }
             
             return true;
         }
 
-        public Enumeration possibilities() {
+        public Enumeration possibilities() {            
             if (terminated() == false) {
                 // we force peer reinitialization
                 if (peer.terminated()) peer.reset();
@@ -385,13 +394,13 @@ abstract class ContentModel {
         }
 
         protected boolean terminated() {
-            boolean self = current == max;
-            if (self == false) return false;
+            if (current != max) return false;
             return peer.terminated();
         }
 
         protected boolean isOptional() {
-            return current >= min && current != max;
+            if (min == 0) return true;
+            return peer.isOptional();
         }
         
         public String toString() {
@@ -405,6 +414,7 @@ abstract class ContentModel {
     private static class Choice extends ContentModel {
 
         private ContentModel[] models;
+        private boolean modelsThatNotAcceptedAtLeastOne[];
 
         private boolean terminated = false;
 
@@ -413,6 +423,7 @@ abstract class ContentModel {
 
         public Choice(ContentModel[] models) {
             this.models = models;
+            modelsThatNotAcceptedAtLeastOne = new boolean[models.length];
         }
 
 
@@ -420,11 +431,12 @@ abstract class ContentModel {
          * Reset all models upto (inclusive) current one.
          */
         protected void reset() {
-            int bounds = Math.min(current+1, models.length);
-            for (int i = 0; i<bounds; i++) {
+            for (int i = 0; i<models.length; i++) {
                 models[i].reset();
+                modelsThatNotAcceptedAtLeastOne[i] = false;
             }
             current = 0;
+            terminated = false;
         }
 
         /**
@@ -443,17 +455,23 @@ abstract class ContentModel {
 
                 int store = food.mark();
                 boolean accept = models[current].eat(food);
-                if (accept) {
+                
+                if (accept) {                    
                     accepted = true;
+                    if (store == food.mark()) {
+                        modelsThatNotAcceptedAtLeastOne[current] = true;
+                    }
                     if (food.hasNext() == false) {
                         acceptedAndHungry |= models[current].terminated() == false;
                     }
                     newFood = Math.max(newFood, food.mark());
+                } else {
+                    modelsThatNotAcceptedAtLeastOne[current] = true;
                 }
                 current++;
                 food.reset(store);
             }
-
+            
             food.reset(newFood);
             terminated = acceptedAndHungry == false;
             return accepted;
@@ -463,11 +481,24 @@ abstract class ContentModel {
             return terminated;
         }
 
+        protected boolean isOptional() { 
+            boolean optional = false;
+            for (int i = 0; i<models.length; i++) {
+                if (models[i].isOptional()) {
+                    optional = true;
+                    break;
+                }
+            }
+//            System.err.println("  " + this + " optional=" + optional);
+            return optional;
+        }
+        
         protected Enumeration possibilities() {
             if (terminated() == false) {
                 Enumeration en = EmptyEnumeration.EMPTY;
                 for ( int i = 0; i<models.length; i++) {
-                    ContentModel next = models[i];
+                    if (modelsThatNotAcceptedAtLeastOne[i]) continue;
+                    ContentModel next = models[i];                    
                     en = new SequenceEnumeration(en, next.possibilities());
                 }
                 return en;
