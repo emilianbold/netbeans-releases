@@ -286,9 +286,43 @@ public class AntTargetNode extends ElementNode {
             names.addAll (IntrospectedInfo.getDefaults ().getDefs ("task").keySet ()); // NOI18N
             names.addAll (AntSettings.getDefault ().getCustomDefs ().getDefs ("task").keySet ()); // NOI18N
             Collections.sort (names);
-            return new NewType[] { new TaskNewType (names) };
+            List newtypes = new ArrayList();
+            newtypes.add(new TaskNewType(names));
+            List types = new ArrayList();
+            types.addAll (IntrospectedInfo.getDefaults ().getDefs ("type").keySet ()); // NOI18N
+            types.addAll (AntSettings.getDefault ().getCustomDefs ().getDefs ("type").keySet ()); // NOI18N
+            Collections.sort(types);
+            Iterator it = types.iterator();
+            while (it.hasNext()) {
+                newtypes.add(new TypeNewType((String)it.next()));
+            }
+            return (NewType[])newtypes.toArray(new NewType[newtypes.size()]);
         } else {
             return new NewType[0];
+        }
+    }
+    
+    private final class TypeNewType extends NewType {
+        private final String name;
+        public TypeNewType(String name) {
+            this.name = name;
+        }
+        public String getName () {
+            return name;
+        }
+        public HelpCtx getHelpCtx () {
+            return new HelpCtx ("org.apache.tools.ant.module.node-manip");
+        }
+        public void create () throws IOException {
+            try {
+                Element el2 = el.getOwnerDocument ().createElement (name);
+                el2.setAttribute ("id", NbBundle.getMessage (AntProjectNode.class, "MSG_id_changeme"));
+                ElementNode.appendWithIndent (el, el2);
+            } catch (DOMException dome) {
+                IOException ioe = new IOException ();
+                AntModule.err.annotate (ioe, dome);
+                throw ioe;
+            }
         }
     }
 
@@ -349,7 +383,13 @@ public class AntTargetNode extends ElementNode {
         if (IntrospectedInfo.getDefaults ().getDefs ("task").containsKey (name)) { // NOI18N
             return true;
         }
+        if (IntrospectedInfo.getDefaults ().getDefs ("type").containsKey (name)) { // NOI18N
+            return true;
+        }
         if (AntSettings.getDefault ().getCustomDefs ().getDefs ("task").containsKey (name)) { // NOI18N
+            return true;
+        }
+        if (AntSettings.getDefault ().getCustomDefs ().getDefs ("type").containsKey (name)) { // NOI18N
             return true;
         }
         return false;
