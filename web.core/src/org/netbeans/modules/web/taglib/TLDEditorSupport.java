@@ -40,77 +40,84 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     private final SaveCookie saveCookie = new SaveCookie() {
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws java.io.IOException {
+            saveDocument();
+        }
+    };
+    /*
+     * Save document using encoding declared in XML prolog if possible otherwise
+     * at UTF-8 (in such case it updates the prolog).
+     */
+    public void saveDocument () throws java.io.IOException {
         final javax.swing.text.StyledDocument doc = getDocument();
         // dependency on xml/core
         String enc = EncodingHelper.detectEncoding(doc);
         
-            try {
-                //test encoding on dummy stream
-                new java.io.OutputStreamWriter(new java.io.ByteArrayOutputStream(1), enc);
-                TLDEditorSupport.this.saveDocument();
-                //moved from Env.save()
-                getDataObject().setModified (false);
-            } catch (java.io.UnsupportedEncodingException ex) {
-                // ask user what next?
-                String message = java.text.MessageFormat.format(NbBundle.getMessage(TLDEditorSupport.class,"TEXT_SAVE_AS_UTF"),
-                                                                new Object[] {enc});
-                NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message);
-                Object res = DialogDisplayer.getDefault().notify(descriptor);
+        try {
+            //test encoding on dummy stream
+            new java.io.OutputStreamWriter(new java.io.ByteArrayOutputStream(1), enc);
+            super.saveDocument();
+            //moved from Env.save()
+            getDataObject().setModified (false);
+        } catch (java.io.UnsupportedEncodingException ex) {
+            // ask user what next?
+            String message = java.text.MessageFormat.format(NbBundle.getMessage(TLDEditorSupport.class,"TEXT_SAVE_AS_UTF"),
+                                                            new Object[] {enc});
+            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message);
+            Object res = DialogDisplayer.getDefault().notify(descriptor);
 
-                if (res.equals(NotifyDescriptor.YES_OPTION)) {
+            if (res.equals(NotifyDescriptor.YES_OPTION)) {
 
-                    // update prolog to new valid encoding                
+                // update prolog to new valid encoding                
 
-                    try {
-                        final int MAX_PROLOG = 1000;                
-                        int maxPrologLen = Math.min(MAX_PROLOG, doc.getLength());                
-                        final char prolog[] = doc.getText(0, maxPrologLen).toCharArray();
-                        int prologLen = 0;  // actual prolog length
+                try {
+                    final int MAX_PROLOG = 1000;                
+                    int maxPrologLen = Math.min(MAX_PROLOG, doc.getLength());                
+                    final char prolog[] = doc.getText(0, maxPrologLen).toCharArray();
+                    int prologLen = 0;  // actual prolog length
 
-                        //parse prolog and get prolog end                
-                        if (prolog[0] == '<' && prolog[1] == '?' && prolog[2] == 'x') {
+                    //parse prolog and get prolog end                
+                    if (prolog[0] == '<' && prolog[1] == '?' && prolog[2] == 'x') {
 
-                            // look for delimitting ?>
-                            for (int i = 3; i<maxPrologLen; i++) {
-                                if (prolog[i] == '?' && prolog[i+1] == '>') {
-                                    prologLen = i + 1;
-                                    break;
-                                }
-                            }                                        
-                        }
-
-                        final int passPrologLen = prologLen;
-
-                        Runnable edit = new Runnable() {
-                             public void run() {
-                                 try {
-
-                                    doc.remove(0, passPrologLen + 1); // +1 it removes exclusive
-                                    doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?> \n<!-- was: " + new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
-
-                                 } catch (BadLocationException e) {
-                                     if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
-                                         e.printStackTrace();
-                                 }
-                             }
-                        };
-
-                        NbDocument.runAtomic(doc, edit);
-
-                        TLDEditorSupport.this.saveDocument();
-                        //moved from Env.save()
-                        getDataObject().setModified (false);
-
-                    } catch (BadLocationException lex) {
-                        org.openide.ErrorManager.getDefault().notify(lex);
+                        // look for delimitting ?>
+                        for (int i = 3; i<maxPrologLen; i++) {
+                            if (prolog[i] == '?' && prolog[i+1] == '>') {
+                                prologLen = i + 1;
+                                break;
+                            }
+                        }                                        
                     }
 
-                } else { // NotifyDescriptor != YES_OPTION
-                    return;
+                    final int passPrologLen = prologLen;
+
+                    Runnable edit = new Runnable() {
+                         public void run() {
+                             try {
+
+                                doc.remove(0, passPrologLen + 1); // +1 it removes exclusive
+                                doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?> \n<!-- was: " + new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
+
+                             } catch (BadLocationException e) {
+                                 if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
+                                     e.printStackTrace();
+                             }
+                         }
+                    };
+
+                    NbDocument.runAtomic(doc, edit);
+
+                    super.saveDocument();
+                    //moved from Env.save()
+                    getDataObject().setModified (false);
+
+                } catch (BadLocationException lex) {
+                    org.openide.ErrorManager.getDefault().notify(lex);
                 }
+
+            } else { // NotifyDescriptor != YES_OPTION
+                return;
             }
         }
-    };
+    }
     
     /** Creates a new instance of TLDEditorSupport */
     public TLDEditorSupport(TLDDataObject dobj) {
