@@ -832,10 +832,10 @@ public class RADComponent implements FormDesignValue {
             }
             else if (FormProperty.CURRENT_EDITOR.equals(evt.getPropertyName())) {
                 // property editor has changed
-                getFormModel().fireComponentPropertyChanged(
-                                   RADComponent.this,
-                                   propName,
-                                   null, null);
+//                getFormModel().fireComponentPropertyChanged(
+//                                   RADComponent.this,
+//                                   propName,
+//                                   null, null);
 
                 if (getNodeReference() != null) // propagate the change to node
                     getNodeReference().fireComponentPropertySetsChange();
