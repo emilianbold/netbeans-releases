@@ -300,7 +300,7 @@ public class WebProjectProperties {
             else {
                 // Standard properties
                 String raw = ((EditableProperties)eProps.get( pd.dest )).getProperty( pd.name );
-                String eval = antProjectHelper.evaluate( pd.name );
+                String eval = antProjectHelper.getStandardPropertyEvaluator ().getProperty ( pd.name );
                 properties.put( pd.name, new PropertyInfo( pd, raw, eval ) );            
             }
         }

@@ -295,11 +295,15 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         return null;
     }
     
-    public final class ThePanel implements WizardDescriptor.FinishPanel {
+    public final class ThePanel implements WizardDescriptor.FinishablePanel {
 
         private ImportLocationVisual panel;
         
         private ThePanel () {
+        }
+        
+        public boolean isFinishPanel() {
+            return true;
         }
         
         public java.awt.Component getComponent () {
@@ -408,10 +412,14 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
     }
     
-    public final class SecondPanel implements WizardDescriptor.FinishPanel {
+    public final class SecondPanel implements WizardDescriptor.FinishablePanel {
         private ImportWebLocationsVisual panel;
         
         private SecondPanel () {
+        }
+        
+        public boolean isFinishPanel() {
+            return true;
         }
         
         public java.awt.Component getComponent () {

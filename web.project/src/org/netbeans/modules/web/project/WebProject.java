@@ -87,7 +87,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         this.helper = helper;
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
-        refHelper = new ReferenceHelper(helper, aux);
+        refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator ());
         genFilesHelper = new GeneratedFilesHelper(helper);
         webModule = new ProjectWebModule (this, helper);
         lookup = createLookup(aux);
@@ -117,7 +117,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(new String[] {
+        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(helper.getStandardPropertyEvaluator (), new String[] {
             "${src.dir}/*.java" // NOI18N
         }, new String[] {
             "${build.classes.dir}/*.class" // NOI18N
@@ -184,7 +184,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     }
     
     FileObject getSourceDirectory() {
-        String srcDir = helper.evaluate("src.dir"); // NOI18N
+        String srcDir = helper.getStandardPropertyEvaluator ().getProperty ("src.dir"); // NOI18N
         return helper.resolveFileObject(srcDir);
     }
     

@@ -84,7 +84,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, AntP
 
     private JavaPlatform findActivePlatform () {
         JavaPlatformManager pm = JavaPlatformManager.getDefault();
-        String platformName = this.helper.evaluate (PLATFORM_ACTIVE);
+        String platformName = this.helper.getStandardPropertyEvaluator ().getProperty (PLATFORM_ACTIVE);
         if (platformName!=null) {
             JavaPlatform[] installedPlatforms = pm.getInstalledPlatforms();
             for (int i = 0; i< installedPlatforms.length; i++) {

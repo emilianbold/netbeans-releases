@@ -60,11 +60,11 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
                     // which we do not support.
                 }
             }
-            String outDir = helper.evaluate(binaryProperty);
+            String outDir = helper.getStandardPropertyEvaluator ().getProperty (binaryProperty);
             if (outDir != null) {
                 URL url = helper.resolveFile (outDir).toURI().toURL();
                 if (url.equals (binaryRoot)) {
-                    String srcDir = helper.evaluate (sourceProperty);
+                    String srcDir = helper.getStandardPropertyEvaluator ().getProperty (sourceProperty);
                     if (srcDir != null) {
                         return helper.resolveFileObject(srcDir);
                     }

@@ -93,7 +93,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     private FileObject getFile(String propname) {
-        String prop = helper.evaluate(propname);
+        String prop = helper.getStandardPropertyEvaluator().getProperty(propname);
         if (prop != null) {
             return helper.resolveFileObject(prop);
         } else {
@@ -172,7 +172,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
             versionListeners = new HashSet();
             org.netbeans.api.web.dd.WebApp webApp = getWebApp();
             if (webApp != null) {
-                PropertyChangeListener l = (PropertyChangeListener) org.openide.util.WeakListener.create(PropertyChangeListener.class, this, webApp);
+                PropertyChangeListener l = (PropertyChangeListener) org.openide.util.WeakListeners.create(PropertyChangeListener.class, this, webApp);
                 webApp.addPropertyChangeListener(l);
             }
         }

@@ -81,7 +81,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, A
 
     private List getPath() {
         List result = new ArrayList ();
-        String prop = helper.evaluate(propertyName);
+        String prop = helper.getStandardPropertyEvaluator ().getProperty (propertyName);
         if (prop != null) {
             String[] pieces = PropertyUtils.tokenizePath(prop);
             for (int i = 0; i < pieces.length; i++) {

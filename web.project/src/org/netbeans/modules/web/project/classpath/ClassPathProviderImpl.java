@@ -46,7 +46,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
     private synchronized FileObject getDir(String propname) {
         FileObject fo = (FileObject) this.dirCache.get (propname);
         if (fo == null ||  !fo.isValid()) {
-            String prop = helper.evaluate(propname);
+            String prop = helper.getStandardPropertyEvaluator ().getProperty (propname);
             if (prop != null) {
                 fo = helper.resolveFileObject(prop);
                 this.dirCache.put (propname, fo);

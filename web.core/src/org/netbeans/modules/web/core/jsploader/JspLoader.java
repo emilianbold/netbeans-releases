@@ -16,7 +16,6 @@ package org.netbeans.modules.web.core.jsploader;
 import java.io.IOException;
 
 import org.openide.actions.*;
-import org.openide.execution.NbClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObjectExistsException;

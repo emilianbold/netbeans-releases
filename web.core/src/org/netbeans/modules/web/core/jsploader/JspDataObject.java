@@ -36,8 +36,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.windows.*;
-import org.openide.execution.NbClassPath;
-import org.openide.execution.NbProcessDescriptor;
 import org.openide.text.*;
 import org.openide.util.*;
 import org.openide.util.enum.*;
