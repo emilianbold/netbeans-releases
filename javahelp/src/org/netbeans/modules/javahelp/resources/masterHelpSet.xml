@@ -20,12 +20,12 @@ Microsystems, Inc. All Rights Reserved.
     <homeID>org.netbeans.api.javahelp.MASTER_ID</homeID>
     <mapref location="masterHelpMap.jhm"/>
   </maps>
-  <view>
+  <view mergetype="javax.help.UniteAppendMerge">
     <name>TOC</name>
     <label>Contents</label>
     <type>javax.help.TOCView</type>
   </view>
-  <view>
+  <view mergetype="javax.help.SortMerge">
     <name>Index</name>
     <label>Index</label>
     <type>javax.help.IndexView</type>
@@ -35,9 +35,10 @@ Microsystems, Inc. All Rights Reserved.
     <label>Search</label>
     <type>javax.help.SearchView</type>
   </view>
+  <!--
   <view>
     <name>Favorites</name>
     <label>Favorites</label>
     <type>javax.help.FavoritesView</type>
-  </view> 
+  </view> -->
 </helpset>
