@@ -171,15 +171,16 @@ public class ParamsPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        paramLabel.setText(I18nUtil.getBundle().getString("LBL_Parameters"));
         paramLabel.setLabelFor(paramsList);
+        paramLabel.setText(I18nUtil.getBundle().getString("LBL_Parameters"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(paramLabel, gridBagConstraints);
 
-        codeLabel.setText(I18nUtil.getBundle().getString("LBL_Code"));
         codeLabel.setLabelFor(codePane);
+        codeLabel.setText(I18nUtil.getBundle().getString("LBL_Code"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -187,17 +188,17 @@ public class ParamsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(codeLabel, gridBagConstraints);
 
-        paramsList.setVisibleRowCount(3);
         paramsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        paramsList.setVisibleRowCount(3);
         paramsScroll.setViewportView(paramsList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(2, 12, 0, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(paramsScroll, gridBagConstraints);
 
         addRemovePanel.setLayout(new java.awt.GridBagLayout());
@@ -236,14 +237,13 @@ public class ParamsPanel extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(2, 11, 0, 11);
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 11, 0, 11);
         add(addRemovePanel, gridBagConstraints);
 
-        codePane.setFont(new java.awt.Font("Courier New", 0, 11));
         codePane.setContentType("text/x-java");
         codePane.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -257,9 +257,9 @@ public class ParamsPanel extends JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(2, 12, 11, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 11);
         add(codeScroll, gridBagConstraints);
 
     }//GEN-END:initComponents
@@ -287,15 +287,15 @@ public class ParamsPanel extends JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane codeScroll;
     private javax.swing.JPanel addRemovePanel;
+    private javax.swing.JButton addParamButton;
+    private javax.swing.JButton removeParamButton;
     private javax.swing.JEditorPane codePane;
+    private javax.swing.JScrollPane paramsScroll;
+    private javax.swing.JLabel paramLabel;
+    private javax.swing.JScrollPane codeScroll;
     private javax.swing.JLabel codeLabel;
     private javax.swing.JList paramsList;
-    private javax.swing.JButton addParamButton;
-    private javax.swing.JLabel paramLabel;
-    private javax.swing.JScrollPane paramsScroll;
-    private javax.swing.JButton removeParamButton;
     // End of variables declaration//GEN-END:variables
 
     /** List model for the list of parameters */
