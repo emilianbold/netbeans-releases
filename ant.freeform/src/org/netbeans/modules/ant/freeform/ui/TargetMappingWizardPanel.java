@@ -36,13 +36,15 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
 
     private TargetMappingPanel component;
     private WizardDescriptor wizardDescriptor;
-
-    public TargetMappingWizardPanel() {
+    private String projectType;
+    
+    public TargetMappingWizardPanel(String projectType) {
+        this.projectType = projectType;
     }
     
     public Component getComponent() {
         if (component == null) {
-            component = new TargetMappingPanel();
+            component = new TargetMappingPanel(projectType);
         }
         return component;
     }

@@ -31,22 +31,31 @@ import org.openide.filesystems.FileObject;
  * @author  David Konecny
  */
 public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCustomizer.Panel {
-    
+
     public static String BUILD_ACTION = "build"; // NOI18N
     public static String CLEAN_ACTION = "clean"; // NOI18N
     public static String REBUILD_ACTION = "rebuild"; // NOI18N
     public static String JAVADOC_ACTION = "javadoc"; // NOI18N
     public static String RUN_ACTION = "run"; // NOI18N
     public static String TEST_ACTION = "test"; // NOI18N
+    public static String REDEPLOY_ACTION = "redeploy"; // NOI18N
 
     private boolean initialized;
     private List/*<String>*/ targetNames;
     private List/*<TargetMapping>*/ targetMappings;
     private String defaultScript = null;
+
+    private String projectType;
     
-    public TargetMappingPanel() {
+    public TargetMappingPanel(String type) {
         initComponents();
         targetMappings = new ArrayList();
+        projectType = type;
+        
+        jLabel7.setVisible(projectType.equals("j2se")); // NOI18N
+        testCombo.setVisible(projectType.equals("j2se")); // NOI18N
+        jLabel3.setVisible(projectType.equals("webapps")); // NOI18N
+        redeployCombo.setVisible(projectType.equals("webapps")); // NOI18N
     }
     
     public void setTargetNames(List list) {
@@ -54,11 +63,11 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         targetNames.add(0, ""); //NOI18N
         updateCombos();
     }
-    
+
     public void setScript(String script) {
         this.defaultScript = script;
     }
-    
+
     private void updateCombos() {
         Iterator it = targetNames.iterator();
         while (it.hasNext()) {
@@ -67,13 +76,19 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             cleanCombo.addItem(name);
             javadocCombo.addItem(name);
             runCombo.addItem(name);
-            testCombo.addItem(name);
+            if (projectType.equals("j2se")) //NOI18N
+                testCombo.addItem(name);
+            else if (projectType.equals("webapps")) //NOI18N
+                redeployCombo.addItem(name);
         }
-        selectItem(buildCombo, "build", false);
-        selectItem(cleanCombo, "clean", false);
-        selectItem(javadocCombo, "javadoc", false);
-        selectItem(runCombo, "run", false);
-        selectItem(testCombo, "test", false);
+        selectItem(buildCombo, "build", false); //NOI18N
+        selectItem(cleanCombo, "clean", false); //NOI18N
+        selectItem(javadocCombo, "javadoc", false); //NOI18N
+        selectItem(runCombo, "run", false); //NOI18N
+        if (projectType.equals("j2se")) //NOI18N
+            selectItem(testCombo, "test", false);
+        else if (projectType.equals("webapps")) //NOI18N
+            selectItem(redeployCombo, "run-deploy", false); //NOI18N
     }
 
     private void selectItem(JComboBox combo, String item, boolean add) {
@@ -109,10 +124,13 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             if (tm.name.equals(TEST_ACTION)) {
                 selectItem(testCombo, getListAsString(tm.targets), true);
             }
+            if (tm.name.equals(REDEPLOY_ACTION)) {
+                selectItem(redeployCombo, getListAsString(tm.targets), true);
+            }
         }
         targetMappings = list;
     }
-    
+
     private String getListAsString(List list) {
         StringBuffer sb = new StringBuffer();
         Iterator it = list.iterator();
@@ -124,7 +142,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         }
         return sb.toString();
     }
-    
+
     private List getStringAsList(String str) {
         ArrayList l = new ArrayList(2);
         StringTokenizer tok = new StringTokenizer(str, ",");
@@ -150,7 +168,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         tm.targets = getStringAsList(value);
         return true;
     }
-    
+
     private FreeformProjectGenerator.TargetMapping getTargetMapping(String key) {
         Iterator it = targetMappings.iterator();
         while (it.hasNext()) {
@@ -165,7 +183,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         targetMappings.add(tm);
         return tm;
     }
-    
+
     public List/*<FreeformProjectGenerator.TargetMapping>*/ getMapping() {
         if (storeTarget(BUILD_ACTION, buildCombo) && storeTarget(CLEAN_ACTION, cleanCombo)) {
             FreeformProjectGenerator.TargetMapping tm = getTargetMapping(REBUILD_ACTION);
@@ -174,10 +192,13 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         }
         storeTarget(RUN_ACTION, runCombo);
         storeTarget(JAVADOC_ACTION, javadocCombo);
-        storeTarget(TEST_ACTION, testCombo);
+        if (projectType.equals("j2se")) //NOI18N
+            storeTarget(TEST_ACTION, testCombo);
+        else if (projectType.equals("webapps")) //NOI18N
+            storeTarget(REDEPLOY_ACTION, redeployCombo);
         return targetMappings;
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -197,6 +218,8 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         javadocCombo = new javax.swing.JComboBox();
         runCombo = new javax.swing.JComboBox();
         testCombo = new javax.swing.JComboBox();
+        jLabel3 = new javax.swing.JLabel();
+        redeployCombo = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -243,40 +266,40 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(jLabel7, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(buildCombo, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(cleanCombo, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(javadocCombo, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(runCombo, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -288,6 +311,23 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints.weighty = 1.0;
         add(testCombo, gridBagConstraints);
 
+        jLabel3.setText("Redeploy:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        add(jLabel3, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(redeployCombo, gridBagConstraints);
+
     }//GEN-END:initComponents
 
     public void initValues(AntProjectHelper helper, List panels) {
@@ -298,27 +338,29 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             defaultScript = FreeformProjectGenerator.getProperties(helper).getProperty(FreeformProjectGenerator.PROP_ANT_SCRIPT);
             initialized = true;
         }
-    }    
-    
+    }
+
     public void storeValues(AntProjectHelper helper) {
         if (!initialized) {
             return;
         }
         FreeformProjectGenerator.putTargetMappings(helper, getMapping());
-    }    
-    
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox buildCombo;
     private javax.swing.JComboBox cleanCombo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JComboBox javadocCombo;
+    private javax.swing.JComboBox redeployCombo;
     private javax.swing.JComboBox runCombo;
     private javax.swing.JComboBox testCombo;
     // End of variables declaration//GEN-END:variables
-    
+
 }

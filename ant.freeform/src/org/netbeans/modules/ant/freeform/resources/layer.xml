@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/j2sefreeform.html"/>
                 </file>
             </folder>
-            <!--
+
             <folder name="Web">
                 <attr name="emptyWeb.xml/webfreeform.xml" boolvalue="true"/>
                 <file name="webfreeform.xml">
@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/webfreeform.html"/>
                 </file>
             </folder>
-            -->
+
         </folder>
     </folder>
 </filesystem>
