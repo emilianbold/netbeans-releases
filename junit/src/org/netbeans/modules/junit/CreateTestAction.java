@@ -162,7 +162,7 @@ public class CreateTestAction extends CookieAction {
         CreationResults results = new CreationResults();
 
         try {
-
+            HashSet reportedMissingURLs = new HashSet(nodes.length);
             // go through all nodes
             for(int nodeIdx = 0; nodeIdx < nodes.length; nodeIdx++) {
                 if (hasParentAmongNodes(nodes, nodeIdx)) {
@@ -191,23 +191,15 @@ public class CreateTestAction extends CookieAction {
 //                         "MSG_no_tests_in_project", fo));
 //                     continue;
                 } else {
-                    // TODO : workaround for #50173
-                    if (!testRoot.getFile().endsWith("/")) {
-                        try {
-                            testRoot = new URL(testRoot.getProtocol(), testRoot.getHost(), testRoot.getPort(), testRoot.getFile()+"/");                                                                   
-                        } catch (java.net.MalformedURLException ex) {
-                            ErrorManager.getDefault().notify(ex);
-                        }
-                    }
-                    // workaround ends
-                    
                     if (testRoot.getProtocol().equals("file") && URLMapper.findFileObject(testRoot) == null) { // NOI18N
-                        try {
-                         ensureFolder(testRoot);   
-                        } catch (java.io.IOException ex) {
-                            ErrorManager.getDefault().notify(ex);
-                            continue;
+                        if (!reportedMissingURLs.contains(testRoot.toExternalForm())) {
+                            NotifyDescriptor descr = new Message(
+                                NbBundle.getMessage(CreateTestAction.class, "MSG_testdir_not_found", testRoot.toExternalForm()), 
+                                NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(descr);
+                            reportedMissingURLs.add(testRoot.toExternalForm());
                         }
+                        continue;    
                     }
 
                     ArrayList cpItems = new ArrayList();                   
