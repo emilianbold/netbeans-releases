@@ -48,8 +48,12 @@ public class JavaCodeGenerator extends CodeGenerator {
     this.formManager = formManager;
     formManager.addFormListener (listener);
     FormEditorSupport s = formManager.getFormEditorSupport ();
-    initComponentsSection = (JavaEditor.SimpleSection) s.findSection (SECTION_INIT_COMPONENTS); // [PENDING - incorrect cast]
-    variablesSection = (JavaEditor.SimpleSection) s.findSection (SECTION_VARIABLES); // [PENDING - incorrect cast]
+    
+    initComponentsSection = s.findSimpleSection (SECTION_INIT_COMPONENTS); // [PENDING]
+    variablesSection = s.findSimpleSection (SECTION_VARIABLES); // [PENDING]
+
+    System.out.println("InitComponentsSection: "+initComponentsSection);
+    System.out.println("VariablesSection: "+variablesSection);
 
     Thread.dumpStack();
     // regenerate on init
@@ -89,7 +93,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     RADForm form = formManager.getRADForm ();
     ComponentContainer top = form.getTopLevelComponent ();
     addInitCode (top, text);
-    //initComponentsSection.setText (text);
+    initComponentsSection.setText (text.toString ());
     System.out.println("-----------regenerateInitializer:--------------");
     System.out.println(text.toString ());
     System.out.println("-----------------------------------------------");
@@ -101,7 +105,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     RADForm form = formManager.getRADForm ();
     ComponentContainer top = form.getTopLevelComponent ();
     addVariables (top, text);
-//    variablesSection.setText (text);
+    variablesSection.setText (text.toString ());
     System.out.println("-----------regenerateVariables:--------------");
     System.out.println(text.toString ());
     System.out.println("---------------------------------------------");
@@ -229,6 +233,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  5    Gandalf   1.4         5/6/99   Ian Formanek    Generates code into 
+ *       guarded sections
  *  4    Gandalf   1.3         5/5/99   Ian Formanek    
  *  3    Gandalf   1.2         5/4/99   Ian Formanek    Package change
  *  2    Gandalf   1.1         4/29/99  Ian Formanek    
