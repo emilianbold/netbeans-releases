@@ -2144,7 +2144,7 @@
 
 	viewcolumn = {
 		name = "Column";
-		class = org.netbeans.modules.db.explorer.nodes.LeafNode;
+		class = org.netbeans.modules.db.explorer.nodes.ColumnNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.ViewColumnNodeInfo;
 		iconbase = "/org/netbeans/modules/db/resources/columnView";
 		resultset = (catalog,schema,tablename,name,datatype,typename,columnsize,bufflen,decdigits,radix,nullable,remarks,coldef,reserved1,reserved2,octetlen,ordpos,isnullable);
