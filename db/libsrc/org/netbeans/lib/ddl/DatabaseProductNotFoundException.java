@@ -14,7 +14,7 @@
 package com.netbeans.ddl;
 
 /** 
-* System is not able to locate appropriate resources to create DBSpec object
+* System is not able to locate appropriate resources to create DatabaseSpecification object
 * (object describing the database). It means that database product is not 
 * supported by system. You can use generic database system or write your 
 * own description file. If you are sure that it is, please check location 
@@ -57,6 +57,7 @@ static final long serialVersionUID =-1108211224066947350L;
 
 /*
  * <<Log>>
+ *  5    Gandalf   1.4         9/10/99  Slavek Psenicka 
  *  4    Gandalf   1.3         8/17/99  Ian Formanek    Generated serial version
  *       UID
  *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version

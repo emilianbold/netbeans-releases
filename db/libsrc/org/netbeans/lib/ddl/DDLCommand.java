@@ -17,14 +17,14 @@ import com.netbeans.ddl.DDLException;
 
 /** 
 * Interface of database action command. Instances should remember connection 
-* information of DBSpec and use it in execute() method.
+* information of DatabaseSpecification and use it in execute() method.
 *
 * @author Slavek Psenicka
 */
 public interface DDLCommand
 {
-	/** Returns specification (DBSpec) for this command */
-	public DBSpec getSpecification();
+	/** Returns specification (DatabaseSpecification) for this command */
+	public DatabaseSpecification getSpecification();
 	
 	/** Returns name of modified object */
 	public String getObjectName();
@@ -50,6 +50,7 @@ public interface DDLCommand
 
 /*
 * <<Log>>
+*  4    Gandalf   1.3         9/10/99  Slavek Psenicka 
 *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
