@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -137,6 +137,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     static File getDefaultAntHome() {
         if (defaultAntHome == null) {
             File antJar = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", "org.apache.tools.ant.module", false); // NOI18N
+            assert antJar != null : "Missing binding for ant/lib/ant.jar in InstalledFileLocator";
             defaultAntHome = antJar.getParentFile().getParentFile();
             if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 AntModule.err.log("getDefaultAntHome: " + defaultAntHome);
