@@ -15,6 +15,8 @@
 package org.netbeans.modules.image;
 
 
+import java.util.HashSet;
+import java.util.Set;
 import org.openide.actions.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -36,6 +38,8 @@ public class ImageDataLoader extends UniFileLoader {
 
     /** Generated serial version UID. */
     static final long serialVersionUID =-8188309025795898449L;
+    
+    private static Set notSupportedExtensions = new HashSet ();
     
     /** Creates new image loader. */
     public ImageDataLoader() {
@@ -67,11 +71,15 @@ public class ImageDataLoader extends UniFileLoader {
         if( retValue == null  && !fo.isFolder() ){
             /* Check through for new extensions */
             String ext = fo.getExt();
-            Iterator it = javax.imageio.ImageIO.getImageReadersBySuffix(ext);
-            if( it.hasNext() ){
-                /* Use the first available ImageIO loader */
-                retValue = fo;
-                getExtensions().addExtension(ext);
+            
+            if (!notSupportedExtensions.contains (ext)) {
+                Iterator it = javax.imageio.ImageIO.getImageReadersBySuffix(ext);
+                if( it.hasNext() ){
+                    /* Use the first available ImageIO loader */
+                    retValue = fo;
+                    getExtensions().addExtension(ext);
+                } else
+                    notSupportedExtensions.add (ext);
             }
         }
         return retValue;
