@@ -510,7 +510,8 @@ Microsystems, Inc. All Rights Reserved.
   
   <folder name="Services">
 
-    <!--<folder name="XML"> uncomment as Lookup will do deep lookups -->
+    <folder name="Hidden">
+      <attr name="hidden" boolvalue="true" />
 
         <!-- Register some entity catalog entries used in OpenIDE (it will be instantiated as EntityCatalogImpl.Entry)-->
         <file name="org-netbeans-core-xml-EntityCatalogImpl-catalog.xml" >
@@ -533,13 +534,6 @@ Microsystems, Inc. All Rights Reserved.
             ]]>
         </file>    
 
-        <!-- EntityCatalog implementation -->
-        <file name="org-netbeans-core-xml-EntityCatalogImpl.instance" />
-
-    <!--</folder>-->
-
-    <folder name="Hidden">
-      <attr name="hidden" boolvalue="true" />
     </folder>
   </folder>
   

@@ -32,24 +32,22 @@ import org.openide.xml.*;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class EntityCatalogImpl extends EntityCatalog implements LookupListener {
+public class EntityCatalogImpl extends EntityCatalog {
 
-    private Hashtable id2uri;  //cache of registered mappings
+    /** map between publicId and privateId (String, String) */
+    private Map id2uri;  
 
     private static final XMLDataObject.Info INFO = new XMLDataObject.Info();
 
-    private Lookup.Result result;  //lookup result
-
-    static {
+    public static void init () {
         INFO.addProcessorClass(RegistrationProcessor.class);
 //        INFO.setIconBase("/org/netbeans/core/windows/toolbars/xmlToolbars");  //!!!
         XMLDataObject.registerInfo(EntityCatalog.PUBLIC_ID, INFO);
     }
     
     /** Creates new EntityCatalogImpl */
-    public EntityCatalogImpl() {
-        id2uri = new Hashtable(17);
-        initLookupListening();        
+    private EntityCatalogImpl(Map map) {
+        id2uri = map;
     }
     
     /**
@@ -72,50 +70,20 @@ public class EntityCatalogImpl extends EntityCatalog implements LookupListener {
     }
 
     /** 
-     * Lookup result callback handler updates cache. 
-     */
-    public void resultChanged(LookupEvent e) {
-        
-        synchronized (id2uri) {            
-            id2uri.clear();
-
-            Collection col = result.allInstances();
-            Iterator it = col.iterator();
-
-            while( it.hasNext() ) {
-                Entry next = (Entry) it.next();
-                id2uri.putAll(next.mapping);
-            }
-        }
-    }
-
-    /**
-     * Start listening at Lookup.Result.
-     */
-    private void initLookupListening() {
-        Lookup.Template templ = new Lookup.Template(Entry.class);
-        result = Lookup.getDefault().lookup(templ);
-
-        result.addLookupListener(this);
-        resultChanged(null);
-    }
-
-    /** 
      * XMLDataObject.Processor implementation recognizing EntityCatalog.PUBLIC_ID DTDs
      * giving them instance cookie returning registered entries.
      */
     public static class RegistrationProcessor extends DefaultHandler implements XMLDataObject.Processor, InstanceCookie, Runnable {
 
         private XMLDataObject peer;
-        private TreeMap map;
-        private Entry instance;
+        private Map map;
         private RequestProcessor.Task parsingTask = RequestProcessor.createRequest(this);
 
         // Processor impl
 
         public void attachTo (XMLDataObject xmlDO) {
             peer = xmlDO;                        
-            map = new TreeMap();
+            map = new Hashtable();  //be synchronized
             parsingTask.schedule(0);
         }
 
@@ -132,16 +100,9 @@ public class EntityCatalogImpl extends EntityCatalog implements LookupListener {
             }
         }
 
-        public void endDocument() {
-            instance = new Entry();
-            instance.setMap(map);
-        }
-        
         // Runnable impl (can be a task body)
 
         public void run() {
-
-            instance = null;
             map.clear();
 
             try {
@@ -171,32 +132,18 @@ public class EntityCatalogImpl extends EntityCatalog implements LookupListener {
         // InstanceCookie impl
 
         public Class instanceClass() throws IOException, ClassNotFoundException {
-            return Entry.class;
+            return EntityCatalogImpl.class;
         }
 
         public Object instanceCreate() throws IOException, ClassNotFoundException {
             parsingTask.waitFinished();
 
-            if (instance == null) {
-                throw new IOException("Error parsing " + peer.getPrimaryFile().getName());  //NOI18N
-            }
-            return instance;
+            return new EntityCatalogImpl (map);
         }
 
+        //do not understand what it means, but it must return the value
         public String instanceName() {
-            return "Entity Catalog Entries (" + peer.getPrimaryFile().getName() + ")";  //!!!
+            return "org.netbeans.core.xml.EntityCatalogImpl"; // NOI18N
         }
     }
-
-    /** 
-     * Set of registrations recognized by RegistrationProcessor and provided at XMLayer. 
-     */
-    public static class Entry {
-
-        Map mapping;
-
-        void setMap(Map mapping) {
-            this.mapping = mapping;
-        }
-    }    
 }
