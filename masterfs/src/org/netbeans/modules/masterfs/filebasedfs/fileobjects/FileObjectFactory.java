@@ -163,12 +163,12 @@ public final class FileObjectFactory {
                     }
 
                     assert retVal != null || !fInfo.isConvertibleToFileObject() : (fInfo.getFile().getAbsolutePath() + " isConvertible:   " + fInfo.isConvertibleToFileObject()) ;//NOI18N
-                    //return null;
-
                 } else {
                     retVal = this.getRoot();
                 }
-                assert retVal != null || !fInfo.isConvertibleToFileObject() : (file.getAbsolutePath() + " isConvertible:   " + !fInfo.isConvertibleToFileObject());//NOI18N
+                //this assert might fail after external changes and means that children caches
+                // doesn't correspond to real files on disk - which may occure
+                //assert retVal != null || !fInfo.isConvertibleToFileObject() : (file.getAbsolutePath() + " isConvertible:   " + !fInfo.isConvertibleToFileObject());//NOI18N
             }
             keepIt.add(retVal);
         }
