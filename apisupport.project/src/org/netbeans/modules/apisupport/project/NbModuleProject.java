@@ -56,7 +56,6 @@ final class NbModuleProject implements Project {
     private static final Image NB_PROJECT_ICON = Utilities.loadImage( "org/netbeans/modules/apisupport/project/resources/module.gif" ); // NOI18N
     
     private static final String BUILD_XSL = "nbbuild/templates/build.xsl";
-    private static final String BUILD_IMPL_XSL = "nbbuild/templates/build-impl.xsl";
 
     private final AntProjectHelper helper;
     private final GeneratedFilesHelper genFilesHelper;
@@ -230,6 +229,7 @@ final class NbModuleProject implements Project {
     private List/*<Map<String,String>>*/ makeEvalDefs() {
         Map defaults = new HashMap();
         defaults.put("code.name.base.dashes", getName().replace('.', '-')); // NOI18N
+        // XXX the following two are now wrong; needs to look in nb_all/nbbuild/netbeans:
         defaults.put("module.jar.dir", "modules"); // NOI18N
         defaults.put("module.jar", "${module.jar.dir}/${code.name.base.dashes}.jar"); // NOI18N
         defaults.put("manifest.mf", "manifest.mf");
@@ -317,11 +317,6 @@ final class NbModuleProject implements Project {
     }
     
     private void refreshBuildScripts(boolean p) throws IOException {
-        FileObject buildImplXsl = getNbrootFile(BUILD_IMPL_XSL);
-        if (buildImplXsl != null) {
-            genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                buildImplXsl.getURL(), p);
-        }
         FileObject buildXsl = getNbrootFile(BUILD_XSL);
         if (buildXsl != null) {
             genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_XML_PATH,
