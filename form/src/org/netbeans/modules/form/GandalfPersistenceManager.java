@@ -1664,12 +1664,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
         bytes[count++] = Byte.parseByte(singleNum);
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes, 0, count);
         try {
-            ObjectInputStream ois = new ObjectInputStream(bis) {
+            class PORObjectInputStream extends ObjectInputStream {
+                public PORObjectInputStream(InputStream is) throws IOException {
+                    super(is);
+                }
                 protected Class resolveClass(ObjectStreamClass v)
                 throws IOException, ClassNotFoundException {
                     return PersistenceObjectRegistry.loadClass(v.getName());
                 }
-            };
+            }
+            ObjectInputStream ois = new PORObjectInputStream(bis);
             return ois.readObject();
         }
         catch (Exception e) {
