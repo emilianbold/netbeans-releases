@@ -90,7 +90,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         children.put(o, new WeakReference(getChildObjects(o, null)));
-                        refreshChildren(o);
+                        fireChildrenChange(o);
                     }
                 });
                 return null;
@@ -201,7 +201,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     
     public void childrenChanged(PhadhailEvent ev) {
         assert ev.getPhadhail().mutex().canRead();
-        refreshChildren(ev.getPhadhail());
+        fireChildrenChange(ev.getPhadhail());
     }
     
     public void nameChanged(PhadhailNameEvent ev) {
@@ -215,7 +215,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         DomProvider p = (DomProvider)e.getSource();
         Phadhail ph = (Phadhail)domProviders2Phadhails.get(p);
         assert ph != null;
-        refreshChildren(ph);
+        fireChildrenChange(ph);
     }
     
 }
