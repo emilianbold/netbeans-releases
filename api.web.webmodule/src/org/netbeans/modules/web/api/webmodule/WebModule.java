@@ -14,7 +14,6 @@
 package org.netbeans.modules.web.api.webmodule;
 
 import java.util.Iterator;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.webmodule.WebModuleAccessor;
 import org.netbeans.modules.web.spi.webmodule.*;
 import org.openide.filesystems.FileObject;

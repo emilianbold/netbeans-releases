@@ -12,7 +12,6 @@
  */
 package org.netbeans.modules.web.spi.webmodule;
 
-import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 
 /**
