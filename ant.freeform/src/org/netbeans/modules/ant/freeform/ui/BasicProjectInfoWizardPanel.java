@@ -17,6 +17,7 @@ import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -26,6 +27,7 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
+import org.openide.util.NbBundle;
 
 /**
  * @author  David Konecny
@@ -41,7 +43,8 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
     
     public Component getComponent() {
         if (component == null) {
-            component = new BasicProjectInfoPanel("", "", "", "", this);
+            component = new BasicProjectInfoPanel("", "", "", "", this); // NOI18N
+            ((JComponent)component).getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(BasicProjectInfoWizardPanel.class, "ACSD_BasicProjectInfoWizardPanel")); // NOI18N
         }
         return component;
     }
@@ -54,10 +57,10 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
         getComponent();
         String error = component.getError();
         if (error != null) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", error);
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", error); // NOI18N
             return false;
         }
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");
+        wizardDescriptor.putProperty( "WizardPanel_errorMessage", ""); // NOI18N
         return true;
     }
     

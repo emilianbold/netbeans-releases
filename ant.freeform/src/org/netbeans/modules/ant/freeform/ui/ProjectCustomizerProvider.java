@@ -87,7 +87,9 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
         // RegisterListener
         ActionListener optionsListener = new OptionListener( project, pc);
         options[ OPTION_OK ].addActionListener( optionsListener );
+        options[ OPTION_OK ].getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ProjectCustomizerProvider.class, "ACSD_Customizer_Ok_Option"));
         options[ OPTION_CANCEL ].addActionListener( optionsListener );
+        options[ OPTION_CANCEL ].getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage (ProjectCustomizerProvider.class, "ACSD_Customizer_Cancel_Option"));
 
         dialogDescriptor = new DialogDescriptor( 
             pc, // innerPane
