@@ -32,7 +32,6 @@ public class ProjectChooserFactoryImpl implements ProjectChooserFactory {
     public ProjectChooserFactoryImpl() {}
     
     public JFileChooser createProjectChooser() {
-        ProjectManager.getDefault().clearNonProjectCache(); // #41882
         return ProjectChooserAccessory.createProjectChooser( false );
     }
 

@@ -334,6 +334,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
      */    
     public static JFileChooser createProjectChooser( boolean defaultAccessory ) {
         
+        ProjectManager.getDefault().clearNonProjectCache(); // #41882
+        
         OpenProjectListSettings opls = OpenProjectListSettings.getInstance();
         JFileChooser chooser = new ProjectFileChooser();
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
