@@ -1,4 +1,4 @@
-/*
+/* 
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -47,6 +47,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import java.net.URL;
 import org.netbeans.api.project.ProjectInformation;
 import org.openide.ErrorManager;
+import org.netbeans.api.queries.VisibilityQuery;
 
 
 
@@ -71,11 +72,17 @@ public class SelectorUtils {
 		   
 	// Has to be a folder or a resource class.
 	return 
-	  (dataObject instanceof DataFolder) ||
+	  ((dataObject instanceof DataFolder) && (isVisible(dataObject))) ||
 	  (dataObject instanceof PropertiesDataObject); // PENDING same like above.
       }
     };
 
+    private static boolean isVisible(DataObject dobj) {
+        return (dobj.getPrimaryFile()==null) ||
+            (VisibilityQuery.getDefault().isVisible(dobj.getPrimaryFile()));
+            
+    }
+    
 				       
   public static final FilteredNode.NodeFilter ALL_FILTER = 
     new FilteredNode.NodeFilter() {
