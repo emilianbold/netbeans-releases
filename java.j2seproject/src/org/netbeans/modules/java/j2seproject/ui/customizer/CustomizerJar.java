@@ -73,6 +73,7 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel {
 
         setBorder(new javax.swing.border.EtchedBorder());
         org.openide.awt.Mnemonics.setLocalizedText(jLabelDistDir, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_DistDir_JTextField"));
+        jLabelDistDir.setLabelFor(jTextFieldDistDir);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
@@ -85,8 +86,10 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 12);
         add(jTextFieldDistDir, gridBagConstraints);
+        jTextFieldDistDir.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_jTextFieldDistDir"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_Excludes_JTextField"));
+        jLabel2.setLabelFor(jTextFieldExcludes);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -102,6 +105,7 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jTextFieldExcludes, gridBagConstraints);
+        jTextFieldExcludes.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_jTextFieldExcludes"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCommpress, org.openide.util.NbBundle.getMessage(CustomizerJar.class, "LBL_CustomizeJar_Commpres_JCheckBox"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -113,6 +117,7 @@ public class CustomizerJar extends JPanel implements J2SECustomizer.Panel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(jCheckBoxCommpress, gridBagConstraints);
+        jCheckBoxCommpress.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_jCheckBoxCompress"));
 
     }//GEN-END:initComponents
     
