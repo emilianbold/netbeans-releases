@@ -76,8 +76,12 @@ public final class WebServicesSupport {
     
     // Delegated methods from WebServicesSupportImpl
     
-    public void addServiceImpl(String serviceName, String serviceEndpointInterface, String serviceEndpoint, FileObject configFile) {
-        impl.addServiceImpl(serviceName, serviceEndpointInterface, serviceEndpoint, configFile);
+    public void addServiceImpl(String serviceName, FileObject configFile) {
+        impl.addServiceImpl(serviceName, configFile);
+    }
+    
+    public void addServiceEntriesToDD(String serviceName, String serviceEndpointInterface, String servantClassName){
+        impl.addServiceEntriesToDD(serviceName, serviceEndpointInterface, servantClassName);
     }
     
     public FileObject getWebservicesDD() {

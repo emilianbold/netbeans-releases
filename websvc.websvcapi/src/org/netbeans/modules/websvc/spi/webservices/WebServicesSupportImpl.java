@@ -26,10 +26,15 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 public interface WebServicesSupportImpl {
 	
     /*
-     * Add web service related entries to the project file and the module's DD
+     * Add web service related entries to the project.properties and project.xml files 
      */
-    public void addServiceImpl(String serviceName, String serviceEndpointInterface, String serviceEndpoint, FileObject configFile);
+    public void addServiceImpl(String serviceName, FileObject configFile);
 	
+    /**
+     * Add web service entries to the module's deployment descriptor
+     */
+    public void addServiceEntriesToDD(String serviceName, String serviceEndpointInterface, String serviceEndpoint);
+    
     /**
      * Get the FileObject of the webservices.xml file.
      */
