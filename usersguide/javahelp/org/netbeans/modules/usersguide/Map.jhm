@@ -1532,16 +1532,10 @@
 
 
 <!--PENDING - map these IDs if possible-->
-  <!--Options .... Script Types-->
-  <mapID target="org.netbeans.core.services.ScriptTypes" url="pending.html" />
-  <!--Options .... Script Types|various types-->
-  <mapID target="org.netbeans.modules.scripting.AbstractScriptType" url="pending.html" />
 
   <mapID target="org.netbeans.modules.pdf.PDFSettings" url="pending.html" />
 
-  <!--Options .... Telnet Server-->  
-  <mapID target="org.netbeans.modules.scripting.remote.ServerSettings" url="pending.html" />
-  
+
  <!--Options | Source Creation and Management | Templates-->  
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
   <!--for all subnodes of Templates category-->
