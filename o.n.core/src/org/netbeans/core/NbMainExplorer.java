@@ -294,10 +294,12 @@ public final class NbMainExplorer extends CloneableTopComponent
         Places.Nodes ns = TopManager.getDefault().getPlaces().nodes();
         // build the list of roots
         LinkedList result = new LinkedList();
-        // repository
+        // repository goes first
         result.add(ns.repository());
-        // workplace
-        result.add(ns.project ());
+        // projects tab (only if projects module is installed)
+        if (NbProjectOperation.hasProjectDesktop()) {
+            result.add(NbProjectOperation.getProjectDesktop());
+        }
         // roots added by modules (javadoc etc...)
         result.addAll(Arrays.asList(ns.roots()));
         // runtime
@@ -312,8 +314,8 @@ public final class NbMainExplorer extends CloneableTopComponent
         // switch according to the type of the root context
         MainTab panel = null;
         Places.Nodes ns = TopManager.getDefault().getPlaces().nodes();
-        if (rc.equals(ns.project ())) {
-            // workplace tab
+        if (rc.equals(NbProjectOperation.getProjectDesktop())) {
+            // projects tab
             panel = new ProjectsTab();
         } else if (rc.equals(ns.repository())) {
             panel = new RepositoryTab ();
@@ -479,11 +481,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         * root context */
         public void readExternal (java.io.ObjectInput oi)
         throws java.io.IOException, ClassNotFoundException {
-            try {
-                super.readExternal(oi);
-            } catch (Exception e) {
-                // ignore any exception, tab will be revalidated later
-            }
+            super.readExternal(oi);
             // put a request for later validation
             // we must do this here, because of ExplorerManager's deserialization.
             // Root context of ExplorerManager is validated AFTER all other
@@ -769,34 +767,16 @@ public final class NbMainExplorer extends CloneableTopComponent
         /** Exchanges deserialized root context to projects root context
         * to keep the uniquennes. */
         protected void validateRootContext () {
-            Node projectsRc = TopManager.getDefault ().getPlaces ().nodes ().project ();
+            Node projectsRc = NbProjectOperation.getProjectDesktop();
             setRootContext(projectsRc);
             registerRootContext(projectsRc);
         }
 
         public void doSelectNode (DataObject obj) {
-            DataFolder parent = null;
-            DataFolder workplace = TopManager.getDefault ().getPlaces ().folders ().projects ();
-            DataObject prjs [] = workplace.getChildren ();
-            
-            for (int i = 0; i < prjs.length; i++) {
-                DataShadow ds = (DataShadow)prjs[i].getCookie (DataShadow.class);
-                if (ds == null)
-                    continue;
-                
-                DataObject prj = ds.getOriginal ();
-                parent = obj.getFolder ();
-                while (parent != null && parent != prj) {
-                    parent = parent.getFolder ();
-                }
-                
-                if (parent == null && workplace == obj.getFolder ()) {
-                    parent = workplace;
-                }
+            DataFolder root = (DataFolder)getRootContext ().getCookie (DataFolder.class);
+            if (selectNode (obj, root)) {
+                requestFocus ();
             }
-            
-            if (parent != null)
-                selectNode (obj, parent);
         }
 
     } // end of ProjectsTab inner class

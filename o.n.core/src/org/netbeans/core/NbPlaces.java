@@ -112,10 +112,10 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
         return ControlPanelNode.getDefault ();
     }
 
-    /** Workplace Node.
+    /** Project Settings.
     */
     public Node project () {
-        return org.netbeans.core.ui.WorkplaceNode.getDefault();
+        return ControlPanelNode.getProjectSettings ();
     }
 
     /** Node with all workspaces */
@@ -128,14 +128,10 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
         return new org.netbeans.core.ui.MountNode ();
     }
 
-    /** Active project's node, this node can change when active project changes.
+    /** Workspace node for current project. This node can change when project changes.
     */
     public Node projectDesktop () {
-        DataObject prj = org.netbeans.core.ui.WorkplaceNode.getDefault().getActiveProject ();
-        if (prj == null)
-            return org.netbeans.core.ui.WorkplaceNode.getDefault().cloneNode ();
-        
-        return prj.getNodeDelegate ().cloneNode ();
+        return NbProjectOperation.getProjectDesktop ();
     }
 
     /** Root nodes.
@@ -177,7 +173,7 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
     /** Default folder for projects.
     */
     public DataFolder projects () {
-        return findSessionFolder (org.netbeans.core.ui.WorkplaceNode.WORKPLACE_FOLDER);
+        return findSessionFolder ("Projects"); // NOI18N
     }
 
     /** Startup folder.
