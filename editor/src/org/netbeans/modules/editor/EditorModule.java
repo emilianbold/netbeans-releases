@@ -29,9 +29,9 @@ import com.netbeans.editor.SettingsChangeEvent;
 import com.netbeans.editor.LocaleSupport;
 import com.netbeans.editor.Formatter;
 import com.netbeans.developer.modules.text.java.JavaKit;
+import com.netbeans.developer.modules.text.html.HTMLKit;
 import com.netbeans.developer.modules.text.java.JCStorage;
 import com.netbeans.developer.modules.text.java.JCUpdateAction;
-import com.netbeans.developer.modules.text.java.JavaKit;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.text.IndentEngine;
@@ -55,14 +55,12 @@ public class EditorModule extends ModuleInstall {
   private static final String MIME_PLAIN = "text/plain"; // NOI18N
   private static final String MIME_JAVA = "text/x-java"; // NOI18N
   private static final String MIME_HTML = "text/html"; // NOI18N
-  private static final String MIME_PROPERTIES = "text/x-properties"; // NOI18N
-  private static final String MIME_JSP = "text/x-jsp"; // NOI18N
 
   /** Kit replacements that will be installed into JEditorPane */
   KitInfo[] replacements = new KitInfo[] {
-    new KitInfo(MIME_PLAIN, "com.netbeans.developer.modules.text.NbEditorPlainKit"), // NOI18N
-    new KitInfo(MIME_JAVA, "com.netbeans.developer.modules.text.java.NbEditorJavaKit"), // NOI18N
-    new KitInfo(MIME_HTML, "com.netbeans.developer.modules.text.NbEditorHTMLKit"), // NOI18N
+    new KitInfo(MIME_PLAIN, PlainKit.class.getName()),
+    new KitInfo(MIME_JAVA, JavaKit.class.getName()),
+    new KitInfo(MIME_HTML, HTMLKit.class.getName())
   };
 
   private static SettingsChangeListener settingsListener;
@@ -195,6 +193,7 @@ public class EditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  42   Jaga      1.38.1.0.1.13/17/00  Miloslav Metelka 
  *  41   Jaga      1.38.1.0.1.03/15/00  Miloslav Metelka Structural change
  *  40   Gandalf-post-FCS1.38.1.0    3/8/00   Miloslav Metelka 
  *  39   Gandalf   1.38        1/16/00  Jesse Glick     Actions pool.
