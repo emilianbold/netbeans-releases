@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -63,7 +63,6 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
             SystemAction.get(MoveDownAction.class),
             SystemAction.get(ReorderAction.class),
             null,
-            SystemAction.get(NewAction.class),
             SystemAction.get(NewTemplateAction.class),
             null,
             SystemAction.get(ToolsAction.class),
