@@ -77,11 +77,14 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             setSpecification(spec);
 
             drvSpec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
-            drvSpec.setMetaData(spec.getMetaData());
+            if (spec.getMetaData().getDriverName().trim().equals("jConnect (TM) for JDBC (TM)")) //NOI18N
+                //hack for Sybase ASE - I don't guess why spec.getMetaData doesn't work
+                drvSpec.setMetaData(connection.getMetaData());
+            else
+                drvSpec.setMetaData(spec.getMetaData());
             drvSpec.setCatalog(connection.getCatalog());
             drvSpec.setSchema(getSchema());
             setDriverSpecification(drvSpec);
-
             setConnection(connection); // fires change
             
         } catch (DatabaseProductNotFoundException e) {
