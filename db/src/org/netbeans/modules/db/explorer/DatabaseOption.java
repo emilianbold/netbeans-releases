@@ -13,26 +13,19 @@
 
 package org.netbeans.modules.db.explorer;
 
-import java.beans.*;
-import java.io.*;
-import java.text.MessageFormat;
-import java.sql.SQLException;
-import java.util.*;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Enumeration;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Vector;
 
-import org.openide.*;
-import org.openide.actions.*;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.filesystems.*;
-import org.openide.nodes.*;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 /** Root system option. It stores a list of available drivers and open connections.
 * These connections will be restored at startup, drivers will be placed in Drivers
@@ -49,15 +42,14 @@ public class DatabaseOption extends SystemOption {
     private static int fetchstep = 200;
     private static boolean autoConn = true;
 
-
     public static final String PROP_DEBUG_MODE = "debugMode"; //NOI18N
     public static final String PROP_FETCH_LIMIT = "fetchLimit"; //NOI18N
     public static final String PROP_FETCH_STEP = "fetchStep"; //NOI18N
     public static final String PROP_AUTO_CONNECTION = "autoConn"; //NOI18N
 
     static final long serialVersionUID =-13629330831657810L;
-    public DatabaseOption()
-    {
+    
+    public DatabaseOption() {
         super();
         drivers = new Vector();
         connections = new Vector();
@@ -75,14 +67,14 @@ public class DatabaseOption extends SystemOption {
         return drivers;
     }
 
-    public boolean getDebugMode()
-    {
+    public boolean getDebugMode() {
         return debugMode;
     }
 
-    public void setDebugMode(boolean flag)
-    {
-        if (debugMode == flag) return;
+    public void setDebugMode(boolean flag) {
+        if (debugMode == flag)
+            return;
+        
         debugMode = flag;
         firePropertyChange(PROP_DEBUG_MODE, !debugMode ? Boolean.TRUE : Boolean.FALSE, debugMode ? Boolean.TRUE : Boolean.FALSE);
     }
@@ -90,14 +82,12 @@ public class DatabaseOption extends SystemOption {
     /** Sets vector of available drivers.
     * @param c Vector with drivers
     */
-    public void setAvailableDrivers(Vector c)
-    {
+    public void setAvailableDrivers(Vector c) {
         drivers = c;
     }
 
     /** Returns vector of saved connections */
-    public Vector getConnections()
-    {
+    public Vector getConnections() {
         if (connections == null)
             connections = new Vector();
 
@@ -107,33 +97,32 @@ public class DatabaseOption extends SystemOption {
     /** Sets vector of open connections.
     * @param c Vector with connections
     */
-    public void setConnections(Vector c)
-    {
+    public void setConnections(Vector c) {
         connections = c;
     }
 
-    public int getFetchLimit()
-    {
+    public int getFetchLimit() {
         return fetchlimit;
     }
 
-    public void setFetchLimit(int limit)
-    {
+    public void setFetchLimit(int limit) {
         int old = fetchlimit;
-        if (old == limit) return;
+        if (old == limit)
+            return;
+        
         fetchlimit = limit;
         firePropertyChange(PROP_FETCH_LIMIT, new Integer(old), new Integer(limit));
     }
 
-    public int getFetchStep()
-    {
+    public int getFetchStep() {
         return fetchstep;
     }
 
-    public void setFetchStep(int limit)
-    {
+    public void setFetchStep(int limit) {
         int old = fetchstep;
-        if (old == limit) return;
+        if (old == limit)
+            return;
+        
         fetchstep = limit;
         firePropertyChange(PROP_FETCH_STEP, new Integer(old), new Integer(limit));
     }
@@ -144,7 +133,9 @@ public class DatabaseOption extends SystemOption {
     
     public void setAutoConn(boolean newAutoConn) {
         boolean old = autoConn;
-        if (old == newAutoConn) return;
+        if (old == newAutoConn)
+            return;
+        
         autoConn = newAutoConn;
         firePropertyChange(PROP_AUTO_CONNECTION, !autoConn ? Boolean.TRUE : Boolean.FALSE, autoConn ? Boolean.TRUE : Boolean.FALSE);
     }
@@ -160,36 +151,14 @@ public class DatabaseOption extends SystemOption {
 
     /** Description of object */
     public String toString() {
-        return drivers.size()+" drivers, "+connections.size()+" connections"; //NOI18N
+        return drivers.size() + " drivers, " + connections.size() + " connections"; //NOI18N
     }
     
-    private void closeConnections() {
-        try {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("UI/Runtime"); //NOI18N
-            DataFolder df;
-            try {
-                df = (DataFolder) DataObject.find(fo);
-            } catch (DataObjectNotFoundException exc) {
-                return;
-            }
-            Node[] n = df.getNodeDelegate().getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
-            
-            for (int i = 0; i < n.length; i++)
-                if (n[i] instanceof ConnectionNode)
-                    ((ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo()).disconnect();
-        } catch (Exception exc) {
-            //connection not closed
-        }
-    }
-
     /** Writes data
     * @param out ObjectOutputStream
     */
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
-        
-        // here was always closed all open connections, it was a problem with the save project action
-        //closeConnections();
         
         out.writeObject(getAvailableDrivers());
         out.writeObject(getConnections());
@@ -199,9 +168,9 @@ public class DatabaseOption extends SystemOption {
     /** Reads data
     * @param in ObjectInputStream
     */
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-    {
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
+        
         drivers = (Vector) in.readObject();
         drivers = checkDrivers(drivers);
         connections = (Vector)in.readObject();
