@@ -185,6 +185,8 @@ public class PropertiesTableModel extends AbstractTableModel {
     if (columnIndex == 0) {
       BundleStructure bs = obj.getBundleStructure();
       String oldValue = (String)bs.getNthKey(rowIndex);
+      if (oldValue == null)
+        return;
       String newValue = ((StringPair)aValue).getValue();
       if ((newValue == null) || (newValue.length() == 0)) {
         // remove from all files
@@ -236,7 +238,7 @@ public class PropertiesTableModel extends AbstractTableModel {
             item.setComment(((StringPair)aValue).getComment());
           }
           else {
-            if ((((StringPair)aValue).getValue().length() > 0) && (((StringPair)aValue).getComment().length() > 0))
+            if ((((StringPair)aValue).getValue().length() > 0) || (((StringPair)aValue).getComment().length() > 0))
               ps.addItem(key, ((StringPair)aValue).getValue(), ((StringPair)aValue).getComment());
           }
         }
