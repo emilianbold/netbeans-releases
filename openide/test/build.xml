@@ -48,36 +48,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.includes" value=""/>
     <property name="xtest.excludes" value=""/>
     
-    <!-- ============== -->
-    <!-- Set classpaths -->
-    <!-- ============== -->
-    
-    <!-- this classpath will be used for executing tests against jars -->
-    <path id="jar.codetest.classpath">        
-        <pathelement location="../netbeans/lib/openide.jar"/>
-        <fileset dir="../../core/netbeans/lib">
-            <include name="core.jar"/>
-            <include name="ext/*.jar"/>
-        </fileset>
-    </path>
-    
-    <!-- this classpath will be used for executing tests against sources -->
-    <path id="src.codetest.classpath">        
-        <pathelement location="../src"/>
-        <fileset dir="../../core/netbeans/lib">
-            <include name="core.jar"/>
-            <include name="ext/*.jar"/>
-        </fileset>
-    </path>
-    
-    <!-- this classpath will be used for executing tests against installed IDE -->
-    <path id="ide.codetest.classpath">        
-        <pathelement location="${netbeans.home}/lib/openide.jar"/>
-        <fileset dir="${netbeans.home}/lib">
-            <include name="core.jar"/>
-            <include name="ext/*.jar"/>
-        </fileset>
-    </path>
     
     <!-- =========== -->
     <!-- Init target -->
@@ -227,22 +197,76 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="jartest-classpath" if="jarcode.classpath">
         <echo message="Using jars classpath."/>
+        <!-- this classpath will be used for executing tests against jars -->
+	<path id="jar.codetest.classpath">        
+        	<pathelement location="../netbeans/lib/openide.jar"/>
+        	<fileset dir="../../core/netbeans/lib">
+            		<include name="core.jar"/>
+            		<include name="ext/*.jar"/>
+        	</fileset>
+    	</path>
+    	<!-- this classpath will be used for compiling tests against jars -->
+	<path id="jar.compiletest.classpath">        
+	    <pathelement location="../openide-13javac-workaround.jar"/>
+	    <pathelement location="../netbeans/lib/openide.jar"/>
+	    <pathelement path="${junit.path}"/>
+	    <pathelement path="${xerces.path}"/>
+	</path>
         <pathdef useid="codetest.classpath">
             <path refid="jar.codetest.classpath"/>
+        </pathdef>
+        <pathdef useid="compiletest.classpath">
+            <path refid="jar.compiletest.classpath"/>
         </pathdef>
     </target>
         
     <target name="srctest-classpath" if="srccode.classpath">
         <echo message="Using srcs classpath."/>
+        <!-- this classpath will be used for executing tests against sources -->
+    	<path id="src.codetest.classpath">        
+	        <pathelement location="../src"/>
+	        <fileset dir="../../core/netbeans/lib">
+            		<include name="core.jar"/>
+            		<include name="ext/*.jar"/>
+        	</fileset>
+    	</path>
+    	<!-- this classpath will be used for compiling tests against sources -->
+    	<path id="src.compiletest.classpath">        
+	        <pathelement location="../openide-13javac-workaround.jar"/>
+	        <pathelement location="../src"/>
+	        <pathelement path="${junit.path}"/>
+		<pathelement path="${xerces.path}"/>
+	</path>
         <pathdef useid="codetest.classpath">
             <path refid="src.codetest.classpath"/>
+        </pathdef>
+        <pathdef useid="compiletest.classpath">
+            <path refid="src.compiletest.classpath"/>
         </pathdef>
     </target>
     
     <target name="idetest-classpath" if="idecode.classpath">
         <echo message="Using IDE classpath."/>
+        <!-- this classpath will be used for executing tests against installed IDE -->
+    	<path id="ide.codetest.classpath">        
+	        <pathelement location="${netbeans.home}/lib/openide.jar"/>
+	        <fileset dir="${netbeans.home}/lib">
+        	    <include name="core.jar"/>
+            	<include name="ext/*.jar"/>
+        	</fileset>
+    	</path>
+        <!-- this classpath will be used for compiling tests against installed IDE -->
+    	<path id="ide.compiletest.classpath">        
+    		<pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
+	        <pathelement location="${netbeans.home}/lib/openide.jar"/>
+	        <pathelement path="${junit.path}"/>
+		<pathelement path="${xerces.path}"/>
+    	</path>
         <pathdef useid="codetest.classpath">
             <path refid="ide.codetest.classpath"/>
+        </pathdef>
+        <pathdef useid="compiletest.classpath">
+            <path refid="ide.compiletest.classpath"/>
         </pathdef>
     </target>
     
@@ -359,26 +383,16 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <!-- Compiles all tests -->
-    <target name="compile" depends="init" unless="xtest.distexec">
+    <target name="compile" depends="init,prepare-classpath" unless="xtest.distexec">
         <javac srcdir="unit/src" 
                deprecation="${build.compiler.deprecation}"
                debug="${build.compiler.debug}">
-            <classpath>
-	        <pathelement location="../openide-13javac-workaround.jar"/>
-                <pathelement location="../src"/>
-                <pathelement path="${junit.path}"/>
-		<pathelement path="${xerces.path}"/>
-            </classpath>
+            <classpath refid="compiletest.classpath"/>
         </javac>
         <javac srcdir="regr/src" 
                deprecation="${build.compiler.deprecation}"
                debug="${build.compiler.debug}">
-            <classpath>
-	        <pathelement location="../openide-13javac-workaround.jar"/>
-                <pathelement location="../src"/>
-                <pathelement path="${junit.path}"/>
-		<pathelement path="${xerces.path}"/>
-            </classpath>
+            <classpath refid="compiletest.classpath"/>
         </javac>
     </target>
     
