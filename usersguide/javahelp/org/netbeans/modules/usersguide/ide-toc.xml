@@ -290,10 +290,10 @@
     
 
   <tocitem text="Configuring the Debugger" target="debug.debugger.customize">
-    <tocitem text="Customizing Debug Views" target="debug.view.customize"></tocitem>
+    <tocitem text="Customizing a Debug View" target="debug.view.customize"></tocitem>
     <tocitem text="Setting General Debugging Options" target="debug.options"/>
     <tocitem text="Setting Options for Java Debugging" target="debug.java.options"></tocitem>
-    <tocitem text="Setting the Boot Class Path" target="debug.debugger.bootclasspath"/>
+    <tocitem text="Setting the Boot Class Path for Java Debugging" target="debug.debugger.bootclasspath"/>
     <tocitem text="Configuring Debugger Types" target="debug.debugger.jump">
     <tocitem text="Default Debugger" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
