@@ -472,6 +472,14 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tasklist/bugs..."/>
     <ant dir="../tasklist/bugs" target="netbeans"/>
   </target>
+  <target name="all-tasklist/pmd" depends="all-openide,all-tasklist/api,all-tasklist/core">
+    <echo message="Building module tasklist/pmd..."/>
+    <ant dir="../tasklist/pmd" target="netbeans"/>
+  </target>
+  <target name="all-tasklist/javaparser" depends="all-openide,all-tasklist/api,all-tasklist/core,all-java">
+    <echo message="Building module tasklist/javaparser..."/>
+    <ant dir="../tasklist/javaparser" target="netbeans"/>
+  </target>
 
   <target name="all-testtools" depends="all-ant,all-openide,all-core,all-java,all-jemmysupport,all-junit,all-utilities/group">
     <echo message="Building module testtools..."/>
