@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -267,6 +267,10 @@ public final class GeneratedFilesHelper {
                                 // Update genfiles.properties too.
                                 EditableProperties p = new EditableProperties();
                                 FileObject genfiles = dir.getFileObject(GENFILES_PROPERTIES_PATH);
+                                if (genfiles != null && genfiles.isVirtual()) {
+                                    // #55164: deleted from CVS?
+                                    genfiles = null;
+                                }
                                 if (genfiles != null) {
                                     is = genfiles.getInputStream();
                                     try {
@@ -374,13 +378,13 @@ public final class GeneratedFilesHelper {
                         throw new IllegalStateException("Cannot generate build scripts from a modified project"); // NOI18N
                     }
                     FileObject script = dir.getFileObject(path);
-                    if (script == null) {
+                    if (script == null || /* #55164 */script.isVirtual()) {
                         return new Integer(FLAG_MISSING);
                     }
                     int flags = 0;
                     Properties p = new Properties();
                     FileObject genfiles = dir.getFileObject(GENFILES_PROPERTIES_PATH);
-                    if (genfiles == null) {
+                    if (genfiles == null || /* #55164 */genfiles.isVirtual()) {
                         // Who knows? User deleted it; anything might be wrong. Safest to assume
                         // that everything is.
                         return new Integer(FLAG_UNKNOWN | FLAG_MODIFIED |
@@ -393,7 +397,7 @@ public final class GeneratedFilesHelper {
                         is.close();
                     }
                     FileObject projectXml = dir.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
-                    if (projectXml != null) {
+                    if (projectXml != null && /* #55164 */!projectXml.isVirtual()) {
                         String crc = getCrc32(projectXml);
                         if (!crc.equals(p.getProperty(path + KEY_SUFFIX_DATA_CRC))) {
                             flags |= FLAG_OLD_PROJECT_XML;
