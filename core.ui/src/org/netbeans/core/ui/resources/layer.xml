@@ -443,6 +443,12 @@ Microsystems, Inc. All Rights Reserved.
             </file>
 	</folder>
         
+        <!-- folder for all recent templates -->
+        <folder name="Recent">
+            <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
+            <attr name="simple" boolvalue="false" />
+	</folder>
+        
         <!-- folder for all registered filesystem templates -->
         <folder name="Mount">
             <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
