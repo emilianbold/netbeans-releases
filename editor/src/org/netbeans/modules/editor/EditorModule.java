@@ -132,6 +132,7 @@ public class EditorModule implements ModuleInstall {
 
     // Preloading of some classes for faster editor opening
     BaseKit.getKit(NbEditorJavaKit.class).createDefaultDocument();
+//    DialogSupport.getFindDialogSupport().getFindDialog();
 
     // Registration of the editor kits to JEditorPane
     for (int i = 0; i < replacements.length; i++) {
@@ -194,6 +195,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  22   Gandalf   1.21        7/26/99  Miloslav Metelka 
  *  21   Gandalf   1.20        7/21/99  Miloslav Metelka 
  *  20   Gandalf   1.19        7/21/99  Miloslav Metelka 
  *  19   Gandalf   1.18        7/20/99  Miloslav Metelka Creation of ParserDB dir

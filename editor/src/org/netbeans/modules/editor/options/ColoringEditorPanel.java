@@ -17,6 +17,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemListener;
@@ -26,11 +27,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import com.netbeans.editor.Coloring;
+import com.netbeans.editor.ColoringManager;
 import com.netbeans.editor.DefaultSettings;
+import org.openide.TopManager;
+import org.openide.DialogDescriptor;
 
 /** 
  *
@@ -38,6 +41,10 @@ import com.netbeans.editor.DefaultSettings;
  * @version 
  */
 public class ColoringEditorPanel extends javax.swing.JPanel {
+
+  private static final String FONT = "font";
+  private static final String FORE_COLOR = "foreColor";
+  private static final String BACK_COLOR = "backColor";
   
   private static final Coloring DEFAULT_COLORING
       = new Coloring(
@@ -53,11 +60,9 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
   
   private boolean canFire;
   
-  private Editor fontEditor;
+  private Editor editor;
   
-  private Editor foreColorEditor;
-  
-  private Editor backColorEditor;
+  private String editorProp;
   
   /** Creates new form ColoringEditorPanel */
   public ColoringEditorPanel() {
@@ -124,6 +129,15 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
     backColorTransparent.setSelected(t);
     backColorTransparent.setEnabled(!t);
 
+    if (coloring.getName().equals(ColoringManager.DEFAULT)) {
+      fontTransparent.setEnabled(false);
+      foreColorTransparent.setEnabled(false);
+      backColorTransparent.setEnabled(false);
+      fontChange.setEnabled(true);
+      foreColorChange.setEnabled(true);
+      backColorChange.setEnabled(true);
+    }
+
     updatePreview();
 
     canFire = true;
@@ -135,6 +149,34 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
     preview.setForeground(foreColorPreview.getBackground());
   }
    
+  private void updateEditor(Coloring c) {
+    if (editor != null) {
+      Object value;
+      if (editorProp.equals(FONT)) {
+        value = c.getFont();
+      } else if (editorProp.equals(FORE_COLOR)) {
+        value = c.getForeColor();
+      } else {
+        value = c.getBackColor();
+      }
+
+      editor.setValue(value);
+    }
+  }
+
+  private void updateFromEditor() {
+    if (editor != null) {
+      Object value = editor.getValue();
+      if (editorProp.equals(FONT)) {
+        fontPreview.setFont((Font)value);
+      } else if (editorProp.equals(FORE_COLOR)) {
+        foreColorPreview.setBackground((Color)value);
+      } else {
+        backColorPreview.setBackground((Color)value);
+      }
+    }
+  }
+
   private void updateColoring() {
     Coloring c = coloring;
     c = Coloring.changeFont(c, fontTransparent.isSelected()
@@ -144,15 +186,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
     c = Coloring.changeBackColor(c, backColorTransparent.isSelected()
         ? null : backColorPreview.getBackground());
 
-    if (fontEditor != null) {
-      fontEditor.setValue(fontPreview.getFont());
-    }
-    if (foreColorEditor != null) {
-      foreColorEditor.setValue(foreColorPreview.getBackground());
-    }
-    if (backColorEditor != null) {
-      backColorEditor.setValue(backColorPreview.getBackground());
-    }
+    updateEditor(c);
 
     if (!c.equals(coloring)) {
       Coloring old = coloring;
@@ -160,6 +194,21 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
       updatePreview();
       firePropertyChange("value", old, coloring);
     }
+  }
+
+  private void createEditor(String prop) {
+    if (editor == null) {
+      Class propClass = (prop.equals(FONT) ? Font.class : Color.class);
+      editorProp = prop;
+      editor = new Editor(propClass);
+      updateEditor(coloring);
+      editor.setOldValue(editor.getValue());
+      editor.setVisible(true);
+    }
+  }
+
+  private void clearEditor() {
+    editor = null;
   }
 
   private void addListeners() {
@@ -409,64 +458,19 @@ add (previewPanel, gridBagConstraints1);
 
   private void backColorChangeActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backColorChangeActionPerformed
     // Add your handling code here:
-    if (backColorEditor == null) {
-      backColorEditor = new Editor(Color.class);
-      backColorEditor.addListener(
-        new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt2) {
-            backColorPreview.setBackground((Color)backColorEditor.getValue());
-          }
-        }
-      );
-      Point p = new Point(getX() + getWidth(), backColorPanel.getY());
-      SwingUtilities.convertPointToScreen(p, this);
-      backColorEditor.setLocation(p);
-    }
-    backColorEditor.setValue(backColorPreview.getBackground());
-    backColorEditor.setVisible(true);
-    backColorEditor.requestFocus();
+    createEditor(BACK_COLOR);
     
   }//GEN-LAST:event_backColorChangeActionPerformed
 
   private void foreColorChangeActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foreColorChangeActionPerformed
     // Add your handling code here:
-    if (foreColorEditor == null) {
-      foreColorEditor = new Editor(Color.class);
-      foreColorEditor.addListener(
-        new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt2) {
-            foreColorPreview.setBackground((Color)foreColorEditor.getValue());
-          }
-        }
-      );
-      Point p = new Point(getX() + getWidth(), foreColorPanel.getY());
-      SwingUtilities.convertPointToScreen(p, this);
-      foreColorEditor.setLocation(p);
-    }
-    foreColorEditor.setValue(foreColorPreview.getBackground());
-    foreColorEditor.setVisible(true);
-    foreColorEditor.requestFocus();
+    createEditor(FORE_COLOR);
     
   }//GEN-LAST:event_foreColorChangeActionPerformed
 
   private void fontChangeActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontChangeActionPerformed
     // Add your handling code here:
-    if (fontEditor == null) {
-      fontEditor = new Editor(Font.class);
-      fontEditor.addListener(
-        new PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent evt2) {
-            fontPreview.setFont((Font)fontEditor.getValue());
-          }
-        }
-      );
-      Point p = new Point(getX() + getWidth(), fontPanel.getY());
-      SwingUtilities.convertPointToScreen(p, this);
-      fontEditor.setLocation(p);
-    }
-    fontEditor.setValue(fontPreview.getFont());
-    fontEditor.setVisible(true);
-    fontEditor.requestFocus();
+    createEditor(FONT);
   
   }//GEN-LAST:event_fontChangeActionPerformed
 
@@ -488,54 +492,69 @@ private javax.swing.JPanel previewPanel;
 private javax.swing.JLabel preview;
 // End of variables declaration//GEN-END:variables
   
-  class Editor extends JDialog implements ActionListener {
+  class Editor {
     
-    PropertyEditor editor;
+    Dialog dialog;
+
+    DialogDescriptor dialogDescriptor;
     
     Object oldValue;
-    
-    JButton okButton;
-    
-    JButton cancelButton;
-    
-    Editor(Class c) {
-      editor = PropertyEditorManager.findEditor(c);
-//      System.out.println("ColoringEditorPanel.java:506 CLASS=" + editor.getClass());
-      getContentPane().add(editor.getCustomEditor());
-      okButton = new JButton("OK");
-      cancelButton = new JButton("Cancel");
-      JPanel bp = new JPanel();
-      bp.add(okButton);
-      bp.add(cancelButton);
-      getContentPane().add(bp, BorderLayout.SOUTH);
-      okButton.addActionListener(this);
-      cancelButton.addActionListener(this);
-      pack();
-    }
-    
-    public void addListener(PropertyChangeListener l) {
-      editor.addPropertyChangeListener(l);
-    }
-    
-    public void setValue(Object value) {
-      oldValue = value;
-//      System.out.println("ColoringEditorPanel.java:525 setValue(): value=" + value);
-      editor.setValue(value);
-//      System.out.println("ColoringEditorPanel.java:525 getValue(): value=" + editor.getValue());
 
+    PropertyEditor editor;
+
+    PropertyChangeListener pcl = new PropertyChangeListener() {
+      public void propertyChange(PropertyChangeEvent evt) {
+        updateFromEditor();
+      }
+    };
+          
+    
+    Editor(Class propClass) {
+      editor = PropertyEditorManager.findEditor(propClass);
+ 
+      JPanel p = new JPanel(new BorderLayout());
+      p.add(editor.getCustomEditor());
+
+      dialogDescriptor = new DialogDescriptor(p, "");
+      dialog = TopManager.getDefault().createDialog(dialogDescriptor);
+      dialog.pack();
+    }
+    
+    public void setVisible(boolean visible) {
+      if (visible) {
+//        Point p = new Point(getX() + getWidth(), getY());
+//        SwingUtilities.convertPointToScreen(p, ColoringEditorPanel.this);
+//        editor.setLocation(p);
+        editor.addPropertyChangeListener(pcl);
+        dialog.setVisible(true);
+        editor.removePropertyChangeListener(pcl);
+
+        Object o = dialogDescriptor.getValue();
+        if (o == DialogDescriptor.OK_OPTION) { // ok pressed
+          updateFromEditor();
+        } else { // cancel pressed
+          setValue(oldValue);
+          updateFromEditor();
+        }
+
+        dialog.setVisible(false);
+        dialog.dispose();
+        dialog = null;
+        dialogDescriptor = null;
+        clearEditor();
+      }
+    }
+
+    public void setOldValue(Object oldValue) {
+      this.oldValue = oldValue;
+    }
+
+    public void setValue(Object value) {
+      editor.setValue(value);
     }
     
     public Object getValue() {
       return editor.getValue();
-    }
-    
-    public void actionPerformed(ActionEvent evt) {
-      if (evt.getSource() == okButton) {
-        this.setVisible(false);
-      } else if (evt.getSource() == cancelButton) {
-        this.setVisible(false);
-        editor.setValue(oldValue);
-      }
     }
     
   }
@@ -544,6 +563,7 @@ private javax.swing.JLabel preview;
 
 /*
  * Log
+ *  3    Gandalf   1.2         7/26/99  Miloslav Metelka 
  *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
  *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
  * $

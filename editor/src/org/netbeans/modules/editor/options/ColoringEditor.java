@@ -52,7 +52,11 @@ public class ColoringEditor extends PropertyEditorSupport {
       editor.addPropertyChangeListener(new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName() == "value") {
-              value.setColoring(editor.getColoring());
+              ColoringBean newValue = new ColoringBean();
+              newValue.setColoring(editor.getColoring());
+              newValue.defaultColoring = value.defaultColoring;
+              newValue.example = value.example;
+              setValue(newValue);
               firePropertyChange();
             }
           }
@@ -134,6 +138,7 @@ public class ColoringEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  7    Gandalf   1.6         7/26/99  Miloslav Metelka 
  *  6    Gandalf   1.5         7/21/99  Miloslav Metelka 
  *  5    Gandalf   1.4         7/20/99  Miloslav Metelka 
  *  4    Gandalf   1.3         7/9/99   Ales Novak      NullPointerException

@@ -15,6 +15,8 @@ package com.netbeans.developer.modules.text.options;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 import java.util.ResourceBundle;
 
 import org.openide.util.HelpCtx;
@@ -42,7 +44,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
   }
 
   public String getAsText() {
-    return null;
+    return "Colorings";
   }
 
   public void  setAsText(String s) {
@@ -54,6 +56,12 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
     Coloring defaultColoring = (Coloring)vals[1];
     String typeName = (String)vals[2];
     
+    PropertyChangeListener pcl = new PropertyChangeListener() {
+      public void propertyChange(PropertyChangeEvent evt) {
+        firePropertyChange();
+      }
+    };
+
     ColoringProperty[] cps = new ColoringProperty[colorings.length];
     ResourceBundle bundle = NbBundle.getBundle(ColoringArrayEditor.class);
     for (int i = 0; i < colorings.length; i++) {
@@ -68,6 +76,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
     FakeNode fn = new FakeNode(cps);
     PropertySheet psheet = new PropertySheet();
     psheet.setNodes(new Node[] {fn});
+    psheet.addPropertyChangeListener(pcl);
     return psheet;
   }
 
@@ -147,6 +156,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
 
 /*
 * Log
+*  3    Gandalf   1.2         7/26/99  Miloslav Metelka 
 *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
 *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
 * $

@@ -17,11 +17,13 @@ import java.awt.Color;
 import java.awt.Insets;
 import java.util.Map;
 import java.util.List;
+import javax.swing.text.JTextComponent;
   
 import com.netbeans.editor.Settings;
 import com.netbeans.editor.ColoringManager;
 import com.netbeans.editor.BaseKit;
 import com.netbeans.editor.Syntax;
+import com.netbeans.editor.MultiKeyBinding;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
@@ -213,7 +215,18 @@ public class BaseOptions extends OptionSupport {
   }
   
   public List getKeyBindingList() {
-    return (List) getSettingValue(Settings.KEY_BINDING_LIST);
+    List kbList = (List)getSettingValue(Settings.KEY_BINDING_LIST);
+    // must convert all members to serializable MultiKeyBinding
+    int cnt = kbList.size();
+    for (int i = 0; i < cnt; i++) {
+      Object o = kbList.get(i);
+      if (o instanceof JTextComponent.KeyBinding) {
+        o = new MultiKeyBinding((JTextComponent.KeyBinding)o);
+        kbList.set(i, o);
+      }
+    }
+
+    return kbList;
   }
   public void setKeyBindingList(List list) {
     setSettingValue(Settings.KEY_BINDING_LIST, list);
@@ -283,6 +296,7 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  4    Gandalf   1.3         7/26/99  Miloslav Metelka 
  *  3    Gandalf   1.2         7/21/99  Miloslav Metelka 
  *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
  *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
