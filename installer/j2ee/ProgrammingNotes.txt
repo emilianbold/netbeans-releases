@@ -9,8 +9,8 @@ Prerequisites
 To build from command line run ant as usual with
 
  -Dismp.home=<home dir of ISMP5>
- -Dcluster.dir=/path/to/mobility
- -Dinstaller.basename=NetBeansMobility-dev-20040701
+ -Dcluster.dir=/path/to/j2ee_cluster (it is built to directory 'enterprise1')
+ -Dinstaller.basename=NetBeansJ2EE-dev-20040701
 
 The installers will be generated and placed in the dist/ subdir
 
