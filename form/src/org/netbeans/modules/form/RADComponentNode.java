@@ -13,7 +13,9 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import org.openide.TopManager;
 import org.openide.actions.*;
+import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
@@ -279,7 +281,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   * @return <code>true</code> if it can
   */
   public boolean canCopy () {
-    return false; // !(component instanceof FormContainer);
+    return !(component instanceof FormContainer);
   }
 
   /** Test whether this node can be cut.
@@ -296,7 +298,6 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   * @throws IOException if it could not copy
   */
   public Transferable clipboardCopy () throws java.io.IOException {
-//    System.out.println("Copying...");
     return new RADTransferable (RAD_COMPONENT_COPY_FLAVOR, component);
   }
 
@@ -306,11 +307,11 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   * @throws IOException if it could not cut
   */
   public Transferable clipboardCut () throws java.io.IOException {
-//    System.out.println("Cutting...");
     final RADComponent comp = component;
     destroy (); // delete node and component from form
     return new RADTransferable (RAD_COMPONENT_CUT_FLAVOR, component);
   }
+
   /** Accumulate the paste types that this node can handle
   * for a given transferable.
   * <P>
@@ -322,116 +323,21 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   * @param s a list of {@link PasteType}s that will have added to it all types
   *    valid for this node
   */
-  protected void createPasteTypes (final Transferable t, java.util.List s) {
+  protected void createPasteTypes (Transferable t, java.util.List s) {
+    boolean isRADComponentFlavor = false;
+
     if ((component instanceof RADVisualContainer) && 
-        (t.isDataFlavorSupported (RAD_COMPONENT_COPY_FLAVOR) || t.isDataFlavorSupported (RAD_COMPONENT_CUT_FLAVOR))) {
-      PasteType pasteType = new PasteType () {
-      
-        /** Perform the paste action.
-        * @return transferable which should be inserted into the clipboard after the
-        *         paste action. It can be <code>null</code>, meaning that the clipboard content
-        *         is not affected. Use e.g. {@link ExTransferable#EMPTY} to clear it.
-        * @throws IOException if something fails
-        */
-        public Transferable paste() throws java.io.IOException {
-//          System.out.println("Paste...");
-          try {
-            DataFlavor[] flavors = t.getTransferDataFlavors ();
-/*            System.out.println("COPY FLAVOR: "+RAD_COMPONENT_COPY_FLAVOR);
-            System.out.println("CUT FLAVOR: "+RAD_COMPONENT_CUT_FLAVOR);
-            for (int i = 0; i < flavors.length; i++) {
-              System.out.println("Flavor["+i+"] = "+flavors[i]);
-            }
-  */          
-            if (t.isDataFlavorSupported (RAD_COMPONENT_COPY_FLAVOR)) {
-//              System.out.println("COPY SUPPORTED !!!");
-/*              RADComponent originalComp = (RADComponent)t.getTransferData (RAD_COMPONENT_COPY_FLAVOR);
-              FormManager2 pasteManager = component.getFormManager ();
-              RADComponent copyComponent;
-              if (originalComp instanceof RADVisualContainer) {
-                copyComponent = new RADVisualContainer ();
-              } else if (originalComp instanceof RADVisualComponent) {
-                copyComponent = new RADVisualComponent ();
-              } else {
-                copyComponent = new RADComponent ();
-              }
-              copyComponent.initialize (pasteManager);
-              copyComponent.setComponent (originalComp.getBeanClass ());
-//              copyComponent.setName (nodes[i].componentName);
-              
-//              formManager2.getVariablesPool ().createVariable (nodes[i].componentName, nodes[i].beanClass);
-                if (copyComponent instanceof RADVisualContainer) {
-// [PENDING]      ((RADVisualContainer)copyComponent).setDesignLayout (((RADContainerNode)nodes[i]).designLayout);
+      (t.isDataFlavorSupported (RAD_COMPONENT_COPY_FLAVOR) || t.isDataFlavorSupported (RAD_COMPONENT_CUT_FLAVOR))) {
+      s.add (new RADPaste (t));
+      isRADComponentFlavor = true;
+    }
 
-            private static void convertComponent (RADNode node, RADComponent comp) {
-              Map origChanged = node.changedValues;
-              BeanInfo bi = comp.getBeanInfo ();
-              PropertyDescriptor[] pds = bi.getPropertyDescriptors ();
-              for (Iterator it = origChanged.keySet ().iterator (); it.hasNext (); ) {
-                Object key = it.next ();
-                for (int i = 0; i < pds.length; i++) {
-                  if (key.equals (pds[i].getName ())) {
-                    try {
-                      comp.restorePropertyValue (pds[i], origChanged.get (key));
-                    } catch (IllegalArgumentException e) {
-                      // [PENDING]
-                    } catch (IllegalAccessException e) {
-                      // [PENDING]
-                    } catch (java.lang.reflect.InvocationTargetException e) {
-                      // [PENDING]
-                    }
-                    break;
-                  }
-                }
-              }
-
-              Hashtable eventHandlers = node.eventHandlers;
-              comp.initDeserializedEvents (eventHandlers);
-
-              // process constraints on visual components
-              if (node instanceof RADVisualNode) {
-                HashMap map = ((RADVisualNode)node).constraints;
-                ((RADVisualComponent)comp).initConstraints (map);
-              }
-            }
-
-              
-              
-              
-  */            
-//              System.out.println("Copy!!!");
-              return null;
-            }
-            
-            if (t.isDataFlavorSupported (RAD_COMPONENT_CUT_FLAVOR)) {
-//              System.out.println("CUT SUPPORTED !!!");
-              final RADComponent originalComp = (RADComponent)t.getTransferData (RAD_COMPONENT_CUT_FLAVOR);
-              FormManager2 pasteManager = component.getFormManager ();
-              originalComp.initialize (pasteManager); // if pasting into another form
-              if (originalComp instanceof RADVisualComponent) {
-                pasteManager.addVisualComponent ((RADVisualComponent)originalComp, (RADVisualContainer)component, null);
-                // [PENDING - should the component be selected after paste or rather the selection should stay on the container to allow further pasting?]
-                //pasteManager.selectComponent (originalComp, false); 
-                pasteManager.getFormTopComponent ().validate();
-                pasteManager.fireFormChange ();
-              } else {
-                pasteManager.addNonVisualComponent (originalComp, null);
-                // [PENDING - should the component be selected after paste or rather the selection should stay on the container to allow further pasting?]
-                //pasteManager.selectComponent (originalComp, false);
-                pasteManager.fireFormChange ();
-              }
-              
-              // put copy flavor as the new one, as the first instance was used already
-              return new RADTransferable (RAD_COMPONENT_COPY_FLAVOR, originalComp);
-            }
-          } catch (java.awt.datatransfer.UnsupportedFlavorException e) {
-            // ignored
-          }
-          return null;
-        }
-              
-      };
-      s.add (pasteType);
+    // if there is not a RADComponent in the clipboard, try if it is not InstanceCookie
+    if (!isRADComponentFlavor) {
+      InstanceCookie ic = (InstanceCookie)NodeTransfer.cookie (t, NodeTransfer.COPY, InstanceCookie.class);
+      if (ic != null) {
+        s.add (new InstancePaste (ic));        
+      }
     }
   } 
 
@@ -537,10 +443,180 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
       throw new UnsupportedFlavorException (flavor);
     }
   }
+
+// -----------------------------------------------------------------------------
+// Paste types
+
+  /** Paste types for data objects.
+  */
+  private final class RADPaste extends PasteType {
+    private Transferable transferable;
+
+    public RADPaste (Transferable t) {
+      this.transferable = t;
+    }
+
+    public Transferable paste() throws java.io.IOException {
+
+      boolean fromCut = ! (transferable.isDataFlavorSupported (RAD_COMPONENT_COPY_FLAVOR));
+      RADComponent radComponent;
+      try {
+        if (fromCut) {
+          radComponent = (RADComponent)transferable.getTransferData (RAD_COMPONENT_CUT_FLAVOR);
+        } else {
+          radComponent = (RADComponent)transferable.getTransferData (RAD_COMPONENT_COPY_FLAVOR);
+        }
+      } catch (java.io.IOException e) {
+        return null; // ignore
+      } catch (UnsupportedFlavorException e) {
+        return null; // ignore
+      }
+      System.out.println ("RADPaste.paste() : fromCut: "+fromCut+", : "+radComponent);
+
+
+      // 1. pasting copy of RADComponent
+      if (!fromCut) {
+        FormManager2 pasteManager = component.getFormManager ();
+        RADComponent copyComponent;
+        if (radComponent instanceof RADVisualContainer) {
+          copyComponent = new RADVisualContainer ();
+        } else if (radComponent instanceof RADVisualComponent) {
+          copyComponent = new RADVisualComponent ();
+        } else {
+          copyComponent = new RADComponent ();
+        }
+        copyComponent.initialize (pasteManager);
+        copyComponent.setComponent (radComponent.getBeanClass ());
+//          formManager2.getVariablesPool ().createVariable (nodes[i].componentName, nodes[i].beanClass);
+        if (copyComponent instanceof RADVisualContainer) {
+// [PENDING]  ((RADVisualContainer)copyComponent).setDesignLayout (((RADContainerNode)nodes[i]).designLayout);
+        }
+        if (copyComponent instanceof RADVisualComponent) {
+          // [PENDING - how about adding visual container to non-visuals?]
+          pasteManager.addVisualComponent ((RADVisualComponent)copyComponent, (RADVisualContainer)component, null);
+          pasteManager.getFormTopComponent ().validate();
+          pasteManager.fireFormChange ();
+        } else {
+          pasteManager.addNonVisualComponent (copyComponent, null);
+          pasteManager.fireFormChange ();
+        }
+        return null;
+      } else {        
+      // 2. pasting cut RADComponent (same instance)
+        FormManager2 pasteManager = component.getFormManager ();
+        radComponent.initialize (pasteManager); // if pasting into another form
+        if (radComponent instanceof RADVisualComponent) {
+          pasteManager.addVisualComponent ((RADVisualComponent)radComponent, (RADVisualContainer)component, null);
+          pasteManager.getFormTopComponent ().validate();
+          pasteManager.fireFormChange ();
+        } else {
+          pasteManager.addNonVisualComponent (radComponent, null);
+          pasteManager.fireFormChange ();
+        }
+        
+        // put copy flavor as the new one, as the first instance was used already
+        return new RADTransferable (RAD_COMPONENT_COPY_FLAVOR, radComponent);
+      }
+    }
+  }
+
+  /** Paste type for InstanceCookie
+  */
+  private final class InstancePaste extends PasteType {
+    private InstanceCookie cookie;
+
+    /** 
+    * @param obj object to work with
+    */
+    public InstancePaste (InstanceCookie cookie) {
+      this.cookie = cookie;
+    }
+
+    /** Paste.
+    */
+    public final Transferable paste () throws java.io.IOException {
+      String name = cookie.instanceName ();
+      // [PENDING]
+      Class instanceClass = null;
+      try {
+        instanceClass = cookie.instanceClass ();
+      } catch (ClassNotFoundException e) {
+        TopManager.getDefault ().notifyException (e); // [PENDING - better notification]
+      }
+      if (instanceClass == null) {
+        return null;
+      }
+
+      if (java.awt.Component.class.isAssignableFrom (instanceClass)) {
+        RADVisualComponent newRADVisualComponent;
+
+//        DesignLayout dl = FormEditor.findDesignLayout (instanceClass);
+/*        if (addItem.isContainer() && (dl != null)) {
+          newRADVisualComponent = new RADVisualContainer();
+          newRADVisualComponent.initialize (FormManager2.this);
+          newRADVisualComponent.setComponent (instanceClass); // [PENDING - how about serialized prototypes and using createInstance on the PaletteItem]
+          ((RADVisualContainer)newRADVisualComponent).initSubComponents (new RADComponent[0]);
+          ((RADVisualContainer)newRADVisualComponent).setDesignLayout (dl);
+        }
+        else { */
+          newRADVisualComponent = new RADVisualComponent();
+          newRADVisualComponent.initialize (component.getFormManager ());
+          newRADVisualComponent.setComponent (instanceClass); // [PENDING - how about serialized prototypes and using createInstance on the PaletteItem]
+//        }
+          
+        component.getFormManager ().addVisualComponent (newRADVisualComponent, (RADVisualContainer)component, null);
+
+        // for some components, we initialize their properties with some non-default values
+        // e.g. a label on buttons, checkboxes
+        FormEditor.defaultComponentInit (newRADVisualComponent);
+        component.getFormManager ().selectComponent (newRADVisualComponent, false);
+        component.getFormManager ().getFormTopComponent ().validate();
+        component.getFormManager ().fireFormChange ();
+      }
+      // preserve clipboard
+      return null;
+    }
+    
+  }
+/*
+        private static void convertComponent (RADNode node, RADComponent comp) {
+          Map origChanged = node.changedValues;
+          BeanInfo bi = comp.getBeanInfo ();
+          PropertyDescriptor[] pds = bi.getPropertyDescriptors ();
+          for (Iterator it = origChanged.keySet ().iterator (); it.hasNext (); ) {
+            Object key = it.next ();
+            for (int i = 0; i < pds.length; i++) {
+              if (key.equals (pds[i].getName ())) {
+                try {
+                  comp.restorePropertyValue (pds[i], origChanged.get (key));
+                } catch (IllegalArgumentException e) {
+                  // [PENDING]
+                } catch (IllegalAccessException e) {
+                  // [PENDING]
+                } catch (java.lang.reflect.InvocationTargetException e) {
+                  // [PENDING]
+                }
+                break;
+              }
+            }
+          }
+
+          Hashtable eventHandlers = node.eventHandlers;
+          comp.initDeserializedEvents (eventHandlers);
+
+          // process constraints on visual components
+          if (node instanceof RADVisualNode) {
+            HashMap map = ((RADVisualNode)node).constraints;
+            ((RADVisualComponent)comp).initConstraints (map);
+          }
+        }
+*/
 }
 
 /*
  * Log
+ *  25   Gandalf   1.24        7/19/99  Ian Formanek    paste copy, paste 
+ *       instance
  *  24   Gandalf   1.23        7/16/99  Ian Formanek    default action
  *  23   Gandalf   1.22        7/14/99  Ian Formanek    Fixed bug 1830 - Layout 
  *       panel is not synchronized with Form Window
