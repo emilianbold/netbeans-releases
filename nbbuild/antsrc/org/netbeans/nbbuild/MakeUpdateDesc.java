@@ -17,6 +17,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
 import java.io.File;
 import java.util.Vector;
 
@@ -91,7 +92,16 @@ public class MakeUpdateDesc extends MatchingTask {
     public void addFileset(FileSet set) {
         filesets.addElement(set);
     }
- 
+
+    
+    private String dist_base;
+   /**
+    * Set distribution base, which will be enforced
+    */
+    public void setDistBase(String dbase) {
+        dist_base = dbase;
+    }
+    
     // Similar to org.openide.xml.XMLUtil methods.
     private static String xmlEscape(String s) {
         int max = s.length();
@@ -258,6 +268,31 @@ public class MakeUpdateDesc extends MatchingTask {
                                                 String mn = line.substring (idx + dummyModuleName.length () - 1);
                                                 log (" Adding module   " + mn + " (" + n_file.getAbsolutePath() + ")");
                                             }
+                                            if (dist_base != null) {
+                                                // fix/enforce distribution URL base
+                                                String dummyDistribution = "distribution=\""; //NOI18N
+                                                idx = line.indexOf (dummyDistribution);
+                                                if (idx != -1) {
+                                                    String line1 = line.substring (0, idx) + "distribution=\""; //NOI18N
+                                                    log ("distribution line1 " + line1, Project.MSG_DEBUG);
+                                                    String pomline = line.substring (idx + dummyDistribution.length ());
+                                                    log ("distribution pomline " + pomline, Project.MSG_DEBUG);
+                                                    String line2;
+                                                    int idx2 = pomline.indexOf("\""); //NOI18N
+                                                    if (idx2 != -1) {
+                                                        line2 = pomline.substring (idx2 + 1);
+                                                        log ("distribution line2 " + line2, Project.MSG_DEBUG);
+                                                    } else {
+                                                        throw new BuildException ("Strange info.xml line: " + line, location);
+                                                    }
+                                                    String newline = line1 + dist_base + "/" + n_file.getName() + line2;
+                                                    if (!newline.equals(line)) {
+                                                        log (" distribution fixed to: " + newline, Project.MSG_INFO);
+                                                        line = newline;
+                                                    }
+                                                }
+                                            }
+
                                             String docType = "<!DOCTYPE module"; //NOI18N
                                             idx = line.indexOf(docType);
                                             if (idx != -1) 
