@@ -59,6 +59,8 @@ public class ComponentInspector extends TopComponent
     private FormEditorSupport focusedForm;
 
     private EmptyInspectorNode emptyInspectorNode;
+    
+    private BeanTreeView treeView;
 
     /** Default icon base for control panel. */
     private static final String EMPTY_INSPECTOR_ICON_BASE =
@@ -128,7 +130,7 @@ public class ComponentInspector extends TopComponent
     }
 
     private void createComponents() {
-        BeanTreeView treeView = new BeanTreeView();
+        treeView = new BeanTreeView();
         treeView.getAccessibleContext().setAccessibleName(
             FormUtils.getBundleString("ACS_ComponentTree")); // NOI18N
         treeView.getAccessibleContext().setAccessibleDescription(
@@ -373,6 +375,11 @@ public class ComponentInspector extends TopComponent
     
     protected String preferredID() {
         return getClass().getName();
+    }
+    
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        return treeView.requestFocusInWindow();
     }
 
     // ---------------
