@@ -269,6 +269,8 @@ public class OptionsAction extends CallableSystemAction {
                 return;
             }
             
+            prepareNodes ();
+            
             TTW ttw = (TTW)view;
             ttw.expandTheseNodes (toExpand, getExplorerManager ().getRootContext ());
             
