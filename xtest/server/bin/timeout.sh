@@ -1,5 +1,4 @@
 #!/bin/sh
-
 echo $$ > ${LOG_DIR}/timeout.pid
 
 if [ "$WARNING_TIME" = "" ]; then
@@ -17,15 +16,19 @@ if [ "$time_in_minutes" -gt 0 ] ;  then
    mesg="${mesg}${time_in_minutes} minutes "
 fi
 
-sleep $WARNING_TIME &
-echo $! > ${LOG_DIR}/sleep.pid
-wait $!
-rm -f ${LOG_DIR}/sleep.pid
+timer_int=60
+timer=0
+
+while [ "$timer" -lt "$WARNING_TIME" -a -f "${LOG_DIR}/test.running" ] ; do
+  sleep $timer_int
+  timer=`expr $timer + $timer_int`
+done
 
 if [ -r ${LOG_DIR}/test.running ]; then
-  ant -buildfile ${XTEST_SERVER_BIN}/mail.xml -Dxtest.mail.subject="TR WARNING: Tests not finished even after ${WARNING_TIME}" \
-   -Dxtest.mail.message="Host: ${HOST_NAME}  Project: ${PROJECT_NAME}  Log: ${LOGFILE}  Problem: tests still running after ${mesg}"
+  sh mail.sh "TR WARNING: Tests not finished even after ${WARNING_TIME}" \
+             "Host: ${HOST_NAME}  Project: ${PROJECT_NAME}  Log: ${LOGFILE}  Problem: tests still running after ${mesg}"
 fi
 
 rm -f ${LOG_DIR}/timeout.pid
 
+echo Timeout end.

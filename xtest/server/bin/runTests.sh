@@ -15,13 +15,10 @@
 
 #==========
 
-if [ -z "${XTEST_SERVER_BIN}" ] ; then
-  XTEST_SERVER_BIN=. 
-fi
 if [ -z "${LOG_DIR}" ] ; then
-  LOG_DIR =../log
+  LOG_DIR =../logs
 fi
-export XTEST_SERVER_BIN LOG_DIR
+export LOG_DIR
 
 # Check java
 if [ -z "${JAVA_HOME}" -o ! -d "${JAVA_HOME}/bin" ]; then
@@ -63,7 +60,7 @@ export PROJECT_NAME
 
 # Check log file
 if [ ! -z "${LOGFILE}" ]; then
-  LOG_ARG="-logfile ${LOGFILE}"
+  LOG_ARG="-logfile \"${LOGFILE}\""
   export LOGFILE
 else  
   echo "Variable LOGFILE not set. Using standart output."
@@ -78,7 +75,9 @@ else
   SHIP_ARG=
 fi
 
-CMD_TO_RUN="cd ${XTEST_SERVER_BIN} ; ant ${LOG_ARG} -Dide.install.path=${BUILDFILE} \
+#=============
+
+CMD_TO_RUN="ant ${LOG_ARG} -Dide.install.path=${BUILDFILE} \
    -Dxtest.tested.project='${PROJECT_NAME}' -Dxtest.driver.config=${DRIVER_CONFIG} \
    -Dxtest.machine=${HOST_NAME} ${SHIP_ARG} ${DRIVER_ARGS}"
 
@@ -93,7 +92,7 @@ export JDK_HOME JAVA_HOME JAVA_PATH PATH
 # flag that tests are running
 touch ${LOG_DIR}/test.running
 
-sh ${XTEST_SERVER_BIN}/timeout.sh > ${LOG_DIR}/timeout.out &
+sh timeout.sh &
 
 echo Testing build ${BUILDFILE} of project ${PROJECT_NAME}
 echo Time: `date`  Log: ${LOGFILE}
@@ -101,9 +100,8 @@ echo Time: `date`  Log: ${LOGFILE}
 eval $CMD_TO_RUN
 
 if [ ! $? -eq 0 ]; then
-  ant -buildfile ${XTEST_SERVER_BIN}/mail.xml -Dxtest.mail.subject="TR ERROR: Test buildscript failed" \
-    -Dxtest.mail.message="Host: ${HOST_NAME}  Project: ${PROJECT_NAME}  \
-    Log: ${LOGFILE}  Problem: buildscript failed. Look at log for more details."
+  sh mail.sh "TR ERROR: Test buildscript failed" \
+             "Host: ${HOST_NAME}  Project: ${PROJECT_NAME}  Log: ${LOGFILE}  Problem: buildscript failed. Look at log for more details."
 fi
 
 echo Test finished at `date`
@@ -111,10 +109,7 @@ echo Test finished at `date`
 rm -f ${LOG_DIR}/test.running
 
 if [ -r ${LOG_DIR}/timeout.pid ]; then
-  kill `cat ${LOG_DIR}/timeout.pid`
-fi
-if [ -r ${LOG_DIR}/sleep.pid ]; then
-  kill `cat ${LOG_DIR}/sleep.pid`
+  wait `cat ${LOG_DIR}/timeout.pid`
 fi
 
 PATH=$OLD_PATH

@@ -1,13 +1,21 @@
 #!/bin/sh
 
-if [ -z "${PROP_FILE}" ] ; then
-   PROP_FILE=../conf/site-properties
-fi
+. `dirname $0`/set_xtesthome.sh
+
+PROP_FILE=${XTEST_SERVER_HOME}/conf/site-properties
 if [ ! -r "${PROP_FILE}" ] ; then
-   echo "Cannot find site-properties file ${PROP_FILE}".
+   echo "Site-properties file ${PROP_FILE} not found".
 fi
 
 . ${PROP_FILE}
+
+LOG_DIR=${XTEST_SERVER_HOME}/logs
+BUILDINFO_DIR=${XTEST_SERVER_HOME}/build-info
+CONF_DIR=${XTEST_SERVER_HOME}/conf
+export LOG_DIR BUILDINFO_DIR CONF_DIR
+mkdir -p ${LOG_DIR}
+mkdir -p ${BUILDINFO_DIR}
+
 
 # check whether new last build exists
 check_new_build () {
@@ -34,13 +42,15 @@ check_new_build () {
 }
 
 run_buildtest() {
-        if [ -r "${XTEST_SERVER_HOME}/xtest-server.stop" ]; then
+        if [ ! -z "${xtest_stop_file}" -a -r "${XTEST_SERVER_HOME}/${xtest_stop_file}" ]; then
            return
         fi
       	LOGFILE=${LOG_DIR}/out_${test_config_name}.log
       	export LOGFILE
         export BUILDFILE
       	
+      	oldpwd=`pwd`
+      	cd ${XTEST_SERVER_HOME}/bin
         if [ ! -z "$BUILD_NUM" ] ; then
            echo "Testing build n. ${BUILD_NUM}"
            BUILDFILE=${OLD_BUILDFILE}
@@ -61,6 +71,7 @@ run_buildtest() {
 		sh runTests.sh
 	   fi	
 	fi
+	cd $oldpwd
 }
 
 parse_args() {

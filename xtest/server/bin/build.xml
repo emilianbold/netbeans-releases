@@ -14,6 +14,7 @@
    <property name="xtest.config.suffix" value=""/>
 
    <target name="start">
+   
        <ant dir="${xtest.testing.base}" antfile="${xtest.home}/lib/driver.xml" target="start"/>
 
        <taskdef name="get-system-property" classname="org.netbeans.xtest.GetSystemProperty" classpath="${xtest.home}/lib/xtest.jar"/>
@@ -22,9 +23,10 @@
    </target>
    
    <target name="mail-errors" if="xtest.errors">
-       <ant antfile="mail.xml">
-           <property name="xtest.mail.subject" value="TR WARNING: Errors during testing"/>
-           <property name="xtest.mail.message" value="Host: ${xtest.machine}  Project: ${xtest.tested.project}  Problem: Tests finished with errors. This may be caused by problems in tests, but it can also be caused by problems in test infrastructure.  List of errors: ${xtest.errors}"/>
-       </ant>
+       <exec executable="sh" failonerror="true">
+          <arg value="mail.sh"/>
+          <arg value="TR WARNING: Errors during testing"/>
+          <arg value="Host: ${xtest.machine}  Project: ${xtest.tested.project}  Problem: Tests finished with errors. This may be caused by problems in tests, but it can also be caused by problems in test infrastructure.  List of errors: ${xtest.errors}"/>
+       </exec>
    </target>
 </project>

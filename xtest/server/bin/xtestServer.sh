@@ -1,26 +1,13 @@
 #!/bin/sh
 
-PROP_FILE=../conf/site-properties
-
-if [ ! -r "${PROP_FILE}" ] ; then
-   echo "Cannot find site-properties file ${PROP_FILE}".
-fi
-
-. ${PROP_FILE}
-
-if [ -z "$XTEST_SERVER_HOME" -o ! -d "$XTEST_SERVER_HOME" ]; then
-    echo XTEST_SERVER_HOME needs to be set. Edit ../conf/site-properties file.
-    exit 1
-fi
-
-
+. `dirname $0`/set_xtesthome.sh
 
 SLEEP_INTERVAL=900
 
 xtest_status_file=xtest-server.run
 xtest_stop_file=xtest-server.stop
 xtest_output_file=xtest-server.out
-
+export xtest_stop_file
 
 xtest_server_start() {
     if [ -r "${XTEST_SERVER_HOME}/$xtest_status_file" ]; then
@@ -112,15 +99,13 @@ xtest_server_kill() {
 xtest_server_status() {
     if [ -r "${XTEST_SERVER_HOME}/$xtest_status_file" ] ; then
 	if [ -r "${XTEST_SERVER_HOME}/$xtest_stop_file" ] ; then
-            echo "Xtest Testing Server is stopping."
+            echo "Xtest Testing Server is being stopped."
         else
             echo "Xtest Testing Server is running."
         fi
     else
 	echo "Xtest Testing Server is not running."
     fi
-
-
 }
 
 case "$1" in
