@@ -13,6 +13,9 @@
 
 package org.netbeans.modules.project.libraries;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import org.openide.xml.XMLUtil;
 import org.xml.sax.*;
 
 /**
@@ -26,7 +29,7 @@ import org.xml.sax.*;
  * <p><b>Warning:</b> the class is machine generated. DO NOT MODIFY</p>
  *
  */
-public class LibraryDeclarationParser implements ContentHandler {
+public class LibraryDeclarationParser implements ContentHandler, EntityResolver {
     
     private java.lang.StringBuffer buffer;
     
@@ -35,20 +38,17 @@ public class LibraryDeclarationParser implements ContentHandler {
     private LibraryDeclarationHandler handler;
     
     private java.util.Stack context;
-    
-    private EntityResolver resolver;
+
     
     /**
      * Creates a parser instance.
      * @param handler handler interface implementation (never <code>null</code>
-     * @param resolver SAX entity resolver implementation or <code>null</code>.
      * It is recommended that it could be able to resolve at least the DTD.@param parslet convertors implementation (never <code>null</code>
      *
      */
-    public LibraryDeclarationParser(final LibraryDeclarationHandler handler, final EntityResolver resolver, final LibraryDeclarationConvertor parslet) {
+    public LibraryDeclarationParser(final LibraryDeclarationHandler handler, final LibraryDeclarationConvertor parslet) {
         this.parslet = parslet;
         this.handler = handler;
-        this.resolver = resolver;
         buffer = new StringBuffer(111);
         context = new java.util.Stack();
     }
@@ -208,7 +208,7 @@ public class LibraryDeclarationParser implements ContentHandler {
      *
      */
     public static void parse(final InputSource input, final LibraryDeclarationHandler handler, final LibraryDeclarationConvertor parslet) throws SAXException, javax.xml.parsers.ParserConfigurationException, java.io.IOException {
-        parse(input, new LibraryDeclarationParser(handler, null, parslet));
+        parse(input, new LibraryDeclarationParser(handler, parslet));
     }
     
     /**
@@ -225,13 +225,10 @@ public class LibraryDeclarationParser implements ContentHandler {
     }
     
     private static void parse(final InputSource input, final LibraryDeclarationParser recognizer) throws SAXException, javax.xml.parsers.ParserConfigurationException, java.io.IOException {
-        javax.xml.parsers.SAXParserFactory factory = javax.xml.parsers.SAXParserFactory.newInstance();
-        factory.setValidating(true);  //the code was generated according DTD
-        factory.setNamespaceAware(false);  //the code was generated according DTD
-        XMLReader parser = factory.newSAXParser().getXMLReader();
+        XMLReader parser = XMLUtil.createXMLReader(false, false);
         parser.setContentHandler(recognizer);
         parser.setErrorHandler(recognizer.getDefaultErrorHandler());
-        if (recognizer.resolver != null) parser.setEntityResolver(recognizer.resolver);
+        parser.setEntityResolver(recognizer);
         parser.parse(input);
     }
     
@@ -257,5 +254,15 @@ public class LibraryDeclarationParser implements ContentHandler {
         
     }
     
+    /** Implementation of entity resolver. Points to the local DTD
+     * for our public ID */
+    public InputSource resolveEntity (String publicId, String systemId)
+    throws SAXException {
+        if ("-//NetBeans//DTD Library Declaration 1.0//EN".equals(publicId)) {
+            InputStream is = new ByteArrayInputStream(new byte[0]);
+            return new InputSource(is);
+        }
+        return null; // i.e. follow advice of systemID
+    }
 }
 

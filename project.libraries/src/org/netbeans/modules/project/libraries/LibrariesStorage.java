@@ -20,7 +20,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 
-import org.openide.filesystems.FileObject;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.xml.EntityCatalog;
@@ -98,9 +97,8 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
         libraries = new HashMap();
         librariesByFileNames = new HashMap();
         LibraryDeclarationHandlerImpl handler = new LibraryDeclarationHandlerImpl();
-        EntityResolver resolver = EntityCatalog.getDefault();
         LibraryDeclarationConvertorImpl convertor = new LibraryDeclarationConvertorImpl();
-        LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,resolver,convertor);
+        LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,convertor);
         // parse
         FileObject libraryDefinitions[] = storage.getChildren();
         for (int i = 0; i < libraryDefinitions.length; i++) {
@@ -137,9 +135,8 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
     
     private static LibraryImplementation readLibrary (FileObject descriptorFile, LibraryImplementation impl) throws SAXException, javax.xml.parsers.ParserConfigurationException, IOException {
         LibraryDeclarationHandlerImpl handler = new LibraryDeclarationHandlerImpl();
-        EntityResolver resolver = EntityCatalog.getDefault();
         LibraryDeclarationConvertorImpl convertor = new LibraryDeclarationConvertorImpl();
-        LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,resolver,convertor);
+        LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,convertor);
         handler.setLibrary (impl);
         readLibrary (descriptorFile, parser);
         return handler.getLibrary();
