@@ -13,23 +13,38 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.*;
-import java.util.*;
-import java.util.jar.*;
-import java.util.zip.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.URI;
 import java.text.SimpleDateFormat;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Jar;
-import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.taskdefs.SignJar;
-import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.ZipFileSet;
-
 
 /** Makes a <code>.nbm</code> (<b>N</b>et<b>B</b>eans <b>M</b>odule) file.
  *
@@ -54,18 +69,36 @@ public class MakeNBM extends Task {
 	public class FileInsert {
             /** File location. */
 	    public void setLocation (File file) throws BuildException {
-                log("Including contents of " + file, Project.MSG_VERBOSE);
+                boolean html = file.getName().endsWith(".html") || file.getName().endsWith(".htm");
+                log("Including contents of " + file + " (HTML mode: " + html + ")", Project.MSG_VERBOSE);
 		long lmod = file.lastModified ();
 		if (lmod > mostRecentInput) mostRecentInput = lmod;
 		addSeparator ();
 		try {
 		    InputStream is = new FileInputStream (file);
 		    try {
-			Reader r = new InputStreamReader (is, "UTF-8"); //NOI18N
-			char[] buf = new char[4096];
-			int len;
-			while ((len = r.read (buf)) != -1)
-			    text.append (buf, 0, len);
+			BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                        String line;
+                        while ((line = r.readLine()) != null) {
+                            if (html) {
+                                // Clean out any markup first. First tags:
+                                line = line.replaceAll("</?[a-zA-Z0-9_.:-]+( +[a-zA-Z0-9_.:-]+( *= *([^ \"]+|\"[^\"]*\"))?)*/?>", "");
+                                // DOCTYPE:
+                                line = line.replaceAll("<![a-zA-Z]+[^>]*>", "");
+                                // Comments (single-line only at the moment):
+                                line = line.replaceAll("<!--([^-]|-[^-])*-->", "");
+                                // Common named character entities:
+                                line = line.replaceAll("&quot;", "\"");
+                                line = line.replaceAll("&nbsp;", " ");
+                                line = line.replaceAll("&copy;", "\u00A9");
+                                line = line.replaceAll("&apos;", "'");
+                                line = line.replaceAll("&lt;", "<");
+                                line = line.replaceAll("&gt;", ">");
+                                line = line.replaceAll("&amp;", "&");
+                            }
+                            text.append(line);
+                            text.append('\n');
+                        }
 		    } finally {
 			is.close ();
 		    }
@@ -598,7 +631,7 @@ public class MakeNBM extends Task {
 	//log ("Ensuring existence of NBM file " + file);
 	Jar jar = (Jar) getProject().createTask("jar"); //NOI18N
     
-	jar.setJarfile (file);
+        jar.setDestFile(file);
         jar.addZipfileset(fs);
         jar.addFileset (infoXML);
         jar.setCompress(true);
