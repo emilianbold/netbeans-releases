@@ -495,7 +495,7 @@ public class FormEditorSupport extends JavaEditor
         if (!dontSwitchWS)
             activateWorkspace();
 
-        FormEditorSupport.this.superOpen();
+        open(); // open java editor
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
