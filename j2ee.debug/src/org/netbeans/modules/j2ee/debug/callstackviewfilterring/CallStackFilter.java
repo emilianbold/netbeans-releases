@@ -257,7 +257,7 @@ public class CallStackFilter implements TreeModelFilter, NodeModel {
     
     // innerclasses ............................................................
     
-    private static class HiddenFrames {
+    public static class HiddenFrames {
         private List frames = new ArrayList ();
         
         void addFrame (CallStackFrame frame) {
