@@ -114,6 +114,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Task is use at submodules' build scripts -->
     <target name="build-xml-lib">
+        <ant antfile="${xtest.module_harness.antfile}" dir="." target="prepare-xtest"/>
         <javac classpathref="xmllib.classpath" srcdir="qa-lib/src"/>
         <jar basedir="qa-lib/src" jarfile="qa-lib/xml-test-lib.jar"/>
     </target>
