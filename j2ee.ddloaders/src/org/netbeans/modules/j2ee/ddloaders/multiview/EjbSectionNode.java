@@ -12,39 +12,20 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.xml.multiview.SectionNode;
-import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.nodes.Children;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * @author pfiala
  */
-public class EjbSectionNode extends SectionNode implements PropertyChangeListener {
+public class EjbSectionNode extends SectionNode {
 
     public EjbSectionNode(SectionNodeView sectionNodeView, boolean isLeaf, Object key, String title, String iconBase) {
         super(sectionNodeView, isLeaf ? Children.LEAF : new Children.Array(), key, title, iconBase);
-        if (key instanceof CommonDDBean) {
-            ((CommonDDBean) key).addPropertyChangeListener(this);
-        }
     }
 
     public EjbSectionNode(SectionNodeView sectionNodeView, Object key, String title, String iconBase) {
         this(sectionNodeView, false, key, title, iconBase);
-    }
-
-    public void propertyChange(final PropertyChangeEvent evt) {
-        propertyChanged(evt.getSource(), evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-    }
-
-    public void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
-        SectionNodePanel panel = getSectionNodePanel();
-        if (panel != null) {
-            panel.propertyChanged(source, propertyName, oldValue, newValue);
-        }
     }
 }

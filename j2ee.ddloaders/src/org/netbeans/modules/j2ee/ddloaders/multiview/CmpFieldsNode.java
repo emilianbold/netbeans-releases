@@ -12,31 +12,33 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.openide.filesystems.FileObject;
 
 /**
  * @author pfiala
  */
 class CmpFieldsNode extends EjbSectionNode {
 
-    private EntityHelper entityHelper;
+    private EntityHelper.CmpFields cmpFields;
 
-    CmpFieldsNode(SectionNodeView sectionNodeView, Entity entity, EntityHelper entityHelper) {
-        super(sectionNodeView, true, entity, Utils.getBundleMessage("LBL_CmpFields"), Utils.ICON_BASE_MISC_NODE);
-        this.entityHelper = entityHelper;
-        entityHelper.addPropertyChangeListener(this);
+    CmpFieldsNode(SectionNodeView sectionNodeView, EntityHelper.CmpFields cmpFields) {
+        super(sectionNodeView, true, cmpFields, Utils.getBundleMessage("LBL_CmpFields"), Utils.ICON_BASE_MISC_NODE);
+        this.cmpFields = cmpFields;
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        final Entity entity = (Entity) key;
-        final FileObject ejbJarFile = getSectionNodeView().getDataObject().getPrimaryFile();
-        final CmpFieldsTableModel model = new CmpFieldsTableModel(ejbJarFile, entity, entityHelper);
+        final CmpFieldsTableModel model = new CmpFieldsTableModel(cmpFields);
         final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
             protected void editCell(final int row, final int column) {
                 model.editRow(row);
+            }
+
+            public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+                if (source == key) {
+                    model.refreshView();
+                    scheduleRefreshView();
+                }
             }
         };
         return innerTablePanel;

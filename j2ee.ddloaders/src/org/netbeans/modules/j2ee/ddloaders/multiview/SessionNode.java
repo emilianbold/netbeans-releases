@@ -14,7 +14,6 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
-import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
@@ -26,8 +25,8 @@ class SessionNode extends EjbSectionNode {
     SessionNode(SectionNodeView sectionNodeView, Session session) {
         super(sectionNodeView, false, session, Utils.getEjbDisplayName(session), Utils.ICON_BASE_SESSION_NODE);
         addChild(new SessionOverviewNode(sectionNodeView, session));
-        EntityAndSessionHelper helper = new EntityAndSessionHelper(sectionNodeView.getDataObject().getPrimaryFile(),
-                session);
+        EjbJarMultiViewDataObject ejbJarMultiViewDataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
+        SessionHelper helper = ejbJarMultiViewDataObject.getSessionHelper(session);
         addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, session, helper));
         addChild(new BeanEnvironmentNode(sectionNodeView, session));
         addChild(new BeanDetailNode(sectionNodeView, session));

@@ -12,8 +12,8 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.common.Icon;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbDetailForm;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
@@ -21,8 +21,6 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * @author pfiala
@@ -118,11 +116,9 @@ class BeanDetailsPanel extends EjbDetailForm {
         });
     }
 
-    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
-        if(source instanceof Ejb || source instanceof Icon) {
-            refreshView();
-        } else {
-            super.propertyChanged(source, propertyName, oldValue, newValue);
+    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+        if(source == ejb || source instanceof Icon) {
+            scheduleRefreshView();
         }
     }
 }

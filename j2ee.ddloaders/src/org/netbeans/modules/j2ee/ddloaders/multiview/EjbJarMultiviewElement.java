@@ -21,6 +21,9 @@ import org.netbeans.modules.xml.multiview.ui.PanelView;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 /**
  * @author pfiala
  */
@@ -41,10 +44,18 @@ public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
     public void componentShowing() {
         if (view == null) {
             view = createView();
+            if (view instanceof SectionNodeView) {
+                dataObject.getEjbJar().addPropertyChangeListener(new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        ((SectionNodeView) view).dataModelPropertyChange(evt.getSource(), evt.getPropertyName(), evt.getOldValue(),
+                                evt.getNewValue());
+                    }
+                });
+            }
         }
         comp.setContentView(view);
         if (view instanceof SectionNodeView) {
-            ((SectionNodeView) view).getRootNode().refreshSubtree();
+            ((SectionNodeView) view).refreshView();
         }
         view.checkValidity();
         super.componentShowing();

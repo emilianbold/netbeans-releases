@@ -13,11 +13,9 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.QueryCustomizer;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.FieldCustomizer;
-import org.openide.filesystems.FileObject;
 import org.openide.src.MethodElement;
 
 import javax.swing.*;
@@ -36,47 +34,49 @@ class SelectMethodsTableModel extends QueryMethodsTableModel {
     private JComboBox returnMethodComboBox = new JComboBox(FieldCustomizer.COMMON_TYPES);
     private TableCellEditor returnMethodEditor = new DefaultCellEditor(returnMethodComboBox);
 
-    public SelectMethodsTableModel(FileObject ejbJarFile, Entity entity, EntityHelper entityHelper) {
-        super(COLUMN_NAMES, COLUMN_WIDTHS, ejbJarFile, entity, entityHelper);
+    public SelectMethodsTableModel(EntityHelper.Queries queries) {
+        super(COLUMN_NAMES, COLUMN_WIDTHS, queries);
     }
 
     public int addRow() {
-        entityHelper.addSelectMethod();
-        initMethods();
-        fireTableRowsInserted(-1, -1);
+        queries.addSelectMethod();
+        //fireTableRowsInserted(-1, -1);
         return getRowCount() - 1;
     }
 
 
     public void editRow(int row) {
-        Query query = (Query) getQueries().get(row);
-        QueryMethodHelper helper = getQueryMethodHelper(query);
+        QueryMethodHelper helper = getQueryMethodHelper(row);
         QueryCustomizer customizer = new QueryCustomizer();
         MethodElement methodElement = (MethodElement) helper.getPrototypeMethod().clone();
-        query = (Query) query.clone();
-        boolean result = customizer.showSelectCustomizer(methodElement, query);
+        Query aQuery = (Query) helper.query.clone();
+        boolean result = customizer.showSelectCustomizer(methodElement, aQuery);
         if (result) {
-            helper.updateSelectMethod(methodElement, query);
-            fireTableRowsUpdated(row, row);
+            helper.updateSelectMethod(methodElement, aQuery);
+            //fireTableRowsUpdated(row, row);
         }
     }
 
-    protected boolean isSupportedMethod(Query query) {
-        return query.getQueryMethod().getMethodName().startsWith("ejbSelectBy"); //NOI18N
+    public QueryMethodHelper getQueryMethodHelper(int row) {
+        return queries.getSelectMethodHelper(row);
+    }
+
+    public int getRowCount() {
+        return queries.getSelectMethodCount();
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        Query query = (Query) getQueries().get(rowIndex);
+        QueryMethodHelper queryMethodHelper = getQueryMethodHelper(rowIndex);
         switch (columnIndex) {
             case 0:
-                return query.getQueryMethod().getMethodName();
+                return queryMethodHelper.getQueryMethod().getMethodName();
             case 1:
-                return getQueryMethodHelper(query).getReturnType();
+                return queryMethodHelper.getReturnType();
             case 2:
-                return query.getEjbQl();
+                return queryMethodHelper.getEjbQl();
             case 3:
-                return query.getDefaultDescription();
-        }
+                return queryMethodHelper.getDefaultDescription();
+            }
         return null;
     }
 

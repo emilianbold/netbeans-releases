@@ -13,10 +13,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.QueryCustomizer;
-import org.openide.filesystems.FileObject;
 import org.openide.src.MethodElement;
 
 /**
@@ -31,55 +29,56 @@ class FinderMethodsTableModel extends QueryMethodsTableModel {
                                                     Utils.getBundleMessage("LBL_Description")};
     protected static final int[] COLUMN_WIDTHS = new int[]{200, 100, 120, 200, 100};
 
-    public FinderMethodsTableModel(FileObject ejbJarFile, Entity entity, EntityHelper entityHelper) {
-        super(COLUMN_NAMES, COLUMN_WIDTHS, ejbJarFile, entity, entityHelper);
+    public FinderMethodsTableModel(EntityHelper.Queries queries) {
+        super(COLUMN_NAMES, COLUMN_WIDTHS, queries);
     }
 
     public void editRow(int row) {
-        Query query = (Query) getQueries().get(row);
-        QueryMethodHelper helper = getQueryMethodHelper(query);
-
-        boolean hasLocal = entityHelper.getLocal() != null;
-        boolean hasRemote = entityHelper.getRemote() != null;
+        QueryMethodHelper helper = getQueryMethodHelper(row);
+        boolean hasLocal = queries.getLocal() != null;
+        boolean hasRemote = queries.getRemote() != null;
         boolean hasLocalMethod = helper.localMethod != null;
         boolean hasRemoteMethod = helper.remoteMethod != null;
         boolean returnsCollection = helper.returnsCollection();
         QueryCustomizer customizer = new QueryCustomizer();
         MethodElement methodElement = (MethodElement) helper.getPrototypeMethod().clone();
-        query = (Query) query.clone();
-        boolean result = customizer.showFinderCustomizer(methodElement, query, returnsCollection,
+        Query aQuery = (Query) queries.getFinderMethod(row).clone();
+        boolean result = customizer.showFinderCustomizer(methodElement, aQuery, returnsCollection,
                 hasLocal, hasRemote, hasLocalMethod, hasRemoteMethod);
         if (result) {
-            helper.updateFinderMethod(methodElement, query, customizer.finderReturnIsSingle(), customizer.publishToLocal(),
-                    customizer.publishToRemote());
-            fireTableRowsUpdated(row, row);
+            helper.updateFinderMethod(methodElement, aQuery, customizer.finderReturnIsSingle(),
+                    customizer.publishToLocal(), customizer.publishToRemote());
+            //fireTableRowsUpdated(row, row);
         }
     }
 
     public int addRow() {
-        entityHelper.addFinderMethod();
-        initMethods();
-        fireTableRowsInserted(-1, -1);
+        queries.addFinderMethod();
+        //fireTableRowsInserted(-1, -1);
         return getRowCount() - 1;
     }
 
-    protected boolean isSupportedMethod(Query query) {
-        return query.getQueryMethod().getMethodName().startsWith("findBy");//NOI18N
+    public QueryMethodHelper getQueryMethodHelper(int row) {
+        return queries.getFinderMethodHelper(row);
+    }
+
+    public int getRowCount() {
+        return queries.getFinderMethodCount();
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        Query query = (Query) getQueries().get(rowIndex);
+        QueryMethodHelper queryMethodHelper = getQueryMethodHelper(rowIndex);
         switch (columnIndex) {
             case 0:
-                return query.getQueryMethod().getMethodName();
+                return queryMethodHelper.getQueryMethod().getMethodName();
             case 1:
-                return new Boolean(getQueryMethodHelper(query).returnsCollection());
+                return new Boolean(queryMethodHelper.returnsCollection());
             case 2:
-                return getQueryMethodHelper(query).getResultInterface();
+                return queryMethodHelper.getResultInterface();
             case 3:
-                return query.getEjbQl();
+                return queryMethodHelper.getEjbQl();
             case 4:
-                return query.getDefaultDescription();
+                return queryMethodHelper.getDefaultDescription();
         }
         return null;
     }

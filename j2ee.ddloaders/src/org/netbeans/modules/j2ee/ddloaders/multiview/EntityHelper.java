@@ -12,49 +12,46 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddCmpFieldAction;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddFinderMethodAction;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddSelectMethodAction;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.src.ClassElement;
 import org.openide.src.Identifier;
 import org.openide.src.MethodElement;
 import org.openide.src.MethodParameter;
 import org.openide.src.SourceException;
 import org.openide.src.Type;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author pfiala
  */
 public class EntityHelper extends EntityAndSessionHelper {
 
-    public EntityHelper(FileObject ejbJarFile, Entity entity) {
-        super(ejbJarFile, entity);
-    }
+    private final Entity entity;
+    public final CmpFields cmpFields;
+    public final EntityHelper.Queries queries;
 
-    public void addCmpField() {
-        new AddCmpFieldAction().addCmpField(beanClass, ejbJarFile);
-    }
 
-    public void addFinderMethod() {
-        new AddFinderMethodAction() {
-            protected void performAction(Node[] activatedNodes) {
-                super.performAction(activatedNodes);
-            }
-        }.performAction(new Node[]{createEntityNode()});
-    }
-
-    public void addSelectMethod() {
-        new AddSelectMethodAction() {
-            protected void performAction(Node[] activatedNodes) {
-                super.performAction(activatedNodes);
-            }
-        }.performAction(new Node[]{createEntityNode()});
+    public EntityHelper(EjbJarMultiViewDataObject ejbJarMultiViewDataObject, Entity entity) {
+        super(ejbJarMultiViewDataObject, entity);
+        this.entity = ((Entity) ejb);
+        cmpFields = new CmpFields();
+        queries = new Queries();
+        ejbJarMultiViewDataObject.getEjbJar().addPropertyChangeListener(this);
     }
 
     public MethodElement createAccessMethod(String fieldName, Type type, boolean get) {
@@ -92,7 +89,7 @@ public class EntityHelper extends EntityAndSessionHelper {
     }
 
     public void removeQuery(Query query) {
-        ((Entity) ejb).removeQuery(query);
+        entity.removeQuery(query);
     }
 
     public boolean hasLocalInterface() {
@@ -104,18 +101,198 @@ public class EntityHelper extends EntityAndSessionHelper {
     }
 
     public String getPrimkeyField() {
-        return ((Entity) ejb).getPrimkeyField();
+        return entity.getPrimkeyField();
     }
 
     public String getPrimKeyClass() {
-        return ((Entity) ejb).getPrimKeyClass();
+        return entity.getPrimKeyClass();
     }
 
     public void setPrimkeyField(String fieldName) {
-        ((Entity) ejb).setPrimkeyField(fieldName);
+        entity.setPrimkeyField(fieldName);
     }
 
     public void setPrimKeyClass(String className) {
-        ((Entity) ejb).setPrimKeyClass(className);
+        entity.setPrimKeyClass(className);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        super.propertyChange(evt);
+        Object source = evt.getSource();
+        String propertyName = evt.getPropertyName();
+        Object oldValue = evt.getOldValue();
+        Object newValue = evt.getNewValue();
+        if (source == entity) {
+            if ((oldValue instanceof CmpField || newValue instanceof CmpField)) {
+                cmpFields.change(source, propertyName, oldValue, newValue);
+            } else if ((oldValue instanceof Query || newValue instanceof Query)) {
+                queries.change(source, propertyName, oldValue, newValue);
+            }
+        } else if (source instanceof CmpField) {
+            cmpFields.change(source, propertyName, oldValue, newValue);
+        } else if (source instanceof Query) {
+            queries.change(source, propertyName, oldValue, newValue);
+        } else if (source instanceof ClassElement) {
+            cmpFields.change(source, propertyName, oldValue, newValue);
+            queries.change(source, propertyName, oldValue, newValue);
+        }
+    }
+
+    public class CmpFields implements PropertyChangeSource {
+
+        private List listeners = new LinkedList();
+        private HashMap cmpFieldHelperMap = new HashMap();
+
+        public int getCmpFieldCount() {
+            return entity.getCmpField().length;
+        }
+
+        public CmpFieldHelper getCmpFieldHelper(int row) {
+            CmpField field = entity.getCmpField(row);
+            CmpFieldHelper cmpFieldHelper = (CmpFieldHelper) cmpFieldHelperMap.get(field);
+            if (cmpFieldHelper == null) {
+                cmpFieldHelper = new CmpFieldHelper(EntityHelper.this, field);
+                cmpFieldHelperMap.put(field, cmpFieldHelper);
+            }
+            return cmpFieldHelper;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            listeners.add(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            listeners.remove(listener);
+        }
+
+        public void change(Object source, String propertyName, Object oldValue, Object newValue) {
+            if (source instanceof Entity) {
+                cmpFieldHelperMap.keySet().retainAll(Arrays.asList(entity.getCmpField()));
+            }
+            firePropertyChange(new PropertyChangeEvent(source, propertyName, oldValue, newValue));
+
+        }
+
+        protected void firePropertyChange(PropertyChangeEvent evt) {
+            for (Iterator iterator = listeners.iterator(); iterator.hasNext();) {
+                ((PropertyChangeListener) iterator.next()).propertyChange(evt);
+            }
+        }
+
+        public void addCmpField() {
+            new AddCmpFieldAction().addCmpField(beanClass, ejbJarFile);
+        }
+    }
+
+    public class Queries implements PropertyChangeSource {
+        private List listeners = new LinkedList();
+        private HashMap queryMethodHelperMap = new HashMap();
+        private Query[] selectMethods;
+        private Query[] finderMethods;
+        private static final String SELECT_PREFIX = "ejbSelect";
+        private static final String FIND_PREFIX = "find";
+
+        public Queries() {
+            initQueryMethods();
+        }
+
+        private void initQueryMethods() {
+            selectMethods = getQueries(SELECT_PREFIX);
+            finderMethods = getQueries(FIND_PREFIX);
+        }
+
+        public QueryMethodHelper getQueryMethodHelper(Query finderMethod) {
+            QueryMethodHelper queryMethodHelper = (QueryMethodHelper) queryMethodHelperMap.get(finderMethod);
+            if (queryMethodHelper == null) {
+                queryMethodHelper = new QueryMethodHelper(EntityHelper.this, finderMethod);
+                queryMethodHelperMap.put(finderMethod, queryMethodHelper);
+            }
+            return queryMethodHelper;
+        }
+
+        public QueryMethodHelper getFinderMethodHelper(int row) {
+            return getQueryMethodHelper(finderMethods[row]);
+        }
+
+        public QueryMethodHelper getSelectMethodHelper(int row) {
+            return getQueryMethodHelper(selectMethods[row]);
+        }
+
+        private Query[] getQueries(String s) {
+            List list = new LinkedList();
+            Query[] queries = entity.getQuery();
+            for (int i = 0; i < queries.length; i++) {
+                Query query = queries[i];
+                if (query.getQueryMethod().getMethodName().startsWith(s)) {
+                    list.add(query);
+                }
+            }
+            return (Query[]) list.toArray(new Query[0]);
+        }
+
+        public void addFinderMethod() {
+            new AddFinderMethodAction() {
+                protected void performAction(Node[] activatedNodes) {
+                    super.performAction(activatedNodes);
+                }
+            }.performAction(new Node[]{createEntityNode()});
+        }
+
+        public void addSelectMethod() {
+            new AddSelectMethodAction() {
+                protected void performAction(Node[] activatedNodes) {
+                    super.performAction(activatedNodes);
+                }
+            }.performAction(new Node[]{createEntityNode()});
+        }
+
+        public int getFinderMethodCount() {
+            return finderMethods.length;
+        }
+
+        public int getSelectMethodCount() {
+            return selectMethods.length;
+        }
+
+        public Query getFinderMethod(int rowIndex) {
+            return finderMethods[rowIndex];
+        }
+
+        public Query getSelecMethod(int rowIndex) {
+            return selectMethods[rowIndex];
+        }
+
+        public void change(Object source, String propertyName, Object oldValue, Object newValue) {
+            initQueryMethods();
+            queryMethodHelperMap.keySet().retainAll(Arrays.asList(entity.getQuery()));
+            firePropertyChange(new PropertyChangeEvent(source, propertyName, oldValue, newValue));
+        }
+
+        //todo
+        public Query[] getQuery() {
+            return entity.getQuery();
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            listeners.add(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            listeners.remove(listener);
+        }
+
+        protected void firePropertyChange(PropertyChangeEvent evt) {
+            for (Iterator iterator = listeners.iterator(); iterator.hasNext();) {
+                ((PropertyChangeListener) iterator.next()).propertyChange(evt);
+            }
+        }
+
+        public String getLocal() {
+            return EntityHelper.this.getLocal();
+        }
+
+        public String getRemote() {
+            return EntityHelper.this.getRemote();
+        }
     }
 }

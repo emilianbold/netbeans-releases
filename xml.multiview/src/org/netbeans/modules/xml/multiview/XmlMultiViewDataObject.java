@@ -28,6 +28,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+
 /**
  * XmlMultiviewDataObject.java
  *
@@ -37,14 +38,17 @@ import java.io.StringReader;
 public abstract class XmlMultiViewDataObject extends MultiDataObject implements CookieSet.Factory {
 
     public static final String PROP_DOCUMENT_VALID = "document_valid"; //NOI18N
-    private XmlMultiViewEditorSupport editor;
+    protected XmlMultiViewEditorSupport editor;
     private org.xml.sax.SAXException saxError;
     boolean changedFromUI;
     private boolean modelUpdated;
 
     private static final int PARSING_INIT_DELAY = 100;
-    private RequestProcessor.Task synchronizeDocumentTask;
-    private boolean syncRequest = false;
+    private RequestProcessor.Task synchronizeModelTask = RequestProcessor.getDefault().create(new Runnable() {
+                public void run() {
+                    sync();
+                }
+            });
     private boolean updateFromModel = false;
     private boolean updatingFromModel = false;
     private boolean updatingModel = false;
@@ -300,48 +304,28 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     }
 
     private void sync() {
-        if (syncRequest) {
-            syncRequest = false;
-            if (updateFromModel) {
-                updatingFromModel = true;
-                try {
-                    updateDocument();
-                } finally {
-                    updatingFromModel = false;
-                }
-                validateSource();
-            } else {
-                updatingModel = true;
-                try {
-                    updateModelFromDocument();
-                } catch (IOException e) {
-                    scheduleSync();
-                } finally {
-                    updatingModel = false;
-                }
+        if (updateFromModel) {
+            updatingFromModel = true;
+            try {
+                updateDocument();
+            } finally {
+                updatingFromModel = false;
             }
-            if (syncRequest) {
-                scheduleSync();
+            validateSource();
+        } else {
+            updatingModel = true;
+            try {
+                updateModelFromDocument();
+            } catch (IOException e) {
+                synchronizeModel(updateFromModel);
+            } finally {
+                updatingModel = false;
             }
         }
     }
 
     private void synchronizeModel(boolean updateFromModel) {
         this.updateFromModel = updateFromModel;
-        syncRequest = true;
-        if (synchronizeDocumentTask == null) {
-            synchronizeDocumentTask = RequestProcessor.getDefault().create(new Runnable() {
-                public void run() {
-                    sync();
-                }
-            });
-            scheduleSync();
-        } else if (synchronizeDocumentTask.isFinished() || synchronizeDocumentTask.cancel()) {
-            scheduleSync();
-        }
-    }
-
-    private void scheduleSync() {
-        synchronizeDocumentTask.schedule(PARSING_INIT_DELAY);
+        synchronizeModelTask.schedule(PARSING_INIT_DELAY);
     }
 }

@@ -25,21 +25,22 @@ import org.openide.filesystems.FileObject;
 import org.openide.src.ClassElement;
 import org.openide.src.Identifier;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Iterator;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 /**
  * @author pfiala
  */
-public class EntityAndSessionHelper implements PropertyChangeListener {
+public abstract class EntityAndSessionHelper implements PropertyChangeListener, PropertyChangeSource {
 
     protected final EntityAndSession ejb;
     protected final ClassElement beanClass;
+    protected final EjbJarMultiViewDataObject ejbJarMultiViewDataObject;
     protected final FileObject ejbJarFile;
     private ClassElement localBusinessInterfaceClass;
     private ClassElement remoteBusinessInterfaceClass;
@@ -52,12 +53,13 @@ public class EntityAndSessionHelper implements PropertyChangeListener {
 
     private List listeners = new LinkedList();
 
-    public EntityAndSessionHelper(FileObject ejbJarFile, EntityAndSession ejb) {
+    public EntityAndSessionHelper(EjbJarMultiViewDataObject ejbJarMultiViewDataObject, EntityAndSession ejb) {
         this.ejb = ejb;
-        this.ejbJarFile = ejbJarFile;
+        this.ejbJarMultiViewDataObject = ejbJarMultiViewDataObject;
+        this.ejbJarFile = ejbJarMultiViewDataObject.getPrimaryFile();
         sourceClassPath = Utils.getSourceClassPath(ejbJarFile);
         beanClass = Utils.getClassElement(sourceClassPath, ejb.getEjbClass());
-        ejb.addPropertyChangeListener(this);
+        ejbJarMultiViewDataObject.getEjbJar().addPropertyChangeListener(this);
         attachListener(beanClass);
         updateLocalInterfaces();
         updateRemoteInterfaces();
@@ -254,8 +256,6 @@ public class EntityAndSessionHelper implements PropertyChangeListener {
         if (evt.getSource() == ejb) {
             updateLocalInterfaces();
             updateRemoteInterfaces();
-        } else {
-            firePropertyChange(evt);
         }
     }
 }

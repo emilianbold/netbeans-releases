@@ -16,8 +16,12 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.j2ee.dd.api.ejb.RelationshipRoleSource;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelationshipRole;
+import org.netbeans.modules.j2ee.dd.api.ejb.CmrField;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,21 +42,30 @@ class CmpRelationshipsTableModel extends InnerTableModel {
                                                   Utils.getBundleMessage("LBL_Field")};
     private static final int[] COLUMN_WIDTHS = new int[]{140, 70, 100, 100, 100, 100, 100, 100};
 
-    public CmpRelationshipsTableModel(FileObject ejbJarFile, EjbJar ejbJar) {
+    public CmpRelationshipsTableModel(EjbJar ejbJar) {
         super(COLUMN_NAMES, COLUMN_WIDTHS);
         this.ejbJar = ejbJar;
+        ejbJar.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                Object source = evt.getSource();
+                if (source instanceof Relationships || source instanceof EjbRelation || source instanceof CmrField ||
+                                source instanceof EjbRelationshipRole || source instanceof RelationshipRoleSource) {
+                    tableChanged();
+                }
+            }
+        });
     }
 
     public int addRow() {
         //todo
-        fireTableDataChanged();
+        //fireTableDataChanged();
         return getRowCount() - 1;
     }
 
     public void removeRow(int row) {
         Relationships relationships = ejbJar.getSingleRelationships();
         relationships.removeEjbRelation(relationships.getEjbRelation(row));
-        fireTableRowsDeleted(row, row);
+        //fireTableRowsDeleted(row, row);
     }
 
     public void refreshView() {

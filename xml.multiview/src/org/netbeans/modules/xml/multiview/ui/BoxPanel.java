@@ -65,9 +65,6 @@ public class BoxPanel extends SectionInnerPanel {
 
     }
 
-    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
-    }
-
     public void linkButtonPressed(Object ddBean, String ddProperty) {
         final Component[] components = getComponents();
         for (int i = 0; i < components.length; i++) {

@@ -69,13 +69,13 @@ class ResourceEnvironmentReferencesTableModel extends InnerTableModel {
         ResourceEnvRef resourceEnvRef = ejb.newResourceEnvRef();
         ejb.addResourceEnvRef(resourceEnvRef);
         int row = getRowCount() - 1;
-        fireTableRowsInserted(row, row);
+        //fireTableRowsInserted(row, row);
         return row;
     }
 
     public void removeRow(int row) {
         fireTableStructureChanged(); // cancel editing
         ejb.removeResourceEnvRef(ejb.getResourceEnvRef(row));
-        fireTableRowsDeleted(row, row);
+        //fireTableRowsDeleted(row, row);
     }
 }

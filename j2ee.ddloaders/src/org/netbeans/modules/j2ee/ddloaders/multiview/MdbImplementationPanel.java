@@ -18,8 +18,8 @@ import org.netbeans.modules.j2ee.ddloaders.multiview.ui.MdbImplementationForm;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import javax.swing.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * @author pfiala
@@ -50,7 +50,7 @@ public class MdbImplementationPanel extends MdbImplementationForm {
 
     }
 
-    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
-        super.propertyChanged(source, propertyName, oldValue, newValue);
+    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+        scheduleRefreshView();
     }
 }

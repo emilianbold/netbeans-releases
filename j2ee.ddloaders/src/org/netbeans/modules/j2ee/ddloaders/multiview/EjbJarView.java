@@ -14,17 +14,14 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.modules.xml.multiview.SectionNode;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.nodes.Node;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * @author pfiala
  */
-class EjbJarView extends SectionNodeView implements PropertyChangeListener {
+class EjbJarView extends SectionNodeView {
 
     protected EnterpriseBeansNode enterpriseBeansNode;
     protected EnterpriseBeans enterpriseBeans;
@@ -35,16 +32,20 @@ class EjbJarView extends SectionNodeView implements PropertyChangeListener {
         EjbSectionNode rootNode = new EjbSectionNode(this, this, Utils.getBundleMessage("LBL_Overview"),
                 Utils.ICON_BASE_DD_VALID);
         ejbJar = dataObject.getEjbJar();
-        ejbJar.addPropertyChangeListener(this);
         rootNode.addChild(new EjbJarDetailsNode(this, ejbJar));
         setRootNode(rootNode);
-        checkEnterpriseBeans();
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getOldValue() instanceof EnterpriseBeans || evt.getNewValue() instanceof EnterpriseBeans) {
-            checkEnterpriseBeans();
+    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+        if (oldValue instanceof EnterpriseBeans || newValue instanceof EnterpriseBeans) {
+            scheduleRefreshView();
         }
+        super.dataModelPropertyChange(source, propertyName, oldValue, newValue);
+    }
+
+    public void refreshView() {
+        checkEnterpriseBeans();
+        super.refreshView();
     }
 
     private void checkEnterpriseBeans() {

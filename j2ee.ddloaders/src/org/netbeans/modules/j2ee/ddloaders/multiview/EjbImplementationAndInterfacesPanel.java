@@ -79,7 +79,7 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         final JButton moveClassButton = getMoveClassButton();
         final JButton renameClassButton = getRenameClassButton();
 
-        refreshView();
+        scheduleRefreshView();
 
         FocusListener focusListener = new FocusAdapter() {
             public void focusGained(FocusEvent e) {
@@ -149,7 +149,7 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             try {
                 helper.addInterfaces(local);
             } finally {
-                refreshView();
+                scheduleRefreshView();
             }
         }
     }
@@ -174,16 +174,12 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             try {
                 helper.removeInterfaces(local);
             } finally {
-                refreshView();
+                scheduleRefreshView();
             }
         }
     }
 
-    public void dataFileChanged() {
-        refreshView();
-    }
-
-    protected void refreshView() {
+    public void refreshView() {
         beanClassDocument.init();
         localComponentDocument.init();
         localHomeDocument.init();
@@ -198,11 +194,9 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         getRemoteInterfaceCheckBox().setSelected(isRemote);
     }
 
-    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
+    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         if (source instanceof EntityAndSession) {
-            refreshView();
-        } else {
-            super.propertyChanged(source, propertyName, oldValue, newValue);
+            scheduleRefreshView();
         }
     }
 

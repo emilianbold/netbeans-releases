@@ -31,7 +31,7 @@ import java.util.Collection;
  */
 public class QueryMethodHelper {
 
-    private final Query query;
+    final Query query;
     private final EntityHelper entityHelper;
     private boolean isSelectMethod;
     private MethodElement implementationMethod;
@@ -296,5 +296,17 @@ public class QueryMethodHelper {
 
     private static void notifyError(Exception ex) {
         Utils.notifyError(ex);
+    }
+
+    public QueryMethod getQueryMethod() {
+        return query.getQueryMethod();
+    }
+
+    public String getEjbQl() {
+        return query.getEjbQl();
+    }
+
+    public String getDefaultDescription() {
+        return query.getDefaultDescription();
     }
 }

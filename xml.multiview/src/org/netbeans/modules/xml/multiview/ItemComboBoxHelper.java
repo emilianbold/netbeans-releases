@@ -22,7 +22,7 @@ import java.awt.event.ActionListener;
  *
  * @author pfiala
  */
-public abstract class ItemComboBoxHelper implements ActionListener {
+public abstract class ItemComboBoxHelper implements ActionListener, Refreshable {
     private JComboBox comboBox;
 
     /**
@@ -87,4 +87,7 @@ public abstract class ItemComboBoxHelper implements ActionListener {
      */
     public abstract void setItemValue(String value);
 
+    public void refresh() {
+        setValue(getItemValue());
+    }
 }

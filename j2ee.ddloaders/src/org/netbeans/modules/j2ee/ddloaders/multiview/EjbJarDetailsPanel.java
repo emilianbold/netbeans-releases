@@ -12,19 +12,15 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.common.Icon;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbDetailForm;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
-import org.netbeans.modules.xml.multiview.Refreshable;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * @author pfiala
@@ -121,11 +117,9 @@ class EjbJarDetailsPanel extends EjbDetailForm {
 
     }
 
-    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
+    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         if (source instanceof EjbJar || source instanceof Icon) {
-            refreshView();
-        } else {
-            super.propertyChanged(source, propertyName, oldValue, newValue);
+            scheduleRefreshView();
         }
     }
 }

@@ -18,6 +18,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 import java.util.HashMap;
 
@@ -29,6 +30,14 @@ public class SectionNodeView extends SectionView {
     private final DataObject dataObject;
     private SectionNode rootNode = null;
     private HashMap nodes = new HashMap();
+
+    private final RequestProcessor.Task refreshTask = RequestProcessor.getDefault().create(new Runnable() {
+                public void run() {
+                    getRootNode().refreshSubtree();
+                }
+            });
+
+    private static final int REFRESH_DELAY = 20;
 
     public SectionNodeView(DataObject dataObject) {
         super();
@@ -75,5 +84,17 @@ public class SectionNodeView extends SectionView {
     public SectionNode retrieveSectionNode(SectionNode node) {
         SectionNode sectionNode = (SectionNode) nodes.get(node);
         return sectionNode == null ? rootNode : sectionNode;
+    }
+
+    public void refreshView() {
+        refreshTask.run();
+    }
+
+    public void scheduleRefreshView() {
+        refreshTask.schedule(REFRESH_DELAY);
+    }
+
+    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+        rootNode.dataModelPropertyChange(source, propertyName, oldValue, newValue);
     }
 }

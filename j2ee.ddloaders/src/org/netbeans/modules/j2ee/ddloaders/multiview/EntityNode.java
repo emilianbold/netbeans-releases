@@ -14,7 +14,6 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
@@ -23,32 +22,23 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 class EntityNode extends EjbSectionNode {
 
-    private Entity entity;
     private EntityHelper entityHelper;
 
     EntityNode(SectionNodeView sectionNodeView, Entity entity) {
         super(sectionNodeView, false, entity, Utils.getEjbDisplayName(entity), Utils.ICON_BASE_ENTITY_NODE);
-        this.entity = entity;
-        entityHelper = new EntityHelper(sectionNodeView.getDataObject().getPrimaryFile(), entity);
+        EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
+        entityHelper = dataObject.getEntityHelper(entity);
         addChild(new EntityOverviewNode(sectionNodeView, entity, entityHelper));
         addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, entity, entityHelper));
         if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType())) {
-            addChild(new CmpFieldsNode(sectionNodeView, entity, entityHelper));
-            addChild(new FinderMethodsNode(sectionNodeView, entity, entityHelper));
-            addChild(new SelectMethodsNode(sectionNodeView, entity, entityHelper));
+            addChild(new CmpFieldsNode(sectionNodeView, entityHelper.cmpFields));
+            addChild(new FinderMethodsNode(sectionNodeView, entityHelper.queries));
+            addChild(new SelectMethodsNode(sectionNodeView, entityHelper.queries));
         }
         addChild(new BeanDetailNode(sectionNodeView, entity));
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
         return null;
-    }
-
-    public Entity getEntity() {
-        return entity;
-    }
-
-    public EntityHelper getEntityHelper() {
-        return entityHelper;
     }
 }

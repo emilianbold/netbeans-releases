@@ -16,7 +16,6 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.filesystems.FileObject;
@@ -46,10 +45,7 @@ public class EjbReferencesNode extends EjbSectionNode {
                 FileObject ejbJarFile =
                         ((SectionNodeView) innerTablePanel.getSectionView()).getDataObject().getPrimaryFile();
                 if (new OpenAddReferenceDialog(ejb, createRefNameSet(ejb), ejbJarFile).openDialog()) {
-                    EjbReferencesTableModel model = ((EjbReferencesTableModel) innerTablePanel.getTable().getModel());
-                    model.fireTableRowsInserted(0, 0);
-                    model.fireTableDataChanged();
-                    innerTablePanel.adjustHeight();
+                    innerTablePanel.refreshView();
                 }
             }
         });

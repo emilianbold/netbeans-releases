@@ -13,34 +13,32 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.openide.filesystems.FileObject;
 
 /**
  * @author pfiala
  */
 class FinderMethodsNode extends EjbSectionNode {
 
-    private EntityHelper entityHelper;
+    private EntityHelper.Queries queries;
 
-    FinderMethodsNode(SectionNodeView sectionNodeView, Entity entity, EntityHelper entityHelper) {
-        super(sectionNodeView, true, entity, Utils.getBundleMessage("LBL_CmpFinders"), Utils.ICON_BASE_MISC_NODE);
-        this.entityHelper = entityHelper;
+    FinderMethodsNode(SectionNodeView sectionNodeView, EntityHelper.Queries queries) {
+        super(sectionNodeView, true, queries, Utils.getBundleMessage("LBL_CmpFinders"), Utils.ICON_BASE_MISC_NODE);
+        this.queries = queries;
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        Entity entity = (Entity) key;
-        final FileObject ejbJarFile = getSectionNodeView().getDataObject().getPrimaryFile();
-        final FinderMethodsTableModel model = new FinderMethodsTableModel(ejbJarFile, entity, entityHelper);
+        final FinderMethodsTableModel model = new FinderMethodsTableModel(queries);
         InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
             protected void editCell(final int row, final int column) {
                 model.editRow(row);
             }
+
+            public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+                super.dataModelPropertyChange(source, propertyName, oldValue, newValue);    
+            }
         };
         return innerTablePanel;
-
     }
 }

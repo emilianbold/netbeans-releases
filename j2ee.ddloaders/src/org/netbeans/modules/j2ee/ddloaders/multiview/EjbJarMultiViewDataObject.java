@@ -24,6 +24,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
@@ -57,7 +58,10 @@ import java.beans.PropertyVetoException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a DD object in the Repository.
@@ -72,6 +76,8 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     private boolean parseable;
     protected final static RequestProcessor RP = new RequestProcessor("XML Parsing");   // NOI18N
     private PropertyChangeListener ejbJarChangeListener;
+    private Map entityHelperMap = new HashMap();
+    private Map sessionHelperMap = new HashMap();
 
     private static final long serialVersionUID = 8857563089355069362L;
 
@@ -89,10 +95,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
     public EjbJarMultiViewDataObject(FileObject pf, EjbJarDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-        init();
-    }
 
-    private void init() {
         // added ValidateXMLCookie
         InputSource in = DataObjectAdapters.inputSource(this);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
@@ -138,6 +141,15 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             }
         }
         srcRoots = (FileObject[]) srcRootList.toArray(new FileObject[srcRootList.size()]);
+    }
+
+
+    public void saveDocument() {
+        try {
+            editor.saveDocument();
+        } catch (IOException e) {
+            Utils.notifyError(e);
+        }
     }
 
     private Project getProject() {
@@ -471,11 +483,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         }
         ejbJar = newEjbJar;
         if (ejbJarChangeListener == null) {
-            ejbJarChangeListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    modelChanged();
-                }
-            };
+            ejbJarChangeListener = new EjbJarPropertyChangeListener();
         }
         ejbJar.addPropertyChangeListener(ejbJarChangeListener);
     }
@@ -484,7 +492,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
      * Update text document from data model. Called when something is changed in visual editor.
      */
     protected String generateDocumentFromModel() {
-        //System.out.println("Generating document - generate....");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             ejbJar.write(out);
@@ -644,11 +651,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
     private boolean fireEvent(String oldResourceName, String resourceName,
             int eventType) {
-//       System.out.println("fireEvent");                            //NOI18N
-//        System.out.println("oldResourceName : " + oldResourceName); //NOI18N
-//        System.out.println("resourceName : " + resourceName);       //NOI18N
-//        System.out.println("eventType : " + eventType);             //NOI18N
-
         boolean elementFound = false;
         String resource = null;
         int specificEventType = -1;
@@ -687,4 +689,38 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         return elementFound;
     }
 
+    public EntityHelper getEntityHelper(Entity entity) {
+        EntityHelper entityHelper = (EntityHelper) entityHelperMap.get(entity);
+        if (entityHelper == null) {
+            entityHelper = new EntityHelper(this, entity);
+            entityHelperMap.put(entity, entityHelper);
+        }
+        return entityHelper;
+    }
+
+    public SessionHelper getSessionHelper(Session session) {
+        SessionHelper sessionHelper = (SessionHelper) entityHelperMap.get(session);
+        if (sessionHelper == null) {
+            sessionHelper = new SessionHelper(this, session);
+            entityHelperMap.put(session, sessionHelper);
+        }
+        return sessionHelper;
+    }
+
+    private class EjbJarPropertyChangeListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            modelChanged();
+            Object source = evt.getSource();
+            if (source instanceof EnterpriseBeans) {
+                Object oldValue = evt.getOldValue();
+                Object newValue = evt.getNewValue();
+                if ((oldValue instanceof Entity || newValue instanceof Entity)) {
+                    entityHelperMap.keySet().retainAll(Arrays.asList(((EnterpriseBeans) source).getEntity()));
+                } else if ((oldValue instanceof Session || newValue instanceof Session)) {
+                    sessionHelperMap.keySet().retainAll(Arrays.asList(((EnterpriseBeans) source).getSession()));
+                }
+            }
+        }
+    }
 }

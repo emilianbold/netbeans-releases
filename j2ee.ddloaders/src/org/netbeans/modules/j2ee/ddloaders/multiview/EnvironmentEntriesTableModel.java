@@ -75,13 +75,13 @@ class EnvironmentEntriesTableModel extends InnerTableModel {
         EnvEntry entry = ejb.newEnvEntry();
         ejb.addEnvEntry(entry);
         int row = getRowCount() - 1;
-        fireTableRowsInserted(row, row);
+        //fireTableRowsInserted(row, row);
         return row;
     }
 
     public void removeRow(int row) {
         fireTableStructureChanged(); // cancel editing
         ejb.removeEnvEntry(ejb.getEnvEntry(row));
-        fireTableRowsDeleted(row, row);
+        //fireTableRowsDeleted(row, row);
     }
 }

@@ -115,7 +115,6 @@ public class SectionNode extends AbstractNode {
     public SectionNodePanel getSectionNodePanel() {
         if (sectionPanel == null) {
             sectionPanel = new SectionNodePanel(this);
-            //sectionNodeView.mapSection(this, sectionPanel);
         }
         return sectionPanel;
     }
@@ -136,10 +135,32 @@ public class SectionNode extends AbstractNode {
     public int hashCode() {
         return key.hashCode();
     }
+                 
+    public final void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+        if (sectionPanel != null) {
+            SectionInnerPanel innerPanel = sectionPanel.getInnerPanel();
+            if (innerPanel != null) {
+                innerPanel.dataModelPropertyChange(source, propertyName, oldValue, newValue);
+            }
+        }
+        Children children = getChildren();
+        if (children != null) {
+            Node[] nodes = children.getNodes();
+            for (int i = 0; i < nodes.length; i++) {
+                Node node = nodes[i];
+                if (node instanceof SectionNode) {
+                    ((SectionNode) node).dataModelPropertyChange(source, propertyName, oldValue, newValue);
+                }
+            }
+        }
+    }
 
     public void refreshSubtree() {
         if (sectionPanel != null) {
-            sectionPanel.refreshView();
+            SectionInnerPanel innerPanel = sectionPanel.getInnerPanel();
+            if (innerPanel != null) {
+                innerPanel.refreshView();
+            }
         }
         Children children = getChildren();
         if (children != null) {

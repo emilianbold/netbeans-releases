@@ -24,11 +24,9 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class SessionOverviewPanel extends SessionOverviewForm {
 
-    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
+    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         if (source instanceof Session) {
-            refreshView();
-        } else {
-            super.propertyChanged(source, propertyName, oldValue, newValue);
+            scheduleRefreshView();
         }
     }
 

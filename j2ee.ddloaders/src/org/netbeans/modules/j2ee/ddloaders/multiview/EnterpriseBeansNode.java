@@ -19,13 +19,16 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.xml.multiview.SectionNode;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.BoxPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author pfiala
@@ -39,7 +42,7 @@ public class EnterpriseBeansNode extends EjbSectionNode {
                 Utils.ICON_BASE_ENTERPRISE_JAVA_BEANS_NODE);
         this.enterpriseBeans = enterpriseBeans;
         setExpanded(true);
-        getSectionNodePanel().refreshView();
+        //getSectionNodePanel().refreshView();
     }
 
     private SectionNode createNode(Ejb ejb) {
@@ -58,15 +61,13 @@ public class EnterpriseBeansNode extends EjbSectionNode {
     public SectionInnerPanel createInnerPanel() {
         SectionNodeView sectionNodeView = getSectionNodeView();
         BoxPanel boxPanel = new BoxPanel(sectionNodeView) {
-            protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
+            public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
                 if (source == enterpriseBeans) {
-                    refreshView();
-                } else {
-                    super.propertyChanged(source, propertyName, oldValue, newValue);
+                    scheduleRefreshView();
                 }
             }
 
-            protected void refreshView() {
+            public void refreshView() {
                 checkChildren();
             }
         };
@@ -86,7 +87,7 @@ public class EnterpriseBeansNode extends EjbSectionNode {
         // sort beans according to their display name
         Arrays.sort(ejbs, new Comparator() {
             public int compare(Object o1, Object o2) {
-                return getEjbDisplayName((Ejb) o1).compareTo(getEjbDisplayName((Ejb) o2));
+                return Utils.getEjbDisplayName((Ejb) o1).compareTo(Utils.getEjbDisplayName((Ejb) o2));
             }
         });
         boolean dirty = nodes.length != ejbs.length;
@@ -107,11 +108,4 @@ public class EnterpriseBeansNode extends EjbSectionNode {
         }
     }
 
-    private String getEjbDisplayName(Ejb ejb) {
-        String name = ejb.getDefaultDisplayName();
-        if (name == null) {
-            name = ejb.getEjbName();
-        }
-        return name;
-    }
 }

@@ -23,6 +23,7 @@ public abstract class InnerTableModel extends AbstractTableModel {
 
     protected final String[] columnNames;
     private int[] columnWidths;
+    private int rowCount = -1;
 
     public InnerTableModel(String[] columnNames, int[] columnWidths) {
         this.columnNames = columnNames;
@@ -59,5 +60,31 @@ public abstract class InnerTableModel extends AbstractTableModel {
 
     public void refreshView() {
         fireTableDataChanged();
+    }
+
+    protected void tableChanged() {
+        if (!checkRowCount()) {
+            fireTableDataChanged();
+        }
+    }
+
+    private boolean checkRowCount() {
+        int n = getRowCount();
+        if (rowCount == -1) {
+            rowCount = n;
+        }
+        if (n != rowCount) {
+            while (rowCount < n) {
+                rowCount++;
+                fireTableRowsInserted(0, 0);
+            }
+            while (rowCount > n) {
+                rowCount--;
+                fireTableRowsDeleted(0, 0);
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 }

@@ -32,6 +32,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
 
     private EjbJarMultiViewDataObject dataObject;
     private static final String COMPOUND = "compound"; //NOI18N
+    private Entity entity;
 
     /**
      * Creates new form EntityOverviewForm
@@ -60,7 +61,8 @@ public class EntityOverviewPanel extends EntityOverviewForm {
         }));
 
         persistenceTypeTextField.setEnabled(false);
-        String persistenceType = entity.getPersistenceType();
+        this.entity = entity;
+        String persistenceType = this.entity.getPersistenceType();
         boolean isCmp = Entity.PERSISTENCE_TYPE_CONTAINER.equals(persistenceType);
         persistenceTypeTextField.setText(persistenceType + ((isCmp ? " (CMP)" : " (BMP)")));    //NOI18N
 
@@ -87,8 +89,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                 primaryKeyFieldComboBox.addItem(cmpField.getFieldName());
                 primaryKeyFieldComboBox.setEditor(new ValidatingTextField());
             }
-            new ItemComboBoxHelper(primaryKeyFieldComboBox) {
-
+            addRefreshable(new ItemComboBoxHelper(primaryKeyFieldComboBox) {
                 public String getItemValue() {
                     return entity.getPrimkeyField();
                 }
@@ -96,7 +97,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                 public void setItemValue(String value) {
                     entity.setPrimkeyField(value);
                 }
-            };
+            });
             primaryKeyFieldComboBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     int selectedIndex = primaryKeyFieldComboBox.getSelectedIndex();
@@ -133,8 +134,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             primaryKeyClassComboBox.addItem("java.lang.String");    //NOI18N
             primaryKeyClassComboBox.addItem("java.math.BigDecimal");//NOI18N
 
-            new ItemComboBoxHelper(primaryKeyClassComboBox) {
-
+            addRefreshable(new ItemComboBoxHelper(primaryKeyClassComboBox) {
                 public String getItemValue() {
                     return entity.getPrimKeyClass();
                 }
@@ -142,7 +142,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                 public void setItemValue(String value) {
                     entity.setPrimKeyClass(value);
                 }
-            };
+            });
 
         } else {
             primaryKeyFieldLabel.setVisible(false);
@@ -160,7 +160,6 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                 }
             }));
         }
-        reentrantCheckBox.setSelected(entity.isReentrant());
         reentrantCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 entity.setReentrant(reentrantCheckBox.isSelected());
@@ -168,7 +167,12 @@ public class EntityOverviewPanel extends EntityOverviewForm {
         });
     }
 
-    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
-        super.propertyChanged(source, propertyName, oldValue, newValue);
+    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+        super.dataModelPropertyChange(source, propertyName, oldValue, newValue);
+    }
+
+    public void refreshView() {
+        super.refreshView();
+        getReentrantCheckBox().setSelected(entity.isReentrant());
     }
 }

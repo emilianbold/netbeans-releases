@@ -202,8 +202,8 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
         }
     }
 
-    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
-        super.propertyChanged(source, propertyName, oldValue, newValue);
+    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+        scheduleRefreshView();
     }
 
     private class DurabilityComboBoxHelper extends ItemComboBoxHelper {

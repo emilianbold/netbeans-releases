@@ -141,7 +141,7 @@ public class Utils {
     public static void scrollToVisible(final JComponent component) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                component.scrollRectToVisible(new Rectangle(component.getWidth(), component.getHeight()));
+                component.scrollRectToVisible(new Rectangle(10, component.getHeight()));
             }
         });
     }

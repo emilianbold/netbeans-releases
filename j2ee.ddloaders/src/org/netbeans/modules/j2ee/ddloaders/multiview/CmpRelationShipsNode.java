@@ -17,7 +17,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.openide.filesystems.FileObject;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,26 +33,27 @@ class CmpRelationShipsNode extends EjbSectionNode {
 
     protected SectionInnerPanel createNodeInnerPanel() {
         final EjbJar ejbJar = (EjbJar) key;
-        final FileObject ejbJarFile = getSectionNodeView().getDataObject().getPrimaryFile();
-        final CmpRelationshipsTableModel model = new CmpRelationshipsTableModel(ejbJarFile, ejbJar);
-        final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model);
-        final CmpRelationshipsDialogHelper dialogHelper = new CmpRelationshipsDialogHelper(ejbJarFile, ejbJar);
+        EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) getSectionNodeView().getDataObject();
+        final CmpRelationshipsTableModel model = new CmpRelationshipsTableModel(ejbJar);
+        final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
+            public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+                if (source == key) {
+                    scheduleRefreshView();
+                }
+            }
+        };
+        final CmpRelationshipsDialogHelper dialogHelper = new CmpRelationshipsDialogHelper(dataObject, ejbJar);
         innerTablePanel.getAddButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_AddCMPRelationship"), null)) {
-                    int row = model.getRowCount() - 1;
-                    model.fireTableRowsInserted(row, row);
-                }
+                dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_AddCMPRelationship"), null);
             }
         });
         innerTablePanel.getEditButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 int row = innerTablePanel.getTable().getSelectedRow();
                 EjbRelation ejbRelation = ejbJar.getSingleRelationships().getEjbRelation(row);
-                if (dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_Edit_CMP_Relationship"),
-                        ejbRelation)) {
-                    model.fireTableRowsUpdated(row, row);
-                }
+                dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_Edit_CMP_Relationship"),
+                        ejbRelation);
             }
         });
         return innerTablePanel;

@@ -21,14 +21,13 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.CmpRelationshipsForm;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
 import org.openide.src.ClassElement;
 import org.openide.src.MethodElement;
 import org.openide.src.Type;
 
 import javax.swing.*;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,7 +42,7 @@ class CmpRelationshipsDialogHelper {
     private static final String CLASS_SET = "java.util.Set";                //NOI18N
     private static final String[] FILED_TYPE_ITEMS = new String[]{CLASS_COLLECTION, CLASS_SET};
 
-    private final FileObject ejbJarFile;
+    private final EjbJarMultiViewDataObject dataObject;
     private final EjbJar ejbJar;
 
     private JTextField relationshipNameTextField;
@@ -135,7 +134,7 @@ class CmpRelationshipsDialogHelper {
                     EntityHelper entityHelper;
                     if (ejbNameChanged) {
                         Entity entity = getEntity(ejbName);
-                        entityHelper = entity == null ? null : new EntityHelper(ejbJarFile, entity);
+                        entityHelper = entity == null ? null : dataObject.getEntityHelper(entity);
                     } else {
                         entityHelper = origEntityHelper;
                     }
@@ -230,7 +229,7 @@ class CmpRelationshipsDialogHelper {
             setRoleName(helper.getRoleName());
             origEjbName = helper.getEjbName();
             Entity entity = getEntity(origEjbName);
-            origEntityHelper = entity == null ? null: new EntityHelper(ejbJarFile, entity);
+            origEntityHelper = entity == null ? null : dataObject.getEntityHelper(entity);
             setEjbName(origEjbName);
             setMultiple(helper.isMultiple());
             setCascadeDelete(helper.isCascadeDelete());
@@ -345,8 +344,8 @@ class CmpRelationshipsDialogHelper {
     FormRoleHelper roleA = new FormRoleHelper();
     FormRoleHelper roleB = new FormRoleHelper();
 
-    public CmpRelationshipsDialogHelper(FileObject ejbJarFile, EjbJar ejbJar) {
-        this.ejbJarFile = ejbJarFile;
+    public CmpRelationshipsDialogHelper(EjbJarMultiViewDataObject dataObject, EjbJar ejbJar) {
+        this.dataObject = dataObject;
         this.ejbJar = ejbJar;
     }
 

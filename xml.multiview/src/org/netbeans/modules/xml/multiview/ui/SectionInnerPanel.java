@@ -17,6 +17,7 @@ import org.netbeans.modules.xml.multiview.cookies.LinkCookie;
 import org.netbeans.modules.xml.multiview.cookies.ErrorLocator;
 import org.netbeans.modules.xml.multiview.Error;
 import org.netbeans.modules.xml.multiview.Refreshable;
+import org.openide.util.RequestProcessor;
 
 import javax.swing.text.JTextComponent;
 import javax.swing.*;
@@ -46,6 +47,15 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
             processFocusEvent(evt);
         }
     };
+
+    private RequestProcessor.Task refreshTask = RequestProcessor.getDefault().create(new Runnable() {
+        public void run() {
+            refreshView();
+        }
+    });
+
+    private static final int REFRESH_DELAY = 50;
+
     /** Constructor that takes the enclosing SectionView object as its argument
      * @param sectionView enclosing SectionView object
      */
@@ -177,17 +187,22 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
         });
     }
 
-    protected void refreshView() {
+    protected void scheduleRefreshView() {
+        refreshTask.schedule(REFRESH_DELAY);
+    }
+
+    public void refreshView() {
         for (Iterator it = refreshableList.iterator(); it.hasNext();) {
             ((Refreshable) it.next()).refresh();
         }
     }
 
-    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
-    }
-
     protected void addRefreshable(Refreshable refreshable) {
         refreshableList.add(refreshable);
+    }
+
+    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+        scheduleRefreshView();
     }
 
     private class TextListener implements javax.swing.event.DocumentListener {

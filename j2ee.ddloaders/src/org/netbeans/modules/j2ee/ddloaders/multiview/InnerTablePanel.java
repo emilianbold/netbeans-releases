@@ -37,6 +37,7 @@ public class InnerTablePanel extends SectionInnerPanel {
 
     private final TablePanel tablePanel;
     private JTable table;
+    private int rowCount;
 
     protected void setButtonListeners(final InnerTableModel model) {
         final JTable table = getTable();
@@ -109,8 +110,9 @@ public class InnerTablePanel extends SectionInnerPanel {
         tablePanel = new TablePanel(model);
         model.addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent e) {
-                if (e.getType() == TableModelEvent.DELETE || e.getType() == TableModelEvent.INSERT) {
-                    adjustHeight();
+                int type = e.getType();
+                if (type == TableModelEvent.INSERT || type == TableModelEvent.DELETE) {
+                    scheduleRefreshView();
                 }
             }
         });
@@ -128,6 +130,7 @@ public class InnerTablePanel extends SectionInnerPanel {
             setButtonListeners(innerTableModel);
             setColumnEditors(innerTableModel);
         }
+        scheduleRefreshView();
     }
 
     private void setColumnEditors(InnerTableModel model) {
@@ -172,27 +175,29 @@ public class InnerTablePanel extends SectionInnerPanel {
     }
 
     public void adjustHeight() {
-        JTable table = getTable();
-        Dimension size = table.getPreferredSize();
-        table.setPreferredSize(null);
-        size.height = table.getPreferredSize().height;
-        table.setPreferredSize(size);
-        Container parent = getParent();
-        if (parent instanceof SectionNodePanel) {
-            SectionNodePanel sectionNodePanel = ((SectionNodePanel) parent);
-            if (sectionNodePanel.isActive()) {
-                Utils.scrollToVisible(sectionNodePanel);
-            }
+        int n = table.getModel().getRowCount();
+        if (n != rowCount) {
+            rowCount = n;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    JTable table = getTable();
+                    Dimension size = table.getPreferredSize();
+                    table.setPreferredSize(null);
+                    size.height = table.getPreferredSize().height;
+                    table.setPreferredSize(size);
+                    Container parent = getParent();
+                    if (parent instanceof SectionNodePanel) {
+                        SectionNodePanel sectionNodePanel = ((SectionNodePanel) parent);
+                        if (sectionNodePanel.isActive()) {
+                            Utils.scrollToVisible(sectionNodePanel);
+                        }
+                    }
+                }
+            });
         }
-
     }
 
-    public void dataFileChanged() {
-        refreshView();
-    }
-
-    protected void refreshView() {
-        ((InnerTableModel) getTable().getModel()).refreshView();
+    public void refreshView() {
         adjustHeight();
     }
 
@@ -228,9 +233,8 @@ public class InnerTablePanel extends SectionInnerPanel {
     public void setValue(JComponent source, Object value) {
     }
 
-    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
-        refreshView();
-
+    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
+        scheduleRefreshView();
     }
 
     public void linkButtonPressed(Object ddBean, String ddProperty) {

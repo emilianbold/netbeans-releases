@@ -120,18 +120,4 @@ public class SectionNodePanel extends SectionPanel {
             super.open();
         }
     }
-
-    public void refreshView() {
-        SectionInnerPanel innerPanel = getInnerPanel();
-        if (innerPanel != null) {
-            innerPanel.refreshView();
-        }
-    }
-
-    public void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
-        SectionInnerPanel innerPanel = getInnerPanel();
-        if (innerPanel != null) {
-            innerPanel.propertyChanged(source, propertyName, oldValue, newValue);
-        }
-    }
 }
