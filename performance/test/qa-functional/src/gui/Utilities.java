@@ -13,9 +13,13 @@
 
 package gui;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -112,8 +116,8 @@ public class Utilities {
      */
     public static void copyFile(File f1, File f2) throws Exception {
         int data;
-        FileInputStream fis = new FileInputStream(f1);
-        FileOutputStream fos = new FileOutputStream(f2);
+        InputStream fis = new BufferedInputStream(new FileInputStream(f1));
+        OutputStream fos = new BufferedOutputStream(new FileOutputStream(f2));
         
         while((data=fis.read())!=-1){
             fos.write(data);
