@@ -228,7 +228,6 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-pdf-PDFSettings.settings" url="../pdf/PDF.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.pdf.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/pdf/PDFDataIcon.gif"/>
-            <attr name="helpID" stringvalue="org.netbeans.modules.pdf.PDFSettings"/>
         </file>
 
         <!--

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.pdf;
@@ -17,6 +17,7 @@ import java.util.Properties;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import org.openide.ErrorManager;
+import org.openide.util.HelpCtx;
 
 import org.openide.util.Lookup;
 
@@ -88,6 +89,12 @@ public class Settings {
                 + l);
 
         supp.removePropertyChangeListener(l);
+    }
+    
+    /**
+     */
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 
 }
