@@ -682,12 +682,23 @@ public class XSLGrammarQuery implements GrammarQuery{
 
     public org.openide.nodes.Node.Property[] getProperties(final HintContext ctx) {
 
-        if (ctx.getNodeType() != Node.ATTRIBUTE_NODE && ctx.getNodeValue() != null) {
+        if (ctx.getNodeType() != Node.ATTRIBUTE_NODE || ctx.getNodeValue() == null) {
             return null;
         }
         
-        PropertySupport prop = new PropertySupport("Attribute value", String.class, 
-            "Attribute value", "The value of the attribute", true, true) {
+        PropertySupport attrNameProp = new PropertySupport("Attribute name", String.class, 
+            "Attribute name", "The name of the selected attribute", true, false) {
+                public void setValue(Object value) {
+                    // Dummy
+                }
+                public Object getValue() {
+                    return ctx.getNodeName();
+                }
+
+        };
+        
+        PropertySupport attrValueProp = new PropertySupport("Attribute value", String.class, 
+            "Attribute value", "The value of the selected attribute", true, true) {
                 public void setValue(Object value) {
                     ctx.setNodeValue((String)value);
                 }
@@ -696,12 +707,13 @@ public class XSLGrammarQuery implements GrammarQuery{
                 }
 
         };
-        return new org.openide.nodes.Node.Property[]{prop};
+        
+        return new org.openide.nodes.Node.Property[]{attrNameProp, attrValueProp};
     }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private helper methods    
-    
+        
     /**
      * @param enum the Enumeration which the element should be added to
      * @param set a set containing strings which should be added (with prefix) to the enum
