@@ -87,7 +87,21 @@ public class NbSummaryPanel extends TextDisplayPanel
                 ProductService.DEFAULT_PRODUCT_SOURCE,
                 type,
                 ProductService.HTML);
-                setText(summary.getProperty(ProductService.SUMMARY_MSG));
+                String summaryMessage = summary.getProperty(ProductService.SUMMARY_MSG);
+                if (type == ProductService.POST_UNINSTALL) {
+                    summaryMessage += "<br><br>"
+                    + resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.descriptionPostUninstall,"
+                    + "$L(org.netbeans.installer.Bundle, Product.userDir))");
+                    if (Util.isWindowsOS()) {
+                        summaryMessage += " "
+                        + resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.descriptionPostUninstallWindows)");
+                    } else {
+                        summaryMessage += " "
+                        + resolveString("$L(org.netbeans.installer.Bundle, SummaryPanel.descriptionPostUninstallUnix)");
+                    }
+                }
+                logEvent(this, Log.DBG, "queryEnter UNINSTALL summaryMessage: " + summaryMessage);
+                setText(summaryMessage);
             }
         } catch (ServiceException e) {
             logEvent(this, Log.ERROR, e);
