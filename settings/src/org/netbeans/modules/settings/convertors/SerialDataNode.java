@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.Action;
 
 import org.openide.*;
 import org.openide.cookies.InstanceCookie;
@@ -555,6 +556,10 @@ public final class SerialDataNode extends DataNode {
         } catch (Exception ex) {
             return super.getShortDescription();
         }
+    }
+    
+    public Action getPreferredAction() {
+        return null;
     }
     
     /* do not want CustomizeBean to be invoked on double-click */
