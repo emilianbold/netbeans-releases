@@ -18,7 +18,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
@@ -96,24 +99,25 @@ public abstract class AntArtifact {
      * @deprecated use {@link #getArtifactLocations} instead
      */
     public URI getArtifactLocation() {
-        // XXX: diagnostic thread dump - this method should not be called anymore
-        Thread.dumpStack();
         return getArtifactLocations()[0];
     }
 
+    private static final Set/*<String>*/ warnedClasses = Collections.synchronizedSet(new HashSet());
     /**
      * Get the locations of the build artifacts relative to the Ant script.
      * For example, <samp>dist/mylib.jar</samp>. The method is not defined 
-     * as abstract only for backward compatibility reasons. It has to be 
-     * always overriden. The order is important and should stay the same
+     * as abstract only for backward compatibility reasons. <strong>It must be
+     * overridden.</strong> The order is important and should stay the same
      * unless the artifact was changed.
      * @return an array of URIs to the build artifacts, resolved relative to {@link #getScriptLocation};
      *         may be either relative, or an absolute <code>file</code>-protocol URI
      * @since 1.5
      */
     public URI[] getArtifactLocations() {
-        // XXX: diagnostic thread dump - this method must be always overriden
-        Thread.dumpStack();
+        String name = getClass().getName();
+        if (warnedClasses.add(name)) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning: " + name + ".getArtifactLocations() must be overridden");
+        }
         return new URI[]{getArtifactLocation()};
     }
 
@@ -134,8 +138,6 @@ public abstract class AntArtifact {
      * @deprecated use {@link #getArtifactFiles} instead
      */
     public final FileObject getArtifactFile() {
-        // XXX: diagnostic thread dump - do not call this method
-        Thread.dumpStack();
         FileObject fos[] = getArtifactFiles();
         if (fos.length > 0) {
             return fos[0];
