@@ -123,19 +123,19 @@ public class ConnectAction extends DatabaseAction {
                         DBConnection con = nfo.getDatabaseConnection();
 
                         try {
-                            Connection connection = con.createJDBCConnection();
-                            if (connection != null) {
+                            Connection connection2 = con.createJDBCConnection();
+                            if (connection2 != null) {
                                 ResultSet rs;
                                 Vector items = new Vector();
                                 try {
-                                    rs = connection.getMetaData().getSchemas();
+                                    rs = connection2.getMetaData().getSchemas();
                                     while (rs.next())
                                         items.add(rs.getString(1).trim());
                                     rs.close();
                                 } catch (SQLException exc) {
                                     //hack for databases which don't support schemas
                                 }
-                                connection.close();
+                                connection2.close();
                                 schemaPanel.setSchemas(items, nfo.getSchema());
                             }
                         } catch(Exception exc) {
