@@ -15,13 +15,13 @@ package org.netbeans.modules.db.explorer.actions;
 
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
+
+import org.openide.*;
+import org.openide.nodes.*;
 
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
-import org.openide.*;
-import org.openide.nodes.*;
 import org.netbeans.lib.ddl.adaptors.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.dlg.*;
@@ -40,12 +40,9 @@ public class AddIndexAction extends DatabaseAction {
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             IndexListNodeInfo nfo = (IndexListNodeInfo)info.getParent(nodename);
 
-            String catalog = (String)nfo.get(DatabaseNode.CATALOG);
             String tablename = (String)nfo.get(DatabaseNode.TABLE);
             String columnname = (String)nfo.get(DatabaseNode.COLUMN);
 
-            Connection con = nfo.getConnection();
-            DatabaseMetaData dmd = info.getSpecification().getMetaData();
             Specification spec = (Specification)nfo.getSpecification();
             String index = (String)nfo.get(DatabaseNode.INDEX);
             DriverSpecification drvSpec = info.getDriverSpecification();
@@ -53,10 +50,15 @@ public class AddIndexAction extends DatabaseAction {
             // List columns not present in current index
             Vector cols = new Vector(5);
 
-            drvSpec.getColumns(catalog, dmd, tablename, null);
-            while (drvSpec.rs.next())
-                cols.add(drvSpec.rs.getString("COLUMN_NAME")); // NOI18N
-            drvSpec.rs.close();
+            drvSpec.getColumns(tablename, "%");
+            ResultSet rs = drvSpec.getResultSet();
+            HashMap rset = new HashMap();
+            while (rs.next()) {
+                rset = drvSpec.getRow();
+                cols.add((String) rset.get(new Integer(4)));
+                rset.clear();
+            }
+            rs.close();
 
             if (cols.size() == 0)
                 throw new Exception(bundle.getString("EXC_NoUsableColumnInPlace")); // NOI18N

@@ -55,6 +55,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public static final String INFOCLASS = "infoclass"; //NOI18N
     public static final String NAME = "name"; //NOI18N
     public static final String USER = "user"; //NOI18N
+    public static final String SCHEMA = "schema"; //NOI18N
     public static final String PASSWORD = "password"; //NOI18N
     public static final String CHILDREN = "children"; //NOI18N
     public static final String ACTIONS = "actions"; //NOI18N
@@ -104,9 +105,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         return getGlobalNodeInfo().get(key);
     }
 
-    public static DatabaseNodeInfo createNodeInfo(DatabaseNodeInfo parent, String nodecode)
-    throws DatabaseException
-    {
+    public static DatabaseNodeInfo createNodeInfo(DatabaseNodeInfo parent, String nodecode) throws DatabaseException {
         DatabaseNodeInfo e_ni = null;
         try {
             String nodec = (String)((Map)DatabaseNodeInfo.getGlobalNodeInfo().get(nodecode)).get(INFOCLASS);
@@ -128,26 +127,22 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         }
         return e_ni;
     }
-
-    public static DatabaseNodeInfo createNodeInfo(DatabaseNodeInfo parent, String nodecode, ResultSet rset) throws DatabaseException {
+    
+    public static DatabaseNodeInfo createNodeInfo(DatabaseNodeInfo parent, String nodecode, HashMap rset) throws DatabaseException {
         int colidx = 1;
         String key = null;
         DatabaseNodeInfo nfo = createNodeInfo(parent, nodecode);
         Vector rsnames = (Vector)nfo.get(DatabaseNodeInfo.RESULTSET);
         Iterator rsnames_i = rsnames.iterator();
         Hashtable data = new Hashtable();
-        while (rsnames_i.hasNext())
-            try {
-                key = (String)rsnames_i.next();
-                if (!key.equals("unused")) { //NOI18N
-                    Object value = rset.getObject(colidx);
-                    if (value != null) data.put(key, value);
-                }
-                colidx++;
-            } catch (SQLException ex) {
-                //        ex.printStackTrace();
-                //        System.out.println("createNodeInfo: " + ex);
+        while (rsnames_i.hasNext()) {
+            key = (String)rsnames_i.next();
+            if (!key.equals("unused")) { //NOI18N
+                Object value = rset.get(new Integer(colidx));
+                if (value != null) data.put(key, value);
             }
+            colidx++;
+        }
 
         nfo.putAll(data);
         nfo.put(nodecode, nfo.getName());
@@ -467,6 +462,14 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     {
         put(USER, usr);
     }
+    
+    public String getSchema() {
+        return (String) get(SCHEMA);
+    }
+
+    public void setSchema(String schema) {
+        put(SCHEMA, schema);
+    }
 
     public String getDatabase()
     {
@@ -615,9 +618,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
     public Vector getActions()
     {
-        
         Vector actions = (Vector)get(ACTIONS);
-        actions = (Vector)actions.clone();
         if (actions == null) {
             actions = new Vector();
             put(ACTIONS, actions);
@@ -625,7 +626,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
         if (actions.size() == 0) return actions;
         Object xaction = actions.elementAt(0);
-        //if (xaction != null && xaction instanceof DatabaseAction) return actions;
+        if (xaction != null && xaction instanceof DatabaseAction) return actions;
         boolean ro = isReadOnly();
         for (int i=0; i<actions.size();i++) {
 

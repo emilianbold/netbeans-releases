@@ -267,23 +267,23 @@ public class AddTableColumnDialog {
             pane.add(ixcheckbox);
 
             try {
-                DatabaseMetaData dmd = nfo.getSpecification().getMetaData();
-                String catalog = (String)nfo.get(DatabaseNode.CATALOG);
                 String table = (String)nfo.get(DatabaseNode.TABLE);
                 DriverSpecification drvSpec = nfo.getDriverSpecification();
 
-                //				ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),table, true, false);
-
-                drvSpec.getIndexInfo(catalog, dmd, table, false, false);
-
+                drvSpec.getIndexInfo(table, false, false);
+                ResultSet rs = drvSpec.getResultSet();
+                HashMap rset = new HashMap();
+                
                 //if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
                 //	rs = dmd.getIndexInfo(catalog, null, table, true, false);
                 //else
                 //	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), table, true, false);
 
                 ixmap = new HashMap();
-                while (drvSpec.rs.next()) {
-                    String ixname = drvSpec.rs.getString("INDEX_NAME"); //NOI18N
+                String ixname;
+                while (rs.next()) {
+                    rset = drvSpec.getRow();
+                    ixname = (String) rset.get(new Integer(6));
                     if (ixname != null) {
                         Vector ixcols = (Vector)ixmap.get(ixname);
                         if (ixcols == null) {
@@ -291,10 +291,11 @@ public class AddTableColumnDialog {
                             ixmap.put(ixname,ixcols);
                         }
 
-                        ixcols.add(drvSpec.rs.getString("COLUMN_NAME")); //NOI18N
+                        ixcols.add((String) rset.get(new Integer(9)));
                     }
+                    rset.clear();
                 }
-                drvSpec.rs.close();
+                rs.close();
             } catch (Exception e) {
                 //
             }

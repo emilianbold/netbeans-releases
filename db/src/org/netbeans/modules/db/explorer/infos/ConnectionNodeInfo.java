@@ -30,6 +30,7 @@ import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
+import org.netbeans.modules.db.explorer.dlg.SchemaDialog;
 import org.netbeans.modules.db.explorer.dlg.UnsupportedDatabaseDialog;
 
 public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOperations {
@@ -39,9 +40,9 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
     public void connect(String dbsys) throws DatabaseException {
         String drvurl = getDriver();
         String dburl = getDatabase();
-
+        String schema = null;
+        
         try {
-
             // check if there is connected connection by Pointbase driver
             // Pointbase driver doesn't permit the concurrently connection
             if (drvurl.startsWith("com.pointbase.jdbc.jdbcUniversalDriver")) {
@@ -59,23 +60,48 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             Properties dbprops = getConnectionProperties();
 
             DatabaseConnection con = new DatabaseConnection(drvurl, dburl, getUser(), getPassword());
-
             Connection connection = con.createJDBCConnection();
+            
+            if (connection != null) {
+                ResultSet rs;
+                Vector items = new Vector();
+                try {
+                    rs = connection.getMetaData().getSchemas();
+                    while (rs.next())
+                        items.add(rs.getString(1).trim());
+                    rs.close();
+                } catch (SQLException exc) {
+                    //hack for databases which don't support schemas
+                }
+                
+                if (items.isEmpty())
+                    setSchema(null);
+                else if (items.size() == 1)
+                    setSchema(items.get(0).toString());
+                else {
+                    SchemaDialog dlg = new SchemaDialog(items, getUser());
+                    if (dlg.run())
+                        setSchema(dlg.getSchema());
+                    else
+                        return;
+                }
+            }
+            
             SpecificationFactory factory = (SpecificationFactory)getSpecificationFactory();
             Specification spec;
             DriverSpecification drvSpec;
 
             if (dbsys != null) {
                 spec = (Specification)factory.createSpecification(con, dbsys, connection);
-            } else {
-                setReadOnly(false);
+            } else
                 spec = (Specification)factory.createSpecification(con, connection);
-            }
-            
 
             setSpecification(spec);
 
             drvSpec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
+            drvSpec.setMetaData(spec.getMetaData());
+            drvSpec.setCatalog(connection.getCatalog());
+            drvSpec.setSchema(getSchema());
             setDriverSpecification(drvSpec);
 
             setConnection(connection); // fires change
@@ -83,34 +109,26 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
 
             UnsupportedDatabaseDialog dlg = new UnsupportedDatabaseDialog();
             dlg.show();
-            setReadOnly(false);
             switch (dlg.getResult()) {
             case UnsupportedDatabaseDialog.GENERIC: connect("GenericDatabaseSystem"); break; //NOI18N
             case UnsupportedDatabaseDialog.READONLY: connectReadOnly(); break;
             default: return;
             }
-
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
         }
     }
 
-    public void connect()
-    throws DatabaseException
-    {
+    public void connect() throws DatabaseException {
         connect(null);
     }
 
-    public void connectReadOnly()
-    throws DatabaseException
-    {
+    public void connectReadOnly() throws DatabaseException {
         setReadOnly(true);
         connect("GenericDatabaseSystem"); //NOI18N
     }
 
-    public void disconnect()
-    throws DatabaseException
-    {
+    public void disconnect() throws DatabaseException {
         Connection connection = getConnection();
         if (connection != null) {
             try {
@@ -126,29 +144,26 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
         }
     }
 
-    public void delete()
-    throws IOException
-    {
+    public void delete() throws IOException {
         try {
             disconnect();
             Vector cons = RootNode.getOption().getConnections();
             DatabaseConnection cinfo = (DatabaseConnection)getDatabaseConnection();
-            if (cons.contains(cinfo)) cons.remove(cinfo);
+            if (cons.contains(cinfo))
+                cons.remove(cinfo);
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
     }
 
     public Object put(Object key, Object obj) {
-
         if (key.equals(USER) || key.equals(DRIVER) || key.equals(DATABASE)) {
             DatabaseOption option = RootNode.getOption();
             Vector cons = option.getConnections();
             Enumeration enu = cons.elements();
             while (enu.hasMoreElements()) {
-                DatabaseConnection dburl = (DatabaseConnection)enu.nextElement();
-                if (dburl.getDatabase().equals(getDatabase())
-                        && (dburl.getUser().equals(get(USER))) ) {
+                DatabaseConnection dburl = (DatabaseConnection) enu.nextElement();
+                if (dburl.getDatabase().equals(getDatabase()) && (dburl.getUser().equals(get(USER)))) {
                     if (key.equals(USER)) {
                         dburl.setUser(obj.toString());
                     } else if (key.equals(DRIVER)) {

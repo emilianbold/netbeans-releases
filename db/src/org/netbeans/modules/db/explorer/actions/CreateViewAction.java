@@ -36,9 +36,8 @@ public class CreateViewAction extends DatabaseAction {
         try {
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             
-            DatabaseMetaData dmd = info.getConnection().getMetaData();
-            if (! info.getDriverSpecification().areViewsSupported(dmd)) {
-                String message = MessageFormat.format(bundle.getString("MSG_ViewsAreNotSupported"), new String[] {dmd.getDatabaseProductName().trim()}); // NOI18N
+            if (! info.getDriverSpecification().areViewsSupported()) {
+                String message = MessageFormat.format(bundle.getString("MSG_ViewsAreNotSupported"), new String[] {info.getConnection().getMetaData().getDatabaseProductName().trim()}); // NOI18N
                 TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
                 return;
             }

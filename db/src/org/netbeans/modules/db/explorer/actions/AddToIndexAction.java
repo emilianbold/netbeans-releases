@@ -15,14 +15,13 @@ package org.netbeans.modules.db.explorer.actions;
 
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
+
+import org.openide.*;
+import org.openide.nodes.*;
 
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
-import org.openide.*;
-import org.openide.nodes.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.dlg.*;
 import org.netbeans.modules.db.explorer.nodes.*;
@@ -42,12 +41,9 @@ public class AddToIndexAction extends DatabaseAction {
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             DatabaseNodeInfo nfo = info.getParent(nodename);
 
-            String catalog = (String)nfo.get(DatabaseNode.CATALOG);
             String tablename = (String)nfo.get(DatabaseNode.TABLE);
             String columnname = (String)nfo.get(DatabaseNode.COLUMN);
 
-            Connection con = nfo.getConnection();
-            DatabaseMetaData dmd = info.getSpecification().getMetaData();
             Specification spec = (Specification)nfo.getSpecification();
             DriverSpecification drvSpec = info.getDriverSpecification();
             String index = (String)nfo.get(DatabaseNode.INDEX);
@@ -55,27 +51,34 @@ public class AddToIndexAction extends DatabaseAction {
             // List columns used in current index (do not show)
             HashSet ixrm = new HashSet();
 
-            drvSpec.getIndexInfo(catalog, dmd, tablename, false, false);
-            while (drvSpec.rs.next()) {
-                String ixname = drvSpec.rs.getString("INDEX_NAME"); // NOI18N
+            drvSpec.getIndexInfo(tablename, false, false);
+            ResultSet rs = drvSpec.getResultSet();
+            HashMap rset = new HashMap();
+            while (rs.next()) {
+                rset = drvSpec.getRow();
+                String ixname = (String) rset.get(new Integer(6));
                 if (ixname != null) {
-                    String colname = drvSpec.rs.getString("COLUMN_NAME"); // NOI18N
+                    String colname = (String) rset.get(new Integer(9));
                     if (ixname.equals(index))
                         ixrm.add(colname);
                 }
+                rset.clear();
             }
-            drvSpec.rs.close();
+            rs.close();
 
             // List columns not present in current index
             Vector cols = new Vector(5);
 
-            drvSpec.getColumns(catalog, dmd, tablename, null);
-            while (drvSpec.rs.next()) {
-                String colname = drvSpec.rs.getString("COLUMN_NAME"); // NOI18N
+            drvSpec.getColumns(tablename, "%");
+            rs = drvSpec.getResultSet();
+            while (rs.next()) {
+                rset = drvSpec.getRow();
+                String colname = (String) rset.get(new Integer(4));               
                 if (!ixrm.contains(colname))
                     cols.add(colname);
+                rset.clear();
             }
-            drvSpec.rs.close();
+            rs.close();
             if (cols.size() == 0)
                 throw new Exception(bundle.getString("EXC_NoUsableColumnInPlace")); // NOI18N
 
