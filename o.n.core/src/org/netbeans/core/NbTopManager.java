@@ -78,6 +78,9 @@ public abstract class NbTopManager extends TopManager {
   /** ExecutionMachine */
   private ExecutionEngine execEngine;
 
+  /** error manager */
+  private ErrorManager errorManager;
+
   /** CompilationMachine */
   private CompilationEngine compilationEngine;
 
@@ -228,6 +231,24 @@ public abstract class NbTopManager extends TopManager {
   */
   public void openProject (ProjectCookie project) throws IOException, UserCancelException {
     NbProjectOperation.setProject (project);
+  }
+
+  /** Get the exception manager for the IDE. It can be used to rafine 
+  * handling of exception and the way they are presented to the user.
+  * 
+  * @return the manager
+  */
+  public ErrorManager getErrorManager () {
+    if (errorManager != null) {
+      return errorManager;
+    }
+  
+    synchronized (this) {
+      if (errorManager == null) {
+        errorManager = new NbErrorManager ();
+      }
+    }
+    return errorManager;
   }
 
   /** Window manager.
