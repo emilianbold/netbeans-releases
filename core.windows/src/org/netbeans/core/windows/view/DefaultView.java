@@ -682,7 +682,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     ViewElement first, ViewElement second) {
         if(DEBUG) {
             debugLog("User moved split"); // NOI18N
-            Debug.dumpStack(DefaultView.class);
+//            Debug.dumpStack(DefaultView.class);
         }
 
         SplitAccessor splitAccessor = (SplitAccessor)hierarchy.getAccessorForView(splitView);
