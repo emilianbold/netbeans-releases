@@ -43,10 +43,6 @@ public final class PropertiesDataLoader extends UniFileLoader {
   /** Creates new PropertiesDataLoader */
   public PropertiesDataLoader() {
     super(PropertiesDataObject.class);
-    ExtensionList ext = new ExtensionList();
-    ext.addExtension("properties");
-    ext.addExtension("impl"); // for CORBA module
-    setExtensions(ext);
   }
 
   /** Does initialization. Initializes display name,
@@ -55,6 +51,11 @@ public final class PropertiesDataLoader extends UniFileLoader {
     super.initialize();
     setDisplayName(NbBundle.getBundle(PropertiesDataLoader.class).
                    getString("PROP_PropertiesLoader_Name"));
+
+    ExtensionList ext = new ExtensionList();
+    ext.addExtension("properties");
+    ext.addExtension("impl"); // for CORBA module
+    setExtensions(ext);
 
     setActions(new SystemAction[] {
       SystemAction.get(OpenAction.class),
@@ -135,6 +136,8 @@ public final class PropertiesDataLoader extends UniFileLoader {
 
 /*
 * <<Log>>
+*  16   Gandalf   1.15        12/4/99  Petr Jiricka    Changed extension 
+*       handling
 *  15   Gandalf   1.14        11/27/99 Patrik Knakal   
 *  14   Gandalf   1.13        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
