@@ -188,6 +188,8 @@
 
 <xsl:template match="TestBag">
 	<xsl:variable name="currentModule" select="@module"/>		
+	<xsl:variable name="testBagsInModule" select="parent::*/TestBag[@module=$currentModule]"/>
+	
 	<A NAME="{parent::*/@runID}-{@module}"><H3>Module: <xsl:value-of select="@module"/></H3></A>
 	
 	<TABLE width="95%" cellspacing="2" cellpadding="5" border="0">
@@ -202,21 +204,24 @@
 			<TD><B>Success Rate</B></TD>
 			<TD><B>Time (s)</B></TD>
 		</TR>
-		<TR class="pass">
-			<TD><B>Summary:</B></TD>
-			<TD align="center">-</TD>
-			<TD align="center">-</TD>
-			<xsl:variable name="testsPass" select="sum(parent::*/TestBag[@module=$currentModule]/@testsPass)"/>
-			<xsl:variable name="testsTotal" select="sum(parent::*/TestBag[@module=$currentModule]/@testsTotal)"/>
-			<TD><B><xsl:value-of select="$testsTotal"/></B></TD>
-			<TD><B><xsl:value-of select="$testsPass"/></B></TD>
-			<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsFail)"/></B></TD>
-			<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsError)"/></B></TD>
-			<TD><B><xsl:value-of select="format-number($testsPass div $testsTotal,'0.00%')"/></B></TD>
-			<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@time)"/></B></TD>
-		</TR>
+		
+		<xsl:if test="count($testBagsInModule) &gt; 1">
+			<TR class="pass">
+				<TD><B>Summary:</B></TD>
+				<TD align="center">-</TD>
+				<TD align="center">-</TD>
+				<xsl:variable name="testsPass" select="sum(parent::*/TestBag[@module=$currentModule]/@testsPass)"/>
+				<xsl:variable name="testsTotal" select="sum(parent::*/TestBag[@module=$currentModule]/@testsTotal)"/>
+				<TD><B><xsl:value-of select="$testsTotal"/></B></TD>
+				<TD><B><xsl:value-of select="$testsPass"/></B></TD>
+				<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsFail)"/></B></TD>
+				<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsError)"/></B></TD>
+				<TD><B><xsl:value-of select="format-number($testsPass div $testsTotal,'0.00%')"/></B></TD>
+				<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@time)"/></B></TD>
+			</TR>
+		</xsl:if>
 
-		<xsl:for-each select = "parent::*/TestBag[@module=$currentModule]">
+		<xsl:for-each select = "$testBagsInModule">
 			<xsl:sort data-type="text" select="@name"/>
 				<xsl:call-template name="testbag-summary-row"/>
 		</xsl:for-each>		
