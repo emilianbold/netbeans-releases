@@ -28,18 +28,56 @@ import org.apache.tools.ant.taskdefs.Java;
  */
 public class MakeNBM extends Task {
 
-    public static class Description {
+    public class Blurb {
 	private StringBuffer text = new StringBuffer ();
-	public Description () {
-	}
-	public Description (String text) {
-	    addText (text);
+	private File file = null;
+	private String name = null;
+	public Blurb () {
 	}
 	public void addText (String text) {
-	    this.text.append (text);
+	    // [PENDING] should also strip initial indentation, probably...
+	    // I.e. if every newline is followed by at least n spaces, then
+	    // strip n spaces after every newline (but leave any extra spaces,
+	    // other than trimming them).
+	    // Needed because of common style:
+	    // <description>
+	    //   Some text here.
+	    //   And another line.
+	    // </description>
+	    this.text.append (text.trim ());
 	}
-	public String getText () {
+	public String getText () throws BuildException {
+	    if (file != null) {
+		if (text.length () > 0)
+		    text.append ("\n\n"); // some sort of separator
+		try {
+		    InputStream is = new FileInputStream (file);
+		    try {
+			Reader r = new InputStreamReader (is);
+			char[] buf = new char[4096];
+			int len;
+			while ((len = r.read (buf)) != -1)
+			    text.append (buf, 0, len);
+		    } finally {
+			is.close ();
+		    }
+		} catch (IOException ioe) {
+		    throw new BuildException ("Exception reading blurb from " + file, ioe, location);
+		}
+	    }
 	    return text.toString ();
+	}
+	public void setName (String name) {
+	    this.name = name;
+	}
+	public String getName () {
+	    return name;
+	}
+	public void setFile (File file) {
+	    this.file = file;
+	    long lmod = file.lastModified ();
+	    if (lmod > mostRecentInput) mostRecentInput = lmod;
+	    name = file.getName ();
 	}
     }
 
@@ -62,9 +100,10 @@ public class MakeNBM extends Task {
     private File manifest = null;
     private String homepage = null;
     private String distribution = null;
-    private File license = null;
-    private Description description = new Description ("(no description)");
+    private Blurb license = null;
+    private Blurb description = null;
     private Signature signature = null;
+    long mostRecentInput = 0L;
 
     public void setFile (String file) {
 	this.file = file;
@@ -74,6 +113,8 @@ public class MakeNBM extends Task {
     }
     public void setManifest (File manifest) {
 	this.manifest = manifest;
+	long lmod = manifest.lastModified ();
+	if (lmod > mostRecentInput) mostRecentInput = lmod;
     }
     public void setHomepage (String homepage) {
 	this.homepage = homepage;
@@ -81,11 +122,11 @@ public class MakeNBM extends Task {
     public void setDistribution (String distribution) {
 	this.distribution = distribution;
     }
-    public void setLicense (File license) {
-	this.license = license;
+    public Blurb createLicense () {
+	return (license = new Blurb ());
     }
-    public Description createDescription () {
-	return (description = new Description ());
+    public Blurb createDescription () {
+	return (description = new Blurb ());
     }
     public Signature createSignature () {
 	return (signature = new Signature ());
@@ -103,81 +144,78 @@ public class MakeNBM extends Task {
 	if (infofile.exists ()) {
 	    // Check for up-to-date w.r.t. manifest and maybe license file.
 	    long iMod = infofile.lastModified ();
-	    if (manifest.lastModified () < iMod &&
-		(license == null || license.lastModified () < iMod))
+	    if (mostRecentInput < iMod)
 		return;
 	}
-	InputStream manifestStream = null;
-	InputStream licenseStream = null;
-	OutputStream infoStream = null;
+	Attributes attr;
+	// Read module manifest for main attributes.
 	try {
-	    // Read module manifest for main attributes.
-	    manifestStream = new FileInputStream (manifest);
-	    Attributes attr = new Manifest (manifestStream).getMainAttributes ();
-	    if (license != null)
-		licenseStream = new FileInputStream (license);
-	    infoStream = new FileOutputStream (infofile);
-	    PrintStream ps = new PrintStream (infoStream);
-	    // Begin writing XML.
-	    ps.println ("<?xml version='1.0'?>");
-	    ps.println ();
-	    String codenamebase = attr.getValue ("OpenIDE-Module");
-	    if (codenamebase == null)
-		throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
-	    // Strip major release number if any.
-	    int idx = codenamebase.lastIndexOf ('/');
-	    if (idx != -1) codenamebase = codenamebase.substring (0, idx);
-	    ps.println ("<module codenamebase=\"" + codenamebase + "\"");
-	    if (homepage != null)
-		ps.println ("        homepage=\"" + homepage + "\"");
-	    if (distribution != null)
-		ps.println ("        distribution=\"" + distribution + "\"");
-	    // Here we only write a name for the license.
-	    String licenseSimple;
-	    if (license == null)
-		licenseSimple = null;
-	    else
-		licenseSimple = license.getName ();
-	    if (licenseSimple != null)
-		ps.println ("        license=\"" + licenseSimple + "\"");
-	    ps.println ("        downloadsize=\"0\"");
-	    ps.println (">");
-	    ps.print ("  <description>");
-	    ps.print (description.getText ().trim ());
-	    ps.println ("</description>");
-	    // Write manifest attributes.
-	    ps.print ("  <manifest ");
-	    boolean firstline = true;
-	    Iterator it = attr.entrySet ().iterator ();
-	    while (it.hasNext ()) {
-		if (firstline)
-		    firstline = false;
-		else
-		    ps.print ("            ");
-		Map.Entry entry = (Map.Entry) it.next ();
-		ps.println (entry.getKey () + "=\"" + entry.getValue () + "\"");
+	    InputStream manifestStream = new FileInputStream (manifest);
+	    try {
+		attr = new Manifest (manifestStream).getMainAttributes ();
+	    } finally {
+		manifestStream.close ();
 	    }
-	    ps.println ("  />");
-	    // Maybe write out license text.
-	    if (licenseSimple != null) {
-		ps.print ("  <license name=\"" + licenseSimple + "\">");
-		byte[] buf = new byte[4096];
-		int read;
-		while ((read = licenseStream.read (buf)) != -1)
-		    ps.write (buf, 0, read);
-		ps.println ("</license>");
+	} catch (IOException e) {
+	    throw new BuildException ("exception when reading manifest " + manifest, e, location);
+	}
+	try {
+	    OutputStream infoStream = new FileOutputStream (infofile);
+	    try {
+		PrintStream ps = new PrintStream (infoStream);
+		// Begin writing XML.
+		ps.println ("<?xml version='1.0'?>");
+		ps.println ();
+		String codenamebase = attr.getValue ("OpenIDE-Module");
+		if (codenamebase == null)
+		    throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
+		// Strip major release number if any.
+		int idx = codenamebase.lastIndexOf ('/');
+		if (idx != -1) codenamebase = codenamebase.substring (0, idx);
+		ps.println ("<module codenamebase=\"" + codenamebase + "\"");
+		if (homepage != null)
+		    ps.println ("        homepage=\"" + homepage + "\"");
+		if (distribution != null)
+		    ps.println ("        distribution=\"" + distribution + "\"");
+		// Here we only write a name for the license.
+		if (license != null) {
+		    String name = license.getName ();
+		    if (name == null)
+			throw new BuildException ("Every license must have a name or file attribute", location);
+		    ps.println ("        license=\"" + name + "\"");
+		}
+		ps.println ("        downloadsize=\"0\"");
+		ps.println (">");
+		if (description != null) {
+		    ps.print ("  <description>");
+		    ps.print (description.getText ());
+		    ps.println ("</description>");
+		}
+		// Write manifest attributes.
+		ps.print ("  <manifest ");
+		boolean firstline = true;
+		Iterator it = attr.entrySet ().iterator ();
+		while (it.hasNext ()) {
+		    if (firstline)
+			firstline = false;
+		    else
+			ps.print ("            ");
+		    Map.Entry entry = (Map.Entry) it.next ();
+		    ps.println (entry.getKey () + "=\"" + entry.getValue () + "\"");
+		}
+		ps.println ("  />");
+		// Maybe write out license text.
+		if (license != null) {
+		    ps.print ("  <license name=\"" + license.getName () + "\">");
+		    ps.print (license.getText ());
+		    ps.println ("</license>");
+		}
+		ps.println ("</module>");
+	    } finally {
+		infoStream.close ();
 	    }
-	    ps.println ("</module>");
 	} catch (IOException e) {
 	    throw new BuildException ("exception when creating Info/info.xml", e, location);
-	} finally {
-	    try {
-		if (manifestStream != null) manifestStream.close ();
-		if (licenseStream != null) licenseStream.close ();
-		if (infoStream != null) infoStream.close ();
-	    } catch (IOException e2) {
-		throw new BuildException ("exception when closing streams", e2, location);
-	    }
 	}
 	// JAR it all up together.
 	Jar jar = (Jar) project.createTask ("jar");

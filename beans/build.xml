@@ -12,7 +12,9 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="beans" default="nbm" basedir=".">
+<project name="beans" default="netbeans" basedir=".">
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
+  <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
   <!-- See core/build.xml for explanation. -->
   <target name="compile">
     <ant dir="../beans" target="compile-with-classic-Javac">
@@ -29,7 +31,6 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
   </target>
   <target name="tojar">
-    <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
     <tojar srcdir="src" unpackeddir="tojar"/>
   </target>
   <target name="jars" depends="compile,tojar">
@@ -42,8 +43,20 @@ Microsystems, Inc. All Rights Reserved.
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
-  <target name="nbm" depends="jars">
-    <zip zipfile="beans.nbm" includes="netbeans/" basedir="."/>
+  <target name="netbeans" depends="jars"/>
+  <target name="nbm" depends="netbeans">
+    <makenbm file="beans.nbm"
+             topdir="."
+	     manifest="manifest-subst.mf"
+	     homepage="http://beans.netbeans.org/"
+	     distribution="http://www.netbeans.org/downloads/nbms/40/beans.nbm">
+      <license file="../nbbuild/standard-nbm-license.txt"/>
+      <description>
+        Development of JavaBeans components, including bean
+	properties, info, and event sets.
+      </description>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+    </makenbm>
   </target>
   <target name="clean">
     <delete dir="src">
@@ -53,5 +66,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-subst.mf"/>
     <delete file="beans.nbm"/>
     <deltree dir="netbeans"/>
+    <deltree dir="Info"/>
   </target>
 </project>

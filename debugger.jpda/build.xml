@@ -17,11 +17,16 @@ ToDo:
 - if jpda.jar is available in a standard location ($JH/lib/ or $JH/lib/ext/ or similar)
   but not in current classpath, then automatically add it to the classpath and continue
 -->
-<project name="debuggerjpda" default="maybe-nbm" basedir=".">
+<project name="debuggerjpda" default="netbeans" basedir=".">
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
   <target name="check">
     <available property="jpda" classname="com.sun.jdi.ObjectReference"/>
   </target>
-  <target name="compile" depends="check" if="jpda">
+  <target name="no-such-luck" depends="check" unless="jpda">
+    <echo message="Sorry, JPDA module will not be built unless you are running JDK 1.3"/>
+    <echo message="or otherwise have jpda.jar in your classpath when invoking Ant."/>
+  </target>
+  <target name="compile" depends="check,no-such-luck" if="jpda">
     <javac srcdir="src" destdir="src">
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
@@ -29,7 +34,7 @@ ToDo:
       </classpath>
     </javac>
   </target>
-  <target name="jars" depends="compile,check" if="jpda">
+  <target name="jars" depends="check,compile" if="jpda">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copyfile src="manifest.mf" dest="manifest-subst.mf" filtering="on"/>
@@ -43,14 +48,22 @@ ToDo:
     <copydir src="javahelp" dest="netbeans/docs"/>
   </target>
   <!-- Build only if JPDA is available now. -->
-  <target name="nbm" depends="check,jars,javahelp" if="jpda">
-    <zip zipfile="debuggerjpda.nbm" includes="netbeans/" basedir="."/>
+  <target name="netbeans" depends="check,jars,javahelp" if="jpda"/>
+  <target name="nbm" depends="check,netbeans" if="jpda">
+    <makenbm file="debuggerjpda.nbm"
+             topdir="."
+	     manifest="manifest-subst.mf"
+	     homepage="http://debuggerjpda.netbeans.org/"
+	     distribution="http://www.netbeans.org/downloads/nbms/40/debuggerjpda.nbm">
+      <license file="../nbbuild/standard-nbm-license.txt"/>
+      <description>
+        JPDA (Java Platform Debugger Architecture) debugger support.
+        Requires that you have jpda.jar installed (or are using JDK
+        1.3).
+      </description>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+    </makenbm>
   </target>
-  <target name="no-such-luck" depends="check" unless="jpda">
-    <echo message="Sorry, JPDA module will not be built unless you are running JDK 1.3"/>
-    <echo message="or otherwise have jpda.jar in your classpath when invoking Ant."/>
-  </target>
-  <target name="maybe-nbm" depends="check,nbm,no-such-luck"/>
   <target name="clean">
     <delete dir="src">
       <include name="**/*.class"/>
@@ -58,5 +71,6 @@ ToDo:
     <delete file="manifest-subst.mf"/>
     <delete file="debuggerjpda.nbm"/>
     <deltree dir="netbeans"/>
+    <deltree dir="Info"/>
   </target>
 </project>

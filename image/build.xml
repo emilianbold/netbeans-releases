@@ -35,8 +35,8 @@ Microsystems, Inc. All Rights Reserved.
              topdir="."
 	     manifest="manifest-subst.mf"
 	     homepage="http://image.netbeans.org/"
-	     distribution="http://www.netbeans.org/downloads/nbms/image.nbm"
-	     license="../nbbuild/standard-nbm-license.txt">
+	     distribution="http://www.netbeans.org/downloads/nbms/40/image.nbm">
+      <license file="../nbbuild/standard-nbm-license.txt"/>
       <description>
         Provides support for viewing images such as GIFs and JPEGs in the IDE.
       </description>

@@ -12,7 +12,8 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="debuggercore" default="nbm" basedir=".">
+<project name="debuggercore" default="netbeans" basedir=".">
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
   <target name="compile">
     <javac srcdir="src" destdir="src">
       <classpath>
@@ -31,8 +32,19 @@ Microsystems, Inc. All Rights Reserved.
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
-  <target name="nbm" depends="jars">
-    <zip zipfile="debuggercore.nbm" includes="netbeans/" basedir="."/>
+  <target name="netbeans" depends="jars">
+  <target name="nbm" depends="netbeans">
+    <makenbm file="debuggercore.nbm"
+             topdir="."
+	     manifest="manifest-subst.mf"
+	     homepage="http://debuggercore.netbeans.org/"
+	     distribution="http://www.netbeans.org/downloads/nbms/40/debuggercore.nbm">
+      <license file="../nbbuild/standard-nbm-license.txt"/>
+      <description>
+        Foundation for the IDE's debugger.
+      </description>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+    </makenbm>
   </target>
   <target name="clean">
     <delete dir="src">
@@ -41,5 +53,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-subst.mf"/>
     <delete file="debuggercore.nbm"/>
     <deltree dir="netbeans"/>
+    <deltree dir="Info"/>
   </target>
 </project>

@@ -22,8 +22,11 @@ ToDo:
 - use nested classpath tags in javac for modules:
   html httpserver icebrowser image jarpackager java javadoc
   objectbrowser projects properties utilities vcscvs web
-- handle Japanese sanely
-- NBM tasks for all modules (done for image)
+- handle Japanese sanely (consider branding too)
+- NBM tasks for all modules; do for:
+  debuggertools editor form html httpserver i18n icebrowser jarpackager
+  java javacvs javadoc objectbrowser openidex projects properties
+  text usersguide utilities vcscvs web
 - NBM-based module group file task
 - build validator DTD for this build system
 - see how many JARs can actually be moved from lib/ext/ (or modules/patches/) to modules/ext/
@@ -37,6 +40,7 @@ innertesters
 javacvs
 makefile
 multicompile
+remotefs
 scripting
 serialversion
 sysprops
@@ -202,6 +206,9 @@ treefs
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
+  <!-- XXX zip task not well suited to making final build, as it does not set +x bits -->
+  <!-- should also create empty lib/patches/ dir (but again zip task will ignore it) -->
+
   <target name="virgin" depends="build-messaging">
     <!-- Automatically include openide and core, these are mandatory -->
     <nbmerge dest="virgin" topdir=".." modules="openide,core,${modules}" targetprefix="all-"/>
@@ -222,6 +229,7 @@ treefs
     <!-- XXX chmod does not work reliably...investigate -->
     <exec os="Linux" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" output="firststart.log" failonerror="yes"/>
     <exec os="Solaris" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" output="firststart.log" failonerror="yes"/>
+    <!-- XXX ideal would be a timeout after which the process would get SIGQUIT then SIGINT then SIGKILL -->
     <echo message="Successfully started, cleaning up detritus..."/>
     <delete file="firststart/system/forte4j.log"/>
     <delete file="firststart/system/project.basic"/>
