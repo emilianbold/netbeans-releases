@@ -31,7 +31,7 @@ import org.openide.util.NbBundle;
 
 
 /** 
- * Action which allows user open file from disk. It installed
+ * Action which allows user open file from disk. It is installed
  * in Menu | File | Open file... .
  *
  * @author Jesse Glick
@@ -39,24 +39,24 @@ import org.openide.util.NbBundle;
 public class OpenFileAction extends CallableSystemAction {
 
     /** Generated serial version UID. */
-    static final long serialVersionUID =-3424129228987962529L;
+    static final long serialVersionUID = -3424129228987962529L;
     
     /** Cache of last directory. */
     private static File currDir;
 
     
-    /** Gets action name. ImMplements superclass abstract method. */
+    /** Gets action name. Implements superclass abstract method. */
     public String getName() {
-        return SettingsBeanInfo.getString ("LBL_openFile");
+        return SettingsBeanInfo.getString("LBL_openFile");
     }
 
     /** Gets action help context. Implements superclass abstract method. */
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (OpenFileAction.class);
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(OpenFileAction.class);
     }
 
     /** Gets action icon resource. Overrides superclass method. */
-    protected String iconResource () {
+    protected String iconResource() {
         return "org/netbeans/modules/openfile/openFile.gif"; // NOI18N
     }
 
@@ -67,7 +67,7 @@ public class OpenFileAction extends CallableSystemAction {
         
         FileFilter currentFilter = chooser.getFileFilter();
         
-        chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         
         chooser.setMultiSelectionEnabled(true);
         
@@ -80,44 +80,41 @@ public class OpenFileAction extends CallableSystemAction {
         
         chooser.setFileFilter(currentFilter);
         
-        if (currDir == null)
-        {
+        if (currDir == null) {
             String defaultDir = null;
-            try
-            {
+            try {
                 Enumeration enu = Repository.getDefault().getFileSystems();
-                while (enu.hasMoreElements())
-                {
-                    FileSystem fs = (FileSystem)enu.nextElement();
-                    if (fs != null && fs.isValid() && fs.isHidden() == false && fs instanceof JarFileSystem == false && fs.getSystemName() != null)
-                    {
+                while (enu.hasMoreElements()) {
+                    FileSystem fs = (FileSystem) enu.nextElement();
+                    if (fs != null && fs.isValid() && fs.isHidden() == false
+                            && fs instanceof JarFileSystem == false
+                            && fs.getSystemName() != null) {
                         defaultDir = fs.getSystemName();
                         break;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 defaultDir = null;
             }
-            if (defaultDir != null)
+            if (defaultDir != null) {
                 currDir = new File(defaultDir);
+            }
         }
         
-        if(currDir != null) 
+        if (currDir != null) {
             chooser.setCurrentDirectory (currDir);
-        
+        }
         File[] files = null;
         
-        while(chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            files = chooser.getSelectedFiles ();
+        while (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            files = chooser.getSelectedFiles();
 
             if (files.length == 0) {
                 // In jdk.1.2 is in fact not supported multi selection -> bug.
-                // Try to get the fisrt file and open.
+                // Try to get the first file and open.
                 File selected = chooser.getSelectedFile();
                 
-                if(selected != null) {
+                if (selected != null) {
                     files = new File[] {selected};
                 } else {
                     // Selected file doesn't exist.
@@ -129,13 +126,13 @@ public class OpenFileAction extends CallableSystemAction {
                 }
             }
             
-            for(int i = 0; i < files.length; i++)
-                OpenFile.open (files[i], false, null, 0, -1);
-            
+            for (int i = 0; i < files.length; i++) {
+                OpenFile.open(files[i], false, null, 0, -1);
+            }
             break;
         }
 
-        currDir = chooser.getCurrentDirectory ();
+        currDir = chooser.getCurrentDirectory();
     }
     
 
@@ -156,21 +153,27 @@ public class OpenFileAction extends CallableSystemAction {
         }
         
         
-        /** Accepts file or not. 
-         * @return true if file is accepted by this filter. */
+        /**
+         * Accepts file or not. 
+         * @return true if file is accepted by this filter.
+         */
         public boolean accept(File file) {
-            if(file.isDirectory())
+            if (file.isDirectory()) {
                 return true;
-            
-            for(int i = 0; i < extensions.length; i++) {
-                if(file.getName().toUpperCase().endsWith(extensions[i]))
+            }
+            for (int i = 0; i < extensions.length; i++) {
+                if (file.getName().toUpperCase().endsWith(extensions[i])) {
                     return true;
+                }
             }
             
             return false;
         }
         
-        /** Gets filter description. Implements <code>FileFilter</code> interface method. */
+        /**
+         * Gets filter description. Implements <code>FileFilter</code>
+         * interface method.
+         */
         public String getDescription() {
             return description;
         }

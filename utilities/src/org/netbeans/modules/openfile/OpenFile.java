@@ -67,7 +67,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
-/** Opens files when requested. Main functionality.
+/**
+ * Opens files when requested. Main functionality.
  *
  * @author Jaroslav Tulach, Jesse Glick
  */
@@ -90,51 +91,59 @@ public class OpenFile extends Object {
                     "org.netbeans.modules.openfile");                   //NOI18N
 
     
-    /** Open the file either by calling {@link OpenCookie} ({@link ViewCookie}), or by
-     * showing it in the Explorer.
+    /**
+     * Open the file either by calling {@link OpenCookie} ({@link ViewCookie}),
+     * or by showing it in the Explorer.
      * Uses {@link #find} to figure out what the right file object is.
+     *
      * @param fileName file name to open
      */
-    public static void open (final String fileName) {
-        em.log ("OpenFile.open: " + fileName);
+    public static void open(final String fileName) {
+        em.log("OpenFile.open: " + fileName);
 
-        final File f = new File (fileName);
-        RequestProcessor.getDefault().post
-            (new Runnable () {
-                    public void run () {
-                        open (f, false, null, -1, -1);
+        final File f = new File(fileName);
+        RequestProcessor.getDefault().post(
+                new Runnable() {
+                    public void run() {
+                        open(f, false, null, -1, -1);
                     }
-                }, 10000 //!!! Waiting for IDE initialization
-             );
+                },
+                10000); //!!! Waiting for IDE initialization
     }
 
     
-    /** Open the file either by calling {@link OpenCookie} ({@link ViewCookie}), or by
-     * showing it in the Explorer.
+    /**
+     * Open the file either by calling {@link OpenCookie} ({@link ViewCookie}),
+     * or by showing it in the Explorer.
      * Uses {@link #find} to figure out what the right file object is.
+     *
      * @param file file to open
      * @param wait whether to wait until requested to return a status
      * @param address address to send reply to, valid only if wait set
      * @param port port to send reply to, valid only if wait set
-     * @param line line number to try to open to (starting at zero), or <code>-1</code> to ignore
+     * @param line line number to try to open to (starting at zero),
+     *             or <code>-1</code> to ignore
      */
-    static void open (File file, final boolean wait, InetAddress address, int port, int line) {
+    static void open(File file,
+                     final boolean wait,
+                     InetAddress address,
+                     int port,
+                     int line) {
         try {
             file = file.getCanonicalFile();
         } catch (IOException exc) {
             // ignore it -- use original File instance
-            em.log (exc.getMessage());
+            em.log(exc.getMessage());
         }
 
-        em.log ("    file: " + file);
-        em.log ("    file.exists: " + file.exists());
-        em.log ("    file.isFile: " + file.isFile());
+        em.log("    file: " + file);
+        em.log("    file.exists: " + file.exists());
+        em.log("    file.isFile: " + file.isFile());
 
-        if ( ( file.exists() == false ) ||
-             ( file.isFile() == false ) ) {
+        if ((file.exists() == false) || (file.isFile() == false)) {
             final String fileName = file.toString();
-            new Thread (new Runnable () {
-                    public void run () {
+            new Thread (new Runnable() {
+                    public void run() {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 SettingsBeanInfo.getString("MSG_fileNotFound",  //NOI18N
                                                            fileName)));
@@ -145,34 +154,36 @@ public class OpenFile extends Object {
 
         FileObject fileObject = find(file);
 
-        if(fileObject == null) 
+        if (fileObject == null) {
             return;
-        
+        }
         try {
             DataObject dataObject = DataObject.find(fileObject);
             
-            final EditorCookie editorCookie = line != -1 ? (EditorCookie) dataObject.getCookie (EditorCookie.class) : null;
-            final OpenCookie openCookie = (OpenCookie)dataObject.getCookie (OpenCookie.class);
-            final ViewCookie viewCookie = (ViewCookie)dataObject.getCookie (ViewCookie.class);
+            final EditorCookie editorCookie = (line != -1)
+                    ? (EditorCookie) dataObject.getCookie(EditorCookie.class)
+                    : null;
+            final OpenCookie openCookie = (OpenCookie) dataObject.getCookie(OpenCookie.class);
+            final ViewCookie viewCookie = (ViewCookie) dataObject.getCookie(ViewCookie.class);
             
             if (openCookie != null || viewCookie != null || editorCookie != null) {
                 StatusDisplayer.getDefault().setStatusText(
                         SettingsBeanInfo.getString(wait ? "MSG_openingAndWaiting"   //NOI18N
                                                         : "MSG_opening",            //NOI18N
-                                                   file.toString ()));
+                                                   file.toString()));
                 
-                if(editorCookie != null) {
-                    editorCookie.open ();
-                    StyledDocument doc = editorCookie.openDocument ();
-                    JEditorPane[] panes = editorCookie.getOpenedPanes ();
+                if (editorCookie != null) {
+                    editorCookie.open();
+                    StyledDocument doc = editorCookie.openDocument();
+                    JEditorPane[] panes = editorCookie.getOpenedPanes();
                     
-                    if(panes.length > 0)
-                        panes[0].setCaretPosition (NbDocument.findLineOffset (doc, line));
-                    else
+                    if (panes.length > 0) {
+                        panes[0].setCaretPosition(NbDocument.findLineOffset(doc, line));
+                    } else {
                         StatusDisplayer.getDefault().setStatusText(
                                 SettingsBeanInfo.getString("MSG_couldNotOpenAt"));  //NOI18N
-                    
-                } else if(openCookie != null) {
+                    }
+                } else if (openCookie != null) {
                     openCookie.open();
                 } else {
                     viewCookie.view();
@@ -180,34 +191,36 @@ public class OpenFile extends Object {
                 
                 StatusDisplayer.getDefault().setStatusText(""); // NOI18N
                 
-                if(wait) {
+                if (wait) {
                     // Could look for a SaveCookie just to see, but need not.
                     Server.waitFor(dataObject, address, port);
                 }
             } else {
                 try {
                     // If it's zip/jar file dont do additional things.
-                    if(fileObject.getFileSystem() instanceof JarFileSystem)
+                    if (fileObject.getFileSystem() instanceof JarFileSystem) {
                         return;
-                } catch(FileStateInvalidException fse) {
-                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, fse);
+                    }
+                } catch (FileStateInvalidException fse) {
+                    org.openide.ErrorManager.getDefault().notify(
+                            org.openide.ErrorManager.INFORMATIONAL, fse);
                 }
                 
-                Node node = dataObject.getNodeDelegate ();
+                Node node = dataObject.getNodeDelegate();
                 
-                if(fileObject.isRoot()) {
+                if (fileObject.isRoot()) {
                     // Try to get the node used in the usual Repository, which
                     // has a non-blank display name and is thus nicer.
-                    FileSystem fs = fileObject.getFileSystem ();
+                    FileSystem fs = fileObject.getFileSystem();
                     Node reponode = RepositoryNodeFactory.getDefault()
                                     .repository(DataFilter.ALL);
-                    Children repokids = reponode.getChildren ();
+                    Children repokids = reponode.getChildren();
                     Enumeration fsenum = repokids.nodes();
                     
-                    while (fsenum.hasMoreElements ()) {
-                        Node fsnode = (Node) fsenum.nextElement ();
-                        DataFolder df = (DataFolder) fsnode.getCookie (DataFolder.class);
-                        if (df != null && df.getPrimaryFile ().getFileSystem ().equals (fs)) {
+                    while (fsenum.hasMoreElements()) {
+                        Node fsnode = (Node) fsenum.nextElement();
+                        DataFolder df = (DataFolder) fsnode.getCookie(DataFolder.class);
+                        if (df != null && df.getPrimaryFile().getFileSystem().equals(fs)) {
                             node = fsnode;
                             break;
                         }
@@ -227,52 +240,60 @@ public class OpenFile extends Object {
                                       .allLoaders();
                 DataLoader DDOLoader = null;
                 // get last data loader from enumeration which have to be default data loader
-                for(; loaders.hasMoreElements(); )
+                for (; loaders.hasMoreElements(); ) {
                     DDOLoader = (DataLoader)loaders.nextElement();
-
+                }
                 boolean opened = false;
                 
-                if(DDOLoader != null && dataObject.getClass().getName().equals(DDOLoader.getRepresentationClass().getName())) {
+                if (DDOLoader != null
+                        && dataObject.getClass().getName().equals(
+                                DDOLoader.getRepresentationClass().getName())) {
                     // Is default data object.
                     Action defaultAction = node.getPreferredAction();
                     
-                    if(defaultAction != null && !(defaultAction instanceof FileSystemAction)) {
+                    if (defaultAction != null
+                            && !(defaultAction instanceof FileSystemAction)) {
                         // Now we suppose Convert To Text Action is available.
                         defaultAction.actionPerformed(new ActionEvent(node, 0, null)); 
 
                         fileObject.refresh();
                         try {
                             DataObject newDataObject = DataObject.find(fileObject);
-                            OpenCookie newOpenCookie = (OpenCookie)newDataObject.getCookie(OpenCookie.class);
+                            OpenCookie newOpenCookie = (OpenCookie) newDataObject.getCookie(OpenCookie.class);
 
-                            if(newOpenCookie != null) {
+                            if (newOpenCookie != null) {
                                 newOpenCookie.open();
                                 opened = true;
                             }
-                        } catch(DataObjectNotFoundException dnfe) {
+                        } catch (DataObjectNotFoundException dnfe) {
                             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, dnfe);
                         }
                     }
                 }
 
-                if(!opened)
+                if (!opened) {
                     // As last resort, explore the node.
                     NodeOperation.getDefault().explore(node);
-                
-                if(wait)
+                }
+                if (wait) {
                     DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message(SettingsBeanInfo.getString(
                                     "MSG_cannotOpenWillClose",          //NOI18N
                                     file)));
+                }
             }
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
         }
     }
     
-    /** Handles .zip and .jar files. Finds of the jar file system
+    /**
+     * Handles .zip and .jar files. Finds of the jar file system
      * is already mounted, if not mounts it.
-     * @return root <code>FileObject</code>of jar file system or null in case of error */ 
+     *
+     * @return root <code>FileObject</code> of jar file system
+     *         or null in case of error
+     */ 
     private static FileObject handleZipJar(File file) {
         JarFileSystem jarFileSystem = new JarFileSystem ();
         try {
@@ -281,7 +302,7 @@ public class OpenFile extends Object {
             ErrorManager.getDefault().notify(ioe);
             
             return null;
-        } catch(PropertyVetoException pve) {
+        } catch (PropertyVetoException pve) {
             ErrorManager.getDefault().notify(pve);
             
             return null;
@@ -291,9 +312,9 @@ public class OpenFile extends Object {
         
         FileSystem existing = repository.findFileSystem(jarFileSystem.getSystemName());
         
-        if(existing == null) {
+        if (existing == null) {
             // have commented out (issue #23223)
-//             if(TopManager.getDefault().notify(new NotifyDescriptor.Confirmation (SettingsBeanInfo.getString ("MSG_mountArchiveConfirm", file),
+//             if (TopManager.getDefault().notify(new NotifyDescriptor.Confirmation (SettingsBeanInfo.getString ("MSG_mountArchiveConfirm", file),
 //                 SettingsBeanInfo.getString ("LBL_mountArchiveConfirm"))).equals (NotifyDescriptor.OK_OPTION)) {
                 repository.addFileSystem(jarFileSystem);
                 existing = jarFileSystem;
@@ -303,11 +324,14 @@ public class OpenFile extends Object {
         }
         
         // The root folder will be displayed in the Explorer:
-        return existing.getRoot ();
+        return existing.getRoot();
     }
 
-    /** Find java package in side .java file. 
-     * @return package or null if not found */
+    /**
+     * Find java package in side .java file. 
+     *
+     * @return package or null if not found
+     */
     private static String findJavaPackage(File file) {
         String pkg = ""; // NOI18N
         boolean packageKnown = false;
@@ -333,7 +357,7 @@ public class OpenFile extends Object {
             }
 
             while (!packageKnown) {
-                String line = rd.readLine ();
+                String line = rd.readLine();
                 if (line == null) {
                     packageKnown = true; // i.e. valid termination of search, default pkg
                     //break;
@@ -341,28 +365,29 @@ public class OpenFile extends Object {
                 }
 
                 pckgPos = line.indexOf(PACKAGE);
-                if (pckgPos == -1) continue;
-
-                StringTokenizer tok = new StringTokenizer (line, " \t;"); // NOI18N
+                if (pckgPos == -1) {
+                    continue;
+                }
+                StringTokenizer tok = new StringTokenizer(line, " \t;"); // NOI18N
                 boolean gotPackage = false;
-                while (tok.hasMoreTokens ()) {
+                while (tok.hasMoreTokens()) {
                     String theTok = tok.nextToken ();
                     if (gotPackage) {
                         // Hopefully the package name, but first a sanity check...
-                        StringTokenizer ptok = new StringTokenizer (theTok, "."); // NOI18N
-                        boolean ok = ptok.hasMoreTokens ();
-                        while (ptok.hasMoreTokens ()) {
-                            String component = ptok.nextToken ();
-                            if (component.length () == 0) {
+                        StringTokenizer ptok = new StringTokenizer(theTok, "."); // NOI18N
+                        boolean ok = ptok.hasMoreTokens();
+                        while (ptok.hasMoreTokens()) {
+                            String component = ptok.nextToken();
+                            if (component.length() == 0) {
                                 ok = false;
                                 break;
                             }
-                            if (! Character.isJavaIdentifierStart (component.charAt (0))) {
+                            if (!Character.isJavaIdentifierStart(component.charAt(0))) {
                                 ok = false;
                                 break;
                             }
-                            for (int pos = 1; pos < component.length (); pos++) {
-                                if (! Character.isJavaIdentifierPart (component.charAt (pos))) {
+                            for (int pos = 1; pos < component.length(); pos++) {
+                                if (!Character.isJavaIdentifierPart(component.charAt(pos))) {
                                     ok = false;
                                     break;
                                 }
@@ -393,7 +418,9 @@ public class OpenFile extends Object {
             ErrorManager.getDefault().notify(e1);
         } finally {
             try {
-                if (rd != null) rd.close ();
+                if (rd != null) {
+                    rd.close();
+                }
             } catch (IOException e2) {
                 ErrorManager.getDefault().notify(e2);
             }
@@ -402,14 +429,16 @@ public class OpenFile extends Object {
         return null;
     }
     
-    /** Try to find the file object corresponding to a given file on disk.
+    /**
+     * Try to find the file object corresponding to a given file on disk.
      * Can produce a folder, mount directories, etc. as needed.
+     *
      * @param f the file on local disk 
      * @return file object or <code>null</code> if not found
      */
-    private static synchronized FileObject find (File f) {
-        String fileName = f.toString ();
-        String fileNameUpper = fileName.toUpperCase ();
+    private static synchronized FileObject find(File f) {
+        String fileName = f.toString();
+        String fileNameUpper = fileName.toUpperCase();
         
         // Handle ZIP/JAR files by mounting and displaying.
         if (fileNameUpper.endsWith(ZIP_EXT) || fileNameUpper.endsWith(JAR_EXT)) {
@@ -420,36 +449,36 @@ public class OpenFile extends Object {
         FileObject[] fObjects = FileUtil.fromFile(f);
 
         // Has found something from already mounted filesystems.
-        if ( fObjects.length > 0 ) {
+        if (fObjects.length > 0) {
             FileObject fileObj = fObjects[0];
 
             // And if there is more then one possible FileObjects, try to find one in correct package
-            if ( fObjects.length > 1 ) {
+            if (fObjects.length > 1) {
                 // Find java file with SAME package
-                if ( fileNameUpper.endsWith (JAVA_EXT) ) {
+                if (fileNameUpper.endsWith(JAVA_EXT)) {
                     // file package
-                    String pkg = findJavaPackage (f);
+                    String pkg = findJavaPackage(f);
                 
-                    for ( int i = 0; i < fObjects.length; i++ ) {
+                    for (int i = 0; i < fObjects.length; i++) {
                         // FileObject package
                         String pkg_i = ""; // NOI18N
-                        if ( fObjects[i].isRoot() == false ) {
+                        if (fObjects[i].isRoot() == false) {
                             FileObject parent = fObjects[i].getParent();
-                            pkg_i = parent.getPackageName ('.');
+                            pkg_i = parent.getPackageName('.');
                         }
                         
-                        if ( pkg.equals (pkg_i) ) { // yes, this is right package
+                        if (pkg.equals (pkg_i)) { // yes, this is right package
                             fileObj = fObjects[i];
                             break;
                         }
                     }
                 } else {
                     // Find file with the shortest package name
-                    String shortName = fileObj.getPackageName ('.');
+                    String shortName = fileObj.getPackageName('.');
 
-                    for ( int i = 1; i < fObjects.length; i++ ) {
-                        String name_i = fObjects[i].getPackageName ('.');
-                        if ( name_i.length() < shortName.length() ) {
+                    for (int i = 1; i < fObjects.length; i++) {
+                        String name_i = fObjects[i].getPackageName('.');
+                        if (name_i.length() < shortName.length()) {
                             fileObj   = fObjects[i];
                             shortName = name_i;
                         }
@@ -473,31 +502,32 @@ public class OpenFile extends Object {
         if (pkg == null) {
             pkg = ""; // assume default package // NOI18N
             packageKnown = false;
-        } else
+        } else {
             packageKnown = true;
-        
-        String prefix = pkg.replace ('.', File.separatorChar);
-        File dir = f.getParentFile ();
+        }
+        String prefix = pkg.replace('.', File.separatorChar);
+        File dir = f.getParentFile();
         String pkgtouse = ""; // NOI18N
-        while (! pkg.equals ("") && dir != null) { // NOI18N
-            int lastdot = pkg.lastIndexOf ('.');
+        while (!pkg.equals("") && dir != null) { // NOI18N
+            int lastdot = pkg.lastIndexOf('.');
             String trypkg;
             String trypart;
             if (lastdot == -1) {
                 trypkg = ""; // NOI18N
                 trypart = pkg;
             } else {
-                trypkg = pkg.substring (0, lastdot);
-                trypart = pkg.substring (lastdot + 1);
+                trypkg = pkg.substring(0, lastdot);
+                trypart = pkg.substring(lastdot + 1);
             }
-            if (dir.getName ().equals (trypart) && dir.getParentFile () != null) {
+            if (dir.getName().equals(trypart) && dir.getParentFile() != null) {
                 // Worked so far.
-                dir = dir.getParentFile ();
+                dir = dir.getParentFile();
                 pkg = trypkg;
-                if (pkgtouse.equals ("")) // NOI18N
+                if (pkgtouse.equals("")) { // NOI18N
                     pkgtouse = trypart;
-                else
+                } else {
                     pkgtouse = trypart + "." + pkgtouse; // NOI18N
+                }
             } else {
                 // No dice.
                 packageKnown = false;
@@ -507,36 +537,36 @@ public class OpenFile extends Object {
         
         // Ask what to mount (if anything). Prompt appropriately with the possible
         // mount points, as well as the recommended one if there is one (i.e. for valid *.java).
-        File[] dirToMount = new File[] { null };
-        String[] mountPackage = new String[] { null };
+        File[] dirToMount = new File[] {null};
+        String[] mountPackage = new String[] {null};
         int pkgLevel = 0;
-        if (! pkgtouse.equals ("")) { // NOI18N
+        if (!pkgtouse.equals("")) { // NOI18N
             int pos = -1;
             do {
-                pos = pkgtouse.indexOf ('.', pos + 1);
+                pos = pkgtouse.indexOf('.', pos + 1);
                 pkgLevel++;
             } while (pos != -1);
         }
         
-        if(!packageKnown) 
+        if (!packageKnown) {
             pkgLevel = -1;
-        
+        }
         // PENDING This is just partial temporary solution.
         // All files except java will be mounted directly (like under default package).
-        if(!fileNameUpper.endsWith(JAVA_EXT)) { // NOI18N
+        if (!fileNameUpper.endsWith(JAVA_EXT)) { // NOI18N
             // Text fiel mount to default package without asking.
             dirToMount[0] = f.getParentFile();            
             mountPackage[0] = ""; // NOI18N
-        } else
+        } else {
             askForMountPoint (f, pkgLevel, dirToMount, mountPackage);
-        
-        if(dirToMount[0] == null) 
+        }
+        if (dirToMount[0] == null) {
             return null;
-        
+        }
         // Mount it.
-        LocalFileSystem fs = new LocalFileSystem ();
+        LocalFileSystem fs = new LocalFileSystem();
         try {
-            fs.setRootDirectory (dirToMount[0]);
+            fs.setRootDirectory(dirToMount[0]);
         } catch (PropertyVetoException e3) {
             ErrorManager.getDefault().notify(e3);
             return null;
@@ -546,36 +576,49 @@ public class OpenFile extends Object {
         }
         
         Repository repo = Repository.getDefault();
-        if (repo.findFileSystem (fs.getSystemName ()) != null) {
+        if (repo.findFileSystem(fs.getSystemName()) != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     MessageFormat.format(
                             NbBundle.getBundle(OpenFile.class)
                                     .getString("MSG_wasAlreadyMounted"),
-                            new Object[] { fs.getSystemName() })));
+                            new Object[] {fs.getSystemName()})));
             return null;
         }
-        repo.addFileSystem (fs);
+        repo.addFileSystem(fs);
         
-        return fs.findResource (mountPackage[0].replace ('.', '/') + (mountPackage[0].equals ("") ? "" : "/") + f.getName ()); // NOI18N
+        return fs.findResource(mountPackage[0].replace('.', '/')
+                               + (mountPackage[0].equals("") ? "" : "/") // NOI18N
+                               + f.getName());
     }
 
-    /** Ask what dir to mount to access a given file.
+    /**
+     * Ask what dir to mount to access a given file.
      * First may display a dialog asking whether the user wishes to select the default,
      * or edit the package selection.
+     *
      * @param f the file which should be accessible
-     * @param pkgLevel the suggested depth of the package; 0 = default, 1 = single component, 2 = foo.bar, etc.; -1 if no suggested package
-     * @param dirToMount 0th elt will contain the directory to mount (null to cancel the mount)
-     * @param mountPackage 0th elt will contain the name of the package (possibly empty, not null) the file will be in
+     * @param pkgLevel the suggested depth of the package;
+     *                 0 = default, 1 = single component, 2 = foo.bar, etc.;
+     *                 -1 if no suggested package
+     * @param dirToMount 0th elt will contain the directory to mount
+     *                   (null to cancel the mount)
+     * @param mountPackage 0th elt will contain the name of the package
+     *                     (possibly empty, not null) the file will be in
      */
-    private static void askForMountPoint (File f, int pkgLevel, final File[] dirToMount, final String[] mountPackage) {
-        final java.util.List /*Vector*/ dirs = new Vector (); // list of mountable dir names; Vector<File>
-        final java.util.List /*Vector*/ pkgs = new Vector (); // list of resulting package names; Vector<String>
+    private static void askForMountPoint(File f,
+                                         int pkgLevel,
+                                         final File[] dirToMount,
+                                         final String[] mountPackage) {
+        final java.util.List /*Vector*/ dirs = new Vector(); // list of mountable dir names; Vector<File>
+        final java.util.List /*Vector*/ pkgs = new Vector(); // list of resulting package names; Vector<String>
         String pkg = ""; // NOI18N
-        for (File dir = f.getParentFile (); dir != null; dir = dir.getParentFile ()) {
-            dirs.add (dir);
-            pkgs.add (pkg);
-            if (! pkg.equals ("")) pkg = "." + pkg; // NOI18N
-            pkg = dir.getName () + pkg;
+        for (File dir = f.getParentFile(); dir != null; dir = dir.getParentFile()) {
+            dirs.add(dir);
+            pkgs.add(pkg);
+            if (!pkg.equals("")) { // NOI18N
+                pkg = "." + pkg; // NOI18N
+            }
+            pkg = dir.getName() + pkg;
         }
 
         // If no guess, always show full dialog.
@@ -618,19 +661,19 @@ public class OpenFile extends Object {
         JButton cancelButton = panel.getCancelButton();
         final JList list = panel.getList();
         
-        dialog[0] = DialogDisplayer.getDefault().createDialog
-            (new DialogDescriptor
-             (panel,                   // object
-              SettingsBeanInfo.getString ("LBL_wizTitle"), // title
+        dialog[0] = DialogDisplayer.getDefault().createDialog(
+            new DialogDescriptor(
+              panel,                   // object
+              SettingsBeanInfo.getString("LBL_wizTitle"), // title
               true,                    // modal
-              new Object[] { okButton, cancelButton }, // options
+              new Object[] {okButton, cancelButton}, // options
               okButton,                // initial
               DialogDescriptor.DEFAULT_ALIGN, // align
-              new HelpCtx (OpenFile.class.getName () + ".dialog"), // help // NOI18N
-              new ActionListener () { // listener
-                  public void actionPerformed (ActionEvent evt) {
-                      if (evt.getSource () == okButton) {
-                          int idx = list.getSelectedIndex ();
+              new HelpCtx(OpenFile.class.getName() + ".dialog"), // help // NOI18N
+              new ActionListener() { // listener
+                  public void actionPerformed(ActionEvent evt) {
+                      if (evt.getSource() == okButton) {
+                          int idx = list.getSelectedIndex();
                           if (idx != -1) {
                               dirToMount[0] = (File) dirs.get(idx);
                               mountPackage[0] = (String) pkgs.get(idx);
@@ -638,13 +681,14 @@ public class OpenFile extends Object {
                               System.err.println ("Should not have accepted OK button");
                           }
                       }
-                      dialog[0].dispose ();
+                      dialog[0].dispose();
                   }
               }));
-        dialog[0].show ();
+        dialog[0].show();
     }
 
-    /** Filtered reader for Java sources - it simply excludes
+    /**
+     * Filtered reader for Java sources - it simply excludes
      * comments and some useless whitespaces from the original stream.
      */
     public static class SourceReader extends InputStreamReader {
@@ -652,8 +696,8 @@ public class OpenFile extends Object {
         private boolean inString = false;
         private boolean backslashLast = false;
         private boolean separatorLast = false;
-        static private final char separators[] = { '.' }; // dot is enough here...
-        static private final char whitespaces[] = { ' ', '\t', '\r', '\n' };
+        static private final char separators[] = {'.'}; // dot is enough here...
+        static private final char whitespaces[] = {' ', '\t', '\r', '\n'};
         
         public SourceReader(InputStream in) {
             super(in);
@@ -674,58 +718,66 @@ public class OpenFile extends Object {
                 if (preRead != -1) {
                     c = preRead;
                     preRead = -1;
-                }
-                else {
+                } else {
                     c = super.read(onechar, 0, 1);
-                    if (c == -1) // end of stream reached
-                        return numRead > 0 ? numRead : -1;
+                    if (c == -1) {   // end of stream reached
+                        return (numRead > 0) ? numRead : -1;
+                    }
                     c = onechar[0];
                 }
                 
                 if (c == '/' && !inString) { // a comment could start here
                     preRead = super.read(onechar, 0, 1);
-                    if (preRead == 1) preRead = onechar[0];
+                    if (preRead == 1) {
+                        preRead = onechar[0];
+                    }
                     if (preRead != '*' && preRead != '/') { // it's not a comment
                         data[pos++] = (char) c;
                         numRead++;
-                        if (preRead == -1) // end of stream reached
+                        if (preRead == -1) {   // end of stream reached
                             return numRead;
-                    }
-                    else { // we have run into the comment - skip it
+                        }
+                    } else { // we have run into the comment - skip it
                         if (preRead == '*') { // comment started with /*
                             preRead = -1;
                             do {
                                 c = moveToChar('*');
                                 if (c == 0) {
                                     c = super.read(onechar, 0, 1);
-                                    if (c == 1) c = onechar[0];
-                                    if (c == '*') preRead = c;
+                                    if (c == 1) {
+                                        c = onechar[0];
+                                    }
+                                    if (c == '*') {
+                                        preRead = c;
+                                    }
                                 }
                             } while (c != '/' && c != -1);
-                        }
-                        else { // comment started with //
+                        } else { // comment started with //
                             preRead = -1;
                             c = moveToChar('\n');
-                            if (c == 0) preRead = '\n';
+                            if (c == 0) {
+                                preRead = '\n';
+                            }
                         }
-                        if (c == -1) return -1;   // end of stream reached
+                        if (c == -1) {   // end of stream reached
+                            return -1;
+                        }
                     }
-                }
-                else { // normal valid character
+                } else { // normal valid character
                     if (!inString) { // not inside a string " ... "
                         if (isWhitespace(c)) { // reduce some whitespaces
                             while (true) {
                                 preRead = super.read(onechar, 0, 1);
-                                if (preRead == -1) // end of stream reached
-                                    return numRead > 0 ? numRead : -1;
+                                if (preRead == -1) {   // end of stream reached
+                                    return (numRead > 0) ? numRead : -1;
+                                }
                                 preRead = onechar[0];
 
                                 if (isSeparator(preRead)) {
                                     c = preRead;
                                     preRead = -1;
                                     break;
-                                }
-                                else if (!isWhitespace(preRead)) {
+                                } else if (!isWhitespace(preRead)) {
                                     if (separatorLast) {
                                         c = preRead;
                                         preRead = -1;
@@ -738,16 +790,19 @@ public class OpenFile extends Object {
                         if (c == '\"' || c == '\'') {
                             inString = true;
                             separatorLast = false;
+                        } else {
+                            separatorLast = isSeparator(c);
                         }
-                        else separatorLast = isSeparator(c);
-                    }
-                    else { // we are just in a string
+                    } else { // we are just in a string
                         if (c == '\"' || c == '\'') {
-                            if (!backslashLast)
+                            if (!backslashLast) {
                                 inString = false;
-                            else backslashLast = false;
+                            } else {
+                                backslashLast = false;
+                            }
+                        } else {
+                            backslashLast = (c == '\\');
                         }
-                        else backslashLast = (c == '\\');
                     }
 
                     data[pos++] = (char) c;
@@ -764,30 +819,37 @@ public class OpenFile extends Object {
             if (preRead != -1) {
                 cc = preRead;
                 preRead = -1;
-            }
-            else {
+            } else {
                 cc = super.read(onechar, 0, 1);
-                if (cc == 1) cc = onechar[0];
+                if (cc == 1) {
+                    cc = onechar[0];
+                }
             }
 
             while (cc != -1 && cc != c) {
                 cc = super.read(onechar, 0, 1);
-                if (cc == 1) cc = onechar[0];
+                if (cc == 1) {
+                    cc = onechar[0];
+                }
             }
 
-            return cc == -1 ? -1 : 0;
+            return (cc == -1) ? -1 : 0;
         }
 
         static private boolean isSeparator(int c) {
             for (int i=0; i < separators.length; i++) {
-                if (c == separators[i]) return true;
+                if (c == separators[i]) {
+                    return true;
+                }
             }
             return false;
         }
 
         static private boolean isWhitespace(int c) {
             for (int i=0; i < whitespaces.length; i++) {
-                if (c == whitespaces[i]) return true;
+                if (c == whitespaces[i]) {
+                    return true;
+                }
             }
             return false;
         }
