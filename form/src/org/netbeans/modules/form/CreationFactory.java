@@ -343,40 +343,106 @@ public class CreationFactory {
      * @return index of most suitable creator
      */
     public static int getBestCreator(CreationDescriptor.Creator[] creators,
-                                     int[] placed, boolean placeAllProps) {
-
-        if (creators == null || creators.length == 0) return -1;
+                                     FormProperty[] properties,
+                                     int[] placed,
+                                     boolean placeAllProps)
+    {
+        if (creators == null || creators.length == 0)
+            return -1;
 
         int best = 0;
         int[] sizes = new int[creators.length];
         sizes[0] = creators[0].getParameterCount();
 
-        if (placeAllProps)
+        if (placeAllProps) {
             // find shortest creator with all properties placed
             for (int i=1; i < placed.length; i++) {
                 sizes[i] = creators[i].getParameterCount();
                 if (placed[i] > placed[best]
                     || (placed[i] == placed[best]
-                        && sizes[i] < sizes[best]))
+                        && (sizes[i] < sizes[best]
+                            || (sizes[i] == sizes[best]
+                                && compareCreatorsAmbiguity(
+                                     creators[i], creators[best], properties)
+                                   == 1))))
                     best = i;
             }
-        else
-            // find longest creator with all parameters provided by properties
+        }
+        else { // find longest creator with all parameters provided by properties
             for (int i=1; i < placed.length; i++) {
                 sizes[i] = creators[i].getParameterCount();
                 int iDiff = sizes[i] - placed[i];
                 int bestDiff = sizes[best] - placed[best];
                 if (iDiff < bestDiff
                     || (iDiff == bestDiff
-                        && sizes[i] > sizes[best]))
+                        && (sizes[i] > sizes[best]
+                            || (sizes[i] == sizes[best]
+                                && compareCreatorsAmbiguity(
+                                     creators[i], creators[best], properties)
+                                   == 1))))
                     best = i;
             }
+        }
 
         return best;
     }
 
     // -----------
     // non-public methods
+
+    /** Compares two creators with equal number of placed properties and equal
+     * number of all properties. To distinguish which one is better, their
+     * properties are checked for null values which could cause ambiguity in
+     * generated code.
+     * @return 1 if creator1 is better, 2 if creator2 is better, 0 if they
+     *          are equal
+     */
+    static int compareCreatorsAmbiguity(CreationDescriptor.Creator cr1,
+                                        CreationDescriptor.Creator cr2,
+                                        FormProperty[] properties)
+    {
+        int nullValues1 = 0;
+        int nullValues2 = 0;
+
+        for (int i=0, n=cr1.getParameterCount(); i < n; i++) {
+            String name1 = cr1.getPropertyNames()[i];
+            String name2 = cr2.getPropertyNames()[i];
+            if (!name1.equals(name2)) {
+                FormProperty prop1 = null;
+                FormProperty prop2 = null;
+                for (int j=0; j < properties.length; j++)
+                    if (prop1 == null && name1.equals(properties[j].getName())) {
+                        prop1 = properties[j];
+                        if (prop2 != null)
+                            break;
+                    }
+                    else if (prop2 == null && name2.equals(properties[j].getName())) {
+                        prop2 = properties[j];
+                        if (prop1 != null)
+                            break;
+                    }
+
+                if (prop1 != null && !prop1.getValueType().isPrimitive()) {
+                    try {
+                        if (prop1.getRealValue() == null)
+                            nullValues1++;
+                    }
+                    catch (Exception ex) {} // ignore
+                }
+                if (prop2 != null && !prop2.getValueType().isPrimitive()) {
+                    try {
+                        if (prop2.getRealValue() == null)
+                            nullValues2++;
+                    }
+                    catch (Exception ex) {} // ignore
+                }
+            }
+        }
+
+        if (nullValues1 == nullValues2)
+            return 0;
+        return nullValues1 < nullValues2 ? 1 : 2;
+    }
 
     static HashMap getRegistry() {
         if (registry == null)
