@@ -181,7 +181,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
                 Utils.notifyError(e);
             }
         }
-        waitForSync();
         return ejbJar;
     }
 
