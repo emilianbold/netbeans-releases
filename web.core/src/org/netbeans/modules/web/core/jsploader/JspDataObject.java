@@ -170,7 +170,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
 
         // System.out.println ("Default look for " + this + " = " + defaultLook); // NOI18N
 
-        Node ret = new LookNode (o, defaultLook);
+        Node ret = new WebLookNode (o, defaultLook);
         // System.out.println ("Testing " + ret.getLook()); // NOI18N
         return ret;
     }
