@@ -106,13 +106,17 @@ Microsystems, Inc. All Rights Reserved.
         </java>
     </target>
     
-    <target name="clean">
+    <target name="clean" depends="init,clean-looks">
         <delete file="threaddemo.jar"/>
         <delete>
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
         </delete>
+    </target>
+    
+    <target name="clean-looks" depends="init" if="looks/build.xml">
+        <ant dir="${looks}" target="clean"/>
     </target>
     
 </project>
