@@ -200,7 +200,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
     // copy layout delegate from another container
     public void copyLayoutDelegateFrom(
-                    LayoutSupportManager sourceLayoutSupport)
+                    LayoutSupportManager sourceLayoutSupport,
+                    RADVisualComponent[] newMetaComps)
     {
         LayoutSupportDelegate sourceDelegate =
             sourceLayoutSupport.getLayoutDelegate();
@@ -216,10 +217,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         CodeExpression[] compExps = new CodeExpression[componentCount];
         Component[] primaryComps = new Component[componentCount];
 
-        RADVisualComponent[] metacomps = metaContainer.getSubComponents();
-
         for (int i=0; i < componentCount; i++) {
-            RADVisualComponent metacomp = metacomps[i];
+            RADVisualComponent metacomp = newMetaComps[i];
             compExps[i] = metacomp.getCodeExpression();
             primaryComps[i] = metacomp.getComponent();
             ensureFakePeerAttached(primaryComps[i]);
@@ -227,9 +226,6 @@ public final class LayoutSupportManager implements LayoutSupportContext {
 
         LayoutSupportDelegate newDelegate =
             sourceDelegate.cloneLayoutSupport(this, compExps);
-
-        for (int i=0; i < componentCount; i++)
-            metacomps[i].resetConstraintsProperties();
 
         newDelegate.setLayoutToContainer(cont, contDel);
         newDelegate.addComponentsToContainer(cont, contDel, primaryComps, 0);

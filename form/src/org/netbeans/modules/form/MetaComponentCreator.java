@@ -461,16 +461,20 @@ public class MetaComponentCreator {
                 newSubs[i] = newSubComp;
             }
 
+            // 2nd - clone layout support
+            if (sourceComp instanceof RADVisualContainer) {
+                RADVisualComponent[] newComps =
+                    new RADVisualComponent[newSubs.length];
+                System.arraycopy(newSubs, 0, newComps, 0, newSubs.length);
+
+                LayoutSupportManager sourceLayout =
+                    ((RADVisualContainer)sourceComp).getLayoutSupport();
+
+                ((RADVisualContainer)newComp).getLayoutSupport()
+                    .copyLayoutDelegateFrom(sourceLayout, newComps);
+            }
+
             ((ComponentContainer)newComp).initSubComponents(newSubs);
-        }
-
-        // 2nd - clone LayoutSupportDelegate
-        if (sourceComp instanceof RADVisualContainer) {
-            RADVisualContainer newCont = (RADVisualContainer) newComp;
-            LayoutSupportManager sourceLayout =
-                ((RADVisualContainer)sourceComp).getLayoutSupport();
-
-            newCont.getLayoutSupport().copyLayoutDelegateFrom(sourceLayout);
         }
 
         // 3rd - copy changed properties
