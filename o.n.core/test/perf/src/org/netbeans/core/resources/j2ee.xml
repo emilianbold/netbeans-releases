@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+  <folder name="Menu">
+    <folder name="Build">
+      <file name="Execute (Force reload)[org-netbeans-modules-j2ee-impl-ExecuteForceReloadAction].instance" />
+      <file name="Deploy[org-netbeans-modules-j2ee-impl-DeployAction].instance" />
+      <attr name="org-openide-actions-ExecuteAction.instance/Execute (Force reload)[org-netbeans-modules-j2ee-impl-ExecuteForceReloadAction].instance" boolvalue="true"/>
+      <attr name="Execute (Force reload)[org-netbeans-modules-j2ee-impl-ExecuteForceReloadAction].instance/Deploy[org-netbeans-modules-j2ee-impl-DeployAction].instance" boolvalue="true"/>
+    </folder>
+  </folder>
+
+  <folder name="Actions">
+    <folder name="Build">
+      <file name="Deploy[org-netbeans-modules-j2ee-impl-DeployAction].instance" />
+      <file name="Execute (Force reload)[org-netbeans-modules-j2ee-impl-ExecuteForceReloadAction].instance" />
+    </folder>
+  </folder>
+
+</filesystem>

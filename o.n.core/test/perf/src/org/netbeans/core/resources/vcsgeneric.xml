@@ -1,0 +1,322 @@
+<?xml version='1.0'?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+  <folder name="vcs">
+    <folder name="commands">
+<file name="Bundle.properties"
+  url="vcs/commands/Bundle.properties"/>
+<file name="CvsAutoFillConfig.java"
+  url="vcs/commands/CvsAutoFillConfig.java"/>
+<file name="CvsBranchFrame.form"
+  url="vcs/commands/CvsBranchFrame.form"/>
+<file name="CvsBranchFrame.java"
+  url="vcs/commands/CvsBranchFrame.java"/>
+<file name="CvsBranches.java"
+  url="vcs/commands/CvsBranches.java"/>
+<file name="CvsLogInfo.java"
+  url="vcs/commands/CvsLogInfo.java"/>
+<file name="CvsLogin.java"
+  url="vcs/commands/CvsLogin.java"/>
+<file name="CvsModuleSelector.java"
+  url="vcs/commands/CvsModuleSelector.java"/>
+<file name="CvsModuleSelectorDialog.form"
+  url="vcs/commands/CvsModuleSelectorDialog.form"/>
+<file name="CvsModuleSelectorDialog.java"
+  url="vcs/commands/CvsModuleSelectorDialog.java"/>
+<file name="CvsRevisionChooserPanel.form"
+  url="vcs/commands/CvsRevisionChooserPanel.form"/>
+<file name="CvsRevisionChooserPanel.java"
+  url="vcs/commands/CvsRevisionChooserPanel.java"/>
+<file name="CvsRevisionExplorer.java"
+  url="vcs/commands/CvsRevisionExplorer.java"/>
+<file name="CvsRevisionGraph.java"
+  url="vcs/commands/CvsRevisionGraph.java"/>
+<file name="CvsRevisionGraphItem.java"
+  url="vcs/commands/CvsRevisionGraphItem.java"/>
+<file name="CvsRevisionSelector.java"
+  url="vcs/commands/CvsRevisionSelector.java"/>
+<file name="CvsWatchStatus.java"
+  url="vcs/commands/CvsWatchStatus.java"/>
+<file name="Diff.java"
+  url="vcs/commands/Diff.java"/>
+<file name="PvcsAutoFillConfig.java"
+  url="vcs/commands/PvcsAutoFillConfig.java"/>
+<file name="PvcsGetWithQuestions.java"
+  url="vcs/commands/PvcsGetWithQuestions.java"/>
+<file name="PvcsRevisionExplorer.java"
+  url="vcs/commands/PvcsRevisionExplorer.java"/>
+<file name="PvcsRevisionExplorerLocalized.java"
+  url="vcs/commands/PvcsRevisionExplorerLocalized.java"/>
+<file name="RecursiveFolderCommand.java"
+  url="vcs/commands/RecursiveFolderCommand.java"/>
+<file name="VCSCustomizerCommand.java"
+  url="vcs/commands/VCSCustomizerCommand.java"/>
+<file name="VssRevisionExplorer.java"
+  url="vcs/commands/VssRevisionExplorer.java"/>
+<file name="VssRevisionExplorerLocalized.java"
+  url="vcs/commands/VssRevisionExplorerLocalized.java"/>
+<file name="CvsAutoFillConfig.class"
+  url="vcs/commands/CvsAutoFillConfig.class"/>
+<file name="CvsBranchFrame$1.class"
+  url="vcs/commands/CvsBranchFrame$1.class"/>
+<file name="CvsBranchFrame$2.class"
+  url="vcs/commands/CvsBranchFrame$2.class"/>
+<file name="CvsBranchFrame$3.class"
+  url="vcs/commands/CvsBranchFrame$3.class"/>
+<file name="CvsBranchFrame$4.class"
+  url="vcs/commands/CvsBranchFrame$4.class"/>
+<file name="CvsBranchFrame$BranchDraw.class"
+  url="vcs/commands/CvsBranchFrame$BranchDraw.class"/>
+<file name="CvsBranchFrame$BranchMouseListener.class"
+  url="vcs/commands/CvsBranchFrame$BranchMouseListener.class"/>
+<file name="CvsBranchFrame.class"
+  url="vcs/commands/CvsBranchFrame.class"/>
+<file name="CvsLogInfo.class"
+  url="vcs/commands/CvsLogInfo.class"/>
+<file name="CvsBranches.class"
+  url="vcs/commands/CvsBranches.class"/>
+<file name="CvsRevisionGraphItem.class"
+  url="vcs/commands/CvsRevisionGraphItem.class"/>
+<file name="CvsRevisionGraph.class"
+  url="vcs/commands/CvsRevisionGraph.class"/>
+<file name="CvsLogin.class"
+  url="vcs/commands/CvsLogin.class"/>
+<file name="CvsModuleSelector$3.class"
+  url="vcs/commands/CvsModuleSelector$3.class"/>
+<file name="CvsModuleSelector$2.class"
+  url="vcs/commands/CvsModuleSelector$2.class"/>
+<file name="CvsModuleSelector$1.class"
+  url="vcs/commands/CvsModuleSelector$1.class"/>
+<file name="CvsModuleSelector$4.class"
+  url="vcs/commands/CvsModuleSelector$4.class"/>
+<file name="CvsModuleSelector$CompleteStatusOutput.class"
+  url="vcs/commands/CvsModuleSelector$CompleteStatusOutput.class"/>
+<file name="CvsModuleSelector.class"
+  url="vcs/commands/CvsModuleSelector.class"/>
+<file name="CvsModuleSelectorDialog$1.class"
+  url="vcs/commands/CvsModuleSelectorDialog$1.class"/>
+<file name="CvsModuleSelectorDialog$2.class"
+  url="vcs/commands/CvsModuleSelectorDialog$2.class"/>
+<file name="CvsModuleSelectorDialog$3.class"
+  url="vcs/commands/CvsModuleSelectorDialog$3.class"/>
+<file name="CvsModuleSelectorDialog$4.class"
+  url="vcs/commands/CvsModuleSelectorDialog$4.class"/>
+<file name="CvsModuleSelectorDialog$5.class"
+  url="vcs/commands/CvsModuleSelectorDialog$5.class"/>
+<file name="CvsModuleSelectorDialog$6.class"
+  url="vcs/commands/CvsModuleSelectorDialog$6.class"/>
+<file name="CvsModuleSelectorDialog$MyDefaultTableModel.class"
+  url="vcs/commands/CvsModuleSelectorDialog$MyDefaultTableModel.class"/>
+<file name="CvsModuleSelectorDialog.class"
+  url="vcs/commands/CvsModuleSelectorDialog.class"/>
+<file name="CvsRevisionChooserPanel.class"
+  url="vcs/commands/CvsRevisionChooserPanel.class"/>
+<file name="CvsRevisionExplorer$1.class"
+  url="vcs/commands/CvsRevisionExplorer$1.class"/>
+<file name="CvsRevisionExplorer$2.class"
+  url="vcs/commands/CvsRevisionExplorer$2.class"/>
+<file name="CvsRevisionExplorer$3.class"
+  url="vcs/commands/CvsRevisionExplorer$3.class"/>
+<file name="CvsRevisionExplorer.class"
+  url="vcs/commands/CvsRevisionExplorer.class"/>
+<file name="CvsRevisionSelector.class"
+  url="vcs/commands/CvsRevisionSelector.class"/>
+<file name="CvsWatchStatus$1.class"
+  url="vcs/commands/CvsWatchStatus$1.class"/>
+<file name="CvsWatchStatus.class"
+  url="vcs/commands/CvsWatchStatus.class"/>
+<file name="Diff.class"
+  url="vcs/commands/Diff.class"/>
+<file name="PvcsAutoFillConfig.class"
+  url="vcs/commands/PvcsAutoFillConfig.class"/>
+<file name="PvcsGetWithQuestions.class"
+  url="vcs/commands/PvcsGetWithQuestions.class"/>
+<file name="PvcsRevisionExplorer$1.class"
+  url="vcs/commands/PvcsRevisionExplorer$1.class"/>
+<file name="PvcsRevisionExplorer$2.class"
+  url="vcs/commands/PvcsRevisionExplorer$2.class"/>
+<file name="PvcsRevisionExplorer$3.class"
+  url="vcs/commands/PvcsRevisionExplorer$3.class"/>
+<file name="PvcsRevisionExplorer.class"
+  url="vcs/commands/PvcsRevisionExplorer.class"/>
+<file name="PvcsRevisionExplorerLocalized$1.class"
+  url="vcs/commands/PvcsRevisionExplorerLocalized$1.class"/>
+<file name="PvcsRevisionExplorerLocalized$2.class"
+  url="vcs/commands/PvcsRevisionExplorerLocalized$2.class"/>
+<file name="PvcsRevisionExplorerLocalized$3.class"
+  url="vcs/commands/PvcsRevisionExplorerLocalized$3.class"/>
+<file name="PvcsRevisionExplorerLocalized.class"
+  url="vcs/commands/PvcsRevisionExplorerLocalized.class"/>
+<file name="RecursiveFolderCommand.class"
+  url="vcs/commands/RecursiveFolderCommand.class"/>
+<file name="VCSCustomizerCommand.class"
+  url="vcs/commands/VCSCustomizerCommand.class"/>
+<file name="VssRevisionExplorer$1.class"
+  url="vcs/commands/VssRevisionExplorer$1.class"/>
+<file name="VssRevisionExplorer$2.class"
+  url="vcs/commands/VssRevisionExplorer$2.class"/>
+<file name="VssRevisionExplorer$3.class"
+  url="vcs/commands/VssRevisionExplorer$3.class"/>
+<file name="VssRevisionExplorer.class"
+  url="vcs/commands/VssRevisionExplorer.class"/>
+<file name="VssRevisionExplorerLocalized$1.class"
+  url="vcs/commands/VssRevisionExplorerLocalized$1.class"/>
+<file name="VssRevisionExplorerLocalized$2.class"
+  url="vcs/commands/VssRevisionExplorerLocalized$2.class"/>
+<file name="VssRevisionExplorerLocalized$3.class"
+  url="vcs/commands/VssRevisionExplorerLocalized$3.class"/>
+<file name="VssRevisionExplorerLocalized.class"
+  url="vcs/commands/VssRevisionExplorerLocalized.class"/>
+<file name="CvsCommit.class"
+  url="vcs/commands/CvsCommit.class"/>
+<file name="CvsRevisionListGetter.java"
+  url="vcs/commands/CvsRevisionListGetter.java"/>
+<file name="CvsRevisionListGetter.class"
+  url="vcs/commands/CvsRevisionListGetter.class"/>
+<file name="CvsCommit.java"
+  url="vcs/commands/CvsCommit.java"/>
+<file name="CvsModuleParser.java"
+  url="vcs/commands/CvsModuleParser.java"/>
+<file name="CvsBranchFrame$5.class"
+  url="vcs/commands/CvsBranchFrame$5.class"/>
+<file name="CvsCommit$1.class"
+  url="vcs/commands/CvsCommit$1.class"/>
+<file name="CvsModuleParser.class"
+  url="vcs/commands/CvsModuleParser.class"/>
+      <folder name="passwd">
+<file name="CVSPasswd.class" url="vcs/commands/passwd/CVSPasswd.class"/>
+<file name="Bundle.properties" url="vcs/commands/passwd/Bundle.properties"/>
+<file name="CVSPasswd.java" url="vcs/commands/passwd/CVSPasswd.java"/>
+<file name="CvsLoginDialog.form" url="vcs/commands/passwd/CvsLoginDialog.form"/>
+<file name="CvsLoginDialog.java" url="vcs/commands/passwd/CvsLoginDialog.java"/>
+<file name="PasswdEntry.java" url="vcs/commands/passwd/PasswdEntry.java"/>
+<file name="StandardScrambler.java"  url="vcs/commands/passwd/StandardScrambler.java"/>
+<file name="CVSPasswd$1.class"  url="vcs/commands/passwd/CVSPasswd$1.class"/>
+<file name="CVSPasswd$2.class"  url="vcs/commands/passwd/CVSPasswd$2.class"/>
+<file name="CVSPasswd$3.class"  url="vcs/commands/passwd/CVSPasswd$3.class"/>
+<file name="CVSPasswd$4.class"  url="vcs/commands/passwd/CVSPasswd$4.class"/>
+<file name="PasswdEntry.class"  url="vcs/commands/passwd/PasswdEntry.class"/>
+<file name="CvsLoginDialog$1.class"  url="vcs/commands/passwd/CvsLoginDialog$1.class"/>
+<file name="CvsLoginDialog$2.class"  url="vcs/commands/passwd/CvsLoginDialog$2.class"/>
+<file name="CvsLoginDialog$3.class"  url="vcs/commands/passwd/CvsLoginDialog$3.class"/>
+<file name="CvsLoginDialog$4.class"  url="vcs/commands/passwd/CvsLoginDialog$4.class"/>
+<file name="CvsLoginDialog$7.class"  url="vcs/commands/passwd/CvsLoginDialog$7.class"/>
+<file name="CvsLoginDialog$6.class"  url="vcs/commands/passwd/CvsLoginDialog$6.class"/>
+<file name="CvsLoginDialog$5.class"  url="vcs/commands/passwd/CvsLoginDialog$5.class"/>
+<file name="CvsLoginDialog.class"  url="vcs/commands/passwd/CvsLoginDialog.class"/>
+<file name="StandardScrambler.class"  url="vcs/commands/passwd/StandardScrambler.class"/>
+      </folder>
+    </folder>
+    <folder name="config">
+<file name="Bundle.properties"
+  url="vcs/config/Bundle.properties"/>
+<file name="configuration-1_0.dtd"
+  url="vcs/config/configuration-1_0.dtd"/>
+<file name="empty.xml"
+  url="vcs/config/empty.xml"/>
+<file name="emptyWin.xml"
+  url="vcs/config/emptyWin.xml"/>
+<file name="pvcsUnix.xml"
+  url="vcs/config/pvcsUnix.xml"/>
+<file name="pvcsWin.xml"
+  url="vcs/config/pvcsWin.xml"/>
+<file name="pvcsWin98.xml"
+  url="vcs/config/pvcsWin98.xml"/>
+<file name="vssWin.xml"
+  url="vcs/config/vssWin.xml"/>
+<file name="vssWin98.xml"
+  url="vcs/config/vssWin98.xml"/>
+<file name="cvsUnix.xml"
+  url="vcs/config/cvsUnix.xml"/>
+<file name="cvsWin.xml"
+  url="vcs/config/cvsWin.xml"/>
+<file name="cvsWin98.xml"
+  url="vcs/config/cvsWin98.xml"/>
+    </folder>
+    <folder name="list">
+<file name="AbstractListCommand.java"
+  url="vcs/list/AbstractListCommand.java"/>
+<file name="Bundle.properties"
+  url="vcs/list/Bundle.properties"/>
+<file name="CvsListCommand.java"
+  url="vcs/list/CvsListCommand.java"/>
+<file name="CvsListRecursiveCommand.java"
+  url="vcs/list/CvsListRecursiveCommand.java"/>
+<file name="PvcsListCommand.java"
+  url="vcs/list/PvcsListCommand.java"/>
+<file name="PvcsListCommandLocalized.java"
+  url="vcs/list/PvcsListCommandLocalized.java"/>
+<file name="VssListCommand.java"
+  url="vcs/list/VssListCommand.java"/>
+<file name="VssListCommandLocalized.java"
+  url="vcs/list/VssListCommandLocalized.java"/>
+<file name="AbstractListCommand.class"
+  url="vcs/list/AbstractListCommand.class"/>
+<file name="CvsListCommand.class"
+  url="vcs/list/CvsListCommand.class"/>
+<file name="CvsListRecursiveCommand$1.class"
+  url="vcs/list/CvsListRecursiveCommand$1.class"/>
+<file name="CvsListRecursiveCommand$2.class"
+  url="vcs/list/CvsListRecursiveCommand$2.class"/>
+<file name="CvsListRecursiveCommand$3.class"
+  url="vcs/list/CvsListRecursiveCommand$3.class"/>
+<file name="CvsListRecursiveCommand.class"
+  url="vcs/list/CvsListRecursiveCommand.class"/>
+<file name="PvcsListCommand.class"
+  url="vcs/list/PvcsListCommand.class"/>
+<file name="PvcsListCommandLocalized.class"
+  url="vcs/list/PvcsListCommandLocalized.class"/>
+<file name="VssListCommand$1.class"
+  url="vcs/list/VssListCommand$1.class"/>
+<file name="VssListCommand.class"
+  url="vcs/list/VssListCommand.class"/>
+<file name="VssListCommandLocalized$1.class"
+  url="vcs/list/VssListCommandLocalized$1.class"/>
+<file name="VssListCommandLocalized.class"
+  url="vcs/list/VssListCommandLocalized.class"/>
+    </folder>
+    <folder name="resources">
+<file name="badgeLocModified.gif"
+  url="vcs/resources/badgeLocModified.gif"/>
+<file name="badgeLocRemoved.gif"
+  url="vcs/resources/badgeLocRemoved.gif"/>
+<file name="badgeMergeConflict.gif"
+  url="vcs/resources/badgeMergeConflict.gif"/>
+<file name="badgeNeedsCheckout.gif"
+  url="vcs/resources/badgeNeedsCheckout.gif"/>
+<file name="badgeUpToDate.gif"
+  url="vcs/resources/badgeUpToDate.gif"/>
+    </folder>
+  </folder>
+
+  <folder name="Templates">
+     <folder name="Mount">
+       <folder name="VCS">
+        <file name="org-netbeans-modules-vcs-advanced-CommandLineVcsFileSystem.settings">
+          <![CDATA[
+          <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+          <settings version="1.0">
+            <instanceof class="org.openide.filesystems.FileSystem"/>
+            <instance class="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem"/>
+          </settings>
+          ]]>
+          <attr name="template" boolvalue="true"/>
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vcs.advanced.config.Bundle" />
+        </file>
+       </folder>
+     </folder>
+   </folder>
+</filesystem>

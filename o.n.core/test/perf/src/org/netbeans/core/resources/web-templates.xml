@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+  <folder name="Templates">
+    <folder name="DreamweaverTemplates">
+
+      <file name="BeanToJSPTemplate.dwt" url="BeanToJSPTemplate.template">
+          <attr name="template" boolvalue="true"/>
+      </file>
+      <file name="ErrorPageTemplate.dwt" url="ErrorPageTemplate.template">
+          <attr name="template" boolvalue="true"/>
+      </file>
+      <file name="masterDetailDBtoJSPTemplate.dwt" url="masterDetailDBtoJSPTemplate.template">
+          <attr name="template" boolvalue="true"/>
+      </file>
+      <file name="masterDetailQueryResult.dwt" url="masterDetailQueryResult.template">
+          <attr name="template" boolvalue="true"/>
+      </file>
+      <file name="singleLevelDBtoJSPTemplate.dwt" url="singleLevelDBtoJSPTemplate.template">
+          <attr name="template" boolvalue="true"/>
+      </file>
+      <file name="singleLevelQueryResult.dwt" url="singleLevelQueryResult.template">
+          <attr name="template" boolvalue="true"/>
+      </file>
+    </folder>
+  </folder>
+
+  <folder name="Menu">
+    <folder name="Tools">
+      <file name="JSP Wizard...[org-netbeans-modules-web-wizards-beanjsp-ide-JSPPageWizardAction].instance" />
+    </folder>
+  </folder>
+
+  <folder name="Actions">
+    <folder name="Tools">
+      <file name="JSP Wizard...[org-netbeans-modules-web-wizards-beanjsp-ide-JSPPageWizardAction].instance" />
+    </folder>
+  </folder>
+
+</filesystem>

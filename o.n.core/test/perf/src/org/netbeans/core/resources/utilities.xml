@@ -1,0 +1,209 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Welcome">
+        <file name="netbeans-ide-home.url">
+            <![CDATA[http://www.netbeans.org/]]>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
+            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/modules/url/info-netbeans-ide-home.html"/>
+        </file>
+        <attr name="netbeans-ide-home.url/org-openide-actions-NewTemplateAction.instance" boolvalue="true" />
+        <attr name="org-openide-actions-NewTemplateAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
+        <file name="org-netbeans-modules-openfile-OpenFileAction.instance">
+            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/modules/openfile/info-OpenFileAction.html" />
+        </file>
+        <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true" />
+    </folder>
+    <folder name="Templates">
+        <folder name="Other">
+            <file name="bookmark.url">
+                <![CDATA[http://www.netbeans.org/]]>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/url/TemplateHelp.html"/>
+                <attr name="templateWizardIterator" newValue="org.netbeans.modules.url.URLWizardIterator"/>
+            </file>
+            <file name="group.group">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.group.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/group/resources/TemplateHelp.html"/>
+            </file>
+        </folder>
+    </folder>
+    <!-- [PENDING] Eventually it may be a good idea to just kill BookmarksAction and simply place Bookmarks/ -->
+    <!-- folder underneath Menu/Help/ and use SFS icons and so on to make it look pretty... -->
+    <!-- (Or make Menu/Help/Bookmarks.shadow a symlink to Bookmarks; this works now.) -->
+    <!-- Easy to do; note URLDataObject presenter currently uses OpenCookie vs. URLNodeCookie, could be changed. -->
+    <folder name="Bookmarks">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+        <file name="jdc.url">
+            <![CDATA[http://developer.java.sun.com/developer/]]>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+        </file>
+        <file name="java-web-site.url">
+            <![CDATA[http://java.sun.com/]]>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+        </file>
+        <file name="apis-online.url">
+            <![CDATA[http://openide.netbeans.org/]]>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+        </file>
+        <file name="swing.url">
+            <![CDATA[http://java.sun.com/products/jfc/tsc/]]>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+        </file>
+        <file name="netbeans-faq.url">
+            <![CDATA[http://www.netbeans.org/articles/faqs/index.html]]>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+        </file>
+        <file name="ffj-kb.url">
+            <![CDATA[http://forte.sun.com/cgi-bin/WebX?customFaqs@111.39R7apexaKh^1@.ee6c6df]]>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+        </file>
+        <attr name="netbeans-faq.url/ffj-kb.url" boolvalue="true"/>
+        <attr name="ffj-kb.url/apis-online.url" boolvalue="true"/>
+        <attr name="apis-online.url/java-web-site.url" boolvalue="true"/>
+        <attr name="java-web-site.url/jdc.url" boolvalue="true"/>
+        <attr name="jdc.url/swing.url" boolvalue="true"/>
+    </folder>
+    <folder name="Actions">
+        <folder name="Help">
+            <file name="org-netbeans-modules-url-BookmarksAction.instance"/>
+        </folder>
+        <folder name="System">
+            <file name="org-netbeans-modules-url-OpenInNewWindowAction.instance"/>
+            <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
+        </folder>
+        <folder name="Tools">
+            <file name="org-netbeans-modules-group-CreateGroupAction.instance"/>
+        </folder>
+        <folder name="Edit">
+            <file name="org-netbeans-modules-search-RepositorySearchAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="File">
+            <attr name="org-netbeans-core-actions-UnmountFSAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
+            <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true"/>
+        </folder>
+        <folder name="Edit">
+            <attr name="org-openide-actions-GotoAction.instance/sep-before-reposearch[javax-swing-JSeparator].instance" boolvalue="true"/>
+            <file name="sep-before-reposearch[javax-swing-JSeparator].instance"/>
+            <attr name="sep-before-reposearch[javax-swing-JSeparator].instance/org-netbeans-modules-search-RepositorySearchAction.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-search-RepositorySearchAction.instance"/>
+        </folder>
+        <folder name="Help">
+            <attr name="Separator1[javax-swing-JSeparator].instance/netbeans-web-link.url" boolvalue="true"/>
+            <file name="netbeans-web-link.url">
+                <![CDATA[http://www.netbeans.org/]]>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
+            </file>
+            <attr name="netbeans-web-link.url/utilities-sep-2[javax-swing-JSeparator].instance" boolvalue="true"/>
+            <file name="utilities-sep-2[javax-swing-JSeparator].instance"/>
+            <attr name="org-netbeans-core-actions-ModuleHelpAction$ShortcutsOnly.instance/submit-feedback-link.url" boolvalue="true"/>
+            <!-- [PENDING] this is none too useful... (some bug is filed to this effect) -->
+            <file name="submit-feedback-link.url">
+                <![CDATA[http://www.netbeans.org/contact.html]]>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
+            </file>
+            <attr name="submit-feedback-link.url/utilities-sep-3[javax-swing-JSeparator].instance" boolvalue="true"/>
+            <file name="utilities-sep-3[javax-swing-JSeparator].instance"/>
+            <attr name="utilities-sep-3[javax-swing-JSeparator].instance/org-netbeans-modules-url-BookmarksAction.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-url-BookmarksAction.instance"/>
+            <attr name="org-netbeans-modules-url-BookmarksAction.instance/org-netbeans-core-actions-WelcomeAction.instance" boolvalue="true"/>
+        </folder>
+    </folder>
+    <folder name="Toolbars">
+        <folder name="System">
+            <attr name="org-netbeans-core-actions-NewTemplateCallableAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
+            <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/org-openide-actions-SaveAction.instance" boolvalue="true"/>
+        </folder>
+    </folder>
+    <folder name="Shortcuts">
+        <file name="C-O[org.netbeans.modules.openfile.OpenFileAction].instance" />
+    </folder>
+
+    <folder name="xml">
+        <folder name="entities">
+            <folder name="NetBeans">
+                <!-- public ID for pdf link xml -->
+                <file name="DTD_PDF_Document_Menu_Link_1_0" url="nbrescurr:/org/netbeans/modules/pdf/pdf_link.dtd"/>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="xml">
+        <folder name="lookups">
+          <folder name="NetBeans">
+               <!-- public ID for pdf link xml -->
+               <file name="DTD_PDF_Document_Menu_Link_1_0.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.pdf.LinkProcessor" />
+               </file>
+          </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Services">
+        <!-- Open File Server Settings -->
+        <file name="org-netbeans-modules-openfile-Settings.settings" url="../openfile/Openfile.settings"/>
+        
+        <!-- PDF Settings -->
+        <file name="org-netbeans-modules-pdf-PDFSettings.settings" url="../pdf/PDF.settings"/>
+        
+        <!-- Search Services -->
+        <folder name="SearchType">
+            <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.search.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlValue="nbresloc:/org/openidex/search/res/find.gif"/>
+            <file name="org-netbeans-modules-search-FullTextType.settings" url="FullTextType.settings"/>
+            <file name="org-netbeans-modules-search-ModificationDateType.settings" url="ModificationDateType.settings"/>
+            <file name="org-netbeans-modules-search-ObjectTypeType.settings" url="ObjectTypeType.settings"/>
+            <file name="org-netbeans-modules-search-ObjectNameType.settings" url="ObjectNameType.settings"/>
+
+            <attr name="org-netbeans-modules-search-FullTextType.settings/org-netbeans-modules-search-ObjectNameType.settings" boolValue="true"/>
+            <attr name="org-netbeans-modules-search-ObjectNameType.settings/org-netbeans-modules-search-ObjectTypeType.settings" boolValue="true"/>
+            <attr name="org-netbeans-modules-search-ObjectTypeType.settings/org-netbeans-modules-search-ModificationDateType.settings" boolValue="true"/>
+        </folder>
+    </folder>
+    
+    <folder name="Templates">
+        <folder name="Services">
+            <folder name="SearchType">
+                <file name="org-netbeans-modules-search-FullTextType.settings" url="FullTextType.settings">
+                    <attr name="template" boolValue="true"/>
+                </file>
+
+                <file name="org-netbeans-modules-search-MofificationDateType.settings" url="MofificationDateType.settings">
+                    <attr name="template" boolValue="true"/>
+                </file>
+
+                <file name="org-netbeans-modules-search-ObjectTypeType.settings" url="ObjectTypeType.settings">
+                    <attr name="template" boolValue="true"/>
+                </file>
+
+                <file name="org-netbeans-modules-search-ObjectNameType.settings" url="ObjectNameType.settings">
+                    <attr name="template" boolValue="true"/>
+                </file>
+
+            </folder>
+        </folder>
+    </folder>
+
+</filesystem>

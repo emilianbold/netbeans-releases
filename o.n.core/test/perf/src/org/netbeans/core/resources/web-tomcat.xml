@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+  <folder name="tomcat">
+      <file name="server.xml" 
+            url = "defaultserver.xml" />
+  </folder>
+</filesystem>

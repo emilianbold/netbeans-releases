@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.rmi"/>
+    <instanceof class="org.openide.ServiceType"/>
+    <instanceof class="org.openide.execution.Executor"/>
+    <instanceof class="org.openide.execution.ProcessExecutor"/>
+    <instanceof class="org.netbeans.modules.rmi.RMIExecutor"/>
+    <instance class="org.netbeans.modules.rmi.serialized.RMIExecutorGenerator" method="createUnicastExportDbg"/>
+</settings>

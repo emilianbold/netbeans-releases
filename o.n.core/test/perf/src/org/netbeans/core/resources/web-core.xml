@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+  <folder name="Templates">
+    <folder name="JSP_Servlet">
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Servlet_JSP.html" />
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+
+      <file name="webapp.warImage" url="templates/WebModule.template">
+          <attr name="template" boolvalue="true"/>
+          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/context/resources/WebModule.html"/>
+          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.context.WebAppWizardIterator.singleton"/>
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.context.Bundle"/>
+      </file>
+      <file name="JSP.jsp" url="templates/JSP.template">
+          <attr name="template" boolvalue="true"/>
+          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+      </file>
+      <file name="Servlet.java" url="templates/Servlet.template">
+          <attr name="template" boolvalue="true"/>
+          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Servlet.html"/>
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+          <attr name="org.netbeans.modules.web.IsServletFile" boolvalue="true"/>
+          <attr name="NetBeansAttrDebuggerType" methodvalue="org.netbeans.modules.j2ee.impl.ServerExecSupport.getServerDebuggerType"/>
+          <attr name="NetBeansAttrExecutor" methodvalue="org.netbeans.modules.j2ee.impl.ServerExecSupport.getServerExecutor"/>
+      </file>
+      <!-- use template description from HTML module -->
+      <file name="Html.html" url="nbresloc:/org/netbeans/modules/html/templates/html.html">
+         <attr name="template" boolvalue="true" />
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.html.Bundle"/>
+      </file>
+      <attr name="webapp.warImage/JSP.jsp" boolvalue="true"/>
+      <attr name="JSP.jsp/Servlet.java" boolvalue="true"/>
+      <attr name="Servlet.java/Html.html" boolvalue="true"/>
+    </folder>
+  </folder>
+
+  <folder name="Actions">
+    <folder name="Build">
+      <file name="Set Request Parameters[org-netbeans-modules-web-core-EditQueryStringAction].instance" />
+      <file name="Execute (restart server)[org-netbeans-modules-web-core-execution-Execute2Action].instance" />
+    </folder>
+    <folder name="System">
+      <file name="View Servlet[org-netbeans-modules-web-core-jsploader-EditServletAction].instance" />
+    </folder>
+    <folder name="Tools">
+      <file name="Convert to Servlet...[org-netbeans-modules-web-core-jsploader-ConvertToServletAction].instance" />
+      <file name="Convert to Servlet...[org-netbeans-modules-web-core-jsploader-ConvertToJavaAction].instance" />
+    </folder>
+  </folder>
+
+  <folder name="Mount">
+      <folder name="java">
+          <file name="org-netbeans-modules-web-core-resources-library-servlet.xml">
+              <![CDATA[
+                  <!DOCTYPE JavaLibrary PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
+                  <Library>
+                      <Archive name="lib/ext/servlet.jar"/>
+                  </Library>
+              ]]>
+          </file>
+      </folder>
+  </folder>
+    <folder name="Services">
+	<folder name="Hidden">
+	    <attr name="hidden" boolvalue="true" />
+	    <file name="org-netbeans-modules-web-core-resources-EntityCatalog.xml" >
+		<![CDATA[
+		    <!DOCTYPE catalog PUBLIC "-//NetBeans//Entity Mapping Registration 1.0//EN" "http://www.netbeans.org/dtds/EntityCatalog-1_0.dtd">
+		    <catalog>
+			<!-- public ID defined by XMLDataObject -->
+			<public publicId="-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web.dtd"/>
+                        <public publicId="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-jsptaglib_1_1.dtd"/>
+		    </catalog>
+		]]>
+	    </file>
+	</folder>
+    </folder>
+
+</filesystem>

@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Templates">
+        <folder name="Script">
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/scripting/resources/scripting-templates-description.html" />
+
+            <file name="BeanShell.bsh">
+                <![CDATA[// BeanShell file - http://www.beanshell.org/
+]]>
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/scripting/resources/BeanShell.html" />
+            </file>
+
+            <file name="DynamicJava.djava">
+                <![CDATA[# DynamicJava file - http://www.inria.fr/koala/djava/
+]]>
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/scripting/resources/DynamicJava.html" />
+            </file>
+
+            <file name="Jython.py">
+                <![CDATA[# Jython file - http://www.jython.org/
+]]>
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/scripting/resources/Jython.html" />
+            </file>
+
+        </folder>
+    </folder>
+
+    <folder name="Shortcuts">
+        <file name="C-ENTER[org-netbeans-modules-scripting-EvaluateAction].instance"/>
+    </folder>
+
+    <folder name="Menu">
+        <folder name="View">
+            <file name="org-netbeans-modules-scripting-ConsoleAction.instance"/>
+                <attr name="org-netbeans-core-actions-EditorViewAction.instance/org-netbeans-modules-scripting-ConsoleAction.instance" boolvalue="true" />
+                <attr name="org-netbeans-modules-scripting-ConsoleAction.instance/org-netbeans-core-actions-OutputWindowAction.instance" boolvalue="true" />
+        </folder>
+    </folder>
+
+    <folder name="Actions">
+        <folder name="View">
+            <file name="org-netbeans-modules-scripting-ConsoleAction.instance"/>
+        </folder>
+    </folder>
+    
+    <folder name="Services">
+        <!-- Telnet Server Settings -->
+        <file name="org-netbeans-modules-scripting-remote-ServerSettings.settings" url="ServerSettings.settings"/>
+        
+        <!-- Scripting Services: BeanShell, DynamicJava and Jython. -->
+        <folder name="ScriptType">
+            <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.scripting.Bundle"/>
+            <!--<attr name="SystemFileSystem.icon" urlValue="nbresloc:/org/netbeans/modules/scripting/script.gif"/>-->
+            <attr name="SystemFileSystem.icon" urlValue="nbres:/org/netbeans/core/resources/scriptTypes.gif"/>
+
+            <file name="org-netbeans-modules-scripting-BeanShellScriptType.settings" url="BeanShellScriptType.settings"/>
+            <file name="org-netbeans-modules-scripting-DynamicJavaScriptType.settings" url="DynamicJavaScriptType.settings"/>
+            <file name="org-netbeans-modules-scripting-JPythonScriptType.settings" url="JPythonScriptType.settings"/>
+        </folder>
+    </folder>
+
+    <folder name="Templates">
+        <folder name="Services">
+            <folder name="ScriptType">
+                <file name="org-netbeans-modules-scripting-BeanShellScriptType.settings" url="BeanShellScriptType.settings">
+                    <attr name="template" boolValue="true"/>
+                </file>
+                
+                <file name="org-netbeans-modules-scripting-DynamicJavaSctiptType.settings" url="DynamicJavaSctiptType.settings">
+                    <attr name="template" boolValue="true"/>
+                </file>
+
+                <file name="org-netbeans-modules-scripting-JPythonScriptType.settings" url="JPythonScriptType.settings">
+                    <attr name="template" boolValue="true"/>
+                </file>
+            </folder>
+        </folder>        
+    </folder>
+</filesystem>

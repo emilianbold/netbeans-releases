@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Templates">
+	<folder name="JarPackager">
+	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jarpackager.Bundle"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/jarpackager/resources/JarPackager.html" />
+	    <file name="JarContents.jarContent" url="templates/JarContents.template">
+		<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jarpackager.Bundle"/>
+                <attr name="template" boolvalue="true" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/jarpackager/resources/JarContents.html" />
+                <attr name="templateWizardIterator" methodValue="org.netbeans.modules.jarpackager.wizard.JarContentsWizardIterator.singleton" />
+            </file>
+         </folder>
+    </folder>     
+</filesystem>
+

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+    <folder name="Menu">
+        <folder name="Help">
+            <!-- Replace normal Contents item with our own which shows UG home page. -->
+            <file name="master-help.xml_hidden"/>
+            <file name="org-netbeans-modules-usersguide-master.xml">
+                <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpctx PUBLIC
+          "-//NetBeans//DTD Help Context 1.0//EN"
+          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
+<helpctx id="ide.welcome" showmaster="true"/>
+]]>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
+                <attr boolvalue="false" name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/usersguide/help.gif"/>
+            </file>
+            <attr name="org-netbeans-modules-usersguide-master.xml/HelpShortcuts" boolvalue="true"/>
+            <folder name="HelpShortcuts">
+                <!-- Shortcut to main page (shows only UG help set). -->
+                <file name="org-netbeans-modules-usersguide-mainpage.xml">
+                    <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpctx PUBLIC
+          "-//NetBeans//DTD Help Context 1.0//EN"
+          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
+<helpctx id="ide.welcome"/>
+]]>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
+                    <attr boolvalue="false" name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/usersguide/helpset.gif"/>
+                </file>
+                <!-- Also a separator after that. -->
+                <attr name="org-netbeans-modules-usersguide-mainpage.xml/org-netbeans-modules-usersguide-sep.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-usersguide-sep.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                </file>
+                <!-- And another below, for "third-party" helpsets (e.g. Ant's): -->
+                <attr name="org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-usersguide-lower-sep.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-usersguide-lower-sep.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Actions">
+        <folder name="Help">
+            <file name="org-netbeans-modules-usersguide-mainpage.xml">
+                <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpctx PUBLIC
+          "-//NetBeans//DTD Help Context 1.0//EN"
+          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
+<helpctx id="ide.welcome"/>
+]]>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
+                <attr boolvalue="false" name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/usersguide/helpset.gif"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Services">
+        <folder name="JavaHelp">
+            <!-- Now the help set. -->
+            <file name="org-netbeans-modules-usersguide-helpset.xml">
+                <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpsetref PUBLIC
+          "-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"
+          "http://www.netbeans.org/dtds/helpsetref-1_0.dtd">
+<helpsetref url="nbdocs:/org/netbeans/modules/usersguide/ide.hs"/>
+]]>
+                <attr boolvalue="false" name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"/>
+            </file>
+            <attr name="org-netbeans-modules-usersguide-helpset.xml/org-netbeans-modules-usersguide-above-regular.txt" boolvalue="true"/>
+            <file name="org-netbeans-modules-usersguide-above-regular.txt">
+                <![CDATA[Only a marker: above regular helpsets, below IDE help.]]>
+            </file>
+            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
+            <file name="org-netbeans-modules-usersguide-below-regular.txt">
+                <![CDATA[Only a marker: below regular helpsets, above third-party helpsets.]]>
+            </file>
+        </folder>
+    </folder>
+</filesystem>

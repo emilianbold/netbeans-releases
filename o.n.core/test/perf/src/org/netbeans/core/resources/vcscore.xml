@@ -1,0 +1,81 @@
+<?xml version='1.0'?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+  <folder name="Menu">
+    <attr name="Build/Versioning" boolvalue="true"/>
+    <attr name="Debug/Versioning" boolvalue="true"/>
+    <attr name="Versioning/Tools" boolvalue="true"/>
+    <folder name="Versioning">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vcscore.actions.Bundle" />
+      <file name="org-netbeans-modules-vcscore-actions-VcsMountFromTemplateAction.instance" />
+      <attr name="org-netbeans-modules-vcscore-actions-VcsMountFromTemplateAction.instance/vcs-explorer-sep-1[javax-swing-JSeparator].instance" boolvalue="true"/>
+      <file name="vcs-explorer-sep-1[javax-swing-JSeparator].instance" />
+      <attr name="vcs-explorer-sep-1[javax-swing-JSeparator].instance/org-netbeans-modules-vcscore-actions-VersioningExplorerAction.instance" boolvalue="true"/>
+      <file name="org-netbeans-modules-vcscore-actions-VersioningExplorerAction.instance" />
+      <attr name="org-netbeans-modules-vcscore-actions-VersioningExplorerAction.instance/vcs-explorer-sep-2[javax-swing-JSeparator].instance" boolvalue="true"/>
+      <file name="vcs-explorer-sep-2[javax-swing-JSeparator].instance" />
+      <attr name="vcs-explorer-sep-2[javax-swing-JSeparator].instance/org-netbeans-modules-vcscore-actions-VcsCommandsAction.instance" boolvalue="true"/>
+      <file name="org-netbeans-modules-vcscore-actions-VcsCommandsAction.instance" /> 
+      <attr name="org-netbeans-modules-vcscore-actions-VcsCommandsAction.instance/org-netbeans-modules-vcscore-actions-VcsSettingsAction.instance" boolvalue="true"/>
+      <file name="org-netbeans-modules-vcscore-actions-VcsSettingsAction.instance" />
+      <file name="org-netbeans-modules-vcscore-grouping-VcsGroupMenuAction.instance" /> 
+    </folder>
+  </folder>
+
+  <folder name="Actions">
+    <folder name="Versioning">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vcscore.actions.Bundle"/>
+      <file name="org-netbeans-modules-vcscore-actions-UpdateCommandAction.instance"/>
+      <file name="org-netbeans-modules-vcscore-actions-CommitCommandAction.instance"/>
+      <file name="org-netbeans-modules-vcscore-actions-HistoryCommandAction.instance"/>
+      <file name="org-netbeans-modules-vcscore-actions-DiffCommandAction.instance"/>
+      <file name="org-netbeans-modules-vcscore-actions-AddCommandAction.instance"/>
+      <file name="org-netbeans-modules-vcscore-actions-RemoveCommandAction.instance"/>
+    </folder>
+  </folder>
+
+  <folder name="vcs">
+    <folder name="Groups">
+        <file name="org-netbeans-modules-vcscore-grouping-MainVcsGroupNode.instance" />      
+    </folder>
+   </folder>
+   
+   <folder name="Services"> 
+     <file name="org-netbeans-modules-vcscore-settings-GeneralVcsSettingsNode.instance" />
+     <folder name = "Hidden">
+        <file name="org-netbeans-modules-vcscore-settings-GeneralVcsSettings.settings" url="GeneralVcsSettings.settings"/>
+        <folder name="VersionControl">
+             <file name="org-netbeans-modules-vcscore-grouping-VcsGroupSettings.settings" url="VcsGroupSettings.settings"/>
+        </folder>
+     </folder>
+     <folder name="SearchType">
+       <file name="org-netbeans-modules-vcscore-search-VcsSearchType.settings" url="VcsSearchType.settings"/>
+     </folder>
+   </folder>
+
+   <folder name="Templates">
+     <folder name="Mount">
+       <folder name="VCS">
+         <file name="org-netbeans-modules-vcscore-wizard-mountcvs-CvsMountFS.settings" url="CvsMountFS.settings">
+         <attr name="template" boolvalue="true"/>
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vcscore.wizard.mountcvs.Bundle" />
+         <attr name="templateWizardIterator" methodValue="org.netbeans.modules.vcscore.wizard.mountcvs.MountCvsWizard.singleton"/>
+         </file>
+       </folder>
+     </folder>
+   </folder>
+
+</filesystem>
+

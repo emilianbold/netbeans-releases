@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.rmi"/>
+    <instanceof class="org.openide.ServiceType"/>
+    <instanceof class="org.openide.debugger.DebuggerType"/>
+    <instanceof class="org.netbeans.modules.debugger.delegator.DefaultDebuggerType"/>
+    <instanceof class="org.netbeans.modules.debugger.support.ProcessDebuggerType"/>
+    <instanceof class="org.netbeans.modules.rmi.RMIDebugType"/>
+    <instance class="org.netbeans.modules.rmi.RMIDebugType"/>
+</settings>

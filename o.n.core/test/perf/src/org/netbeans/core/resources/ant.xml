@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+  <folder name="Templates">
+    <folder name="Ant">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+      <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntDescription.html"/>
+      <file name="Project.xml" url="Project.xml_">
+        <attr name="template" boolvalue="true"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/ProjectDescription.html"/>
+        <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="true"/>
+        <attr name="templateWizardIterator" newvalue="org.apache.tools.ant.module.loader.AntTemplateIterator"/>
+      </file>
+      <attr name="Project.xml/SampleProject.xml" boolvalue="true"/>
+      <file name="SampleProject.xml" url="SampleProject.xml_">
+        <attr name="template" boolvalue="true"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/SampleProjectDescription.html"/>
+        <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="true"/>
+        <attr name="templateWizardIterator" newvalue="org.apache.tools.ant.module.loader.AntTemplateIterator"/>
+      </file>
+      <attr name="SampleProject.xml/CustomTask.java" boolvalue="true"/>
+      <file name="CustomTask.java" url="CustomTask_java">
+        <attr name="template" boolvalue="true"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/CustomTaskDescription.html"/>
+      </file>
+      <attr name="CustomTask.java/Shortcut.txt" boolvalue="true"/>
+      <file name="Shortcut.txt">
+        <![CDATA[Contents irrelevant.]]>
+        <attr name="template" boolvalue="true"/>
+        <attr name="templateWizardIterator" newvalue="org.apache.tools.ant.module.wizards.shortcut.ShortcutIterator"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntShortcut.gif"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntShortcut.html"/>
+      </file>
+    </folder>
+    <!-- Service templates -->
+    <folder name="Services">
+      <folder name="CompilerType">
+        <file name="AntCompiler.settings" url="AntCompiler.settings">
+	  <attr name="template" boolvalue="true"/>
+	</file>
+        <file name="IndirectAntCompiler.settings" url="IndirectAntCompiler.settings">
+	  <attr name="template" boolvalue="true"/>
+        </file>
+      </folder>
+      <folder name="Executor">
+        <file name="AntExecutor.settings" url="AntExecutor.settings">
+	  <attr name="template" boolvalue="true"/>
+        </file>
+      </folder>
+    </folder>
+  </folder>
+
+  <!-- To make the module nicer to debug, list the cookies it provides. -->
+  <folder name="Services">
+    <file name="AntSettings.settings" url="AntSettings.settings"/>
+    <folder name="CompilerType">
+      <file name="AntCompiler.settings" url="AntCompiler.settings"/>
+      <file name="IndirectAntCompiler.settings" url="IndirectAntCompiler.settings"/>
+    </folder>
+    <folder name="Executor">
+      <file name="AntExecutor.settings" url="AntExecutor.settings"/>
+    </folder>
+    <folder name="Hidden">
+      <file name="org-apache-tools-ant-module-cookies.xml" url="cookies.xml"/>
+    </folder>
+    <folder name="JavaHelp">
+      <attr name="org-netbeans-modules-usersguide-below-regular.txt/org-apache-tools-ant-module-helpset.xml" boolvalue="true"/>
+      <file name="org-apache-tools-ant-module-helpset.xml">
+        <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpsetref PUBLIC
+          "-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"
+          "http://www.netbeans.org/dtds/helpsetref-1_0.dtd">
+<helpsetref url="nbdocs:/org/apache/tools/ant/module/docs/HelpSet.hs"/>
+]]>
+        <attr boolvalue="false" name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"/>
+      </file>
+    </folder>
+  </folder>
+  <folder name="Menu">
+    <folder name="Help">
+      <folder name="HelpShortcuts">
+        <attr name="org-netbeans-modules-usersguide-lower-sep.instance/org-apache-tools-ant-module-mainpage.xml" boolvalue="true"/>
+        <file name="org-apache-tools-ant-module-mainpage.xml">
+          <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpctx PUBLIC
+          "-//NetBeans//DTD Help Context 1.0//EN"
+          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
+<helpctx id="org.apache.tools.ant.module.ant-docs"/>
+]]>
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+          <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="false"/>
+          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+        </file>
+      </folder>
+    </folder>
+  </folder>
+  <folder name="Actions">
+    <folder name="Help">
+      <file name="org-apache-tools-ant-module-mainpage.xml">
+        <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpctx PUBLIC
+          "-//NetBeans//DTD Help Context 1.0//EN"
+          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
+<helpctx id="org.apache.tools.ant.module.ant-docs"/>
+]]>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+        <attr name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE" boolvalue="false"/>
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+      </file>
+    </folder>
+  </folder>
+  <!-- Mount documentation automatically. -->
+  <folder name="Mount">
+    <folder name="Javadoc">
+      <file name="org-apache-tools-ant-module-javadoc.xml">
+        <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE Javadoc PUBLIC
+          "-//NetBeans IDE//DTD JavadocLibrary//EN"
+          "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
+<Javadoc>
+  <Archive name="docs/ant-api.zip"/>
+</Javadoc>
+]]>
+      </file>
+    </folder>
+  </folder>
+</filesystem>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<filesystem>
+  <folder name="Menu">
+    <folder name="Versioning">
+      <attr boolvalue="true" name="org-netbeans-modules-vcscore-actions-VcsMountFromTemplateAction.instance/org-netbeans-modules-cvsclient-CvsMenuAction.instance"/>
+      <file name="org-netbeans-modules-cvsclient-CvsMenuAction.instance"/>
+      <attr boolvalue="true" name="org-netbeans-modules-cvsclient-CvsMenuAction.instance/org-netbeans-modules-cvsclient-login-LoginManagerAction.instance"/>
+      <file name="org-netbeans-modules-cvsclient-login-LoginManagerAction.instance"/>
+    </folder>
+  </folder>
+
+  <folder name="Services">
+    <folder name="Hidden">
+     <folder name="VersionControl">
+       <file name="org-netbeans-modules-cvsclient-JavaCvsSettings.settings" url="JavaCvsSettings.settings"/>
+     </folder>
+
+    </folder>
+  </folder>
+
+  <folder name="Actions">
+    <folder name="Versioning">
+      <folder name="JavaCvs">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cvsclient.actions.Bundle"/>
+        <file name="org-netbeans-modules-cvsclient-actions-JStatusCommandAction.instance"/>
+        <file name="org-netbeans-modules-cvsclient-actions-JLogCommandAction.instance"/>
+<!--        <file name="org-netbeans-modules-cvsclient-actions-JDiffCommandAction.instance"/> -->
+        <file name="org-netbeans-modules-cvsclient-actions-JAnnotateCommandAction.instance"/>
+<!--        <file name="org-netbeans-modules-cvsclient-actions-JCommitCommandAction.instance"/> -->
+<!--        <file name="org-netbeans-modules-cvsclient-actions-JUpdateCommandAction.instance"/> -->
+        <file name="org-netbeans-modules-cvsclient-actions-JCheckoutCommandAction.instance"/> 
+<!--        <file name="org-netbeans-modules-cvsclient-actions-JAddCommandAction.instance"/> -->
+<!--        <file name="org-netbeans-modules-cvsclient-actions-JRemoveCommandAction.instance"/> -->
+        <file name="org-netbeans-modules-cvsclient-actions-JTagCommandAction.instance"/>
+        <file name="org-netbeans-modules-cvsclient-actions-JRefreshCommandAction.instance"/>
+        <file name="org-netbeans-modules-cvsclient-actions-JRecRefreshCommandAction.instance"/>
+        <file name="org-netbeans-modules-cvsclient-actions-JListModulesCommandAction.instance"/>
+        <file name="org-netbeans-modules-cvsclient-actions-JRevisionExplorerCommandAction.instance"/>
+      </folder>
+    </folder>
+  </folder>
+
+</filesystem>

@@ -1,0 +1,331 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+	<!-- Actions -->	
+	<folder name="Actions">
+		<folder name="Tools">
+			<file name="org-netbeans-modules-rmi-MarkRMIAction.instance"/>
+			<file name="org-netbeans-modules-rmi-UnMarkRMIAction.instance"/>
+		</folder>
+	</folder>
+
+	<!-- Menu -->	
+	<folder name="Menu">
+		<folder name="Tools">
+			<file name="org-netbeans-modules-rmi-wizard-RMIWizardAction.instance" />
+		</folder>
+	</folder>
+
+	<!-- Temporary files -->
+  <folder name="RMI">
+    <file name="rmi.policy" url="rmi.policy" />
+  </folder>
+  
+	<!-- Templates -->  
+  <folder name="Templates">
+    <folder name="RMI">
+      <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/rmi/resources/RMI.html"/>
+      <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/RMI.html"/>
+      
+      <file name="Activatable__Impl.java" url="templates/RMI/Activatable__Impl.java.template">
+        <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000d524d4920446562756767696e677400256f72672e6e65746265616e732e6d6f64756c65732e726d692e524d4944656275675479706578"/>
+        <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000c524d49204578656375746f727400246f72672e6e65746265616e732e6d6f64756c65732e726d692e524d494578656375746f7278"/>
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/Activatable__Impl.html"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="Activatable__Impl.rmi" url="templates/RMI/Activatable__Impl.rmi.template">
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="ActivatableServer.group" url="templates/RMI/ActivatableServer.group.template">
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/ActivatableServer.html"/>
+        <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/rmi/resources/ActivatableServer.html"/>
+        <attr name="templatepattern" stringvalue="{1}{2}"/>
+        <attr name="usepattern" boolvalue="true"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="ClearObject.group" url="templates/RMI/ClearObject.group.template">
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/ClearObject.html"/>
+        <attr name="templatepattern" stringvalue="{1}{2}"/>
+        <attr name="usepattern" boolvalue="true"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="ClearUnicastObject__Impl.java" url="templates/RMI/ClearUnicastObject__Impl.java.template">
+        <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000d524d4920446562756767696e677400256f72672e6e65746265616e732e6d6f64756c65732e726d692e524d4944656275675479706578"/>
+        <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000c524d49204578656375746f727400246f72672e6e65746265616e732e6d6f64756c65732e726d692e524d494578656375746f7278"/>
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/ClearUnicastObject__Impl.html"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="ClearUnicastObject__Impl.rmi" url="templates/RMI/ClearUnicastObject__Impl.rmi.template">
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="IIOPServer.group" url="templates/RMI/IIOPServer.group.template">
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/IIOPServer.html"/>
+        <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/rmi/resources/IIOPServer.html"/>
+        <attr name="templatepattern" stringvalue="{1}{2}"/>
+        <attr name="usepattern" boolvalue="true"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="RemoteInterface.java" url="templates/RMI/RemoteInterface.java.template">
+        <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074001144656661756c7420446562756767696e677400376f72672e6e65746265616e732e6d6f64756c65732e64656275676765722e64656275672e44656661756c7444656275676765725479706578"/>
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/RemoteInterface.html"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="RMI__Client.java" url="templates/RMI/RMI__Client.java.template">
+        <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000d524d4920446562756767696e677400256f72672e6e65746265616e732e6d6f64756c65732e726d692e524d4944656275675479706578"/>
+        <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e00017870740013524d4920436c69656e74204578656375746f727400246f72672e6e65746265616e732e6d6f64756c65732e726d692e524d494578656375746f7278"/>
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/RMIClient.html"/>
+        <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/rmi/resources/RMIClient.html"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="RMIIIOP__Impl.java" url="templates/RMI/RMIIIOP__Impl.java.template">
+        <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000d524d4920446562756767696e677400256f72672e6e65746265616e732e6d6f64756c65732e726d692e524d4944656275675479706578"/>
+        <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000c524d49204578656375746f727400246f72672e6e65746265616e732e6d6f64756c65732e726d692e524d494578656375746f7278"/>
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/RMIIIOP__Impl.html"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="RMIIIOP__Impl.rmi" url="templates/RMI/RMIIIOP__Impl.rmi.template">
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="UnicastRemoteObject__Impl.java" url="templates/RMI/UnicastRemoteObject__Impl.java.template">
+        <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000d524d4920446562756767696e677400256f72672e6e65746265616e732e6d6f64756c65732e726d692e524d4944656275675479706578"/>
+        <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000c524d49204578656375746f727400246f72672e6e65746265616e732e6d6f64756c65732e726d692e524d494578656375746f7278"/>
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/UnicastRemoteObject__Impl.html"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="UnicastRemoteObject__Impl.rmi" url="templates/RMI/UnicastRemoteObject__Impl.rmi.template">
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="UnicastRemoteServer.group" url="templates/RMI/UnicastRemoteServer.group.template">
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/UnicastServer.html"/>
+        <attr name="templatepattern" stringvalue="{1}{2}"/>
+        <attr name="usepattern" boolvalue="true"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <folder name="implementations">
+      	<attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/implementations.html"/>
+        
+        <file name="Activatable.java" url="templates/RMI/implementations/Activatable.java.template">
+          <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000d524d4920446562756767696e677400256f72672e6e65746265616e732e6d6f64756c65732e726d692e524d4944656275675479706578"/>
+          <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000c524d49204578656375746f727400246f72672e6e65746265616e732e6d6f64756c65732e726d692e524d494578656375746f7278"/>
+          <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/Activatable__Impl.html"/>
+          <attr name="template" boolvalue="true" />
+        </file>
+        
+        <file name="Activatable.rmi" url="templates/RMI/implementations/Activatable.rmi.template">
+          <attr name="template" boolvalue="true" />
+        </file>
+        
+        <file name="ClearImplementation.java" url="templates/RMI/implementations/ClearImplementation.java.template">
+          <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000d524d4920446562756767696e677400256f72672e6e65746265616e732e6d6f64756c65732e726d692e524d4944656275675479706578"/>
+          <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000c524d49204578656375746f727400246f72672e6e65746265616e732e6d6f64756c65732e726d692e524d494578656375746f7278"/>
+          <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/ClearUnicastObject__Impl.html"/>
+          <attr name="template" boolvalue="true" />
+        </file>
+        
+        <file name="ClearImplementation.rmi" url="templates/RMI/implementations/ClearImplementation.rmi.template">
+          <attr name="template" boolvalue="true" />
+        </file>
+        
+        <file name="RMI_IIOP.java" url="templates/RMI/implementations/RMI_IIOP.java.template">
+          <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000d524d4920446562756767696e677400256f72672e6e65746265616e732e6d6f64756c65732e726d692e524d4944656275675479706578"/>
+          <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000c524d49204578656375746f727400246f72672e6e65746265616e732e6d6f64756c65732e726d692e524d494578656375746f7278"/>
+          <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/RMIIIOP__Impl.html"/>
+          <attr name="template" boolvalue="true" />
+        </file>
+        
+        <file name="RMI_IIOP.rmi" url="templates/RMI/implementations/RMI_IIOP.rmi.template">
+          <attr name="template" boolvalue="true" />
+        </file>
+        
+        <file name="UnicastRemoteObject.java" url="templates/RMI/implementations/UnicastRemoteObject.java.template">
+          <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000d524d4920446562756767696e677400256f72672e6e65746265616e732e6d6f64756c65732e726d692e524d4944656275675479706578"/>
+          <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074000c524d49204578656375746f727400246f72672e6e65746265616e732e6d6f64756c65732e726d692e524d494578656375746f7278"/>
+          <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/UnicastRemoteObject__Impl.html"/>
+          <attr name="template" boolvalue="true" />
+        </file>
+        
+        <file name="UnicastRemoteObject.rmi" url="templates/RMI/implementations/UnicastRemoteObject.rmi.template">
+          <attr name="template" boolvalue="true" />
+        </file>
+        
+      </folder>
+      
+      <folder name="interfaces">
+        <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/interfaces.html"/>
+      
+        <file name="Hello.java" url="templates/RMI/interfaces/Hello.java.template">
+          <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074001144656661756c7420446562756767696e677400376f72672e6e65746265616e732e6d6f64756c65732e64656275676765722e64656275672e44656661756c7444656275676765725479706578"/>
+          <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/Hello.html"/>
+          <attr name="template" boolvalue="true" />
+        </file>
+      
+        <file name="Remote.java" url="templates/RMI/interfaces/Remote.java.template">
+          <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074001144656661756c7420446562756767696e677400376f72672e6e65746265616e732e6d6f64756c65732e64656275676765722e64656275672e44656661756c7444656275676765725479706578"/>
+          <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/Remote.html"/>
+          <attr name="template" boolvalue="true" />
+        </file>
+        
+      </folder>
+      
+    </folder>
+    
+    <folder name="RMISockets">
+      <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/rmi/resources/RMISockets.html"/>
+      <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/rmi/resources/RMISockets.html"/>
+      
+      <file name="ClientSocket.group" url="templates/RMISockets/ClientSocket.group.template">
+        <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/rmi/resources/ClientSocket.html"/>
+        <attr name="templatepattern" stringvalue="{1}{3}"/>
+        <attr name="template" boolvalue="true" />
+        <attr name="usepattern" boolvalue="true"/>
+      </file>
+      
+      <file name="ClientSocketFactory.java" url="templates/RMISockets/ClientSocketFactory.java.template">
+        <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074001144656661756c7420446562756767696e677400376f72672e6e65746265616e732e6d6f64756c65732e64656275676765722e64656275672e44656661756c7444656275676765725479706578"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="CustomSockets.group" url="templates/RMISockets/CustomSockets.group.template">
+        <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/rmi/resources/CustomSockets.html"/>
+        <attr name="templatepattern" stringvalue="{1}{3}"/>
+        <attr name="template" boolvalue="true" />
+        <attr name="usepattern" boolvalue="true"/>
+    </file>
+      
+      <file name="InputStream.java" url="templates/RMISockets/InputStream.java.template">
+        <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074001144656661756c7420446562756767696e677400376f72672e6e65746265616e732e6d6f64756c65732e64656275676765722e64656275672e44656661756c7444656275676765725479706578"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="OutputStream.java" url="templates/RMISockets/OutputStream.java.template">
+        <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074001144656661756c7420446562756767696e677400376f72672e6e65746265616e732e6d6f64756c65732e64656275676765722e64656275672e44656661756c7444656275676765725479706578"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="ServerSocket.group" url="templates/RMISockets/ServerSocket.group.template">
+        <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/rmi/resources/ServerSocket.html"/>
+        <attr name="templatepattern" stringvalue="{1}{3}"/>
+        <attr name="template" boolvalue="true" />
+        <attr name="usepattern" boolvalue="true"/>
+      </file>
+      
+      <file name="ServerSocket.java" url="templates/RMISockets/ServerSocket.java.template">
+        <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074001144656661756c7420446562756767696e677400376f72672e6e65746265616e732e6d6f64756c65732e64656275676765722e64656275672e44656661756c7444656275676765725479706578"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="ServerSocketFactory.java" url="templates/RMISockets/ServerSocketFactory.java.template">
+        <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074001144656661756c7420446562756767696e677400376f72672e6e65746265616e732e6d6f64756c65732e64656275676765722e64656275672e44656661756c7444656275676765725479706578"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+      <file name="Socket.java" url="templates/RMISockets/Socket.java.template">
+        <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e0001787074001144656661756c7420446562756767696e677400376f72672e6e65746265616e732e6d6f64756c65732e64656275676765722e64656275672e44656661756c7444656275676765725479706578"/>
+        <attr name="template" boolvalue="true" />
+      </file>
+      
+    </folder>
+    
+  </folder>
+
+
+	<!-- Services -->
+    <folder name="Services">
+    
+    	<!-- Settings -->
+  	<file name="RMISettings.settings" url="RMISettings.settings"/>
+  	<file name="RMIRegistryItems.settings" url="RMIRegistryItems.settings">
+  	    <attr name="hidden" boolvalue="true" />
+  	</file>
+
+    	<!-- Compiler -->
+        <folder name="CompilerType">
+    	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.rmi.Bundle"/>
+    	    <!--<attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/rmi/resources/rmiStubCompilation.gif"/>-->
+	    <file name="RMIStubCompiler.settings" url="RMIStubCompiler.settings">
+		<attr name="template" boolvalue="true" />
+	    </file>
+	</folder>
+
+	<!-- Debugger -->
+        <folder name="DebuggerType">
+    	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.rmi.Bundle"/>
+    	    <!--<attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/rmi/resources/RMIDebugger.gif"/> -->
+	    <file name="RMIDebugger.settings" url="RMIDebugger.settings">
+	        <attr name="template" boolvalue="true"/>
+	    </file>
+	</folder>
+
+	<!-- Executor -->
+        <folder name="Executor">
+    	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.rmi.Bundle"/>
+    	    <!--<attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/rmi/resources/RMIExecutor.gif"/> -->
+	    <!-- Default -->
+	    <file name="RMIExecutor.settings" url="RMIExecutor.settings">
+	        <attr name="template" boolvalue="true"/>
+	    </file>
+
+	    <!-- Debug -->
+	    <file name="RMIExecutorDbg.settings" url="RMIExecutorDbg.settings">
+	        <attr name="template" boolvalue="true"/>
+	    </file>
+	    <attr name="RMIExecutor.settings/RMIExecutorDbg.settings" boolvalue="true" />
+
+
+	    <!-- Client -->
+	    <file name="RMIClientExecutor.settings" url="RMIClientExecutor.settings">
+	        <attr name="template" boolvalue="true"/>
+	    </file>
+	    <attr name="RMIExecutorDbg.settings/RMIClientExecutor.settings" boolvalue="true" />
+		
+	    <!-- Client debug -->
+	    <file name="RMIClientExecutorDbg.settings" url="RMIClientExecutorDbg.settings">
+	        <attr name="template" boolvalue="true"/>
+	    </file>
+	    <attr name="RMIClientExecutor.settings/RMIClientExecutorDbg.settings" boolvalue="true" />
+
+	    <!-- Unicast Export -->
+	    <file name="RMIUnicastExport.settings" url="RMIUnicastExport.settings">
+	        <attr name="template" boolvalue="true"/>
+	    </file>
+	    <attr name="RMIClientExecutorDbg.settings/RMIUnicastExport.settings" boolvalue="true" />
+
+	    <!-- Unicast Export debug -->
+	    <file name="RMIExportDbg.settings" url="RMIExportDbg.settings">
+	        <attr name="template" boolvalue="true" />
+	    </file>
+	    <attr name="RMIUnicastExport.settings/RMIUnicastExportDbg.settings" boolvalue="true" />
+
+	</folder>
+    </folder>
+
+</filesystem>

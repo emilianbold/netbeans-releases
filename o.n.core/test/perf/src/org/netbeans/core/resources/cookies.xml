@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!DOCTYPE cookies PUBLIC "-//NetBeans//DTD apisupport cookie class list 1.0//EN" "http://www.netbeans.org/dtds/apisupport-cookie-class-list-1_0.dtd">
+<cookies>
+  <class name="org.apache.tools.ant.module.api.AntProjectCookie"/>
+  <class name="org.apache.tools.ant.module.api.ElementCookie"/>
+  <class name="org.apache.tools.ant.module.api.IntrospectionCookie"/>
+</cookies>

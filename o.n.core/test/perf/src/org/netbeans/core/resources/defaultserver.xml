@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<Server>
+    <xmlmapper:debug level="0" />
+
+    <Logger name="tc_log" 
+            verbosityLevel = "WARNING" 
+    />
+
+    <Logger name="servlet_log" 
+            path="logs/servlet.log"
+            verbosityLevel = "WARNING" 
+    />
+
+    <Logger name="JASPER_LOG" 
+	    path="logs/jasper.log"
+            verbosityLevel = "WARNING" />
+
+    <ContextManager debug="0" workDir="{2}" randomClass="java.util.Random" >
+        <ContextInterceptor className="org.apache.tomcat.context.AutoSetup" />
+        
+        <ContextInterceptor 
+            className="org.apache.tomcat.context.WebXmlReader" />
+
+        <ContextInterceptor 
+            className="org.netbeans.modules.web.core.execution.IDEJspInterceptor" />
+
+        <ContextInterceptor 
+            className="org.apache.tomcat.context.LoaderInterceptor" />
+        <ContextInterceptor 
+            className="org.apache.tomcat.context.DefaultCMSetter" />
+        <ContextInterceptor 
+            className="org.netbeans.modules.web.core.execution.ForteDefaults" />
+        <ContextInterceptor 
+            className="org.apache.tomcat.context.WorkDirInterceptor" />
+
+{3}
+        <RequestInterceptor 
+            className="org.apache.tomcat.request.SessionInterceptor" />
+
+        <RequestInterceptor 
+            className="org.apache.tomcat.request.SimpleMapper1" 
+            debug="0" />
+
+        <RequestInterceptor 
+            className="org.apache.tomcat.request.InvokerInterceptor" 
+            debug="0" />
+
+        <RequestInterceptor 
+            className="org.apache.tomcat.request.StaticInterceptor" 
+            debug="0" />
+
+        <RequestInterceptor 
+            className="org.apache.tomcat.session.StandardSessionInterceptor" />
+
+        <RequestInterceptor 
+            className="org.apache.tomcat.request.AccessInterceptor" 
+            debug="0" />
+
+        <RequestInterceptor 
+            className="org.apache.tomcat.request.SimpleRealm" 
+            debug="0" />
+
+        <ContextInterceptor 
+            className="org.apache.tomcat.context.LoadOnStartupInterceptor" />
+            
+            
+        <Connector className="org.apache.tomcat.service.PoolTcpConnector">
+            <Parameter name="handler" 
+                value="org.apache.tomcat.service.http.HttpConnectionHandler"/>
+            <Parameter name="port" 
+                value="{0}"/>
+        </Connector>
+
+        <Connector className="org.apache.tomcat.service.PoolTcpConnector">
+            <Parameter name="handler" 
+                value="org.apache.tomcat.service.connector.Ajp12ConnectionHandler"/>
+            <Parameter name="port" value="8006"/>
+        </Connector>
+
+{1}
+
+    </ContextManager>
+</Server>

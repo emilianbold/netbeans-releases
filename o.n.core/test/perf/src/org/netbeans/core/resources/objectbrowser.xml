@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+    <folder name="Actions">
+        <folder name="View">
+            <file name="org-netbeans-modules-objectbrowser-ShowBrowserAction.instance" />
+        </folder>
+    </folder>
+
+  <folder name="Menu">
+
+     <folder name="View">
+        <attr name="org-netbeans-modules-form-actions-ComponentInspectorAction.instance/org-netbeans-modules-objectbrowser-ShowBrowserAction.instance" boolvalue="true" />
+        <file name="org-netbeans-modules-objectbrowser-ShowBrowserAction.instance" />
+        <attr name="org-netbeans-modules-objectbrowser-ShowBrowserAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
+     </folder>
+
+  </folder>
+<!--
+     <folder name="Toolbars">
+
+        <folder name="System">
+            <attr name="org-netbeans-core-actions-OpenExplorerAction.instance/org-netbeans-modules-objectbrowser-ShowBrowserAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-objectbrowser-ShowBrowserAction.instance" />
+            <attr name="org-netbeans-modules-objectbrowser-ShowBrowserAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
+        </folder>
+
+    </folder>
+-->
+  <folder name="Shortcuts">
+
+    <file name="C-9[org-netbeans-modules-objectbrowser-ShowBrowserAction].instance" />
+
+  </folder>
+
+  <folder name="Services">
+    <file name="org.netbeans.modules.objectbrowser.ObjectBrowserSettings.settings">
+        <![CDATA[<?xml version="1.0"?>
+        <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+        <settings version="1.0">
+            <module name="org.netbeans.modules.objectbrowser/1" spec="1.7"/>
+            <instanceof class="java.lang.Object"/>
+            <instanceof class="org.openide.util.SharedClassObject"/>
+            <instanceof class="org.openide.options.SystemOption"/>
+            <instanceof class="org.netbeans.modules.objectbrowser.ObjectBrowserSettings"/>
+            <instanceof class="java.io.Serializable"/>
+            <instanceof class="java.io.Externalizable"/>
+            <instance class="org.netbeans.modules.objectbrowser.ObjectBrowserSettings"/>
+        </settings>
+        ]]>
+    </file>
+  </folder>
+
+</filesystem>

@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+  <folder name="Menu">
+	<folder name="Tools">
+            <file name="Separator3[javax-swing-JSeparator].instance"/>
+	    <attr name="org-netbeans-modules-projects-settings-OptionsAction.instance/Separator3[javax-swing-JSeparator].instance" boolvalue="true" />
+	    <attr name="org-netbeans-core-actions-SettingsAction.instance/Separator3[javax-swing-JSeparator].instance" boolvalue="true" />
+            <file name="org-netbeans-modules-autoupdate-UpdateAction.instance"/>
+            <attr name="Separator3[javax-swing-JSeparator].instance/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true" />
+        </folder>
+  </folder>
+
+  <folder name="Actions">
+    <folder name="System">
+      <file name="org-netbeans-modules-autoupdate-UpdateAction.instance" />
+    </folder>    
+  </folder>
+  
+  <folder name="Wizards">
+    <folder name="Setup">
+      <file name="org-netbeans-modules-autoupdate-SetupPanel.instance">
+        <attr name="module" stringvalue="org.netbeans.modules.autoupdate" />
+      </file>
+    </folder>
+  </folder>
+  
+  <folder name="Welcome">
+    <attr name="org-openide-actions-NewTemplateAction.instance/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true" />
+    <file name="org-netbeans-modules-autoupdate-UpdateAction.instance">
+      <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/modules/autoupdate/resources/info-UpdateAction.html" />
+    </file>
+    <attr name="org-netbeans-modules-autoupdate-UpdateAction.instance/org-netbeans-core-ui-ProxySettingsAction.instance" boolvalue="true" />        
+  </folder>
+
+  <folder name="Services">
+    <folder name="Hidden">
+      <file name="org-netbeans-modules-autoupdate-AutoModuleNewType.instance"/>
+    </folder>
+    
+    <file name="autoupdate.settings" url="autoupdate.settings"/>
+    
+    <folder name="AutoupdateType">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.autoupdate.resources.Bundle"/>
+      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/autoupdate/resources/updateAction.gif"/>
+      <file name="autoupdate_xml_type.settings" url="autoupdate_xml_type.settings"/>
+    </folder>
+    
+  </folder>
+  
+  <folder name="Templates">
+    <folder name="Services">
+      <folder name="AutoupdateType">
+        <file name="autoupdate_xml_type.settings" url="autoupdate_xml_type.settings">
+          <attr name="template" boolvalue="true"/>
+        </file>
+      </folder>
+    </folder>
+    
+  </folder>
+</filesystem>

@@ -1,0 +1,28 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Layer: org/netbeans/modules/java/resources/mf-layer.xml
+OpenIDE-Module-Install: org/netbeans/modules/java/JavaModule.class
+OpenIDE-Module-Name: Java Source Files
+OpenIDE-Module-Short-Description: Supports work with Java source files
+ .
+OpenIDE-Module-Long-Description: The Java Source Files module enables 
+ you to browse a visual representation of Java classes in the Explorer
+  and edit Java sources.
+OpenIDE-Module-Implementation-Version: ${buildnumber}
+Class-Path: ext/javac.jar ext/java-gj.jar
+OpenIDE-Module-Specification-Version: 1.7
+OpenIDE-Module-Display-Category: Java
+#OpenIDE-Module-Package-Dependencies: [org.netbeans.modules.java.gj.Jav
+# aCompilerType], [org.netbeans.lib.javac.Main]
+OpenIDE-Module: org.netbeans.modules.java/1
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.10
+
+Name: org/netbeans/modules/java/JavaDataLoader.class
+Install-Before: org.netbeans.modules.clazz.ClassDataObject
+OpenIDE-Module-Class: Loader
+
+Name: org/netbeans/modules/java/imptool/ImpToolAction.class
+OpenIDE-Module-Class: Action
+
+Name: org/netbeans/modules/java/ui/actions/SynchronizeAction.class
+OpenIDE-Module-Class: Action
+

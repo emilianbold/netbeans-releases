@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Actions">
+        <folder name="System">
+            <file name="org-netbeans-core-actions-SaveSettingsAction.instance_hidden"/>
+        </folder>
+        <folder name="Project">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.projects.Bundle" />
+            <file name="org-openide-actions-BuildProjectAction.instance"/>
+            <file name="org-openide-actions-CompileProjectAction.instance"/>
+            <file name="org-openide-actions-ExecuteProjectAction.instance"/>
+            <file name="org-openide-actions-DebugProjectAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Project">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.projects.Bundle" />
+
+            <file name="org-openide-actions-CompileProjectAction.instance"/>
+            <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-CompileProjectAction.instance" boolvalue="true"/>
+
+            <file name="org-openide-actions-BuildProjectAction.instance"/>
+            <attr name="org-openide-actions-CompileProjectAction.instance/org-openide-actions-BuildProjectAction.instance" boolvalue="true"/>
+            <file name="Separator3[javax-swing-JSeparator].instance"/>
+            <attr name="org-openide-actions-BuildProjectAction.instance/Separator3[javax-swing-JSeparator].instance" boolvalue="true"/>
+            <file name="org-openide-actions-ExecuteProjectAction.instance"/>
+            <attr name="org-netbeans-modules-projects-SetMainClassAction.instance/org-openide-actions-ExecuteProjectAction.instance" boolvalue="true"/>
+
+            <file name="org-openide-actions-DebugProjectAction.instance"/>
+            <attr name="org-openide-actions-ExecuteProjectAction.instance/org-openide-actions-DebugProjectAction.instance" boolvalue="true"/>
+            
+            <file name="Separator4[javax-swing-JSeparator].instance"/>
+            <attr name="org-openide-actions-DebugProjectAction.instance/Separator4[javax-swing-JSeparator].instance" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-projects-def-upgrade-ImportAction.instance"/>
+            <attr name="Separator4[javax-swing-JSeparator].instance/org-netbeans-modules-projects-def-upgrade-ImportAction.instance" boolvalue="true"/>
+
+        </folder>
+        <attr name="View/Project" boolvalue="true" />
+        <attr name="Project/Build" boolvalue="true" />
+    </folder>
+
+    <folder name="Templates">
+        <folder name="Settings">
+            <folder name="Execution">
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/openide/resources/pending.gif" />
+                <file name="Main Object.pmain"><![CDATA[
+<?xml version="1.0"?>
+
+<links>
+    <link url="file:."/>
+</links>
+]]>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" methodValue="org.netbeans.modules.projects.def.ui.wizard.MainObjectIterator.getInstance" />
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="Workplace">
+            <folder name="Default">
+                <folder name="Default Project">
+                    <attr name="template" boolvalue="true"/>
+                </folder>
+                <folder name="Default Project.prj.settings">
+                    <attr name="template" boolvalue="true"/>
+                    <folder name="default">
+                    </folder>
+                </folder>
+                <file name="Default Project.prj">
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

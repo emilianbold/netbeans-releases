@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.apache.tools.ant.module"/>
+    <instanceof class="org.openide.ServiceType"/>
+    <instanceof class="org.openide.compiler.CompilerType"/>
+    <instanceof class="org.apache.tools.ant.module.run.AntCompilerType"/>
+    <instance class="org.apache.tools.ant.module.run.AntCompilerType"/>
+</settings>
