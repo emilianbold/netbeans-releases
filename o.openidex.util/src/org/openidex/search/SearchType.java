@@ -32,11 +32,11 @@ import org.openide.util.Lookup;
  */
 public abstract class SearchType extends ServiceType implements Cloneable {
 
-    /** Serial version UID. */ // PENDING How to change this silly number?
+    /** Serial version UID. */ // PENDING How to change this silly number? Can be done by using Utilities.translate
     static final long serialVersionUID = 1L;
     
     /** Name of valid property. */
-    public static final String PROP_VALID = "org.openidex.search.valid"; // NOI18N
+    public static final String PROP_VALID = "valid"; // NOI18N
     
     /** Name of object changed property. */
     protected static final String PROP_OBJECT_CHANGED = "org.openidex.search.objectChanged"; // NOI18N
