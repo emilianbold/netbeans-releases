@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -390,7 +390,8 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         add(upTestFolder, gridBagConstraints);
         upTestFolder.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_SourceFoldersPanel_upTestFolder"));
 
-        projectFolderLabel.setText(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_ProjFolderLabel"));
+        projectFolderLabel.setLabelFor(projectFolder);
+        org.openide.awt.Mnemonics.setLocalizedText(projectFolderLabel, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_ProjFolderLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -399,7 +400,8 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(projectFolderLabel, gridBagConstraints);
 
-        projectContentLabel.setText(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_ProjContentLabel"));
+        projectContentLabel.setLabelFor(contentFolder);
+        org.openide.awt.Mnemonics.setLocalizedText(projectContentLabel, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_ProjContentLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -408,7 +410,8 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(projectContentLabel, gridBagConstraints);
 
-        buildScriptLabel.setText(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_BuildScriptLabel"));
+        buildScriptLabel.setLabelFor(buildScript);
+        org.openide.awt.Mnemonics.setLocalizedText(buildScriptLabel, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_BuildScriptLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -425,6 +428,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(projectFolder, gridBagConstraints);
+        projectFolder.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("ACSD_SourceFoldersPanel_projectFolder"));
 
         contentFolder.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -434,6 +438,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(contentFolder, gridBagConstraints);
+        contentFolder.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("ACSD_SourceFoldersPanel_contentFolder"));
 
         buildScript.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -443,6 +448,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(buildScript, gridBagConstraints);
+        buildScript.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("ACSD_SourceFoldersPanel_buildScript"));
 
     }//GEN-END:initComponents
 
