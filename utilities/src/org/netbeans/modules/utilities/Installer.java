@@ -148,13 +148,13 @@ public class Installer extends ModuleInstall {
             // install into menu
             Utilities2.createAction (BookmarksAction.class,
                                      DataFolder.create (TopManager.getDefault ().getPlaces ().folders().menus (), "Help"), // NOI18N
-                                     "TipOfTheDayAction", false, true, true, false // NOI18N
+                                     "SubmitFeedback", true, false, false, false // NOI18N
                                     );
 
             // OpenFile:
             Utilities2.createAction (OpenFileAction.class,
                                      DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File"), // NOI18N
-                                     "SaveAction", false, true, false, false); // NOI18N
+                                     "OpenExplorer", true, false, false, false); // NOI18N
             Utilities2.createAction (OpenFileAction.class,
                                      DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System"), // NOI18N
                                      "SaveAction", false, true, false, false); // NOI18N
