@@ -512,7 +512,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 return false;
             }
             else {         
-                return false; // XXX For now
+                return true;
             }
         }
 
@@ -583,10 +583,50 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             return false;
         }
 
+        
         public void setName(String name) {
-            System.out.println( "Rename to " + name );
-            assert false : "Cannot rename";
+            if (isDefaultPackage) {
+                return;
+            }
+            String oldName = computePackageName(false);
+            if (oldName.equals(name)) {
+                return;
+            }
+            StringTokenizer dtk = new StringTokenizer(name,".");    //NOI18N
+            try {
+                FileObject destination = this.root;
+                while (dtk.hasMoreTokens()) {
+                    String pathElement = dtk.nextToken();
+                    FileObject tmp = destination.getFileObject(pathElement);
+                    if (tmp == null) {
+                        tmp = destination.createFolder (pathElement);
+                    }
+                    destination = tmp;
+                }
+                FileObject source = this.dataFolder.getPrimaryFile();                
+                DataFolder sourceFolder = DataFolder.findFolder (source);
+                DataFolder destinationFolder = DataFolder.findFolder (destination);
+                DataObject[] children = sourceFolder.getChildren();
+                for (int i=0; i<children.length; i++) {
+                    if (children[i].getPrimaryFile().isData()) {
+                        children[i].move(destinationFolder);
+                    }
+                }
+                while (!this.root.equals(source)) {
+                    if (source.getChildren().length==0) {
+                        FileObject tmp = source;
+                        source = source.getParent();
+                        tmp.delete();
+                    }
+                    else {
+                        break;
+                    }
+                }
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify (ioe);
+            }
         }
+        
         
         
         public boolean canDestroy() {

@@ -602,6 +602,77 @@ public class PackageViewTest extends NbTestCase {
         }
     }
     
+    
+    public void testRename() throws Exception {
+        
+        // Prepare test data
+        FileObject root = TestUtil.makeScratchDir( this );
+        // System.out.println("root " + root.getFileSystem().getClass() );
+        
+        
+        assertNull( "source folder should not exist yet", root.getFileObject( "src" ) );
+        
+        
+	// Create children
+        SourceGroup group = new SimpleSourceGroup( FileUtil.createFolder( root, "src" ) );
+        Children ch = PackageView.createPackageView( group ).getChildren();
+        
+        
+        // Create folder
+	FileUtil.createFolder( root, "src/a" );
+        assertNodes( ch, 
+                     new String[] { "a", },
+                     new int[] { 0, } );
+        
+        Node n = ch.findChild( "a" );                     
+        n.setName( "b" );        
+        assertNodes( ch, 
+                     new String[] { "b", },
+                     new int[] { 0, } );
+        
+        FileUtil.createFolder( root, "src/b/c" );
+        assertNodes( ch, 
+                     new String[] { "b.c", },
+                     new int[] { 0, } );
+        
+        n = ch.findChild( "b.c" );                     
+        n.setName( "b.d" );        
+        assertNodes( ch, 
+                     new String[] { "b.d", },
+                     new int[] { 0, } );
+        
+        n = ch.findChild( "b.d" );                     
+        n.setName( "a.d" );
+        assertNodes( ch, 
+                     new String[] { "a.d", },
+                     new int[] { 0, } );
+        
+        FileUtil.createFolder( root, "src/a/e" );
+        assertNodes( ch, 
+                     new String[] { "a.d", "a.e" },
+                     new int[] { 0, 0 } );
+        
+        n = ch.findChild( "a.e" );                     
+        n.setName( "a.f" );
+        assertNodes( ch, 
+                     new String[] { "a.d", "a.f" },
+                     new int[] { 0, 0 } );
+        
+        
+        n = ch.findChild( "a.d" );                     
+        n.setName( "c.d" );
+        assertNodes( ch, 
+                     new String[] { "a.f", "c.d"},
+                     new int[] { 0, 0 } );
+        
+        n = ch.findChild( "a.f" );                     
+        n.setName( "c.f" );
+        assertNodes( ch, 
+                     new String[] { "c.d", "c.f" },
+                     new int[] { 0, 0 } );
+                     
+                     
+    }
         
     public static void assertNodes( Children children, String[] nodeNames ) {
         assertNodes( children, nodeNames, null );
