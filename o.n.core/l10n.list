@@ -11,7 +11,6 @@ core/ide/src/org/netbeans/core/ide/resources/Bundle.properties
 core/ide/src/org/netbeans/core/upgrade/Bundle.properties
 core/javahelp/src/org/netbeans/modules/javahelp/Bundle.properties
 core/javahelp/src/org/netbeans/modules/javahelp/resources/Bundle.properties
-core/javahelp/src/org/netbeans/modules/javahelp/resources/masterHelpMap.jhm
 core/javahelp/src/org/netbeans/modules/javahelp/resources/masterHelpPage.html
 core/javahelp/src/org/netbeans/modules/javahelp/resources/masterHelpSet.xml
 core/libsrc/org/netbeans/lib/terminalemulator/Bundle.properties
