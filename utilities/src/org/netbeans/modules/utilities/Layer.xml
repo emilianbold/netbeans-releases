@@ -35,6 +35,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/url/TemplateHelp.html"/>
+                <attr name="templateWizardIterator" newValue="org.netbeans.modules.url.URLWizardIterator"/>
             </file>
             <file name="group.group">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.group.Bundle"/>

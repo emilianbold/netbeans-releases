@@ -81,7 +81,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
      * @return <code>URL</code> string stored in the file or empty string if file is empty
      * or <code>null</code> if error occured. Even there are multiple lines of text in the
      *  file, only the first one is returned */
-    private String getURLString() {
+    String getURLString() {
         FileObject urlFile = getPrimaryFile();
         if(!urlFile.isValid())
             return null;
@@ -138,7 +138,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
 
     /** Stores specified String into the URL file.
      * @param newUrlString the URL String to be stored in the file. */
-    private void setURLString(String newUrlString) {
+    void setURLString(String newUrlString) {
         FileObject urlFile = getPrimaryFile();
         if(!urlFile.isValid())
             return;
@@ -171,17 +171,6 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
         return new URLNode(this);
     }
 
-    /** Creates new data objet from template. 
-     * @param df folder where to put new data object
-     * @param name name of new data object 
-     * @exception IOException if en error occures */
-    protected DataObject handleCreateFromTemplate(DataFolder df, String name) throws IOException {
-        DataObject obj = super.handleCreateFromTemplate(df,name);
-        URLNode node = (URLNode)obj.getNodeDelegate();
-        node.defEditAction = true; // after creating from template, default node action will be performed
-                                   // it should be an EditAction, however OpenAction is default in other cases
-        return obj;
-    }
 
     /** Invokes the open action. Implements <code>OpenCookie</code> interface. */
     public void open() {
@@ -442,28 +431,12 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
      */
     public static final class URLNode extends DataNode {
 
-        /** Flag indicating edit action as default. */
-        boolean defEditAction = false;
-        
-        
         /** Default constructor, constructs node */
         public URLNode (final DataObject dataObject) {
             super(dataObject, Children.LEAF);
             setIconBase("org/netbeans/modules/url/urlObject"); // NOI18N
         }
 
-        /** Gets default action. Overrides superclass method.
-         * If it was just created from template <code>EditAction</code> is default,
-         * otherwise the <code>OpendAction</code> is the one. */
-        public SystemAction getDefaultAction () {
-            if(defEditAction) { // EditAction is used only after creation from template
-                defEditAction = false; // and no more...
-                return SystemAction.get(EditAction.class);
-            }
-            
-            SystemAction result = super.getDefaultAction();
-            return result == null ? SystemAction.get(OpenAction.class) : result;
-        }
         
         /** Gets sheet of properties. Overrides superclass method. */
         protected Sheet createSheet() {
