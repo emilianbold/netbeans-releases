@@ -461,7 +461,6 @@
 <mapID target="javadoc.search.window" url="javadoc/search_window.html" />
 <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
 <mapID target="javadoc.doc.window" url="javadoc/doc_comment_window.html" />
-<mapID target="javadoc.tab.explorer" url="javadoc/javadoc_tab.html" />
 
 <mapID target="jarpackager" url="jarpackager/jarpackager.html" />
 <mapID target="jarpackager.creating" url="jarpackager/jarpackager_creating.html" />
@@ -1065,6 +1064,8 @@
    <mapID target="org.netbeans.modules.javadoc.search.IndexSearch" url="pending.html" /> 
    <mapID target="org.netbeans.modules.javadoc.comments.AutoCommentTopComponent" url="pending.html" />
    <mapID target="org.netbeans.modules.javadoc.comments.AutoCommentAction" url="pending.html" />
+   <mapID target="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction" url="javadoc/accuracy.html" />
+
    <mapID target="org.netbeans.modules.java.support.AutoCommentAction" url="pending.html"  />
    <mapID target="org.netbeans.modules.java.support.AutoCommentAction.dialog" url="pending.html"  />
    <mapID target="org.netbeans.modules.java.support.AutoCommentPanel.dialog" url="pending.html"  />
@@ -1295,7 +1296,7 @@
 <!--used for folder nodes in explorer, including root nodes of filesystems, such as JARs, and folders in JARs-->
    <mapID target="org.openide.loaders.DataFolder" url="filesystems/filesystems-objects.html" />
 <!--used for root node of a Javadoc filesystem on the javadoc tab in the Explorer-->
-   <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="javadoc/javadoc_tab.html" />
+   <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="pending.html" />
 
    <mapID target="org.netbeans.modules.vcs.cmdline.CvsAction.UNCONFIG" url="pending.html" />
    <mapID target="org.openide.windows.TopComponent" url="pending.html" /> 
