@@ -165,7 +165,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       RADComponent[] children = ((ComponentContainer)comp).getSubBeans ();
       for (int i = 0; i < children.length; i++) {
         text.append ("\n"); // [PENDING - indentation engine]
-        if (comp instanceof FormContainer) {
+        if ((comp instanceof FormContainer) || (!FormEditor.getFormSettings ().getIndentAWTHierarchy ())) {
           // do not indent for top-level children
           addInitCode (children[i], text, indent);
         } else {
@@ -435,7 +435,11 @@ public class JavaCodeGenerator extends CodeGenerator {
     RADComponent[] children = cont.getSubBeans ();
     for (int i = 0; i < children.length; i++) {
       text.append (oneIndent); // [PENDING - will be done by indentation engine]
-      text.append ("private ");
+      switch (FormEditor.getFormSettings ().getVariablesModifier ()) {
+        case FormLoaderSettings.PRIVATE: text.append ("private "); break;
+        case FormLoaderSettings.PROTECTED: text.append ("protected "); break;
+        case FormLoaderSettings.PUBLIC: text.append ("public "); break;
+      }
       text.append (children[i].getComponentClass ().getName ());
       text.append (" ");
       text.append (children[i].getName ());
@@ -719,6 +723,10 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  22   Gandalf   1.21        6/8/99   Ian Formanek    Fixed bugs 1856 - The 
+ *       Variables Modifier property of Form Object in Explorer doesn't work  
+ *       1857 - The Indent AWT hiearchy  property of Form Object in Explorer 
+ *       doesn't work  
  *  21   Gandalf   1.20        6/7/99   Ian Formanek    Undone last change (a 
  *       bad change indeed)
  *  20   Gandalf   1.19        6/6/99   Ian Formanek    Fixed container add code
