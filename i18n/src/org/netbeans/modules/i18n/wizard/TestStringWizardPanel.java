@@ -557,80 +557,82 @@ final class TestStringWizardPanel extends JPanel {
         /** Searches hard coded strings in sources and puts found hard coded string - i18n string pairs
          * into settings. Implements <code>ProgressMonitor</code> interface method. */
         public void doLongTimeChanges() {
-            // Replace panel.
-            final ProgressWizardPanel progressPanel = new ProgressWizardPanel(true);
-            progressPanel.setMainText(NbBundle.getBundle(getClass()).getString("LBL_Internationalizing"));
-            progressPanel.setMainProgress(0);
-            
-            ((Container)getComponent()).remove(getUI());
-            GridBagConstraints constraints = new GridBagConstraints();
-            constraints.weightx = 1.0;
-            constraints.weighty = 1.0;
-            constraints.fill = GridBagConstraints.BOTH;
-            ((Container)getComponent()).add(progressPanel, constraints);
-            ((JComponent)getComponent()).revalidate();
-            getComponent().repaint();
+            if (foundStrings(getMap())) {
+                // Replace panel.
+                final ProgressWizardPanel progressPanel = new ProgressWizardPanel(true);
+                progressPanel.setMainText(NbBundle.getBundle(getClass()).getString("LBL_Internationalizing"));
+                progressPanel.setMainProgress(0);
 
-            // Add missing key-value pairs into resource.
-            Map sourceMap = getUI().getSourceMap();
+                ((Container)getComponent()).remove(getUI());
+                GridBagConstraints constraints = new GridBagConstraints();
+                constraints.weightx = 1.0;
+                constraints.weighty = 1.0;
+                constraints.fill = GridBagConstraints.BOTH;
+                ((Container)getComponent()).add(progressPanel, constraints);
+                ((JComponent)getComponent()).revalidate();
+                getComponent().repaint();
 
-            Iterator sourceIterator = sourceMap.keySet().iterator();
+                // Add missing key-value pairs into resource.
+                Map sourceMap = getUI().getSourceMap();
 
-            // For each source perform the task.
-            for(int i=0; sourceIterator.hasNext(); i++) {
-                Object source = sourceIterator.next();
+                Iterator sourceIterator = sourceMap.keySet().iterator();
 
-                // Get source data.
-                SourceData sourceData = (SourceData)sourceMap.get(source);
+                // For each source perform the task.
+                for(int i=0; sourceIterator.hasNext(); i++) {
+                    Object source = sourceIterator.next();
 
-                // Get i18n support for this source.
-                I18nSupport support = sourceData.getSupport();
+                    // Get source data.
+                    SourceData sourceData = (SourceData)sourceMap.get(source);
 
-                // Get string map.
-                Map stringMap = sourceData.getStringMap();
+                    // Get i18n support for this source.
+                    I18nSupport support = sourceData.getSupport();
 
-                // Get removed strings.
-                Set removed = sourceData.getRemovedStrings();
-                
-                // Do actual replacement.
-                Iterator it = stringMap.keySet().iterator();
+                    // Get string map.
+                    Map stringMap = sourceData.getStringMap();
 
-                ClassPath cp = ClassPath.getClassPath( ((DataObject)source).getPrimaryFile(), ClassPath.SOURCE );                
-                progressPanel.setSubText(Util.getString("LBL_Source")+" "+cp.getResourceName( ((DataObject)source).getPrimaryFile(), '.', false)); //NOI18N
+                    // Get removed strings.
+                    Set removed = sourceData.getRemovedStrings();
 
-                for(int j=0; it.hasNext(); j++) {
-                    HardCodedString hcString = (HardCodedString)it.next();
-                    I18nString i18nString = (I18nString)stringMap.get(hcString);
+                    // Do actual replacement.
+                    Iterator it = stringMap.keySet().iterator();
 
-                    if(removed != null && removed.contains(hcString))
-                        // Don't proceed.
-                        continue;
-                    
-                    // Actually put missing property into bundle with origin comment.
-                    String comment = i18nString.getComment();
-                    if (source instanceof DataObject && (comment == null || "".equals(comment) ) ) {
-                        DataObject dobj = (DataObject) source;
-                        cp = ClassPath.getClassPath( dobj.getPrimaryFile(), ClassPath.SOURCE );                
-                        comment = cp.getResourceName( dobj.getPrimaryFile(), '.', false );
+                    ClassPath cp = ClassPath.getClassPath( ((DataObject)source).getPrimaryFile(), ClassPath.SOURCE );                
+                    progressPanel.setSubText(Util.getString("LBL_Source")+" "+cp.getResourceName( ((DataObject)source).getPrimaryFile(), '.', false)); //NOI18N
+
+                    for(int j=0; it.hasNext(); j++) {
+                        HardCodedString hcString = (HardCodedString)it.next();
+                        I18nString i18nString = (I18nString)stringMap.get(hcString);
+
+                        if(removed != null && removed.contains(hcString))
+                            // Don't proceed.
+                            continue;
+
+                        // Actually put missing property into bundle with origin comment.
+                        String comment = i18nString.getComment();
+                        if (source instanceof DataObject && (comment == null || "".equals(comment) ) ) {
+                            DataObject dobj = (DataObject) source;
+                            cp = ClassPath.getClassPath( dobj.getPrimaryFile(), ClassPath.SOURCE );                
+                            comment = cp.getResourceName( dobj.getPrimaryFile(), '.', false );
+                        }
+
+                        // we may have already added it in, it is the referenced from
+                        // multiple sources, merge comments
+                        String key = i18nString.getKey();
+                        String prev = support.getResourceHolder().getCommentForKey(key);
+                        comment += (prev == null ? "" : " " + prev);                // NOI18N
+                        support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), comment, false);
+
+                        progressPanel.setSubProgress((int)((j+1)/(float)stringMap.size() * 100));
+                    } // End of inner for.
+
+                    // Provide additional changes if there are some.
+                    if(support.hasAdditionalCustomizer()) {
+                        support.performAdditionalChanges();
                     }
 
-                    // we may have already added it in, it is the referenced from
-                    // multiple sources, merge comments
-                    String key = i18nString.getKey();
-                    String prev = support.getResourceHolder().getCommentForKey(key);
-                    comment += (prev == null ? "" : " " + prev);                // NOI18N
-                    support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), comment, false);
-
-                    progressPanel.setSubProgress((int)((j+1)/(float)stringMap.size() * 100));
-                } // End of inner for.
-                
-                // Provide additional changes if there are some.
-                if(support.hasAdditionalCustomizer()) {
-                    support.performAdditionalChanges();
-                }
-
-                progressPanel.setMainProgress((int)((i+1)/(float)sourceMap.size() * 100));
-            } // End of outer for.
+                    progressPanel.setMainProgress((int)((i+1)/(float)sourceMap.size() * 100));
+                } // End of outer for.
+            } // if (foundStrings(getMap()))
         }
         
         /** Implements <code>ProgressMonitor</code> interface method. Does nothing. */
