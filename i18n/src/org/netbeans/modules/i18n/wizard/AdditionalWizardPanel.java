@@ -133,6 +133,7 @@ public class AdditionalWizardPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        sourceLabel.setText(NbBundle.getBundle(AdditionalWizardPanel.class).getString("LBL_Source"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(sourceLabel, gridBagConstraints);

@@ -14,6 +14,7 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="getPanelDescription()" type="code"/>
         </Property>
+        <Property name="wrapStyleWord" type="boolean" value="true"/>
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
       <Constraints>

@@ -154,6 +154,7 @@ public class SourceWizardPanel extends JPanel {
         descTextArea.setEditable(false);
         descTextArea.setLineWrap(true);
         descTextArea.setText(getPanelDescription());
+        descTextArea.setWrapStyleWord(true);
         descTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;

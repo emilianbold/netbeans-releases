@@ -310,10 +310,10 @@ public class HardStringWizardPanel extends JPanel {
     }//GEN-LAST:event_sourceComboActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel sourceLabel;
-    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JLabel hardStringLabel;
     private javax.swing.JComboBox sourceCombo;
+    private javax.swing.JLabel sourceLabel;
+    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JTable hardStringTable;
     // End of variables declaration//GEN-END:variables
 
