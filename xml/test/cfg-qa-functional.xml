@@ -14,7 +14,8 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="XML-ALL config">
 
-    <testbag testattribs="stable" compiler="qa-compiler" executor="ide" name="all_xml_full" resultsprocessor="qa-reporter">
+    <!-- Validation suite for my module -->
+    <testbag testattribs="stable" executor="ide" name="all_xml_full">
         <testset dir="qa-functional/src">
             <patternset>
                 <!-- TAX -->
@@ -47,22 +48,20 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
         
-    <testbag testattribs="fail" executor="ide" name="all_xml_fail" resultsprocessor="qa-reporter">
+    <testbag testattribs="fail" executor="ide" name="all_xml_fail">
         <testset dir="qa-functional/src">
            <patternset>
            </patternset>
         </testset>
     </testbag>
         
-    <testbag testattribs="dev" executor="ide" name="all_xml_dev" resultsprocessor="qa-reporter">
+    <testbag testattribs="dev" executor="ide" name="all_xml_dev">
         <testset dir="qa-functional/src">
             <patternset>
            </patternset>
         </testset>
     </testbag>    
 
-    <resultsprocessor name="qa-reporter" antfile="build.xml" target="test_report"/>
-    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
-    <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
-    <compiler name="qa-compiler" antfile="build-qa-functional.xml" target="qa-compiler" default="true"/>
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
 </mconfig>
