@@ -97,9 +97,6 @@ public abstract class NbTopManager extends TopManager {
     /** main lookup service of the system */
     private org.openide.util.Lookup lookup;
 
-    /** currently used debugger or null if none is in use */
-    private Debugger debugger;
-
     /** default repository */
     private Repository repository;
 
@@ -623,34 +620,11 @@ public abstract class NbTopManager extends TopManager {
     * @return currently installed  debugger.
     */
     public Debugger getDebugger () throws DebuggerNotFoundException {
-
-        Debugger d = debugger;
+        Debugger d = (Debugger) Lookup.getDefault().lookup(Debugger.class);
         if (d == null) {
             throw new DebuggerNotFoundException();
         }
         return d;
-    }
-
-    /** Setter for debugger.
-    */
-    final void setDebugger (Debugger d) {
-        Debugger old;
-
-        synchronized (this) {
-            old = debugger;
-
-            if (old != null && d != null) {
-                throw new SecurityException ("only one debugger") { // NOI18N
-                    public String getLocalizedMessage () {
-                        return Main.getString ("EXC_only_one_debugger_simultaneously");
-                    }
-                };
-            }
-
-            debugger = d;
-        }
-
-        firePropertyChange (PROP_DEBUGGER, old, d);
     }
 
     /**
