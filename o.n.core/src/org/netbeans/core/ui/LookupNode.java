@@ -53,7 +53,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
         getCookieSet ().add (this);
     }
     
-    public final HelpCtx getHelpCtx () {
+    public HelpCtx getHelpCtx () {
         Object o = getDataObject().getPrimaryFile().getAttribute(EA_HELPCTX);
         if (o != null) {
             return new HelpCtx(o.toString());

@@ -935,7 +935,19 @@ public final class NbMainExplorer extends CloneableTopComponent
         protected void updateTitle () {
             // empty to keep the title unchanged
         }
-
+        
+        /** Get context help for a NbMainExplorer.SettingsTab.
+        * Looks at the manager's node selection if no node is selected
+        * returns root context node's help context.
+        * @return the help context
+        */
+        public HelpCtx getHelpCtx () {
+            HelpCtx hlp = super.getHelpCtx ();
+            if(hlp==null || hlp.equals(new HelpCtx(ExplorerPanel.class))) {
+                return getExplorerManager ().getRootContext ().getHelpCtx ();
+            }
+            return hlp;
+        }
     }
 
     /** Listener on roots, listens to changes of roots content */
