@@ -281,7 +281,12 @@ class J2SEActionProvider implements ActionProvider {
             return files != null && files.length == 1;
         }
         else if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
-            return findSources( context ) != null || findTestSources( context, false ) != null;
+            FileObject fos[] = findSources(context);
+            if (fos != null && fos.length == 1) {
+                return true;
+            }
+            fos = findTestSources(context, false);
+            return fos != null && fos.length == 1;
         } else if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE)) {
             FileObject fos[] = findSources(context);
             if (fos != null && fos.length == 1) {
