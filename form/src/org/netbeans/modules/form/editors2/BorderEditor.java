@@ -48,7 +48,7 @@ import com.netbeans.developer.modules.loaders.form.palette.*;
 *
 * @author Petr Hamernik
 */
-public final class BorderEditor extends PropertyEditorSupport {
+public final class BorderEditor extends PropertyEditorSupport { // implements org.openide.explorer.propertysheet.editors.XMLPropertyEditor { // [PENDING - not for now]
 
   /** Icon bases for unknown border node. */
   private static final String UNKNOWN_BORDER_BASE = "com/netbeans/developer/explorer/propertysheet/editors/unknownBorder";
@@ -374,10 +374,65 @@ public final class BorderEditor extends PropertyEditorSupport {
     }
 
   } 
+
+//--------------------------------------------------------------------------
+// XMLPropertyEditor implementation
+
+  public static final String XML_BORDER = "Border";
+
+  public static final String ATTR_INFO = "info";
+
+  /** Called to load property value from specified XML subtree. If succesfully loaded, 
+  * the value should be available via the getValue method.
+  * An IOException should be thrown when the value cannot be restored from the specified XML element
+  * @param element the XML DOM element representing a subtree of XML from which the value should be loaded
+  * @exception IOException thrown when the value cannot be restored from the specified XML element
+  */
+  public void readFromXML (org.w3c.dom.Node element) throws java.io.IOException {
+    if (!XML_BORDER.equals (element.getNodeName ())) {
+      throw new java.io.IOException ();
+    }
+    org.w3c.dom.NamedNodeMap attributes = element.getAttributes ();
+    try {
+      String info = attributes.getNamedItem (ATTR_INFO).getNodeValue ();
+      BorderInfo bi = (BorderInfo)org.openide.TopManager.getDefault ().systemClassLoader ().loadClass (info).newInstance ();
+      org.w3c.dom.NodeList children = element.getChildNodes ();
+      for (int i = 0; i < children.getLength (); i++) {
+        if (children.item (i).getNodeType () == org.w3c.dom.Node.ELEMENT_NODE) {
+          bi.readFromXML (children.item (i));
+          break;
+        }
+      }
+      setValue (new DesignBorder (bi));
+    } catch (Exception e) {
+      throw new java.io.IOException ();
+    }
+  }
+  
+  /** Called to store current property value into XML subtree. The property value should be set using the
+  * setValue method prior to calling this method.
+  * @param doc The XML document to store the XML in - should be used for creating nodes only
+  * @return the XML DOM element representing a subtree of XML from which the value should be loaded
+  */
+  public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
+    if (getValue () instanceof DesignBorder) {
+      org.w3c.dom.Element el = doc.createElement (XML_BORDER);
+      BorderInfo info = ((DesignBorder)getValue ()).getInfo ();
+      el.setAttribute (ATTR_INFO, info.getClass ().getName ());
+      org.w3c.dom.Node borderNode = info.storeToXML (doc);
+      if (borderNode != null) el.appendChild (borderNode);
+      return el;
+    } else {
+      return null; // cannot be saved
+    }
+  }
+
 }
 
 /*
  * Log
+ *  7    Gandalf   1.6         8/2/99   Ian Formanek    preview of XML 
+ *       serialization of borders
  *  6    Gandalf   1.5         7/8/99   Jesse Glick     Context help.
  *  5    Gandalf   1.4         6/11/99  Jaroslav Tulach System.out commented
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
