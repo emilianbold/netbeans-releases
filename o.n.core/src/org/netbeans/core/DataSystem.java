@@ -116,13 +116,15 @@ implements RepositoryListener {
 
     public Action[] getActions(boolean context) {
         return new Action[] {
-                   SystemAction.get (org.openide.actions.FindAction.class),
-                   null,
                    new RefreshAllFilesystemsAction(), // #31047
                    null,
+                   SystemAction.get (org.openide.actions.FindAction.class),
+                   //Problem with ToolsAction as last item and separator. When ToolsAction
+                   //is empty separator is displayed as last item.
+                   //null,
                    SystemAction.get (org.openide.actions.ToolsAction.class),
                    //SystemAction.get (org.openide.actions.PropertiesAction.class), // #12072
-                   SystemAction.get (org.openide.actions.CustomizeAction.class),
+                   //SystemAction.get (org.openide.actions.CustomizeAction.class),
                };
     }
 
