@@ -610,7 +610,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     /** Invalidates the current copy of server plugin for this JSP.
     * @param reload true if the new version of the plugin should be loaded.
     */
-    public void refreshPlugin(boolean reload) {
+    public synchronized void refreshPlugin(boolean reload) {
 //System.out.println("REFRESHING PLUGIN " + reload);
         compileData = null;
         if (reload)
