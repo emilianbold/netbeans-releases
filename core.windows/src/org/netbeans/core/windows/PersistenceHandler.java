@@ -838,6 +838,18 @@ final class PersistenceHandler implements PersistenceObserver {
         if(width > 0 && height > 0) {
             // From absoute values.
             bounds = new Rectangle(x, y, width, height);
+            // #33288 fix start- when screen resolution changes, some windows may get completely out of the screen.
+            Rectangle screen = Utilities.getUsableScreenBounds();
+            int xlimit = screen.x + screen.width - 20; // 20 = let's have some buffer area..
+            int ylimit = screen.y + screen.height - 20; // 20 = let's have some buffer area..
+            // will make sure that the out-of-screen windows get thrown in.
+            while (bounds.x > xlimit) {
+                bounds.x = Math.max(bounds.x - screen.width, screen.x);
+            }
+            while (bounds.y > ylimit) {
+                bounds.y = Math.max(bounds.y - ylimit, screen.y);
+            }
+            // #33288 fix end
         } else if(relativeWidth > 0F && relativeHeight > 0F) {
             // From relative values.
             Rectangle screen = Utilities.getUsableScreenBounds();
