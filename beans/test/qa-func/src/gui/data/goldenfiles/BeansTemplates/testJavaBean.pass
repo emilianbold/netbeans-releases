@@ -1,6 +1,15 @@
+/*
+ * MyBean.java
+ *
+ * Created on
+ */
 
 import java.beans.*;
 
+/**
+ *
+ * @author
+ */
 public class MyBean extends Object implements java.io.Serializable {
     
     private static final String PROP_SAMPLE_PROPERTY = "SampleProperty";

@@ -1,3 +1,13 @@
+/*
+ * MyCustomizer.java
+ *
+ * Created on
+ */
+
+/**
+ *
+ * @author
+ */
 public class MyCustomizer extends javax.swing.JPanel {
     
     /** Creates new customizer MyCustomizer */
