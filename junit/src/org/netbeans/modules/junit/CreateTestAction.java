@@ -18,6 +18,7 @@
 
 package org.netbeans.modules.junit;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -35,6 +36,7 @@ import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -175,21 +177,42 @@ public class CreateTestAction extends CookieAction {
                 FileObject packageRoot = cp.findOwnerRoot(fo);
                 String resource = cp.getResourceName(fo, '/', false);
                 
-                URL testRoot = UnitTestForSourceQuery.findUnitTest(packageRoot);
+                URL testRoot = UnitTestForSourceQuery.findUnitTest(packageRoot);                              
                 if (testRoot == null) {
                     testClassPath = cp;
 //                     TestUtil.notifyUser(NbBundle.getMessage(CreateTestAction.class,
 //                         "MSG_no_tests_in_project", fo));
 //                     continue;
                 } else {
-                    ArrayList cpItems = new ArrayList();
+                    // TODO : workaround for #50173
+                    if (!testRoot.getFile().endsWith("/")) {
+                        try {
+                            testRoot = new URL(testRoot.getProtocol(), testRoot.getHost(), testRoot.getPort(), testRoot.getFile()+"/");                                                                   
+                        } catch (java.net.MalformedURLException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        }
+                    }
+                    // workaround ends
+                    
+                    if (testRoot.getProtocol().equals("file") && URLMapper.findFileObject(testRoot) == null) { // NOI18N
+                        try {
+                         ensureFolder(testRoot);   
+                        } catch (java.io.IOException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                            continue;
+                        }
+                    }
+
+                    ArrayList cpItems = new ArrayList();                   
                     cpItems.add(ClassPathSupport.createResource(testRoot));
                     testClassPath = ClassPathSupport.createClassPath(cpItems);
                 }
 
                 try {
                     results.combine(createTests(testClassPath, fo, doTestTempl, doSuiteTempl, null, progress));
-                } catch (CreationError e) {}
+                } catch (CreationError e) {
+                    ErrorManager.getDefault().notify(e);
+                }
 
             }
 
@@ -204,7 +227,7 @@ public class CreateTestAction extends CookieAction {
                 // one class? report it
                 TestUtil.notifyUser
                     (NbBundle.getMessage(CreateTestAction.class,
-                                         "MSG_skipped_class",
+                                         "MSG_skipped_class",   // NOI18N
                                          ((JavaClass)results.getSkipped().iterator().next()).getName()),
                      NotifyDescriptor.INFORMATION_MESSAGE );
 
@@ -212,7 +235,7 @@ public class CreateTestAction extends CookieAction {
                 // more classes, report a general error
                 TestUtil.notifyUser
                     (NbBundle.getMessage(CreateTestAction.class,
-                                         "MSG_skipped_classes"),
+                                         "MSG_skipped_classes"), // NOI18N
                      NotifyDescriptor.INFORMATION_MESSAGE);
             }
                         
@@ -225,6 +248,21 @@ public class CreateTestAction extends CookieAction {
                 ec.open();
             }
         }
+    }
+
+    private static void ensureFolder(URL url) throws java.io.IOException {
+        if (url.getProtocol().equals("file")) { // NOI18N
+            String path = url.getPath();
+            ensureFolder(new File(path));          
+        } 
+    }
+     
+    private static FileObject ensureFolder(File file) throws java.io.IOException {          
+        File parent = file.getParentFile();
+        String name = file.getName();
+        FileObject pfo = FileUtil.toFileObject(parent);
+        if (pfo == null) pfo = ensureFolder(parent);
+        return pfo.createFolder(name);        
     }
     
     /**
@@ -250,6 +288,7 @@ public class CreateTestAction extends CookieAction {
                                              DataObject doSuiteT, 
                                              LinkedList parentSuite,
                                              ProgressIndicator progress) 
+                                             throws CreationError
     {
         
         // find correct package name
@@ -265,34 +304,38 @@ public class CreateTestAction extends CookieAction {
                                ? pkg + '/' + suiteName
                                : TestUtil.convertPackage2SuiteName(pkg);
         
-        // find the suite class, if it exists or create one from active template
-        DataObject doTarget = getTestClass(testClassPath, fullSuiteName, doSuiteT);
+        try {
+            // find the suite class, if it exists or create one from active template
+            DataObject doTarget = getTestClass(testClassPath, fullSuiteName, doSuiteT);
 
-        // generate the test suite for all listed test classes
-        Collection targetClasses = TestUtil.getAllClassesFromFile(doTarget.getPrimaryFile());
+            // generate the test suite for all listed test classes
+            Collection targetClasses = TestUtil.getAllClassesFromFile(doTarget.getPrimaryFile());
 
-        Iterator tcit = targetClasses.iterator();
-        while (tcit.hasNext()) {
-            JavaClass targetClass = (JavaClass)tcit.next();
+            Iterator tcit = targetClasses.iterator();
+            while (tcit.hasNext()) {
+                JavaClass targetClass = (JavaClass)tcit.next();
 
-            if (progress != null) {
-                progress.setMessage(getCreatingMsg(targetClass.getName()), false);
+                if (progress != null) {
+                    progress.setMessage(getCreatingMsg(targetClass.getName()), false);
+                }
+
+                try {
+                    TestCreator.createTestSuite(suite, dotPkg, targetClass);
+                    save(doTarget);
+                } catch (Exception e) {
+                    ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
+                    return null;
+                }
+
+                // add the suite class to the list of members of the parent
+                if (null != parentSuite) {
+                    parentSuite.add(targetClass.getName());
+                }
             }
-
-            try {
-                TestCreator.createTestSuite(suite, dotPkg, targetClass);
-                save(doTarget);
-            } catch (Exception e) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
-                return null;
-            }
-
-            // add the suite class to the list of members of the parent
-            if (null != parentSuite) {
-                parentSuite.add(targetClass.getName());
-            }
+            return doTarget;
+        } catch (IOException ioe) {
+            throw new CreationError(ioe);
         }
-        return doTarget;
     }
     
     private CreationResults createTests(ClassPath testClassPath, FileObject foSource, 
@@ -362,30 +405,31 @@ public class CreateTestAction extends CookieAction {
                 if (!skipNonTestable || TestCreator.isClassTestable(theClass)) {
                     // find the test class, if it exists or create one
                     // from active template
-                    DataObject doTarget 
-                        = getTestClass(testClassPath, 
-                                       TestUtil.getTestClassFullName(theClass.getSimpleName(),
-                                                                     packageName(theClass.getName())), 
-                                       doTestT);
-
-                    // generate the test of current node
-                    Resource tgtRc = JavaModel.getResource(doTarget.getPrimaryFile());
-                    JavaClass targetClass = TestUtil.getMainJavaClass(tgtRc);
-                    
-                    if (progress != null) {
-                        progress.setMessage(getCreatingMsg(targetClass.getName()), false);
-                    }                    
-
-                    TestCreator.createTestClass(srcRc, theClass, tgtRc, targetClass);
                     try {
-                        save(doTarget);
-                    } catch (java.io.IOException e) { throw new CreationError(e);}
+                        DataObject doTarget = getTestClass(testClassPath, 
+                                                       TestUtil.getTestClassFullName(theClass.getSimpleName(),
+                                                       packageName(theClass.getName())), 
+                                                       doTestT);
 
-                    result.addCreated(doTarget);
+                        // generate the test of current node
+                        Resource tgtRc = JavaModel.getResource(doTarget.getPrimaryFile());
+                        JavaClass targetClass = TestUtil.getMainJavaClass(tgtRc);
 
-                    // add the test class to the parent's suite
-                    if (null != parentSuite) {
-                        parentSuite.add(targetClass.getName());
+                        if (targetClass != null) {                  
+                            if (progress != null) {
+                                progress.setMessage(getCreatingMsg(targetClass.getName()), false);
+                            }                    
+
+                            TestCreator.createTestClass(srcRc, theClass, tgtRc, targetClass);
+                            save(doTarget);
+                            result.addCreated(doTarget);
+                            // add the test class to the parent's suite
+                            if (null != parentSuite) {
+                                parentSuite.add(targetClass.getName());
+                            }
+                        }
+                    } catch (IOException ioe) {
+                        throw new CreationError(ioe);
                     }
                 } else {
                     if (progress != null) {
@@ -406,15 +450,12 @@ public class CreateTestAction extends CookieAction {
         return fullName.substring(0, i > 0 ? i : 0);
     }
 
-    private static DataObject getTestClass(ClassPath cp, String testClassName, DataObject doTemplate) {
+    private static DataObject getTestClass(ClassPath cp, String testClassName, DataObject doTemplate) 
+        throws DataObjectNotFoundException, IOException
+    {
         FileObject fo = cp.findResource(testClassName+".java");
         if (fo != null) {
-            try {
-                return DataObject.find(fo);
-            } catch (DataObjectNotFoundException e) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
-                return null;
-            }
+            return DataObject.find(fo);
         } else {
             // test file does not exist yet so create it:
             assert cp.getRoots().length == 1;
@@ -422,17 +463,13 @@ public class CreateTestAction extends CookieAction {
             int index = testClassName.lastIndexOf('/');
             String pkg = index > -1 ? testClassName.substring(0, index) : "";
             String clazz = index > -1 ? testClassName.substring(index+1) : testClassName;
-            try {
-                // create package if it does not exist
-                if (pkg.length() > 0) {
-                    root = FileUtil.createFolder(root, pkg);
-                }
-                // instantiate template into the package
-                return doTemplate.createFromTemplate(DataFolder.findFolder(root), clazz);
-            } catch (IOException e) {
-                ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
-                return null;
+      
+            // create package if it does not exist
+            if (pkg.length() > 0) {
+                root = FileUtil.createFolder(root, pkg);
             }
+            // instantiate template into the package
+            return doTemplate.createFromTemplate(DataFolder.findFolder(root), clazz);
         }
     }
     

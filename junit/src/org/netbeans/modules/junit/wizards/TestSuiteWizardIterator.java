@@ -284,15 +284,16 @@ public class TestSuiteWizardIterator
                                                         testClassPath);
         
         /* create test class(es) for the selected source class: */
-        DataObject suite = CreateTestAction.createSuiteTest(
+        try {
+            DataObject suite = CreateTestAction.createSuiteTest(
                 testClassPath, targetDataFolder, name,
                 new LinkedList(testClassNames),
                 templateDataObj, null, null);
         
-        if (suite == null) {
+            return Collections.singleton(suite);
+        } catch (CreateTestAction.CreationError e) {
             throw new IOException();
-        }
-        return Collections.singleton(suite);
+        }            
     }
     
     /** */
