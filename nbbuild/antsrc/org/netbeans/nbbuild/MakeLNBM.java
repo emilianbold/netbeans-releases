@@ -312,12 +312,20 @@ public class MakeLNBM extends MatchingTask {
         this.needsrestart = needsrestart;
     }
     /** URL where this NBM file is expected to be downloadable from. */
-    public void setDistribution (String distribution) throws MalformedURLException {
+    public void setDistribution (String distribution) throws BuildException {
         if (distribution.startsWith("http://")) { //NOI18N
             this.distribution = distribution;
-        } else {
+        } else  if (!(distribution.equals(""))) {
             // workaround for typical bug in build script
             this.distribution = "http://" + distribution; //NOI18N
+        } else {
+            throw new BuildException("Distribution URL is empty, check build.xml file", location);
+        }
+        // check the URL
+        try {
+            URI uri = java.net.URI.create(this.distribution);
+        } catch (IllegalArgumentException ile) {
+            throw new BuildException ("Distribution URL \""+this.distribution+"\" is not a valid URI", ile, location);
         }
     }
     public Blurb createLicense () {
@@ -461,8 +469,11 @@ public class MakeLNBM extends MatchingTask {
 		    }
 		    if (homepage != null)
                         ps.println ("        homepage=\"" + xmlEscape(homepage) + "\""); //NOI18N
-		    if (distribution != null)
+		    if (distribution != null) {
                         ps.println ("        distribution=\"" + xmlEscape(distribution) + "\""); //NOI18N
+                    } else {
+                        throw new BuildException ("NBM distribution URL is not set", location);
+                    }
 		    // Here we only write a name for the license.
 		    if (license != null) {
 			String name = license.getName ();
