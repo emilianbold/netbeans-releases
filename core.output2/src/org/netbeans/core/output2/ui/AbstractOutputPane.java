@@ -42,7 +42,7 @@ import org.openide.util.Lookup;
  *
  * @author  Tim Boudreau
  */
-public abstract class AbstractOutputPane extends JScrollPane implements DocumentListener, MouseListener, MouseMotionListener, KeyListener, ChangeListener, MouseWheelListener {
+public abstract class AbstractOutputPane extends JScrollPane implements DocumentListener, MouseListener, MouseMotionListener, KeyListener, ChangeListener, MouseWheelListener, Runnable {
     private boolean locked = true;
     
     private int fontHeight = -1;
@@ -99,13 +99,33 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         return textView.getSelectionStart() != textView.getSelectionEnd();
     }
 
-    private static final Rectangle rect = new Rectangle();
+    /**
+     * Ensure that the document is scrolled all the way to the bottom (unless
+     * some user event like scrolling or placing the caret has unlocked it).
+     * <p>
+     * Note that this method is always called on the event queue, since 
+     * OutputDocument only fires changes on the event queue.
+     */
     public final void ensureCaretPosition() {
-        if (locked) {            
-            rect.setBounds(0, textView.getHeight() - 2, 1, 1);
-            textView.scrollRectToVisible(
-                rect);
+        if (locked) {           
+            //Make sure the scrollbar is updated *after* the document change
+            //has been processed and the scrollbar model's maximum updated
+            if (!enqueued) {
+                SwingUtilities.invokeLater(this);
+                enqueued = true;
+            }
         }
+    }
+    
+    /** True when invokeLater has already been called on this instance */
+    private boolean enqueued = false;
+    /**
+     * Scrolls the pane to the bottom, invokeLatered to ensure all state has
+     * been updated, so the bottom really *is* the bottom.
+     */
+    public void run() {
+        enqueued = false;
+        getVerticalScrollBar().setValue(getVerticalScrollBar().getModel().getMaximum());
     }
 
     public int getSelectionStart() {
