@@ -2736,19 +2736,27 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <echo>WARNING - the nozip-check target is deprecated. Use all-nozip instead.</echo>
   </target>
 
-  <target name="tryme" depends="tryme-debug,tryme-run"
+  <target name="tryme-setup-debug-args" if="debug.port" >
+    <property name="debug.pause" value="n" />
+    <property name="debug.server" value="y" />
+    
+    <property name="tryme.debug.args" value="-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=${debug.server},address=${debug.port}" />
+  </target>
+          
+          
+  <target name="tryme" depends="init,maybe-build-nozip,tryme-setup-debug-args"
           description="Try running the IDE interactively (build it first if needed).
 It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in debug mode" 
-   />
-          
-          
-  <target name="tryme-run" depends="init,maybe-build-nozip" unless="debug.port" >
+   >
+    <property name="tryme.debug.args" value="" />
+  
     <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes">
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
+      <arg line="${tryme.debug.args}" />
     </exec>
     <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes">
       <arg value="${netbeans.dest}/bin/netbeans"/>
@@ -2757,6 +2765,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg value="-userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
+      <arg line="${tryme.debug.args}" />
     </exec>
     <exec os="Mac OS X" dir="." executable="sh" failonerror="yes">
       <arg value="${netbeans.dest}/bin/netbeans"/>
@@ -2765,28 +2774,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg value="-userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
-    </exec>
-  </target>
-  
-  <target name="tryme-debug" depends="init,maybe-build-nozip" if="debug.port" >
-    <property name="debug.pause" value="n" />
-  
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes">
-      <arg value="-jdkhome"/>
-      <arg file="${jdkhome}"/>
-      <arg value="-userdir"/>
-      <arg file="${test.user.dir}"/>
-      <arg line="${tryme.args}"/>
-      <arg line="-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=y,address=${debug.port}" />
-    </exec>
-    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes">
-      <arg value="${netbeans.dest}/bin/netbeans"/>
-      <arg value="-jdkhome"/>
-      <arg file="${jdkhome}"/>
-      <arg value="-userdir"/>
-      <arg file="${test.user.dir}"/>
-      <arg line="${tryme.args}"/>
-      <arg line="-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=y,address=${debug.port}" />
+      <arg line="${tryme.debug.args}" />
     </exec>
   </target>
   
