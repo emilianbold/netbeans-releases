@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.web.core.jsploader;
 
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.cookies.EditorCookie;
@@ -54,7 +56,12 @@ public class EditServletAction extends CookieAction {
         return new HelpCtx (EditServletAction.class);
     }
     
+    /*
+     * We always enable View Servlet action, but show an error message 
+     * in case when JSP has not been compiled yet.
+     */ 
     protected boolean enable(Node[] activatedNodes) {
+/*        
         if (!super.enable(activatedNodes))
             return false;
         for (int i = 0; i < activatedNodes.length; i++) {
@@ -67,6 +74,8 @@ public class EditServletAction extends CookieAction {
             }
         }
         return false;
+*/
+        return true;
     }
 
 
@@ -99,9 +108,19 @@ public class EditServletAction extends CookieAction {
         for (int i = 0; i < activatedNodes.length; i++) {
             JspDataObject jspdo = (JspDataObject)activatedNodes[i].getCookie(JspDataObject.class);
             if (jspdo != null) {
+                jspdo.refreshPlugin(true);
                 EditorCookie cook = jspdo.getServletEditor();
                 if (cook != null)
                     cook.open ();
+                else {
+                    //show error dialog
+                    String msg = NbBundle.getMessage(EditServletAction.class, "ERR_CantEditServlet");
+                    String title = NbBundle.getMessage(EditServletAction.class, "EditServlet");
+                    NotifyDescriptor descriptor = new NotifyDescriptor(msg, title,
+                            NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE,
+                            new Object[]{NotifyDescriptor.OK_OPTION}, null);
+                    DialogDisplayer.getDefault().notify(descriptor);
+                }
             }
         }
     }
