@@ -86,12 +86,12 @@ class UpdateTracking {
     public String getVersionForCodeName( String codeName ) throws BuildException {
         module = new Module();
         module.setCodename( codeName );
-        if (this.is == null) {
+//        if (this.is == null) {
             File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
             setTrackingFile(directory, getTrackingFileName());
             if (!trackingFile.exists() || !trackingFile.isFile())
                 throw new BuildException ("Tracking file " + trackingFile.getAbsolutePath() + " cannot be found for module codenamebase " + codeName );
-        }
+//        }
         read();
         if ( module.getVersions().size() != 1 ) 
             throw new BuildException ("Module with codenamebase " + codeName + " has got " + module.getVersions().size() + " specification versions. Correct number is 1.");
