@@ -50,7 +50,7 @@ public class BeanProp implements BaseProperty {
     //	each property, a BeanProp is created. One GroupProp is created
     //	for these 3 properties, and each BeanProp reference this GroupProp.
     //
-    class GroupProp {
+    static class GroupProp {
         ArrayList group;
 	
         public GroupProp(BeanProp prop) {
@@ -76,9 +76,9 @@ public class BeanProp implements BaseProperty {
     //	Class used to identify the type of action to do in the recursive
     //	syncNodes() call.
     //
-    class Action {
-        static final int 				ADD	= 1;
-        static final int 				REMOVE	= 2;
+    static class Action {
+        public static final int 				ADD	= 1;
+        public static final int 				REMOVE	= 2;
 	
         int 							action;
         java.beans.PropertyChangeEvent 	event;
@@ -176,7 +176,7 @@ public class BeanProp implements BaseProperty {
         }
     }
     
-    class InternalEvent {
+    static class InternalEvent {
         static final int CHANGED = 1;
         static final int VETOABLE = 2;
 	

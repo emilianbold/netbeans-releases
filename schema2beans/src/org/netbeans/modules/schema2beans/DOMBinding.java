@@ -647,10 +647,17 @@ public class DOMBinding {
                 if (Common.isBean(prop.type)) {
                     NodeFactory f = prop.getNodeFactory();
 		    
-                    if (this.node != null)
+                    if (this.node != null) {
+                        System.out.println("Removing from old graph.");
+                        BeanProp.Action a2;
+                        a2 = new BeanProp.Action(a.REMOVE);
+                        syncNodes(this.prop.beanProp, a2);
+                        /*
                         throw new IllegalStateException(Common.getMessage(
                                      "DOMBindingAlreadyHasNode_msg",
                                      node.toString()));
+                        */
+                    }
 		    
                     Node parent = prop.getParentNode();
                     this.node = f.createElement(prop);
