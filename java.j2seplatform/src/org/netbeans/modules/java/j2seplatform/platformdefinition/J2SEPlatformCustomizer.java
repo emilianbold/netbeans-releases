@@ -357,7 +357,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
     }
 
 
-    private static class PathModel extends AbstractListModel {
+    private static class PathModel extends AbstractListModel/*<String>*/ {
 
         private J2SEPlatformImpl platform;
         private int type;
@@ -376,7 +376,14 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             java.util.List list = this.getData();
             URL url = (URL)list.get(index);
             if ("jar".equals(url.getProtocol())) {      //NOI18N
-                url = FileUtil.getArchiveFile (url);
+                URL fileURL = FileUtil.getArchiveFile (url);
+                if (FileUtil.getArchiveRoot(fileURL).equals(url)) {
+                    // really the root
+                    url = fileURL;
+                } else {
+                    // some subdir, just show it as is
+                    return url.toExternalForm();
+                }
             }
             if ("file".equals(url.getProtocol())) {
                 File f = new File (URI.create(url.toExternalForm()));
