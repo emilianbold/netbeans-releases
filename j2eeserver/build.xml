@@ -43,10 +43,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- PENDING required by debugger type, perhaps could be
     removed -->
     <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/> 
-    <fileset dir="${nbroot}/core/external">
-      <include name="xml-apis*.jar"/> <!-- PENDING remove when move to 1.4 build -->
-      <include name="crimson*.jar"/>
-    </fileset>
   </path>
   
   <taskdef classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar" name="locjar"/>
@@ -232,14 +228,12 @@ symbols and copy jar file(s)" depends="debug">
   
   <target name="javadoc" description="Build j2eeserver module API documentation.">
     <echo message="Build j2eeserver module API documentation..."/>
-    <!-- Ant 1.4 bug workaround: <property refid="..."/> does not work inside <ant> -->
-    <property name="_cp" refid="cp"/>
     <ant dir="${nbroot}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
       <property name="javadoc.base" location="."/>
       <property name="javadoc.name" value="J2EEServerAPI"/>
       <property name="javadoc.title" value="NetBeans j2eeserver module APIs"/>
       <property name="javadoc.packages" value="org.netbeans.modules.j2ee.deployment.devmodules.spi.*,org.netbeans.modules.j2ee.deployment.devmodules.api.*,org.netbeans.modules.j2ee.deployment.plugins.api.*"/>
-      <property name="javadoc.classpath" value="${_cp}"/>
+      <property name="javadoc.classpath" refid="cp"/>
       <property name="javadoc.overview" location="api/doc/overview.html"/>
       <property name="javadoc.docfiles" location="api/doc"/>
       <!--<property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>-->
