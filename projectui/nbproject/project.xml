@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency>
                         <release-version>1</release-version>
                     </run-dependency>
-                </dependency>
+                </dependency>                                
                 <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
@@ -39,6 +39,14 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency>
                         <release-version>0</release-version>
                         <!-- XXX declare the impl dep somehow... -->
+                    </run-dependency>
+                </dependency>                
+                <dependency>
+                    <code-name-base>org.netbeans.modules.queries</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0</release-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

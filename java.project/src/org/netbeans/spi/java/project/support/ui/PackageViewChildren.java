@@ -30,6 +30,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.netbeans.api.java.queries.AccessibilityQuery;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -135,6 +136,11 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
      */
     private void findNonExcludedPackages( FileObject fo ) {
         assert fo.isFolder() : "Package view only accepts folders"; // NOI18N
+        
+        if ( !VisibilityQuery.getDefault().isVisible( fo ) ) {
+            return; // Don't show hidden packages
+        }
+        
         FileObject[] kids = fo.getChildren();
         boolean hasSubfolders = false;
         boolean hasFiles = false;
@@ -348,8 +354,9 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             Boolean.getBoolean("org.netbeans.spi.java.project.support.ui.packageView.TRUNCATE_PACKAGE_NAMES"); // NOI18N
 
         private static final DataFilter NO_FOLDERS_FILTER = new DataFilter() {
-            public boolean acceptDataObject(DataObject obj) {
-                return !(obj instanceof DataFolder);
+            public boolean acceptDataObject(DataObject obj) {                
+                FileObject fo = obj.getPrimaryFile();                
+                return  VisibilityQuery.getDefault().isVisible( fo ) && !(obj instanceof DataFolder);
             }
         };
         
