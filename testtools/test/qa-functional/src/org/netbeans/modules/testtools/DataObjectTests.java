@@ -20,6 +20,7 @@ package org.netbeans.modules.testtools;
  * Created on July 23, 2002, 2:01 PM
  */
 import java.beans.BeanInfo;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.util.StringTokenizer;
@@ -32,6 +33,7 @@ import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.testtools.nodes.XTestBuildScriptNode;
 import org.netbeans.jellytools.properties.*;
 import org.netbeans.jellytools.properties.editors.ServiceTypeCustomEditorOperator;
+import org.netbeans.jemmy.JemmyProperties;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
@@ -72,7 +74,8 @@ public class DataObjectTests extends JellyTestCase {
     
     /** method called after each testcase
      */
-    protected void tearDown() {
+    protected void tearDown() throws IOException {
+        JemmyProperties.getCurrentTimeouts().loadDebugTimeouts();
     }
     
     /** Use for internal test execution inside IDE

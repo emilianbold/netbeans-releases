@@ -32,6 +32,7 @@ import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.testtools.*;
 import org.netbeans.jellytools.nodes.*;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.junit.diff.Diff;
 
 /** JUnit test suite with Jemmy support
@@ -65,7 +66,8 @@ public class WizardsTest extends JellyTestCase {
     
     /** method called before each testcase
      */
-    protected void setUp() {
+    protected void setUp() throws IOException {
+        JemmyProperties.getCurrentTimeouts().loadDebugTimeouts();
     }
     
     /** method called after each testcase

@@ -65,6 +65,7 @@ public class NodeGeneratorTest extends JellyTestCase {
     /** method called before each testcase
      */
     protected void setUp() throws IOException {
+        JemmyProperties.getCurrentTimeouts().loadDebugTimeouts();
     }
     
     /** method called after each testcase
