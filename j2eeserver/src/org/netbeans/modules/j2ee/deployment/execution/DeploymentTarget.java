@@ -43,6 +43,8 @@ public interface DeploymentTarget extends Node.Cookie {
     // possibly a more involved api here?
     public void startClient(String url);
     
+    public String getClientUrl(String partUrl);
+
     public TargetModule[] getTargetModules();
     
     public void setTargetModules(TargetModule[] targetModules);

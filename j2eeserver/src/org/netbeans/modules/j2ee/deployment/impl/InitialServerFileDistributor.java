@@ -65,7 +65,9 @@ public class InitialServerFileDistributor extends ServerProgress {
         try {
             if (dir == null) {
                 inPlace = true;
-                dir = FileUtil.toFile(dtarget.getModule().getContentDirectory());
+                if (dtarget.getModule().getContentDirectory() != null) {
+                    dir = FileUtil.toFile(dtarget.getModule().getContentDirectory());
+                }
                 if (dir == null) {
                     String msg = NbBundle.getMessage(InitialServerFileDistributor.class, "MSG_InPlaceNoSupport");
                     setStatusDistributeFailed(msg);

@@ -79,7 +79,16 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     public void startClient(String partUrl) {
         if (! settings.getShowClient().booleanValue())
             return;
-        
+
+        String url = getClientUrl(partUrl);
+                
+        if (url != null)
+            startWebClient(url + partUrl);
+        else
+            return; //PENDING implement start non-web client
+    }
+
+    public String getClientUrl(String partUrl) {
         // determine client module
         J2eeModule clientModule = getModule();
         String url = null;
@@ -103,7 +112,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             
             // Has no webs or nor client modules
             if (clientModule == null)
-                return;
+                return null;
             
             TargetModule tmid = getTargetModule(getModule());
             url = getChildWebUrl(tmid, clientModule);
@@ -113,11 +122,12 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             if (tmid != null)
                 url = tmid.getWebURL();
         }
-        
-        if (url != null)
-            startWebClient(url + partUrl);
-        else
-            return; //PENDING implement start non-web client
+
+        if (url != null) {
+            return (url + partUrl);
+        } else {
+            return null;
+        }
     }
     
     private TargetModule getTargetModule(J2eeModule module) {
@@ -198,7 +208,11 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     
     public TargetModule[] getTargetModules() {
         if (targetModules == null || targetModules.length == 0) {
-            targetModules = TargetModule.load(getServer(), getTargetModuleFileName());
+            String fname = getTargetModuleFileName();
+            if (fname == null) {
+                return null;
+            }
+            targetModules = TargetModule.load(getServer(), fname);
         }
         return targetModules;
     }
@@ -221,7 +235,9 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     private String getTargetModuleFileName() {
         File f = null;
         try {
-            f = FileUtil.toFile(getModule().getContentDirectory());
+            if (getModule().getContentDirectory() != null) {
+                f = FileUtil.toFile(getModule().getContentDirectory());
+            }
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
         }
