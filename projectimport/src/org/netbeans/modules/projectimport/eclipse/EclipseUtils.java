@@ -14,6 +14,7 @@
 package org.netbeans.modules.projectimport.eclipse;
 
 import java.io.File;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Serveral helpers for parsing, managing, loading Eclipse projects and
@@ -37,8 +38,10 @@ public class EclipseUtils {
      * <code>projectDir</code>.
      */
     public static boolean isRegularProject(File projectDir) {
-        return projectDir.isDirectory() &&
-                new File(projectDir, EclipseProject.PROJECT_FILE).isFile();
+        return projectDir != null
+                && FileUtil.toFileObject(FileUtil.normalizeFile(projectDir)) != null
+                && projectDir.isDirectory()
+                && new File(projectDir, EclipseProject.PROJECT_FILE).isFile();
     }
     
     /**
@@ -73,12 +76,13 @@ public class EclipseUtils {
      * <code>workspaceDir</code>.
      */
     public static boolean isRegularWorkSpace(File workspaceDir) {
-        return workspaceDir != null && workspaceDir.isDirectory() &&
-                new File(workspaceDir, Workspace.CORE_PREFERENCE).isFile() &&
-                new File(workspaceDir, Workspace.LAUNCHING_PREFERENCES).isFile() &&
-                new File(workspaceDir, Workspace.RESOURCE_PROJECTS_DIR).isDirectory();
+        return workspaceDir != null
+                && FileUtil.toFileObject(FileUtil.normalizeFile(workspaceDir)) != null
+                && workspaceDir.isDirectory()
+                && new File(workspaceDir, Workspace.CORE_PREFERENCE).isFile()
+                && new File(workspaceDir, Workspace.LAUNCHING_PREFERENCES).isFile()
+                && new File(workspaceDir, Workspace.RESOURCE_PROJECTS_DIR).isDirectory();
     }
-    
     
     private static final String TMP_NAME =
             "NB___TMP___ENOUGH___UNIQUE___CONSTANT___"; // NOI18N
