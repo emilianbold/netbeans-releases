@@ -174,6 +174,10 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
         container.addPropertyChangeListener (
             org.openide.util.WeakListeners.propertyChange (listener, container)
         );
+        
+        if (err.isLoggable (err.INFORMATIONAL)) {
+            err.log ("new " + this); // NOI18N
+        }
     }
     
     /* -------------------------------------------------------------------- */
@@ -331,12 +335,15 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
     * if it should not be used
     */
     protected InstanceCookie acceptDataObject(DataObject dob) {
+        int acceptType = -1;
+        
         InstanceCookie cookie;
         //Order of checking reversed first check cookie and then folder
         // test if we accept the instance
         cookie = (InstanceCookie)dob.getCookie (InstanceCookie.class);
         try {
             cookie = cookie == null ? null : acceptCookie (cookie);
+            acceptType = 1;
         } catch (IOException ex) {
             // an error during a call to acceptCookie
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -354,8 +361,10 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
                 if (previous != null && previous.cookie != null) {
                     // the old cookie will be returned if the folder is already registered
                     cookie = previous;
+                    acceptType = 2;
                 } else {
                     cookie = acceptFolder (folder);
+                    acceptType = 3;
                 }
             }
         }
@@ -365,11 +374,12 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
             DataObject.Container c = (DataObject.Container)dob.getCookie (DataObject.Container.class);
             if (c != null) {
                 cookie = acceptContainer (c);
+                acceptType = 4;
             }
         }
 
         if (err.isLoggable (ErrorManager.INFORMATIONAL)) {
-            err.log (ErrorManager.INFORMATIONAL, "acceptDataObject: " + dob + " cookie: " + cookie);
+            err.log (ErrorManager.INFORMATIONAL, "acceptDataObject: " + dob + " cookie: " + cookie + " acceptType: " + acceptType); // NOI18N
         }
 
         return cookie;
@@ -703,7 +713,12 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
         } catch (ClassNotFoundException ex) {
             result = ex;
         } finally {
-            err.log ("notifying finished"); // NOI18N
+            if (err.isLoggable (err.INFORMATIONAL)) {
+                err.log ("notifying finished"); // NOI18N
+                for (int log = 0; log < all.length; log++) {
+                    err.log ("  #" + log + ": " + all[log]); // NOI18N
+                }
+            }
             object = result;
             
             Object prevResult = CURRENT.get ();
@@ -763,6 +778,10 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
      */
     final ErrorManager err () {
         return err;
+    }
+    
+    public String toString () {
+        return getClass ().getName () + "@" + Integer.toHexString (System.identityHashCode (this)) + "(" + this.container + ")"; // NOI18N
     }
     
     /* -------------------------------------------------------------------- */
@@ -970,6 +989,10 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
             } else {
                 return null;
             }
+        }
+        
+        public String toString () {
+            return super.toString () + " from " + source + " tocookie: " + cookie; // NOI18N
         }
     } // end of HoldInstance
     

@@ -132,6 +132,9 @@ implements FileChangeListener, DataObject.Container {
         fo.addFileChangeListener (WeakListener.fileChange (this, fo));
     }
  */
+    public String toString () {
+        return "FolderList{" + folder + "}"; // NOI18N
+    }
     
     /* -------------------------------------------------------------------- */
     /* -- Factory method (static) ----------------------------------------- */
