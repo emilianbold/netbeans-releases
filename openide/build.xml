@@ -766,7 +766,7 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
         <ant dir="test" target="buildtests" />
     </target>
     
-    <target name="test-single" depends="init" >
+    <target name="test-single" depends="init,compile-test-single" >
         <fail unless="test.includes">Must set test.includes</fail>
         <mkdir dir="${build.test.unit.results.dir}"/>
         <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
