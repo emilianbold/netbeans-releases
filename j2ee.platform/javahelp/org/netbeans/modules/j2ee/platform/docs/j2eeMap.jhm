@@ -149,7 +149,7 @@
 	<!-- NEW PROJECT WIZARD FOR A STANDARD WEB APPLICATION :-->
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="web/csh/projwiz_standard/PanelConfigureProject.html" />
 	<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$ThePanel" url="web/csh/projwiz_standard/ThePanel.html" />
-	<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$SecondPanel" url="web/csh/projwiz_standard/SecondPanel.html" />
+	<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSourceFolders" url="web/csh/projwiz_standard/SecondPanel.html" />
 	
 	<!-- The Library Manager dialog box: -->
 	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/taglib_manage.html" />
