@@ -18,6 +18,10 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.status.*;
 import javax.swing.JButton;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.AttachingDICookie;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
@@ -353,6 +357,7 @@ public class ServerInstance implements Node.Cookie {
             if (url.equalsIgnoreCase(si.getUrl())) continue;
             if (si.isDebuggable(target)) { //running in debug mode
                 ServerDebugInfo sdi = si.getStartServer().getDebugInfo(target);
+                if (sdi == null) continue; //should not occur -> workaround for issue #56714
                 if (thisSDI.getTransport().equals(sdi.getTransport())) { //transport matches
                     if (thisSDI.getTransport() == ServerDebugInfo.TRANSPORT_SOCKET) {
                         if (thisSDI.getHost().equalsIgnoreCase(sdi.getHost())) //host matches
@@ -366,6 +371,60 @@ public class ServerInstance implements Node.Cookie {
         }
         
         return cd;
+    }
+
+    /**
+     * Returns true if this server is started in debug mode AND debugger is attached to it 
+     * AND threads are suspended (e.g. debugger stopped on breakpoint)
+     */
+    public boolean isSuspended() {
+
+        ServerDebugInfo sdi = null;
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+
+        try {
+            sdi = getStartServer().getDebugInfo(null);
+        } catch (Exception e) {
+            // don't care - just a try
+        }
+
+        if (sdi == null) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
+            return false; // give user a chance to start server even if we don't know whether she will success
+        }
+
+        for (int i=0; i < sessions.length; i++) {
+            Session s = sessions[i];
+            if (s == null) continue;
+            Object o = s.lookupFirst(null, AttachingDICookie.class);
+            if (o == null) continue;
+            AttachingDICookie attCookie = (AttachingDICookie)o;
+            if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
+                    Object d = s.lookupFirst(null, JPDADebugger.class);
+                    if (d != null) {
+                        JPDADebugger jpda = (JPDADebugger)d;
+                        if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
+                            return true;
+                        }
+                    }
+                }
+            } else {
+                if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
+                    if (attCookie.getPortNumber() == sdi.getPort()) {
+                        Object d = s.lookupFirst(null, JPDADebugger.class);
+                        if (d != null) {
+                            JPDADebugger jpda = (JPDADebugger)d;
+                            if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
     }
     
     public boolean startedByIde() {
