@@ -86,6 +86,12 @@ public class MergePanel extends javax.swing.JPanel {
      * The line numbers start from '1'.
      */
     private int[] resultLineNumbers;
+    
+    private int numConflicts;
+    private int numUnresolvedConflicts;
+    private int currentConflictPos;
+    private List resolvedLeftConflictsLineNumbers = new ArrayList();
+    private List resolvedRightConflictsLineNumbers = new ArrayList();
 
     private ArrayList controlListeners = new ArrayList();
 
@@ -108,7 +114,7 @@ public class MergePanel extends javax.swing.JPanel {
         prevConflictButton.setMnemonic (org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.prevButton.mnemonic").charAt (0));
         nextConflictButton.setMnemonic (org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.nextButton.mnemonic").charAt (0));
         //setTitle(org.openide.util.NbBundle.getBundle(DiffComponent.class).getString("DiffComponent.title"));
-        setName(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.title"));
+        //setName(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.title"));
         //HelpCtx.setHelpIDString (getRootPane (), DiffComponent.class.getName ());
         initActions();
         diffSplitPane.setResizeWeight(0.5);
@@ -454,8 +460,18 @@ public class MergePanel extends javax.swing.JPanel {
  */
   }//GEN-LAST:event_jEditorPane2CaretUpdate
 
-  public void setCurrentLine(int line, int diffLength) {
-      if (line > 0) showLine(line, diffLength);
+  public void setNumConflicts(int numConflicts) {
+      this.numConflicts = numConflicts;
+      this.numUnresolvedConflicts = numConflicts;
+  }
+    
+  public void setCurrentLine(int line, int diffLength, int conflictPos) {
+      if (line > 0) {
+          showLine(line, diffLength);
+          if (conflictPos >= 0) this.currentConflictPos = conflictPos;
+          updateStatusLine();
+          updateAcceptButtons(line);
+      }
   }
   
   public synchronized void addControlActionListener(ActionListener listener) {
@@ -464,6 +480,22 @@ public class MergePanel extends javax.swing.JPanel {
   
   public synchronized void removeControlActionListener(ActionListener listener) {
       controlListeners.remove(listener);
+  }
+  
+  private void updateStatusLine() {
+      statusLabel.setText(org.openide.util.NbBundle.getMessage(MergePanel.class,
+          "MergePanel.statusLine", Integer.toString(currentConflictPos),
+          Integer.toString(numConflicts), Integer.toString(numUnresolvedConflicts)));
+  }
+  
+  private void updateAcceptButtons(int linePos) {
+      Integer conflictPos = new Integer(linePos);
+      boolean left = resolvedLeftConflictsLineNumbers.contains(conflictPos);
+      boolean right = resolvedRightConflictsLineNumbers.contains(conflictPos);
+      acceptLeftButton.setEnabled(!left);
+      acceptAndNextLeftButton.setEnabled(!left);
+      acceptRightButton.setEnabled(!right);
+      acceptAndNextRightButton.setEnabled(!right);
   }
   
   private void fireControlActionCommand(String command) {
@@ -1106,6 +1138,10 @@ public class MergePanel extends javax.swing.JPanel {
      * @param line4 The ending line in the result
      */
     public void replaceSource1InResult(int line1, int line2, int line3, int line4) {
+        //System.out.println("replaceSource1InResult("+line1+", "+line2+", "+line3+", "+line4+")");
+        Integer conflictLine = new Integer((line1 > 0) ? line1 : 1);
+        // If trying to resolve the conflict twice simply return .
+        if (resolvedLeftConflictsLineNumbers.contains(conflictLine)) return ;
         StyledDocument doc1 = (StyledDocument) jEditorPane1.getDocument();
         StyledDocument doc2 = (StyledDocument) jEditorPane3.getDocument();
         try {
@@ -1113,6 +1149,15 @@ public class MergePanel extends javax.swing.JPanel {
         } catch (BadLocationException e) {
             org.openide.TopManager.getDefault().notifyException(e);
         }
+        if (resolvedRightConflictsLineNumbers.contains(conflictLine)) {
+            resolvedRightConflictsLineNumbers.remove(conflictLine);
+        } else {
+            // We've resolved the conflict.
+            numUnresolvedConflicts--;
+            updateStatusLine();
+        }
+        resolvedLeftConflictsLineNumbers.add(conflictLine);
+        updateAcceptButtons(line1);
     }
     
     /**
@@ -1124,6 +1169,10 @@ public class MergePanel extends javax.swing.JPanel {
      * @param line4 The ending line in the result
      */
     public void replaceSource2InResult(int line1, int line2, int line3, int line4) {
+        //System.out.println("replaceSource2InResult("+line1+", "+line2+", "+line3+", "+line4+")");
+        Integer conflictLine = new Integer((line1 > 0) ? line1 : 1);
+        // If trying to resolve the conflict twice simply return .
+        if (resolvedRightConflictsLineNumbers.contains(conflictLine)) return ;
         StyledDocument doc1 = (StyledDocument) jEditorPane2.getDocument();
         StyledDocument doc2 = (StyledDocument) jEditorPane3.getDocument();
         try {
@@ -1131,18 +1180,30 @@ public class MergePanel extends javax.swing.JPanel {
         } catch (BadLocationException e) {
             org.openide.TopManager.getDefault().notifyException(e);
         }
+        if (resolvedLeftConflictsLineNumbers.contains(conflictLine)) {
+            resolvedLeftConflictsLineNumbers.remove(conflictLine);
+        } else {
+            // We've resolved the conflict.
+            numUnresolvedConflicts--;
+            updateStatusLine();
+        }
+        resolvedRightConflictsLineNumbers.add(conflictLine);
+        updateAcceptButtons(line1);
     }
     
-    public void replace(StyledDocument doc1, int line1, int line2,
-                        StyledDocument doc2, int line3, int line4) throws BadLocationException {
+    private void replace(StyledDocument doc1, int line1, int line2,
+                         StyledDocument doc2, int line3, int line4) throws BadLocationException {
         //dumpResultLineNumbers();
         //System.out.println("replace("+line1+", "+line2+", "+line3+", "+line4+")");
-        int offset1 = org.openide.text.NbDocument.findLineOffset(doc1, line1 - 1);
+        int offset1 = (line1 > 0) ? org.openide.text.NbDocument.findLineOffset(doc1, line1 - 1)
+                                  : 0;
         int offset2 = (line2 >= 0) ? org.openide.text.NbDocument.findLineOffset(doc1, line2)
                                    : (doc1.getLength() - 1);
-        int offset3 = org.openide.text.NbDocument.findLineOffset(doc2, line3 - 1);
+        int offset3 = (line3 > 0) ? org.openide.text.NbDocument.findLineOffset(doc2, line3 - 1)
+                                  : 0;
         int offset4 = (line4 >= 0) ? org.openide.text.NbDocument.findLineOffset(doc2, line4)
                                    : (doc2.getLength() - 1);
+        //System.out.println("replace: offsets = "+offset1+", "+offset2+", "+offset3+", "+offset4);
         int length = offset2 - offset1;
         if (line2 < 0) length++;
         String text = doc1.getText(offset1, length);
@@ -1350,17 +1411,29 @@ public class MergePanel extends javax.swing.JPanel {
         //      SimpleAttributeSet attrSet = new SimpleAttributeSet();
         //      attrSet.addAttribute(StyleConstants.ColorConstants.Background, java.awt.Color.green);
         //s.addAttribute(StyleConstants.ColorConstants.Background, color);
+        Style s = doc.getStyle("diff-style("+color+"):1500");
+        //if (s == null) s = doc.getLogicalStyle(offset);
+        if (s == null) {
+            //System.out.println("setHighlight(): logical style is NULL"); // NOI18N
+            s = doc.addStyle("diff-style("+color+"):1500", null); // NOI18N
+            s.addAttribute(StyleConstants.ColorConstants.Background, color);
+        }
         for(int line = line1-1; line < line2; line++) {
             if (line < 0) continue;
             int offset = org.openide.text.NbDocument.findLineOffset(doc, line);
             //System.out.println("setHighlight(): I got offset = "+offset); // NOI18N
             if (offset >= 0) {
-                Style s = doc.getLogicalStyle(offset);
-                if (s == null) {
-                    //System.out.println("setHighlight(): logical style is NULL"); // NOI18N
-                    s = doc.addStyle("diff-style("+color+"):1500", null); // NOI18N
+                /*
+                Style ls = doc.getLogicalStyle(offset);
+                //if (ls != null) ls.addAttributes(s.copyAttributes());
+                if (ls == null) {
+                    ls = s;//new javax.swing.text.StyleContext.NamedStyle("diff-style("+color+"):1500", null);
+                } else {
+                    //ls.addAttributes(s.copyAttributes());
                 }
-                s.addAttribute(StyleConstants.ColorConstants.Background, color);
+                ls.removeAttribute(StyleConstants.ColorConstants.Background);
+                ls.addAttribute(StyleConstants.ColorConstants.Background, color);
+                 */
                 doc.setLogicalStyle(offset, s);
                 //doc.setParagraphAttributes(offset, 1, s, false);
             }
@@ -1411,6 +1484,7 @@ public class MergePanel extends javax.swing.JPanel {
         //int endOffset = doc.getEndPosition().getOffset();
         //if (offset > endOffset) offset = endOffset;
         String insStr = strCharacters('\n', numLines);
+        //System.out.println("addEmptyLines = '"+insStr+"'");
         try {
             doc.insertString(offset, insStr, null);
         } catch (BadLocationException e) {
@@ -1519,9 +1593,9 @@ public class MergePanel extends javax.swing.JPanel {
         panel.addControlActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 if (ACTION_PREVIOUS_CONFLICT.equals(evt.getActionCommand())) {
-                    panel.setCurrentLine(38, 2);
+                    panel.setCurrentLine(38, 2, -1);
                 } else if (ACTION_NEXT_CONFLICT.equals(evt.getActionCommand())) {
-                    panel.setCurrentLine(45, 1);
+                    panel.setCurrentLine(45, 1, -1);
                 }
             }
         });
@@ -1562,9 +1636,9 @@ public class MergePanel extends javax.swing.JPanel {
         panel.addControlActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 if (ACTION_PREVIOUS_CONFLICT.equals(evt.getActionCommand())) {
-                    panel.setCurrentLine(38, 2);
+                    panel.setCurrentLine(38, 2, -1);
                 } else if (ACTION_NEXT_CONFLICT.equals(evt.getActionCommand())) {
-                    panel.setCurrentLine(45, 1);
+                    panel.setCurrentLine(45, 1, -1);
                 }
             }
         });

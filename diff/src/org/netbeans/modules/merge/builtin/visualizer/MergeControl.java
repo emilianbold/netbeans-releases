@@ -16,24 +16,33 @@ package org.netbeans.modules.merge.builtin.visualizer;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
 
+import org.openide.util.NbBundle;
+
 import org.netbeans.api.diff.Difference;
+import org.netbeans.api.diff.StreamSource;
+//import org.netbeans.spi.merge.MergeVisualizer.WriterInfo;
 
 /**
  * This class controls the merge process.
  *
  * @author  Martin Entlicher
  */
-public class MergeControl extends Object implements ActionListener {
+public class MergeControl extends Object implements ActionListener, VetoableChangeListener {
     
-    private Color colorAdded;
-    private Color colorMissing;
-    private Color colorChanged;
+    private Color colorUnresolvedConflict;
+    private Color colorResolvedConflict;
+    private Color colorOtherConflict;
     
     //private MergeDialogComponent component;
     private MergePanel panel;
@@ -44,6 +53,7 @@ public class MergeControl extends Object implements ActionListener {
     private int currentDiffLine = 0;
     private int[] resultDiffLocations;
     private Set resolvedConflicts = new HashSet();
+    private StreamSource resultSource;
     
     /** Creates a new instance of MergeControl */
     public MergeControl(/*MergeDialogComponent component, */MergePanel panel) {
@@ -51,33 +61,44 @@ public class MergeControl extends Object implements ActionListener {
         this.panel = panel;
     }
     
+    /*
     public void initialize(Difference[] diffs, String name1, String title1, Reader r1,
                            String name2, String title2, Reader r2,
-                           String name3, String title3, Writer w3, String mimeType,
-                           Color colorAdded, Color colorChanged, Color colorMissing) {
+                           StreamSource result, String mimeType,
+                           Color colorUnresolvedConflict, Color colorResolvedConflict,
+                           Color colorOtherConflict) {
+     */
+    public void initialize(Difference[] diffs, StreamSource source1,
+                           StreamSource source2, StreamSource result,
+                           Color colorUnresolvedConflict, Color colorResolvedConflict,
+                           Color colorOtherConflict) {
         this.diffs = diffs;
         this.diffShifts = new int[diffs.length][2];
         this.resultDiffLocations = new int[diffs.length];
-        panel.setMimeType1(mimeType);
-        panel.setMimeType2(mimeType);
-        panel.setMimeType3(mimeType);
-        panel.setSource1Title(title1);
-        panel.setSource2Title(title2);
-        panel.setResultSourceTitle(title3);
+        panel.setMimeType1(source1.getMIMEType());
+        panel.setMimeType2(source2.getMIMEType());
+        panel.setMimeType3(result.getMIMEType());
+        panel.setSource1Title(source1.getTitle());
+        panel.setSource2Title(source2.getTitle());
+        panel.setResultSourceTitle(result.getTitle());
+        panel.setName(source1.getName());
         try {
-            panel.setSource1(r1);
-            panel.setSource2(r2);
+            panel.setSource1(source1.createReader());
+            panel.setSource2(source2.createReader());
             panel.setResultSource(new java.io.StringReader(""));
         } catch (IOException ioex) {
             org.openide.TopManager.getDefault().notifyException(ioex);
         }
-        this.colorAdded = colorAdded;
-        this.colorChanged = colorChanged;
-        this.colorMissing = colorMissing;
+        this.colorUnresolvedConflict = colorUnresolvedConflict;
+        this.colorResolvedConflict = colorResolvedConflict;
+        this.colorOtherConflict = colorOtherConflict;
         insertEmptyLines(true);
         setDiffHighlight(true);
         copyToResult();
+        panel.setNumConflicts(diffs.length);
         panel.addControlActionListener(this);
+        showCurrentLine();
+        this.resultSource = result;
     }
     
     private void insertEmptyLines(boolean updateActionLines) {
@@ -136,17 +157,17 @@ public class MergeControl extends Object implements ActionListener {
             //D.deb("Action: "+action.getAction()+": ("+n1+","+n2+","+n3+","+n4+")"); // NOI18N
             switch (action.getType()) {
             case Difference.DELETE:
-                if (set) panel.highlightRegion1(n1, n2, colorMissing);
+                if (set) panel.highlightRegion1(n1, n2, colorUnresolvedConflict);
                 else panel.highlightRegion1(n1, n2, java.awt.Color.white);
                 break;
             case Difference.ADD:
-                if (set) panel.highlightRegion2(n3, n4, colorAdded);
+                if (set) panel.highlightRegion2(n3, n4, colorUnresolvedConflict);
                 else panel.highlightRegion2(n3, n4, java.awt.Color.white);
                 break;
             case Difference.CHANGE:
                 if (set) {
-                    panel.highlightRegion1(n1, n2, colorChanged);
-                    panel.highlightRegion2(n3, n4, colorChanged);
+                    panel.highlightRegion1(n1, n2, colorUnresolvedConflict);
+                    panel.highlightRegion2(n3, n4, colorUnresolvedConflict);
                 } else {
                     panel.highlightRegion1(n1, n2, java.awt.Color.white);
                     panel.highlightRegion2(n3, n4, java.awt.Color.white);
@@ -166,17 +187,18 @@ public class MergeControl extends Object implements ActionListener {
             int n2 = action.getFirstEnd() + diffShifts[i][0];
             int n3 = action.getSecondStart() + diffShifts[i][1];
             int n4 = action.getSecondEnd() + diffShifts[i][1];
-            //System.out.println("diff = "+n1+", "+n2+", "+n3+", "+n4+"; copy("+(line1 - 1)+", "+(n1-1)+", "+line3+")");
+            //System.out.println("diff = "+n1+", "+n2+", "+n3+", "+n4+"; copy("+line1+", "+(n1-1)+", "+line3+")");
             if (n1 >= line1) panel.copySource1ToResult(line1, n1 - 1, line3);
             line3 += n1 - line1;
             int length = Math.max(n2 - n1, n4 - n3);
+            //System.out.println("  addEmptyLines3("+line3+", "+(length + 1)+")");
             panel.addEmptyLines3(line3, length + 1);
-            panel.highlightRegion3(line3, line3 + length, colorMissing);
+            panel.highlightRegion3(line3, line3 + length, colorUnresolvedConflict);
             resultDiffLocations[i] = line3;
             line3 += length + 1;
-            line1 = n2 + 1;
+            line1 = Math.max(n2, n4) + 1;
         }
-        //System.out.println("copy("+(line1 - 1)+", -1, "+line3+")");
+        //System.out.println("copy("+line1+", -1, "+line3+")");
         panel.copySource1ToResult(line1, -1, line3);
     }
 
@@ -187,7 +209,7 @@ public class MergeControl extends Object implements ActionListener {
         int lf1 = diff.getFirstEnd() - diff.getFirstStart() + 1;
         int lf2 = diff.getSecondEnd() - diff.getSecondStart() + 1;
         int length = Math.max(lf1, lf2);
-        panel.setCurrentLine(line, length);
+        panel.setCurrentLine(line, length, currentDiffLine);
     }
     
     /**
@@ -201,10 +223,10 @@ public class MergeControl extends Object implements ActionListener {
         int[] shifts = diffShifts[conflNum];
         int line1 = diff.getFirstStart() + shifts[0];
         int line2 = (diff.getType() != Difference.ADD) ? diff.getFirstEnd() + shifts[0]
-                                                       : line1;
+                                                       : line1 - 1; // We must not remove anything from the result
         int line3 = diff.getSecondStart() + shifts[1];
         int line4 = (diff.getType() != Difference.DELETE) ? diff.getSecondEnd() + shifts[1]
-                                                          : line3;
+                                                          : line3 - 1; // We must not remove anything from the result
         int rlength; // The length of the area before the conflict is resolved
         if (resolvedConflicts.contains(diff)) {
             rlength = (right) ? (line2 - line1) : (line4 - line3);
@@ -213,16 +235,23 @@ public class MergeControl extends Object implements ActionListener {
         }
         int shift;
         if (right) {
-            panel.replaceSource2InResult(line3, line4,
+            panel.replaceSource2InResult(line3, Math.max(line4, 0), // Correction for possibly negative value
                                          resultDiffLocations[conflNum],
                                          resultDiffLocations[conflNum] + rlength);
             shift = rlength - (line4 - line3);
+            panel.highlightRegion1(line1, Math.max(line2, 0), colorOtherConflict);
+            panel.highlightRegion2(line3, Math.max(line4, 0), colorResolvedConflict);
         } else {
-            panel.replaceSource1InResult(line1, line2,
+            panel.replaceSource1InResult(line1, Math.max(line2, 0), // Correction for possibly negative value
                                          resultDiffLocations[conflNum],
                                          resultDiffLocations[conflNum] + rlength);
             shift = rlength - (line2 - line1);
+            panel.highlightRegion1(line1, Math.max(line2, 0), colorResolvedConflict);
+            panel.highlightRegion2(line3, Math.max(line4, 0), colorOtherConflict);
         }
+        panel.highlightRegion3(resultDiffLocations[conflNum],
+                               resultDiffLocations[conflNum] + rlength - shift,
+                               colorResolvedConflict);
         for (int i = conflNum + 1; i < diffs.length; i++) {
             resultDiffLocations[i] -= shift;
         }
@@ -254,6 +283,39 @@ public class MergeControl extends Object implements ActionListener {
                 }
             }
         });
+    }
+    
+    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+    }
+    
+    public void vetoableChange(PropertyChangeEvent propertyChangeEvent) throws PropertyVetoException {
+        if (MergeDialogComponent.PROP_PANEL_CLOSING.equals(propertyChangeEvent.getPropertyName())) {
+            MergePanel panel = (MergePanel) propertyChangeEvent.getNewValue();
+            if (this.panel == panel) {
+                ArrayList unresolvedConflicts = new ArrayList();//java.util.Arrays.asList(diffs));
+                for (int i = 0; i < diffs.length; i++) {
+                    if (!resolvedConflicts.contains(diffs[i])) {
+                        Difference conflict = new Difference(diffs[i].getType(),
+                                                             resultDiffLocations[i],
+                                                             resultDiffLocations[i] + diffs[i].getFirstEnd() - diffs[i].getFirstStart(),
+                                                             resultDiffLocations[i],
+                                                             resultDiffLocations[i] + diffs[i].getSecondEnd() - diffs[i].getSecondStart(),
+                                                             diffs[i].getFirstText(),
+                                                             diffs[i].getSecondText());
+                        unresolvedConflicts.add(conflict);
+                    }
+                }
+                try {
+                    panel.writeResult(resultSource.createWriter((Difference[]) unresolvedConflicts.toArray(
+                        new Difference[unresolvedConflicts.size()])));
+                } catch (IOException ioex) {
+                    throw new PropertyVetoException(NbBundle.getMessage(MergeControl.class,
+                                                        "MergeControl.failedToSave",
+                                                        ioex.getLocalizedMessage()),
+                                                    propertyChangeEvent);
+                }
+            }
+        }
     }
     
 }
