@@ -428,11 +428,12 @@ public class MultiDataObject extends DataObject {
         if (suffix == null)
             throw new org.openide.util.UserCancelException();
 
-        fo = getPrimaryEntry ().copy (df.getPrimaryFile (), suffix);
         Iterator it = secondaryEntries().iterator();
         while (it.hasNext ()) {
             ((Entry)it.next()).copy (df.getPrimaryFile (), suffix);
         }
+        //#33244 - copy primary file after the secondary ones
+        fo = getPrimaryEntry ().copy (df.getPrimaryFile (), suffix);
         
         try {
             return createMultiObject (fo);
