@@ -36,8 +36,6 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.dnd.InvalidDnDOperationException;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -232,8 +230,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     private class DnDSupport implements DragSourceListener, DragGestureListener, DropTargetListener {
         private DragSource dragSource = new DragSource();
         
-        private Cursor dragMoveCursor = createCustomCursor( Utilities.loadImage( "org/openide/resources/cursorsmovesingle.gif"), "ACTION_MOVE" );
-        private Cursor dragNoDropCursor = createCustomCursor( Utilities.loadImage( "org/openide/resources/cursorsnone.gif"), "NO_ACTION_MOVE" );
+        private Cursor dragMoveCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/resources/cursorsmovesingle.gif"), "ACTION_MOVE" );
+        private Cursor dragNoDropCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/resources/cursorsnone.gif"), "NO_ACTION_MOVE" );
         
         public DnDSupport() {
             dragSource.addDragSourceListener(this);
@@ -363,38 +361,6 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                 e.acceptDrag( DnDConstants.ACTION_MOVE );
             }
         }
-        
-
-        //XXX copy & paste from DragDropUtilities, make it public instead?
-        /**
-         * Returns cursor created from given icon.
-         */
-        private Cursor createCustomCursor(Image icon, String name) {
-            Toolkit t = Toolkit.getDefaultToolkit();
-            Dimension d = t.getBestCursorSize(16, 16);
-            Image i = icon;
-            if (d.width != icon.getWidth(null)) {
-                // need to resize the icon
-                Image empty = createBufferedImage(d.width, d.height);
-                i = Utilities.mergeImages(icon, empty, 0, 0);
-            }
-            return t.createCustomCursor(i, new Point(1,1), name);
-        }
-    
-        /** 
-         * Creates BufferedImage and Transparency.BITMASK 
-         * Note: this method is copied from org.openide.util.IconManager. Should
-         * it be exposed in Utilities? I don't know (dstrupl).
-         */
-        private final BufferedImage createBufferedImage(int width, int height) {
-            ColorModel model = GraphicsEnvironment.getLocalGraphicsEnvironment().
-                                              getDefaultScreenDevice().getDefaultConfiguration().getColorModel(Transparency.BITMASK);
-            BufferedImage buffImage = new BufferedImage(model,
-                    model.createCompatibleWritableRaster(width, height), model.isAlphaPremultiplied(), null);
-            return buffImage;
-        }
-        
-        //XXX copy&paste end
     }
     
     void doDrop( DataObject ob, int dropIndex, boolean dropBefore ) throws IOException {

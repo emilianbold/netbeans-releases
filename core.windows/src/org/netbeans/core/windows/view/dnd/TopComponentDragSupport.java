@@ -34,16 +34,13 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.awt.event.AWTEventListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 
 
 /**
@@ -331,10 +328,10 @@ implements AWTEventListener, DragSourceListener {
         windowDnDManager.dragStarting(startingDroppable, startingPoint, firstTC);
 
         Cursor cursor = hackUserDropAction == DnDConstants.ACTION_MOVE
-            ? getDragCursor(CURSOR_MOVE)
+            ? getDragCursor(startingComp, CURSOR_MOVE)
             : (canCopy 
-                ? getDragCursor(CURSOR_COPY)
-                : getDragCursor(CURSOR_COPY_NO_MOVE));
+                ? getDragCursor(startingComp, CURSOR_COPY)
+                : getDragCursor(startingComp, CURSOR_COPY_NO_MOVE));
 
         
         Container con = SwingUtilities.getAncestorOfClass(
@@ -509,7 +506,7 @@ implements AWTEventListener, DragSourceListener {
             return;
         }
         
-        evt.getDragSourceContext().setCursor(getDragCursor(type));
+        evt.getDragSourceContext().setCursor(getDragCursor(evt.getDragSourceContext().getComponent(),type));
     }
 
     /** Implements <code>DragSourceListener</code> method.
@@ -665,7 +662,7 @@ implements AWTEventListener, DragSourceListener {
             return;
         }
         
-        ctx.setCursor(getDragCursor(type));
+        ctx.setCursor(getDragCursor(ctx.getComponent(),type));
     }
     
     /** Hacks problems with <code>dragExit</code> wrong method calls.
@@ -691,7 +688,7 @@ implements AWTEventListener, DragSourceListener {
             return;
         }
 
-        ctx.setCursor(getDragCursor(type));
+        ctx.setCursor(getDragCursor(ctx.getComponent(),type));
     }
 
     /** Provides cleanup when finished drag operation. Ideally the code
@@ -729,7 +726,7 @@ implements AWTEventListener, DragSourceListener {
      * @param type valid one of {@link #CURSOR_COPY}, {@link #CURSOR_COPY_NO}, 
      *             {@link #CURSOR_MOVE}, {@link #CURSOR_MOVE_NO}
      * @exception IllegalArgumentException if invalid type parameter passed in */
-    private static Cursor getDragCursor(int type) {
+    private static Cursor getDragCursor( Component comp, int type ) {
         Image image = null;
         String name = null;
         
@@ -757,42 +754,7 @@ implements AWTEventListener, DragSourceListener {
             throw new IllegalArgumentException("Unknown cursor type=" + type); // NOI18N
         }
         
-        return createCustomCursor(image, name);
-    }
-
-    // XXX Copied from openide/explorer code.
-    /** Creates window drag <code>Cursor</code> created from given icon
-     * and name. Utility method. */
-    private static Cursor createCustomCursor(Image icon, String name) {
-        Toolkit t = Toolkit.getDefaultToolkit();
-        Dimension d = t.getBestCursorSize(16, 16);
-        Image i = icon;
-        if (d.width != icon.getWidth(null)) {
-            // need to resize the icon
-            Image empty = createBufferedImage(d.width, d.height);
-            i = Utilities.mergeImages(icon, empty, 0, 0);
-        }
-        
-        return t.createCustomCursor(i, new Point(11, 9), name);
-    }
-    
-    /** Creates <code>BufferedImage</code> and <code>Transparency.BITMASK</code> 
-     * <em>Note:</em> this method is copied
-     * from <code>org.openide.util.IconManager</code>.
-     * Should it be exposed in Utilities? I don't know (dstrupl). */
-    private static final BufferedImage createBufferedImage(int width, int height) {
-        ColorModel model = GraphicsEnvironment.getLocalGraphicsEnvironment()
-            .getDefaultScreenDevice().getDefaultConfiguration()
-            .getColorModel(Transparency.BITMASK);
-        
-        BufferedImage buffImage = new BufferedImage(
-            model,
-            model.createCompatibleWritableRaster(width, height),
-            model.isAlphaPremultiplied(),
-            null
-        );
-        
-        return buffImage;
+        return Utilities.createCustomCursor( comp, image, name );
     }
 
     // Helpers<<
