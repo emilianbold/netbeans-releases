@@ -89,7 +89,9 @@ public class FormEditorModule extends ModuleInstall {
 
       // install actions into toolbar
       DataFolder formFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Form"); // NOI18N
+      localizeFile (formFolder.getPrimaryFile ());
       DataFolder paletteFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Palette"); // NOI18N
+      localizeFile (paletteFolder.getPrimaryFile ());
   
       DataObject[] formInstances = {
         Utilities2.createAction (ComponentInspectorAction.class, formFolder),
@@ -103,6 +105,7 @@ public class FormEditorModule extends ModuleInstall {
 
       // install actions into action pool
       DataFolder formActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Form"); // NOI18N
+      localizeFile (formActions.getPrimaryFile ());
       Utilities2.createAction (InstallBeanAction.class, formActions);
       Utilities2.createAction (ComponentInspectorAction.class, formActions);
       Utilities2.createAction (PaletteAction.class, formActions);
@@ -458,6 +461,7 @@ public class FormEditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  43   Gandalf   1.42        1/19/00  Jesse Glick     Localized filenames.
  *  42   Gandalf   1.41        1/17/00  Jesse Glick     Localized filenames.
  *  41   Gandalf   1.40        1/16/00  Jesse Glick     Actions pool; localized 
  *       jars.
