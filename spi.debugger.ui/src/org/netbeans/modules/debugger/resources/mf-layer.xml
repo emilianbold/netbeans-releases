@@ -290,6 +290,10 @@ SystemFileSystem
             <file name="debugger.wsmode" url="debugger.wsmode"/>
             <folder name="debugger">
                 <file name="DebuggerWindow.wstcref" url="DebuggerWindow.wstcref"/>
+                <attr name="DebuggerWindow.wstcref/filesystems.wstcref" boolvalue="true" />
+                <file name="filesystems.wstcref" url="filesystems.wstcref" />
+                <attr name="filesystems.wstcref/project.wstcref" boolvalue="true" />
+                <file name="project.wstcref" url="project.wstcref" />
             </folder>
 
             <file name="output.wsmode" url="output.wsmode"/>
