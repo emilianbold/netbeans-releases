@@ -137,15 +137,16 @@ public class NbEditorKit extends ExtKit {
                     return;
 
                 } else { // not cloneable-editor actions
-                    Class saClass;
+                    Class saClass = null;
+                    TopManager tm = NbEditorUtilities.getTopManager();
                     try {
-                        saClass = Class.forName(actionName);
+                        if (tm != null) {
+                            saClass = Class.forName(actionName, false, tm.systemClassLoader());
+                        }
                     } catch (Throwable t) {
-                        saClass = null;
                     }
 
                     if (saClass != null && SystemAction.class.isAssignableFrom(saClass)) {
-                        TopManager tm = NbEditorUtilities.getTopManager();
                         if (tm != null) { // IDE initialized
                             SystemAction sa = SystemAction.get(saClass);
                             if (sa instanceof Presenter.Popup) {
