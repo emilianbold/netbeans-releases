@@ -13,7 +13,10 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
+import java.beans.PropertyChangeListener;
+import javax.swing.Icon;
 import junit.framework.*;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.junit.NbTestCase;
 
 import org.netbeans.api.project.TestUtil;
@@ -44,8 +47,8 @@ public class PackageViewTest extends NbTestCase {
         
         
 	// Create children
-        FileUtil.createFolder( root, "src" );
-        Children ch = PackageView.createPackageView( root.getFileObject( "src" ) );
+        SourceGroup group = new SimpleSourceGroup( FileUtil.createFolder( root, "src" ) );
+        Children ch = PackageView.createPackageView( group ).getChildren();
         
         
 	FileUtil.createFolder( root, "src/a/b/c" );
@@ -174,9 +177,9 @@ public class PackageViewTest extends NbTestCase {
         // System.out.println("root " + root.getFileSystem().getClass() );
         
         
-	// Create children
-        FileUtil.createFolder( root, "src" );
-        Children ch = PackageView.createPackageView( root.getFileObject( "src" ) );
+	// Create children        
+        SourceGroup group = new SimpleSourceGroup( FileUtil.createFolder( root, "src" ) );
+        Children ch = PackageView.createPackageView( group ).getChildren();
         
         // Default package should be there
         assertNodes( ch, 
@@ -190,7 +193,6 @@ public class PackageViewTest extends NbTestCase {
                      new int[] { 0, } );
                      
         // Default package should appear again
-        System.out.println("----------------------------");
         FileObject someJava = FileUtil.createData( root, "src/Some.java" );
         assertNodes( ch, 
                      new String[] { "<default package>", "a", },
@@ -207,6 +209,61 @@ public class PackageViewTest extends NbTestCase {
         assertNodes( ch, 
                      new String[] { "<default package>" },
                      new int[] { 0 } );
+        
+    }
+    
+    public void testFindPath() throws Exception {
+        
+        // Prepare test data
+        FileObject root = TestUtil.makeScratchDir( this );
+        // System.out.println("root " + root.getFileSystem().getClass() );
+        
+        
+	// Create children        
+        SourceGroup group = new SimpleSourceGroup( FileUtil.createFolder( root, "src" ) );
+        Node sourceRoot = PackageView.createPackageView( group );
+        Children ch = sourceRoot.getChildren();
+        
+        FileObject a_b_c = FileUtil.createFolder( root, "src/a/b/c" );
+        FileObject a_b = root.getFileObject( "src/a/b" );
+        FileObject e_f_g = FileUtil.createFolder( root, "src/e/f/g" );
+        
+        FileObject dp_java = FileUtil.createData( root, "src/DP" );
+        FileObject a_b_c_java = FileUtil.createData( root, "src/a/b/c/ABC" );
+        FileObject a_b_java = FileUtil.createData( root, "src/a/b/AB" );
+        FileObject e_f_g_java = FileUtil.createData( root, "src/e/f/g/EFG" );
+        
+        // Try to find standard files
+        Node n;
+        n = PackageView.findPath( sourceRoot, a_b_c_java );
+        assertNode( n, "ABC" );
+                
+        n = PackageView.findPath( sourceRoot, a_b_java );
+        assertNode( n, "AB" );
+        
+        n = PackageView.findPath( sourceRoot, e_f_g_java );
+        assertNode( n, "EFG" );
+        
+        // Try to find folders
+        n = PackageView.findPath( sourceRoot, a_b_c );
+        assertNode( n, "a.b.c" );
+        
+        n = PackageView.findPath( sourceRoot, a_b );
+        assertNode( n, "a.b" );
+        
+        n = PackageView.findPath( sourceRoot, e_f_g );
+        assertNode( n, "e.f.g" );
+        
+        // Try file in default package
+        n = PackageView.findPath( sourceRoot, dp_java );
+        assertNode( n, "DP" );
+        
+        n = PackageView.findPath( sourceRoot, group.getRootFolder() );
+        assertNode( n, "" );
+                
+        dp_java.delete(); // Dp will disapear should return root node
+        n = PackageView.findPath( sourceRoot, group.getRootFolder() );
+        assertNode( n, group.getName() );
         
     }
     
@@ -232,6 +289,52 @@ public class PackageViewTest extends NbTestCase {
                 assertEquals( "Wrong nuber of children. Node: " + nodeNames[i] +".", childCount[i], nodes[i].getChildren().getNodes( true ).length );
             }
         }
+    }
+    
+    public static void assertNode( Node n, String name ) {
+        
+        if ( name != null ) {
+            assertNotNull( "Node not found", n  );
+            assertEquals( "Wrong name", name, n.getName() );             
+        }
+        else {
+            assertNull( "No node should be found", n );
+        }
+        
+    }
+    
+    private static class SimpleSourceGroup implements SourceGroup {
+        
+        private FileObject root;
+        
+        public SimpleSourceGroup( FileObject root ) {
+            this.root = root;
+        }
+        
+        public FileObject getRootFolder() {
+            return root;
+        }
+        
+        public String getName() {
+            return "TestGroup";
+        }
+        
+        public String getDisplayName() {
+            return getName();
+        }
+        
+        public Icon getIcon(boolean opened) {
+            return null;
+        }
+
+        public boolean contains(FileObject file) throws IllegalArgumentException {
+            return FileUtil.isParentOf( root, file );
+        }
+    
+        public void addPropertyChangeListener(PropertyChangeListener listener) {}
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {}
+        
     }
     
 }

@@ -520,8 +520,8 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             }
             else {
                 if ( children == null ) {
-                    Children ch = PackageView.createPackageView( group.getRootFolder() );
-                    Node nodes[] = ch.getNodes( true );
+                    Node n = PackageView.createPackageView( group );
+                    Node nodes[] = n.getChildren().getNodes( true );
                     children = new ModelItem[ nodes.length ];
                     for( int i = 0; i < nodes.length; i++ ) {
                         children[i] = new ModelItem( nodes[i] );
