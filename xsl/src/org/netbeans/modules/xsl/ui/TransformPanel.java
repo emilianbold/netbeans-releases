@@ -1,17 +1,20 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xsl.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -45,7 +48,13 @@ import org.netbeans.modules.xsl.utils.TransformUtil;
 public final class TransformPanel extends javax.swing.JPanel {
     /** Serial Version UID */
     private static final long serialVersionUID = -3449709794133206327L;
-
+    
+    public static final String DATA_XML_MODIFIED="DATA_XML_MODIFIED";
+    public static final String DATA_XSL_MODIFIED="DATA_XSL_MODIFIED";
+    public static final String DATA_OUTPUT_MODIFIED="DATA_OUTPUT_MODIFIED";
+    public static final String DATA_PROCESS_MODIFIED="DATA_PROCESS_MODIFIED";
+    public static final String DATA_OVERWRITE_MODIFIED="DATA_OVERWRITE_MODIFIED";
+    
     private URL baseURL;
     private Data data;
     private boolean initialized = false;
@@ -55,20 +64,20 @@ public final class TransformPanel extends javax.swing.JPanel {
     private DataObject    xslDataObject;
     private TransformHistory xmlHistory;
     private TransformHistory xslHistory;
-
+    
     private boolean userSetOutput  = false;
     private boolean userSetProcess = false;
     private String lastOutputFileExt = TransformUtil.DEFAULT_OUTPUT_EXT;
     private Object lastXSLObject     = new Object();
-
+    
     /** Hide transformation components if true. */
     private boolean suppressXSL;
     
     /** Names of output actions. */
     private static final String[] SHOW_NAMES = new String[] {
-        Util.THIS.getString ("NAME_process_output_do_nothing"),           // TransformHistory.DO_NOTHING
-        Util.THIS.getString ("NAME_process_output_apply_default_action"), // TransformHistory.APPLY_DEFAULT_ACTION
-        Util.THIS.getString ("NAME_process_output_open_in_browser"),      // TransformHistory.OPEN_IN_BROWSER
+        Util.THIS.getString("NAME_process_output_do_nothing"),           // TransformHistory.DO_NOTHING
+        Util.THIS.getString("NAME_process_output_apply_default_action"), // TransformHistory.APPLY_DEFAULT_ACTION
+        Util.THIS.getString("NAME_process_output_open_in_browser"),      // TransformHistory.OPEN_IN_BROWSER
     };
     
     private static final Object JUST_PREVIEW = new Preview();
@@ -76,34 +85,33 @@ public final class TransformPanel extends javax.swing.JPanel {
     /** Creates new form TransformPanel */
     public TransformPanel (DataObject xml, String xml_ss, DataObject xsl, boolean suppressXSL) throws MalformedURLException, FileStateInvalidException {
         initComponents();
-
-        init (xml, xml_ss, xsl, suppressXSL);
+        
+        init(xml, xml_ss, xsl, suppressXSL);
         initAccessibility();
     }
     
     /** Creates new form TransformPanel */
-    public TransformPanel (DataObject xml, String xml_ss, DataObject xsl) throws MalformedURLException, FileStateInvalidException {
-        this (xml, xml_ss, xsl, false);
+    public TransformPanel(DataObject xml, String xml_ss, DataObject xsl) throws MalformedURLException, FileStateInvalidException {
+        this(xml, xml_ss, xsl, false);
     }
     
-
-    private void init (DataObject xml, String xml_ss, DataObject xsl, boolean supXSL) throws MalformedURLException, FileStateInvalidException {
+    private void init(DataObject xml, String xml_ss, DataObject xsl, boolean supXSL) throws MalformedURLException, FileStateInvalidException {
         data = new Data();
         xmlDataObject  = xml;
         xml_stylesheet = xml_ss;
         xslDataObject  = xsl;
         suppressXSL    = supXSL;
-                
+        
         if ( xmlDataObject != null ) {
-            data.xml = TransformUtil.getURLName (xmlDataObject.getPrimaryFile());
+            setInput(TransformUtil.getURLName(xmlDataObject.getPrimaryFile()));
             FileObject xmlFileObject = xmlDataObject.getPrimaryFile();
-            xmlHistory = (TransformHistory)xmlFileObject.getAttribute (TransformHistory.TRANSFORM_HISTORY_ATTRIBUTE);
+            xmlHistory = (TransformHistory)xmlFileObject.getAttribute(TransformHistory.TRANSFORM_HISTORY_ATTRIBUTE);
             if ( xmlHistory != null ) {
-                data.xsl = xmlHistory.getLastXSL();
+                setXSL(xmlHistory.getLastXSL());
             }
             if ( ( data.xsl == null ) &&
-                 ( xml_stylesheet != null ) ) {
-                data.xsl = xml_stylesheet;
+            ( xml_stylesheet != null ) ) {
+                setXSL(xml_stylesheet);
             }
             try {
                 baseURL = xmlFileObject.getParent().getURL();
@@ -112,11 +120,11 @@ public final class TransformPanel extends javax.swing.JPanel {
             }
         }
         if ( xslDataObject != null ) {
-            data.xsl = TransformUtil.getURLName (xslDataObject.getPrimaryFile());
+            setXSL(TransformUtil.getURLName(xslDataObject.getPrimaryFile()));
             FileObject xslFileObject = xslDataObject.getPrimaryFile();
-            xslHistory = (TransformHistory)xslFileObject.getAttribute (TransformHistory.TRANSFORM_HISTORY_ATTRIBUTE);
+            xslHistory = (TransformHistory)xslFileObject.getAttribute(TransformHistory.TRANSFORM_HISTORY_ATTRIBUTE);
             if ( ( data.xml == null ) && ( xslHistory != null ) ) {
-                data.xml = xslHistory.getLastXML();
+                setInput(xslHistory.getLastXML());
             }
             if ( baseURL == null ) {
                 try {
@@ -126,333 +134,333 @@ public final class TransformPanel extends javax.swing.JPanel {
                 }
             }
         }
-
+        
         if ( ( xmlHistory != null ) || ( xslHistory != null ) ) {
             if ( xmlHistory != null ) {
-                data.output = xmlHistory.getLastXSLOutput();
+                setOutput(xmlHistory.getLastXSLOutput());
             }
             if ( ( data.output == null ) &&
-                 ( xslHistory != null ) ) {
-                data.output = xslHistory.getLastXMLOutput();
+            ( xslHistory != null ) ) {
+                setOutput(xslHistory.getLastXMLOutput());
             }
             if ( data.output == null ) {
-                data.output = JUST_PREVIEW;
+                setOutput(JUST_PREVIEW);
             }
         }
-
+        
         if ( xmlHistory != null ) {
-            data.overwrite = xmlHistory.isOverwriteOutput() ? Boolean.TRUE : Boolean.FALSE;
-            data.process   = new Integer (xmlHistory.getProcessOutput());
+            setOverwriteOutput( xmlHistory.isOverwriteOutput());
+            setProcessOutput(new Integer(xmlHistory.getProcessOutput()));
         } else if ( xslHistory != null ) {
-            data.overwrite = xslHistory.isOverwriteOutput() ? Boolean.TRUE : Boolean.FALSE;
-            data.process   = new Integer (xslHistory.getProcessOutput());
+            setOverwriteOutput( xslHistory.isOverwriteOutput());
+            setProcessOutput(new Integer(xslHistory.getProcessOutput()));
         }
-
-        ownInitComponents ();
+        
+        ownInitComponents();
     }
-
-
-    private void ownInitComponents () {
+    
+    
+    private void ownInitComponents() {
         // XML Input
-        updateXMLComboBoxModel (null);
+        updateXMLComboBoxModel(null);
         // XSL Transformation
-        updateXSLComboBoxModel (null);
-
+        updateXSLComboBoxModel(null);
+        
         updateComponents();
-
-        setCaretPosition (inputComboBox);
-        setCaretPosition (transformComboBox);
-        setCaretPosition (outputComboBox);
+        
+        setCaretPosition(inputComboBox);
+        setCaretPosition(transformComboBox);
+        setCaretPosition(outputComboBox);
     }
-
-
-    private void setCaretPosition (JComboBox comboBox) {
+    
+    
+    private void setCaretPosition(JComboBox comboBox) {
         ComboBoxEditor cbEditor = comboBox.getEditor();
         final Component editorComponent = cbEditor.getEditorComponent();
-
+        
         if ( Util.THIS.isLoggable() ) /* then */ {
-            Util.THIS.debug ("TransformPanel.setCaretPosition: " + comboBox);
-            Util.THIS.debug ("    editorComponent = " + editorComponent);
+            Util.THIS.debug("TransformPanel.setCaretPosition: " + comboBox);
+            Util.THIS.debug("    editorComponent = " + editorComponent);
         }
-
+        
         if ( editorComponent instanceof JTextField ) {
             SwingUtilities.invokeLater
-                (new Runnable () {
-                        public void run() {
-                            JTextField textField = (JTextField) editorComponent;
-                            int length = textField.getText().length();
-                            textField.setCaretPosition (length);
-
-                            if ( Util.THIS.isLoggable() ) /* then */ {
-                                Util.THIS.debug ("    text[" + length + "]='" + textField.getText() + "' - " + textField.getCaretPosition());
-                            }
-                        }
+            (new Runnable() {
+                public void run() {
+                    JTextField textField = (JTextField) editorComponent;
+                    int length = textField.getText().length();
+                    textField.setCaretPosition(length);
+                    
+                    if ( Util.THIS.isLoggable() ) /* then */ {
+                        Util.THIS.debug("    text[" + length + "]='" + textField.getText() + "' - " + textField.getCaretPosition());
                     }
-                 );
+                }
+            }
+            );
         }
     }
-
-    private void updateXMLComboBoxModel (Object prefItem) {
+    
+    private void updateXMLComboBoxModel(Object prefItem) {
         Object[] history = null;
         if ( ( xmlDataObject == null ) &&
-             ( xslHistory != null ) ) {
+        ( xslHistory != null ) ) {
             history = xslHistory.getXMLs();
         }
-
+        
         Vector cbModel = new Vector();
-
+        
         // Preferred Item
         if ( prefItem != null ) {
-            cbModel.add (prefItem);
+            cbModel.add(prefItem);
         }
         // History
         if ( history != null ) {
             for ( int i = 0; i < history.length; i++ ) {
-                cbModel.add (history[i]);
+                cbModel.add(history[i]);
             }
         }
-
-        inputComboBox.setModel (new DefaultComboBoxModel (cbModel));
+        
+        inputComboBox.setModel(new DefaultComboBoxModel(cbModel));
     }
-
-    private void updateXSLComboBoxModel (Object prefItem) {
+    
+    private void updateXSLComboBoxModel(Object prefItem) {
         Object[] history = null;
         if ( ( xslDataObject == null ) &&
-             ( xmlHistory != null ) ) {
+        ( xmlHistory != null ) ) {
             history = xmlHistory.getXSLs();
         }
-
+        
         Vector cbModel = new Vector();
-
+        
         // Preferred Item
         if ( prefItem != null ) {
-            cbModel.add (prefItem);
+            cbModel.add(prefItem);
         }
         // <?xsl-stylesheet ...
         if ( xml_stylesheet != null ) {
-            cbModel.add (xml_stylesheet);
+            cbModel.add(xml_stylesheet);
         }
         // History
         if ( history != null ) {
             for ( int i = 0; i < history.length; i++ ) {
                 if ( ( history[i] != null ) &&
-                     ( history[i].equals (xml_stylesheet) == false ) ) { // do not duplicate xml_stylesheet item
-                    cbModel.add (history[i]);
+                ( history[i].equals(xml_stylesheet) == false ) ) { // do not duplicate xml_stylesheet item
+                    cbModel.add(history[i]);
                 }
             }
         }
-
-        transformComboBox.setModel (new DefaultComboBoxModel (cbModel));
-    }
-
-    private boolean isInitialized () {
-        synchronized ( data ) {
-            return initialized;
-        }        
+        
+        transformComboBox.setModel(new DefaultComboBoxModel(cbModel));
     }
     
-    private void setInitialized (boolean init) {
+    private boolean isInitialized() {
+        synchronized ( data ) {
+            return initialized;
+        }
+    }
+    
+    private void setInitialized(boolean init) {
         synchronized ( data ) {
             initialized = init;
-        }        
+        }
     }
-
-    private static String guessFileName (String xml) {
+    
+    private static String guessFileName(String xml) {
         String fileName = null;
-
-        int slashIndex = xml.lastIndexOf ('/');
+        
+        int slashIndex = xml.lastIndexOf('/');
         if ( slashIndex != -1 ) {
-            fileName = xml.substring (slashIndex + 1);
+            fileName = xml.substring(slashIndex + 1);
         } else {
             fileName = xml;
         }
-
+        
         return fileName;
     }
-
-    private String guessOutputFileExt () {
+    
+    private String guessOutputFileExt() {
         String ext = lastOutputFileExt;
         String xslObject = getXSL();
-
+        
         if ( xslObject != lastXSLObject ) {
             try {
                 Source xslSource;
-                xslSource = TransformUtil.createSource (baseURL, xslObject);
-                ext = TransformUtil.guessOutputExt (xslSource);
-
+                xslSource = TransformUtil.createSource(baseURL, xslObject);
+                ext = TransformUtil.guessOutputExt(xslSource);
+                
                 // cache last values
                 lastXSLObject = xslObject;
                 lastOutputFileExt = ext;
             } catch (Exception exc) {
                 // ignore it
                 
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[TransformPanel] Cannot guess extension!", exc);
+                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("[TransformPanel] Cannot guess extension!", exc);
             }
         }
-
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[TransformPanel] I guess output has '" + ext + "' extension.");
-
+        
+        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("[TransformPanel] I guess output has '" + ext + "' extension.");
+        
         return ext;
     }
-
-    private Object guessOutputFile () {
+    
+    private Object guessOutputFile() {
         Object output = data.output;
-
-        if ( ( output == null ) || ( JUST_PREVIEW.equals (output) ) ) {
-            String origName = guessFileName (data.xml);
+        
+        if ( ( output == null ) || ( JUST_PREVIEW.equals(output) ) ) {
+            String origName = guessFileName(data.xml);
             String origExt = "";
-            int dotIndex = origName.lastIndexOf ('.');
+            int dotIndex = origName.lastIndexOf('.');
             if ( dotIndex != -1 ) {
-                origExt = origName.substring (dotIndex + 1);
-                origName = origName.substring (0, dotIndex);
+                origExt = origName.substring(dotIndex + 1);
+                origName = origName.substring(0, dotIndex);
             }
             
             String ext = guessOutputFileExt();
             String plusName = "";
-            if ( ext.equals (origExt) ) {
-                plusName = Util.THIS.getString ("NAME_plusNameIfSameName");
+            if ( ext.equals(origExt) ) {
+                plusName = Util.THIS.getString("NAME_plusNameIfSameName");
             }
             
             output = origName + plusName  + "." + ext; // NOI18N
         }
-
+        
         return output;
     }
-
-    private void initOutputComboBox (Object defaultOutput) {
-        outputComboBox.setModel (new DefaultComboBoxModel (new Object[] { defaultOutput, JUST_PREVIEW }));
-    }
-
     
-    private void updateComponents () {
-        setInitialized (false);
-
+    private void initOutputComboBox(Object defaultOutput) {
+        outputComboBox.setModel(new DefaultComboBoxModel(new Object[] { defaultOutput, JUST_PREVIEW }));
+    }
+    
+    
+    private void updateComponents() {
+        setInitialized(false);
+        
         // XML Input
         boolean notXML = ( xmlDataObject == null );
         if ( data.xml != null ) {
-            inputComboBox.setSelectedItem (data.xml);
-            inputComboBox.setEditable (data.xml instanceof String);
+            inputComboBox.setSelectedItem(data.xml);
+            inputComboBox.setEditable(data.xml instanceof String);
         }
-        inputComboBox.setEnabled (notXML);
-        browseInputButton.setEnabled (notXML);
+        inputComboBox.setEnabled(notXML);
+        browseInputButton.setEnabled(notXML);
         
         // XSL Transformation
         if ( suppressXSL ) {
-            transformLabel.setVisible (false);
-            transformComboBox.setVisible (false);
-            browseXSLTButton.setVisible (false);
+            transformLabel.setVisible(false);
+            transformComboBox.setVisible(false);
+            browseXSLTButton.setVisible(false);
         } else {
-            transformLabel.setVisible (true);
-            transformComboBox.setVisible (true);
-            browseXSLTButton.setVisible (true);
-
+            transformLabel.setVisible(true);
+            transformComboBox.setVisible(true);
+            browseXSLTButton.setVisible(true);
+            
             boolean notXSL = ( xslDataObject == null );
-            transformComboBox.setEnabled (notXSL);
-            browseXSLTButton.setEnabled (notXSL);
+            transformComboBox.setEnabled(notXSL);
+            browseXSLTButton.setEnabled(notXSL);
             if ( data.xsl != null ) {
-                transformComboBox.setSelectedItem (data.xsl);
-                transformComboBox.setEditable (data.xsl instanceof String);
+                transformComboBox.setSelectedItem(data.xsl);
+                transformComboBox.setEditable(data.xsl instanceof String);
             }
         }
-
+        
         // test if XML and also XSL
         boolean canOutput = true;
         if ( ( data.xml == null ) ||
-             ( data.xsl == null ) ||
-             ( data.xml.length() == 0 ) ||
-             ( data.xsl.length() == 0 ) ) {
+        ( data.xsl == null ) ||
+        ( data.xml.length() == 0 ) ||
+        ( data.xsl.length() == 0 ) ) {
             canOutput = false;
         }
-
+        
         boolean notPreview = true;
-
+        
         // Output
-        outputComboBox.setEnabled (canOutput);
+        outputComboBox.setEnabled(canOutput);
         if ( canOutput ) {
             Object output = guessOutputFile();
-
-            initOutputComboBox (output);
+            
+            initOutputComboBox(output);
             if ( data.output != null ) {
                 output = data.output;
             }
-
-            outputComboBox.setSelectedItem (output);
-            notPreview = ( JUST_PREVIEW.equals (output) == false );
-            outputComboBox.setEditable (notPreview);
+            
+            outputComboBox.setSelectedItem(output);
+            notPreview = ( JUST_PREVIEW.equals(output) == false );
+            outputComboBox.setEditable(notPreview);
         }
-
+        
         // Overwrite Output
         if ( data.overwrite != null ) {
-            overwriteCheckBox.setSelected (data.overwrite.booleanValue());
+            overwriteCheckBox.setSelected(data.overwrite.booleanValue());
         }
-        overwriteCheckBox.setEnabled (canOutput && notPreview);
+        overwriteCheckBox.setEnabled(canOutput && notPreview);
         
         // Process Output
         if ( data.process != null ) {
-            showComboBox.setSelectedIndex (data.process.intValue());
+            showComboBox.setSelectedIndex(data.process.intValue());
         } else {
             String ext = guessOutputFileExt().toLowerCase();
-            if ( ext.equals ("html") || ext.equals ("htm") ) { // NOI18N
-                showComboBox.setSelectedIndex (TransformHistory.OPEN_IN_BROWSER);
+            if ( ext.equals("html") || ext.equals("htm") ) { // NOI18N
+                showComboBox.setSelectedIndex(TransformHistory.OPEN_IN_BROWSER);
             } else {
-                showComboBox.setSelectedIndex (TransformHistory.APPLY_DEFAULT_ACTION);
+                showComboBox.setSelectedIndex(TransformHistory.APPLY_DEFAULT_ACTION);
             }
         }
-        showComboBox.setEnabled (canOutput && notPreview);
-
-        setInitialized (true);
-    }
-
-    
-    public Data getData () {
-        return new Data (getInput(), getXSL(), getOutput(), isOverwriteOutput(), getProcessOutput());
-    }
+        showComboBox.setEnabled(canOutput && notPreview);
         
+        setInitialized(true);
+    }
+    
+    
+    public Data getData() {
+        return data;
+    }
+    
     public void setData(Data data) {
         this.data = data;
         updateComponents();
     }
-
+    
     /**
      * @return selected XML input.
      */
-    private String getInput () {
+    private String getInput() {
         return (String) inputComboBox.getSelectedItem();
     }
     
     /**
      * @return selected XSLT script.
      */
-    private String getXSL () {
+    private String getXSL() {
         return (String) transformComboBox.getSelectedItem();
     }
     
     /**
      * @return selected output.
      */
-    private String getOutput () {
+    private String getOutput() {
         Object output = outputComboBox.getSelectedItem();
-
-        if ( JUST_PREVIEW.equals (output) ) {
+        
+        if ( JUST_PREVIEW.equals(output) ) {
             return null;
         }
         return (String) output;
     }
-
+    
     /**
      * @return selected overwrite output option.
      */
-    private boolean isOverwriteOutput () {
+    private boolean isOverwriteOutput() {
         return overwriteCheckBox.isSelected();
     }
     
     /**
      * @return selected process output option.
      */
-    private int getProcessOutput () {
+    private int getProcessOutput() {
         return showComboBox.getSelectedIndex();
     }
-
+    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -615,186 +623,245 @@ public final class TransformPanel extends javax.swing.JPanel {
         add(showComboBox, gridBagConstraints);
 
     }//GEN-END:initComponents
-
-
+    
+    
     /** Initialize accesibility
      */
-    private void initAccessibility () {
-        this.getAccessibleContext().setAccessibleDescription (Util.THIS.getString ("ACSD_TransformPanel"));
-
-        overwriteCheckBox.getAccessibleContext().setAccessibleDescription (Util.THIS.getString ("ACSD_overwriteCheckBox"));
-        outputComboBox.getAccessibleContext().setAccessibleDescription (Util.THIS.getString ("ACSD_outputComboBox"));
-        inputComboBox.getAccessibleContext().setAccessibleDescription (Util.THIS.getString ("ACSD_inputComboBox"));
-        browseXSLTButton.getAccessibleContext().setAccessibleDescription (Util.THIS.getString ("ACSD_browseXSLTButton"));
-        showComboBox.getAccessibleContext().setAccessibleDescription (Util.THIS.getString ("ACSD_showComboBox"));
-        browseInputButton.getAccessibleContext().setAccessibleDescription (Util.THIS.getString ("ACSD_browseInputButton"));
-        transformComboBox.getAccessibleContext().setAccessibleDescription (Util.THIS.getString ("ACSD_transformComboBox"));
+    private void initAccessibility() {
+        this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_TransformPanel"));
+        
+        overwriteCheckBox.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_overwriteCheckBox"));
+        outputComboBox.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_outputComboBox"));
+        inputComboBox.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_inputComboBox"));
+        browseXSLTButton.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_browseXSLTButton"));
+        showComboBox.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_showComboBox"));
+        browseInputButton.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_browseInputButton"));
+        transformComboBox.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_transformComboBox"));
     }
-
-
+    
+    
     private void browseXSLTButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseXSLTButtonActionPerformed
         // Add your handling code here:
         try {
             Node[] nodes = TopManager.getDefault().getNodeOperation().select
-                (Util.THIS.getString ("LBL_select_xslt_script"),
-                 Util.THIS.getString ("LBL_select_node"),
-                 TopManager.getDefault().getPlaces().nodes().repository(),
-                 new NodeAcceptor () {
-                     public boolean acceptNodes (Node[] nodes) {
-                         if ( nodes.length != 1 ) {
-                             return false;
-                         }
-                         
-                         DataObject dataObject = (DataObject) nodes[0].getCookie (DataObject.class);
-                         if ( dataObject == null ) {
-                             return false;
-                         }
-                         return TransformUtil.isXSLTransformation (dataObject);
-                     }
-                 });
-            DataObject dataObject = (DataObject) nodes[0].getCookie (DataObject.class);
-            data.xsl = TransformUtil.getURLName (dataObject.getPrimaryFile());
-
+            (Util.THIS.getString("LBL_select_xslt_script"),
+            Util.THIS.getString("LBL_select_node"),
+            TopManager.getDefault().getPlaces().nodes().repository(),
+            new NodeAcceptor() {
+                public boolean acceptNodes(Node[] nodes) {
+                    if ( nodes.length != 1 ) {
+                        return false;
+                    }
+                    
+                    DataObject dataObject = (DataObject) nodes[0].getCookie(DataObject.class);
+                    if ( dataObject == null ) {
+                        return false;
+                    }
+                    return TransformUtil.isXSLTransformation(dataObject);
+                }
+            });
+            DataObject dataObject = (DataObject) nodes[0].getCookie(DataObject.class);
+            setXSL(TransformUtil.getURLName(dataObject.getPrimaryFile()));
+            
             if ( ( userSetOutput == false ) && ( xmlHistory != null ) ) {
-                data.output = xmlHistory.getXSLOutput (data.xsl);
+                setOutput(xmlHistory.getXSLOutput(data.xsl));
             }
             if ( userSetProcess == false ) {
-                data.process = null;
+                setProcessOutput(null);
             }
-            updateXSLComboBoxModel (data.xsl);
+            updateXSLComboBoxModel(data.xsl);
             
             updateComponents();
             
-            setCaretPosition (transformComboBox);
+            setCaretPosition(transformComboBox);
         } catch (UserCancelException exc) { // TopManager.getDefault().getNodeOperation().select
             // ignore it
-            Util.THIS.debug (exc);
+            Util.THIS.debug(exc);
         } catch (IOException exc) { // TransformUtil.getURLName (...)
             // ignore it
-            Util.THIS.debug (exc);
+            Util.THIS.debug(exc);
         }
     }//GEN-LAST:event_browseXSLTButtonActionPerformed
-
+    
     private void browseInputButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseInputButtonActionPerformed
         // Add your handling code here:
         try {
             Node[] nodes = TopManager.getDefault().getNodeOperation().select
-                (Util.THIS.getString ("LBL_select_xml_document"),
-                 Util.THIS.getString ("LBL_select_node"),
-                 TopManager.getDefault().getPlaces().nodes().repository(),
-                 new NodeAcceptor () {
-                     public boolean acceptNodes (Node[] nodes) {
-                         if ( nodes.length != 1 ) {
-                             return false;
-                         }
-                         
-                         Object transformable = nodes[0].getCookie (TransformableCookie.class);
-                         return ( transformable != null );
-                     }
-                 });
-            DataObject dataObject = (DataObject) nodes[0].getCookie (DataObject.class);
-            data.xml = TransformUtil.getURLName (dataObject.getPrimaryFile());
-
+            (Util.THIS.getString("LBL_select_xml_document"),
+            Util.THIS.getString("LBL_select_node"),
+            TopManager.getDefault().getPlaces().nodes().repository(),
+            new NodeAcceptor() {
+                public boolean acceptNodes(Node[] nodes) {
+                    if ( nodes.length != 1 ) {
+                        return false;
+                    }
+                    
+                    Object transformable = nodes[0].getCookie(TransformableCookie.class);
+                    return ( transformable != null );
+                }
+            });
+            DataObject dataObject = (DataObject) nodes[0].getCookie(DataObject.class);
+            setInput(TransformUtil.getURLName(dataObject.getPrimaryFile()));
+            
             if ( Util.THIS.isLoggable() ) /* then */ {
-                Util.THIS.debug ("TransformPanel.browseInputButtonActionPerformed:");
-                Util.THIS.debug ("    dataObject = " + dataObject);
-                Util.THIS.debug ("    dataObject.getPrimaryFile() = " + dataObject.getPrimaryFile());
+                Util.THIS.debug("TransformPanel.browseInputButtonActionPerformed:");
+                Util.THIS.debug("    dataObject = " + dataObject);
+                Util.THIS.debug("    dataObject.getPrimaryFile() = " + dataObject.getPrimaryFile());
             }
             
             if ( ( userSetOutput == false ) && ( xslHistory != null ) ) {
-                data.output = xslHistory.getXMLOutput (data.xml);
+                setOutput(xslHistory.getXMLOutput(data.xml));
             }
             if ( userSetProcess == false ) {
-                data.process = null;
+                setProcessOutput(null);
             }
-            updateXMLComboBoxModel (data.xml);
-
+            updateXMLComboBoxModel(data.xml);
+            
             updateComponents();
-
-            setCaretPosition (inputComboBox);
+            
+            setCaretPosition(inputComboBox);
         } catch (UserCancelException exc) { // TopManager.getDefault().getNodeOperation().select
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TransformPanel.browseInputButtonActionPerformed: EXCEPTION", exc);
-
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("TransformPanel.browseInputButtonActionPerformed: EXCEPTION", exc);
+            
             // ignore it
         } catch (IOException exc) { // TransformUtil.getURLName (...)
             // ignore it
-            Util.THIS.debug (exc);
+            Util.THIS.debug(exc);
         }
     }//GEN-LAST:event_browseInputButtonActionPerformed
-
+    
+    public void setInput(String input) {
+        if(data==null) {
+            return;
+        }
+        String oldInput=data.getInput();
+        data.setInput(input);
+        firePropertyChange(DATA_XML_MODIFIED,oldInput,input);
+    }
+    
+    public void setXSL(String xslValue) {
+        if(data==null) {
+            return;
+        }
+        String oldXSL=data.getXSL();
+        data.setXSL(xslValue);
+        firePropertyChange(DATA_XSL_MODIFIED,oldXSL,xslValue);
+    }
+    
+    public void setOutput(Object outputValue) {
+        if(data==null) {
+            return;
+        }
+        Object oldOutput=data.getOutput();
+        data.setOutput(outputValue);
+        firePropertyChange(DATA_OUTPUT_MODIFIED,oldOutput,outputValue);
+    }
+    
+    public void setOverwriteOutput(Boolean overwriteObject) {
+        if(data==null || overwriteObject==null) {
+            return;
+        }
+        setOverwriteOutput(overwriteObject.booleanValue());
+    }
+    
+    public void setOverwriteOutput(boolean overwriteValue) {
+        if(data==null) {
+            return;
+        }
+        boolean oldOverwrite=data.isOverwriteOutput();
+        data.setOverwriteOutput(overwriteValue);
+        firePropertyChange(DATA_OVERWRITE_MODIFIED,oldOverwrite,overwriteValue);
+    }
+    
+    public void setProcessOutput(Integer processObject) {
+        if(data==null || processObject==null) {
+            return;
+        }
+        setProcessOutput(processObject.intValue());
+    }
+    
+    public void setProcessOutput(int processValue) {
+        if(data==null) {
+            return;
+        }
+        int oldProcess=data.getProcessOutput();
+        data.setProcessOutput(processValue);
+        firePropertyChange(DATA_PROCESS_MODIFIED,oldProcess,processValue);
+    }
+    
     private void showComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showComboBoxActionPerformed
         // Add your handling code here:
         if ( isInitialized() ) {
-            data.process = new Integer (showComboBox.getSelectedIndex());
+            setProcessOutput(new Integer(showComboBox.getSelectedIndex()));
             userSetProcess = true;
             updateComponents();
         }
     }//GEN-LAST:event_showComboBoxActionPerformed
-
+    
     private void overwriteCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_overwriteCheckBoxActionPerformed
         // Add your handling code here:
         if ( isInitialized() ) {
-            data.overwrite = overwriteCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE;
+            setOverwriteOutput( overwriteCheckBox.isSelected() );
             updateComponents();
         }
     }//GEN-LAST:event_overwriteCheckBoxActionPerformed
-
+    
     private void transformComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transformComboBoxActionPerformed
         // Add your handling code here:
         if ( isInitialized() ) {
             String item = (String) transformComboBox.getSelectedItem();
             
             if ( Util.THIS.isLoggable() ) /* then */ {
-                Util.THIS.debug ("TransformPanel.transformComboBoxActionPerformed: getSelectedItem = " + item);
+                Util.THIS.debug("TransformPanel.transformComboBoxActionPerformed: getSelectedItem = " + item);
             }
-
+            
             if ( item == null ) {
                 return;
             }
-
-            data.xsl = item.trim();
-
+            
+            setXSL(item.trim());
+            
             if ( ( userSetOutput == false ) && ( xmlHistory != null ) ) {
-                data.output = xmlHistory.getXSLOutput (data.xsl);
+                setOutput(xmlHistory.getXSLOutput(data.xsl));
             }
             if ( userSetProcess == false ) {
-                data.process = null;
+                setProcessOutput(null);
             }
-
+            
             updateComponents();
-
-//             setCaretPosition (transformComboBox);
+            
+            //             setCaretPosition (transformComboBox);
         }
     }//GEN-LAST:event_transformComboBoxActionPerformed
-
+    
     private void inputComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inputComboBoxActionPerformed
         // Add your handling code here:
         if ( isInitialized() ) {
             String item = (String) inputComboBox.getSelectedItem();
-
+            
             if ( Util.THIS.isLoggable() ) /* then */ {
-                Util.THIS.debug ("TransformPanel.inputComboBoxActionPerformed: getSelectedItem = " + item);
+                Util.THIS.debug("TransformPanel.inputComboBoxActionPerformed: getSelectedItem = " + item);
             }
-
+            
             if ( item == null ) {
                 return;
             }
-
-            data.xml = item.trim();
-
+            
+            setInput(item.trim());
+            
             if ( ( userSetOutput == false ) && ( xslHistory != null ) ) {
-                data.output = xslHistory.getXMLOutput (data.xml);
+                setOutput(xslHistory.getXMLOutput(data.xml));
             }
             if ( userSetProcess == false ) {
-                data.process = null;
+                setProcessOutput(null);
             }
-
-            updateComponents();        
             
-//             setCaretPosition (inputComboBox);
+            updateComponents();
+            
+            //             setCaretPosition (inputComboBox);
         }
     }//GEN-LAST:event_inputComboBoxActionPerformed
-
+    
     private void outputComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputComboBoxActionPerformed
         // Add your handling code here:
         if ( isInitialized() ) {
@@ -806,28 +873,31 @@ public final class TransformPanel extends javax.swing.JPanel {
                 }
                 item = str;
             }
-            data.output = item;
+            setOutput(item);
+            
+            
             userSetOutput = true;
             updateComponents();
-
-//             setCaretPosition (outputComboBox);
+            
+            
+            //             setCaretPosition (outputComboBox);
         }
     }//GEN-LAST:event_outputComboBoxActionPerformed
-        
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel transformLabel;
-    private javax.swing.JCheckBox overwriteCheckBox;
-    private javax.swing.JLabel outputLabel;
     private javax.swing.JComboBox outputComboBox;
-    private javax.swing.JComboBox inputComboBox;
-    private javax.swing.JLabel inputLabel;
-    private javax.swing.JLabel showLabel;
-    private javax.swing.JButton browseXSLTButton;
     private javax.swing.JComboBox showComboBox;
+    private javax.swing.JLabel showLabel;
+    private javax.swing.JLabel outputLabel;
     private javax.swing.JButton browseInputButton;
     private javax.swing.JComboBox transformComboBox;
+    private javax.swing.JLabel transformLabel;
+    private javax.swing.JButton browseXSLTButton;
+    private javax.swing.JCheckBox overwriteCheckBox;
+    private javax.swing.JLabel inputLabel;
+    private javax.swing.JComboBox inputComboBox;
     // End of variables declaration//GEN-END:variables
-
+    
     
     //
     // class Data
@@ -839,82 +909,111 @@ public final class TransformPanel extends javax.swing.JPanel {
         private Object  output;
         private Boolean overwrite;
         private Integer process;
-
-        public Data () {
+        
+        public Data() {
             this.xml       = null;
             this.xsl       = null;
             this.output    = null;
             this.overwrite = null;
             this.process   = null;
         }
-
-        public Data (String xml, String xsl, String output, boolean overwrite, int process) {
+        
+        public Data(String xml, String xsl, Object output, boolean overwrite, int process) {
             this.xml       = xml;
             this.xsl       = xsl;
             this.output    = output;
             this.overwrite = overwrite ? Boolean.TRUE : Boolean.FALSE;
-            this.process   = new Integer (process);
+            this.process   = new Integer(process);
         }
-
-
+        
         /**
          * @return selected XML input.
          */
-        public String getInput () {
+        public String getInput() {
             return xml;
         }
-    
+        
         /**
          * @return selected XSLT script.
          */
-        public String getXSL () {
+        public String getXSL() {
             return xsl;
         }
-    
+        
         /**
          * @return selected output.
          */
-        public String getOutput () {
-            return (String) output;
+        public Object getOutput() {
+            return output;
         }
-
+        
         /**
          * @return selected overwrite output option.
          */
-        public boolean isOverwriteOutput () {
+        public boolean isOverwriteOutput() {
+            if(overwrite==null) {
+                return false;
+            }
             return overwrite.booleanValue();
         }
-    
+        
         /**
          * @return selected process output option.
          */
-        public int getProcessOutput () {
+        public int getProcessOutput() {
+            if(process==null) {
+                return 0;
+            }
             return process.intValue();
         }
-
-        public String toString () {
-            StringBuffer sb = new StringBuffer (super.toString());
-
-            sb.append ("[input='").append (xml).append ("'; ");
-            sb.append ("xsl='").append (xsl).append ("'; ");
-            sb.append ("output='").append (output).append ("'; ");
-            sb.append ("overwrite='").append (overwrite).append ("'; ");
-            sb.append ("process='").append (process).append ("]");
-
+        
+        public void setInput(String input) {
+            xml=input;
+        }
+        
+        public void setXSL(String xslValue) {
+            xsl=xslValue;
+        }
+        
+        public void setOutput(Object outputValue) {
+            output=outputValue;
+        }
+        
+        public void setOverwriteOutput(boolean overwriteValue) {
+            overwrite = overwriteValue ? Boolean.TRUE : Boolean.FALSE;
+        }
+        
+        public void setProcessOutput(Integer processObject) {
+            process=processObject;
+        }
+        
+        public void setProcessOutput(int processValue) {
+            setProcessOutput(new Integer(processValue));
+        }
+        
+        public String toString() {
+            StringBuffer sb = new StringBuffer(super.toString());
+            
+            sb.append("[input='").append(xml).append("'; ");
+            sb.append("xsl='").append(xsl).append("'; ");
+            sb.append("output='").append(output).append("'; ");
+            sb.append("overwrite='").append(overwrite).append("'; ");
+            sb.append("process='").append(process).append("]");
+            
             return sb.toString();
         }
         
     } // class Data
-
-
+    
+    
     //
     // class Preview
     //
-
+    
     private static class Preview {
-        public String toString () {
-            return Util.THIS.getString ("NAME_output_just_preview");
+        public String toString() {
+            return Util.THIS.getString("NAME_output_just_preview");
         }
     } // class Preview
-
+    
 }
