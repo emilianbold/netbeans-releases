@@ -65,109 +65,29 @@ Microsystems, Inc. All Rights Reserved.
 <!--  Services part -->
 
   <folder name="Services">
-    <file name="org.netbeans.modules.javadoc.settings.DocumentationSettings.settings">
-        <![CDATA[<?xml version="1.0"?>
-        <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-        <settings version="1.0">
-            <module name="org.netbeans.modules.javadoc/1" spec="1.7"/>
-            <instanceof class="java.lang.Object"/>
-            <instanceof class="org.openide.util.SharedClassObject"/>
-            <instanceof class="org.openide.options.SystemOption"/>
-            <instanceof class="org.netbeans.modules.javadoc.settings.DocumentationSettings"/>
-            <instanceof class="java.io.Serializable"/>
-            <instanceof class="java.io.Externalizable"/>
-            <instance class="org.netbeans.modules.javadoc.settings.DocumentationSettings"/>
-        </settings>
-        ]]>
-    </file>
+    <file name="org.netbeans.modules.javadoc.settings.DocumentationSettings.settings" url="DocumentationSettings.settings"/>
 
       <folder name="JavadocExecutors">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
 
-        <file name="javadoc_external_executor.settings">
-            <![CDATA[<?xml version="1.0"?>
-            <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-            <settings version="1.0">
-                <module name="org.netbeans.modules.javadoc/1" spec="1.7"/>
-                <instanceof class="java.lang.Object"/>
-                <instanceof class="org.openide.ServiceType"/>
-                <instanceof class="org.netbeans.modules.javadoc.JavadocType"/>
-                <instanceof class="org.netbeans.modules.javadoc.ExternalJavadocType"/>
-                <instanceof class="org.netbeans.modules.javadoc.settings.ExternalJavadocSettingsService"/>
-                <instanceof class="java.io.Serializable"/>
-                <instance class="org.netbeans.modules.javadoc.settings.ExternalJavadocSettingsService"/>
-            </settings>
-            ]]>
-        </file>    
-        <file name="javadoc_internal_executor.settings">
-            <![CDATA[<?xml version="1.0"?>
-            <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-            <settings version="1.0">
-                <module name="org.netbeans.modules.javadoc/1" spec="1.7"/>
-                <instanceof class="java.lang.Object"/>
-                <instanceof class="org.openide.ServiceType"/>
-                <instanceof class="org.netbeans.modules.javadoc.JavadocType"/>
-                <instanceof class="org.netbeans.modules.javadoc.settings.JavadocSettingsService"/>
-                <instanceof class="java.io.Serializable"/>
-                <instance class="org.netbeans.modules.javadoc.settings.JavadocSettingsService"/>
-            </settings>
-            ]]>
-        </file>
+        <file name="javadoc_external_executor.settings" url="javadoc_external_executor.settings"/>
+        <file name="javadoc_internal_executor.settings" url="javadoc_internal_executor.settings"/>
       </folder>  
 
       <folder name="JavadocDoclets">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
 
-        <file name="javadoc_doclets.settings">
-            <![CDATA[<?xml version="1.0"?>
-            <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-            <settings version="1.0">
-                <module name="org.netbeans.modules.javadoc/1" spec="1.7"/>
-                <instanceof class="java.lang.Object"/>
-                <instanceof class="org.openide.ServiceType"/>
-                <instanceof class="org.netbeans.modules.javadoc.StdDocletType"/>
-                <instanceof class="org.netbeans.modules.javadoc.settings.StdDocletSettingsService"/>
-                <instanceof class="java.io.Serializable"/>
-                <instance class="org.netbeans.modules.javadoc.settings.StdDocletSettingsService"/>
-            </settings>
-            ]]>
-        </file>
-      </folder>  
+        <file name="javadoc_doclets.settings" url="javadoc_doclets.settings"/>
+      </folder>
 
       <folder name="JavadocSearchTypes">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
 
-        <file name="javadoc_search.settings">
-            <![CDATA[<?xml version="1.0"?>
-            <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-            <settings version="1.0">
-                <module name="org.netbeans.modules.javadoc/1" spec="1.7"/>
-                <instanceof class="java.lang.Object"/>
-                <instanceof class="org.openide.ServiceType"/>
-                <instanceof class="org.netbeans.modules.javadoc.search.JavadocSearchType"/>
-                <instanceof class="org.netbeans.modules.javadoc.search.Jdk12SearchType"/>
-                <instanceof class="java.io.Serializable"/>
-                <instance class="org.netbeans.modules.javadoc.search.Jdk12SearchType"/>
-            </settings>
-            ]]>
-        </file>
-        <file name="javadoc_japan_search.settings">
-            <![CDATA[<?xml version="1.0"?>
-            <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-            <settings version="1.0">
-                <module name="org.netbeans.modules.javadoc/1" spec="1.7"/>
-                <instanceof class="java.lang.Object"/>
-                <instanceof class="org.openide.ServiceType"/>
-                <instanceof class="org.netbeans.modules.javadoc.search.JavadocSearchType"/>
-                <instanceof class="org.netbeans.modules.javadoc.search.Jdk12SearchType_japan"/>
-                <instanceof class="java.io.Serializable"/>
-                <instance class="org.netbeans.modules.javadoc.search.Jdk12SearchType_japan"/>
-            </settings>
-            ]]>
-        </file>
+        <file name="javadoc_search.settings" url="javadoc_search.settings"/>
+        <file name="javadoc_japan_search.settings" url="javadoc_japan_search.settings"/>
       </folder>  
   </folder>
 
@@ -176,87 +96,26 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Templates">
       <folder name="Services">
           <folder name="JavadocExecutors">
-            <file name="javadoc_external_executor.settings">
-            <attr name="template" boolvalue="true"/>
-                <![CDATA[<?xml version="1.0"?>
-                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                <settings version="1.0">
-                    <module name="org.netbeans.modules.javadoc/1" spec="1.7"/>
-                    <instanceof class="java.lang.Object"/>
-                    <instanceof class="org.openide.ServiceType"/>
-                    <instanceof class="org.netbeans.modules.javadoc.JavadocType"/>
-                    <instanceof class="org.netbeans.modules.javadoc.ExternalJavadocType"/>
-                    <instanceof class="org.netbeans.modules.javadoc.settings.ExternalJavadocSettingsService"/>
-                    <instanceof class="java.io.Serializable"/>
-                    <instance class="org.netbeans.modules.javadoc.settings.ExternalJavadocSettingsService"/>
-                </settings>
-                ]]>
+            <file name="javadoc_external_executor.settings" url="javadoc_external_executor.settings">
+              <attr name="template" boolvalue="true"/>
             </file>    
-            <file name="javadoc_internal_executor.settings">
-            <attr name="template" boolvalue="true"/>
-                <![CDATA[<?xml version="1.0"?>
-                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                <settings version="1.0">
-                    <module name="org.netbeans.modules.javadoc/1" spec="1.7"/>
-                    <instanceof class="java.lang.Object"/>
-                    <instanceof class="org.openide.ServiceType"/>
-                    <instanceof class="org.netbeans.modules.javadoc.JavadocType"/>
-                    <instanceof class="org.netbeans.modules.javadoc.settings.JavadocSettingsService"/>
-                    <instanceof class="java.io.Serializable"/>
-                    <instance class="org.netbeans.modules.javadoc.settings.JavadocSettingsService"/>
-                </settings>
-                ]]>
+            <file name="javadoc_internal_executor.settings" url="javadoc_internal_executor.settings">
+              <attr name="template" boolvalue="true"/>
             </file>
           </folder>  
 
           <folder name="JavadocDoclets">
-            <file name="javadoc_doclets.settings">
-            <attr name="template" boolvalue="true"/>
-                <![CDATA[<?xml version="1.0"?>
-                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                <settings version="1.0">
-                    <module name="org.netbeans.modules.javadoc/1" spec="1.7"/>
-                    <instanceof class="java.lang.Object"/>
-                    <instanceof class="org.openide.ServiceType"/>
-                    <instanceof class="org.netbeans.modules.javadoc.StdDocletType"/>
-                    <instanceof class="org.netbeans.modules.javadoc.settings.StdDocletSettingsService"/>
-                    <instanceof class="java.io.Serializable"/>
-                    <instance class="org.netbeans.modules.javadoc.settings.StdDocletSettingsService"/>
-                </settings>
-                ]]>
+            <file name="javadoc_doclets.settings" url="javadoc_doclets.settings">
+              <attr name="template" boolvalue="true"/>
             </file>
           </folder>  
 
           <folder name="JavadocSearchTypes">
-            <file name="javadoc_search.settings">
-            <attr name="template" boolvalue="true"/>
-                <![CDATA[<?xml version="1.0"?>
-                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                <settings version="1.0">
-                    <module name="org.netbeans.modules.javadoc/1" spec="1.7"/>
-                    <instanceof class="java.lang.Object"/>
-                    <instanceof class="org.openide.ServiceType"/>
-                    <instanceof class="org.netbeans.modules.javadoc.search.JavadocSearchType"/>
-                    <instanceof class="org.netbeans.modules.javadoc.search.Jdk12SearchType"/>
-                    <instanceof class="java.io.Serializable"/>
-                    <instance class="org.netbeans.modules.javadoc.search.Jdk12SearchType"/>
-                </settings>
-                ]]>
+            <file name="javadoc_search.settings" url="javadoc_search.settings">
+              <attr name="template" boolvalue="true"/>
             </file>
-            <file name="javadoc_japan_search.settings">
-            <attr name="template" boolvalue="true"/>
-                <![CDATA[<?xml version="1.0"?>
-                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                <settings version="1.0">
-                    <module name="org.netbeans.modules.javadoc/1" spec="1.7"/>
-                    <instanceof class="java.lang.Object"/>
-                    <instanceof class="org.openide.ServiceType"/>
-                    <instanceof class="org.netbeans.modules.javadoc.search.JavadocSearchType"/>
-                    <instanceof class="org.netbeans.modules.javadoc.search.Jdk12SearchType_japan"/>
-                    <instanceof class="java.io.Serializable"/>
-                    <instance class="org.netbeans.modules.javadoc.search.Jdk12SearchType_japan"/>
-                </settings>
-                ]]>
+            <file name="javadoc_japan_search.settings" url="javadoc_japan_search.settings">
+              <attr name="template" boolvalue="true"/>
             </file>
           </folder>  
       </folder>
