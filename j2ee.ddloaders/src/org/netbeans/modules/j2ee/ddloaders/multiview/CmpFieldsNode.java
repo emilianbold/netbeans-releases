@@ -10,11 +10,9 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.filesystems.FileObject;
@@ -29,6 +27,7 @@ class CmpFieldsNode extends EjbSectionNode {
     CmpFieldsNode(SectionNodeView sectionNodeView, Entity entity, EntityHelper entityHelper) {
         super(sectionNodeView, true, entity, Utils.getBundleMessage("LBL_CmpFields"), Utils.ICON_BASE_MISC_NODE);
         this.entityHelper = entityHelper;
+        entityHelper.addPropertyChangeListener(this);
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {

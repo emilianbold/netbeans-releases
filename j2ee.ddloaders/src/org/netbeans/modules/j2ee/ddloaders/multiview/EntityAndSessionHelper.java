@@ -29,11 +29,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Iterator;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * @author pfiala
  */
-public class EntityAndSessionHelper {
+public class EntityAndSessionHelper implements PropertyChangeListener {
 
     protected final EntityAndSession ejb;
     protected final ClassElement beanClass;
@@ -47,20 +50,33 @@ public class EntityAndSessionHelper {
 
     protected ClassPath sourceClassPath;
 
+    private List listeners = new LinkedList();
+
     public EntityAndSessionHelper(FileObject ejbJarFile, EntityAndSession ejb) {
         this.ejb = ejb;
         this.ejbJarFile = ejbJarFile;
         sourceClassPath = Utils.getSourceClassPath(ejbJarFile);
         beanClass = Utils.getClassElement(sourceClassPath, ejb.getEjbClass());
-        localHomeClass = getClassElement(ejb.getLocalHome());
-        localInterfaceClass = getClassElement(ejb.getLocal());
-        localBusinessInterfaceClass = localInterfaceClass == null ?
-                null : getBusinessInterfaceClass(localInterfaceClass);
-        homeClass = getClassElement(ejb.getHome());
-        remoteInterfaceClass = getClassElement(ejb.getRemote());
-        remoteBusinessInterfaceClass = remoteInterfaceClass == null ?
-                null : getBusinessInterfaceClass(remoteInterfaceClass);
+        ejb.addPropertyChangeListener(this);
+        attachListener(beanClass);
+        updateLocalInterfaces();
+        updateRemoteInterfaces();
     }
+
+    private void updateLocalInterfaces() {
+        localHomeClass = changeClass(localHomeClass, getClassElement(ejb.getLocalHome()));
+        localInterfaceClass = changeClass(localInterfaceClass, getClassElement(ejb.getLocal()));
+        localBusinessInterfaceClass = changeClass(localBusinessInterfaceClass, localInterfaceClass == null ? null :
+                getBusinessInterfaceClass(localInterfaceClass));
+    }
+
+    private void updateRemoteInterfaces() {
+        homeClass = changeClass(homeClass, getClassElement(ejb.getHome()));
+        remoteInterfaceClass = changeClass(remoteInterfaceClass, getClassElement(ejb.getRemote()));
+        remoteBusinessInterfaceClass = changeClass(remoteBusinessInterfaceClass, remoteInterfaceClass == null ? null :
+                getBusinessInterfaceClass(remoteInterfaceClass));
+    }
+
 
     public ClassElement getLocalBusinessInterfaceClass() {
         return localBusinessInterfaceClass;
@@ -87,24 +103,18 @@ public class EntityAndSessionHelper {
             if (localBusinessInterfaceClass != localInterfaceClass) {
                 removeBeanInterface(localBusinessInterfaceClass.getName());
             }
-            localBusinessInterfaceClass = null;
             removeBeanInterface(localInterfaceClass.getName());
-            localInterfaceClass = null;
-            ejb.setLocal(null);
             Utils.removeClass(sourceClassPath, ejb.getLocalHome());
+            ejb.setLocal(null);
             ejb.setLocalHome(null);
-            localHomeClass = null;
         } else {
             if (remoteBusinessInterfaceClass != remoteInterfaceClass) {
                 removeBeanInterface(remoteBusinessInterfaceClass.getName());
             }
-            remoteBusinessInterfaceClass = null;
             removeBeanInterface(remoteInterfaceClass.getName());
-            remoteInterfaceClass = null;
-            ejb.setRemote(null);
             Utils.removeClass(sourceClassPath, ejb.getHome());
+            ejb.setRemote(null);
             ejb.setHome(null);
-            homeClass = null;
         }
     }
 
@@ -171,9 +181,6 @@ public class EntityAndSessionHelper {
                         localInterfaceName);
                 ejb.setLocal(localInterfaceName);
                 ejb.setLocalHome(localHomeInterfaceName);
-                localInterfaceClass = getClassElement(localInterfaceName);
-                localBusinessInterfaceClass = getBusinessInterfaceClass(localInterfaceClass);
-                localHomeClass = getClassElement(ejb.getLocalHome());
             } else {
                 String remoteInterfaceName = EjbGenerationUtil.getRemoteName(packageName, ejbName);
                 remoteInterfaceName = generator.generateRemote(packageName, packageFile, remoteInterfaceName, ejbName);
@@ -185,9 +192,6 @@ public class EntityAndSessionHelper {
                         remoteInterfaceName);
                 ejb.setRemote(remoteInterfaceName);
                 ejb.setHome(homeInterfaceName);
-                remoteInterfaceClass = getClassElement(remoteInterfaceName);
-                remoteBusinessInterfaceClass = getBusinessInterfaceClass(remoteInterfaceClass);
-                homeClass = getClassElement(ejb.getHome());
             }
         } catch (IOException e) {
             Utils.notifyError(e);
@@ -209,5 +213,49 @@ public class EntityAndSessionHelper {
 
     protected EntityNode createEntityNode() {
         return Utils.createEntityNode(ejbJarFile, sourceClassPath, (Entity) ejb);
+    }
+
+    private ClassElement changeClass(ClassElement origClass, ClassElement newClass) {
+        if (origClass != newClass) {
+            detachListener(origClass);
+            attachListener(newClass);
+            firePropertyChange(new PropertyChangeEvent(ejb, "IntefaceChanged", origClass, newClass));
+        }
+        return newClass;
+    }
+
+    private void attachListener(ClassElement classElement) {
+        if (classElement != null) {
+            classElement.addPropertyChangeListener(this);
+        }
+    }
+
+    private void detachListener(ClassElement classElement) {
+        if (classElement != null) {
+            classElement.removePropertyChangeListener(this);
+        }
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    protected void firePropertyChange(PropertyChangeEvent evt) {
+        for (Iterator iterator = listeners.iterator(); iterator.hasNext();) {
+            ((PropertyChangeListener) iterator.next()).propertyChange(evt);
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getSource() == ejb) {
+            updateLocalInterfaces();
+            updateRemoteInterfaces();
+        } else {
+            firePropertyChange(evt);
+        }
     }
 }

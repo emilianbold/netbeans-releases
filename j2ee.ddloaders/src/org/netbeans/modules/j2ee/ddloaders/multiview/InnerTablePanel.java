@@ -200,6 +200,10 @@ public class InnerTablePanel extends SectionInnerPanel {
     }
 
     public void dataFileChanged() {
+        refreshView();
+    }
+
+    protected void refreshView() {
         ((InnerTableModel) getTable().getModel()).refreshView();
         adjustHeight();
     }
@@ -237,7 +241,7 @@ public class InnerTablePanel extends SectionInnerPanel {
     }
 
     protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
-        super.propertyChanged(source, propertyName, oldValue, newValue);
+        refreshView();
 
     }
 
