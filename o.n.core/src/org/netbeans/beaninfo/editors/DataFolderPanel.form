@@ -15,6 +15,7 @@
       <SubComponents>
         <Container class="org.openide.explorer.view.BeanTreeView" name="beanTreeView">
           <Properties>
+            <Property name="defaultActionAllowed" type="boolean" value="false"/>
             <Property name="popupAllowed" type="boolean" value="false"/>
           </Properties>
           <Constraints>

@@ -155,6 +155,7 @@ class DataFolderPanel extends TopComponent implements
 
         packagesPanel.setLayout(new java.awt.GridBagLayout());
 
+        beanTreeView.setDefaultActionAllowed(false);
         beanTreeView.setPopupAllowed(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
