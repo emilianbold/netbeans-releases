@@ -23,11 +23,6 @@ public class jemmy_028 extends JemmyTest {
 
 	try {
 
-	    if(!System.getProperty("java.version").startsWith("1.2")) {
-		Operator.setDefaultComponentVisualizer(new MouseVisualizer());
-	    } else {
-		Operator.setDefaultComponentVisualizer(new DefaultVisualizer());
-	    }
 	    ((DefaultVisualizer)ComponentOperator.
 	     getDefaultComponentVisualizer()).switchTab(true);
 	    ((DefaultVisualizer)ComponentOperator.

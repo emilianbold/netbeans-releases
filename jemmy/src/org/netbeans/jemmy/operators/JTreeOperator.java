@@ -548,7 +548,7 @@ public class JTreeOperator extends JComponentOperator
 	TreeModel model = getModel();
 	int count = 0;
 	for(int i = 0; i < getRowCount(); i++) {
-	    if(chooser.checkRow(this, index)) {
+	    if(chooser.checkRow(this, i)) {
 		if(count == index) {
 		    return(i);
 		} else {
@@ -912,6 +912,7 @@ public class JTreeOperator extends JComponentOperator
 	    expandPath(path.getParentPath());
 	}
 	makeVisible(path);
+        scrollToPath(path);
 	Point point = getPointToClick(path);
 	clickMouse((int)point.getX(), (int)point.getY(), clickCount);
     }
@@ -947,7 +948,8 @@ public class JTreeOperator extends JComponentOperator
 	    }
 	}
 	selectPaths(paths);
-	Point point = getPointToClick(paths[0]);
+        scrollToPath(paths[paths.length - 1]);
+	Point point = getPointToClick(paths[paths.length - 1]);
 	return(JPopupMenuOperator.callPopup(getSource(), 
 					    (int)point.getX(), 
 					    (int)point.getY(), 

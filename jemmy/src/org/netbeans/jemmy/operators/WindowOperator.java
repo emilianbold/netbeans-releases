@@ -17,6 +17,9 @@
 
 package org.netbeans.jemmy.operators;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.netbeans.jemmy.ClassReference;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyProperties;
@@ -355,6 +358,44 @@ implements Outputable{
 		}});}
 
     //End of mapping                                      //
+    ////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////
+    //Mapping 1.4                                         //
+
+    /**Maps <code>Window.isFocused()</code> through queue*/
+    public boolean isFocused() {
+        return(runMapping(new MapBooleanAction("isFocused") {
+                public boolean map() {
+                    try {
+                        return(((Boolean)new ClassReference(getSource()).
+                                invokeMethod("isFocused", null, null)).booleanValue());
+                    } catch(InvocationTargetException e) {
+                        return(false);
+                    } catch(NoSuchMethodException e) {
+                        return(false);
+                    } catch(IllegalAccessException e) {
+                        return(false);
+                    }
+                    }}));}
+
+    /**Maps <code>Window.isActive()</code> through queue*/
+    public boolean isActive() {
+	return(runMapping(new MapBooleanAction("isActive") {
+		public boolean map() {
+                    try {
+                        return(((Boolean)new ClassReference(getSource()).
+                                invokeMethod("isActive", null, null)).booleanValue());
+                    } catch(InvocationTargetException e) {
+                        return(false);
+                    } catch(NoSuchMethodException e) {
+                        return(false);
+                    } catch(IllegalAccessException e) {
+                        return(false);
+                    }
+		}}));}
+
+    //End of mapping 1.4                                  //
     ////////////////////////////////////////////////////////
 
     protected static Window waitWindow(ComponentChooser chooser, int index,

@@ -38,6 +38,12 @@ public class jemmy_031 extends JemmyTest {
 		}, false).produceAction(dotButtonOper);
 
 	    JFileChooserOperator chooseoper = new JFileChooserOperator();
+
+            chooseoper.selectFileType("All Files");
+            chooseoper.selectFileType("No file");
+            chooseoper.selectFileType("No directory");
+            chooseoper.selectFileType("Nothing");
+
 	    JFileChooser d = JFileChooserOperator.waitJFileChooser();
 	    getOutput().printLine("By find       : " +                      d.toString());
 	    getOutput().printLine("By comstructor: " + chooseoper.getSource().toString());

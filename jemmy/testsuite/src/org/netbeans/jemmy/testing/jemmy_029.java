@@ -25,8 +25,6 @@ public class jemmy_029 extends JemmyTest {
 
 	try {
 
-	    ComponentOperator.
-		setDefaultComponentVisualizer(new DefaultVisualizer());
 	    ((DefaultVisualizer)ComponentOperator.
 	     getDefaultComponentVisualizer()).checkForModal(true);
 

@@ -20,6 +20,7 @@ package org.netbeans.jemmy.operators;
 import org.netbeans.jemmy.Action;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeoutable;
@@ -318,6 +319,11 @@ public class AbstractButtonOperator extends JComponentOperator
 	output.printLine("Push button\n    :" + getSource().toString());
 	output.printGolden("Push button");
 	makeComponentVisible();
+        try {
+            waitComponentEnabled();
+        } catch(InterruptedException e) {
+            throw(new JemmyException("Interrupted", e));
+        }
 	driver.push(this);
     }
 
@@ -363,6 +369,11 @@ public class AbstractButtonOperator extends JComponentOperator
 	output.printLine("Press button\n    :" + getSource().toString());
 	output.printGolden("Press button");
 	makeComponentVisible();
+        try {
+            waitComponentEnabled();
+        } catch(InterruptedException e) {
+            throw(new JemmyException("Interrupted", e));
+        }
 	driver.press(this);
     }
 
@@ -373,6 +384,11 @@ public class AbstractButtonOperator extends JComponentOperator
     public void release() {
 	output.printLine("Release button\n    :" + getSource().toString());
 	output.printGolden("Release button");
+        try {
+            waitComponentEnabled();
+        } catch(InterruptedException e) {
+            throw(new JemmyException("Interrupted", e));
+        }
 	driver.release(this);
     }
 
@@ -392,7 +408,9 @@ public class AbstractButtonOperator extends JComponentOperator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Text", ((AbstractButton)getSource()).getText());
+        if(((AbstractButton)getSource()).getText() != null) {
+            result.put("Text", ((AbstractButton)getSource()).getText());
+        }
 	result.put("Selected", new Boolean(((AbstractButton)getSource()).isSelected()).toString());
 	return(result);
     }

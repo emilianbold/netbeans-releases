@@ -21,6 +21,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.Window;
 
+import java.awt.event.FocusEvent;
 import java.awt.event.WindowEvent;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -45,6 +46,9 @@ public class DefaultWindowDriver extends SupportiveDriver implements WindowDrive
  	eDriver.dispatchEvent(oper.getSource(), 
 			      new WindowEvent((Window)oper.getSource(),
 					      WindowEvent.WINDOW_ACTIVATED));
+ 	eDriver.dispatchEvent(oper.getSource(), 
+			      new FocusEvent((Window)oper.getSource(),
+                                             FocusEvent.FOCUS_GAINED));
     }
     public void close(ComponentOperator oper) {
 	checkSupported(oper);

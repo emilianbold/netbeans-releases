@@ -49,6 +49,7 @@ public class JTreeMouseDriver extends SupportiveDriver implements TreeDriver {
 	super(new Class[] {JTreeOperator.class});
     }
     public void selectItem(ComponentOperator oper, int index) {
+        ((JTreeOperator)oper).scrollToRow(index);
 	selectItems(oper, new int[] {index});
     }
     public void selectItems(ComponentOperator oper, int[] indices) {
@@ -103,7 +104,7 @@ public class JTreeMouseDriver extends SupportiveDriver implements TreeDriver {
     }
 
     public void startEditing(ComponentOperator oper, int index, Timeout waitEditorTime) {
-	startEditing(oper, index, waitEditorTime);
+	startEditingAndReturnEditor(oper, index, waitEditorTime);
     }
 
     private JTextComponentOperator startEditingAndReturnEditor(ComponentOperator oper, int index, Timeout waitEditorTime) {

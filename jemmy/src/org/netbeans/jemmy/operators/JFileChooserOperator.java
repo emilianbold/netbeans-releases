@@ -1048,7 +1048,8 @@ public class JFileChooserOperator extends JComponentOperator
 		       public boolean checkComponent(Component comp) {
 			   return(comp instanceof JButton &&
 				  !(comp.getParent() instanceof JComboBox) &&
-				  ((JButton)comp).getText().length() == 0);
+                                  (((JButton)comp).getText() == null ||
+                                   ((JButton)comp).getText().length() == 0));
 		       }
 		       public String getDescription() {
 			   return("JButton");
@@ -1137,9 +1138,8 @@ public class JFileChooserOperator extends JComponentOperator
 	}
 	public boolean checkComponent(Component comp) {
 	    return(comp instanceof JButton &&
-		   ((JButton)comp).
-		   getText().
-		   equals(text));
+                   ((JButton)comp).getText() != null &&
+		   ((JButton)comp).getText().equals(text));
 	}
 	public String getDescription() {
 	    return("\"" + text + "\" button");

@@ -25,6 +25,8 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 
+import org.netbeans.jemmy.util.EmptyVisualizer;
+
 public class JComboMouseDriver extends SupportiveDriver implements ListDriver {
     public JComboMouseDriver() {
 	super(new Class[] {JComboBoxOperator.class});
@@ -36,6 +38,8 @@ public class JComboMouseDriver extends SupportiveDriver implements ListDriver {
 		push(coper.getButton());
 	}
 	JListOperator list = new JListOperator(coper.waitList());
+        list.copyEnvironment(coper);
+        list.setVisualizer(new EmptyVisualizer());
 	coper.getTimeouts().sleep("JComboBoxOperator.BeforeSelectingTimeout");
 	DriverManager.getListDriver(list).
 	    selectItem(list, index);

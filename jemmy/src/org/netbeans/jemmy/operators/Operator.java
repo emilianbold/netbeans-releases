@@ -33,7 +33,6 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 
-import org.netbeans.jemmy.util.DefaultVisualizer;
 import org.netbeans.jemmy.util.MouseVisualizer;
 
 import java.awt.Component;
@@ -228,15 +227,11 @@ public abstract class Operator extends Object
     }
 
     static {
-	if((JemmyProperties.getCurrentDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) == 0) {
-	    setDefaultComponentVisualizer(new DefaultVisualizer());
-	} else {
-	    setDefaultComponentVisualizer(new MouseVisualizer());
-	}
+        setDefaultComponentVisualizer(new MouseVisualizer());
 	operatorPkgs = new Vector ();
 	setDefaultStringComparator(new DefaultStringComparator(false, false));
 	addOperatorPackage("org.netbeans.jemmy.operators");
-	setDefaultVerification(false);
+	setDefaultVerification(true);
     }
 
     /**

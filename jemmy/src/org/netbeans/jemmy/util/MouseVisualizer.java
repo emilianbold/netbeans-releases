@@ -35,6 +35,8 @@ import org.netbeans.jemmy.operators.WindowOperator;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.Frame;
 import java.awt.Point;
 
 import javax.swing.JInternalFrame;
@@ -43,7 +45,8 @@ import javax.swing.JTabbedPane;
 
 /**
  *
- * Activates windows by robot mouse click on border.
+ * Does <code>super.activate(org.netbeans.jemmy.operators.WindowOperator)</code>.
+ * Then, if java version is appropriate (1.3 or later) activates windows by robot mouse click on border.
  * 
  * @see org.netbeans.jemmy.operators.Operator#setVisualizer(Operator.ComponentVisualizer)
  * @see org.netbeans.jemmy.operators.Operator.ComponentVisualizer
@@ -69,6 +72,7 @@ public class MouseVisualizer extends DefaultVisualizer {
      */
     public MouseVisualizer() {
     }
+
     /**
      * Creates a visualizer which clicks on window boder.
      * In case if <code>place == BOTTOM</code>, for example 
@@ -85,17 +89,31 @@ public class MouseVisualizer extends DefaultVisualizer {
 	this.checkMouse = checkMouse;
     }
 
+    /**
+     * Activates window by mouse click.
+     */
     protected void activate(WindowOperator winOper) 
 	throws TimeoutExpiredException {
-	if(winOper.getFocusOwner() == null) {
-	    super.activate(winOper);
-	    Point p = getClickPoint(winOper);
-	    new MouseRobotDriver(winOper.getTimeouts().create("EventDispatcher.RobotAutoDelay")).
-		clickMouse(winOper, p.x, p.y,
-			   1, winOper.getDefaultMouseButton(),
-			   0, 
-			   winOper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
-	}
+        boolean needToBeActivated = false;
+        if(winOper.getSource() instanceof Frame ||
+           winOper.getSource() instanceof Dialog) {
+            if(System.getProperty("java.version").startsWith("1.4")) {
+                needToBeActivated = !winOper.isFocused(); 
+            } else {
+                needToBeActivated = (winOper.getFocusOwner() == null);
+            }
+        }
+        if(needToBeActivated) {
+            winOper.activate();
+            if(!System.getProperty("java.version").startsWith("1.2")) {
+                Point p = getClickPoint(winOper);
+                new MouseRobotDriver(winOper.getTimeouts().create("EventDispatcher.RobotAutoDelay")).
+                    clickMouse(winOper, p.x, p.y,
+                               1, winOper.getDefaultMouseButton(),
+                               0, 
+                               winOper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
+            }
+        }
     }
 
     private Point getClickPoint(WindowOperator win) {

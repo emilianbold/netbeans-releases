@@ -102,7 +102,10 @@ public class DefaultVisualizer implements ComponentVisualizer {
 
     protected void activate(WindowOperator winOper) 
 	throws TimeoutExpiredException {
-	winOper.activate();
+	winOper.toFront();
+        if(winOper.getFocusOwner() == null) {
+            winOper.activate();
+        }
     }
 
     protected void initInternalFrame(JInternalFrameOperator intOper) {
@@ -144,8 +147,8 @@ public class DefaultVisualizer implements ComponentVisualizer {
 						  compOper.getSource()));
 		}
 	    }
+            WindowOperator winOper = new WindowOperator(compOper.getWindow());
 	    if(window) {
-		WindowOperator winOper = new WindowOperator(compOper.getWindow());
 		winOper.copyEnvironment(compOper);
 		winOper.setVisualizer(new EmptyVisualizer());
 		activate(winOper);

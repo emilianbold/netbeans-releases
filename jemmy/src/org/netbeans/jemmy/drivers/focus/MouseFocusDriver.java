@@ -57,7 +57,7 @@ public class MouseFocusDriver extends SupportiveDriver implements FocusDriver {
     public void giveFocus(ComponentOperator oper) {
 	if(!oper.hasFocus()) {
 	    DriverManager.getMouseDriver(oper).
-		clickMouse(oper, oper.getCenterX(), oper.getCenterY(),
+		clickMouse(oper, oper.getCenterXForClick(), oper.getCenterYForClick(),
 			   1, oper.getDefaultMouseButton(), 0, 
 			   oper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
 	}

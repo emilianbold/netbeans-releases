@@ -17,6 +17,8 @@ public class jemmy_032 extends JemmyTest {
 
 	try {
 
+            QueueTool qt = new QueueTool();
+
 	    (new ClassReference("org.netbeans.jemmy.testing.Application_032")).startApplication();
 
 	    WindowOperator winOper = new WindowOperator();
@@ -43,6 +45,8 @@ public class jemmy_032 extends JemmyTest {
 		finalize();
 		return(1);
 	    }
+
+            qt.waitEmpty(2000);
 
 	    //buttons
 	    new JButtonOperator(frameOper, "TtON").push();
@@ -119,8 +123,10 @@ public class jemmy_032 extends JemmyTest {
 
 	    bttFrameOper.getSource().setVisible(false);
 
+            qt.waitEmpty(2000);
+
 	    //Menus
-	    new JButtonOperator(frameOper, "US").push();
+	    new JButtonOperator(frameOper, "menus").push();
 	    JFrameOperator mnFrameOper = new JFrameOperator("uS");
 	    JMenuBarOperator mbo = new JMenuBarOperator(mnFrameOper);
 	    JMenuOperator mo = new JMenuOperator(mnFrameOper, "");
@@ -166,6 +172,8 @@ public class jemmy_032 extends JemmyTest {
 
 	    mnFrameOper.getSource().setVisible(false);
 
+            qt.waitEmpty(2000);
+
 	    //lists
 	    new JButtonOperator(frameOper, "li").push();
 	    JFrameOperator lstFrameOper = new JFrameOperator("sts");
@@ -179,6 +187,8 @@ public class jemmy_032 extends JemmyTest {
 	    getOutput().printLine("Tree  : " +  tro.getSource().toString());
 
 	    lstFrameOper.getSource().setVisible(false);
+
+            qt.waitEmpty(2000);
 
 	    //texts
 	    new JButtonOperator(frameOper, "xts").push();
