@@ -456,24 +456,39 @@ public class CodeStructure {
         if (expressionsToVariables.get(expression) != null)
             removeExpressionFromVariable(expression);
 
-        int n = 0;
-        String baseName;
-        if (name != null) { // a valid name provided
-            baseName = name; // try it without a suffix first
-        }
-        else { // derive default name from class type, add "1" as suffix
-            String typeName = expression.getOrigin().getType().getName();
-            int i = typeName.lastIndexOf('$');
-            if (i < 0)
-                i = typeName.lastIndexOf('.');
-            baseName = Character.toLowerCase(typeName.charAt(i+1))
-                       + typeName.substring(i+2);
-            name = baseName + (++n);
-        }
+        if (name == null || namesToVariables.get(name) != null) {
+            // variable name not provided or already being used
+            int n = 0;
+            String baseName;
+            if (name != null) { // already used name provided
+                // try to find number suffix
+                int i = name.length();
+                int exp = 1;
+                while (--i >= 0) {
+                    char c = name.charAt(i);
+                    if (c >= '0' && c <= '9') {
+                        n += (c - '0') * exp;
+                        exp *= 10;
+                    }
+                    else break;
+                }
 
-        // find a free name
-        while (namesToVariables.get(name) != null)
-            name = baseName + (++n);
+                baseName = i >= 0 ? name.substring(0, i+1) : name;
+            }
+            else { // derive default name from class type, add "1" as suffix
+                String typeName = expression.getOrigin().getType().getName();
+                int i = typeName.lastIndexOf('$');
+                if (i < 0)
+                    i = typeName.lastIndexOf('.');
+                baseName = Character.toLowerCase(typeName.charAt(i+1))
+                           + typeName.substring(i+2);
+            }
+
+            do { // find a free name
+                name = baseName + (++n);
+            }
+            while (namesToVariables.get(name) != null);
+        }
 
         Variable var = new Variable(type,
                                     expression.getOrigin().getType(),
