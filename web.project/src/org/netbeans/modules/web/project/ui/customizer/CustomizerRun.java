@@ -314,7 +314,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.ValidatingPan
         if (contextPath.length() > 0) {
             if (!contextPath.startsWith("/")) {
                 message = NbBundle.getMessage (CustomizerRun.class, "MSG_INVALID_CP_DOES_NOT_START_WITH_SLASH");
-            } else if (contextPath.contains("//")) {
+            } else if (contextPath.indexOf("//") >= 0) {
                 message = NbBundle.getMessage (CustomizerRun.class, "MSG_INVALID_CP_CONTAINS_DOUBLE_SLASH");
                 message = "Context path should not contain \"//\"";
             } else if (contextPath.endsWith("/")) {
