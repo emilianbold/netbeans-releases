@@ -47,6 +47,8 @@ public class Module extends JellyTestCase {
 	private String delim="|";	// NOI18N
 	private String failMessage="test failed";	// NOI18N
         
+        private static String originalPort = "8082";
+        
         private HttpServerSettings serverSettings = new HttpServerSettings();
 
     public Module(String testName) { 
@@ -172,7 +174,8 @@ public class Module extends JellyTestCase {
                 throw new AssertionFailedErrorException("IOException during reading from '" + (url==null?"null":url.toString()) + "'.",ioe);
         }
     }
-        
+      
+    /*
     private boolean checkResult(String url, String output) {
      
 	HtmlBrowser browser = new HtmlBrowser ();
@@ -200,6 +203,7 @@ public class Module extends JellyTestCase {
 		return true;
 	}
     }
+    */
 
 // Internal HTTP Server Test Specification:  Test suite: 1. Browsing of User Repository
 
@@ -210,9 +214,9 @@ public class Module extends JellyTestCase {
 	switchToHTTPServerNode();
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
         psto = pw.getPropertySheetTabOperator("Expert");
-
+        
 	TextFieldProperty tf=new TextFieldProperty(psto,"Base Filesystems URL");
-	tf.setValue("repository");	// NOI18N
+	tf.setValue("repository");	// NOI18
 	pw.close();
 
 	startHTTPServer();
@@ -229,11 +233,12 @@ public class Module extends JellyTestCase {
         
         TextFieldProperty tf=new TextFieldProperty(psto,"Base Filesystems URL");
         tf.setValue("repository");	// NOI18N
+        tf=new TextFieldProperty(psto,"Port");
+	originalPort = tf.getValue();
         pw.close();
         
         startHTTPServer();
-        
-        checkResult("/repository/examples/colorpicker/README.txt",1,"ColorPicker is a simple program",false);
+        checkResult("/repository/org/netbeans/test/gui/httpserver/test.txt",1,"This is test file",false);
     }
 
     
@@ -328,7 +333,7 @@ public class Module extends JellyTestCase {
         psto = pw.getPropertySheetTabOperator("Properties");
 
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
-	tf.setValue("8082");	// NOI18N
+	tf.setValue(originalPort);	// NOI18N
 	tf=new TextFieldProperty(psto,"Hosts with Granted Access");
 	tf.setValue("Selected Hosts: ");
 
@@ -385,7 +390,7 @@ public class Module extends JellyTestCase {
 
 	startHTTPServer();
 
-	checkResult("http://localhost:8082/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",true);
+	checkResult("http://localhost:"+originalPort+"/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",true);
     }
 
 /* commented because of bug in IDE
@@ -549,7 +554,7 @@ public class Module extends JellyTestCase {
         psto = pw.getPropertySheetTabOperator("Properties");
 
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
-	tf.setValue("8082");	// NOI18N
+	tf.setValue(originalPort);	// NOI18N
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
@@ -561,7 +566,7 @@ public class Module extends JellyTestCase {
             throw e;
 	
 	startHTTPServer();
-        checkResult("http://localhost:8082/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",true);
+        checkResult("http://localhost:"+originalPort+"/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",true);
     }
 
 // 4.5.3
@@ -572,7 +577,7 @@ public class Module extends JellyTestCase {
         psto = pw.getPropertySheetTabOperator("Properties");
 
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
-	tf.setValue("8082");	// NOI18N
+	tf.setValue(originalPort);	// NOI18N
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
@@ -582,7 +587,7 @@ public class Module extends JellyTestCase {
 
 	startHTTPServer();
 
-        checkResult("http://localhost:8082/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
+        checkResult("http://localhost:"+originalPort+"/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
     }
 */
     
@@ -594,7 +599,7 @@ public class Module extends JellyTestCase {
         psto = pw.getPropertySheetTabOperator("Properties");
 
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
-	tf.setValue("8082");	// NOI18N
+	tf.setValue(originalPort);	// NOI18N
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
@@ -604,7 +609,7 @@ public class Module extends JellyTestCase {
 
 	startHTTPServer();
 
-        checkResult("http://localhost:8082/newrepository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
+        checkResult("http://localhost:"+originalPort+"/newrepository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
     }
 
     
@@ -667,7 +672,7 @@ public class Module extends JellyTestCase {
         psto = pw.getPropertySheetTabOperator("Properties");
 
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
-	tf.setValue("8082");	// NOI18N
+	tf.setValue(originalPort);	// NOI18N
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
@@ -683,7 +688,7 @@ public class Module extends JellyTestCase {
         
 	startHTTPServer();
 
-        checkResult("http://localhost:8082/classpath/org/netbeans/core/resources/templatesFileSystems.html",
+        checkResult("http://localhost:"+originalPort+"/classpath/org/netbeans/core/resources/templatesFileSystems.html",
                     15,"Select the type of filesystem that you want to mount.",true);
     }
 
@@ -695,7 +700,7 @@ public class Module extends JellyTestCase {
         psto = pw.getPropertySheetTabOperator("Properties");
 
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
-	tf.setValue("8082");	// NOI18N
+	tf.setValue(originalPort);	// NOI18N
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
@@ -705,7 +710,7 @@ public class Module extends JellyTestCase {
 
 	startHTTPServer();
 
-        checkResult("http://localhost:8082/org/netbeans/core/resources/templatesFileSystems.html",
+        checkResult("http://localhost:"+originalPort+"/org/netbeans/core/resources/templatesFileSystems.html",
                     15,"Select the type of filesystem that you want to mount.",false);
     }
 */
@@ -718,7 +723,7 @@ public class Module extends JellyTestCase {
         psto = pw.getPropertySheetTabOperator("Properties");
 
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
-	tf.setValue("8082");	// NOI18N
+	tf.setValue(originalPort);	// NOI18N
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
@@ -728,7 +733,7 @@ public class Module extends JellyTestCase {
 
 	startHTTPServer();
 
-        checkResult("http://localhost:8082/newclasspath/org/netbeans/core/resources/templatesFileSystems.html",
+        checkResult("http://localhost:"+originalPort+"/newclasspath/org/netbeans/core/resources/templatesFileSystems.html",
         15,"Select the type of filesystem that you want to mount.",false);
   
     }
@@ -793,7 +798,7 @@ public class Module extends JellyTestCase {
         psto = pw.getPropertySheetTabOperator("Properties");
 
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
-	tf.setValue("8082");	// NOI18N
+	tf.setValue(originalPort);	// NOI18N
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
@@ -810,7 +815,7 @@ public class Module extends JellyTestCase {
  
 	startHTTPServer();
 
-        checkResult("http://localhost:8082/javadoc/",2,"List of Javadoc mounts",true);
+        checkResult("http://localhost:"+originalPort+"/javadoc/",2,"List of Javadoc mounts",true);
     }
 
 // 4.7.4
@@ -821,7 +826,7 @@ public class Module extends JellyTestCase {
         psto = pw.getPropertySheetTabOperator("Properties");
 
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
-	tf.setValue("8082");	// NOI18N
+	tf.setValue(originalPort);	// NOI18N
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
@@ -831,7 +836,7 @@ public class Module extends JellyTestCase {
 
 	startHTTPServer();
 
-        checkResult("http://localhost:8082/",2,"List of Javadoc mounts",false);
+        checkResult("http://localhost:"+originalPort+"/",2,"List of Javadoc mounts",false);
     }
 */
     
@@ -843,7 +848,7 @@ public class Module extends JellyTestCase {
         psto = pw.getPropertySheetTabOperator("Properties");
 
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
-	tf.setValue("8082");	// NOI18N
+	tf.setValue(originalPort);	// NOI18N
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
@@ -853,7 +858,7 @@ public class Module extends JellyTestCase {
 
 	startHTTPServer();
 
-        checkResult("http://localhost:8082/newjavadoc/",2,"List of Javadoc mounts",false);
+        checkResult("http://localhost:"+originalPort+"/newjavadoc/",2,"List of Javadoc mounts",false);
     }
 
 
