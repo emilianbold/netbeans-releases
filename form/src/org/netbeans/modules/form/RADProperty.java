@@ -159,12 +159,12 @@ public class RADProperty extends FormProperty {
         PropertyEditor prEd = null;
 
         PropertyDescriptor descriptor = getPropertyDescriptor();
-        if (descriptor.getPropertyType() == Integer.TYPE) {
-            if ("mnemonic".equals(descriptor.getName()) // NOI18N
-                  || "displayedMnemonic".equals(descriptor.getName())) // NOI18N
-                prEd = new MnemonicEditor();
-            else
-                prEd = createEnumEditor(descriptor);
+        if (descriptor.getPropertyType() == Integer.TYPE
+            && ("mnemonic".equals(descriptor.getName()) // NOI18N
+                || "displayedMnemonic".equals(descriptor.getName()))) { // NOI18N
+                    prEd = new MnemonicEditor();
+        } else {
+            prEd = createEnumEditor(descriptor);
         }
 
         if (prEd == null && desc.getPropertyEditorClass() != null) {
