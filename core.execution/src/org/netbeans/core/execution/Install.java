@@ -115,9 +115,10 @@ public class Install extends ModuleInstall {
         return showPendingTasks();
     }
     
-    // A class that server as a pending dialog manager.
-    // It closes the dialog if there are no more pending tasks
-    // and also servers as the action listener for killing the tasks.
+    /** A class that server as a pending dialog manager.
+     * It closes the dialog if there are no more pending tasks
+     * and also servers as the action listener for killing the tasks.
+     */
     private static class PendingDialogCloser extends WindowAdapter implements Runnable,
 		PropertyChangeListener, ActionListener, NodeListener {
 	private Dialog[] dialogHolder;
@@ -193,7 +194,7 @@ public class Install extends ModuleInstall {
         JButton exitOption = new JButton(NbBundle.getMessage(Install.class, "LAB_EndTasks"));
         exitOption.setMnemonic(NbBundle.getMessage(Install.class, "LAB_EndTasksMnem").charAt(0));
         // No default button.
-        exitOption.setDefaultCapable(false);
+        // exitOption.setDefaultCapable(false);
         exitOption.getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(Install.class, "ACSD_EndTasks"));
 
@@ -211,7 +212,7 @@ public class Install extends ModuleInstall {
                 exitOption,
                 DialogDescriptor.CANCEL_OPTION
             },
-            null,
+            exitOption,
             DialogDescriptor.DEFAULT_ALIGN,
             null,
 	    closer
@@ -260,7 +261,7 @@ public class Install extends ModuleInstall {
         cons.gridy = 1;
         cons.weighty = 1.0D;
         cons.fill = GridBagConstraints.BOTH;
-        cons.insets = new Insets(7, 11, 0, 12);
+        cons.insets = new Insets(2, 11, 0, 12);
 
         ListView view = new ListView();
         label.setLabelFor(view);
@@ -271,6 +272,10 @@ public class Install extends ModuleInstall {
             NbBundle.getMessage(Install.class, "ACSD_PendingTasks"));
         panel.getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(Install.class, "ACSD_PendingTitle"));
+        
+        // set size requested by HIE guys
+        Dimension origSize = panel.getPreferredSize();
+        panel.setPreferredSize(new Dimension(origSize.width * 5 / 4, origSize.height));
 
         return panel;
     }
