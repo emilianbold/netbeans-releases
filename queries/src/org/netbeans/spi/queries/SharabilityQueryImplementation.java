@@ -48,7 +48,7 @@ public interface SharabilityQueryImplementation {
      * If it is not, it is either a disposable build product, or a per-user
      * private file which is important but should not be shared.
      * @param file a file to check for sharability (may or may not yet exist)
-     * @return one of {@link SharabilityQuery}'s constants
+     * @return one of {@link org.netbeans.api.queries.SharabilityQuery}'s constants
      */
     int getSharability(File file);
     
