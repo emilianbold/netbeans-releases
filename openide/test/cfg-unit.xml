@@ -59,6 +59,8 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- filesystems tests should be stable. If not file a bug: -->                
                 <include name="org/openide/filesystems/*.class"/>
                 <exclude  name="org/openide/filesystems/SystemFileSystemTest.class"/>                                         
+                <!-- Under development: -->
+                <exclude  name="org/openide/filesystems/MultiFileSystemMaskTest.class"/>                                         
                 <include name="org/openide/modules/*.class"/>
                 <include name="org/openide/loaders/*.class"/>                
                 <!-- #28118 in faling testbag yet -->
