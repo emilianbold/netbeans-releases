@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.editor.util</package>
+                <package>org.netbeans.modules.editor.util.element</package>
             </public-packages>
         </data>
     </configuration>

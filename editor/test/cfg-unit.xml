@@ -25,6 +25,14 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="editor unit test config">
     
+    <testbag testattribs="document" executor="code" name="document_testbag">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/**Document**.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
     <testbag testattribs="stable" executor="code" name="testbag_1">
         <testset dir="unit/src">
             <patternset>
