@@ -61,23 +61,26 @@ public class AdditionalWizardPanel extends JPanel {
     private JComponent additionalComponent = EMPTY_COMPONENT;
     
     /** Empty component to show when no additional values are supported. */
-    private static final JLabel EMPTY_COMPONENT = new JLabel(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_HasNoAdditonal"));
+    private static final JLabel EMPTY_COMPONENT = 
+                         new JLabel(Util.getString("TXT_HasNoAdditonal"));
     
     
     /** Creates new form HardCodedStringsPanel */
     private AdditionalWizardPanel() {
         initComponents();
+        initA11Y();
         
-        postInitComponents();        
-        
-        //Accessibility   
-        sourceCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdditionalWizardPanel.class).getString("ACS_sourceCombo"));        
-        
-        setComboModel(sourceMap);        
-        sourceComboActionPerformed(null); // update additional compoment
-        addAdditionalComponent();
+        // set customized model
+        setComboModel(sourceMap);
     }
 
+    /** Does additional init of components. */
+    private void initA11Y() {
+        sourceLabel.setLabelFor(sourceCombo);
+        sourceLabel.setDisplayedMnemonic(Util.getString("LBL_Source_Mnem").charAt(0));
+        sourceCombo.getAccessibleContext().setAccessibleDescription(Util.getString("ACS_sourceCombo"));
+    }
+    
     
     /** Sets combo model only for source which support provides additional customizing. */
     private void setComboModel(Map sourceMap) {
@@ -85,50 +88,37 @@ public class AdditionalWizardPanel extends JPanel {
         
         ArrayList nonEmptySources = new ArrayList();
 
-        for(int i = 0; i < sources.length; i++) {
+        for (int i = 0; i < sources.length; i++) {
             if(((SourceData)sourceMap.get(sources[i])).getSupport().hasAdditionalCustomizer())
                 nonEmptySources.add(sources[i]);
         }
         
         sourceCombo.setModel(new DefaultComboBoxModel(nonEmptySources.toArray()));
-    }
-
-    /** Does additional init of components. */
-    private void postInitComponents() {
-        sourceLabel.setLabelFor(sourceCombo);
-        sourceLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_Source_Mnem").charAt(0));
-    }
-    
-    /** Getter for <code>sourceMap</code> property. */
-    public Map getSourceMap() {
-        return sourceMap;
+        
+        // update view
+        Object selected = sourceCombo.getSelectedItem();
+        updateAdditionalComponent(selected);
+        
     }
 
     /** Getter for <code>viewedSources</code> property. */
-    public Set getViewedSources() {
+    Set getViewedSources() {
         return viewedSources;
+    }
+
+    /** Getter for <code>sourceMap</code> property. */
+    Map getSourceMap() {
+        return sourceMap;
     }
     
     /** Setter for <code>resources</code> property. */
-    public void setSourceMap(Map sourceMap) {
+    void setSourceMap(Map sourceMap) {
         this.sourceMap.clear();
         this.sourceMap.putAll(sourceMap);
         
         setComboModel(sourceMap);
     }
-    
-    /** Inits additonal component. */
-    private void addAdditionalComponent() {
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(additionalComponent, gridBagConstraints);
-    }
-    
+        
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -164,12 +154,18 @@ public class AdditionalWizardPanel extends JPanel {
 
     private void sourceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourceComboActionPerformed
         Object selected = sourceCombo.getSelectedItem();
+        updateAdditionalComponent(selected);
+    }//GEN-LAST:event_sourceComboActionPerformed
 
+    private void updateAdditionalComponent(Object selected) {
+        
         I18nSupport support = null;
         
-        if(selected != null)
+        if (selected != null) {
             support = ((SourceData)sourceMap.get(selected)).getSupport();
+        }
 
+        // remove last one
         remove(additionalComponent);
         
         if(support != null && support.hasAdditionalCustomizer()) {
@@ -179,11 +175,19 @@ public class AdditionalWizardPanel extends JPanel {
             additionalComponent = EMPTY_COMPONENT;
         }
 
-        addAdditionalComponent();
+        // add it
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(additionalComponent, gridBagConstraints);
         
-        revalidate();
-    }//GEN-LAST:event_sourceComboActionPerformed
-
+        revalidate();        
+    }
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox sourceCombo;
@@ -198,10 +202,11 @@ public class AdditionalWizardPanel extends JPanel {
         private final JLabel emptyLabel;
         
         /** Component. */
-        private final AdditionalWizardPanel additionalPanel = new AdditionalWizardPanel();
+        private final AdditionalWizardPanel additionalPanel;
 
-        {
-            emptyLabel = new JLabel(NbBundle.getBundle(TestStringWizardPanel.class).getString("TXT_HasNoAdditonal"));
+        Panel () {
+            additionalPanel = new AdditionalWizardPanel();
+            emptyLabel = new JLabel(Util.getString("TXT_HasNoAdditonal"));
             emptyLabel.setHorizontalAlignment(JLabel.CENTER);
             emptyLabel.setVerticalAlignment(JLabel.CENTER);
         }        
