@@ -11,6 +11,9 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html"/>
     
+    <!-- unique key over all groups of apis -->
+    <xsl:key match="//api" name="apiGroups" use="@group" />
+    
     <xsl:param name="arch.stylesheet"/>
     <xsl:param name="arch.overviewlink"/>
     <xsl:param name="arch.footer"/>
@@ -53,51 +56,21 @@
                 <xsl:apply-templates />    
                 
                 <hr/>
-                
+
                 <h2>Interfaces table</h2>
+
+                <xsl:call-template name="for-each-group">
+                    <xsl:with-param name="target" >api-group</xsl:with-param>
+                </xsl:call-template>
+                
                 
                 <xsl:variable name="all_interfaces" select="//api" />
-                
                 <xsl:if test="not($all_interfaces)" >
                     <b> WARNING: No imported or exported interfaces! </b>
                 </xsl:if>
-             
-                <table border="1" width="100%" >   
-                    <thead>
-                        <th valign="bottom" width="25%"><b>Interface Name</b></th>
-                        <th valign="bottom" width="10%"><b>In/Out</b></th>
-                        <th valign="bottom" width="10%"><b>Stability</b></th>
-                        <th valign="bottom" ><b>Specified in What Document?</b></th>
-                    </thead>
-                
-                    <xsl:for-each select="$all_interfaces">
-                        <tr/>
-                        <xsl:call-template name="api" />
-                    </xsl:for-each>
-                </table>
-                
-                <hr/>
-                
-                <xsl:variable name="all_properties" select="//property" />
-                <xsl:if test="$all_properties">
-                
-                    <h2>Properties table</h2>
-                
-                    <table border="1" width="100%" >   
-                        <thead>
-                            <th valign="bottom" width="25%"><b>Name</b></th>
-                            <th valign="bottom" width="10%"><b>Stability</b></th>
-                            <th valign="bottom" ><b>Specified in What Document?</b></th>
-                        </thead>
 
-                        <xsl:for-each select="$all_properties">
-                            <tr/>
-                            <xsl:call-template name="property" />
-                        </xsl:for-each>
-                    </table>
-                    <hr/>
-                </xsl:if>
-                
+                <hr/>
+                                
                 <xsl:if test="$arch.footer">
                     <p><xsl:value-of select="$arch.footer"/></p>
                 </xsl:if>
@@ -180,16 +153,6 @@
         </a>
         
     </xsl:template>
-
-    <xsl:template name="property">
-        <xsl:call-template name="api-line" >
-            <xsl:with-param name="group">property</xsl:with-param>
-            <xsl:with-param name="name" select="@name" />
-            <xsl:with-param name="category" select="@category" />
-            <xsl:with-param name="describe.url" select="@url" />
-            <xsl:with-param name="describe.node" select="./node()" />
-        </xsl:call-template>
-    </xsl:template>
     
     <!-- Format random HTML elements as is: -->
     <xsl:template match="@*|node()">
@@ -206,6 +169,90 @@
         <!-- ignore direct answers -->
     </xsl:template>
     
+    <!-- enumerates all groups of APIs and calls given template 
+      on each of them
+    -->
+    <xsl:template name="for-each-group" >
+        <xsl:param name="target" />
+    
+        <xsl:for-each select="//api[generate-id() = generate-id(key('apiGroups', @group))]">
+            <xsl:call-template name="jump-to-target">
+                <xsl:with-param name="group" select="@group" />
+                <xsl:with-param name="target" select="$target" />
+            </xsl:call-template>
+        </xsl:for-each>
+
+        <!-- backward compatibility for property tag, if no 
+            <api group="property" ... /> but <property />
+            call the template
+        -->
+        <xsl:variable name="old_properties" select="//property" />
+        <xsl:variable name="new_properties" select="//api[@group='property']" />
+        <xsl:if test="$old_properties and not($new_properties)" >
+            <xsl:call-template name="jump-to-target">
+                <xsl:with-param name="group">property</xsl:with-param>
+                <xsl:with-param name="target" select="$target" />
+            </xsl:call-template>
+        </xsl:if>
+    </xsl:template>    
+    <xsl:template name="jump-to-target" >
+        <xsl:param name="target" />
+        <xsl:param name="group" />
+        
+        <xsl:choose>
+            <xsl:when test="$target='api-group'" >
+                <xsl:call-template name="api-group">
+                    <xsl:with-param name="group" select="$group" />
+                </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>WRONG <xsl:value-of select="$target" /></xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    
+
+    <!-- displays group of APIs -->
+    
+    <xsl:template name="api-group" >
+        <xsl:param name="group" />
+        
+    
+        <h5>Group of <xsl:value-of select="$group"/> interfaces</h5>
+        
+        <xsl:variable name="all_interfaces" select="//api[@group=$group]" />
+        <table border="1" width="100%" >   
+            <thead>
+                <th valign="bottom" width="25%"><b>Interface Name</b></th>
+                <th valign="bottom" width="10%"><b>In/Out</b></th>
+                <th valign="bottom" width="10%"><b>Stability</b></th>
+                <th valign="bottom" ><b>Specified in What Document?</b></th>
+            </thead>
+
+            <xsl:for-each select="$all_interfaces">
+                <tr/>
+                <xsl:call-template name="api" />
+            </xsl:for-each>
+            
+            <!-- backward compat for <property /> tags -->
+            
+            <xsl:if test="$group='property'" >
+                <xsl:variable name="all_properties" select="//property" />
+                
+                <xsl:for-each select="$all_properties">
+                    <tr/>
+                    <xsl:call-template name="api-line" >
+                        <xsl:with-param name="group">property</xsl:with-param>
+                        <xsl:with-param name="name" select="@name" />
+                        <xsl:with-param name="type">export</xsl:with-param>
+                        <xsl:with-param name="category" select="@category" />
+                        <xsl:with-param name="describe.url" select="@url" />
+                        <xsl:with-param name="describe.node" select="./node()" />
+                    </xsl:call-template>
+                </xsl:for-each>
+            </xsl:if>
+        </table>
+
+        <p/>
+    </xsl:template>    
     
     <!-- the template to convert an instances of API into an HTML line in a table 
       describing the API -->
