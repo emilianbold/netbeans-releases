@@ -555,7 +555,7 @@ public final class AntBridge {
     private static Map/*<ThreadGroup,PrintStream>*/ delegateOuts = new HashMap();
     private static Map/*<ThreadGroup,PrintStream>*/ delegateErrs = new HashMap();
     /** map, not set, so can be reentrant */
-    private static List/*<ThreadGroup>*/ suspendedDelegationTasks = new ArrayList();
+    private static List/*<Thread>*/ suspendedDelegationTasks = new ArrayList();
     
     /**
      * Handle I/O scoping for overlapping project runs.
@@ -600,17 +600,17 @@ public final class AntBridge {
     }
 
     /**
-     * Temporarily suspend delegation of system I/O streams for the current thread group.
+     * Temporarily suspend delegation of system I/O streams for the current thread.
      * Useful when running callbacks to IDE code that might try to print to stderr etc.
      * Must be matched in a finally block by {@link #resumeDelegation}.
      * Safe to call when not actually delegating; in that case does nothing.
      * Safe to call in reentrant but not overlapping fashion.
      */
     public static synchronized void suspendDelegation() {
-        ThreadGroup tg = Thread.currentThread().getThreadGroup();
-        //assert delegateOuts.containsKey(tg) : "Not currently delegating in " + tg;
-        //assert !suspendedDelegationTasks.contains(tg) : "Already suspended delegation in " + tg;
-        suspendedDelegationTasks.add(tg);
+        Thread t = Thread.currentThread();
+        //assert delegateOuts.containsKey(t.getThreadGroup()) : "Not currently delegating in " + t;
+        assert !suspendedDelegationTasks.contains(t) : "Already suspended delegation in " + t;
+        suspendedDelegationTasks.add(t);
     }
     
     /**
@@ -618,10 +618,10 @@ public final class AntBridge {
      * after a call to {@link #suspendDelegation}.
      */
     public static synchronized void resumeDelegation() {
-        ThreadGroup tg = Thread.currentThread().getThreadGroup();
-        //assert delegateOuts.containsKey(tg) : "Not currently delegating in " + tg;
-        assert suspendedDelegationTasks.contains(tg) : "Have not suspended delegation in " + tg;
-        suspendedDelegationTasks.remove(tg);
+        Thread t = Thread.currentThread();
+        //assert delegateOuts.containsKey(t.getThreadGroup()) : "Not currently delegating in " + t;
+        assert suspendedDelegationTasks.contains(t) : "Have not suspended delegation in " + t;
+        suspendedDelegationTasks.remove(t);
     }
     
     private static final class MultiplexInputStream extends InputStream {
@@ -629,12 +629,13 @@ public final class AntBridge {
         public MultiplexInputStream() {}
         
         private InputStream delegate() {
-            ThreadGroup tg = Thread.currentThread().getThreadGroup();
+            Thread t = Thread.currentThread();
+            ThreadGroup tg = t.getThreadGroup();
             while (tg != null && !delegateIns.containsKey(tg)) {
                 tg = tg.getParent();
             }
             InputStream is = (InputStream)delegateIns.get(tg);
-            if (is != null && !suspendedDelegationTasks.contains(tg)) {
+            if (is != null && !suspendedDelegationTasks.contains(t)) {
                 return is;
             } else if (delegating > 0) {
                 assert origIn != null;
@@ -698,13 +699,14 @@ public final class AntBridge {
         }
         
         private PrintStream delegate() {
-            ThreadGroup tg = Thread.currentThread().getThreadGroup();
+            Thread t = Thread.currentThread();
+            ThreadGroup tg = t.getThreadGroup();
             Map/*<ThreadGroup,PrintStream>*/ delegates = err ? delegateErrs : delegateOuts;
             while (tg != null && !delegates.containsKey(tg)) {
                 tg = tg.getParent();
             }
             PrintStream ps = (PrintStream)delegates.get(tg);
-            if (ps != null && !suspendedDelegationTasks.contains(tg)) {
+            if (ps != null && !suspendedDelegationTasks.contains(t)) {
                 return ps;
             } else if (delegating > 0) {
                 PrintStream orig = err ? origErr : origOut;
