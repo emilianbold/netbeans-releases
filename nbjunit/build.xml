@@ -79,13 +79,7 @@ Microsystems, Inc. All Rights Reserved.
            basedir="javadoc/nbjunit-api"/>
   </target>
   
-  <target name="parserdb">
-  	<copy toDir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/ParserDB">
-  		<fileset dir="parserdb"/>
-  	</copy>
-  </target>
-  
-  <target name="netbeans" depends="compile-nbjunit, jar-nbjunit, javadoc-nbjunit, parserdb"/>
+  <target name="netbeans" depends="compile-nbjunit, jar-nbjunit, javadoc-nbjunit"/>
 
   <target name="clean" depends="default.init">
      <delete dir="javadoc"/>
