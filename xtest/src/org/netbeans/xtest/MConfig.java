@@ -120,25 +120,36 @@ public class MConfig {
     }
     
     public static class Setup {
-        private File startFile, stopFile;
+        private File startDir, stopDir;
+        private String startAntFile, stopAntFile;
         private String startTarget, stopTarget;
         
-        public void setStart(File startFile, String startTarget) {
-            this.startFile = startFile;
+        public void setStart(File startDir, String startAntFile, String startTarget) {
+            this.startDir = startDir;
+            this.startAntFile = startAntFile;
             this.startTarget = startTarget;
         }
         
-        public void setStop(File stopFile, String stopTarget) {
-            this.stopFile = stopFile;
+        public void setStop(File stopDir, String stopAntFile, String stopTarget) {
+            this.stopDir = stopDir;
+            this.stopAntFile = stopAntFile;
             this.stopTarget = stopTarget;
         }
         
-        public File getStartAntfile() {
-            return startFile;
+        public File getStartDir() {
+            return startDir;
         }
         
-        public File getStopAntfile() {
-            return stopFile;
+        public File getStopDir() {
+            return stopDir;
+        }
+        
+        public String getStartAntfile() {
+            return startAntFile;
+        }
+        
+        public String getStopAntfile() {
+            return stopAntFile;
         }
         
         public String getStartTarget() {
