@@ -1,0 +1,52 @@
+<HTML>
+    <HEAD>
+        <LINK TITLE="Style" TYPE="text/css" REL="stylesheet" href="stylesheet.css">
+    </HEAD>
+    <BODY>
+        <table width="100%" xmlns:xlink="http://www.w3c.org/1999/xlink">
+            <tr>
+                <td align="left">
+                    <h1>Unit Tests Results</h1>
+                </td><td align="right"><b>Time: </b>20 Mar 2001 10:56:06</td>
+            </tr>
+            <tr>
+                <td valign="bottom"><a href="sysinfo.html">System information</a></td><td valign="bottom" align="right">Designed for XTest</td>
+            </tr>
+        </table>
+        <hr size="1" xmlns:xlink="http://www.w3c.org/1999/xlink">
+        <H2>Class HelloWorldTest</H2>
+        <h3>TestCase HelloWorldTest</h3>
+        <table width="95%" cellspacing="2" cellpadding="5" border="0">
+            <tr valign="top" bgcolor="#A6CAF0" xmlns:xlink="http://www.w3c.org/1999/xlink">
+                <td width="18%"><b>Name</b></td><td width="7%"><b>Status</b></td><td width="70%"><b>Type</b></td><td nowrap="nowrap" width="5%"><b>Time(s)</b></td>
+            </tr>
+            <TR valign="top" xmlns:xlink="http://www.w3c.org/1999/xlink" class="Pass">
+                <TD>testGreeting1</TD><TD>Success</TD><TD>&nbsp;</TD><td>0.016</td>
+            </TR>
+            <TR valign="top" xmlns:xlink="http://www.w3c.org/1999/xlink" class="Failure">
+                <TD><A href="#testGreeting2">testGreeting2</A></TD><td>Failure</td><td>This failure is for demonstration purpose only.</td><td>0.312</td>
+            </TR>
+        </table>
+        <h3 xmlns:xlink="http://www.w3c.org/1999/xlink">Failures Details</h3>
+        <h4 xmlns:xlink="http://www.w3c.org/1999/xlink"><A name="testGreeting2">testGreeting2</A></h4>
+        <pre xmlns:xlink="http://www.w3c.org/1999/xlink">junit.framework.AssertionFileFailedError: This failure is for demonstration purpose only.
+	at junit.framework.Assert.assertFile(Assert.java:281)
+	at junit.framework.Assert.assertFile(Assert.java:318)
+	at HelloWorldTest.testGreeting2(HelloWorldTest.java:44)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at junit.framework.TestCase.runTest(TestCase.java:156)
+	at junit.framework.TestCase.runBare(TestCase.java:130)
+	at junit.framework.TestResult$1.protect(TestResult.java:106)
+	at junit.framework.TestResult.runProtected(TestResult.java:124)
+	at junit.framework.TestResult.run(TestResult.java:109)
+	at junit.framework.TestCase.run(TestCase.java:121)
+	at junit.framework.TestSuite.runTest(TestSuite.java:157)
+	at junit.framework.TestSuite.run(TestSuite.java:152)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.run(JUnitTestRunner.java:209)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.main(JUnitTestRunner.java:346)
+
+			
+		</pre>
+        <p xmlns:xlink="http://www.w3c.org/1999/xlink"><A href="../../results/work/data/greeting.diff">results/work/data/greeting.diff</A></p>
+    </BODY>
+</HTML>

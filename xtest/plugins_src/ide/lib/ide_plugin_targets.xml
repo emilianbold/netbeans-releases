@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!-- plugin targets, currently only executor and parts of results processor 
+     for IDE XTest plugin -->
+<project default="forbidden" name="ide_plugin_targets">
+    
+
+
+    <!-- ============= -->
+    <!-- IDE test part -->
+    <!-- ============= -->
+    <target name="ide_execution" depends="init,extra-classpath">
+        
+    <xtest executeAction="prepare-tests"/>
+        <!-- BEGIN this has to be here, though it should be rather only in module_harness !!! -->
+        <property name="_ideplugin.test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
+        <!-- END -->    
+    
+        <!-- prepare workdir structure for ide executor -->
+        <mkdir dir="${xtest.workdir}/sys/ide"/>
+        
+        
+        <!-- by default use XTestErrorManager to keep eye on errors notified via ErrorManager -->
+        <property name="xtest.error.manager" value="true"/>
+        <pathdef useid="_old.test.classpath">
+            <!-- this path is mounted to repo in IDE -->
+            <!-- <path refid="test.basepath"/> -->
+            <path path="${tbag.classpath}"/>
+        </pathdef>
+        
+        <!--
+        <echo message="tbag.classpath = ${tbag.classpath}"/>
+        -->
+        
+        <!-- there should be some better userdir than this -->
+        <property name="xtest.userdir" location="${xtest.workdir}/sys/ide"/>
+        <property name="test.class" value="org.netbeans.xtest.testrunner.IdeJUnitTestRunnerExecutor"/>
+        
+        
+        <property name="xtest.ide.commandline.suffix" value=""/>
+        <property name="xtest.ide.jvmargs" value=""/>
+        <property name="junit.properties.file" value=""/>
+        <property name="xtest.ide.reuse.userdir" value="false"/>
+        <property name="xtest.ide.winsys" value="mdi"/>
+        <property name="xtest.ide.exit" value="true"/>
+        <property name="xtest.ide.mounts" value=""/>
+        <property name="xtest.ide.umount.defaults" value="false"/>
+        <!-- create an empty Java project in IDE -->
+        <property name="xtest.ide.create.project" value="false"/>
+        <!-- open project at specified location -->
+        <property name="xtest.ide.open.project" value=""/>
+        
+        
+        <property name="xtest.ide.use.classloader" value=""/>
+        
+        <condition property="xtest.reuse.ide.false">
+           <equals arg1="${xtest.reuse.ide}" arg2="false"/>
+        </condition>
+        <antcall target="delete-userdir"/>
+        
+        <condition property="xtest.reuse.and.noexist">
+           <not>
+              <or>
+                 <equals arg1="${xtest.ide.reuse.userdir}" arg2="false"/>
+                 <available file="${xtest.userdir}/system/ide.log" property="ide.userdir.available"/>
+              </or>
+           </not>
+        </condition>
+        <antcall target="check-userdir"/>
+        <antcall target="ide_test_bootstrap_cont"/>
+    </target>
+
+
+    <!-- prepare user dirs and workdirs for ide mode tests -->
+    <target name="ide_prepare_userdir_and_workdir">
+
+        <property name="xtest.workdir.idejars" value="${xtest.workdir}/sys/idejars"/>
+        <mkdir dir="${xtest.workdir.idejars}"/>
+        
+        <!-- let's put our jars under ${xtest.userdir}/xtest ... -->
+        <mkdir dir="${xtest.userdir}/xtest/lib/ext"/>
+        
+        <copy file="${xtest.home}/lib/xtest.jar" todir="${xtest.userdir}/xtest/lib"/>
+        <copy file="${xtest.plugin.home}/lib/xtest-ide-main.jar" todir="${xtest.userdir}/xtest/lib"/>
+        <copy file="${xtest.home}/lib/junit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
+        <copy file="${xtest.home}/lib/nbjunit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>        
+                
+        <copy file="${xtest.home}/lib/xtest-junit-testrunner.jar" todir="${xtest.workdir.idejars}"/> 
+        <copy file="${xtest.plugin.home}/lib/xtest-ide-testexec.jar" todir="${xtest.workdir.idejars}"/> 
+
+        <antcall target="copy-user-jars"/>    
+    </target>    
+    
+    
+    <target name="set_openide_classloader">
+    	<condition property="_use.openide.classloader">
+    	    <equals arg1="${xtest.ide.use.classloader}" arg2="openide" casesensitive="false"/>
+    	</condition>
+    </target>
+    
+    
+    <!-- default netbeans.classpath !!! -->        
+    <target name="ide_set_netbeans_classpath_default" unless="_use.openide.classloader"
+            depends="ide_prepare_userdir_and_workdir, set_openide_classloader">
+        <property name="xtest.netbeans.classpath" refid="xtest.netbeans.classpath">
+            <classpath id="xtest.netbeans.classpath">
+                <fileset dir="${xtest.userdir}/xtest/lib">
+                    <include name="xtest.jar"/>
+                    <include name="xtest-ide-main.jar"/>
+                </fileset>
+            </classpath>        
+        </property>        
+    </target>
+            
+    
+    <!-- netbeans.classpath for core/openide tests which need to be loaded by openide/core classloader -->        
+    <target name="ide_set_netbeans_classpath_test_core" if="_use.openide.classloader"
+            depends="ide_prepare_userdir_and_workdir, set_openide_classloader">
+        <echo message="Using openide/core classloader to load tests ..."/>
+        <property name="_helper_xtest.netbeans.classpath" refid="xtest.netbeans.classpath">
+            <classpath id="xtest.netbeans.classpath">
+                <fileset dir="${xtest.userdir}/xtest/lib">
+                    <include name="xtest.jar"/>
+                    <include name="xtest-ide-main.jar"/>         
+                </fileset>
+            </classpath>        
+        </property>
+        <property name="xtest.netbeans.classpath" value="${_helper_xtest.netbeans.classpath};${tbag.classpath}"/>
+    </target>
+    
+    <target name="ide_test_bootstrap_cont" unless="xtest.reuse.and.noexist" 
+            depends="ide_set_netbeans_classpath_default,ide_set_netbeans_classpath_test_core">
+
+        <ide-jvmargs jvmargs="${xtest.ide.jvmargs}" property="xtest.ide.commandline.jvmargs"/>
+            
+        <!--
+        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -nosplash -cp:p &quot;${xtest.ide.path}&quot; -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dtest.reuse.ide=${xtest.ide.reuse.userdir} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=&quot;${xtest.module}&quot; -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=${xtest.ide.exit} -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Djunit.properties.file=${junit.properties.file} -J-Dnetbeans.windows=${xtest.ide.winsys} -J-Dxtest.error.manager=${xtest.error.manager} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
+        -->
+        
+        <condition property="xtest.ide.timeout" value="0">
+ 	   <equals arg1="${xtest.ide.exit}" arg2="false"/>
+ 	</condition>        
+        
+        <property name="xtest.ide.timeout" value="${xtest.timeout}"/>
+        
+        
+        <!-- now create a system classloader path to be supplied to ide -->
+        <property name="xtest.netbeans.systemclassloader.patches" refid="xtest.netbeans.systemclassloader.path">
+            <classpath id="xtest.netbeans.systemclassloader.path">
+                <fileset dir="${xtest.workdir.idejars}">
+                    <include name="*.jar"/>
+                </fileset>       
+                <!-- this needs to be fixed, because of openide/core tests ... -->
+                <pathelement path="${tbag.classpath}"/>
+                <pathelement path="${test.classpath}"/>
+            </classpath>
+        </property>
+        
+        
+        <!-- ide classpath - ant and junit -->
+        <property name="xtest.ide.path" refid="xtest.ide.path">
+            <classpath id="xtest.ide.path">         
+                <fileset dir="${xtest.userdir}/xtest/lib/ext">
+                    <include name="*.jar"/>
+                </fileset>                
+            </classpath>
+        </property>        
+                
+        <!-- this property can be used to turn off the IDE security ... -->
+        <!--
+        <property name="xtest.ide.security" value="-J-Dnetbeans.security.nocheck=true"/>
+        -->
+        <property name="xtest.ide.security" value=""/>
+        
+        <!-- to  be removed -->
+        <property name="test.propertyfile" value=""/>
+        
+        <property name="args" value="-jdkhome &quot;${jdkhome}&quot; -userdir &quot;${xtest.userdir}&quot; -nosplash 
+-cp:p &quot;${xtest.ide.path}&quot; 
+-J-Dnetbeans.classpath=&quot;${xtest.netbeans.classpath}&quot; 
+-J-Dnetbeans.mainclass=org.netbeans.xtest.plugin.ide.Main 
+-J-Dnetbeans.full.hack=true 
+-J-Dnetbeans.windows=${xtest.ide.winsys} 
+-J-Dnetbeans.systemclassloader.patches=${xtest.netbeans.systemclassloader.patches} 
+-J-Dtest.class=${test.class} 
+-J-Dtest.exit=${xtest.ide.exit} 
+-J-Dtest.reuse.ide=${xtest.ide.reuse.userdir} 
+-J-Dtest.output.redirect=true 
+-J-Dtbag.classpath=&quot;${tbag.classpath}&quot; 
+
+-J-Dxtest.error.manager=${xtest.error.manager} 
+-J-Dxtest.home=&quot;${xtest.home}&quot;         
+-J-Dnbjunit.home=&quot;${nbjunit.home}&quot;
+-J-Dtestrunner.workdir=&quot;${xtest.workdir}/sys&quot;
+-J-Dtestrunner.timeout=${xtest.timeout} 
+
+-J-Dtestrunner.propertyfiles=&quot;${_ideplugin.test.propertyfile}&quot;
+
+-J-Dwork.dir=&quot;${xtest.workdir}/sys&quot;
+-J-Dxtest.workdir=&quot;${xtest.workdir}&quot;
+-J-Dxtest.tmpdir=&quot;${xtest.tmpdir}&quot;
+-J-Dxtest.sketchpad=&quot;${xtest.sketchpad}&quot;
+-J-Dnbjunit.workdir=&quot;${xtest.workdir}/user&quot;
+-J-Djunit.properties.file=&quot;${junit.properties.file}&quot;
+-J-Dxtest.timeout=${xtest.timeout}
+-J-Dxtest.ide.mounts=${xtest.ide.mounts}
+-J-Dxtest.ide.umount.defaults=${xtest.ide.umount.defaults}
+-J-Dxtest.ide.create.project=${xtest.ide.create.project}
+-J-Dxtest.ide.open.project=&quot;${xtest.ide.open.project}&quot;
+-J-Dxtest.userdir=&quot;${xtest.userdir}&quot;
+-J-Dxtest.ide.use.classloader=${xtest.ide.use.classloader}    
+${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
+
+<!--
+removed !!!!
+
+
+-J-Dtest.classpath=&quot;${test.classpath}&quot; 
+
+-->                   
+        
+        <echo message="enableAssertions=${xtest.enable.assertions} debugPort=${xtest.debug.port} debugSuspend=${xtest.debug.suspend}"/>
+        
+        <ideTestRunner dir="${core/ide.dir}/${nb.bin.dir}" executable="${core/ide.dir}/${nb.bin.dir}/runide.exe" workdir="${xtest.workdir}/sys"
+              os="Windows 95 Windows 98 Windows Me Windows NT Windows 2000 Windows XP"
+              failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
+              enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
+	    	  <arg line="${args}"/>
+        </ideTestRunner>            
+        
+        <ideTestRunner dir="${core/ide.dir}/${nb.bin.dir}" executable="sh"  workdir="${xtest.workdir}/sys"
+              os="Linux SunOS Solaris Mac OS X" 
+              failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
+              enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
+            <arg line="runide.sh ${args}"/>
+        </ideTestRunner>    
+        
+        
+        <delete dir="${xtest.userdir}/xtest"/>
+                                
+        <antcall target="delete-user-jars"/>        
+        
+        <delete dir="${xtest.workdir.idejars}"/>
+        
+        <!-- check whether IDE finished abnormally, in this case
+             add failure information to the testbag -->
+        <available file="${xtest.workdir}/ide.flag" property="testbag.failure"/>
+        <antcall target="testbag-failure"/>
+        
+    </target>
+    
+
+    <target name="check-userdir" if="xtest.reuse.and.noexist">
+        <testbaginfo unexpectedFailure="This testbag wants to reuse old userdir, but it doesn't exists. Testbag wasn't executed." outfile="${xtest.workdir}/xmlresults/testbag.xml"/> 
+    </target>
+    
+    <target name="delete-userdir" if="xtest.reuse.ide.false">
+        <delete dir="${xtest.userdir}"/>
+    </target>
+    
+    <target name="copy-user-jars" depends="init,ide-extra-jars" if="xtest.extra.jars.ide">
+         <for list="${ide.extra.classpath}" delimiters=";${path.separator}," property="xtest.ide.onejar">
+           <antcall target="copy-jar"/>
+         </for>
+    </target>
+    
+    <target name="copy-jar">
+        <!--
+         <copy file="${xtest.ide.onejar}" todir="${netbeans.home}/lib"/>
+         -->
+         <copy file="${xtest.ide.onejar}" todir="${xtest.workdir.idejars}"/>
+    </target>
+    
+    <target name="delete-user-jars" depends="init" if="xtest.extra.jars.ide">
+         <for list="${xtest.extra.jars.ide}" delimiters=";${path.separator}," property="xtest.ide.onejar">
+           <antcall target="delete-jar"/>
+         </for>
+    </target>
+    
+    <target name="delete-jar">
+        <!--
+         <delete file="${netbeans.home}/lib/${xtest.ide.onejar}"/>
+         -->
+         <delete file="${xtest.workdir.idejars}/${xtest.ide.onejar}"/>
+    </target>
+
+    <target name="ide-extra-jars" if="xtest.extra.jars.ide">
+        <jar-finder dirs="${xtest.extra.jars.path}" files="${xtest.extra.jars.ide}" 
+                   property="ide.extra.classpath"/>
+    </target>
+    
+    
+    <target name="ide_test_init">
+        <!-- deprecated
+        <property name="junit.fork" value="no"/>
+        -->
+        <!-- run tests in ide mode -->
+        <property name="xtest.testrunner.mode" value="ide"/>
+        <!-- !! always use empty path, JUnit task will use IDE filesystems instead !! -->
+        <pathdef useid="test.classpath"/>
+    </target>
+
+    <!-- if testbag did not finish correctly, notice this state to the current testbag -->
+    <target name="testbag-failure" if="testbag.failure">
+        <testbaginfo unexpectedFailure="testbag did not finish correctly, some tests may not have run" outfile="${xtest.workdir}/xmlresults/testbag.xml"/> 
+    </target>
+    
+    <!-- ======================== -->
+    <!-- stuff for moving results -->
+    <!-- ======================== -->
+    
+    <target name="move-ide-results">
+        <available file="${xtest.workdir}/sys/ide/system/ide.log" property="ide.userdir.available"/>
+        <antcall target="move-ide-userdir"/>
+    </target>
+    
+    <target name="move-ide-userdir" if="ide.userdir.available">
+        <!-- copy ide.log -->
+        <copy file="${xtest.workdir}/sys/ide/system/ide.log" todir="${xtest.current.results}/sys/ide"/>
+        <!-- copy output dir -->
+        <available file="${xtest.workdir}/sys/ide/output" type="dir" property="xtest.ide.output.exists"/>
+        <antcall target="copy-output"/>
+        <!-- copy ide screenshot image -->
+        <available file="${xtest.workdir}/sys/ide/system/screenshots" type="dir" property="xtest.ide.screenshot.exists"/>
+        <antcall target="copy-ide-screenshots"/>
+        <!-- copy ide.zip -->
+        <condition property="xtest.userdir.move">
+           <equals arg1="${xtest.archive.ide.userdir}" arg2="true"/>
+        </condition>
+        <antcall target="copy-ide.zip"/>
+    </target>
+    
+    <target name="copy-ide.zip" if="xtest.userdir.move">
+        <!-- zip the ide userdir stuff -->
+        <zip zipfile="${xtest.current.results}/sys/ide/ide.zip" basedir="${xtest.workdir}/sys/ide"/>
+    </target>
+
+    <target name="copy-output" if="xtest.ide.output.exists">
+        <copy todir="${xtest.current.results}/sys/ide/output">
+           <fileset dir="${xtest.workdir}/sys/ide/output"/>
+        </copy>
+    </target>
+    
+    <target name="copy-ide-screenshots" if="xtest.ide.screenshot.exists">
+        <copy todir="${xtest.current.results}/sys/ide/screenshots">
+            <fileset dir="${xtest.workdir}/sys/ide/system/screenshots"/>
+        </copy>
+    </target>
+    
+
+    
+    
+    <!-- =============== -->
+    <!-- utility targets -->
+    <!-- =============== -->
+    
+    <!-- init target - even this script have to initialize some stuff :-)) -->
+    <target name="init">
+        <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
+                 classpath="${xtest.home}/lib/xtest.jar"/>
+             
+        <echo message="${xtest.plugin.home}/lib/xtest-ide-plugin.jar"/>
+                 
+        <!-- the junit in the task is required, because it is used to prepare testlist -->
+        <nbtaskdef classpath="${xtest.plugin.home}/lib/xtest-ide-plugin.jar:${xtest.home}/lib/xtest-junit-testrunner.jar:${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar">
+            <taskdef name="ide-jvmargs" classname="org.netbeans.xtest.plugin.ide.IdeJvmArgs"/>
+            <taskdef name="ideTestRunner" classname="org.netbeans.xtest.plugin.ide.IdeTestRunnerTask"/>
+        </nbtaskdef>
+    </target>
+    
+    <!-- !!!! this target is copied directly from module_harness.xml !!!! -->
+    <!-- !!!! please keep in sync !!! -->
+    <target name="extra-classpath" if="xtest.extra.jars">
+        <jar-finder dirs="${xtest.extra.jars.path}" files="${xtest.extra.jars}" 
+                   property="test.extra.classpath"/>
+    </target>
+    
+    
+    
+    <!-- forbidden main target -->
+    <target name="forbidden">
+       <fail message="This script is not intended to be directly executed. This in only library."/>
+    </target>
+    
+</project>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!-- Authors: Jesse Glick -->
+<project name="cloverized tests" basedir="." default="help">
+
+    <property name="xtest.basedir" location="../.."/>
+
+    <!-- Overridable: -->
+    <property name="clover.home" location="/space/clover-1.0"/>
+    <property name="netbeans.home" location="${xtest.basedir}/nbbuild/netbeans"/>
+
+    <target name="help" description="Summary of usage.">
+        <echo><![CDATA[Run Clover coverage tests. See:
+http://www.thecortex.net/clover/
+
+Usage:
+# Rebuild NB classes to be instrumented (${netbeans.home} will be overwritten!):
+CLASSPATH=${clover.jar} ant -f build-clover.xml -Dclover.home=${clover.home} clean instrument
+# You can use -Dmoduleconfig=myconfig etc. if you want to.
+# (From inside NetBeans: copy clover.jar to modules/patches/org-apache-tools-ant-module/ rather than setting CLASSPATH)
+# Run developer tests (could also select other configs; see XTest docs):
+ant -f build-clover.xml -Dclover.home=${clover.home} runtests
+# Or, just run NetBeans and manually perform some actions.
+# View coverage in a GUI browser:
+ant -f build-clover.xml -Dclover.home=${clover.home} report.gui
+# Or, generate HTML coverage:
+ant -f build-clover.xml -Dclover.home=${clover.home} report.html
+# Or, generate HTML coverage and view it in Netscape/Mozilla on Unix:
+ant -f build-clover.xml -Dclover.home=${clover.home} report.html.unix]]></echo>
+    </target>
+
+    <property name="clover.jar" location="${clover.home}/lib/clover.jar"/>
+    <property name="clover.db.dir" location="clover/db"/>
+    <property name="clover.html" location="clover/html"/>
+    <property name="clover.html.index" location="${clover.html}/index.html"/>
+    <property name="unix.browser" location="/usr/bin/mozilla"/>
+    <property name="clover.initstring" location="${clover.db.dir}/netbeans.dat"/>
+
+
+    <target name="check.for.clover.home.pre">
+        <available property="clover.home.set" file="${clover.jar}"/>
+    </target>
+    <target name="check.for.clover.home" depends="check.for.clover.home.pre" unless="clover.home.set">
+        <fail>You must set the location of clover, e.g.: -Dclover.home=/opt/clover-1.0</fail>
+    </target>
+    <target name="check.for.clover.cp.pre">
+        <available property="clover.cp.set" classname="org.apache.tools.ant.taskdefs.CloverCompilerAdapter"/>
+    </target>
+    <target name="check.for.clover.cp" depends="check.for.clover.cp.pre,check.for.clover.home" unless="clover.cp.set">
+        <fail>You must include ${clover.jar} in Ant's classpath</fail>
+    </target>
+
+
+    <target name="with.clover" depends="check.for.clover.cp">
+	<property name="build.compiler" value="org.apache.tools.ant.taskdefs.CloverCompilerAdapter"/>
+        <mkdir dir="${clover.db.dir}"/>
+        <!-- Files that get broken by Clover instrumentation, generally by bloat beyond VM limits: -->
+        <property name="clover.excludes" value="org/netbeans/modules/css/text/syntax/javacc/CSSSyntaxTokenManager.java"/>
+        <!-- Circularly loaded classes: -->
+        <property name="clover.useclass.includes" value="org/openide/nodes/Node.java,org/openide/nodes/AbstractNode.java"/>
+    </target>
+
+    <target name="instrument" depends="with.clover" description="Rebuild NetBeans using Clover instrumentation.">
+        <!-- Make sure NB runtime classpath includes it too. For code mode tests, see runtests target. -->
+        <mkdir dir="${xtest.basedir}/core/netbeans/lib/ext"/>
+        <copy file="${clover.jar}" tofile="${xtest.basedir}/core/netbeans/lib/ext/clover.jar"/>
+        <!-- Recreate build. We need to ensure that clover.jar is in compiler classpath, so:  -->
+        <property name="build.sysclasspath" value="last"/>
+        <ant dir="${xtest.basedir}/nbbuild" target="build-nozip">
+            <property name="netbeans.dest.abs" location="${netbeans.home}"/>
+        </ant>
+    </target>
+
+    <target name="runtests" depends="check.for.clover.home" description="Run tests using Clover instrumentation.">
+        <!-- Test path used for code-mode tests; see instrument target for ide-mode tests and manual testing: -->
+        <property name="clover.test.path" value="${clover.jar}"/>
+        <ant dir="." target="cleanresults"/>
+        <ant dir="." target="runtests"/>
+    </target>
+
+    <target name="report.gui" depends="check.for.clover.home" description="View coverage in a GUI browser.">
+        <java classname="com.cortexeb.tools.clover.reporters.jfc.Viewer" fork="yes">
+	    <arg file="${clover.initstring}"/>
+	    <classpath>
+                <pathelement location="${clover.jar}"/>
+            </classpath>
+	</java>
+    </target>
+
+    <target name="report.html" depends="check.for.clover.home" description="Produce coverage results as HTML.">
+	<java classname="com.cortexeb.tools.clover.reporters.html.HtmlReporter" fork="yes">
+	    <arg value="-i"/>
+	    <arg file="${clover.initstring}"/>
+            <arg value="-o"/>
+            <arg file="${clover.html}"/>
+            <arg value="title"/>
+            <arg value="NetBeans Coverage"/>
+	    <classpath>
+                <pathelement location="${clover.jar}"/>
+                <pathelement location="${clover.home}/lib/velocity.jar"/>
+            </classpath>
+	</java>
+        <echo>Generated to ${clover.html.index}</echo>
+    </target>
+
+    <target name="report.html.unix" depends="report.html" description="View coverage results in Netscape/Mozilla (Unix).">
+        <exec executable="${unix.browser}">
+            <arg value="-remote"/>
+            <arg value="openURL(file://${clover.html.index})"/>
+        </exec>
+    </target>
+
+    <target name="clean" description="Clean Clover-related files.">
+        <ant dir="${xtest.basedir}/nbbuild" target="clean"/>
+        <delete dir="clover"/>
+    </target>
+
+</project>

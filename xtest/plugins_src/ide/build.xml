@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!-- build script for IDE XTest plugin -->
+<project basedir="." default="all" name="XTest IDE plugin">
+    <import file="../../../nbbuild/default-properties.xml"/>
+
+    <target name="all">
+        <!-- WRITEME -->
+    </target>
+    
+    
+    <target name="compile">
+        <path id="basecp">
+            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar" />
+            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar" />
+            <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+            <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
+            <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
+            <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/>
+            <pathelement location="${core/output.dir}/${nb.modules.dir}/org-netbeans-core-output.jar"/>
+            <pathelement location="${core/execution.dir}/${nb.modules.dir}/org-netbeans-core-execution.jar"/>
+            <!-- project support classpath -->
+            <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
+            <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>
+            <pathelement location="${java/j2seproject.dir}/${nb.modules.dir}/org-netbeans-modules-java-j2seproject.jar"/>
+            <pathelement location="${ant/project.dir}/${nb.modules.dir}/org-netbeans-modules-project-ant.jar"/>
+            <!-- use junit with already compiled extensions -->        
+            <pathelement location="../../lib/xtest.jar"/>
+            <pathelement location="../../lib/xtest-junit-testrunner.jar"/>
+            <pathelement location="../../lib/nbjunit.jar"/>
+            <pathelement location="${ant.home}/lib/ant.jar"/>
+            <fileset dir="../../external">
+                <include name="junit*.jar"/>
+            </fileset>            
+        </path>
+        <javac srcdir="src" destdir="src"
+           deprecation="${build.compiler.deprecation}"
+           debug="${build.compiler.debug}">          
+          <classpath refid="basecp"/>
+        </javac> 
+    </target>
+    
+    
+    <target name="jar" depends="compile">
+        <jar jarfile="lib/xtest-ide-plugin.jar"            
+            basedir="src"
+            excludesfile="${nball.cvs.root}/nbbuild/standard-jar-excludes.txt"
+            compress="false">
+            <include name="org/netbeans/xtest/plugin/ide/Ide*.class"/>
+        </jar>
+        
+        <jar jarfile="lib/xtest-ide-testexec.jar"            
+            basedir="src"
+            excludesfile="${nball.cvs.root}/nbbuild/standard-jar-excludes.txt"
+            compress="false">
+            <include name="org/netbeans/xtest/plugin/ide/Main*.class"/>
+        </jar>
+        <jar jarfile="lib/xtest-ide-main.jar"
+            basedir="src"
+            excludesfile="${nball.cvs.root}/nbbuild/standard-jar-excludes.txt"
+            compress="false">
+            <include name="org/netbeans/xtest/plugin/ide/Main*.class"/>
+            <include name="org/netbeans/xtest/plugin/ide/MainWithExec*.class"/>
+        </jar>        
+    </target>
+    
+    
+    <target name="deploy" depends="jar">
+        <property name="plugin.install.dir" value="${plugins.install.dir}/ide"/>
+        <mkdir dir="${plugin.install.dir}/lib"/>        
+        <copy file="plugin_descriptor.xml" toDir="${plugin.install.dir}"/>
+        <copy todir="${plugin.install.dir}/lib">
+            <fileset dir="lib"/>
+        </copy>
+    </target>
+    
+    <target name="clean">
+        <delete file="lib/xtest-ide-main.jar"/>
+        <delete file="lib/xtest-ide-testexec.jar"/>
+        <delete file="lib/xtest-ide-plugin.jar"/>
+        <delete>
+            <fileset dir="src">
+                <include name="**/*.class"/>
+            </fileset>        
+        </delete>
+     </target>
+     
+</project>

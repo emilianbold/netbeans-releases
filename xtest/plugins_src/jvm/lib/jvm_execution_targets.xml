@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project default="forbidden" name="jvm_plugin_targets">
+    
+
+
+
+    <!-- ============== -->
+    <!-- Code test part -->
+    <!-- ============== -->
+    
+    <target name="jvm_execution" depends="init,test_init,junit_test"/>
+    
+    <target name="test_init">
+
+            <!-- Needed for running code-mode tests with Clover (see build-clover.xml): -->
+        <property name="clover.test.path" value=""/> 
+                        
+        <pathdef useid="_jvmplugin.test.basepath">
+            <path>
+                <pathelement path="${junit.classpath}"/>
+                <pathelement path="${xtest.home}/lib/xtest.jar"/>
+                <pathelement path="${xtest.home}/lib/xtest-junit-testrunner.jar"/>
+                <pathelement path="${xtest.plugin.home}/lib/xtest-jvm-plugin.jar"/>
+                <pathelement location="${xtest.workdir}/sys/tests"/>
+                <pathelement path="${clover.test.path}"/>
+            </path>
+        </pathdef>    
+    
+        <property name="test.classpath" value=""/>
+        <pathdef useid="_jvmplugin.test.classpath">
+            <path refid="_jvmplugin.test.basepath"/>
+            <path path="${tbag.classpath}"/>
+            <path path="${test.classpath}"/>
+        </pathdef>
+    </target> 
+
+
+    <!-- ================= -->
+    <!-- Main JUnit target -->
+    <!-- ================= -->
+    <target name="junit_test">  
+
+        <xtest executeAction="prepare-tests"/>
+        <!-- BEGIN this has to be here, though it should be rather only in module_harness !!! -->
+        <property name="_jvmplugin.test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
+        <!-- END -->
+        
+        <property name="xtest.jvm.args" value=""/>
+        <property name="junit.properties.file" value=""/>
+
+        <property name="xtest.testrunner.mode" value="testsuite"/>        
+
+        <!-- run the tests -->        
+        <jvmTestRunner workDir="${xtest.workdir}/sys"  jdkHome="${jdkhome}" jvmArgs="${xtest.jvm.args}"
+            enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}"
+            testMode="${xtest.testrunner.mode}"  timeout="${xtest.timeout}">
+            <classpath  refid="_jvmplugin.test.classpath"/>
+
+            <sysproperty key="nbjunit.home" value="${nbjunit.home}"/>
+            <sysproperty key="xtest.home" value="${xtest.home}"/>            
+            
+            <sysproperty key="work.dir" value="${xtest.workdir}/sys"/>
+            <sysproperty key="xtest.workdir" value="${xtest.workdir}"/>
+            <sysproperty key="xtest.tmpdir" value="${xtest.tmpdir}"/>
+            <sysproperty key="xtest.sketchpad" value="${xtest.sketchpad}"/>
+            <sysproperty key="nbjunit.workdir" value="${xtest.workdir}/user"/>
+            <sysproperty key="junit.properties.file" value="${junit.properties.file}"/>
+            <syspropertyfile file="${_jvmplugin.test.propertyfile}"/>
+        </jvmTestRunner>
+    </target>
+
+
+    <!-- =============== -->
+    <!-- utility targets -->
+    <!-- =============== -->
+    
+    <!-- init target - even this script have to initialize some stuff :-)) -->
+    <target name="init">
+                                  
+        <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
+                 classpath="${xtest.home}/lib/xtest.jar"/>
+                 
+        <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">
+            <taskdef name="pathdef" classname="org.netbeans.xtest.PathDef"/>                        
+            <taskdef name="for" classname="org.netbeans.xtest.driver.ForTask"/>
+            <taskdef name="jar-finder" classname="org.netbeans.xtest.JarFinder"/>
+        </nbtaskdef>
+        
+        <nbtaskdef classpath="${junit.classpath}:${xtest.home}/lib/xtest.jar:${xtest.home}/lib/xtest-junit-testrunner.jar:${xtest.plugin.home}/lib/xtest-jvm-plugin.jar">
+            <taskdef name="jvmTestRunner" classname="org.netbeans.xtest.plugin.jvm.JVMTestRunnerTask"/>
+        </nbtaskdef>
+        
+    </target>    
+    
+    <!-- forbidden main target -->
+    <target name="forbidden">
+       <fail message="This script is not intended to be directly executed. This in only library."/>
+    </target>
+        
+</project>

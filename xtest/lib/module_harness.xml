@@ -1,0 +1,419 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="module-harness" default="forbidden">
+
+    <!-- location for workdir for the harness -->
+    <property name="xtest.workdir" location="work"/>
+    <!-- location for results from the harness -->
+    <property name="xtest.results" location="results"/>
+
+    <property name="xtest.tmpdir" location="${xtest.workdir}/tmpdir"/>
+    <property name="xtest.sketchpad" location="${xtest.workdir}/user/sketch-pad"/>
+
+    <property name="xtest.module" value="Unknown"/>
+    
+    <!-- hard timeout for single testbag (in miliseconds)-->    
+    <property name="xtest.timeout" value="2400000"/>    
+    
+    <!-- properties just for compiler -->
+    <property name="build.compiler.deprecation" value="off"/>
+    <!-- should be default ON, because it helps to find problems -->
+    <property name="build.compiler.debug" value="on"/>
+    
+    <property name="xtest.build" location="."/>    
+    <property name="xtest.file.name" value="tests.xar"/>
+    <property name="xtest.file.location" value="lib"/>
+    
+    <!-- nbjunit library home -->
+    <property name="nbjunit.home" value="${xtest.home}/lib"/>
+    
+
+    <!-- These in/excludes will be added to xtest.pattern    -->
+    <!-- if you want to use these properties, you should use -->
+    <!-- config with empty testbag                           -->    
+    <property name="xtest.includes" value=""/>
+    <property name="xtest.excludes" value=""/>   
+    
+
+    <target name="forbidden">
+       <antcall target="version"/>
+       <fail message="This script is not intended to be directly executed. This in only library."/>
+    </target>
+        
+    <target name="version" description="Shows version of XTest">
+        <property name="xtest.jar" value="${xtest.home}/lib/xtest.jar"/>
+        <taskdef name="version" classname="org.netbeans.xtest.XTestVersion" 
+                 classpath="${xtest.jar}"/>
+        <version/>
+    </target>    
+    
+    <!-- =========== -->
+    <!-- Init target -->
+    <!-- =========== -->
+    
+    <target name="init" depends="prepare-xtest">        
+    
+        <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
+                 classpath="${xtest.home}/lib/xtest.jar"/>                 
+                 
+        <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">
+            <taskdef name="nbpath" classname="org.netbeans.xtest.NbPath"/>
+            <taskdef name="nbpatternset" classname="org.netbeans.xtest.NbPatternset"/>
+            <taskdef name="pathdef" classname="org.netbeans.xtest.PathDef"/>                        
+            <taskdef name="write-property" classname="org.netbeans.xtest.UserPropertyWriter"/>
+            <taskdef name="for" classname="org.netbeans.xtest.driver.ForTask"/>
+            <taskdef name="jar-finder" classname="org.netbeans.xtest.JarFinder"/>
+        </nbtaskdef>
+        
+        <!-- set jdkhome to a real valid value -->
+        <nbpath jdkHomePropertyName="jdkhome"/>        
+        <!-- set junit.classpath to contain also nbjunit -->
+        <property name="junit.classpath" value="${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar"/>        
+
+	<!-- publishing tasks -->
+        <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">
+            <taskdef name="testruninfo" classname="org.netbeans.xtest.pe.TestRunInfoTask"/>
+            <taskdef name="testbaginfo" classname="org.netbeans.xtest.pe.TestBagInfoTask"/>
+            <taskdef name="regenerateXML" classname="org.netbeans.xtest.pe.RegenerateXMLTask"/>
+            <taskdef name="transformXML" classname="org.netbeans.xtest.pe.TransformXMLTask"/>
+            <taskdef name="printSummary" classname="org.netbeans.xtest.pe.PrintSummary"/>
+            <taskdef name="getResultsDirs" classname="org.netbeans.xtest.pe.GetResultsDirsTask"/>            
+        </nbtaskdef>
+        
+        <!-- plugin and user tasks -->
+        <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">
+            <!-- plugin tasks - for plugin writers -->
+            <taskdef name="pluginsInit" classname="org.netbeans.xtest.plugin.PluginsInitTask"/>
+            <taskdef name="pluginExecute" classname="org.netbeans.xtest.plugin.PluginExecuteTask"/>
+            <!-- user tasks - for XTest users -->
+            <taskdef name="compileTests" classname="org.netbeans.xtest.usertasks.CompileTestsTask"/>
+            <taskdef name="packageTests" classname="org.netbeans.xtest.usertasks.PackageTestsTask"/>
+            <taskdef name="buildTests" classname="org.netbeans.xtest.usertasks.BuildTestsTask"/>
+            <taskdef name="executeTests" classname="org.netbeans.xtest.usertasks.ExecuteTestsTask"/>
+            <taskdef name="xtest" classname="org.netbeans.xtest.usertasks.XTestActionTask"/>
+        </nbtaskdef>
+
+        <!-- Executors/Compilers-->
+        <nbtaskdef classpath="${junit.classpath}:${xtest.home}/lib/xtest.jar:${xtest.home}/lib/xtest-junit-testrunner.jar">
+            <taskdef name="test-executor" classname="org.netbeans.xtest.harness.MTestExecutor"/>            
+            <taskdef name="test-configurator" classname="org.netbeans.xtest.harness.MTestConfigTask"/>
+            <taskdef name="test-compiler" classname="org.netbeans.xtest.harness.MTestCompiler"/>            
+        </nbtaskdef>    
+
+       
+        <nbpatternset useid="xtest.pattern">
+            <patternset includes="${xtest.includes}" excludes="${xtest.excludes}">
+                <!--
+                <exclude name="**/*Suite.class"/>
+                -->
+                <exclude name="**/*$$*.class"/>
+                <exclude name="**/data/**"/>
+                <exclude name="**/hidden/**"/>
+                <exclude name="**/*Hidden.*"/>
+                <exclude name="**/*Hid.*"/>
+            </patternset>
+        </nbpatternset>
+        
+        <!-- There will be test classpath created from folowing two properties inside   -->
+        <!-- test executor in folowing way:                                             -->
+        <!-- ${xtest.classpath.root}/${xtest.testtype}/${tbag.classpath.work}           -->
+        <!-- and then testset specific dir and then returned in property tbag.classpath -->
+        <property name="tbag.classpath.root" location="${xtest.workdir}"/>
+        <property name="tbag.classpath.work" value="sys/tests"/>
+        
+       	<property file="${xtest.userdata.propertyfile}"/>       
+        
+        <!-- initialize plugins -->
+        <property name="xtest.preferred.plugins" value=""/>
+        <pluginsInit pluginsHome="${xtest.home}/plugins" preferredPlugins="${xtest.preferred.plugins}"/>
+        
+        <!-- deprecated stuff - required only for deprecated plugin -->
+        <!-- for some reason junit.path was used as a property for junit.classpath (which should be a better name) -->
+        <property name="junit.path" value="${junit.classpath}"/>
+        
+    </target>
+    
+    <target name="prepare-xtest">
+        <ant dir="${xtest.home}/lib" antfile="harness.xml" target="buildxtest"/>
+    </target>
+    
+    <!-- ======================== -->
+    <!-- Init cluster properties  -->
+    <!-- ======================== -->
+    <target name="init_cluster_properties">
+         <!-- Read moduleCluster.properties and directories.properties from netbeans.dest.dir -->
+         <property file="${netbeans.dest.dir}/directories.properties"/>
+         <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
+    </target>
+    
+    <!-- ======== -->
+    <!-- Run test -->
+    <!-- ======== -->
+    
+    <target name="config" depends="init, cleanworkdir">
+        <property name="xtest.executors" value=""/>
+        <property name="xtest.testbags" value=""/>
+        <property name="xtest.module.configfile" value=""/>
+        <property name="xtest.patternset.attribs" value=""/>
+        <property name="xtest.run.singletest" value=""/>
+        <!-- This task reads config file cfg-${xtest.testtype}.xml and selects all -->
+        <!-- testbags, which conforms to ${xtest.attribs} - is subset or equals -->
+        <test-configurator testtype="${xtest.testtype}" 
+                           testattributes="${xtest.attribs}"
+                           testexecutors="${xtest.executors}"
+                           testbags="${xtest.testbags}"
+                           testconfig="${xtest.module.configfile}"
+                           patternsetattribs="${xtest.patternset.attribs}"
+                           singleTest="${xtest.run.singletest}">
+             <patternset refid="xtest.pattern"/>
+	</test-configurator>                           
+    </target>
+    
+    <target name="runtests" depends="config,init_cluster_properties">
+        <condition property="xtest.runmessage" value="attributes: ${xtest.attribs}">
+           <equals arg1="${xtest.testbags}" arg2=""/>
+        </condition>
+        <property name="xtest.runmessage" value="testbags: ${xtest.testbags}"/>
+        <echo message="Running ${xtest.module} tests, testtype: ${xtest.testtype}, ${xtest.runmessage}"/>
+
+        <!-- prepare result dir and produce some informatino about this testrun -->
+        <mkdir dir="${xtest.results}"/>
+        <getResultsDirs testRunDirProperty="xtest.results.testrun.dir"/>
+        <testruninfo outfile="${xtest.results.testrun.dir}/xmlresults/testrun.xml"/>
+
+        <mkdir dir="${xtest.workdir}/user/sketch-pad"/>
+        <mkdir dir="${xtest.workdir}/tmpdir"/>
+        <mkdir dir="${xtest.workdir}/sys"/>
+        
+        <property name="xtest.debug.port" value="0"/>
+        <property name="xtest.debug.suspend" value="true"/>
+        <property name="xtest.enable.assertions" value="true"/>
+        
+        <test-executor paramClasspathProp="tbag.classpath"
+                       paramTestConfigProp="tbag.testtype"
+                       paramNameProp="tbag.name"
+                       paramExecutorProp="tbag.executor"
+                       resultDir="${xtest.workdir}/xmlresults/suites"
+                       workDir="${xtest.workdir}/sys"
+                       />
+                       
+        <ant antfile="${xtest.home}/lib/harness.xml" target="mail-results"/>
+
+        <!-- print summary -->
+        <printSummary resultsDir="${xtest.results}"/>   
+    </target>        
+    
+    
+    <target name="test" depends="deprecated_executors">
+        
+        <antcall target="prepare-tests"/>
+        
+        <property name="plugin.name" value=""/>
+        <property name="plugin.executor" value=""/>
+        <pluginExecute  pluginName="${plugin.name}" executeType="executor" executeAction="${plugin.executor}"/>
+        <!--
+        <antcall target="${xtest.exectype}_test_bootstrap"/>
+        -->
+    </target>
+    
+    <!-- deprecated executors - !!! -->
+    <target name="deprecated_executors" if="xtest.exectype">
+        
+        <echo message="**********************************************************"/>
+        <echo message="**********************************************************"/>
+        <echo message="********    This is DEPRECATED test mode    **************"/>
+        <echo message="**                                                      **"/>
+        <echo message="**             Please refer to a                        **"/>
+        <echo message="** http://xtest.netbeans.org/XTest_migration_guide.html **"/>
+        <echo message="**   to get information how to update your tests        **"/>
+        <echo message="**                                                      **"/>
+        <echo message="**********************************************************"/>
+        <echo message="**********************************************************"/>
+
+        <echo message="Requested xtest.exectype=${xtest.exectype}"/>
+       
+        <!-- original code mode -->
+        <condition property="plugin.name" value="deprecated">
+            <equals arg1="code" arg2="${xtest.exectype}"/>
+        </condition>
+        <condition property="plugin.executor" value="deprecated_jvm_execution">
+            <equals arg1="code" arg2="${xtest.exectype}"/>
+        </condition>        
+        
+        <!-- original ide mode -->
+        <condition property="plugin.name" value="deprecated">
+            <equals arg1="ide" arg2="${xtest.exectype}"/>
+        </condition>
+        <condition property="plugin.executor" value="deprecated_ide_internal_execution">
+            <equals arg1="ide" arg2="${xtest.exectype}"/>
+        </condition>
+        
+        <echo message="Using plugin ${plugin.name}, executor ${plugin.executor}"/>
+        <!--
+        <echo message="**********"/>
+        -->
+    </target>
+
+
+    <target name="prepare-tests-init">
+        <!-- prepare workdir structure -->
+        <mkdir dir="${xtest.workdir}/xmlresults"/>
+        <mkdir dir="${xtest.workdir}/xmlresults/suites"/>
+        <mkdir dir="${xtest.workdir}/sys/tests"/>        
+        <mkdir dir="${xtest.workdir}/user"/>
+
+        <property name="test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
+   	<write-property propertyPrefix="xtest.userdata" attribs="${xtest.attribs}" file="${test.propertyfile}"/>
+
+        <!-- create testbag info for report -->
+        <testbaginfo name="${tbag.name}" testType="${tbag.testtype}" testAttribs="${xtest.attribs}"
+                      executor="${tbag.executor}" module="${xtest.module}"
+                      outfile="${xtest.workdir}/xmlresults/testbag.xml"/>      
+    </target>    
+                
+    <target name="prepare-tests" depends="prepare-tests-init,test-unjared" unless="unjared">
+    
+        <unjar dest="${xtest.workdir}/sys/tests" 
+               src="${xtest.build}/${xtest.file.location}/${xtest.file.name}"/>
+    </target>
+    
+    <!-- Just test whether tests are already unzipped -->
+    <target name="test-unjared">
+        <available property="unjared" file="${xtest.workdir}/sys/tests/META-INF/MANIFEST.MF"/>
+    </target>
+    
+    <!-- ============== -->
+    <!-- Code test part -->
+    <!-- ============== -->
+   
+    <!-- nothing - everything has moved to deprecated plugin -->
+     
+  
+    <!-- ============= -->
+    <!-- IDE test part -->
+    <!-- ============= -->    
+                
+    <!-- nothing - everything has moved to deprecated plugin -->
+        
+
+        
+    <!-- ======================= -->
+    <!-- Test results formatting -->
+    <!-- ======================= -->
+    
+    <target name="test_report" depends="init">
+       <!-- deprecated again -->
+       <property name="plugin.name" value="deprecated"/>
+       <property name="plugin.compiler" value="deprecated_result_processor"/>
+       <pluginExecute pluginName="${plugin.name}" executeType="result_processor" executeAction="${plugin.compiler}"/>      
+    </target>
+       
+    
+    <!-- ======== -->
+    <!-- Building -->
+    <!-- ======== -->
+    
+    <target name="compiler-launcher" depends="config,deleteworkdir,init_cluster_properties" unless="xtest.distexec">
+       <test-compiler  paramClasspathProp="tbag.classpath"
+                       paramTestConfigProp="tbag.testtype"
+                       paramNameProp="tbag.name"
+                       paramExecutorProp="tbag.executor"/>    
+    </target>
+    
+    <target name="compiletests" depends="init" unless="xtest.distexec">
+       <!-- deprecated again -->
+       <property name="plugin.name" value="deprecated"/>
+       <property name="plugin.compiler" value="deprecated_compilation"/>
+       <pluginExecute pluginName="${plugin.name}" executeType="compiler" executeAction="${plugin.compiler}"/>              
+    </target>
+        
+    <!-- Creates lib/tests.xar with all tests for this module,       -->
+    <target name="buildtests" depends="compiletests" unless="xtest.distexec">
+       <!-- deprecated again -->
+       <property name="plugin.name" value="deprecated"/>
+       <property name="plugin.packager" value="deprecated_packaging"/>    
+       <pluginExecute pluginName="${plugin.name}" executeType="packager" executeAction="${plugin.packager}"/>
+    </target>
+    
+
+    <!-- this might be moved elsewhere - I have no opinion about this -->
+    <target name="cleantests">
+        <delete>
+            <fileset dir=".">
+                <include name="**/src/**/*.class"/>
+            </fileset>
+        </delete>
+        <delete dir="${xtest.file.location}"/>
+    </target>
+    
+    <!-- Removes results from previous test execution of given testtype  -->
+    <!-- xtest.testtype is defined either by default or by test executor -->    
+    <target name="cleanworkdir" description="Deletes working directory">
+        <available file="${xtest.workdir}" property="xtest.workdir.available"/>
+        <antcall target="cleanworkdir2"/>
+    </target>
+   
+    <target name="cleanworkdir2" if="xtest.workdir.available">
+        <delete includeEmptyDirs="true">
+           <fileset dir="${xtest.workdir}">
+             <exclude name="tmpdir/**"/>
+             <exclude name="user/sketch-pad/**"/>
+           </fileset>
+        </delete>
+    </target>
+        
+    <target name="deleteworkdir" description="Deletes working directory">
+        <delete includeEmptyDirs="true" dir="${xtest.workdir}"/>
+    </target>
+    
+    <target name="cleanresults" description="Deletes results" depends="cleanworkdir">
+        <delete dir="${xtest.results}"/>
+    </target>
+    
+    <target name="realclean"
+            description="Deletes classes, ${xtest.file.location}/${xtest.file.name} and *all* results."
+            depends="cleantests,cleanresults">
+    </target>
+
+    <!-- ================= -->
+    <!-- Config generation -->
+    <!-- ================= -->
+    <!-- Generate config with failed tests from the last test run. -->
+    <target name="generateFailedConfig" description="Generates config of failed tests from last results">
+        <taskdef name="generateFailedConfig" classpath="${xtest.home}/lib/xtest.jar"
+                 classname="org.netbeans.xtest.pe.GenerateFailedTask"/>
+	<generateFailedConfig inputDir="${xtest.results}" outputDir="."/>
+    </target>
+
+    <!-- Generates config from tests excluded in given config or in all configs 
+    find in input directory -->
+    <target name="generateExcludedConfig">
+        <taskdef name="generateExcludedConfig" classpath="${xtest.home}/lib/xtest.jar"
+                 classname="org.netbeans.xtest.pe.GenerateExcludedTask"/>
+        <property name="configFile" value="" />
+	<generateExcludedConfig inputDir="." outputDir="." configFile="${configFile}"/>
+    </target>
+    
+    <!-- =============== -->
+    <!-- Utility targets -->
+    <!-- =============== -->
+    
+    <!-- target for providing callback to defined script and target -->
+    <target name="callback" if="callback.file">
+        <echo message="Calling back buildfile ${callback.file}, target ${callback.target}" level="verbose"/>
+        <ant antfile="${callback.file}" target="${callback.target}"/>
+    </target>
+
+</project>

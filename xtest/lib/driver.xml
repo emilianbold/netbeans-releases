@@ -1,0 +1,390 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="XTest driver" basedir="." default="start">
+
+   <property file="${xtest.driver.re.user.conf}"/>
+   <property file="${xtest.driver.re.conf}"/>
+
+   <property name="xtest.driver.config" location="driver.properties"/>
+   <property file="${xtest.driver.config}"/>
+
+   <property name="xtest.execute" value="install-ide,checkout,build,execute"/>
+
+   <property name="ide.installto" location="../ide" />
+   <property name="ide.copyto" location="${ide.installto}/../cache" />
+   <property name="ide.nbm.temp" location="${ide.installto}/nbmtemp"/>
+
+   <property name="installer.java.home" location="${java.home}"/>
+   <property name="installer.params" value=""/>
+   <property name="installer.args" value=""/>
+   
+   <property name="xtest.home" location=".."/>
+   <property name="xtest.driver.backup" location="backup"/>
+   <property name="xtest.ide.exit" value="true"/>
+   <property name="ide.timestamp.file" value="cvstimestamp.txt"/>
+   
+   <property name="driver.classpath" location="${xtest.home}/lib/xtest.jar"/>
+   
+   <!-- ============== -->
+   <!-- Initialization -->
+   <!-- ============== -->
+   
+   <target name="init" depends="check-classpath">
+  
+     <available file="${xtest.driver.config}" property="xtest.driver.config.present"/>
+
+     <antcall target="check-configfile"/>
+     <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
+                 classpath="${driver.classpath}"/>
+     <nbtaskdef classpath="${driver.classpath}">
+     	<taskdef name="for" classname="org.netbeans.xtest.driver.ForTask"/>  
+     	<taskdef name="checkout" classname="org.netbeans.xtest.driver.CheckoutNeeded"/>
+     	<taskdef name="list" classname="org.netbeans.xtest.driver.ListReader"/>
+     	<taskdef name="instances" classname="org.netbeans.xtest.driver.InstancePropertiesParser"/>
+     	<taskdef name="setproperty" classname="org.netbeans.xtest.driver.PropertySetter"/>
+        <taskdef name="reportinfo" classname="org.netbeans.xtest.pe.XTestResultsReportTask"/>
+        <taskdef name="buildinfo" classname="org.netbeans.xtest.driver.ParseBuildInfo"/>
+        <taskdef name="unzip2" classname="org.netbeans.xtest.driver.UnzipExt"/>
+        <taskdef name="getfilename" classname="org.netbeans.xtest.driver.FileName"/>
+        <taskdef name="lookForTimestamp" classname="org.netbeans.xtest.driver.LookForTimestamp"/>
+     </nbtaskdef>
+   </target>
+   
+   <target name="check-configfile" unless="xtest.driver.config.present">
+       <fail message="Config file ${xtest.driver.config} doesn't exist."/>
+   </target>
+   
+   <target name="check-classpath">
+      <condition property="classpath.notfound">
+        <not>
+          <available file="${driver.classpath}"/>
+        </not>
+      </condition>
+      <antcall target="classpath-notfound">
+         <param name="not.found.message" location="${driver.classpath}"/>
+      </antcall>
+   </target>
+   
+
+   <target name="classpath-notfound" if="classpath.notfound">
+     <fail message="Driver can't find ${not.found.message}."/>
+   </target>
+   
+   <!-- ==== -->
+   <!-- Main -->
+   <!-- ==== -->
+  
+   <target name="actionlist" depends="init">
+     <list list="${xtest.execute}" prefix="xtest.execute_actions"/>
+   </target>
+
+   <target name="start" depends="init,localresults-clean,install-ide">
+     <instances property="xtest.instance.postfixes"/>
+     <echo message="Found following instances: ${xtest.instance.postfixes}"/>
+
+     <buildinfo ideHome="${ide.home}" buildNumberProperty="xtest.ide.build.name"
+                buildProjectNameProperty="xtest.tested.project" buildTimestampProperty="ide.timestamp"/>
+     <property name="ide.timestamp" value=""/>
+
+     <antcall target="checkout-system"/>
+     <antcall target="checkout-modules"/>
+
+     <!-- prebuild specific stuff -> this needs to be more enhanced !!! -->
+     <antcall target="prebuild"/>
+     <!-- create results dir, get info about tested build and create testreport file -->
+     <mkdir dir="${xtest.results}/xmlresults"/>
+     <echo message="ide installto = ${ide.installto}"/>
+     
+     <echo message="Testing build ${xtest.ide.build.name} in project ${xtest.tested.project}"/>
+     <property name="xtest.tested.project" value="unknown"/>
+     <property name="xtest.tested.project_id" value="unknown"/>
+     <property name="xtest.testing.team" value=""/>
+     <property name="xtest.testing.group" value="unknown"/>
+     <property name="xtest.tested.type" value="unknown"/>
+     <reportinfo  outFile="${xtest.results}/xmlresults/testreport.xml"
+            project="${xtest.tested.project}" project_id="${xtest.tested.project_id}"
+            team="${xtest.testing.team}" build="${xtest.ide.build.name}"
+            testingGroup="${xtest.testing.group}" testedType="${xtest.tested.type}"
+            host="${xtest.machine}" comment="${xtest.testrun.comment}" 
+            scanPropertiesForAttributes="true"/>
+     
+     
+     <for list="${xtest.instance.postfixes}" delimiters="," property="xtest.instance.postfix">
+       <antcall target="test-one-repository">
+           <param name="xtest.no.mail.results" value="true"/>
+       </antcall>
+     </for>   
+     <antcall target="pack-results"/>   
+     <ant antfile="${xtest.home}/lib/harness.xml" target="mail-results"/>  
+   </target>
+   
+   <target name="pack-results" if="ide.home">
+      <antcall target="pack-results2"/>
+   </target>
+   
+   <target name="pack-results2" if="xtest.ship.results.to">
+         <buildinfo ideHome="${ide.home}" buildNumberProperty="ide.build"
+                buildProjectNameProperty="xtest.tested.project" />
+         <echo message="Shipping results for build ${ide.build}"/>
+         <property name="ide.build" value="unknown"/>
+         <property name="xtest.machine" value="unknown"/>
+         <property name="xtest.tested.project" value="unknown"/>
+         <property name="xtest.testing.group" value="unknown"/>
+         <property name="xtest.tested.type" value="unknown"/>
+         <property name="archive.filename" value="xtr-${xtest.tested.project}-${ide.build}-${xtest.testing.group}-${xtest.tested.type}-${xtest.machine}.zip"/>
+         <property name="archive.file" value="${xtest.results}/${archive.filename}"/>
+         <zip zipfile="${archive.file}">
+            <fileset dir="${xtest.results}" excludes="xtr*.zip"/>                          
+         </zip>
+         <mkdir dir="${xtest.driver.backup}"/>
+         <copy file="${archive.file}" toDir="${xtest.driver.backup}"/>
+         <antcall target="ship-results"/>
+         <antcall target="ship-nbresults"/>
+         <delete file="${xtest.driver.backup}/${archive.filename}"/>
+   </target>
+   
+   <target name="ship-results" if="xtest.ship.results.to">
+        <copy overwrite="yes" file="${archive.file}" todir="${xtest.ship.results.to}"/>
+        <chmod perm="ugo+rw" file="${xtest.ship.results.to}/${archive.filename}"/>
+   </target>
+
+   <target name="ship-nbresults" if="xtest.ship.nbresults.to">
+        <copy overwrite="yes" file="${archive.file}" todir="${xtest.ship.nbresults.to}"/>
+        <chmod perm="ugo+rw" file="${xtest.ship.nbresults.to}/${archive.filename}"/>
+   </target>
+
+
+   <target name="test-one-repository">
+     <setproperty input="xtest.instance.cvs.workdir${xtest.instance.postfix}"
+                  output="xtest.instance.wdir"/>
+     <setproperty input="xtest.instance.location${xtest.instance.postfix}"
+                  output="xtest.instance.loc"/>                   
+     <setproperty input="xtest.instance.config${xtest.instance.postfix}"
+                  output="xtest.config"/>
+     <setproperty input="xtest.instance.master-config${xtest.instance.postfix}"
+                  output="xtest.instance.master-config"/>
+     <property name="xtest.instance.dir" location="${xtest.instance.wdir}/${xtest.instance.loc}"/>
+     <echo message="Testing xtest instance ${xtest.instance.dir} with config ${xtest.config}"/>
+     <!-- <antcall target="build"/> -->
+     <antcall target="clean"/>
+     <antcall target="execute"/>
+   </target>
+   
+  <!-- ======== -->
+  <!-- Checkout -->
+  <!-- ======== -->
+   
+   <target name="checkout-system" if="xtest.driver.sysmodules">
+       <antcall target="checkout-system-modules"/>
+   </target>
+   
+   <target name="checkout-system-modules" depends="init,actionlist" if="xtest.execute_actions.checkout">
+        <echo message="Checking out system modules: ${xtest.driver.sysmodules}"/>
+   	<checkout modules="${xtest.driver.sysmodules}" repos="${xtest.cvs.repositories}" quiet="true" date="${ide.timestamp}"/>
+   </target>
+   
+   <target name="checkout-modules" depends="init,actionlist" if="xtest.execute_actions.checkout">
+      <checkout repos="${xtest.cvs.repositories}" quiet="true" date="${ide.timestamp}"/>
+   </target>
+   
+  <!-- ======== -->
+  <!-- Building -->
+  <!-- ======== -->
+     
+   <target name="build" depends="actionlist" if="xtest.execute_actions.build">
+     <property name="xtest.nobuildxtest" value="true"/>
+     <ant dir="${xtest.instance.dir}" target="cleantests"/>
+     <ant dir="${xtest.instance.dir}" target="buildtests">
+        <property name="xtest.source.location" value="ide"/>
+        <property name="netbeans.home" value="${ide.home}"/>
+        <!-- Hotfix - need to set netbeans.dest.dir property to directory 
+        with moduleCluster.properties and directories.properties.
+        It expects ide.home points one level up, e.g. <root>/netbeans. -->
+        <property name="netbeans.dest.dir" location="${ide.home}/.."/>
+     </ant>
+   </target>
+   
+   <target name="clean" depends="actionlist" if="xtest.execute_actions.checkout">
+      <property name="xtest.nobuildxtest" value="true"/>
+      <ant dir="${xtest.instance.dir}" target="cleantests"/>
+   </target>
+   
+   <target name="prebuild" if="xtest.prebuild.dir">   
+        <property name="xtest.prebuild.antfile" value="build.xml"/>
+        <property name="xtest.prebuild.target" value="all"/>
+        <echo message="calling ${xtest.prebuild.dir}/${xtest.prebuild.antfile} with target=${xtest.prebuild.target}"/>
+        <ant antfile="${xtest.prebuild.antfile}" dir="${xtest.prebuild.dir}"
+            target="${xtest.prebuild.target}"/>
+   </target>
+   
+  <!-- ========= -->
+  <!-- Execution -->
+  <!-- ========= -->
+   
+   <target name="execute" depends="actionlist" if="xtest.execute_actions.execute">
+     <property name="xtest.nobuildxtest" value="true"/>
+     <!-- <ant dir="${xtest.instance.dir}" target="cleanresults"/>
+     <ant dir="${xtest.instance.dir}" target="localresults-clean"/> -->
+     <ant dir="${xtest.instance.dir}" target="runtests">
+       	<property name="netbeans.home" value="${ide.home}"/>
+        <!-- Hotfix - need to set netbeans.dest.dir property to directory 
+        with moduleCluster.properties and directories.properties.
+        It expects ide.home points one level up, e.g. <root>/netbeans. -->
+        <property name="netbeans.dest.dir" location="${ide.home}/.."/>
+      	<property name="xtest.mode" value="ide"/>
+      	<property name="xtest.noboot" value="true"/>
+ 	<property name="xtest.source.location" value="ide"/>
+     </ant>
+   </target>
+   
+   <target name="localresults-clean">
+        <delete dir="${xtest.results}"/>                
+   </target>
+
+  <!-- ================= -->
+  <!-- IDE installlation  -->
+  <!-- ================= -->
+
+  <target name="install-ide" depends="install-from,find-installed-ide,check-installed-ide,make-bin-executable,install-nbms"/>
+
+  <target name="install-from" depends="install-from-zip,install-from-http-zip,install-from-installer,install-from-jarinstaller,install-from-dir">
+    <lookForTimestamp installPath="${ide.install.path}" timestampFileName="${ide.timestamp.file}" timestampProperty="ide.timestamp"/>
+  </target>         
+         
+  <target name="install-from-installer" depends="check-ide-param" if="ide.install.type.installer">
+    <antcall target="clean-ide"/>
+    <copy file="${ide.install.path}" todir="${ide.copyto}"/>
+    <!-- this hack is for setting 'x' bit on unices, since ant does not preserve 'x' bits :-( -->    
+    <chmod dir="${ide.copyto}" perm="ugo+x" includes="*"/>
+    <!-- hack end -->
+    <getfilename file="${ide.install.path}" nameExtProperty="ide.install.path.filenameext" nameProperty="ide.install.path.filename"/>
+    <property name="install.paramfile" value="${ide.copyto}/${ide.install.path.filename}.sp"/>
+    <echo message="installDir=${ide.installto}${line.separator}jdkHome=${installer.java.home}${line.separator}${installer.params}" file="${install.paramfile}"/>
+    <exec executable="${ide.copyto}/${ide.install.path.filenameext}" failonerror="true">
+      <arg line="-silent ${installer.args}"/>
+    </exec>
+    <delete dir="${ide.copyto}"/>
+  </target>
+  
+  <target name="install-from-jarinstaller" depends="check-ide-param" if="ide.install.type.jarinstaller">
+    <antcall target="clean-ide"/>
+    <exec executable="${installer.java.home}/bin/java" failonerror="true">
+      <arg line="-DinstallDir=${ide.installto} -DjdkHome=${installer.java.home} ${installer.params} -jar ${ide.install.path} -silent"/>
+    </exec>
+  </target>
+  
+  <target name="install-from-zip" depends="check-ide-param" if="ide.install.type.zip">
+    <antcall target="clean-ide"/>
+    <mkdir dir="${ide.installto}"/>
+    <unzip src="${ide.install.path}" dest="${ide.installto}"/>    
+  </target>   
+
+  <target name="install-from-http-zip" depends="check-ide-param" if="ide.install.type.http-zip">
+    <antcall target="clean-ide"/>
+    <mkdir dir="${ide.installto}"/>
+    <get src="${ide.install.path}" dest="${ide.installto}/ide.zip" />   
+    <unzip src="${ide.installto}/ide.zip" dest="${ide.installto}"/>    
+    <delete file="${ide.installto}/ide.zip"/>
+  </target>   
+  
+  <target name="install-from-dir" depends="check-ide-param" if="ide.install.type.dir">
+      <available file="${ide.install.path}/lib/openide.jar" type="file" property="ide.home" value="${ide.install.path}"/>
+      <available file="${ide.install.path}/netbeans/lib/openide.jar" type="file" property="ide.home" value="${ide.install.path}${file.separator}netbeans"/>
+      <antcall target="find-existing-ide"/>
+  </target>   
+  
+  <target name="find-existing-ide" unless="ide.home">
+     <fail message="IDE was not found either ${ide.install.path} or ${ide.install.path}${file.separator}netbeans."/>
+  </target>    
+      
+  <target name="find-installed-ide" depends="install-from" unless="ide.home">
+     <available file="${ide.installto}/lib/openide.jar" type="file" property="ide.home" value="${ide.installto}"/>
+     <available file="${ide.installto}/netbeans/lib/openide.jar" type="file" property="ide.home" value="${ide.installto}${file.separator}netbeans"/>
+  </target>
+  
+  <target name="check-installed-ide" depends="find-installed-ide,actionlist" unless="ide.home" if="xtest.execute_actions.install-ide">
+     <fail message="IDE wasn't properly installed. Can't find ${ide.home}${file.separator}lib${file.separator}openide.jar."/>
+  </target>
+
+  <target name="install-type-fail" unless="ide.install.type.ok">
+     <fail message="Property ide.install.type has to contain one of these values: 'zip', 'installer' or 'dir'"/>
+  </target>
+  
+  <target name="make-bin-executable" if="ide.home">
+    <chmod perm="ugo+rx" dir="${ide.home}" includes="**/*.sh"/>
+  </target>
+  
+  <target name="check-ide-param" depends="actionlist" if="xtest.execute_actions.install-ide">
+      <condition property="ide.install.type.ok">
+        <or>
+          <equals arg1="${ide.install.type}" arg2="zip"/>
+          <equals arg1="${ide.install.type}" arg2="installer"/>
+          <equals arg1="${ide.install.type}" arg2="jarinstaller"/>
+          <equals arg1="${ide.install.type}" arg2="dir"/>
+          <equals arg1="${ide.install.type}" arg2="http-zip"/>
+        </or>
+      </condition>
+      <antcall target="install-type-fail"/>
+      <condition property="ide.install.type.zip">
+          <equals arg1="${ide.install.type}" arg2="zip"/>
+      </condition>
+      <condition property="ide.install.type.installer">
+          <equals arg1="${ide.install.type}" arg2="installer"/>
+      </condition>
+      <condition property="ide.install.type.jarinstaller">
+          <equals arg1="${ide.install.type}" arg2="jarinstaller"/>
+      </condition>
+      <condition property="ide.install.type.dir">
+          <equals arg1="${ide.install.type}" arg2="dir"/>
+      </condition>
+      <condition property="ide.install.type.http-zip">
+          <equals arg1="${ide.install.type}" arg2="http-zip"/>
+      </condition>
+  </target>
+  
+  <target name="install-nbms" if="ide.nbm.list">
+     <antcall target="install-nbms-2"/>
+  </target>
+  
+  <target name="install-nbms-2" if="xtest.execute_actions.install-ide">
+     <for list="${ide.nbm.list}" delimiters="," property="xtest.nbmfile">
+       <antcall target="install-one-nbm-from-zip"/>
+       <antcall target="install-one-nbm-from-dir"/>
+     </for> 
+     <delete dir="${ide.nbm.temp}"/>
+  </target>
+  
+  <target name="install-one-nbm-from-zip" if="ide.nbm.zipfile" unless="ide.nbm.dir">
+     <echo message="Installing nbm ${xtest.nbmfile} from zip ${ide.nbm.zipfile}"/>
+     <unzip2 src="${ide.nbm.zipfile}" dest="${ide.nbm.temp}" files="${xtest.nbmfile}"/>   
+     <unzip2 src="${ide.nbm.temp}/${xtest.nbmfile}" files="netbeans" shift="true" dest="${ide.home}"/> 
+  </target>
+
+  <target name="install-one-nbm-from-dir" if="ide.nbm.dir" unless="ide.nbm.zipfile">
+     <echo message="Installing nbm ${xtest.nbmfile} from dir ${ide.nbm.dir}"/>
+     <unzip2 src="${ide.nbm.dir}/${xtest.nbmfile}" files="netbeans" shift="true" dest="${ide.home}"/> 
+  </target>
+
+  
+  <!-- ======== -->
+  <!-- Cleaning -->
+  <!-- ======== -->
+  
+  <target name="clean-ide">
+    <delete dir="${ide.installto}"/>
+  </target>
+  
+  
+</project>

@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="xtest" default="netbeans" basedir=".">
+
+  <target name="netbeans" depends="check-xtest"/>
+
+  <target name="check-xtest" depends="check-files" unless="xtest.dist.complete">
+     <fail message="Xtest distribution isn't complete. Some files in directory lib is missing."/>
+  </target>
+  
+  <target name="check-files">
+     <echo message="This is xtest distribution without sources. XTest will not be compiled."/>
+     <condition property="xtest.dist.complete">
+    	<and>
+    	   <available file="lib/xtest.jar"/>
+    	   <available file="lib/nbjunit.jar"/>
+    	   <available file="lib/junit.jar"/>
+    	   <available file="lib/xtest-junit-testrunner.jar"/>
+    	</and>
+     </condition>
+  </target>
+  
+  <target name="version" depends="check-xtest">
+     <ant antfile="lib/module_harness.xml" target="version">
+         <property name="xtest.home" value="./"/>
+     </ant>
+  </target>
+
+</project>
