@@ -442,57 +442,84 @@ class SharedXMLSupport {
             console.receive(new CookieMessage(message));
         }
     }
-    
+
+    private Map ns2Location;
+
     private String[] getSchemaLocations(InputSource is) {
         EntityResolver res = createEntityResolver();
         if (res==null) return null;
+        ns2Location = Collections.EMPTY_MAP;
         String[] namespaces = getNamespaces(is);
         List loc = new ArrayList();
         for (int i=0;i<namespaces.length;i++) {
-            try {
-                javax.xml.transform.Source src = ((javax.xml.transform.URIResolver)res).resolve(namespaces[i], null);
-                if (src!=null) loc.add(namespaces[i]+" "+src.getSystemId()); //NOI18N
-            } catch (Exception ex) {}
+            String ns = namespaces[i];
+            if (ns2Location.containsKey(ns)) {
+                loc.add(ns + " " + ns2Location.get(ns)); //NOI18N
+            } else {
+                try {
+                    javax.xml.transform.Source src = ((javax.xml.transform.URIResolver)res).resolve(ns, null);
+                    if (src!=null) loc.add(ns+" "+src.getSystemId()); //NOI18N
+                } catch (Exception ex) {}
+            }
         }
         String[] schemaLocations = new String[loc.size()];
         loc.toArray(schemaLocations);
+        ns2Location = Collections.EMPTY_MAP;
         return schemaLocations;
     }
     
     private String[] getNamespaces(InputSource is) {
         NsHandler handler = new NsHandler();
         try {
-            XMLReader xmlReader = org.openide.xml.XMLUtil.createXMLReader();
+            XMLReader xmlReader = org.openide.xml.XMLUtil.createXMLReader(false, true);
             xmlReader.setContentHandler(handler);
             xmlReader.parse(is);
         } catch (IOException ex) {
         } catch (SAXException ex) {
         }
+        ns2Location = handler.mapping;
         return handler.getNamespaces();
     }
     
     private static class NsHandler extends org.xml.sax.helpers.DefaultHandler {
-        List namespaces;
-        
+        Set namespaces;
+        private Map mapping;
+
         NsHandler() {
-            namespaces=new ArrayList();
+            namespaces=new HashSet();
+            mapping = new HashMap();
         }
         
         public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
             if (atts.getLength()>0) { //NOI18N
-                for (int i=0;i<atts.getLength();i++) {
-                    if (atts.getQName(i).startsWith("xmlns")) { //NOI18N
-                        namespaces.add(atts.getValue(i));
+                // parse XMLSchema location attribute
+                String locations = atts.getValue("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation");  // NOI18N
+                if (locations != null) {
+                    StringTokenizer tokenizer = new StringTokenizer(locations);
+                    if ((tokenizer.countTokens() % 2) == 0) {
+                        while (tokenizer.hasMoreElements()) {
+                            String nsURI = tokenizer.nextToken();
+                            String nsLocation = tokenizer.nextToken();
+                            mapping.put(nsURI, nsLocation);
+                        }
                     }
                 }
             }
         }
-        
+
+        public void startPrefixMapping(String prefix, String uri) throws SAXException {
+            if ("http://www.w3.org/2001/XMLSchema-instance".equals(uri)) {  // NOIi8N
+                return; // it's build in into parser
+            }
+            namespaces.add(uri);
+        }
+
         String[] getNamespaces() {
             String[] ns = new String[namespaces.size()];
             namespaces.toArray(ns);
             return ns;
         }
+
     }
 
 }
