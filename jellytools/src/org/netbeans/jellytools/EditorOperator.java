@@ -136,7 +136,7 @@ public class EditorOperator extends TopComponentOperator {
         this.requestFocus(); // needed for pushKey() methods
     }
 
-    /** Closes all opened documents and discards all changes.
+    /** Closes all opened documents and discards all changes by IDE API calls.
      * It works also if no file is modified, so it is a safe way how to close
      * documents and no block further execution.
      */
@@ -153,8 +153,8 @@ public class EditorOperator extends TopComponentOperator {
         }
     }
 
-    /** Closes this editor and depending on given flag it saves or discards
-     * changes.
+    /** Closes this editor by IDE API call and depending on given flag 
+     * it saves or discards changes.
      * @param save true - save changes, false - discard changes
      */
     public void close(boolean save) {
