@@ -178,12 +178,12 @@ public class ProgressUI extends JPanel {
                     return -1;
                 }
             };
-            Object [] options = new Object [] { NotifyDescriptor.CLOSED_OPTION };
+            Object [] options = new Object [] {};
             dd.setOptions (options);
             dd.setClosingOptions (options);
-            dialog = DialogDisplayer.getDefault().createDialog(dd);
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
+                    dialog = DialogDisplayer.getDefault().createDialog(dd);
                     myMonitor.setMaximum (max);
                     myMonitor.setValue (0);
                     taskTitle.setText (msg);

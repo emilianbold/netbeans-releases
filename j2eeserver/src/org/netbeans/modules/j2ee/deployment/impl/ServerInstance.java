@@ -191,18 +191,29 @@ public class ServerInstance implements Node.Cookie {
     public void remove() {
         String displayName = getDisplayName();
         String title = NbBundle.getMessage(ServerInstance.class, "LBL_StopServerProgressMonitor", displayName);
-        DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
-        
-        for (Iterator i=targetsStartedByIde.iterator(); i.hasNext(); ){
-            String targetName = (String) i.next();
-            ServerTarget serverTarget = getServerTarget(targetName);
-            if (serverTarget != null) {
-                _stop(serverTarget.getTarget(), ui);
+        final DeployProgressMonitor ui = new DeployProgressMonitor(title, true, true);  // modeless with stop/cancel buttons
+        RequestProcessor.getDefault().post(new Runnable() {
+            private int MAX = 3;
+            public void run() {
+                if (startedByIde()) {
+                    ui.startProgressUI(MAX);
+                    for (Iterator i=targetsStartedByIde.iterator(); i.hasNext(); ){
+                        String targetName = (String) i.next();
+                        ServerTarget serverTarget = getServerTarget(targetName);
+                        if (serverTarget != null) {
+                            _stop(serverTarget.getTarget(), ui);
+                        }
+                    }
+                    if (isReallyRunning()) {
+                        ui.setClosingAllowed(true);
+                        _stop(ui);
+                    } else {
+                        ui.recordWork(MAX);
+                    }
+                }
+                ServerRegistry.getInstance().removeServerInstance(getUrl());
             }
-        }
-        
-        stop(ui);
-        ServerRegistry.getInstance().removeServerInstance(getUrl());
+        });
     }
     
     /**
