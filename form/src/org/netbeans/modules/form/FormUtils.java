@@ -16,7 +16,7 @@ package com.netbeans.developer.modules.loaders.form.formeditor;
 import java.awt.*;
 import java.beans.*;
 import java.io.*;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.lang.reflect.Method;
 import javax.swing.JComponent;
 
@@ -30,11 +30,11 @@ import com.netbeans.developer.modules.loaders.form.FormBCObjectInputStream;
 
 /** A class that contains utility methods for the formeditor.
 *
-* @version  1.01, Jul 30, 1998
+* @author Ian Formanek
 */
 public class FormUtils extends Object {
 
-  private static final boolean debug = true; // (System.getProperty ("netbeans.debug.form") != null);
+  private static final boolean debug = (System.getProperty ("netbeans.debug.form") != null);
 
   /** The IDESettings - useed for output details level */
   private static final IDESettings ideSettings = new IDESettings ();
@@ -42,9 +42,9 @@ public class FormUtils extends Object {
   /** The list of all well-known heavyweight components */
   private static Class[] heavyweightComponents;
 
-  private static Hashtable jComponentIgnored;
+  private static HashMap jComponentIgnored;
 
-  private static Hashtable valuesCache = new Hashtable ();
+  private static HashMap valuesCache = new HashMap ();
 
   /** The properties whose changes are ignored in JComponent subclasses */
   private static String[] jComponentIgnoredList = new String [] {
@@ -78,7 +78,7 @@ public class FormUtils extends Object {
       throw new InternalError("Cannot initialize AWT classes");
     }
 
-    jComponentIgnored = new Hashtable ();
+    jComponentIgnored = new HashMap (15);
     for (int i = 0; i < jComponentIgnoredList.length; i++)
       jComponentIgnored.put (jComponentIgnoredList[i], jComponentIgnoredList[i]);
   }
@@ -474,6 +474,8 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  5    Gandalf   1.4         4/7/99   Ian Formanek    Debug finalized, 
+ *       Hashtable->HashMap
  *  4    Gandalf   1.3         3/29/99  Ian Formanek    Added DEBUG methods
  *  3    Gandalf   1.2         3/28/99  Ian Formanek    
  *  2    Gandalf   1.1         3/24/99  Ian Formanek    
