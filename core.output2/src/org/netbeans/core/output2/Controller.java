@@ -16,16 +16,13 @@ import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.text.DefaultEditorKit;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
 import org.openide.ErrorManager;
-import org.openide.actions.CopyAction;
 import org.openide.actions.FindAction;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.ActionPerformer;
-import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.*;
 
@@ -114,6 +111,7 @@ public class Controller { //XXX public only for debug access to logging code
             (KeyStroke)null);
     
     Action toEditorAction = new ControllerAction (ACTION_TO_EDITOR, "ToEditorAction", 
+            // if you ever change or remove the shortcut, check the popup hiding hack. in postPopuMenu()
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
 
     private Object[] popupItems = new Object[] {
@@ -900,8 +898,16 @@ public class Controller { //XXX public only for debug access to logging code
                 }
             }
         }
-        popup.addPopupMenuListener(new PMListener(popupItems));
+        // hack to remove the esc keybinding when doing popup..
+        KeyStroke esc = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        JComponent c = tab.getOutputPane().getTextView();
+        Object escHandle = c.getInputMap().get(esc);
+        c.getInputMap().remove(esc);
+        tab.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).remove(esc);
+        
+        popup.addPopupMenuListener(new PMListener(popupItems, escHandle));
         popup.show(src, p.x, p.y);
+        
     }
     
     /**
@@ -910,14 +916,24 @@ public class Controller { //XXX public only for debug access to logging code
      */
     private static class PMListener implements PopupMenuListener {
         private Object[] popupItems;
-        PMListener (Object[] popupItems) {
+        private Object handle;
+        PMListener (Object[] popupItems, Object escHandle) {
             this.popupItems = popupItems;
+            handle = escHandle;
         }
         
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
             JPopupMenu popup = (JPopupMenu) e.getSource();
             popup.removeAll();
             popup.setInvoker(null);
+            // hack
+            AbstractOutputTab tab = (AbstractOutputTab)popup.getClientProperty("component");
+            KeyStroke esc = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+            JComponent c = tab.getOutputPane().getTextView();
+            c.getInputMap().put(esc, handle);
+            tab.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(esc, handle);
+            
+            //hack end
             popup.putClientProperty ("container", null); //NOI18N
             popup.putClientProperty ("component", null); //NOI18N
             popup.removePopupMenuListener(this);

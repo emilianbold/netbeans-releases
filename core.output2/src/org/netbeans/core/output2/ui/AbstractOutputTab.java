@@ -90,7 +90,7 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
             // mkleint - ignore the WeakAction referencing as it introduces
             // additional non obvious contract to using the the toolbar actions.
 //            actions[i] = new WeakAction(a[i]);
-            installKeyboardAction (a[i]);
+            installKeyboardAction (actions[i]);
             jb[i] = new JButton(actions[i]);
             jb[i].setBorderPainted(false);
             jb[i].setOpaque(false);
@@ -136,6 +136,8 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
         name = (String) a.getValue(Action.NAME);
         if (accel != null) {
             if (Controller.log) Controller.log ("Installed action " + name + " on " + accel);
+            // if the logic here changes, check the popup escaping hack in Controller
+            // it temporarily removes the VK_ESCAPE from input maps..
             JComponent c = getOutputPane().textView;
             c.getInputMap().put(accel, name);
             c.getActionMap().put(name, a);
