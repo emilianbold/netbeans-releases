@@ -43,7 +43,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/url/TemplateHelp.html"/>
             </file>
-            <!-- [PENDING] this does not currently show up until the folder is refreshed (is that still true?): -->
             <file name="group.group">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.group.Bundle"/>
                 <attr name="template" boolvalue="true"/>
