@@ -137,8 +137,7 @@ public abstract class NbBaseServlet extends HttpServlet {
             }
             // PENDING - URL com/ behaves incorrectly
             if (encoding == null) {
-                // encoding = "thisisabug/inclassloader"; // NOI18N
-                return false;
+                encoding = "content/unknown"; // NOI18N
             }
             response.setContentType(encoding);
             // don't know content length
