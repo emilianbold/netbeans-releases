@@ -1,8 +1,11 @@
-public final int length
-public Object clone()
+protected int x
+protected int y
+protected native Object clone() throws CloneNotSupportedException
 public boolean equals(Object obj)
-public final native Class getClass()
+protected void finalize() throws Throwable
+public final native Class<Object> getClass()
 public native int hashCode()
+public void moveAlso(int dx, int dy)
 public final native void notify()
 public final native void notifyAll()
 public String toString()
