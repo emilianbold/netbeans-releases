@@ -41,73 +41,86 @@ import org.openide.util.actions.*;
 
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
-import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.api.ElementCookie;
-import org.apache.tools.ant.module.api.IntrospectedInfo;
+import org.apache.tools.ant.module.api.*;
 import org.apache.tools.ant.module.xml.ElementSupport;
 import org.apache.tools.ant.module.wizards.properties.*;
+import org.openide.util.Utilities;
 
 /** A node that represents an Ant project.
  */
-public class AntProjectNode extends DataNode implements ChangeListener, PropertyChangeListener {
-
+public class AntProjectNode extends DataNode implements ChangeListener {
+    
     public AntProjectNode (DataObject obj) {
-        super (obj, new AntProjectChildren ((AntProjectCookie) obj.getCookie (AntProjectCookie.class)));
-        setIconBase ("org/apache/tools/ant/module/resources/AntIcon"); // NOI18N
-        AntProjectCookie cookie = (AntProjectCookie) getCookie (AntProjectCookie.class);
-        cookie.addChangeListener (WeakListener.change (this, cookie));
-        obj.addPropertyChangeListener (WeakListener.propertyChange (this, obj));
-        RequestProcessor.postRequest (new Runnable () {
-                public void run () {
-                    updateDisplayName ();
-                    updateElementCookie ();
-                }
-            }, 500); // don't even think about squeezing out folder recognizer thread...
+        this(obj, (AntProjectCookie)obj.getCookie(AntProjectCookie.class));
+    }
+    private AntProjectNode(DataObject obj, AntProjectCookie cookie) {
+        super(obj, new AntProjectChildren(cookie));
+        cookie.addChangeListener(WeakListener.change(this, cookie));
         getCookieSet ().add (new ProjectNodeIndex (this));
     }
-
-    private void updateDisplayName () {
-        AntProjectCookie cookie = (AntProjectCookie) getCookie (AntProjectCookie.class);
+    
+    public Node.Cookie getCookie(Class c) {
+        if (c == ElementCookie.class || c == IntrospectionCookie.class) {
+            AntProjectCookie main = (AntProjectCookie)getDataObject().getCookie(AntProjectCookie.class);
+            Element projel = main.getProjectElement();
+            if (projel != null) {
+                return new ElementSupport.Introspection(projel, Project.class.getName());
+            }
+        }
+        return super.getCookie(c);
+    }
+    
+    public Image getIcon(int type) {
+        AntProjectCookie.ParseStatus cookie = (AntProjectCookie.ParseStatus)getDataObject().getCookie(AntProjectCookie.ParseStatus.class);
         if (cookie.getFile() == null && cookie.getFileObject() == null) {
             // Script has been invalidated perhaps? Don't continue, we would
             // just get an NPE from the getParseException.
-            return;
+            return Utilities.loadImage("org/apache/tools/ant/module/resources/AntIconError.gif"); // NOI18N
         }
-        Element pel = cookie.getProjectElement ();
-        if (pel != null) {
-            String projectName = pel.getAttribute ("name"); // NOI18N
-            if (! projectName.equals("")) { // NOI18N
-                // Set the node description in the IDE to the name of the project 
-                setShortDescription(NbBundle.getMessage (AntProjectNode.class, "LBL_named_script_description", projectName));
-            } else {
-                // No name specified, OK.
-                setShortDescription(NbBundle.getMessage (AntProjectNode.class, "LBL_anon_script_description"));
-            }
+        if (!cookie.isParsed()) {
+            // Assume for now it is not erroneous.
+            return Utilities.loadImage("org/apache/tools/ant/module/resources/AntIcon.gif"); // NOI18N
         }
-        Throwable exc = cookie.getParseException ();
-        if (exc == null) {
-            setIconBase ("org/apache/tools/ant/module/resources/AntIcon"); // NOI18N
+        Throwable exc = cookie.getParseException();
+        if (exc != null) {
+            return Utilities.loadImage("org/apache/tools/ant/module/resources/AntIconError.gif"); // NOI18N
         } else {
-            String m = exc.getLocalizedMessage ();
-            if (m == null || m.length () == 0) {
-                m = exc.toString ();
-                AntModule.err.annotate (exc, ErrorManager.UNKNOWN, "Strange parse error in " + ((DataObject) getCookie (DataObject.class)).getPrimaryFile (), null, null, null); // NOI18N
-                AntModule.err.notify (ErrorManager.INFORMATIONAL, exc);
-            }
-            setShortDescription (m);
-            setIconBase ("org/apache/tools/ant/module/resources/AntIconError"); // NOI18N
+            return Utilities.loadImage("org/apache/tools/ant/module/resources/AntIcon.gif"); // NOI18N
         }
     }
-
-    private void updateElementCookie () {
-        AntProjectCookie main = (AntProjectCookie) getCookie (AntProjectCookie.class);
-        Element projel = main.getProjectElement ();
-        if (projel != null) {
-            getCookieSet ().add (new ElementSupport.Introspection (projel, Project.class.getName ()));
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+    
+    public String getShortDescription() {
+        AntProjectCookie cookie = (AntProjectCookie)getDataObject().getCookie(AntProjectCookie.class);
+        if (cookie.getFile() == null && cookie.getFileObject() == null) {
+            // Script has been invalidated perhaps? Don't continue, we would
+            // just get an NPE from the getParseException.
+            return super.getShortDescription();
+        }
+        Throwable exc = cookie.getParseException();
+        if (exc != null) {
+            String m = exc.getLocalizedMessage();
+            if (m != null) {
+                 return m;
+            } else {
+                return exc.toString();
+            }
         } else {
-            ElementCookie cookie = (ElementCookie) getCookie (ElementCookie.class);
-            if (cookie != null) {
-                getCookieSet ().remove (cookie);
+            Element pel = cookie.getProjectElement();
+            if (pel != null) {
+                String projectName = pel.getAttribute("name"); // NOI18N
+                if (!projectName.equals("")) { // NOI18N
+                    // Set the node description in the IDE to the name of the project
+                    return NbBundle.getMessage(AntProjectNode.class, "LBL_named_script_description", projectName);
+                } else {
+                    // No name specified, OK.
+                    return NbBundle.getMessage(AntProjectNode.class, "LBL_anon_script_description");
+                }
+            } else {
+                // ???
+                return super.getShortDescription();
             }
         }
     }
@@ -280,16 +293,11 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         props.put (pcp);
     }
 
-    public void propertyChange (PropertyChangeEvent evt) {
-        String prop = evt.getPropertyName ();
-        if (prop == null || prop.equals (DataObject.PROP_NAME)) {
-            updateDisplayName ();
-        }
-    }
-
     public void stateChanged (ChangeEvent ev) {
-        updateDisplayName ();
-        updateElementCookie ();
+        fireIconChange();
+        fireOpenedIconChange();
+        fireShortDescriptionChange(null, null);
+        fireCookieChange();
         firePropertyChange (null, null, null);
     }
 

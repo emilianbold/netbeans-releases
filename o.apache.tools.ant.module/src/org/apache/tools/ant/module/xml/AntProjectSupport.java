@@ -43,7 +43,7 @@ import org.openide.util.WeakListener;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 
-public class AntProjectSupport implements AntProjectCookie, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable, ChangeListener {
+public class AntProjectSupport implements AntProjectCookie.ParseStatus, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable, ChangeListener {
   
     private File file;
     private FileObject fo;
@@ -152,6 +152,10 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
         invalidate ();
     }
     
+    public boolean isParsed() {
+        return parsed;
+    }
+    
     public Document getDocument () {
         if (parsed) {
             return projDoc;
@@ -246,7 +250,12 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
         } catch (Exception e) {
             // leave projDoc the way it is...
             exception = e;
+            if (!(exception instanceof SAXParseException)) {
+                AntModule.err.annotate(exception, ErrorManager.UNKNOWN, "Strange parse error in " + this, null, null, null); // NOI18N
+                AntModule.err.notify(ErrorManager.INFORMATIONAL, exception);
+            }
         }
+        fireChangeEvent();
         parsed = true;
     }
     
