@@ -169,31 +169,38 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     private RequestProcessor priviledged;
     /** the folder that is being modified */
     private FileObject blocked;
-    public void runAtomicAction (FileObject target, FileSystem.AtomicAction action) 
+    public void runAtomicAction (final FileObject target, final FileSystem.AtomicAction action) 
     throws java.io.IOException {
-        Thread prev;
-        FileObject prevBlocked;
-        synchronized (this) {
-            // make sure that we are the ones that own 
-            // the recognition process
-            enterRecognition (null);
-            prev = atomic;
-            prevBlocked = blocked;
-            atomic = Thread.currentThread ();
-            blocked = target;
-        }
         
-        Collection findPrev = enterAllowContructor ();
-        try {
-            target.getFileSystem ().runAtomicAction(action);
-        } finally {
-            synchronized (this) {
-                atomic = prev;
-                blocked = prevBlocked;
-                notifyAll ();
+        class WrapAtomicAction implements FileSystem.AtomicAction {
+            public void run () throws java.io.IOException {
+                Thread prev;
+                FileObject prevBlocked;
+                synchronized (DataObjectPool.this) {
+                    // make sure that we are the ones that own 
+                    // the recognition process
+                    enterRecognition (null);
+                    prev = atomic;
+                    prevBlocked = blocked;
+                    atomic = Thread.currentThread ();
+                    blocked = target;
+                }
+
+                Collection findPrev = enterAllowContructor ();
+                try {
+                    action.run ();
+                } finally {
+                    synchronized (DataObjectPool.this) {
+                        atomic = prev;
+                        blocked = prevBlocked;
+                        DataObjectPool.this.notifyAll ();
+                    }
+                    exitAllowConstructor (findPrev);
+                }
             }
-            exitAllowConstructor (findPrev);
-        }
+        } // end of WrapAtomicAction
+        
+        target.getFileSystem ().runAtomicAction(new WrapAtomicAction ());
     }
     
     /** The thread that runs in atomic action wants to delegate its priviledia
