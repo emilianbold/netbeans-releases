@@ -308,7 +308,7 @@ public class I18nManager {
     private static boolean isFormDataObject(DataObject dataObject) {
         try {
              // Test for form module presence.
-            Class formModule = Class.forName("org.netbeans.modules.form.FormModule", // NOI18N
+            Class formModule = Class.forName("org.netbeans.modules.form.FormEditorModule", // NOI18N
                 false, I18nManager.class.getClassLoader());
 
             // Form module is available -> call dependent code.
