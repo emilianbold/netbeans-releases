@@ -319,7 +319,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    public void setValue (Object val){
                        TomcatManager mng = getTomcatManager();
                        if (mng!=null) {
-                           if (mng.isRunning()) {
+                           if (mng.isRunning(false)) {
                                TomcatInstallUtil.notifyThatRunning(mng);
                            } else {
                                Integer newPort = (Integer)val;
@@ -346,7 +346,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    public void setValue (Object val){
                        TomcatManager mng = getTomcatManager();
                        if (mng!=null) {
-                           if (mng.isRunning()) {
+                           if (mng.isRunning(false)) {
                                TomcatInstallUtil.notifyThatRunning(mng);
                            } else {
                                Integer newPort = (Integer)val;
@@ -541,7 +541,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    public void setValue (Object val){
                        TomcatManager mng = getTomcatManager();
                        if (mng!=null) {
-                           if (mng.isRunning()) {
+                           if (mng.isRunning(false)) {
                                TomcatInstallUtil.notifyThatRunning(mng);
                            } else {
                                setDebugPort((Integer)val);
@@ -565,7 +565,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    public void setValue (Object val){
                        TomcatManager mng = getTomcatManager();
                        if (mng!=null) {
-                           if (mng.isRunning()) {
+                           if (mng.isRunning(false)) {
                                TomcatInstallUtil.notifyThatRunning(mng);
                            } else {
                                setClassic((Boolean)val);
@@ -592,7 +592,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                        public void setValue (Object val) {
                            TomcatManager mng = getTomcatManager();
                            if (mng!=null) {
-                               if (mng.isRunning()) {
+                               if (mng.isRunning(false)) {
                                    TomcatInstallUtil.notifyThatRunning(mng);
                                } else {
                                     setDebugType((String)val);
@@ -620,7 +620,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                        public void setValue (Object val){
                            TomcatManager mng = getTomcatManager();
                            if (mng!=null) {
-                               if (mng.isRunning()) {
+                               if (mng.isRunning(false)) {
                                    TomcatInstallUtil.notifyThatRunning(mng);
                                } else {
                                    setSharedMemory((String)val);

@@ -158,7 +158,7 @@ public final class StartTomcat extends StartServer implements ProgressObject
      * Returns true if this admin server is running.
      */
     public boolean isRunning() {
-        return tm.isRunning ();
+        return tm.isRunning (true);
     }
 
     /**

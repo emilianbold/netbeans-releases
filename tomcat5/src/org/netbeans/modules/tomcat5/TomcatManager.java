@@ -144,6 +144,12 @@ public class TomcatManager implements DeploymentManager {
     /** Tomcat specific Instance property - if this property exists and is set 
        to <code>true</code> Tomcat will be stoped wiht the "-force" option */
     private static final String FORCE_STOP_OPTION = "forceStopOption";
+    
+    /** Tomcat specific Instance property - running state check timeout in millis */
+    public static final String RUNNING_CHECK_TIMEOUT = "runningCheckTimeout";
+    
+    /* Default running state check timeout in millis */
+    public static final int DEFAULT_RUNNING_CHECK_TIMEOUT = 1000;
 
     /** Manager state. */
     private boolean connected;
@@ -260,12 +266,43 @@ public class TomcatManager implements DeploymentManager {
         this.catalinaBase = catBase;
     }
      */
+
+    /**
+     * Returns true if the server is running.
+     *
+     * @param checkResponse should be checked whether is the server responding - is really up?
+     * @return <code>true</code> if the server is running.
+     */
+    public boolean isRunning(boolean checkResponse) {
+        return isRunning(getRunningCheckTimeout(), checkResponse);
+    }
     
     /**
-     * Returns true if this admin server is running.
+     * Returns true if the server is running.
+     * 
+     * @param timeout for how long should we keep trying to detect the running state.
+     * @param checkResponse should be checked whether is the server responding - is really up?
+     * @return <code>true</code> if the server is running.
      */
-    public boolean isRunning() {
-        return URLWait.waitForStartup (this, 1000);
+    public boolean isRunning(int timeout, boolean checkResponse) {
+        Process proc = getTomcatProcess();
+        if (proc != null) {
+            try {
+                // process is stopped
+                proc.exitValue();
+                return false;
+            } catch (IllegalThreadStateException e) {
+                // process is running
+                if (!checkResponse) {
+                    return true;
+                }
+            }
+        }
+        if (checkResponse) {
+            return URLWait.waitForStartup (this, timeout); // is tomcat responding?
+        } else {
+            return false; // cannot resolve the state
+        }
     }
     
     /** Returns identifier of TomcatManager. This is not a real URI!
@@ -616,6 +653,27 @@ public class TomcatManager implements DeploymentManager {
             if (val != null) return Boolean.valueOf(val.toString()).booleanValue();
         }
         return false;
+    }
+    
+        
+    /** 
+     * Return running state check timeout. The default value is 1000ms.
+     *
+     * @return running state check timeout. The default value is 1000ms.
+     */
+    public int getRunningCheckTimeout() {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            Object val = ip.getProperty(RUNNING_CHECK_TIMEOUT);
+            if (val != null) {
+                try {
+                    return Integer.valueOf(val.toString()).intValue();
+                } catch (NumberFormatException nfe) {
+                    // ignore
+                }
+            }
+        }
+        return DEFAULT_RUNNING_CHECK_TIMEOUT;
     }
     
     /**
@@ -1404,7 +1462,7 @@ public class TomcatManager implements DeploymentManager {
      *
      * @param <code>Process</code> of the started Tomcat.
      */
-    public void setTomcatProcess(Process p) {
+    public synchronized void setTomcatProcess(Process p) {
         process = p;
     }
 
@@ -1414,7 +1472,7 @@ public class TomcatManager implements DeploymentManager {
      * @return <code>Process</code> of the started Tomcat, <code>null</code> if
      *         Tomcat wasn't started by IDE.
      */
-    public Process getTomcatProcess() {
+    public synchronized Process getTomcatProcess() {
         return process;
     }
 }
