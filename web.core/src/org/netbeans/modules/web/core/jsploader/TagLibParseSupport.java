@@ -237,6 +237,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                 throw new InternalError();
             }
             locResult = parser.analyzePage(jspFile, JspParserAccess.getJspParserWM (getWebModule (jspFile)), JspParserAPI.ERROR_IGNORE);
+            assert locResult != null;
             synchronized (TagLibParseSupport.this.parseResultLock) {
                 parseResultRef = new SoftReference(locResult);
                 if (locResult.isParsingSuccess()) {
