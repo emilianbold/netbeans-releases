@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -25,7 +25,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.awt.Toolbar;
 import org.openide.awt.StatusDisplayer;
 import org.openide.windows.WindowManager;
-import org.netbeans.core.awt.TabControl;
+import org.netbeans.core.windows.awt.TabControl;
 import org.netbeans.core.windows.UIModeManager;
 import org.netbeans.core.windows.WindowManagerImpl;
 
@@ -206,13 +206,13 @@ public class MainWindowOperator extends JFrameOperator {
     /** Returns instance of special tab component for workspace switching.
      * First time finds TabControl component in MainFrame, next time
      * returns already found instance.
-     * @return instance of org.netbeans.core.awt.TabControl
+     * @return instance of org.netbeans.core.windows.awt.TabControl
      */
     public Component getTabControl() {
         if(_tabControl == null) {
             ComponentChooser chooser = new ComponentChooser() {
                 public boolean checkComponent(Component comp) {
-                    return (comp instanceof org.netbeans.core.awt.TabControl);
+                    return (comp instanceof TabControl);
                 }
                 public String getDescription() {
                     return "org.netbeans.core.awt.TabControl";

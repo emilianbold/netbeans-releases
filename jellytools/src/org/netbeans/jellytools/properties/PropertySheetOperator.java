@@ -14,7 +14,7 @@ package org.netbeans.jellytools.properties;
 
 import java.awt.Component;
 import javax.swing.JComponent;
-import org.netbeans.core.NbNodeOperation;
+import org.netbeans.core.NbSheet;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
@@ -42,7 +42,7 @@ import org.openide.explorer.propertysheet.PropertySheet;
  * @author Jiri.Skrivanek@sun.com
  */
 public class PropertySheetOperator extends TopComponentOperator {
-    // in IDE PropertySheet extends JPanel (parent org.netbeans.core.NbNodeOperation$Sheet extends TopComponent)
+    // in IDE PropertySheet extends JPanel (parent org.netbeans.core.NbSheet extends TopComponent)
     
     /** Operator for tabbed pane */
     private JTabbedPaneOperator _tbpPropertySheetTabPane;
@@ -183,7 +183,7 @@ public class PropertySheetOperator extends TopComponentOperator {
      */
     private static final class PropertySheetSubchooser implements ComponentChooser {
         public boolean checkComponent(Component comp) {
-            return (comp instanceof PropertySheet || comp instanceof NbNodeOperation.Sheet);
+            return (comp instanceof PropertySheet || comp instanceof NbSheet);
         }
 
         public String getDescription() {
