@@ -147,8 +147,8 @@ public class AttrProp implements BaseAttribute {
         return Common.TYPE_0_1;
     }
     
-    public void setEnum(boolean enum) {
-        enumMode += (enum?1:-1);
+    public void setEnum(boolean enume) {
+        enumMode += (enume?1:-1);
         if (enumMode == 1) {
             if (this.values == null)
                 this.values = new ArrayList();
