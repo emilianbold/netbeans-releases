@@ -566,6 +566,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../vcsgeneric/profiles/cvsprofiles" target="netbeans"/>
   </target>
 
+  <target name="all-vcsgeneric/profiles/clearcase" depends="all-vcsgeneric,all-openide/deprecated">
+    <echo message="Building module vcsgeneric/profiles/clearcase"/>
+    <ant dir="../vcsgeneric/profiles/clearcase" target="netbeans"/>
+  </target>
+
   <target name="all-vcsgeneric/profiles/pvcs" depends="all-vcsgeneric,all-openide/deprecated">
     <echo message="Building module vcsgeneric/profiles/pvcs"/>
     <ant dir="../vcsgeneric/profiles/pvcs" target="netbeans"/>
@@ -752,9 +757,13 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <!-- build javadoc for selected modules -->
   <target name="build-javadoc" depends="merge">
+      <!-- build javadoc for supported APIs -->
       <for-each startdir=".." target="javadoc" locations="${fixedmodules}"/>
+      <!-- build javadoc for unsupported APIs -->
+      <for-each startdir=".." target="javadoc" locations="${modules}"/>
       <taskdef name="simplemerge" classname="org.netbeans.nbbuild.SimpleMerge" classpath="nbantext.jar"/>
       <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc" modules="${fixedmodules}"/>
+      <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc/UnsupportedAPIs" modules="${modules}"/>
   </target>
 
   <target name="build-messaging" depends="init">
