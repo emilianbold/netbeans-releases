@@ -35,16 +35,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="init" depends="default.init">
       <ant dir="external" target="unscramble"/>
-      <patternset id="xtest.files">
-        <!-- All files created for NBM -->
-        <include name="${nb.modules.dir}/xtest.jar"/>
-        <include name="${nb.modules/docs.dir}/testtools.jar"/>
-        <include name="${nb.system.dir}/ParserDB/NbJUnit*"/>
-        <include name="${nb.docs.dir}/nbjunit-api.zip"/>
-        <include name="${nb.modules.dir}/ext/nbjunit.jar"/>
-        <include name="${nb.modules.dir}/ext/nbjunit-ide.jar"/>
-        <include name="xtest-distribution/**"/>
-      </patternset>
       <!-- Copy directories.properties because it is not guaranteed it is in IDE build. -->
       <copy file="${nb_all}/nbbuild/directories.properties" todir="lib" overwrite="true"/>
   </target>
@@ -133,12 +123,6 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
-      <fileset dir="modulesrc">
-        <include name="**/*.class"/>
-      </fileset>
-       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-          <patternset refID="xtest.files"/>
-      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="module-manifest-subst.mf"/>
@@ -152,9 +136,9 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="lib/xml-apis.jar"/>
     <delete file="lib/xtest-junit-testrunner.jar"/>
     <delete file="xtest-distribution.zip"/>
-    <delete dir="${netbeans.dest.dir}/${cluster.dir}/xtest-distribution"/>
     <delete file="xtest-pes-distribution.zip"/>
-    <delete dir="${plugins.install.dir}"/>  
+    <delete dir="${plugins.install.dir}"/>
+    <ant antfile="module_build.xml" target="clean"/>
   </target>
   
    <target name="clean-plugins">
