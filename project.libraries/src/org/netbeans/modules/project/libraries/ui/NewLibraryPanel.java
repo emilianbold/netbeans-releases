@@ -103,7 +103,10 @@ public class NewLibraryPanel extends javax.swing.JPanel {
     }
     
     private boolean isReasonableAntProperty(String name) {
-        // XXX: there will be a method in PropertyUtils which will obsolete this one.
+        // XXX: there is method in PropertyUtils.isUsablePropertyName()
+        // which should be used here but that would create dependency
+        // on ant/project modules which is not desirable.
+        // Anyway, the restriction on display name is just for promoD.
         return name.indexOf(' ') == -1;
     }
     
