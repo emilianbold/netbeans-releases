@@ -183,7 +183,6 @@ public final class BorderEditor extends PropertyEditorSupport
     public Component getCustomEditor() {
         if (bPanel == null) {
             bPanel = new BorderPanel();
-            bPanel.setValue(current);
         }
         return bPanel;
     }
@@ -642,6 +641,16 @@ public final class BorderEditor extends PropertyEditorSupport
 
         PropertyEditor propEd = prop.getCurrentEditor();
         if (propEd instanceof XMLPropertyEditor) {
+            Object value;
+            try {
+                value = prop.getValue();
+            }
+            catch (Exception ex) {
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace(); // problem getting value => ignore
+                return;
+            }
+            propEd.setValue(value);
             valueNode = ((XMLPropertyEditor)propEd).storeToXML(doc);
             if (valueNode != null) {
                 el.appendChild(valueNode);
