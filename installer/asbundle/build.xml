@@ -46,6 +46,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${ismp.home}">
           <include name="lib/*.jar"/>
           <include name="ppk/*.jar"/>
+          <include name="lib/ppk/*.jar"/>
           <exclude name="lib/conversion.jar"/>
         </fileset>        
         <fileset dir="../lib">
@@ -324,7 +325,8 @@ Creating NetBeans.app bundle using ${nb.dir} as master
       </filterset>
     </copy>
 
-    <!-- Link must be created by installer during installation                                                                             <echo message="Creating launch script symlink ${build.dir}/${app.dir}/Contents/MacOS/netbeans"/>
+    <!-- Link must be created by installer during installation
+    <echo message="Creating launch script symlink ${build.dir}/${app.dir}/Contents/MacOS/netbeans"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
       <arg value="ln -s ../Resources/NetBeans/bin/netbeans '${build.dir}/${app.dir}/Contents/MacOS/netbeans'"/>
