@@ -42,7 +42,7 @@ public class LoggingScanClasspath {
     }
     
     public class PerformanceScanData{
-        private String name; 
+        private String name;
         private long value;
         private String fullyQualifiedName;
         
@@ -57,20 +57,20 @@ public class LoggingScanClasspath {
             // jar:file:/path_to_jdk/src.zip!/
             // file:/path_to_jEdit41/src/
             
-            int beginIndex; 
+            int beginIndex;
             int endIndex;
             
             try {
                 beginIndex = name.substring(0, name.lastIndexOf(java.io.File.separator)-1).lastIndexOf(java.io.File.separator)+1;
                 endIndex = name.indexOf('!', beginIndex); // it's jar and it ends with '!/'
                 if (endIndex == -1) endIndex = name.length()-1; // it's directory and it ends with '/'
+                
+                this.setName(name.substring(beginIndex, endIndex));
             } catch (Exception exc) {
-                exc.printStackTrace(System.err);  
-                beginIndex = 0;
-                endIndex = name.length()-1;
+                exc.printStackTrace(System.err);
+                this.setName(name);
             }
             
-            this.setName(name.substring(beginIndex, endIndex));
             this.setValue(value.longValue());
             this.setFullyQualifiedName(fullyQualifiedName);
         }
@@ -78,27 +78,27 @@ public class LoggingScanClasspath {
         public String toString(){
             return "name =[" + getName() + "] value=" + getValue() + " FQN=[" + getFullyQualifiedName() + "]";
         }
-
+        
         public String getName() {
             return name;
         }
-
+        
         public void setName(String name) {
             this.name = name;
         }
-
+        
         public long getValue() {
             return value;
         }
-
+        
         public void setValue(long value) {
             this.value = value;
         }
-
+        
         public String getFullyQualifiedName() {
             return fullyQualifiedName;
         }
-
+        
         public void setFullyQualifiedName(String fullyQualifiedName) {
             this.fullyQualifiedName = fullyQualifiedName;
         }
