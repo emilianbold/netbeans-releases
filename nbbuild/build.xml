@@ -837,11 +837,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../libs/j2eeeditor" target="netbeans"/>
   </target>
 
-  <target name="all-libs" depends="all-libs/xalan, all-libs/jaxp, all-libs/xerces, all-libs/j2eeeditor"/>
+  <target name="all-libs" depends="all-libs/xerces, all-libs/j2eeeditor"/>
 
 
   <!-- XML modules -->
-  <target name="all-xml/api" depends="build-platform, all-libs/jaxp">
+  <target name="all-xml/api" depends="build-platform">
       <echo message="Building module xml/api..."/>
       <ant dir="../xml/api" target="netbeans"/>
   </target>
@@ -861,7 +861,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../xml/catalog" target="netbeans"/>
   </target>
 
-  <target name="all-xml/tools" depends="build-platform, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core,all-java/srcmodel,all-java/api">
+  <target name="all-xml/tools" depends="build-platform, all-xml/api, all-xml/tax, all-xml/core,all-java/srcmodel,all-java/api">
       <echo message="Building module xml/tools..."/>
       <ant dir="../xml/tools" target="netbeans"/>
   </target>
@@ -881,12 +881,12 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../xml/css" target="netbeans"/>
   </target>
 
-  <target name="all-xml/xsl" depends="build-platform,all-httpserver/servletapi,all-libs/jaxp,all-xml/api,all-xml/tax,all-xml/core">
+  <target name="all-xml/xsl" depends="build-platform,all-httpserver/servletapi,all-xml/api,all-xml/tax,all-xml/core">
       <echo message="Building module xml/xsl..."/>
       <ant dir="../xml/xsl" target="netbeans"/>
   </target>
 
-  <target name="all-xml/schema" depends="build-platform, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core">
+  <target name="all-xml/schema" depends="build-platform, all-xml/api, all-xml/tax, all-xml/core">
       <echo message="Building xml/schema module..."/>
       <ant dir="../xml/schema" target="netbeans"/>
   </target>

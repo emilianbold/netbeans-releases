@@ -11,7 +11,6 @@ OpenIDE-Module-Module-Dependencies:
  org.netbeans.api.xml/1 > ${xml.api.spec.version}, 
  org.netbeans.modules.xml.tax/2 = ${xml.common.impl.version},
  org.netbeans.modules.xml.core/2 = ${xml.common.impl.version}, 
- org.netbeans.libs.jaxp/1,
  org.netbeans.api.java/1,
  org.openide.src > 1.0
 
