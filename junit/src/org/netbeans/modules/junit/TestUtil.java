@@ -238,7 +238,7 @@ public class TestUtil {
      *          main class; or <code>null</code> if the class was not
      *          found (e.g. because of a broken source file)
      */
-    static JavaClass getMainJavaClass(Resource res) {
+    static public JavaClass getMainJavaClass(Resource res) {
         // search for the main class  
         Iterator it = res.getChildren().iterator();
         String resName = fileToClassName(res.getName());

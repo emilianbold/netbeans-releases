@@ -43,6 +43,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
+import org.netbeans.jmi.javamodel.*;
+import org.netbeans.modules.javacore.api.JavaModel;
 
 /**
  */
@@ -268,6 +270,13 @@ public class EmptyTestCaseWizardIterator
         DataFolder targetFolderDataObj = DataFolder.findFolder(targetFolder);
         DataObject testDataObj = templateDataObj.createFromTemplate(
                                          targetFolderDataObj, name);
+
+        // fill in setup etc. according to dialog settings
+        FileObject foSource = testDataObj.getPrimaryFile();
+        Resource srcRc = JavaModel.getResource(foSource);        
+        JavaClass cls = org.netbeans.modules.junit.TestUtil.getMainJavaClass(srcRc);
+        org.netbeans.modules.junit.TestCreator.fillGeneral(cls);
+
         return Collections.singleton(testDataObj);
     }
 

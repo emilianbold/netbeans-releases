@@ -415,42 +415,40 @@ public class TestCreator extends java.lang.Object {
 
 
 
-    static private void fillGeneral(JavaClass testClass) {
-        JavaModelPackage pkg = (JavaModelPackage)testClass.refImmediatePackage();
-        
-        // !-- GENERATE NbJUnit no longer supported
-        // set explicitly super class and modifiers
-        
-//         if (JUnitSettings.getDefault().isGenerateNbJUnit()) {
-//             classTest.setSuperclass(Identifier.create(NBJUNIT_SUPER_CLASS_NAME));
-//         } else {
-//             classTest.setSuperclass(Identifier.create(JUNIT_SUPER_CLASS_NAME));
-//         }
-        
-        // GENERATE NbJUnit no longer supported --!
-        testClass.setSuperClassName(pkg.getMultipartId().createMultipartId(JUNIT_SUPER_CLASS_NAME, null, Collections.EMPTY_LIST));
-        testClass.setModifiers(Modifier.PUBLIC);
+    static public void fillGeneral(JavaClass testClass) {
+        // public entry points are wrapped in MDR transactions
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
 
-        // remove default ctor, if exists (shouldn't throw exception)
-        if (null == testClass.getConstructor(Collections.singletonList(createStringType(pkg)), false)) {
-            //fill classe's constructor
-            Constructor newConstr = createTestConstructor(pkg, testClass.getSimpleName());
-            testClass.getFeatures().add(newConstr);
-        }
+            JavaModelPackage pkg = (JavaModelPackage)testClass.refImmediatePackage();
+        
+            testClass.setSuperClassName(pkg.getMultipartId().createMultipartId(JUNIT_SUPER_CLASS_NAME, null, Collections.EMPTY_LIST));
+            testClass.setModifiers(Modifier.PUBLIC);
+
+            // remove default ctor, if exists (shouldn't throw exception)
+            if (null == testClass.getConstructor(Collections.singletonList(createStringType(pkg)), false)) {
+                //fill classe's constructor
+                Constructor newConstr = createTestConstructor(pkg, testClass.getSimpleName());
+                testClass.getFeatures().add(newConstr);
+            }
         
 
-        //add method setUp() (optionally):
-        if (JUnitSettings.getDefault().isGenerateSetUp()
+            //add method setUp() (optionally):
+            if (JUnitSettings.getDefault().isGenerateSetUp()
                 && !hasInitMethod(testClass, METHOD_NAME_SETUP)) {
 
-            testClass.getFeatures().add(generateInitMethod(pkg, METHOD_NAME_SETUP));
-        }
+                testClass.getFeatures().add(generateInitMethod(pkg, METHOD_NAME_SETUP));
+            }
         
-        //add method tearDown() (optionally):
-        if (JUnitSettings.getDefault().isGenerateTearDown()
+            //add method tearDown() (optionally):
+            if (JUnitSettings.getDefault().isGenerateTearDown()
                 && !hasInitMethod(testClass, METHOD_NAME_TEARDOWN)) {
-            testClass.getFeatures().add(generateInitMethod(pkg, METHOD_NAME_TEARDOWN));
+                testClass.getFeatures().add(generateInitMethod(pkg, METHOD_NAME_TEARDOWN));
+            }
+        } finally {
+            JavaModel.getJavaRepository().endTrans();
         }
+
     }
 
     
