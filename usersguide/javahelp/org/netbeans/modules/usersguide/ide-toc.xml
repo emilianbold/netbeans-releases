@@ -262,12 +262,14 @@
     <tocitem text="Configuring the Debug Toolbar" target="debug.toolbar"></tocitem>
   </tocitem>
   <tocitem text="Starting a Debugging Session" target="debug.running.debugger" />
-  <tocitem text="Running Your Program in the Debugger" target="debug.running.jump">
+  <tocitem text="Attaching the Debugger to a Running Process" target="debug.attach" />
+  <tocitem text="Controlling Program Execution" target="debug.running.jump">
      <tocitem text="Running to the First Line of the Program" target="debug.running.first" />
      <tocitem text="Running to the Cursor Location" target="debug.running.cursor" />
      <tocitem text="Stepping Through Your Program" target="debug.step" />
      <tocitem text="Pausing a Program" target="debug.running.pause" />
      <tocitem text="Continuing a Program in the Debugger" target="debug.running.resume" />
+     <tocitem text="Finishing a Debugging Session" target="debug.running.end" />
   </tocitem>
   <tocitem text="Setting Breakpoints" target="debug.breakpoint">
      <tocitem text="Setting a Breakpoint on a Line" target="debug.breakpoint.line" />
@@ -297,14 +299,12 @@
    </tocitem>
   <tocitem text="Modifying a Variable" target="debug.variables.value"/>
   <tocitem text="Examining Classes" target="debug.environment.classes" />
-  <tocitem text="Attaching the Debugger to a Running Process" target="debug.attach" />
   <tocitem text="Debugging Multiple Sessions" target="debug.sessions.jump">
     <tocitem text="Starting Multiple Sessions" target="debug.sessions.start" />
     <tocitem text="Making a Session Persistent" target="debug.sessions.persistent" />
     <tocitem text="Finishing or Destroying a Session" target="debug.sessions.finishsession" />
     <tocitem text="Restarting a Persistent Session" target="debug.sessions.restart" />
   </tocitem>
-  <tocitem text="Finishing a Debugging Session" target="debug.running.end" />
   <tocitem text="Setting Debugger Options" target="debug.debugger.jump">
     <tocitem text="Default Debugger" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
