@@ -12,7 +12,8 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="image" default="nbm" basedir=".">
+<project name="image" default="netbeans" basedir=".">
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
   <target name="compile">
     <javac srcdir="src"
            destdir="src"
@@ -28,10 +29,18 @@ Microsystems, Inc. All Rights Reserved.
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
-  <target name="nbm" depends="jars">
-    <zip zipfile="image.nbm"
-         includes="netbeans/"
-	 basedir="."/>
+  <target name="netbeans" depends="jars"/>
+  <target name="nbm" depends="netbeans">
+    <makenbm file="image.nbm"
+             topdir="."
+	     manifest="manifest-subst.mf"
+	     homepage="http://image.netbeans.org/"
+	     distribution="http://www.netbeans.org/downloads/nbms/image.nbm"
+	     license="../nbbuild/standard-nbm-license.txt">
+      <description>
+        Provides support for viewing images such as GIFs and JPEGs in the IDE.
+      </description>
+    </makenbm>
   </target>
   <target name="clean">
     <delete dir="src">
@@ -40,5 +49,6 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-subst.mf"/>
     <delete file="image.nbm"/>
     <deltree dir="netbeans"/>
+    <deltree dir="Info"/>
   </target>
 </project>

@@ -14,8 +14,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <!--
 ToDo:
-- precheck for downloaded binaries; if not found, immediately
-  give an error with explanation of what was wrong and how to fix
 - target to check out repository fresh in a special area (where??)
   and do a clean build there; should only check out required modules;
   should it export, or should there be support for updating as well?
@@ -25,11 +23,12 @@ ToDo:
   html httpserver icebrowser image jarpackager java javadoc
   objectbrowser projects properties utilities vcscvs web
 - handle Japanese sanely
-- proper NBM task (with Info.xml, etc.)
+- NBM tasks for all modules (done for image)
+- NBM-based module group file task
 - build validator DTD for this build system
-- if experimental <obsolete> task can be used, do so for netbeans/firststart dirs, maybe
 - see how many JARs can actually be moved from lib/ext/ (or modules/patches/) to modules/ext/
 - delete obsolete jars.cfg (from trunk anyway)
+- tasks to create: source zip; API examples
 Modules:
 ant (has build system, but not integrated into master)
 crosscompile
@@ -58,8 +57,19 @@ treefs
   <!-- Best to leave this alone, though, unless you know what you are doing: -->
   <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true"/>
 
+  <target name="look-for-binaries">
+    <available property="have-binaries-already" file="../core/release/lib/ext/jh.jar"/>
+  </target>
+  <target name="check-for-binaries" depends="look-for-binaries" unless="have-binaries-already">
+    <echo message="ERROR: you seem to be missing the required download of"/>
+    <echo message="       binaries which are required to build the IDE."/>
+    <echo message="       Please see: http://www.netbeans.org/downloads.html"/>
+  </target>
+
+  <!-- XXX specifically request target netbeans in subbuilds when ready -->
+
   <!-- How to build the IDE core: -->
-  <target name="all-openide">
+  <target name="all-openide" depends="check-for-binaries">
     <echo message="Building Open APIs..."/>
     <ant dir="../openide"/>
   </target>
@@ -181,31 +191,33 @@ treefs
     <ant dir="../web"/>
   </target>
 
-  <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
-  <!-- It also runs deltree(dir=netbeans) and expand(src=../X/X.nbm,dest=.) to create the IDE install. -->
-  <target name="netbeans-messaging">
+  <target name="build-messaging">
     <echo message="Starting a build for NetBeans (build ${buildnumber}) ..."/>
     <echo message="Selected modules: ${modules}"/>
+    <echo message="OS: ${os.name} ${os.version}  Locale: ${user.language}_${user.region}"/>
+    <echo message="Java: ${java.vendor} ${java.version} in ${java.home}"/>
+    <echo message="Classpath: ${java.class.path}"/>
   </target>
-  <target name="netbeans" depends="netbeans-messaging">
+
+  <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
+  <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
+
+  <target name="virgin" depends="build-messaging">
     <!-- Automatically include openide and core, these are mandatory -->
-    <nbmerge upperdir="." topdir=".." modules="openide,core,${modules}" targetprefix="all-"/>
+    <nbmerge dest="virgin" topdir=".." modules="openide,core,${modules}" targetprefix="all-"/>
+    <zip zipfile="NetBeans-${buildnumber}-virgin.zip" basedir="virgin"/>
+    <echo message="Virgin build created; see NetBeans-${buildnumber}-virgin.zip (in nbbuild/)."/>
   </target>
 
-  <target name="virgin" depends="netbeans">
-    <zip zipfile="NetBeans-${buildnumber}-virgin.zip" basedir="netbeans"/>
-  </target>
-
-  <target name="firststart" depends="netbeans">
-    <deltree dir="firststart"/>
-    <copydir src="netbeans" dest="firststart"/>
+  <target name="firststart" depends="build-messaging">
+    <nbmerge dest="firststart" topdir=".." modules="openide,core,${modules}" targetprefix="all-"/>
     <chmod file="firststart/bin/ffj.sh" perm="ugo+x"/>
     <chmod file="firststart/bin/ffj_multiuser.sh" perm="ugo+x"/>
     <echo message="Starting the IDE..."/>
     <echo message="(This both acts as a test, and primes some files"/>
     <echo message="to make the first user start faster and better.)"/>
     <!-- XXX should perhaps preset JAVA_PATH to ${java.home} or something? -->
-    <!-- XXX check these OS names... -->
+    <!-- XXX check these OS names...still need Windows 95/98, and does this work for 2000? -->
     <exec os="Windows NT" dir="firststart/bin" command="forte4j.exe ${firststart.args}" output="firststart.log" failonerror="yes"/>
     <!-- XXX chmod does not work reliably...investigate -->
     <exec os="Linux" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" output="firststart.log" failonerror="yes"/>
@@ -229,7 +241,7 @@ treefs
   </target>
 
   <target name="localclean">
-    <deltree dir="netbeans"/>
+    <deltree dir="virgin"/>
     <deltree dir="firststart"/>
     <delete file="firststart.log"/>
     <echo message="Manually delete unwanted builds as needed."/>

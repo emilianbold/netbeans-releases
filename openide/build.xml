@@ -13,7 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <!-- ToDo: target to build API documentation...would be used by API Support -->
-<project name="openide" default="nbm" basedir=".">
+<project name="openide" default="netbeans" basedir=".">
   <target name="init">
     <available property="jdk13proxies" classname="java.lang.reflect.Proxy"/>
   </target>
@@ -42,15 +42,12 @@ Microsystems, Inc. All Rights Reserved.
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
-  <target name="nbm" depends="jars">
-    <zip zipfile="openide.nbm" includes="netbeans/" basedir="."/>
-  </target>
+  <target name="netbeans" depends="jars"/>
   <target name="clean">
     <delete dir="src">
       <include name="**/*.class"/>
     </delete>
     <delete file="manifest-subst.mf"/>
-    <delete file="openide.nbm"/>
     <deltree dir="netbeans"/>
   </target>
 </project>

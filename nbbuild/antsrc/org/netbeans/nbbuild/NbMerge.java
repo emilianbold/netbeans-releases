@@ -22,7 +22,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Deltree;
-import org.apache.tools.ant.taskdefs.Expand;
+import org.apache.tools.ant.taskdefs.Copydir;
 
 /** Pseudo-task to unpack a set of modules.
  * Causes the containing target to both depend on the building of the modules in
@@ -32,13 +32,13 @@ import org.apache.tools.ant.taskdefs.Expand;
  */
 public class NbMerge extends Task {
     
-    private String upperdir = ".";
+    private String dest = "virgin";
     private Vector modules = new Vector (); // Vector<String>
     private String targetprefix = "all-";
     private String topdir = "..";
     
-    public void setUpperdir (String s) {
-        upperdir = s;
+    public void setDest (String s) {
+        dest = s;
     }
     
     public void setModules (String s) {
@@ -58,24 +58,23 @@ public class NbMerge extends Task {
     
     public void execute () throws BuildException {
         Deltree deltree = (Deltree) project.createTask ("deltree");
-        // Yes, this is fixed by .nbm format:
-        deltree.setDir (upperdir + "/netbeans");
+        deltree.setDir (dest);
 	deltree.init ();
         deltree.setLocation (location);
 	deltree.execute ();
         for (int i = 0; i < modules.size (); i++) {
             String module = (String) modules.elementAt (i);
-	    String nbm = topdir + '/' + module + '/' + module + ".nbm";
-	    if (! new File (nbm).exists ()) {
-		log ("NBM file " + nbm + " does not exist, skipping...", Project.MSG_WARN);
+	    String netbeans = topdir + '/' + module + "/netbeans";
+	    if (! new File (netbeans).exists ()) {
+		log ("Build product dir " + netbeans + " does not exist, skipping...", Project.MSG_WARN);
 		continue;
 	    }
-            Expand expand = (Expand) project.createTask ("unzip");
-            expand.setDest (upperdir);
-            expand.setSrc (nbm);
-	    expand.init ();
-            expand.setLocation (location);
-            expand.execute ();
+            Copydir copydir = (Copydir) project.createTask ("copydir");
+            copydir.setSrc (netbeans);
+            copydir.setDest (dest);
+	    copydir.init ();
+            copydir.setLocation (location);
+            copydir.execute ();
         }
     }
     
