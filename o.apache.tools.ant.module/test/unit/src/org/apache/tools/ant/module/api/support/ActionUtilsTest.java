@@ -47,6 +47,7 @@ public class ActionUtilsTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         LocalFileSystem fs = new LocalFileSystem();
+        clearWorkDir();
         fs.setRootDirectory(getWorkDir());
         dir = fs.getRoot();
         f1 = dir.createData("f1.data");
