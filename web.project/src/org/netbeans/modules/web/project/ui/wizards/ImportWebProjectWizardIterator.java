@@ -334,9 +334,9 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
         
         public boolean isFinishPanel() {
-            return true;
+            return false;
         }
-        
+
         public java.awt.Component getComponent () {
             if (panel == null) {
                 panel = new ImportLocationVisual (this);
