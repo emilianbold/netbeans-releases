@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.util.*;
 
 import org.openide.ErrorManager;
+import org.openide.TopManager;
 
 /** This is the implementation of the famous exception manager.
 *
@@ -37,6 +38,7 @@ final class NbErrorManager extends ErrorManager {
 
   /** Creates new NbExceptionManager. */
   public NbErrorManager() {
+    System.setProperty("sun.awt.exception.handler", "com.netbeans.developer.impl.NbErrorManager$AWTHandler");
   }
   
   /** Adds these values. All the 
@@ -351,10 +353,24 @@ final class NbErrorManager extends ErrorManager {
       }
     }
   }
+
+  // part of bugfix #6120
+  /** Instances are created in awt.EventDispatchThread */
+  public static final class AWTHandler {
+    
+    /** The name MUST be handle and MUST be public */
+    public static void handle(Throwable t) {
+      if (t instanceof com.netbeans.developer.impl.execution.ExitSecurityException) {
+        return;
+      }
+      TopManager.getDefault().getErrorManager().notify((ERROR << 1), t);
+    }
+  }
 }
 
 /* 
 * Log
+*  3    Jaga      1.2         4/10/00  Ales Novak      #6120
 *  2    Jaga      1.1         4/5/00   Jaroslav Tulach Works even there is no 
 *       annotation associated with the exception.
 *  1    Jaga      1.0         4/4/00   Jaroslav Tulach 
