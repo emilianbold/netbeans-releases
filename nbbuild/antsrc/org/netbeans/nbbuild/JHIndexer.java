@@ -143,7 +143,7 @@ public class JHIndexer extends MatchingTask {
      * <samp>brand</samp>, not only display the expected variants of <samp>foo.html</samp>
      * and <samp>baz.html</samp>, but be able to search for strings specifically in them
      * (including correct offsets).
-     * @see "#31044"
+     * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=31044">Issue #31044</a>
      */
     public void addBrandedFileSet(BrandedFileSet s) {
         brandings.add(s);
