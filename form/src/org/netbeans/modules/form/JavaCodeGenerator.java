@@ -955,17 +955,10 @@ class JavaCodeGenerator extends CodeGenerator {
 
             if (shouldGenerate) {
                 Method eventAddMethod = eventSetDesc.getAddListenerMethod();
-
-//                initCodeWriter.write("\n"); // NOI18n
+                Class[] exceptions = eventAddMethod.getExceptionTypes();
                 
-                boolean unicastEvent = false;
-                if ((eventAddMethod.getExceptionTypes().length == 1) &&
-                    (java.util.TooManyListenersException.class.equals(eventAddMethod.getExceptionTypes()[0])))
-                    unicastEvent = true;
-
-                if (unicastEvent) {
+                if (exceptions != null && exceptions.length > 0)
                     initCodeWriter.write("try {\n"); // NOI18N
-                }
 
                 // beginning of the addXXXListener
                 initCodeWriter.write(variablePrefix);
@@ -1018,25 +1011,38 @@ class JavaCodeGenerator extends CodeGenerator {
                 // end of the innerclass
                 initCodeWriter.write("});\n\n"); // NOI18N
 
-                // if the event is unicast, generate the catch for TooManyListenersException
-                if (unicastEvent) {
-                    initCodeWriter.write("} catch (java.util.TooManyListenersException "); // NOI18N
-                    String varName = "e"; // NOI18N
-                    if (formModel.getVariablePool().isReserved(varName)) {
-                        int varCount = 1;
-                        varName = "e1"; // NOI18N
-                        while (true) {
-                            if (!(formModel.getVariablePool().isReserved(varName)))
-                                break;
-                            varName = "e"+varCount; // NOI18N
+                // if the add listener method is throwing something,
+                // generate the catch for each exception 
+                if (exceptions != null && exceptions.length > 0) {
+                    initCodeWriter.write("}"); // NOI18N
+                    for (int k = 0; k < exceptions.length; k++) {
+                        boolean addException = true;
+                        if (k > 0) {
+                            for (int m = 0; m < k; m++)
+                                if (exceptions[m].isAssignableFrom(exceptions[k])) {
+                                    // already caught
+                                    addException = false;
+                                    break;
+                                }
+                        }
+                        if (addException) {
+                            initCodeWriter.write(" catch ("); // NOI18N
+                            initCodeWriter.write(exceptions[k].getName());
+                            initCodeWriter.write(" "); // NOI18N
+
+                            String varName = "e"; // NOI18N
+                            int varCount = 0;
+                            while (formModel.getVariablePool().isReserved(varName))
+                                varName = "e" + (++varCount); // NOI18N
+
+                            initCodeWriter.write(varName);
+                            initCodeWriter.write(") {\n"); // NOI18N
+                            initCodeWriter.write(varName);
+                            initCodeWriter.write(".printStackTrace();\n"); // NOI18N
+                            initCodeWriter.write("}"); // NOI18N
                         }
                     }
-
-                    initCodeWriter.write(varName);
-                    initCodeWriter.write(") {\n"); // NOI18N
-                    initCodeWriter.write(varName);
-                    initCodeWriter.write(".printStackTrace();\n"); // NOI18N
-                    initCodeWriter.write("}\n\n"); // NOI18N
+                    initCodeWriter.write("\n\n"); // NOI18N
                 }
             }
         }
