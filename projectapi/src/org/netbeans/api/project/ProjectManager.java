@@ -115,6 +115,11 @@ public final class ProjectManager {
     private final Map/*<Project,ProjectFactory>*/ proj2Factory = new WeakHashMap();
     
     /**
+     * The thread which is currently loading a project, if any.
+     */
+    private Thread loadingThread = null;
+    
+    /**
      * Clear internal state.
      * Useful from unit tests.
      */
@@ -166,6 +171,9 @@ public final class ProjectManager {
                             o = dir2Proj.get(projectDirectory);
                             if (o == LOADING_PROJECT) {
                                 try {
+                                    if (Thread.currentThread() == loadingThread) {
+                                        throw new IllegalStateException("Attempt to call ProjectManager.findProject within the body of ProjectFactory.loadProject (hint: try using ProjectManager.mutex().postWriteRequest(...) within the body of your Project's constructor to prevent this)"); // NOI18N
+                                    }
                                     dir2Proj.wait();
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
@@ -184,6 +192,7 @@ public final class ProjectManager {
                         }
                         // not in cache
                         dir2Proj.put(projectDirectory, LOADING_PROJECT);
+                        loadingThread = Thread.currentThread();
                     }
                     boolean resetLP = false;
                     try {
@@ -207,6 +216,7 @@ public final class ProjectManager {
                         // called again (without anything being GC'd)
                         throw e;
                     } finally {
+                        loadingThread = null;
                         if (!resetLP) {
                             // IOException or a runtime exception interrupted.
                             assert dir2Proj.get(projectDirectory) == LOADING_PROJECT;

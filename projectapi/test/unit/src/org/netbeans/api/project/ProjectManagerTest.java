@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,6 +30,7 @@ import org.openide.util.lookup.Lookups;
  * ensure that modified projects cannot be collected
  * and that unmodified projects can (incl. after a save)
  * - testIsProject
+ * - testCallFindProjectWithinLoadProjectProhibited
  */
 
 /**
