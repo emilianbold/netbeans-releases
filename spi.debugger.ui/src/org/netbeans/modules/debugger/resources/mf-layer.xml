@@ -236,135 +236,133 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-    <folder name="AnnotationTypes"> 
-        <folder name="Debugger"> 
-            <file name="Breakpoint">
+    <folder name="Editors"> 
+        <folder name="AnnotationTypes"> 
+            <file name="Breakpoint.xml">
                 <![CDATA[<?xml version="1.0"?>
                     <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
                         "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
                     <type
 
                         name='Breakpoint'
-                        description_key='HINT_ANNOTATION'
+                        description_key='HINT_BREAKPOINT'
                         localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
                         visible='true' 
-                        glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpoint.gif'
-                        highlight='0x7F7FFF' 
-                        foreground='0x2266EE'
+                        glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpointglyph.gif'
+                        highlight='0xFF0000' 
+                        foreground='0xFFFFFF'
                         type='line'> 
                         
                     </type>    
                 ]]>
             </file>
 
-            <file name="DisabledBreakpoint">
+            <file name="DisabledBreakpoint.xml">
                 <![CDATA[<?xml version="1.0"?>
                     <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
                         "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
                     <type
 
                         name='DisabledBreakpoint'
-                        description_key='HINT_ANNOTATION'
+                        description_key='HINT_DISABLED_BREAKPOINT'
                         localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
-                        visible='false' 
-                        glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpoint.gif'
-                        highlight='0xAAAAAA' 
-                        foreground='0x2266EE'
+                        visible='true' 
+                        glyph='nbresloc:/org/netbeans/modules/debugger/resources/disabledbreakpointglyph.gif'
+                        highlight='0xFF7F7F' 
+                        foreground='0xFFFFFF'
                         type='line'> 
                         
                     </type>    
                 ]]>
             </file>
 
-            <file name="CondBreakpoint">
+            <file name="CondBreakpoint.xml">
                 <![CDATA[<?xml version="1.0"?>
                     <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
                         "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
                     <type
 
                         name='CondBreakpoint'
-                        description_key='HINT_ANNOTATION'
+                        description_key='HINT_CONDITIONAL_BREAKPOINT'
                         localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
                         visible='true' 
-                        glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpoint.gif'
-                        highlight='0x7F7FFF' 
-                        foreground='0x2266EE'
+                        glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpointglyph.gif'
+                        highlight='0xFF0000' 
+                        foreground='0xFFFFFF'
                         type='line'> 
                         
                     </type>  
                 ]]>
             </file>
 
-            <file name="DisabledCondBreakpoint">
+            <file name="DisabledCondBreakpoint.xml">
                 <![CDATA[<?xml version="1.0"?>
                     <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
                         "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
                     <type
 
                         name='DisabledCondBreakpoint'
-                        description_key='HINT_ANNOTATION'
+                        description_key='HINT_DISABLED_CONDITIONAL_BREAKPOINT'
                         localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
-                        visible='false' 
-                        glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpoint.gif'
-                        highlight='0xAAAAAA' 
-                        foreground='0x2266EE'
+                        visible='true' 
+                        glyph='nbresloc:/org/netbeans/modules/debugger/resources/disabledbreakpointglyph.gif'
+                        highlight='0xFF7F7F' 
+                        foreground='0xFFFFFF'
                         type='line'> 
                         
                     </type>  
                 ]]>
             </file>
 
-            <file name="CurrentPC">
+            <file name="CurrentPC.xml">
                 <![CDATA[<?xml version="1.0"?>
                     <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
                         "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
                     <type
 
                         name='CurrentPC'
-                        description_key='HINT_ANNOTATION'
+                        description_key='HINT_CURRENT_PC'
                         localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
                         visible='true' 
-                        glyph='nbresloc:/org/netbeans/modules/debugger/resources/resume.gif'
-                        highlight='0xFF00FF' 
-                        foreground='0x2266EE'
+                        glyph='nbresloc:/org/netbeans/modules/debugger/resources/pcglyph.gif'
+                        highlight='0x0000FF' 
+                        foreground='0xFFFFFF'
                         type='line'> 
                         
                     </type>  
                 ]]>
             </file>
 
-            <file name="CallSite">
+            <file name="CallSite.xml">
                 <![CDATA[<?xml version="1.0"?>
                     <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
                         "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
                     <type
 
                         name='CallSite'
-                        description_key='HINT_ANNOTATION'
+                        description_key='HINT_CALLSITE'
                         localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
                         visible='true' 
-                        glyph='nbresloc:/org/netbeans/modules/debugger/resources/suspend.gif'
-                        highlight='0xBBBB00' 
-                        foreground='0x2266EE'
+                        glyph='nbresloc:/org/netbeans/modules/debugger/resources/callsiteglyph.gif'
+                        highlight='0xFF00FF' 
+                        foreground='0xFFFFFF'
                         type='line'> 
                         
                     </type>  
                 ]]>
             </file>
 
-            <file name="BreakpointableLine">
+            <file name="BreakpointableLine.xml">
                 <![CDATA[<?xml version="1.0"?>
                     <!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN"
                         "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
                     <type
 
-                        name='CondBreakpoint'
+                        name='BreakpointableLine'
                         description_key='HINT_ANNOTATION'
                         localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
                         visible='false' 
-                        glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpoint.gif'
                         highlight='0xFFFFFF' 
-                        foreground='0x2266EE'
                         type='line'>
                         
                     </type>  
