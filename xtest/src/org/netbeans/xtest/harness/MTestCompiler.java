@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -84,35 +84,6 @@ public class MTestCompiler extends Task {
                         ant_prop.setValue( properties[j].getValue() );
                     }
                  
-                 */
-        // Set classpath property for given testbag
-                /*
-                Property clspth_prop = ant_new.createProperty();
-                clspth_prop.setName( targetParamClasspathProp );
-                 */
-        
-                /*
-                StringBuffer stb = new StringBuffer();
-                for (int j=0; j<testbag.getTestsets().length; j++) {
-                    // name of this property should be passed by atribute
-                    // and also it's not clear where it's resolved !!!!!!
-                    stb.append( ant_new.getProject().getProperty( "tbag.classpath.root" ) );
-                    // don't need it :-)
-                 
-                 
-                    //stb.append( "/" );
-                    //stb.append( MTestConfigurator.getCurrentTestType() );
-                 
-                    stb.append( "/" );
-                    stb.append( ant_new.getProject().getProperty( "tbag.classpath.work" ) );
-                    stb.append( "/" );
-                    stb.append( testbag.getTestsets()[j].getDir());
-                    stb.append( ";" );
-                }
-                if ( stb.length() > 1 ) {
-                    stb.deleteCharAt( stb.length() - 1 );
-                }
-                clspth_prop.setValue( stb.toString() );
                  */
         // set name of executed test config
         Property cttprop = antTask.createProperty();
