@@ -17,8 +17,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <attr name="API_Support/Other" boolvalue="true"/>
         <folder name="Other">
-            <file name="bookmark.url">
-                <![CDATA[http://www.netbeans.org/]]>
+            <file name="bookmark.url" url="bookmark.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/url/TemplateHelp.html"/>
@@ -65,28 +64,22 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         <attr name="helpID" stringvalue="org.netbeans.modules.url.BookmarksNode"/>
 
-        <file name="jdc.url">
-            <![CDATA[http://developer.java.sun.com/developer/]]>
+        <file name="jdc.url" url="jdc.url">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
-        <file name="java-web-site.url">
-            <![CDATA[http://java.sun.com/]]>
+        <file name="java-web-site.url" url="java-web-site.url">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
-        <file name="apis-online.url">
-            <![CDATA[http://openide.netbeans.org/]]>
+        <file name="apis-online.url" url="apis-online.url">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
-        <file name="swing.url">
-            <![CDATA[http://java.sun.com/products/jfc/tsc/]]>
+        <file name="swing.url" url="swing.url">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
-        <file name="netbeans-faq.url">
-            <![CDATA[http://www.netbeans.org/devhome/faqs/index.html]]>
+        <file name="netbeans-faq.url" url="netbeans-faq.url">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
-        <file name="ffj-kb.url">
-            <![CDATA[http://forte.sun.com/cgi-bin/WebX?customFaqs@111.39R7apexaKh^1@.ee6c6df]]>
+        <file name="ffj-kb.url" url="ffj-kb.url">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
         <attr name="netbeans-faq.url/ffj-kb.url" boolvalue="true"/>
@@ -126,8 +119,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Help">
             <attr name="Separator1.instance/netbeans-web-link.url" boolvalue="true"/>
-            <file name="netbeans-web-link.url">
-                <![CDATA[http://www.netbeans.org/]]>
+            <file name="netbeans-web-link.url" url="netbeans-web-link.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
             </file>
@@ -137,8 +129,7 @@ Microsystems, Inc. All Rights Reserved.
 	    </file>
             <attr name="org-netbeans-core-actions-ModuleHelpAction$ShortcutsOnly.instance/submit-feedback-link.url" boolvalue="true"/>
             <!-- [PENDING] this is none too useful... (some bug is filed to this effect) -->
-            <file name="submit-feedback-link.url">
-                <![CDATA[http://www.netbeans.org/about/os/contact.html]]>
+            <file name="submit-feedback-link.url" url="submit-feedback-link.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
             </file>
@@ -242,21 +233,15 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.openfile.Bundle"/>
 
                     <file name="org-netbeans-modules-openfile-Settings.shadow">
-<![CDATA[Services/org-netbeans-modules-openfile-Settings.settings
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-openfile-Settings.settings"/>
                     </file>
                     <file name="org-netbeans-modules-pdf-PDFSettings.shadow">
-<![CDATA[Services/org-netbeans-modules-pdf-PDFSettings.settings
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-pdf-PDFSettings.settings"/>
                     </file>
                 </folder>
                 <folder name="System">
                     <file name="org-netbeans-modules-url-BookmarksNode.shadow">
-<![CDATA[Services/org-netbeans-modules-url-BookmarksNode.instance
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-url-BookmarksNode.instance"/>
                     </file>
                 </folder>
             </folder>
