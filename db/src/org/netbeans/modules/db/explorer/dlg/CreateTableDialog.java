@@ -264,6 +264,9 @@ public class CreateTableDialog {
                                   String defval = enuele.getDefaultValue();
                                   if (defval != null && defval.length() > 0)
                                       cmdcol.setDefaultValue(defval);
+                                  if (enuele.hasCheckConstraint())
+                                      // add the TABLE check constraint
+                                      cmd.createCheckConstraint(name, enuele.getCheckConstraint());
                                   // index support removed!
                                   //if (enuele.isIndexed()) {
                                   //    org.netbeans.lib.ddl.impl.TableColumn icol = icmd.specifyColumn(name);
