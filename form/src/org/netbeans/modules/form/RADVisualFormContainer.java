@@ -18,6 +18,7 @@ import com.netbeans.developerx.loaders.form.formeditor.layouts.*;
 import com.netbeans.developer.modules.loaders.form.forminfo.FormInfo;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 /** RADVisualFormContainer represents the top-level container of the form and the form itself
 * during design time.
@@ -25,12 +26,26 @@ import java.awt.*;
 * @author Ian Formanek
 */
 public class RADVisualFormContainer extends RADVisualContainer implements FormContainer {
+  public static final String PROP_MENU_BAR = "menuBar";
+  public static final String PROP_FORM_SIZE_POLICY = "formSizePolicy";
+  public static final String PROP_FORM_SIZE = "formSize";
+  public static final String PROP_FORM_POSITION = "formPosition";
+  public static final String PROP_GENERATE_POSITION = "generatePosition";
+  public static final String PROP_GENERATE_SIZE = "generateSize";
+  public static final String PROP_GENERATE_CENTER = "generateCenter";
+
   public static final int GEN_BOUNDS = 0;
   public static final int GEN_PACK = 1;
   public static final int GEN_NOTHING = 2;
+
+  /** Localized string for no menu. */
+  static final String NO_MENU = FormEditor.getFormBundle ().getString ("CTL_NoMenu");
   
   private FormInfo formInfo;
   private Container topContainer;
+
+  // Synthetic properties of form
+  private String menu;
   private Dimension formSize = new Dimension (FormEditor.DEFAULT_FORM_WIDTH, FormEditor.DEFAULT_FORM_HEIGHT);
   private Point formPosition;
   private boolean generatePosition = true;
@@ -65,6 +80,14 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
   public FormInfo getFormInfo () {
     return formInfo;
+  }
+
+  public String getFormMenu () {
+    return menu;
+  }
+
+  public void setFormMenu (String value) {
+    menu = value;
   }
 
   public Point getFormPosition () {
@@ -131,7 +154,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
   protected Node.Property[] createSyntheticProperties () {
 
-    Node.Property policyProperty = new PropertySupport.ReadWrite ("form size policy", Integer.TYPE, "form size policy", "form size policy") {
+    Node.Property policyProperty = new PropertySupport.ReadWrite (PROP_FORM_SIZE_POLICY, Integer.TYPE, "form size policy", "form size policy") {
       public Object getValue () throws
       IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         return new Integer (getFormSizePolicy ());
@@ -151,7 +174,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     };
 
 
-    Node.Property sizeProperty = new PropertySupport.ReadWrite ("form size", Dimension.class, "form size", "form size") {
+    Node.Property sizeProperty = new PropertySupport.ReadWrite (PROP_FORM_SIZE, Dimension.class, "form size", "form size") {
       public Object getValue () throws
       IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         return getFormSize ();
@@ -164,7 +187,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     };
 
-    Node.Property positionProperty = new PropertySupport.ReadWrite ("form position", Point.class, "form position", "form position") {
+    Node.Property positionProperty = new PropertySupport.ReadWrite (PROP_FORM_POSITION, Point.class, "form position", "form position") {
       public Object getValue () throws
       IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         return getFormPosition ();
@@ -177,7 +200,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     };
 
-    Node.Property genPositionProperty = new PropertySupport.ReadWrite ("generate position", Boolean.TYPE, "generate position", "generate position") {
+    Node.Property genPositionProperty = new PropertySupport.ReadWrite (PROP_GENERATE_POSITION, Boolean.TYPE, "generate position", "generate position") {
       public Object getValue () throws
       IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         return new Boolean (getGeneratePosition ());
@@ -190,7 +213,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     };
 
-    Node.Property genSizeProperty = new PropertySupport.ReadWrite ("generate size", Boolean.TYPE, "generate size", "generate size") {
+    Node.Property genSizeProperty = new PropertySupport.ReadWrite (PROP_GENERATE_SIZE, Boolean.TYPE, "generate size", "generate size") {
       public Object getValue () throws
       IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         return new Boolean (getGenerateSize ());
@@ -203,7 +226,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     };
 
-    Node.Property genCenterProperty = new PropertySupport.ReadWrite ("generate center", Boolean.TYPE, "generate center", "generate center") {
+    Node.Property genCenterProperty = new PropertySupport.ReadWrite (PROP_GENERATE_CENTER, Boolean.TYPE, "generate center", "generate center") {
       public Object getValue () throws
       IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         return new Boolean (getGenerateCenter ());
@@ -216,16 +239,76 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     };
 
-    Node.Property[] ret = new Node.Property [6];
-    ret[0] = sizeProperty;
-    ret[1] = positionProperty;
-    ret[2] = policyProperty;
-    ret[3] = genPositionProperty;
-    ret[4] = genSizeProperty;
-    ret[5] = genCenterProperty;
-    return ret;
+    if ((formInfo instanceof JMenuBarContainer) || (formInfo instanceof MenuBarContainer)) {
+      Node.Property[] ret = new Node.Property [7];
+
+      Node.Property menuProperty = new PropertySupport.ReadWrite (PROP_MENU_BAR, String.class, "menu bar", "menu bar of the form") {
+        public Object getValue () throws
+        IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+          String s = getFormMenu ();
+          return (s == null) ? NO_MENU : s;
+        }
+    
+        public void setValue (Object val) throws IllegalAccessException,
+        IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+          if (!(val instanceof String)) throw new IllegalArgumentException ();
+          String s = (String) val;
+          setFormMenu(s.equals(NO_MENU) ? null : s);
+        }
+  
+        /** Editor for alignment */
+        public java.beans.PropertyEditor getPropertyEditor () {
+          return new FormMenuEditor ();
+        }
+        
+      };
+
+      ret[0] = menuProperty;
+      ret[1] = sizeProperty;
+      ret[2] = positionProperty;
+      ret[3] = policyProperty;
+      ret[4] = genPositionProperty;
+      ret[5] = genSizeProperty;
+      ret[6] = genCenterProperty;
+      return ret;
+    } else {
+      Node.Property[] ret = new Node.Property [6];
+      ret[0] = sizeProperty;
+      ret[1] = positionProperty;
+      ret[2] = policyProperty;
+      ret[3] = genPositionProperty;
+      ret[4] = genSizeProperty;
+      ret[5] = genCenterProperty;
+      return ret;
+    }
   }
 
+  String[] getAvailableMenus() {
+    ArrayList list = new ArrayList();
+    RADComponent[] comps = getFormManager ().getNonVisualComponents ();
+    int size = comps.length;
+    boolean swing = (formInfo instanceof JMenuBarContainer);
+    
+    for (int i = 0; i < size; i++) {
+      if (comps[i] instanceof RADMenuComponent) {
+        RADMenuComponent n = (RADMenuComponent) comps[i];
+        if ((swing && (n.getMenuItemType () == RADMenuComponent.T_JMENUBAR)) ||
+            (!swing && (n.getMenuItemType () == RADMenuComponent.T_MENUBAR)))
+          list.add (n);
+      }
+    }
+    size = list.size();
+    String[] menus = new String[size + 1];
+//    menusNodes = new RADMenuNode[size + 1];
+    
+    menus[0] = NO_MENU;
+//    menusNodes[0] = null;
+    for (int i = 0; i < size; i++) {
+//      menusNodes[i + 1] = (RADMenuComponent) list.elementAt(i);
+      menus[i + 1] = ((RADMenuComponent) list.get(i)).getName();
+    }
+    return menus;
+  }
 
 // ------------------------------------------------------------------------------------------
 // Innerclasses
@@ -262,10 +345,31 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
   }
 
+  final public class FormMenuEditor extends java.beans.PropertyEditorSupport {
+
+    /** @return names of the possible directions */
+    public String[] getTags () {
+      return getAvailableMenus ();
+    }
+
+    /** @return text for the current value */
+    public String getAsText () {
+      return (String) getValue ();
+    }
+
+    /** Setter.
+    * @param str string equal to one value from directions array
+    */
+    public void setAsText (String str) {
+      setValue (str);
+    }
+  }
 }
 
 /*
  * Log
+ *  6    Gandalf   1.5         7/5/99   Ian Formanek    menu bar property, 
+ *       constants for properties
  *  5    Gandalf   1.4         6/25/99  Ian Formanek    Improved Size Policy 
  *  4    Gandalf   1.3         6/24/99  Ian Formanek    Generation of size for 
  *       visaul forms
