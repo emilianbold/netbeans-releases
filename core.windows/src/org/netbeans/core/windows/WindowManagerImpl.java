@@ -40,8 +40,6 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.NbMarshalledObject;
-import org.openide.modules.Dependency;
-import org.openide.modules.SpecificationVersion;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -443,8 +441,7 @@ public final class WindowManagerImpl extends WindowManager {
     
     /** Indicates whether the window drag and drop is enabled. */
     public static boolean isWindowDnDEnabled() {
-        return Boolean.getBoolean("netbeans.winsys.dnd") // NOI18N
-        && (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.4")) >= 0); // NOI18N
+        return Boolean.getBoolean("netbeans.winsys.dnd"); // NOI18N
     }
     
     /** Provides access to the MainWindow of the IDE.

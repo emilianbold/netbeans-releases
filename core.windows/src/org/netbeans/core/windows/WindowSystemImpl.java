@@ -18,7 +18,7 @@ package org.netbeans.core.windows;
 import java.io.IOException;
 
 import org.netbeans.core.NbTopManager;
-import org.netbeans.core.windows.frames.NbFocusManager;
+import org.netbeans.core.windows.frames.ShortcutAndMenuKeyEventProcessor;
 import org.netbeans.core.windows.util.WindowUtils;
 
 import org.openide.ErrorManager;
@@ -36,7 +36,7 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
     
     
     public void show() {
-        NbFocusManager.install();
+        ShortcutAndMenuKeyEventProcessor.install();
         MainWindow.getDefault().showWindow();
     }
     
@@ -44,6 +44,7 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
         wmi.setExitingIDE(true); // ??
         WindowUtils.hideAllFrames();
+        ShortcutAndMenuKeyEventProcessor.uninstall();
     }
     
     public void load() {
