@@ -479,13 +479,13 @@ public abstract class NbTopManager {
         try {
             if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
      
-                org.netbeans.CLIHandler.stopServer ();
-                
                 final WindowSystem windowSystem = (WindowSystem)Lookup.getDefault().lookup(WindowSystem.class);
                 
                 // #29831: hide frames between closing() and close()
                 Runnable hideFrames = new Runnable() {
                     public void run() {
+                        org.netbeans.CLIHandler.stopServer ();
+                
                         if(windowSystem != null) {
                             windowSystem.hide();
                             windowSystem.save();

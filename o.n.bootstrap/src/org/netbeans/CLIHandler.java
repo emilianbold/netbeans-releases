@@ -772,6 +772,7 @@ public abstract class CLIHandler extends Object {
         final void stopServer () {
             try {
                 ServerSocket s = socket;
+                if (s == null) return;
                 socket = null;
                 s.close ();
             } catch (IOException ex) {
