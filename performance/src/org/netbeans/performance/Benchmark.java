@@ -207,13 +207,31 @@ public class Benchmark extends Assert implements Test {
             float avgTime  = ((float)sum) / 1000 / iters / 3;
             
             // PENDING - add real reporting stuff here
-            String argString = argument.toString();
+            StringBuffer sb = new StringBuffer(100);
+            argument2String(argument, sb);
+            String argString = sb.toString();
             if( argString.length() > 0 ) argString = "@" + argString;
             System.out.println( name + argString +
                 ": iter=" + iters + 
                 ", min=" + 1000000f*realMin + 
                 ", avg=" + 1000000f*avgTime +
                 ", max=" + 1000000f*realMax );
+    }
+    
+    /** Handles arrays */
+    private static void argument2String(Object argument, StringBuffer sb) {
+        if (argument instanceof Object[]) {
+            Object[] arg = (Object[]) argument;
+            sb.append('[');
+            for (int i = 0; i < arg.length - 1; i++) {
+                argument2String(arg[i], sb);
+                sb.append(',').append(' ');
+            }
+            argument2String(arg[arg.length - 1], sb);
+            sb.append(']');
+        } else {
+            sb.append(argument.toString());
+        }
     }
     
     private long doOneMeasurement( Method testMethod, int iterations ) throws Exception {
