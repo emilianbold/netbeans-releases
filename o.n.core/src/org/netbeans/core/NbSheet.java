@@ -288,6 +288,7 @@ public final class NbSheet extends TopComponent {
             }
             setName(localPropertiesFormat.format(titleParams));
         }
+        setToolTipText(getName());
     }
 
     /** Nodes to display.
