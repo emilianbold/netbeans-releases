@@ -158,7 +158,7 @@ public class TargetServer {
             ModuleType type = (ModuleType) dtarget.getModule().getModuleType();
             TargetModuleID[] ids = dm.getAvailableModules(type, targets);
             for (int i=0; i<ids.length; i++) {
-                availables.put(ids[i].toString(), ids[i]);
+                availables.put(ids[i].getModuleID (), ids[i]);
             }
         } catch (TargetException te) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, te);
@@ -387,7 +387,7 @@ public class TargetServer {
         Set originals = new HashSet();
         for (int i=0; i<modules.length; i++) {
             if (modules[i].getParentTargetModuleID() == null) {
-                String id = modules[i].toString();
+                String id = modules[i].getModuleID ();
                 String targetName = modules[i].getTarget().getName();
                 TargetModule tm = new TargetModule(id, instance.getUrl(), targetName, timestamp, modules[i]);
                 deployedRootTMIDs.add(tm);
