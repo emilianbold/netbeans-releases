@@ -91,7 +91,9 @@ public class ResultModel implements TaskListener {
 
     /** Listener on search group to reflect dynamically changes on search objects. */
     private PropertyChangeListener propListener;
-    
+
+    /** Contains optional finnish message often reason why finished. */
+    private String finishMessage;
 
     /** Creates new <code>ResultModel</code>. */
     public ResultModel(List searchTypeList, SearchGroup searchGroup) {
@@ -277,21 +279,28 @@ public class ResultModel implements TaskListener {
 
         int found = getFound();
 
-        return getRootDisplayNameHelp(found);
+        return getRootDisplayNameHelp(found, finishMessage);
     }
     
     /** Gets display name based on number of found nodes.
      * @param found number of found nodes. */
-    private static String getRootDisplayNameHelp(int found) {
+    private static String getRootDisplayNameHelp(int found, String finishMessage) {
+        String orig;
         if (found == 1) {
-            return MessageFormat.format(NbBundle.getBundle(ResultModel.class).getString("TEXT_MSG_FOUND_A_NODE"), // NOI18N
+            orig = MessageFormat.format(NbBundle.getBundle(ResultModel.class).getString("TEXT_MSG_FOUND_A_NODE"), // NOI18N
                     new Object[] { new Integer(found) } );
         } else if (found > 1) {
-            return MessageFormat.format(NbBundle.getBundle(ResultModel.class).getString("TEXT_MSG_FOUND_X_NODES"),
+            orig = MessageFormat.format(NbBundle.getBundle(ResultModel.class).getString("TEXT_MSG_FOUND_X_NODES"),
                     new Object[] { new Integer(found) } );
         } else { // <1
-            return NbBundle.getBundle(ResultModel.class).getString("TEXT_MSG_NO_NODE_FOUND");
+            orig = NbBundle.getBundle(ResultModel.class).getString("TEXT_MSG_NO_NODE_FOUND");
         }
+
+        if (finishMessage != null) {
+            return orig + " (" + finishMessage + ")";
+        }
+
+        return orig;
     }
 
     /** Stops search task. */
@@ -594,6 +603,19 @@ public class ResultModel implements TaskListener {
         } else {
             return new FoundNode(node, org.openide.nodes.Children.LEAF, foundObject);
         }
+    }
+
+    /** This exception stoped search */
+    void searchException(RuntimeException ex) {
+        ErrorManager.Annotation[] annotations = ErrorManager.getDefault().findAnnotations(ex);
+        for (int i = 0; i < annotations.length; i++) {
+            ErrorManager.Annotation annotation = annotations[i];
+            if (annotation.getSeverity() == ErrorManager.USER) {
+                finishMessage = annotation.getLocalizedMessage();
+                if (finishMessage != null) return;
+            }
+        }
+        finishMessage = ex.getLocalizedMessage();
     }
 
     /** Details for found top level (file) nodes. */

@@ -76,7 +76,11 @@ public class SearchTask extends Task {
             );
 
             searchGroup.setSearchRootNodes(nodes);
-            searchGroup.search();
+            try {
+                searchGroup.search();
+            } catch (RuntimeException ex) {
+                resultModel.searchException(ex);
+            }
         } finally {
             // Notifies search task has finished.
             notifyFinished();
