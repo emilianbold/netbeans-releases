@@ -97,5 +97,10 @@ Microsystems, Inc. All Rights Reserved.
     <target name="check-bootstrap">
         <available file="${nb_all}/nbbuild/nbantext.jar" property="bootstrap-ready" />
     </target>
+    
+    <target name="show-results-nb" if="netbeans.home">
+        <!-- Probably a cleaner way of doing this, but this should work for now. -->
+        <nbbrowse file="${nb_all}/${xtest.module}/test/results/index.html"/>
+    </target>
 
 </project>
