@@ -233,7 +233,7 @@ final class ModesSubModel {
     
     /** Sets active mode. */
     public boolean setActiveMode(ModeImpl activeMode) {
-        if(modes.contains(activeMode)) {
+        if(activeMode == null || modes.contains(activeMode)) {
             this.activeMode = activeMode;
             return true;
         }

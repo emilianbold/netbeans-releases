@@ -438,8 +438,11 @@ public final class MainWindow extends JFrame {
             Component result = w.getDefaultComponent(focusCycleRoot);
             
             ModeImpl mi = WindowManagerImpl.getInstance().getActiveMode();
-            TopComponent tc = mi.getSelectedTopComponent();
-            return tc;
+            if (mi != null) {
+                TopComponent tc = mi.getSelectedTopComponent();
+                return tc;
+            }
+            return null;
         }
 
         public Component getFirstComponent(Container focusCycleRoot) {

@@ -444,6 +444,8 @@ final class Central implements ControllerHandler {
             // Notify registry.
             WindowManagerImpl.notifyRegistryTopComponentActivated(
                 newActive.getSelectedTopComponent());
+        } else {
+            WindowManagerImpl.notifyRegistryTopComponentActivated(null);
         }
     }
     
@@ -456,7 +458,7 @@ final class Central implements ControllerHandler {
                 return mode;
             }
         }
-        
+        model.setActiveMode(null);
         return model.getActiveMode();
     }
 
@@ -615,6 +617,8 @@ final class Central implements ControllerHandler {
             // Notify registry.
             WindowManagerImpl.notifyRegistryTopComponentActivated(
                 newActive.getSelectedTopComponent());
+        } else {
+            WindowManagerImpl.notifyRegistryTopComponentActivated(null);
         }
     }
 
@@ -745,6 +749,9 @@ final class Central implements ControllerHandler {
             // Notify registry.
             WindowManagerImpl.notifyRegistryTopComponentActivated(
                 newActive.getSelectedTopComponent());
+        } else {
+            WindowManagerImpl.notifyRegistryTopComponentActivated(
+                null);
         }
     }
     
@@ -1656,10 +1663,33 @@ final class Central implements ControllerHandler {
         model.setModeTopComponentPreviousMode(targetMode, tc, source);
         model.setModeTopComponentPreviousConstraints(targetMode, tc, model.getModeConstraints(source));
         
+        ModeImpl oldActive = getActiveMode();
+        ModeImpl newActive;
+        if(source == oldActive && source.getOpenedTopComponents().isEmpty()) {
+            newActive = setSomeModeActive();
+        } else {
+            newActive = oldActive;
+        }        
+        
         if(isVisible()) {
             viewRequestor.scheduleRequest(
                 new ViewRequest(null, View.CHANGE_TOPCOMPONENT_AUTO_HIDE_ENABLED, null, null));
         }
+        
+        if(oldActive != newActive) {
+            WindowManagerImpl.getInstance().doFirePropertyChange(
+                WindowManagerImpl.PROP_ACTIVE_MODE, oldActive, newActive);
+        }
+    
+        // Notify new active.
+        if(newActive != null) {
+            // Notify registry.
+            WindowManagerImpl.notifyRegistryTopComponentActivated(
+                newActive.getSelectedTopComponent());
+        } else {
+            WindowManagerImpl.notifyRegistryTopComponentActivated(null);
+        }        
+        
     }
     
     public void userDisabledAutoHide(TopComponent tc, ModeImpl source) {
