@@ -21,16 +21,8 @@ help\
 	<mapID target="ctx_monitorintro" url="monitor/ctx_monitorintro.html" />
 	<mapID target="monitor_process" url="monitor/process.html" />
 	<mapID target="monitor_display" url="monitor/display.html" />
-	<mapID target="monitor_delete" url="monitor/delete.html" />
 	<mapID target="monitor_resend" url="monitor/resend.html" />
-	<mapID target="monitor_sort" url="monitor/sort.html" />
 	<mapID target="monitor_store" url="monitor/store.html" />
 	<mapID target="monitor_view" url="monitor/view.html" />
-	<mapID target="monitor_servconfig" url="monitor/servconfig.html" />
-
-	<mapID target="org.netbeans.modules.web.monitor.client.MonitorAction"
-url="monitor/ctx_monitorintro.html" />
-
-
-
+	<mapID target="org.netbeans.modules.web.monitor.client.MonitorAction" url="monitor/ctx_monitorintro.html" />
 </map>
