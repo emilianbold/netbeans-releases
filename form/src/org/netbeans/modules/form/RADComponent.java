@@ -89,8 +89,13 @@ public class RADComponent implements FormDesignValue {
      * will be added 
      */
     public void initialize(FormModel formModel) {
-        this.formModel = formModel;
-        readOnly = formModel.isReadOnly();
+        if (this.formModel != formModel) {
+            this.formModel = formModel;
+            readOnly = formModel.isReadOnly();
+
+            // properties and events will be created on first request
+            clearProperties();
+        }
     }
 
     public void setParentComponent(RADComponent parentComp) {
@@ -103,12 +108,7 @@ public class RADComponent implements FormDesignValue {
     public Object initInstance(Class beanClass) throws Exception {
 //    throws InstantiationException, IllegalAccessException
         // properties and events will be created on first request
-        nameToProperty = new HashMap();
-        syntheticProperties = null;
-        beanProperties = null;
-        beanProperties2 = null;
-        eventsList = null;
-        beanEvents = null;
+        clearProperties();
 
         beanInfo = null;
         this.beanClass = beanClass;
@@ -131,12 +131,7 @@ public class RADComponent implements FormDesignValue {
         }
 
         // properties and events will be created on first request
-        nameToProperty = new HashMap();
-        syntheticProperties = null;
-        beanProperties = null;
-        beanProperties2 = null;
-        eventsList = null;
-        beanEvents = null;
+        clearProperties();
 
         beanInfo = null;
         this.beanClass = beanClass;
@@ -157,27 +152,12 @@ public class RADComponent implements FormDesignValue {
      * @see #setComponent
      */
     public void setInstance(Object beanInstance) {
-// XXX(-tdt) see xformcvt.Import...
-//          
-//          if (this.beanClass != null) {
-//              throw new InternalError("Component already initialized: current: "+this.beanClass +", new: "+beanClass); // NOI18N
-//          }
-        nameToProperty = new HashMap();
+        // properties and events will be created on first request
+        clearProperties();
 
         beanClass = beanInstance.getClass();
         setBeanInstance(beanInstance);
-//        this.beanInstance = beanInstance;
-//        beanInfo = BeanSupport.createBeanInfo(beanClass);
 
-
-//        createBeanProperties();
-
-        // other properties and events will be created on first request
-        syntheticProperties = null;
-        eventsList = null;
-        beanEvents = null;
-
-//        PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
         RADProperty[] props = getAllBeanProperties();
         for (int i = 0; i < props.length; i++) {
             if (!FormUtils.isIgnoredProperty(beanClass, props[i].getName())) {
@@ -187,21 +167,9 @@ public class RADComponent implements FormDesignValue {
                 catch (Exception e) {
                     if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                         e.printStackTrace();
-                    // [PENDING] notify exception?
                     // simply ignore this property
                 }
             }
-            // ignore some properties (why?)
-/***********************
-            // xformcvt import, I must ignore preferredSize, maximumSize and minimumSize
-
-            if ("preferredSize".equals(props[i].getName())
-                || "maximumSize".equals(props[i].getName())
-                || "minimumSize".equals(props[i].getName())
-                ) {
-                continue;
-            }
-**********************/
         }
     }
 
@@ -588,6 +556,18 @@ public class RADComponent implements FormDesignValue {
         });
     }
 
+    private void clearProperties() {
+        if (nameToProperty != null)
+            nameToProperty.clear();
+        else nameToProperty = new HashMap();
+
+        syntheticProperties = null;
+        beanProperties = null;
+        beanProperties2 = null;
+        eventsList = null;
+        beanEvents = null;
+    }
+
     /** Provides access to the Node which represents this RADComponent
      * @return the RADComponentNode which represents this RADComponent
      */
@@ -786,7 +766,7 @@ public class RADComponent implements FormDesignValue {
     }
 
     public void debugChangedValues() {
-        if (System.getProperty("netbeans.debug.form.full") != null) { // NOI18N
+/*        if (System.getProperty("netbeans.debug.form.full") != null) { // NOI18N
             System.out.println("-- debug.form: Changed property values in: "+this+" -------------------------"); // NOI18N
             for (java.util.Iterator it = nameToProperty.values().iterator(); it.hasNext();) {
                 RADProperty prop =(RADProperty)it.next();
@@ -800,7 +780,7 @@ public class RADComponent implements FormDesignValue {
                 }
             }
             System.out.println("--------------------------------------------------------------------------------------"); // NOI18N
-        }
+        } */
     }
 
     // -------------

@@ -241,8 +241,9 @@ public class FormModel
     }
 
     public void addComponent(RADComponent comp,
-                      ComponentContainer parentContainer) {
+                             ComponentContainer parentContainer) {
         checkComponentNames(comp);
+        initComponentWithModelRecursively(comp);
 
         if (parentContainer != null) {
             parentContainer.add(comp);
@@ -255,20 +256,12 @@ public class FormModel
         fireComponentAdded(comp);
     }
 
-    public void setContainerLayout(RADVisualContainer metacont,
-                                   LayoutSupport layoutSupport) {
-        LayoutSupport current = metacont.getLayoutSupport();
-        metacont.setLayoutSupport(layoutSupport);
-        fireContainerLayoutChanged(metacont, current, layoutSupport);
-    }
-
-    public void addVisualComponent(
-        RADVisualComponent comp,
-        RADVisualContainer parentContainer,
-        LayoutSupport.ConstraintsDesc constraints)
-    {
-        boolean isContainer = comp instanceof RADVisualContainer;
+    public void addVisualComponent(RADVisualComponent comp,
+                                   RADVisualContainer parentContainer,
+                                   LayoutSupport.ConstraintsDesc constraints) {
         checkComponentNames(comp);
+        initComponentWithModelRecursively(comp);
+
         parentContainer.add(comp);
 
         LayoutSupport layoutSup = parentContainer.getLayoutSupport();
@@ -276,6 +269,13 @@ public class FormModel
             layoutSup.addComponent(comp, constraints);
 
         fireComponentAdded(comp);
+    }
+
+    public void setContainerLayout(RADVisualContainer metacont,
+                                   LayoutSupport layoutSupport) {
+        LayoutSupport current = metacont.getLayoutSupport();
+        metacont.setLayoutSupport(layoutSupport);
+        fireContainerLayoutChanged(metacont, current, layoutSupport);
     }
 
     public void removeComponent(RADComponent comp) {
@@ -294,28 +294,33 @@ public class FormModel
 
     public void deleteComponent(RADComponent comp) {
         if (eventHandlers != null)
-            deleteEventHandlersRecursively(comp);
+            removeEventHandlersRecursively(comp);
 
         removeComponent(comp);
 
         deleteVariables(comp);
     }
 
-    // recursively searches for subcomponents and deletes their attached events
-    private void deleteEventHandlersRecursively(RADComponent comp) {
+    // sets FormModel for given component and all its subcomponents
+    private void initComponentWithModelRecursively(RADComponent comp) {
         if (comp instanceof ComponentContainer) {
             RADComponent[] subcomps = ((ComponentContainer)comp).getSubBeans();
-            if (subcomps!=null) {
-                for (int i=0; i<subcomps.length; i++) {
-                    deleteEventHandlersRecursively(subcomps[i]);
-                }            
-            }
+            for (int i=0; i < subcomps.length; i++)
+                initComponentWithModelRecursively(subcomps[i]);
         }
-        deleteEventHandlers(comp);
+
+        comp.initialize(this);
     }
-    
-    // delete attached events
-    private void deleteEventHandlers(RADComponent comp) {
+
+    // removes all event handlers attached to given component and all
+    // its subcomponents
+    private void removeEventHandlersRecursively(RADComponent comp) {
+        if (comp instanceof ComponentContainer) {
+            RADComponent[] subcomps = ((ComponentContainer)comp).getSubBeans();
+            for (int i=0; i<subcomps.length; i++)
+                removeEventHandlersRecursively(subcomps[i]);
+        }
+
         EventSet[] eventSets = comp.getEventHandlers().getEventSets();
         for (int i = 0; i < eventSets.length; i++) {
             Event[] events = eventSets[i].getEvents();
