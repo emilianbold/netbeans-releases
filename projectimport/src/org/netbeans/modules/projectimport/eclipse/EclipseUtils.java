@@ -38,8 +38,25 @@ public class EclipseUtils {
      */
     public static boolean isRegularProject(File projectDir) {
         return projectDir.isDirectory() &&
-                new File(projectDir, EclipseProject.PROJECT_FILE).isFile(); // &&
-        //                new File(projectDir, EclipseProject.CLASSPATH_FILE).isFile();
+                new File(projectDir, EclipseProject.PROJECT_FILE).isFile();
+    }
+    
+    /**
+     * Returns whether there is a valid project in the given
+     * <code>projectDir</code> and if the project has java nature.
+     */
+    public static boolean isRegularJavaProject(File projectDir) {
+        return isRegularProject(projectDir) &&
+                new File(projectDir, EclipseProject.CLASSPATH_FILE).isFile();
+    }
+    
+    /**
+     * Returns whether there is a valid project in the given
+     * <code>projectDir</code> and if the project has java nature.
+     */
+    public static boolean isRegularJavaProject(String projectDir) {
+        return projectDir != null &&
+                isRegularJavaProject(new File(projectDir));
     }
     
     /**
@@ -61,7 +78,7 @@ public class EclipseUtils {
                 new File(workspaceDir, Workspace.LAUNCHING_PREFERENCES).isFile() &&
                 new File(workspaceDir, Workspace.RESOURCE_PROJECTS_DIR).isDirectory();
     }
-
+    
     
     private static final String TMP_NAME =
             "NB___TMP___ENOUGH___UNIQUE___CONSTANT___"; // NOI18N

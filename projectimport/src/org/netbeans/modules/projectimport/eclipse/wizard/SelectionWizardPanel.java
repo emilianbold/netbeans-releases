@@ -17,7 +17,6 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import org.netbeans.modules.projectimport.eclipse.EclipseUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -78,9 +77,15 @@ final class SelectionWizardPanel extends ImporterWizardPanel implements
     public void validate() throws WizardValidationException {
         if (!panel.isWorkspaceChosen()) {
             String dest = panel.getProjectDestinationDir();
+            String message = null;
             if ((!new File(dest).isAbsolute()) || !EclipseUtils.isWritable(dest)) {
-                String message = ProjectImporterWizard.getMessage(
+                message = ProjectImporterWizard.getMessage(
                         "MSG_CannotCreateProjectInFolder", dest); // NOI18N
+            } else if (!EclipseUtils.isRegularJavaProject(panel.getProjectDir())) {
+                message = ProjectImporterWizard.getMessage(
+                        "MSG_CannotImportNonJavaProject"); // NOI18N
+            }
+            if (message != null) {
                 setErrorMessage(message);
                 throw new WizardValidationException(panel, message, null);
             }
