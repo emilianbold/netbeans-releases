@@ -73,18 +73,20 @@ public class PlatformUiSupport {
      * Stores active platform, javac.source and javac.target into the project's metadata
      * @param props project's shared properties
      * @param helper to read/update project.xml
-     * @param platformDisplayName the patform's display name
+     * @param platformKey the PatformKey got from the platform model
      * @param sourceLevel source level
      */
-    public static void storePlatform (EditableProperties props, UpdateHelper helper, String platformDisplayName, SpecificationVersion sourceLevel) {
-        JavaPlatform platform = getPlatform(platformDisplayName);                
+    public static void storePlatform (EditableProperties props, UpdateHelper helper, Object platformKey, SpecificationVersion sourceLevel) {
+        assert platformKey instanceof PlatformKey;
+        PlatformKey pk = (PlatformKey) platformKey;
+        JavaPlatform platform = getPlatform(pk);                
         //null means active broken (unresolved) platform, no need to do anything
         if (platform != null) {
             String platformAntName = (String) platform.getProperties().get("platform.ant.name");    //NOI18N        
             assert platformAntName != null;
             props.put(J2SEProjectProperties.JAVA_PLATFORM, platformAntName);
             Element root = helper.getPrimaryConfigurationData(true);
-            boolean defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName().equals(platformDisplayName);        
+            boolean defaultPlatform = pk.isDefaultPlatform();
             boolean changed = false;
             NodeList explicitPlatformNodes = root.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"explicit-platform");   //NOI18N
             if (defaultPlatform) {                
@@ -167,22 +169,76 @@ public class PlatformUiSupport {
         return new SourceLevelComboBoxModel (platformComboBoxModel, initialValue);
     }
     
-    private static JavaPlatform getPlatform (String displayName) {
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(displayName, new Specification("j2se",null));  //NOI18N
-        return platforms.length == 0 ? null : platforms[0];
+    private static JavaPlatform getPlatform (PlatformKey platformKey) {
+        return platformKey.platform;
+    }    
+    
+    private static class PlatformKey implements Comparable {
+        
+        private String name;
+        private JavaPlatform platform;
+        
+        public PlatformKey (String name) {
+            assert name != null;
+            this.name = name;
+        }
+        
+        public PlatformKey (JavaPlatform platform) {
+            assert platform != null;
+            this.platform = platform;
+        }
+
+        public int compareTo(Object o) {
+            return this.getDisplayName().compareTo(((PlatformKey)o).getDisplayName());
+        }
+        
+        public boolean equals (Object other) {
+            if (other instanceof PlatformKey) {
+                PlatformKey otherKey = (PlatformKey)other;
+                return (this.platform == null ? otherKey.platform == null : this.platform.equals(otherKey.platform)) &&
+                       otherKey.getDisplayName().equals (this.getDisplayName());
+            }
+            else {
+                return false;
+            }
+        }
+        
+        public int hashCode () {
+            return getDisplayName ().hashCode ();
+        }
+        
+        public String toString () {
+            return getDisplayName ();
+        }
+        
+        public synchronized String getDisplayName () {
+            if (this.name == null) {
+                if (isDefaultPlatform()) {
+                    this.name = NbBundle.getMessage (PlatformUiSupport.class,"TXT_DefaulPlatform",
+                            this.platform.getSpecification().getVersion().toString());
+                }
+                else {
+                    this.name = this.platform.getDisplayName();
+                }
+            }
+            return this.name;
+        }
+        
+        public boolean isDefaultPlatform () {
+            if (this.platform == null) {
+                return false;
+            }
+            return this.platform.equals(JavaPlatformManager.getDefault().getDefaultPlatform());
+        }
+        
     }
     
-    private static String getAntPlatformName (String displayName) {        
-        JavaPlatform platform = getPlatform(displayName);
-        return  platform == null ? null : (String) platform.getProperties().get("platform.ant.name");    //NOI18N
-    }
-           
     private static class PlatformComboBoxModel extends AbstractListModel implements ComboBoxModel, PropertyChangeListener {
         
         private JavaPlatformManager pm;
-        private String[] platformNamesCache;
+        private PlatformKey[] platformNamesCache;
         private String initialPlatform;
-        private String selectedPlatform;
+        private PlatformKey selectedPlatform;
         
         public PlatformComboBoxModel (String initialPlatform) {
             this.pm = JavaPlatformManager.getDefault();
@@ -191,12 +247,12 @@ public class PlatformUiSupport {
         }
         
         public int getSize () {
-            String[] platformNames = getPlatformNames ();
+            PlatformKey[] platformNames = getPlatformNames ();
             return platformNames.length;
         }
         
         public Object getElementAt (int index) {
-            String[] platformNames = getPlatformNames ();
+            PlatformKey[] platformNames = getPlatformNames ();
             assert index >=0 && index< platformNames.length;
             return platformNames[index];
         }
@@ -207,7 +263,7 @@ public class PlatformUiSupport {
         }
         
         public void setSelectedItem (Object obj) {
-            this.selectedPlatform = (String) obj;
+            this.selectedPlatform = (PlatformKey) obj;
             this.fireContentsChanged(this, -1, -1);
         }
         
@@ -220,20 +276,21 @@ public class PlatformUiSupport {
             }
         }
         
-        private synchronized String[] getPlatformNames () {
+        private synchronized PlatformKey[] getPlatformNames () {
             if (this.platformNamesCache == null) {
                 JavaPlatform[] platforms = pm.getPlatforms (null, new Specification("j2se",null));    //NOI18N
-                Set orderedNames = new TreeSet ();
+                JavaPlatform defaultPlatform = pm.getDefaultPlatform ();
+                Set/*<PlatformKey>*/ orderedNames = new TreeSet ();
                 boolean activeFound = false;
                 for (int i=0; i< platforms.length; i++) {
                     if (platforms[i].getInstallFolders().size()>0) {
-                        String displayName = platforms[i].getDisplayName();
-                        orderedNames.add (displayName);                    
+                        PlatformKey pk = new PlatformKey(platforms[i]);
+                        orderedNames.add (pk);
                         if (!activeFound && initialPlatform != null) {
                             String antName = (String) platforms[i].getProperties().get("platform.ant.name");    //NOI18N
                             if (initialPlatform.equals(antName)) {
                                 if (this.selectedPlatform == null) {
-                                    this.selectedPlatform = displayName;
+                                    this.selectedPlatform = pk;
                                 }
                                 activeFound = true;
                             }
@@ -243,17 +300,18 @@ public class PlatformUiSupport {
                 if (!activeFound) {
                     if (initialPlatform == null) {
                         if (this.selectedPlatform == null) {
-                            this.selectedPlatform = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName();
+                            this.selectedPlatform = new PlatformKey (JavaPlatformManager.getDefault().getDefaultPlatform());
                         }
                     }
                     else {
-                        orderedNames.add(this.initialPlatform);
+                        PlatformKey pk = new PlatformKey (this.initialPlatform);
+                        orderedNames.add (pk);
                         if (this.selectedPlatform == null) {
-                            this.selectedPlatform = initialPlatform;
+                            this.selectedPlatform = pk;
                         }
                     }
                 }
-                this.platformNamesCache = (String[]) orderedNames.toArray(new String[orderedNames.size()]);
+                this.platformNamesCache = (PlatformKey[]) orderedNames.toArray(new PlatformKey[orderedNames.size()]);
             }
             return this.platformNamesCache;                    
         }
@@ -268,11 +326,11 @@ public class PlatformUiSupport {
         private SpecificationVersion selectedSourceLevel;
         private SpecificationVersion[] sourceLevelCache;
         private final ComboBoxModel platformComboBoxModel;
-        private String activePlatform;
+        private PlatformKey activePlatform;
         
         public SourceLevelComboBoxModel (ComboBoxModel platformComboBoxModel, String initialValue) {            
             this.platformComboBoxModel = platformComboBoxModel;
-            this.activePlatform = (String) this.platformComboBoxModel.getSelectedItem();
+            this.activePlatform = (PlatformKey) this.platformComboBoxModel.getSelectedItem();
             this.platformComboBoxModel.addListDataListener (this);
             if (initialValue != null && initialValue.length()>0) {
                 this.selectedSourceLevel = new SpecificationVersion (initialValue);
@@ -317,7 +375,7 @@ public class PlatformUiSupport {
         }
 
         public void contentsChanged(ListDataEvent e) {
-            String selectedPlatform = (String) this.platformComboBoxModel.getSelectedItem();
+            PlatformKey selectedPlatform = (PlatformKey) this.platformComboBoxModel.getSelectedItem();
             JavaPlatform platform = getPlatform(selectedPlatform);
             if (platform != null) {
                 SpecificationVersion version = platform.getSpecification().getVersion();
@@ -341,7 +399,7 @@ public class PlatformUiSupport {
         
         private SpecificationVersion[] getSourceLevels () {
             if (this.sourceLevelCache == null) {
-                String selectedPlatform = (String) this.platformComboBoxModel.getSelectedItem();
+                PlatformKey selectedPlatform = (PlatformKey) this.platformComboBoxModel.getSelectedItem();
                 JavaPlatform platform = getPlatform(selectedPlatform);                
                 List/*<SpecificationVersion>*/ sLevels = new ArrayList ();
                 //If platform == null broken platform, the source level range is unknown

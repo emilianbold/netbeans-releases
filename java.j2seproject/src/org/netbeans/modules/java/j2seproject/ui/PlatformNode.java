@@ -83,18 +83,25 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
     public String getDisplayName () {
         JavaPlatform plat = pp.getPlatform();
+        String name;
         if (plat != null) {
-            return plat.getDisplayName();
+            if (isDefaultPaltform (plat)) {
+                name = NbBundle.getMessage(PlatformNode.class,"TXT_DefaulPlatform", plat.getSpecification().getVersion().toString());
+            }
+            else {
+                name = plat.getDisplayName();
+            }
         }
         else {
             String platformId = pp.getPlatformId ();
             if (platformId == null) {
-                return NbBundle.getMessage(PlatformNode.class,"TXT_BrokenPlatform");
+                name = NbBundle.getMessage(PlatformNode.class,"TXT_BrokenPlatform");
             }
             else {
-                return MessageFormat.format(NbBundle.getMessage(PlatformNode.class,"FMT_BrokenPlatform"), new Object[] {platformId});
+                name = MessageFormat.format(NbBundle.getMessage(PlatformNode.class,"FMT_BrokenPlatform"), new Object[] {platformId});
             }
         }
+        return name;
     }
     
     public String getHtmlDisplayName () {
@@ -132,6 +139,12 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                 ((PlatformContentChildren)getChildren()).addNotify ();
             }
         });
+    }
+    
+    
+    private static boolean isDefaultPaltform (JavaPlatform platform) {
+        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        return platform.equals(defaultPlatform);
     }
     
     
