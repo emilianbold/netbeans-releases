@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init" depends="default.init">
         <patternset id="xml/tools.files">
           <include name="${nb.modules.dir}/xml-tools.jar"/>
-          <include name="${nb.docs.dir}/xml-apis.zip"/>
+          <!--<include name="${nb.docs.dir}/xml-apis.zip"/>-->
         </patternset>
         <path id="cp">
           <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
