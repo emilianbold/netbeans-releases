@@ -51,15 +51,12 @@ if [ -f "${userdir}"/etc/netbeans.conf ] ; then
     . "${userdir}"/etc/netbeans.conf
 fi
 
-if [ -z "$netbeans_clusters" ] ; then
-    netbeans_clusters="$progdir/../nb4.1:$progdir/../ide5"
-    if [ -d "$progdir/../enterprise1" ] ; then
-        netbeans_clusters="$netbeans_clusters:$progdir/../enterprise1"
+netbeans_clusters=""
+for i in nb4.1 ide5 enterprise1 profiler1 mobility7.1 extra ; do
+    if [ -d "$progdir/../$i" ] ; then
+        netbeans_clusters="$netbeans_clusters:$progdir/../$i"
     fi
-    if [ -d "$progdir/../extra" ]; then
-        netbeans_clusters="$netbeans_clusters:$progdir/../extra"
-    fi
-fi
+done
 
 if [ ! -z "$netbeans_extraclusters" ] ; then
     netbeans_clusters="$netbeans_clusters:$netbeans_extraclusters"

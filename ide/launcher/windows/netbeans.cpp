@@ -30,6 +30,14 @@ static char options[4098] = "";
 static char dirs[4098] = "", extradirs[4098];
 static char jdkswitch[MAX_PATH] = "";
 
+static char* defaultDirs[] = { "nb4.1",
+                               "ide5",
+                               "enterprise1",
+                               "profiler1",
+                               "mobility7.1",
+                               "extra",
+                               NULL };
+
 #ifdef WINMAIN
 
 static void parseCommandLine(char *argstr);
@@ -80,19 +88,14 @@ int WINAPI
     
     char nbexec[MAX_PATH];
     char cmdline2[10240];
-    
-    if (dirs[0] == '\0') {
-        sprintf(dirs, "%s\\%s;%s\\%s", topdir, "\\nb4.1", topdir, "\\ide5");
 
-        sprintf(buf, "%s\\enterprise1", topdir);
+    dirs[0] = '\0';
+    for (char **pdir = defaultDirs; *pdir != NULL; pdir++) {
+        sprintf(buf, "%s\\%s", topdir, *pdir);
         if (dirExists(buf)) {
-            sprintf(buf, "%s;%s\\%s", dirs, topdir, "\\enterprise1");
-            strcpy(dirs, buf);
-        }
-
-        sprintf(buf, "%s\\extra", topdir);
-        if (dirExists(buf)) {
-            sprintf(buf, "%s;%s\\%s", dirs, topdir, "\\extra");
+            if (dirs[0] != '\0') {
+                sprintf(buf, "%s;%s\\%s", dirs, topdir, *pdir);
+            }
             strcpy(dirs, buf);
         }
     }
@@ -224,19 +227,6 @@ void parseConfigFile(const char* path) {
             
             *(pc+1) = '\0';
             strcpy(options, q);
-        } else if (strstr(pc, "netbeans_clusters=") == pc) {
-            char *q = strstr(pc, "=") + 1;
-            pc = line + strlen(line) - 1;
-            while (*pc == '\n' || *pc == '\r' || *pc == '\t' || *pc == ' ')
-                pc--;
-            
-            if (*q == '"' && *pc == '"') {
-                q++;
-                pc--;
-            }
-            
-            *(pc+1) = '\0';
-            strcpy(dirs, q);
         } else if (strstr(pc, "netbeans_extraclusters=") == pc) {
             char *q = strstr(pc, "=") + 1;
             pc = line + strlen(line) - 1;
