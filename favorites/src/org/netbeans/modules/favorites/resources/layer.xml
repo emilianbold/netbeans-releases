@@ -84,6 +84,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Templates" >
         <folder name="Other" >
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
             <file name="file">
                 <![CDATA[]]>
                 <attr name="template" boolvalue="true"/>
