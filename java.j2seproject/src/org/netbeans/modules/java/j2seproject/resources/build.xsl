@@ -86,7 +86,7 @@ Microsystems, Inc. All Rights Reserved.
 
     An example of overriding the target for project execution could look like this:
 
-        <target name="run" depends="<PROJNAME>-impl.jar">
+        <target name="run" depends="]]><xsl:value-of select="$name"/><![CDATA[-impl.jar">
             <exec dir="bin" executable="launcher.exe">
                 <arg file="${dist.jar}"/>
             </exec>
