@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Action;
+
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -168,9 +169,10 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         this.editorUI = editorUI;
         
         setFloatable(false);
-        // special border installed by core or no border if not available
-        Border b = (Border)UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
-        setBorder(b);
+        //mkleint - instead of here, assign the border in CloneableEditor and MultiView module.
+//        // special border installed by core or no border if not available
+//        Border b = (Border)UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
+//        setBorder(b);
         addMouseListener(sharedMouseListener);
         Settings.addSettingsChangeListener(this);
         settingsChange(null);

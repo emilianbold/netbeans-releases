@@ -25,7 +25,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
  * Temporary solution tomultiview tabs..
  * @author  mkleint
  */
-class TabsComponent extends JToolBar {
+class TabsComponent extends JPanel {
     
     private JComponent EMPTY;
     private final static String TOOLBAR_MARKER = "MultiViewPanel"; //NOI18N
@@ -37,17 +37,24 @@ class TabsComponent extends JToolBar {
     private JPanel componentPanel;
     private CardLayout cardLayout;
     private Set alreadyAddedElements;
-
+    private JToolBar bar;
     
     /** Creates a new instance of TabsComponent */
     public TabsComponent() {
         super();
-        setBorder (BorderFactory.createEmptyBorder(0,0,0,0));
-        setBorderPainted(false);
+        bar = new JToolBar();
+        // special border installed by core or no border if not available
+        Border b = (Border)UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
+        bar.setBorder(b);
+//        setBorder (BorderFactory.createEmptyBorder(0,0,0,0));
 //        setLayout (new AdaptiveGridLayout());
-        setLayout (new OneLineGridLayout());
-        setFloatable(false);
-        setFocusable(true);
+        bar.setLayout (new OneLineGridLayout());
+        bar.setFloatable(false);
+        bar.setFocusable(true);
+        bar.setPreferredSize(new Dimension(10, 26));
+        
+        setLayout(new BorderLayout());
+        add(bar, BorderLayout.NORTH);
         startToggling();
 //        setFocusCycleRoot(true);
 //        setFocusTraversalKeysEnabled(true);
@@ -64,14 +71,14 @@ class TabsComponent extends JToolBar {
     
     public void setModel(MultiViewModel model) {
         if (this.model != null) {
-            removeAll();
+            bar.removeAll();
         }
         this.model = model;
         
         componentPanel = new JPanel();
         cardLayout = new CardLayout();
         componentPanel.setLayout(cardLayout);
-        add(componentPanel);
+        add(componentPanel, BorderLayout.CENTER);
         alreadyAddedElements = new HashSet();
         
         MultiViewDescription[] descs = model.getDescriptions();
@@ -80,7 +87,7 @@ class TabsComponent extends JToolBar {
         for (int i = 0; i < descs.length; i++) {
             JToggleButton button = createButton(descs[i]);
             model.getButtonGroup().add(button);
-            add(button);
+            bar.add(button);
             if (descs[i] == model.getActiveDescription()) {
                 active = button;
                 
@@ -90,7 +97,7 @@ class TabsComponent extends JToolBar {
             active.setSelected(true);
         }
         toolbarPanel = getEmptyInnerToolBar();
-        add(toolbarPanel);
+        bar.add(toolbarPanel);
 //        if (isVisible()) {
 //            revalidate();
 //            repaint();
@@ -168,25 +175,27 @@ class TabsComponent extends JToolBar {
         return button;
     }
 
-    void setInnerToolBar(JComponent bar) {
+    void setInnerToolBar(JComponent innerbar) {
         synchronized (getTreeLock()) {
             if (toolbarPanel != null) {
-                remove(toolbarPanel);
+                bar.remove(toolbarPanel);
             } else {
                 System.out.println("something wrong.. model was not set..");
             }
-            if (bar == null) {
-                bar = getEmptyInnerToolBar();
+            if (innerbar == null) {
+                innerbar = getEmptyInnerToolBar();
             }
-            bar.putClientProperty(TOOLBAR_MARKER, "X"); //NOI18N
-            toolbarPanel = bar;
+            innerbar.putClientProperty(TOOLBAR_MARKER, "X"); //NOI18N
+            // need to set it to null, because CloneableEditor set's the border for the editor bar part only..
+            innerbar.setBorder(null);
+            toolbarPanel = innerbar;
             if (toolbarPanel != null) {
-                add(toolbarPanel);
+                bar.add(toolbarPanel);
             }
             // rootcycle is the tabscomponent..
 //            toolbarPanel.setFocusCycleRoot(false);
-            revalidate();
-            repaint();
+            bar.revalidate();
+            bar.repaint();
         }
     }
     
@@ -201,7 +210,7 @@ class TabsComponent extends JToolBar {
     
     
     void requestFocusForSelectedButton() {
-        setFocusable(true);
+        bar.setFocusable(true);
         Enumeration en = model.getButtonGroup().getElements();
         while (en.hasMoreElements()) {
             JToggleButton but = (JToggleButton)en.nextElement();
@@ -214,7 +223,7 @@ class TabsComponent extends JToolBar {
     }
 
     void requestFocusForPane() {
-        setFocusable(false);
+        bar.setFocusable(false);
         componentPanel.requestFocus();
     }
     
