@@ -204,7 +204,10 @@ public final class ProjectWebModule extends J2eeModuleProvider
     
     private WebApp getWebApp () {
         try {
-            return DDProvider.getDefault ().getDDRoot (getDeploymentDescriptor ());
+            FileObject deploymentDescriptor = getDeploymentDescriptor ();
+            if(deploymentDescriptor != null) {
+                return DDProvider.getDefault ().getDDRoot (deploymentDescriptor);
+            }
         } catch (java.io.IOException e) {
             org.openide.ErrorManager.getDefault ().log (e.getLocalizedMessage ());
         }

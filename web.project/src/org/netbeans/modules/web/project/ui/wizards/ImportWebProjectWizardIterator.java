@@ -461,7 +461,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
     }
     
-    public final class SecondPanel implements WizardDescriptor.FinishablePanel {
+    public final class SecondPanel implements WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
         private ImportWebLocationsVisual panel;
         
         private SecondPanel () {
@@ -592,6 +592,10 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
                     ((ImportWebLocationsVisual) panels[1].getComponent()).initValues(sourceRoot, webPages, javaSources, libraries);
                 }
             }
+        }
+
+        public void validate() throws WizardValidationException {
+            panel.validateLocations();
         }
     }
 }

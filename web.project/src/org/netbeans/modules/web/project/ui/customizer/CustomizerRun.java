@@ -71,7 +71,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
                 final String serverInstId = (String) webProperties.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
                 final String path = (String) propertyInfo.getValue();
                 final String oldValue = (String) propertyInfo.getOldValue();
-                if(!oldValue.equals(path)) {
+                if(path != null && !path.equals(oldValue)) {
                     wm.setContextPath(serverInstId, path);
                 }
             }
