@@ -366,8 +366,7 @@ Microsystems, Inc. All Rights Reserved.
              	  <include name="org/openide/util/*"/>
                   
                   <!-- Exclude classes already included in lib-lookup -->
-                  <exclude name="org/openide/util/lookup"/>
-                  <exclude name="org/openide/util/lookup/*"/>
+                  <exclude name="org/openide/util/lookup/"/>
                   <exclude name="org/openide/util/*Lookup*"/>
                   <exclude name="org/openide/util/WeakSet*"/>
                   
