@@ -34,7 +34,6 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.JMenuItem;
 import javax.swing.event.*;
-import javax.swing.border.EmptyBorder;
 import org.netbeans.core.IDESettings;
 
 import org.openide.*;
