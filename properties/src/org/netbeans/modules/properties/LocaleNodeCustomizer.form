@@ -16,6 +16,9 @@
           <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="LBL_Name" replaceFormat="NbBundle.getBundle(LocaleNodeCustomizer.class).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="nameLabel.setDisplayedMnemonic((NbBundle.getBundle(LocaleNodeCustomizer.class).getString(&quot;LBL_Name_Mnem&quot;)).charAt(0)); // NOI18N"/>
+      </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="0" gridY="0" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="12" insetsLeft="12" insetsBottom="0" insetsRight="0" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -32,7 +35,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="keyLabel.setDisplayedMnemonic((NbBundle.getBundle(LocaleNodeCustomizer.class).getString(&quot;LBL_Keys_Mnem&quot;)).charAt(0));"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="keyLabel.setDisplayedMnemonic((NbBundle.getBundle(LocaleNodeCustomizer.class).getString(&quot;LBL_Keys_Mnem&quot;)).charAt(0)); // NOI18N"/>
       </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -54,11 +57,11 @@
       <SubComponents>
         <Component class="javax.swing.JList" name="keyList">
           <Properties>
+            <Property name="cellRenderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="new DefaultListCellRenderer() {&#xa;    public Component getListCellRendererComponent(&#xa;    JList list,&#xa;    Object value,            // value to display&#xa;    int index,               // cell index&#xa;    boolean isSelected,      // is the cell selected&#xa;    boolean cellHasFocus)    // the list and the cell have the focus&#xa;    {&#xa;        JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);&#xa;&#xa;        label.setText(value.toString());&#xa;        &#xa;        label.setIcon(getKeyIcon());&#xa;&#xa;        return label;&#xa;    }&#xa;}" type="code"/>
+            </Property>
             <Property name="prototypeCellValue" type="java.lang.Object" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="&quot;0123456789012345678901234567890123456789&quot;" type="code"/>
-            </Property>
-            <Property name="cellRenderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="new DefaultListCellRenderer() {&#xa;    public Component getListCellRendererComponent(&#xa;    JList list,&#xa;    Object value,            // value to display&#xa;    int index,               // cell index&#xa;    boolean isSelected,      // is the cell selected&#xa;    boolean cellHasFocus)    // the list and the cell have the focus&#xa;    {&#xa;        JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);&#xa;&#xa;        label.setText(UtilConvert.unicodesToChars(value.toString()));&#xa;        &#xa;        label.setIcon(getKeyIcon());&#xa;&#xa;        return label;&#xa;    }&#xa;}" type="code"/>
             </Property>
           </Properties>
           <Events>
@@ -66,8 +69,8 @@
           </Events>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value=""/>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JList(retrieveKeys(entry));"/>
             <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value=""/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JList(retrieveKeys(entry));"/>
           </AuxValues>
         </Component>
       </SubComponents>

@@ -79,6 +79,8 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         // area that must accept newlines.
         textField.getDocument().putProperty("filterNewlines",  Boolean.FALSE); // NOI18N
         textField.setBorder(new LineBorder(Color.black));
+        textField.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BundleEditPanel.class).getString("ACSN_CellEditor"));
+        textField.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACSD_CellEditor"));
         table.setDefaultEditor(PropertiesTableModel.StringPair.class,
         new PropertiesTableCellEditor(textField, textComment, textValue, valueLabel, new ModifiedListener()));
         

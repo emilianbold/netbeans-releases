@@ -155,8 +155,9 @@ public class LocaleNodeCustomizer extends JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         nameLabel = new javax.swing.JLabel();
+        nameLabel.setDisplayedMnemonic((NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Name_Mnem")).charAt(0)); // NOI18N
         keyLabel = new javax.swing.JLabel();
-        keyLabel.setDisplayedMnemonic((NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Keys_Mnem")).charAt(0));
+        keyLabel.setDisplayedMnemonic((NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Keys_Mnem")).charAt(0)); // NOI18N
         jScrollPane1 = new javax.swing.JScrollPane();
         keyList = new JList(retrieveKeys(entry));
         addKeyButton = new javax.swing.JButton();
@@ -186,7 +187,6 @@ public class LocaleNodeCustomizer extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         add(keyLabel, gridBagConstraints);
 
-        keyList.setPrototypeCellValue("0123456789012345678901234567890123456789");
         keyList.setCellRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(
                 JList list,
@@ -196,11 +196,15 @@ public class LocaleNodeCustomizer extends JPanel {
                 boolean cellHasFocus)    // the list and the cell have the focus
             {
                 JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
                 label.setText(value.toString());
+
                 label.setIcon(getKeyIcon());
+
                 return label;
             }
         });
+        keyList.setPrototypeCellValue("0123456789012345678901234567890123456789");
         keyList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 keyListValueChanged(evt);
@@ -372,15 +376,15 @@ public class LocaleNodeCustomizer extends JPanel {
 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel nameLabel;
-    private javax.swing.JLabel keyLabel;
-    private javax.swing.JTextField nameText;
     private javax.swing.JButton addKeyButton;
     private javax.swing.JButton changeNameButton;
-    private javax.swing.JButton removeKeyButton;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel keyLabel;
     private javax.swing.JList keyList;
+    private javax.swing.JLabel nameLabel;
+    private javax.swing.JTextField nameText;
+    private javax.swing.JButton removeKeyButton;
     // End of variables declaration//GEN-END:variables
 
 }
