@@ -4,13 +4,13 @@
  * The contents of this file are subject to the Sun Public License Version
  * 1.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is available at http://www.sun.com/
- * 
+ *
  * The Original Code is the Jemmy library.
  * The Initial Developer of the Original Code is Alexandre Iline.
  * All Rights Reserved.
  * 
  * Contributor(s): Alexandre Iline.
- * 
+ *
  * $Id$ $Revision$ $Date$
  * 
  */
@@ -29,7 +29,6 @@ import java.util.Properties;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
-import org.netbeans.jemmy.drivers.DefaultDriverInstaller;
 import org.netbeans.jemmy.drivers.InputDriverInstaller;
 
 /**
@@ -55,8 +54,6 @@ public class JemmyProperties {
      * @see #setCurrentDispatchingModel(int)
      */
     public static int ROBOT_MODEL_MASK = 2;
-
-    public static int SHORTCUT_MODEL_MASK = 4;
 
     private static final int DEFAULT_DRAG_AND_DROP_STEP_LENGTH = 100;
     private static Stack propStack = null;
@@ -111,7 +108,7 @@ public class JemmyProperties {
 
     /**
      * Creates a copy of the current JemmyProperties object
-     * and pushes it into the properties stack. 
+     * and pushes it into the properties stack.
      * @return New current properties.
      */
     public static JemmyProperties push() {
@@ -119,7 +116,7 @@ public class JemmyProperties {
     }
 
     /**
-     * Pops last pushed properties from the properties stack. 
+     * Pops last pushed properties from the properties stack.
      * If stack has just one element, does nothing.
      * @return Poped properties.
      */
@@ -201,7 +198,7 @@ public class JemmyProperties {
     public static TestOut setCurrentOutput(TestOut out) {
 	return(getProperties().setOutput(out));
     }
-   
+
     /**
      * Just like getProperties().getBundleManager()
      */
@@ -343,13 +340,13 @@ public class JemmyProperties {
 	    props.load(new FileInputStream(prop_file));
 	    if(props.getProperty("TIMEOUTS_FILE") != null &&
 	       !props.getProperty("TIMEOUTS_FILE").equals("")) {
-		getOutput().printLine("Loading timeouts from " + props.getProperty("TIMEOUTS_FILE") + 
+		getOutput().printLine("Loading timeouts from " + props.getProperty("TIMEOUTS_FILE") +
 				      " file");
 		getTimeouts().loadDefaults(props.getProperty("TIMEOUTS_FILE"));
 	    }
 	    if(props.getProperty("RESOURCE_FILE") != null &&
 	       !props.getProperty("RESOURCE_FILE").equals("")) {
-		getOutput().printLine("Loading resources from " + props.getProperty("RESOURCE_FILE") + 
+		getOutput().printLine("Loading resources from " + props.getProperty("RESOURCE_FILE") +
 				      " file");
 		getBundleManager().loadBundleFromFile(props.getProperty("RESOURCE_FILE"), "");
 	    }
@@ -381,15 +378,15 @@ public class JemmyProperties {
      * Initializes dispatching model.
      * @param queue Notifies that event queue dispatching should be used.
      * @param robot Notifies that robot dispatching should be used.
-     * @param shortcut Notifies that event shorcutting should be used.
      */
-    public void initDispatchingModel(boolean queue, boolean robot, boolean shortcut) {
+    public void initDispatchingModel(boolean queue, boolean robot) {
 	int model = 0;
 	getOutput().print("Reproduce user actions ");
 	if(queue) {
 	    model = QUEUE_MODEL_MASK;
 	    getOutput().printLine("through event queue.");
 	} else {
+	    model = 0;
 	    getOutput().printLine("directly.");
 	}
 	getOutput().print("Use ");
@@ -397,26 +394,11 @@ public class JemmyProperties {
 	    model = model | ROBOT_MODEL_MASK;
 	    getOutput().print("java.awt.Robot class");
 	} else {
+	    model = model;
 	    getOutput().print("event dispatching");
 	}
 	getOutput().printLine(" to reproduce user actions");
-	if(shortcut) {
-	    model = model | SHORTCUT_MODEL_MASK;
-	    getOutput().print("Shortcut");
-	} else {
-	    getOutput().print("Dispatch");
-	}
-	getOutput().printLine(" test events");
 	setDispatchingModel(model);
-    }
-
-    /**
-     * Initializes dispatching model.
-     * @param queue Notifies that event queue dispatching should be used.
-     * @param robot Notifies that robot dispatching should be used.
-     */
-    public void initDispatchingModel(boolean queue, boolean robot) {
-        this.initDispatchingModel(queue, robot, false);
     }
 
     /**
@@ -432,7 +414,6 @@ public class JemmyProperties {
     public void initDispatchingModel() {
 	boolean qmask = ((getDefaultDispatchingModel() & QUEUE_MODEL_MASK) != 0);
 	boolean rmask = ((getDefaultDispatchingModel() & ROBOT_MODEL_MASK) != 0);
-	boolean smask = ((getDefaultDispatchingModel() & SHORTCUT_MODEL_MASK) != 0);
 	if( System.getProperty("jemmy.queue_dispatching") != null &&
 	   !System.getProperty("jemmy.queue_dispatching").equals("")) {
 	    qmask = System.getProperty("jemmy.queue_dispatching").equals("on");
@@ -441,12 +422,8 @@ public class JemmyProperties {
 	   !System.getProperty("jemmy.robot_dispatching").equals("")) {
 	    rmask = System.getProperty("jemmy.robot_dispatching").equals("on");
 	}
-	if( System.getProperty("jemmy.shortcut_events") != null &&
-	   !System.getProperty("jemmy.shortcut_events").equals("")) {
-	    smask = System.getProperty("jemmy.shortcut_events").equals("on");
-	}
 
-	initDispatchingModel(qmask, rmask, smask);
+	initDispatchingModel(qmask, rmask);
     }
 
     /**
@@ -579,7 +556,6 @@ public class JemmyProperties {
      */
     public int setDispatchingModel(int model) {
 	new InputDriverInstaller((model & ROBOT_MODEL_MASK) == 0).install();
-	new DefaultDriverInstaller((model & SHORTCUT_MODEL_MASK) != 0).install();
 	return(((Integer)setProperty("dispatching.model", new Integer(model))).intValue());
     }
 
