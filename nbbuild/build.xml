@@ -355,6 +355,11 @@ workspaceswitcher
     <ant dir="../externaleditor" target="netbeans"/>
   </target>
 
+  <target name="all-xml" depends="all-openide,all-openidex,all-editor">
+    <echo message="Building module xml..."/>
+    <ant dir="../xml" target="netbeans"/>
+  </target>
+
   <target name="build-messaging" depends="init">
     <echo message="Starting a build for NetBeans (build ${buildnum}, config '${moduleconfig}') ..."/>
     <echo message="Selected modules: ${modules}"/>
