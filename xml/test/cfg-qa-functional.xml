@@ -40,8 +40,10 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/xml/text/syntax/ColoringTest.class"/>
                 <!-- TREE-EDIT -->
                 <include name="org/netbeans/modules/xml/tree/nodes/XMLDataNodeTest.class"/>
-                <include name="org/netbeans/modules/xml/tree/nodes/DTDDataNodeTest.class"/> 
-       </patternset>
+                <include name="org/netbeans/modules/xml/tree/nodes/DTDDataNodeTest.class"/>
+		<!-- XSL -->
+                <include name="org/netbeans/modules/xsl/action/TransformationActionTest.class"/>
+            </patternset>
         </testset>
     </testbag>
         
