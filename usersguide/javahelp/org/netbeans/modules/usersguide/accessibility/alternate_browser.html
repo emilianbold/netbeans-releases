@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright 2001 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<HTML>
+<HEAD>
+<TITLE>Displaying Help in an Alternate Browser</TITLE>
+<link rel="StyleSheet" href="../ide.css" type="text/css">
+</HEAD>
+<BODY>
+
+<h2>Displaying Help in an Alternate Browser</h2>
+<p>
+The online help is designed to be viewed in the JavaHelp viewer, which
+is intergrated in the IDE.  If you prefer, you can view the online help
+in the IDE's web browser or in another browser.
+</p>
+<p>
+The online help is divided into several help sets.  Most help sets
+are packaged in a JAR file, while a few help sets are packaged in a zip file.  
+Help sets are
+typically stored in the <tt>modules/docs</tt> directory in your installation directory.  The file <tt>usersguide.jar</tt> includes the core online help.
+This help set describes how to manage project and files, how to design a user interface, how to compile, debug and run Java programs, and so on.
+</p>
+<p>
+<b>To extract the online help from a JAR file:</b>
+<ol>
+<li>Change directory to the <tt>modules/docs</tt> directory
+in your installation directory and view the JAR files in that directory.
+</li>
+<li>Enter the command:
+<p>
+<tt>jar xf </tt><i>jar-file</i>
+</p>
+<p>
+where <i>jar-file</i> is the filename of the JAR file from which to extract
+files. 
+</p>
+<p>
+The Jar tool makes copies of the desired files and writes them to the current directory, reproducing the directory structure that the files have in the archive.  
+</p>
+</li>
+</ol>
+For example, to extract the core online help, change directory to
+your <i>installation_dir</i>/<tt>modules/docs</tt> and enter the command
+<tt>jar xf usersguide.jar</tt>.
+The core help files are reproduced in <tt>org/netbeans/modules/usersguide</tt>
+under <tt>modules/docs</tt>.  The following table provides pointers 
+on where to start browsing the core help.</p>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr>
+<th align="left" scope="col" valign="top"><b>If you want information on</b></th>
+<th align="left" scope="col" valign="top"><b>Go to this file in 
+<br><tt>modules/docs/org/netbeans/modules/usersguide</code</b></th>
+</tr>
+<tr>
+<td>Getting Started</td>
+<td><tt>getstart/ide.html</tt>
+</td>
+</tr>
+<tr>
+<td>Filesystems and Objects</td>
+<td><tt>filesystems/filesystems-objects.html</tt>
+</td>
+</tr>
+<tr>
+<td>Projects in the IDE</td>
+<td><tt>project/project.html</tt>
+</td>
+</tr>
+<tr>
+<td>Designing Java GUIs</td>
+<td><tt>gui/intro.html</tt>
+</td>
+</tr>
+<tr>
+<td>Editing Source Files</td>
+<td><tt>editing/intro.html</tt>
+</td>
+</tr>
+<tr>
+<td>Compiling and Running Java Programs</td>
+<td><tt>compile/compile_run.html</tt>
+</td>
+</tr>
+<tr>
+<td>Debugging Java Programs</td>
+<td><tt>debug/debug.html</tt>
+</td>
+</tr>
+<tr>
+<td>Working With Java Source</td>
+<td><tt>java/intro.html</tt>
+</td>
+</tr>
+<tr>
+<td>Editing Resource Bundles</td>
+<td><tt>propfiles/editbundles.html</tt>
+</td>
+</tr>
+<tr>
+<td>Using Version Control in the IDE</td>
+<td><tt>vcs-nb/vcs_overview.html</tt>
+</td>
+</tr>
+<tr>
+<td>Using Scripting Languages</td>
+<td><tt>scripting/scripting.html</tt>
+</td>
+</tr>
+<tr>
+<td>Building With Ant</td>
+<td><tt>ant/building.html</tt>
+</td>
+</tr>
+<tr>
+<td>Developing JSP and Servlet Files</td>
+<td><tt>jsp/jsp_jump.html</tt>
+</td>
+</tr>
+<tr>
+<td>Web Server Integration</td>
+<td><tt>j2eeserver/about_the_j2eeserver_module.html</tt>
+</td>
+</tr>
+<tr>
+<td>Configuring the Environment</td>
+<td><tt>configure/configure.html</tt>
+</td>
+</tr>
+<tr>
+<td>Accessibility</td>
+<td><tt>accessibility/accessibility_home.html</tt>
+</td>
+</tr>
+</table>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+</body>
+</html>

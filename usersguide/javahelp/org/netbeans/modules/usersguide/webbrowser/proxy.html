@@ -16,7 +16,7 @@
 need to configure the IDE with your proxy settings.</p>
 <p><b>To configure the IDE to use an HTTP proxy:</b></p>
 <ol>
-<li>From the main window, choose Tools <img src="../images/arrow.gif" alt="and choose"> Options.</li>
+<li>From the main window, choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.</li>
 <li>Expand the IDE Configuration node, and then expand the System node.
 </li>
 <li>Select the System Settings Node.</li>
@@ -25,19 +25,19 @@ need to configure the IDE with your proxy settings.</p>
 </ol>
 
 <p>To run the IDE using a SOCKS proxy, you must pass the SOCKS proxy host and proxy port parameters to the JVM 
-when you start the IDE. On Microsoft Windows machines, use the <code>ide.cfg</code> file to pass the parameters. 
+when you start the IDE. On Microsoft Windows machines, use the <tt>ide.cfg</tt> file to pass the parameters. 
 On UNIX and LINUX machines, you can write a wrapper shell script.</p>
 
 <p><b>To configure the IDE to use a SOCKS proxy, when running on a Microsoft Windows machine:</b></p>
 <ol>
-<li>In the IDE's installation directory, expand the <code>bin</code> directory.</li>
-<li>If an <code>ide.cfg</code> file is not there, create one.</li>
-<li>Open <code>ide.cfg</code> in a text editor and type the line
-<p><code>-J-DsocksProxyHost=</code><i>SOCKS-SERVER</i> <code>-DsocksProxyPort=1080</code></p>
+<li>In the IDE's installation directory, expand the <tt>bin</tt> directory.</li>
+<li>If an <tt>ide.cfg</tt> file is not there, create one.</li>
+<li>Open <tt>ide.cfg</tt> in a text editor and type the line
+<p><tt>-J-DsocksProxyHost=</tt><i>SOCKS-SERVER</i> <tt>-DsocksProxyPort=1080</tt></p>
 <p>
 where <i>SOCKS-SERVER</i> is the host name of your SOCKS proxy.
 </p></li>
-<li>Save <code>ide.cfg</code> and close it.</li>
+<li>Save <tt>ide.cfg</tt> and close it.</li>
 <li>Restart the IDE.</li></ol>
 
 
@@ -45,10 +45,10 @@ where <i>SOCKS-SERVER</i> is the host name of your SOCKS proxy.
 <p><b>To configure the IDE to use a SOCKS proxy, 
 when running on a UNIX or LINUX machine:</b></p>
 <ol>
-<li>Change directory to your <i>IDE_installation</i><code>/bin</code> directory.</li>
+<li>Change directory to your <i>IDE_installation</i><tt>/bin</tt> directory.</li>
 <li>Create a new shell script file.</li>
 <li>Open the new shell file in a text editor and enter the line 
-<p><code>runide.sh -J-DsocksProxyHost=</code><i>SOCKS-SERVER</i> <code>-DsocksProxyPort=1080</code></p>
+<p><tt>runide.sh -J-DsocksProxyHost=</tt><i>SOCKS-SERVER</i> <tt>-DsocksProxyPort=1080</tt></p>
 <p>
 where <i>SOCKS-SERVER</i> is the host name of your SOCKS proxy.
 </p></li>

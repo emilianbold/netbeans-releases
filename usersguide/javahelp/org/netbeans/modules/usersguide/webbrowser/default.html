@@ -6,46 +6,59 @@
 -->
 <HTML>
 <HEAD>
-<TITLE>Specifying the Default Browser</TITLE>
+<TITLE>Specifying the Default Web Browser</TITLE>
 <link rel="StyleSheet" href="../ide.css" type="text/css">
 </HEAD>
 <BODY>
 
-<h2>Specifying the Default Browser</h2>
+<h2>Specifying the Default Web Browser</h2>
 <p>
-The IDE comes with a 
-set of browsers, which enables
-you to use different browsers for different tasks.
-One browser is selected as the default.
-At startup, the default browser is the Microsoft Windows or UNIX external
-browser, depending on your platform.  An external browser is the preferred
-browser for use with the IDE because it provides more functionality
-than an internal browser, such as the Swing HTML browser.
+You can configure the IDE to use either the internal Swing HTML web
+browser or external web browser.
+Both types of browsers enable you to view external and 
+local web pages, including online help and Javadoc documentation.
+The Swing HTML browser provides the highest level of integration with the IDE--you can embed an internal browser into another IDE window or an MDI frame.   </p>
+<p>
+The preferred browser for use with the IDE is an external browser,
+which provides more functionality than an internal
+browser and does not close when you shut down the IDE.
+A disadvantage of using an external browser is that you
+cannot embed it in an IDE window.  Three implementations of the external
+browser are available for use with the IDE:
 </p>
+<ul>
+<li><b>External browser (Command Line)</b>.
+A simple browser that executes a specified command when asked
+to display a URL.  Users will typically customize this browser
+to run Netscape Navigator<sup><small>TM</small></sup>.  
+</li>
+<li><b>External browser (Windows)</b>. The Internet Explorer browser.  
+</li>
+<li><b>External browser (Unix)</b>.
+The Netscape Navigator browser.  
+</li>
+</ul>
 <p>
+At startup, the default browser is the Microsoft Windows or UNIX external
+browser, depending on your platform.  
 By default, the IDE uses the same browser for displaying HTML pages and JSPs,
 unless you explicitly set the JSP browser. 
-For a description of the different browser types, see
-<a href="webbrowser.html">Using a Web Browser With the IDE</a>.
 <p>
 <b>To change the default browser for HTML pages:</b></p>
 <ol>
 <li>
-From the main menu, choose Tools <img src="../images/arrow.gif" alt="and choose"> Options.
+From the main menu, choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Setup Wizard.
 </li>
-<li>In the Options window, expand the IDE Configuration node.
-Then expand the System node.
-</li>
-<li>Select the System Settings node.
-</li>
-<li>Click the value for the Web Browser property and select
-a browser type from the combo box.
+<li>In the Setup wizard, select a browser type from the Web Browser combo box.
 </li>
 </ol>
 <p>
 <b>To change the default browser for JSPs and servlets:</b>
 </p>
 <ol>
+<li>
+From the main menu, choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.
+</li>
 <li>In the Options window, expand the Building node and select the JSP & Servlets node.
 </li>
 <li>Click the value for the Web browser property and select
@@ -59,9 +72,9 @@ a browser type from the combo box.
 <tr>
 <td width="23"></td>
 <td>
-<a href="configure.html">Configuring an External Browser</a>
+<a href="configure.html">External Browser</a>
 <br>
-<a href="swingbrowser.html">Using the Swing HTML Browser</a>
+<a href="swingbrowser.html">Swing HTML Browser</a>
 </td></tr>
 </table>
 <hr>

@@ -30,7 +30,6 @@
 <mapID target="gs.step" url="getstart/colorswitch/steppingcode.html" />
 
 <mapID target="modules.manage" url="modules/managingmods.html" />
-<mapID target="ide.newmodule" url="modules/newmodule.html" />
 <mapID target="ide.autoupdate" url="modules/autoupdate.html" />
 <mapID target="configure.module" url="modules/module.html" />
 
@@ -270,6 +269,8 @@
 <mapID target="editing.find" url="editing/find.html" />
 <mapID target="editing.formatting" url="editing/formatting.html" />
 <mapID target="editing.tabs" url="editing/tabs.html" />
+<mapID target="editing.linenumbers" url="editing/linenumbers.html" />
+<mapID target="editing.annotations" url="editing/annotations.html" />
 <mapID target="editing.imageview" url="editing/imageview.html" />
 <mapID target="editing.codecompletion" url="editing/codecompletion/intro.html" />
 <mapID target="editing.completing-exp" url="editing/codecompletion/completing-exp.html" />
@@ -296,6 +297,7 @@
 <mapID target="editing.settingkeybdshorts" url="editing/configuring/settingkeybdshorts.html" />
 <mapID target="editing.javaeditor-props" url="editing/configuring/javaeditor-props.html" />
 <mapID target="editing.indentation" url="editing/configuring/indentation.html" />
+<mapID target="editing.configuring.annotations" url="editing/configuring/annotations.html" />
 <mapID target="editing.keybindings" url="editing/configuring/keybindings.html" />
 <!-- Need csh page for the Add Shortcut Sequent dialog box... -->
 <mapID target="editing.csh.shortcutseq" url="shortcuts/kybdshortcuts.html" />
@@ -362,18 +364,19 @@
 <mapID target="debug.running.end" url="debug/running/running_end.html" />
 <mapID target="debug.attach" url="debug/running/attach.html" />
 
+<mapID target="debug.variables.jump" url="debug/variables/variables_jump.html" />
 <mapID target="debug.variables.value" url="debug/variables/value.html" />
-
-<mapID target="debug.watches.jump" url="debug/watches/watch_jump.html" />
 <mapID target="debug.watch" url="debug/watches/watch.html" />
 <mapID target="debug.watch.fix" url="debug/watches/fix.html" />
-<mapID target="debug.watch.modify" url="debug/watches/modify.html" />
 <mapID target="debug.watch.delete" url="debug/watches/delete_watch.html" />
 <mapID target="debug.watch.window" url="debug/watches/watch_window.html" />
 
 <mapID target="debug.environment.classes" url="debug/environment/classestab.html" />
 
-<mapID target="debug.environment.callstack" url="debug/environment/callstacktab.html" />
+<mapID target="debug.callstack.jump" url="debug/callstack/callstack_jump.html" />
+<mapID target="debug.callstack.method" url="debug/callstack/callstack_methods.html" />
+<mapID target="debug.callstack.callingmethod" url="debug/callstack/calling_method.html" />
+<mapID target="debug.callstack.source" url="debug/callstack/callstack_source.html" />
 
 <mapID target="debug.threads.jump" url="debug/threads/threads_jump.html" />
 <mapID target="debug.threads.suspend" url="debug/threads/suspend.html" />
@@ -407,7 +410,6 @@
 <mapID target="javadoc.comment" url="javadoc/comment.html" />
 <mapID target="javadoc.accuracy" url="javadoc/accuracy.html" />
 <mapID target="javadoc.generate" url="javadoc/generate.html" />
-<mapID target="javadoc.filesystem.jump" url="javadoc/javadoc_filesystem.html" />
 <mapID target="javadoc.search.path" url="javadoc/search_path.html" />
 <mapID target="javadoc.filesystem.configure" url="javadoc/filesystems_configure.html" />
 <mapID target="javadoc.filesystem.unmount" url="javadoc/filesystems_removing.html" />
@@ -533,11 +535,8 @@
 <mapID target="internation.testing" url="internationalize/testingwizard.html" />
 <mapID target="internation.custom" url="internationalize/replacingformat.html" />
 <mapID target="internation.singlefile" url="internationalize/autoinsert.html" />
+<mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
 
-<mapID target="script.scripting" url="scripting/scripting.html" />
-<mapID target="script.runscript" url="scripting/runningscript.html" />
-<mapID target="script.addscript" url="scripting/addingscript.html" />
-<mapID target="script.dynamicexample" url="scripting/dynamic-example.html" />
 
 <mapID target="ant.building" url="ant/building.html" />
 <mapID target="ant.ident" url="ant/ident.html" />
@@ -547,6 +546,7 @@
 <mapID target="ant.props" url="ant/ant-props.html" />
 <mapID target="ant.advance" url="ant/adv-comp-exec.html" />
 <mapID target="ant.compwith" url="ant/compwith.html" />
+<mapID target="ant.compproject" url="ant/comp-project.html" />
 <mapID target="ant.running" url="ant/running.html" />
 <mapID target="ant.settings" url="ant/settings.html" />
 <mapID target="ant.custom-tasks" url="ant/custom-tasks.html" />
@@ -576,6 +576,8 @@
 
 <mapID target="accessibility.home" url="accessibility/accessibility_home.html" />
 <mapID target="accessibility.stylesheet" url="accessibility/stylesheet.html" />
+<mapID target="accessibility.jhshortcuts" url="accessibility/jhshortcuts.html" />
+<mapID target="accessibility.alternate.browser" url="accessibility/alternate_browser.html" />
 
 
 <!--Open Image dialog available from icon property editors (and other places?)-->
@@ -590,7 +592,13 @@
 <mapID target="org.netbeans.core.services.CompilerTypes" url="compile/options_jump.html" />
 <mapID target="org.netbeans.core.services.ExecutorTypes" url="run/executor_options.html" />
 <mapID target="org.netbeans.core.services.DebuggerTypes" url="debug/debugger/debugger_jump.html" />
-<mapID target="org.netbeans.core.services.Browsers" url="pending.html" />
+<mapID target="org.netbeans.core.services.Browsers" url="webbrowser/configure.html" />
+
+<mapID target="org.netbeans.modules.extbrowser.WinWebBrowser" url="webbrowser/configure.html" />
+<mapID target="org.netbeans.modules.extbrowser.UnixWebBrowser" url="webbrowser/configure.html" />
+<mapID target="org.netbeans.modules.extbrowser.SimpleExtBrowser" url="webbrowser/configure.html" />
+<mapID target="org.openide.awt.SwingBrowser" url="webbrowser/swingbrowser.html" />
+<mapID target="org.netbeans.modules.icebrowser.IceBrowser" url="webbrowser/webbrowser.html" />
 
 
 <mapID target="NetbeansDebuggerSessionNode" url="debug/environment/sessions_view.html" />
@@ -665,8 +673,6 @@
   <mapID target="org.openide.awt.HtmlBrowser$BrowserComponent" url="pending.html" />
   <mapID target="org.openide.execution.ProcessExecutor" url="run/external.html" />
   <mapID target="org.openide.execution.ThreadExecutor" url="run/internal.html" />
-  <mapID target="org.netbeans.modules.apisupport.lite" url="modules/newmodule.html" />
-  <mapID target="org.netbeans.modules.apisupport.lite.Wizard" url="modules/newmodule.html" />
   <mapID target="org.netbeans.modules.debugger.multisession.DebuggerExecutor" url="pending.html" />
   <mapID target="org.netbeans.modules.debugger.delegator.DelegatingDebugger.dialog" url="debug/sessions/finishdialog.html" />
   <mapID target="org.openide.explorer.propertysheet.PropertySheetSettings" url="pending.html" />
@@ -709,7 +715,7 @@
 
    <mapID target="org.netbeans.core.actions.SettingsAction" url="project/project_settings.html" />
 
-   <mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="configure/configure_options.html" />
    <mapID target="org.netbeans.beaninfo.editors.BeanEditor" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.options.ColoringArrayEditor$FakeNode" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.options.ColoringArrayEditorPanel" url="pending.html" />
@@ -772,6 +778,7 @@
    <mapID target="org.netbeans.core.windows.nodes.WorkspaceNewType" url="pending.html" /> 
    <mapID target="org.netbeans.core.windows.nodes.WorkspacePoolContext" url="workspace/workspace.html" /> 
    <mapID target="org.netbeans.core.windows.nodes.WorkspacePoolContext$WorkspacePasteType" url="pending.html" /> 
+   <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/toolbar.html" /> 
    <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
    <mapID target="org.netbeans.core.actions.NextOutJumpAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.PreviousOutJumpAction" url="pending.html" />
@@ -796,22 +803,22 @@
 
    <mapID target="org.netbeans.modules.text.TXTDataObject" url="objects/objects.html" />
    <mapID target="org.netbeans.modules.html.HtmlLoader.Obj" url="objects/objects.html" />
-   <mapID target="org.netbeans.modules.beans.EventSetPatternNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.EventSetPatternNode" url="java/nodes/beanprop.html" />
    <mapID target="org.netbeans.modules.beans.IdxPropertyPatternNode" url="java/nodes/beanprop.html" />
    <mapID target="org.netbeans.modules.beans.PatternGroupNode" url="java/nodes/beanprop.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_IDXPROPERTY" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_MULTICASTSE" url="pending.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_UNICASTSE" url="pending.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_PROPERTY" url="pending.html" /> 
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Indexed Property" url="pending.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Multicast Event Source" url="pending.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Unicast Event Source" url="pending.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Property" url="pending.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogProperty" url="pending.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogIdxProperty" url="pending.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogUniCastES" url="pending.html" />
-   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogMultiCastES" url="pending.html" />
-   <mapID target="org.netbeans.modules.beans.PatternNode" url="pending.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_IDXPROPERTY" url="java/nodes/beanprop.html" /> 
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_MULTICASTSE" url="java/nodes/beanprop.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_UNICASTSE" url="java/nodes/beanprop.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.MENU_CREATE_PROPERTY" url="java/nodes/beanprop.html" /> 
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Indexed Property" url="java/nodes/beanprop.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Multicast Event Source" url="java/nodes/beanprop.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Unicast Event Source" url="java/nodes/beanprop.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.Property" url="java/nodes/beanprop.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogProperty" url="java/nodes/beanprop.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogIdxProperty" url="java/nodes/beanprop.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogUniCastES" url="java/nodes/beanprop.html" />
+   <mapID target="org.netbeans.modules.beans.PatternGroupNode.dialogMultiCastES" url="java/nodes/beanprop.html" />
+   <mapID target="org.netbeans.modules.beans.PatternNode" url="java/nodes/beanprop.html" />
    <mapID target="org.netbeans.modules.beans.PropertyPatternNode" url="java/nodes/beanprop.html" />
    
    <mapID target="org.netbeans.modules.debugger.core.CoreDebugger.dialog" url="pending.html" />
@@ -852,7 +859,7 @@
    <mapID target="org.netbeans.modules.autoupdate.ConnectingErrorDialog" url="modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.Wizard" url="modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.CertDialog" url="pending.html" />
-   <mapID target="org.netbeans.modules.autoupdate.ProxyDialog" url="modules/autoupdate" />   
+   <mapID target="org.netbeans.modules.autoupdate.ProxyDialog" url="modules/autoupdate.html" />   
    <mapID target="org.netbeans.modules.autoupdate.Settings" url="pending.html" />
    <mapID target="org.netbeans.modules.autoupdate.AutoCheckInfo" url="pending.html" />
 
@@ -1146,78 +1153,19 @@
    <mapID target="org.apache.tools.ant.module.executing-project" url="ant/exec-proj.html" />
    <mapID target="org.apache.tools.ant.module.executing-target" url="ant/exec-targ.html" />
    <mapID target="org.apache.tools.ant.module.custom-tasks" url="ant/custom-tasks.html" />
-   <mapID target="org.apache.tools.ant.module.adv-comp-exec" url="ant/adv-comp-exec.html" />
+   <mapID target="org.apache.tools.ant.module.adv-comp-exec" url="ant/comp-project.html" />
    <mapID target="org.apache.tools.ant.module.settings" url="ant/settings.html" />
    <mapID target="org.apache.tools.ant.module.node-manip" url="ant/editing.html" />
-   
-   <!-- From RMI module. -->
-   <mapID target="rmi_intro" url="rmi/rmi_intro.html" />
-   <mapID target="rmi_wizard" url="rmi/rmi_intro.html" />
-   <mapID target="rmi_concepts_intro" url="rmi/concepts/rmi_concepts.html" />
-   <mapID target="rmi_concepts_basics" url="rmi/concepts/rmi_concepts_basics.html" />
-   <mapID target="rmi_concepts_files" url="rmi/concepts/rmi_concepts_files.html" />
-   <mapID target="rmi_concepts_procs" url="rmi/concepts/rmi_concepts_procs.html" />	
-   <mapID target="rmi_generating_intro" url="rmi/generating/rmi_generating.html" />	
-   <mapID target="rmi_templates" url="rmi/generating/rmi_templates.html" />
-   <mapID target="rmi_generating_client" url="rmi/generating/rmi_generating_client.html" />	
-   <mapID target="rmi_generating_impl" url="rmi/generating/generating_impl.html" />	
-   <mapID target="rmi_generating_server" url="rmi/generating/rmi_generating_server.html" />	
-   <mapID target="rmi_mainexample" url="rmi/completing/main-example.html" />
-   <mapID target="rmi_completing_client" url="rmi/completing/rmi_completing_client.html" />	
-   <mapID target="rmi_completing_server" url="rmi/completing/rmi_completing_server.html" />
-   <mapID target="rmi_compiling_client" url="rmi/completing/rmi_compiling_client.html" />	
-   <mapID target="rmi_compiling_server" url="rmi/completing/rmi_compiling_server.html" />
-   <mapID target="rmi_registrybrowser_intro" url="rmi/registrybrowser/rmi_registrybrowser.html" />	
-   <mapID target="rmi_registrybrowser_starting" url="rmi/registrybrowser/rmi_registrybrowser_starting.html" />
-   <mapID target="rmi_registrybrowser_viewing" url="rmi/registrybrowser/rmi_registrybrowser_viewing.html" />	
-   <mapID target="rmi_registrybrowser_using" url="rmi/registrybrowser/rmi_registrybrowser_using.html" />	
-
-   <mapID target="rmi_settings_intro" url="rmi/settings/custom_rmi.html" />
-   <mapID target="rmi_settings_mod" url="rmi/settings/rmi_settings.html" />
-   <mapID target="rmi_settings_activ" url="rmi/settings/activation_props.html" />
-   <mapID target="rmi_settings_regis" url="rmi/settings/registry_props.html" />
-   <mapID target="rmi_settings_executionnode" url="rmi/settings/rmi_settings_executionnode.html" />	
-   <mapID target="rmi_settings_debuggernode" url="rmi/settings/rmi_settings_debuggernode.html" />	
-   <mapID target="rmi_settings_compilernode" url="rmi/settings/rmi_settings_compilernode.html" />
-
-   <mapID target="rmi_activatebrowser" url="rmi/activatebrowser/rmi_activatebrowser.html" />
-   <mapID target="rmi_activate_starting" url="rmi/activatebrowser/rmi_activatebrowser_starting.html" />	
-   <mapID target="rmi_activ_instance" url="rmi/activatebrowser/addingbrowserinstance.html" />	
-   <mapID target="rmi_activ_group" url="rmi/activatebrowser/addingactgroup.html" />	
-   <mapID target="rmi_activate_usingsystem" url="rmi/activatebrowser/rmi_activatebrowser_usingsystem.html" />	
-   <mapID target="rmi_activate_usinggroup" url="rmi/activatebrowser/rmi_activatebrowser_usinggroup.html" />	
-   <mapID target="rmi_activate_usingobject" url="rmi/activatebrowser/rmi_activatebrowser_usingobject.html" />
-
-   <mapID target="org.netbeans.modules.rmi.RMIStubCompilerType" url="rmi/settings/rmi_settings_compilernode.html" />
-   <mapID target="rmi_fig" url="rmi/concepts/RMIfig.html" />	
-<!--for RMI debugger and executor type nodes in the Options window-->   
-   <mapID target="org.netbeans.modules.rmi.RMIDebugType" url="rmi/settings/rmi_settings_debuggernode.html" />
-   <mapID target="org.netbeans.modules.rmi.RMIExecutor" url="rmi/settings/rmi_settings_executionnode.html" />
-
-
   
-   <!-- From JNDI module. -->
-   
-   <mapID target="jndi_intro" url="jndi/jndi_intro.html" />
-   <mapID target="jndi_concepts_basics" url="jndi/concepts/jndi_concepts_basics.html" />
-   <mapID target="jndi_concepts_procs" url="jndi/concepts/jndi_concepts_procs.html" />	
-   <mapID target="jndi_jndibrowser_addprovider" url="jndi/jndibrowser/jndi_jndibrowser_addprovider.html" />   
-   <mapID target="jndi_jndibrowser_connect" url="jndi/jndibrowser/jndi_jndibrowser_connect.html" />
-   <mapID target="jndi_jndibrowser_generating" url="jndi/jndibrowser/jndi_jndibrowser_generating.html" />
-   <mapID target="jndi_jndibrowser_commands" url="jndi/jndibrowser/jndi_jndibrowser_commands.html" />	
-   <mapID target="jndi_settings_intro" url="jndi/settings/jndi_settings.html" />
 
 <!--from j2eeserver module-->
   <mapID target="credits_html" url="credits.html" />
   <mapID target="general_about_the_j2eeserver_module_html" url="j2eeserver/general/about_the_j2eeserver_module.html" />
   <mapID target="glossary_deploymentdesc_html" url="j2eeserver/glossary/deploymentdesc.html" />
-  <mapID target="glossary_j2eeappdef_html" url="j2eeserver/glossary/j2eeappdef.html" />
-  <mapID target="glossary_j2eeserverdef_html" url="j2eeserver/glossary/j2eeserverdef.html" />
-  <mapID target="glossary_webcontainerdef_html" url="j2eeserver/glossary/webcontainerdef.html" />
   <mapID target="glossary_webserverdef_html" url="j2eeserver/glossary/webserverdef.html" />
   <mapID target="nodes_default_servers_node_html" url="j2eeserver/nodes/default_servers_node.html" />
   <mapID target="nodes_installed_servers_node_html" url="j2eeserver/nodes/installed_servers_node.html" />
-  <mapID target="nodes_j2ee_applications_defsrv_node_html" url="j2eeserver/nodes/j2ee_applications_defsrv_node.html" />
+  <mapID target="nodes_j2ee_applications_defsrv_node_html" url="pending.html" />
   <mapID target="nodes_server_registry_node_html" url="j2eeserver/nodes/server_registry_node.html" />
   <mapID target="nodes_web_applications_defsrv_node_html" url="j2eeserver/nodes/web_applications_defsrv_node.html" />
 
