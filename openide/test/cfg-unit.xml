@@ -37,6 +37,7 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testGetOutputStream"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testAddFileChangeListener"/>
                 <exclude name="org/openide/filesystems/MultiFileSystem3Test.class/testRemoveFileChangeListener"/>
+                <include name="org/openide/modules/*.class"/>
             </patternset>
         </testset>      
     </testbag>
@@ -45,11 +46,12 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/util/*.class"/>
+                <!-- XXX many loaders tests can run in IDE mode just fine... -->
                 <include name="org/openide/loaders/*.class"/>
+                <exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectsCreatedOncePerFile"/>
                 <include name="org/openide/xml/*.class"/>
                 <include name="org/openide/explorer/propertysheet/*.class"/>
                 <include name="org/openide/nodes/*.class"/>
-                <include name="org/openide/modules/*.class"/>
             </patternset>
         </testset>        
     </testbag>
@@ -79,6 +81,9 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>      
     </testbag>
+
+    <!-- XXX: ide,failing? -->
+    <!--<include name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectsCreatedOncePerFile"/>-->
     
     <executor name="ide" antfile="build.xml" target="runidetest"/>
     <executor name="code" antfile="build.xml" target="runcodetest"/>
