@@ -113,7 +113,10 @@ public class OutputWindow extends AbstractOutputWindow {
     }
 
     public void requestVisible () {
-        if (Controller.log) Controller.log("Request visible");
+        if (Controller.log) {
+            Controller.log("Request visible");
+            Controller.logStack();
+        }
         super.requestVisible();
     }
     

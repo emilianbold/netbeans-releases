@@ -1140,9 +1140,6 @@ public class Controller { //XXX public only for debug access to logging code
             OutputWindow ow = OutputWindow.findDefault();
             ActionEvent ae = new ActionEvent(ow, ActionEvent.ACTION_PERFORMED,
                     "");
-            if (!ow.isShowing()) {
-                ow.requestVisible();
-            }
             actionPerformed(ae);
         }
 
