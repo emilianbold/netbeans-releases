@@ -37,6 +37,7 @@ import org.openide.util.Utilities;
 public class BrokenReferencesCustomizer extends javax.swing.JPanel {
 
     private BrokenReferencesModel model;
+    private File lastSelectedFile;
     
     /** Creates new form BrokenReferencesCustomizer */
     public BrokenReferencesCustomizer(BrokenReferencesModel model) {
@@ -159,9 +160,13 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
                 chooser.setDialogTitle(NbBundle.getMessage(BrokenReferencesCustomizer.class, 
                     "LBL_BrokenLinksCustomizer_Resolve_File", or.getDisplayID()));
             }
+            if (lastSelectedFile != null) {
+                chooser.setSelectedFile(lastSelectedFile);
+            }
             int option = chooser.showOpenDialog(null);
             if (option == JFileChooser.APPROVE_OPTION) {
                 model.updateReference(errorList.getSelectedIndex(), chooser.getSelectedFile());
+                lastSelectedFile = chooser.getSelectedFile();
             }
         }
         model.refresh();
