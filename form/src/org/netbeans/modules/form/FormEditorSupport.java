@@ -373,6 +373,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     private void closeForm() {
         openForms.remove(this);
 
+        // remove nodes hierarchy
+        formObject.getNodeDelegate().getChildren()
+                .remove(new RADComponentNode [] { formRootNode });
+
         // remove listeners
         detachWorkspacesListener();
         if (openForms.isEmpty()) {
@@ -391,10 +395,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             formWin.setCloseOperation(TopComponent.CLOSE_EACH);
             formWin.close();
         }
-
-        // remove nodes hierarchy
-        formObject.getNodeDelegate().getChildren()
-                .remove(new RADComponentNode [] { formRootNode });
 
         RADMenuItemComponent.freeDesignTimeMenus(formModel);
 
