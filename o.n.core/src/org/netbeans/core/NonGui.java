@@ -87,9 +87,9 @@ public class NonGui extends NbTopManager implements Runnable {
 
     /** The netbeans home dir - acquired from property netbeans.home */
     private static String homeDir;
-    /** The netbeans user dir - acquired from property netbeans.user / or copied from homeDir if such property does not exist */
+    /** The netbeans user dir - acquired from property netbeans.user */
     private static String userDir;
-    /** The netbeans system dir - it is netbeans.home/system or a folder specified via -system option */
+    /** The netbeans system dir - ${netbeans.user}/system */
     private static String systemDir;
 
     /** module subsystem */
@@ -99,20 +99,12 @@ public class NonGui extends NbTopManager implements Runnable {
     * command line option */
     private static boolean noLogging = false;
 
-    /** Flag telling if the system clipboard should be used or not.
-    * This helps avoid crashes and hangs on Unixes.
-    */
-    private static boolean noSysClipboard = false;
-
     /** The flag whether to show the Splash screen on the startup */
     protected  static boolean noSplash = false;
 
     /** The Class that logs the IDE events to a log file */
     private static TopLogging logger;
 
-    /** The flag for accessibility */
-    public static boolean accessibility = false;
-    
     /** Getter for home directory. */
     protected static String getHomeDir () {
         if (homeDir == null) {
@@ -196,15 +188,7 @@ public class NonGui extends NbTopManager implements Runnable {
     }
     
     protected static void showHelp() {
-        System.out.println(getString("CTL_Cmd_options"));
-        System.out.println(getString("CTL_System_option"));
-        System.out.println("                      " + getString("CTL_System_option2"));
-        System.out.println(getString("CTL_UI_option"));
-        System.out.println(getString("CTL_FontSize_option"));
-        System.out.println(getString("CTL_Locale_option"));
-        System.out.println(getString("CTL_Branding_option"));
-        System.out.println(getString("CTL_Nologging_option"));
-        System.out.println(getString("CTL_Nosysclipboard_option"));
+        System.out.println(getString("TEXT_help"));
     }
 
     public static void parseCommandLine(String[] args) {
@@ -220,21 +204,18 @@ public class NonGui extends NbTopManager implements Runnable {
                 );
             } else if (args[i].equalsIgnoreCase("-nosplash")) // NOI18N
                 noSplash = true;
-            else if (args[i].equalsIgnoreCase("-accessibility")) // NOI18N
-            {
-                accessibility = true;
-                java.lang.System.setProperty("netbeans.accessibility","true");
-            }
             else if (args[i].equalsIgnoreCase("-noinfo")) { // NOI18N
                 // obsolete switch, ignore
             }
             else if (args[i].equalsIgnoreCase("-nologging")) // NOI18N
                 noLogging = true;
+            /* not supported:
             else if (args[i].equalsIgnoreCase("-nosysclipboard")) // NOI18N
                 noSysClipboard = true;
             else if (args[i].equalsIgnoreCase("-system")) { // NOI18N
                 systemDir = args[++i];
             }
+            */
             else if (args[i].equalsIgnoreCase("-ui")) { // NOI18N
                 try {
                     uiClass = Class.forName(args[++i]);
