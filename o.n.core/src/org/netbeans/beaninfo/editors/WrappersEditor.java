@@ -66,6 +66,11 @@ public abstract class WrappersEditor implements ExPropertyEditor {
             //Reasonable to assume any exceptions from core/jdk editors are legit
             IllegalArgumentException iae = new IllegalArgumentException (e.getMessage());
             String msg = e.getLocalizedMessage();
+            //special handling for the jdk's javabeans editors, which
+            //can't possibly know anything about ErrorManager.
+            if (pe.getClass().getName().startsWith("sun")) { //NOI18N
+                msg = null;
+            }
             if (msg == null) {
                 msg = MessageFormat.format(
                 NbBundle.getMessage(
