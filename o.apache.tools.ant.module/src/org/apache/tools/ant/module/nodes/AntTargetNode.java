@@ -132,6 +132,15 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
         return new HelpCtx ("org.apache.tools.ant.module.identifying-project");
     }
 
+    protected Sheet createSheet() {
+        Sheet sheet = super.createSheet();
+        Sheet.Set props = sheet.get(Sheet.PROPERTIES);
+        if (props != null)  {
+            props.setValue("helpID", "org.apache.tools.ant.module.nodes.AntTargetNode.Properties");
+        }
+        return sheet;
+    }
+    
     protected void addProperties (Sheet.Set props) {
         String[] attrs = new String[] { "name", "description", "if", "unless", /*"id"*/ }; // NOI18N
         AntProjectCookie proj = (AntProjectCookie) getCookie(AntProjectCookie.class);

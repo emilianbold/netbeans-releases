@@ -146,6 +146,7 @@ public class AntProjectNode extends DataNode implements ChangeListener {
             sheet.put(props);
         }
         add2Sheet (props);
+        props.setValue("helpID", "org.apache.tools.ant.module.nodes.AntProjectNode.Properties");
 
         Sheet.Set exec = new Sheet.Set ();
         exec.setName ("execution"); // NOI18N
@@ -160,6 +161,7 @@ public class AntProjectNode extends DataNode implements ChangeListener {
         if (csupp != null || xsupp != null) {
             sheet.put (exec);
         }
+        exec.setValue("helpID", "org.apache.tools.ant.module.nodes.AntProjectNode.Execution");
 
         return sheet;
     }
