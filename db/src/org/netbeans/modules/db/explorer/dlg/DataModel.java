@@ -175,7 +175,9 @@ public class DataModel extends AbstractTableModel
 	*/
 	public void removeRow(int row) 
 	{
-		data.removeElementAt(row);
-		fireTableRowsDeleted(row, row);
+		if (row < data.size()) {
+			data.removeElementAt(row);
+			fireTableRowsDeleted(row, row);
+		}
     }
 }
