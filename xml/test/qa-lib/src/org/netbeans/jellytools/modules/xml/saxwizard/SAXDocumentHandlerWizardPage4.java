@@ -1,7 +1,7 @@
 /*
- * SAXDocumentHandlerWizard.java
+ * SAXDocumentHandlerWizardPage4.java
  *
- * Created on 8/5/02 4:17 PM
+ * Created on 9/3/02 7:44 PM
  */
 package org.netbeans.jellytools.modules.xml.saxwizard;
 
@@ -15,13 +15,14 @@ import org.netbeans.jemmy.operators.*;
  */
 public class SAXDocumentHandlerWizardPage4 extends WizardOperator {
 
-    /** Creates new SAXDocumentHandlerWizard that can handle it.
+    /** Creates new SAXDocumentHandlerWizardPage4 that can handle it.
      */
     public SAXDocumentHandlerWizardPage4() {
         super("SAX Document Handler Wizard");
     }
 
     private JLabelOperator _lblSteps;
+    private JListOperator _lstSteps;
     private JLabelOperator _lbl4Of4OutputFileNames;
     private JTextAreaOperator _txtJTextArea;
     private JLabelOperator _lblHandlerInterface;
@@ -30,6 +31,10 @@ public class SAXDocumentHandlerWizardPage4 extends WizardOperator {
     private JTextFieldOperator _txtHandlerImplementation;
     private JLabelOperator _lblGeneratedParser;
     private JTextFieldOperator _txtGeneratedParser;
+    private JLabelOperator _lblDataConvertorInterface;
+    private JTextFieldOperator _txtDataConvertorInterface;
+    private JLabelOperator _lblDataConvertorImplementation;
+    private JTextFieldOperator _txtDataConvertorImplementation;
     private JCheckBoxOperator _cbSaveCustomizedBindings;
     private JLabelOperator _lblLocation;
     private JTextFieldOperator _txtLocation;
@@ -49,6 +54,16 @@ public class SAXDocumentHandlerWizardPage4 extends WizardOperator {
             _lblSteps = new JLabelOperator(this, "Steps");
         }
         return _lblSteps;
+    }
+
+    /** Tries to find null JList in this dialog.
+     * @return JListOperator
+     */
+    public JListOperator lstSteps() {
+        if (_lstSteps==null) {
+            _lstSteps = new JListOperator(this);
+        }
+        return _lstSteps;
     }
 
     /** Tries to find "4 of 4 - Output File Names" JLabel in this dialog.
@@ -131,6 +146,46 @@ public class SAXDocumentHandlerWizardPage4 extends WizardOperator {
         return _txtGeneratedParser;
     }
 
+    /** Tries to find "Data Convertor Interface:" JLabel in this dialog.
+     * @return JLabelOperator
+     */
+    public JLabelOperator lblDataConvertorInterface() {
+        if (_lblDataConvertorInterface==null) {
+            _lblDataConvertorInterface = new JLabelOperator(this, "Data Convertor Interface:");
+        }
+        return _lblDataConvertorInterface;
+    }
+
+    /** Tries to find null ValidatingTextField in this dialog.
+     * @return JTextFieldOperator
+     */
+    public JTextFieldOperator txtDataConvertorInterface() {
+        if (_txtDataConvertorInterface==null) {
+            _txtDataConvertorInterface = new JTextFieldOperator(this, 3);
+        }
+        return _txtDataConvertorInterface;
+    }
+
+    /** Tries to find "Data Convertor Implementation:" JLabel in this dialog.
+     * @return JLabelOperator
+     */
+    public JLabelOperator lblDataConvertorImplementation() {
+        if (_lblDataConvertorImplementation==null) {
+            _lblDataConvertorImplementation = new JLabelOperator(this, "Data Convertor Implementation:");
+        }
+        return _lblDataConvertorImplementation;
+    }
+
+    /** Tries to find null ValidatingTextField in this dialog.
+     * @return JTextFieldOperator
+     */
+    public JTextFieldOperator txtDataConvertorImplementation() {
+        if (_txtDataConvertorImplementation==null) {
+            _txtDataConvertorImplementation = new JTextFieldOperator(this, 4);
+        }
+        return _txtDataConvertorImplementation;
+    }
+
     /** Tries to find " Save Customized Bindings" JCheckBox in this dialog.
      * @return JCheckBoxOperator
      */
@@ -156,7 +211,7 @@ public class SAXDocumentHandlerWizardPage4 extends WizardOperator {
      */
     public JTextFieldOperator txtLocation() {
         if (_txtLocation==null) {
-            _txtLocation = new JTextFieldOperator(this, 3);
+            _txtLocation = new JTextFieldOperator(this, 5);
         }
         return _txtLocation;
     }
@@ -270,6 +325,48 @@ public class SAXDocumentHandlerWizardPage4 extends WizardOperator {
         txtGeneratedParser().typeText(text);
     }
 
+    /** gets text for txtDataConvertorInterface
+     * @return String text
+     */
+    public String getDataConvertorInterface() {
+        return txtDataConvertorInterface().getText();
+    }
+
+    /** sets text for txtDataConvertorInterface
+     * @param text String text
+     */
+    public void setDataConvertorInterface(String text) {
+        txtDataConvertorInterface().setText(text);
+    }
+
+    /** types text for txtDataConvertorInterface
+     * @param text String text
+     */
+    public void typeDataConvertorInterface(String text) {
+        txtDataConvertorInterface().typeText(text);
+    }
+
+    /** gets text for txtDataConvertorImplementation
+     * @return String text
+     */
+    public String getDataConvertorImplementation() {
+        return txtDataConvertorImplementation().getText();
+    }
+
+    /** sets text for txtDataConvertorImplementation
+     * @param text String text
+     */
+    public void setDataConvertorImplementation(String text) {
+        txtDataConvertorImplementation().setText(text);
+    }
+
+    /** types text for txtDataConvertorImplementation
+     * @param text String text
+     */
+    public void typeDataConvertorImplementation(String text) {
+        txtDataConvertorImplementation().typeText(text);
+    }
+
     /** checks or unchecks given JCheckBox
      * @param state boolean requested state
      */
@@ -282,7 +379,7 @@ public class SAXDocumentHandlerWizardPage4 extends WizardOperator {
     /** gets text for txtLocation
      * @return String text
      */
-    public String getCustomizeBindingsLocation() {
+    public String getBindingsLocation() {
         return txtLocation().getText();
     }
 
@@ -317,10 +414,11 @@ public class SAXDocumentHandlerWizardPage4 extends WizardOperator {
     // High-level functionality definition part
     //*****************************************
 
-    /** Performs verification of SAXDocumentHandlerWizard by accessing all its components.
+    /** Performs verification of SAXDocumentHandlerWizardPage4 by accessing all its components.
      */
     public void verify() {
         lblSteps();
+        lstSteps();
         lbl4Of4OutputFileNames();
         txtJTextArea();
         lblHandlerInterface();
@@ -329,6 +427,10 @@ public class SAXDocumentHandlerWizardPage4 extends WizardOperator {
         txtHandlerImplementation();
         lblGeneratedParser();
         txtGeneratedParser();
+        lblDataConvertorInterface();
+        txtDataConvertorInterface();
+        lblDataConvertorImplementation();
+        txtDataConvertorImplementation();
         cbSaveCustomizedBindings();
         lblLocation();
         txtLocation();
@@ -336,7 +438,7 @@ public class SAXDocumentHandlerWizardPage4 extends WizardOperator {
         btHelp();
     }
 
-    /** Performs simple test of SAXDocumentHandlerWizard
+    /** Performs simple test of SAXDocumentHandlerWizardPage4
     * @param args the command line arguments
     */
     public static void main(String args[]) {

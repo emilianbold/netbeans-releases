@@ -31,6 +31,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- TOOLS -->
                 <include name="org/netbeans/modules/xml/tools/generator/GenerateDOMScannerSupportTest.class"/>
                 <include name="org/netbeans/modules/xml/tools/generator/GenerateDTDSupportTest.class"/>
+                <include name="org/netbeans/modules/xml/tools/generator/SAXGeneratorJTest.class"/>
                 <include name="org/netbeans/modules/xml/tools/doclet/DTDDocletTest.class"/>
                 <include name="org/netbeans/modules/xml/tools/actions/CheckActionTest.class"/>
                 <include name="org/netbeans/modules/xml/tools/actions/ValidateActionTest.class"/>
