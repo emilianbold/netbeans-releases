@@ -8,7 +8,7 @@ OpenIDE-Module-Provides: org.netbeans.modules.tomcat5
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.j2eeserver/3,
  org.netbeans.modules.j2eeapis/1,
  org.netbeans.api.web.dd/1,
- org.openide.execution,
+ org.openide.execution > 1.3,
  org.netbeans.api.debugger/1,
  org.netbeans.api.debugger.jpda/1,
  org.openide.io,
