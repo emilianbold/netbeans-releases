@@ -190,7 +190,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     }
     
     public void open(){
-        encoding = getObjectEncoding(false, true); //use encoding from fileobject & cache it
+        encoding = getObjectEncoding(false, false); //use encoding from fileobject & cache it
         if (!isSupportedEncoding(encoding)){
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadEncodingDuringLoad", //NOI18N
