@@ -21,7 +21,6 @@ import java.util.*;
 import java.text.MessageFormat;
 
 import org.openide.util.NbBundle;
-import org.netbeans.modules.debugger.jpda.evaluator.PValue;
 
 /**
  * This class is a runtime exception because it integrates better with the generated code and
@@ -140,7 +139,6 @@ public class EvaluationException extends RuntimeException {
 
     private String formatMessage(String msg, String [] params) {
         ResourceBundle bundle = NbBundle.getBundle (EvaluationException.class);
-//        ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.debugger.jpda.expr.Bundle");
         msg = bundle.getString(msg);
         return MessageFormat.format(msg, params);
     }
