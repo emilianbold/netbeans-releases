@@ -310,7 +310,7 @@ public class FormEditorModule extends ModuleInstall {
         try {
             if ((awtCategory = paletteFolder.getFileObject("AWT")) == null) // NOI18N
                 awtCategory = paletteFolder.createFolder("AWT"); // NOI18N
-            createInstances(awtCategory, defaultAWTComponents, null, componentErrors);
+            createInstances(awtCategory, defaultAWTComponents, defaultAWTIcons, componentErrors);
             localizeFile(awtCategory);
         } catch (java.io.IOException e) {
             categoryErrors.add("AWT"); // NOI18N
@@ -460,6 +460,23 @@ public class FormEditorModule extends ModuleInstall {
         "java.awt.PopupMenu", // NOI18N
     };
 
+    /** The default AWT icons */
+    private final static String[] defaultAWTIcons = new String[] {
+        "/org/netbeans/beaninfo/awt/label.gif", // NOI18N
+        "/org/netbeans/beaninfo/awt/button.gif", // NOI18N
+        "/org/netbeans/beaninfo/awt/textfield.gif", // NOI18N
+        "/org/netbeans/beaninfo/awt/textarea.gif", // NOI18N
+        "/org/netbeans/beaninfo/awt/checkbox.gif", // NOI18N
+        "/org/netbeans/beaninfo/awt/choice.gif", // NOI18N
+        "/org/netbeans/beaninfo/awt/list.gif", // NOI18N
+        "/org/netbeans/beaninfo/awt/scrollbar.gif", // NOI18N
+        "/org/netbeans/beaninfo/awt/scrollpane.gif", // NOI18N
+        "/org/netbeans/beaninfo/awt/panel.gif", // NOI18N
+        "/org/netbeans/beaninfo/awt/canvas.gif", // NOI18N
+        "/org/netbeans/beaninfo/awt/menubar.gif", // NOI18N
+        "/org/netbeans/beaninfo/awt/popupmenu.gif", // NOI18N
+    };
+    
     /** The default Swing Components */
     private final static String[] defaultSwingComponents = new String[] {
         "javax.swing.JLabel", // NOI18N
