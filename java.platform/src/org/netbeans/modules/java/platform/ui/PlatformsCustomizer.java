@@ -58,7 +58,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     private static final String TEMPLATE = "Templates/Services/Platforms/org-netbeans-api-java-Platform/javaplatform.xml";  //NOI18N
     private static final String STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N
     
-    private static final Dimension PREFERRED_SIZE = new Dimension (600,400);
+    private static final Dimension PREFERRED_SIZE = new Dimension (720,400);
 
     private PlatformCategoriesChildren children;
     private ExplorerManager manager;
@@ -145,7 +145,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 6);
         add(addButton, gridBagConstraints);
 
         removeButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_Remove"));
@@ -160,7 +160,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(removeButton, gridBagConstraints);
 
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_PlatformHome").charAt(0));
@@ -206,6 +206,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 3);
         add(jLabel2, gridBagConstraints);
 
@@ -215,6 +216,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 3, 6, 12);
         add(platformName, gridBagConstraints);
