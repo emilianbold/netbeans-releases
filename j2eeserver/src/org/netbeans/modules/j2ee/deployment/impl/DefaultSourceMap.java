@@ -17,6 +17,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -29,39 +31,44 @@ public class DefaultSourceMap extends SourceFileMap {
      * Straight file mapping service.
      * Map a distribution path to a file using distribution path as relative path to a mapping root.
      */
-    private String contextName;
-    private FileObject[] roots;
-    private FileObject configDir;
-    private File resourceDir;
+    private J2eeModuleProvider provider;
     private HashSet rootFiles = new HashSet();
     
     /** Creates a new instance of DefaultFileMapping */
-    public DefaultSourceMap(String name, FileObject[] roots, File resourceDir) {
-        this.contextName = name;
-        this.roots = roots;
-        this.resourceDir = resourceDir;
+    public DefaultSourceMap(J2eeModuleProvider provider) {
+        this.provider = provider;
+        FileObject[] roots = provider.getSourceRoots();
         for (int i=0; i<roots.length; i++) {
             rootFiles.add(FileUtil.toFile(roots[i]));
         }
     }
     
     public String getContextName() {
-        return contextName;
+        return provider.getDeploymentName();
     }
 
     public FileObject[] getSourceRoots() {
-        return roots;
+        return provider.getSourceRoots();
     }
     
     public File getEnterpriseResourceDir() {
-        return resourceDir;
+        return provider.getEnterpriseResourceDirectory();
+    }
+    
+    public File[] getEnterpriseResourceDirs() {
+        ArrayList result = new ArrayList();
+        result.add(provider.getEnterpriseResourceDirectory());
+        if (provider instanceof J2eeAppProvider) {
+            J2eeAppProvider jap = (J2eeAppProvider) provider;
+            J2eeModuleProvider[] children = jap.getChildModuleProviders();
+            for (int i=0; i<children.length; i++) {
+                result.add(children[i].getEnterpriseResourceDirectory());
+            }
+        }
+        return (File[]) result.toArray(new File[result.size()]);
     }
    
     public boolean add(String distributionPath, FileObject sourceFile) {
-        for (int i=0; i<roots.length; i++) {
-            if (sourceFile.getPath().startsWith(roots[i].getPath()))
-                return true;
-        }
         return false;
     }
     
@@ -71,6 +78,7 @@ public class DefaultSourceMap extends SourceFileMap {
     
     public FileObject[] findSourceFile(String distributionPath) {
         ArrayList ret = new ArrayList();
+        FileObject[] roots = getSourceRoots();
         String path = distributionPath.startsWith("/") ? distributionPath.substring(1) : distributionPath; //NOI18N
         for (int i=0; i<roots.length; i++) {
             FileObject fo = roots[i].getFileObject(path);

@@ -168,7 +168,7 @@ public abstract class J2eeModuleProvider {
      * directory to distribution directory.
      */
     public SourceFileMap getSourceFileMap() {
-        return new DefaultSourceMap(getDeploymentName(), getSourceRoots(), getEnterpriseResourceDirectory());
+        return new DefaultSourceMap(this);
     }
     
     /** If the module wants to specify a target server instance for deployment 

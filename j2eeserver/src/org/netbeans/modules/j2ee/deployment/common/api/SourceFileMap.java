@@ -53,11 +53,22 @@ public abstract class SourceFileMap {
     public abstract String getContextName();
     
     /**
-     * Returns directory path to repository of enterprise resource definition files.
-     * If the directory pointed to by the returned path does not exists writing user
+     * Returns directory paths to repository of enterprise resource definition files.
+     * If the directories pointed to by the returned path does not exists writing user
      * of the method call could attempt to create it.
      */
     public abstract File getEnterpriseResourceDir();
+    
+    /**
+     * Returns directory paths to repository of enterprise resource definition files.
+     * If the directories pointed to by the returned path does not exists writing user
+     * of the method call could attempt to create it.
+     * For a stand-alone J2EE module, the returned list should contain only one path as
+     * returned by getEnterpriseResourceDir.
+     *
+     * For J2EE application module, the list contains resource directory paths of all child modules.
+     */
+    public abstract File[] getEnterpriseResourceDirs();
     
     /**
      * Add new mapping or update existing mapping of the given distribution path.
