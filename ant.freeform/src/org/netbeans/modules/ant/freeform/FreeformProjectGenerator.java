@@ -689,6 +689,12 @@ public class FreeformProjectGenerator {
                 sf.location = Util.findText(el);
             }
             if (type == null || type.equals(sf.type)) {
+                if (sf.label == null || sf.label.length() == 0) {
+                    throw new IllegalArgumentException("label element is empty or not specified. "+helper.getProjectDirectory()); // NOI18N
+                }
+                if (sf.location == null || sf.location.length() == 0) {
+                    throw new IllegalArgumentException("location element is empty or not specified. "+helper.getProjectDirectory()); // NOI18N
+                }
                 list.add(sf);
             }
         }
@@ -739,20 +745,24 @@ public class FreeformProjectGenerator {
             SourceFolder sf = (SourceFolder)it2.next();
             Element sourceFolderEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "source-folder"); // NOI18N
             Element el;
-            if (sf.label != null) {
+            if (sf.label != null && sf.label.length() > 0) {
                 el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "label"); // NOI18N
                 el.appendChild(doc.createTextNode(sf.label)); // NOI18N
                 sourceFolderEl.appendChild(el);
+            } else {
+                throw new IllegalArgumentException("label cannot be empty. "+helper.getProjectDirectory()); // NOI18N
             }
             if (sf.type != null) {
                 el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "type"); // NOI18N
                 el.appendChild(doc.createTextNode(sf.type)); // NOI18N
                 sourceFolderEl.appendChild(el);
             }
-            if (sf.location != null) {
+            if (sf.location != null && sf.location.length() > 0) {
                 el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "location"); // NOI18N
                 el.appendChild(doc.createTextNode(sf.location)); // NOI18N
                 sourceFolderEl.appendChild(el);
+            } else {
+                throw new IllegalArgumentException("location cannot be empty. "+helper.getProjectDirectory()); // NOI18N
             }
             appendChildElement(foldersEl, sourceFolderEl, folderElementsOrder);
         }
