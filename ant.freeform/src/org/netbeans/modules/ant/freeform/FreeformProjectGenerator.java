@@ -49,7 +49,7 @@ public class FreeformProjectGenerator {
 
     /** Location of original project. This property should be set/used when NB 
      * project metadata are stored in different folder. */
-    public static final String PROP_PROJECT_LOCATION = "project.location";
+    public static final String PROP_PROJECT_LOCATION = "project.dir"; // NOI18N
 
     /** Keep root elements in this order. */
     private static final String[] rootElementsOrder = new String[]{"name", "properties", "folders", "ide-actions", "export", "view", "subprojects"}; // NOI18N
@@ -539,12 +539,18 @@ public class FreeformProjectGenerator {
     /**
      * Structure describing source folder.
      * Data in the struct are in the same format as they are stored in XML.
+     * Beware that when used in <folders> you must specify label, location, and optional type;
+     * in <view><items>, you must specify label, location, and style. So if you are switching
+     * from the latter to the former you must add style; if vice-versa, you may need to add type.
      */
     public static final class SourceFolder {
         public String label;
         public String type;
         public String location;
         public String style;
+        public String toString() {
+            return "FPG.SF[label=" + label + ",type=" + type + ",location=" + location + ",style=" + style + "]"; // NOI18N
+        }
     }
 
     /**
@@ -593,11 +599,11 @@ public class FreeformProjectGenerator {
      * Update source folders of the project. Project is left modified and you 
      * must save it explicitely.
      * @param helper AntProjectHelper instance
+     * @param sources list of SourceFolder instances
      * @param type type of source folders to update. 
      *    Can be null in which case all types will be overriden.
      *    Useful for overriding just one type of source folders. Source folders
      *    without type are overriden only when type == null.
-     * @param sources list of SourceFolder instances
      */
     public static void putSourceFolders(AntProjectHelper helper, List/*<SourceFolder>*/ sources, String type) {
         ArrayList list = new ArrayList();
@@ -680,6 +686,7 @@ public class FreeformProjectGenerator {
             }
             SourceFolder sf = new SourceFolder();
             sf.style = sourceFolderEl.getAttribute("style");
+            assert sf.style != null && sf.style.length() > 0 : "Bad style attr on <source-folder> in " + helper;
             Element el = Util.findElement(sourceFolderEl, "label", FreeformProjectType.NS_GENERAL);
             if (el != null) {
                 sf.label = Util.findText(el);
@@ -736,6 +743,9 @@ public class FreeformProjectGenerator {
         while (it2.hasNext()) {
             SourceFolder sf = (SourceFolder)it2.next();
             Element sourceFolderEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "source-folder"); // NOI18N
+            if (sf.style == null || sf.style.length() == 0) {
+                throw new IllegalArgumentException("No style on <source-folder> in " + sources + " for " + helper); // NOI18N
+            }
             sourceFolderEl.setAttribute("style", sf.style);
             Element el;
             if (sf.label != null) {
@@ -1051,7 +1061,7 @@ public class FreeformProjectGenerator {
     
     /** 
      * Relativize given file against the original project and if needed use 
-     * ${project.location} property as base. If file cannot be relativized
+     * ${project.dir} property as base. If file cannot be relativized
      * the absolute filepath is returned.
      * @param projectBase original project base folder
      * @param freeformBase Freeform project base folder
@@ -1071,7 +1081,7 @@ public class FreeformProjectGenerator {
     }
 
     /**
-     * Resolve given string value (e.g. "${project.location}/lib/lib1.jar")
+     * Resolve given string value (e.g. "${project.dir}/lib/lib1.jar")
      * to a File.
      * @param evaluator evaluator to use for properties resolving
      * @param freeformProjectBase freeform project base folder
